@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.core.dev.wizard;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.border.EtchedBorder;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
@@ -138,16 +139,21 @@ public class EjbChooser extends javax.swing.JPanel {
 
             // no node selected
             if (nodes.length == 0) {
-                setErrorMessage(NbBundle.getMessage(EjbChooser.class, "LBL_SelectOneEJB")); //NOI18N
+                setErrorMessage(NbBundle.getMessage(EjbChooser.class, "LBL_SelectOneEJB"));
                 return false;
             }
-// Retouche            
-//            Feature member = (Feature) nodes[0].getLookup().lookup(Feature.class);
-//            // non-EJB node is selected
-//            if (!(member instanceof JavaClass)) {
-//                setErrorMessage(NbBundle.getMessage(EjbChooser.class, "LBL_NodeIsNotEJB")); //NOI18N
-//                return false;
-//            }
+            
+            EjbReference ejbRef = nodes[0].getLookup().lookup(EjbReference.class);
+            
+            if (ejbRef == null) {
+                setErrorMessage(NbBundle.getMessage(EjbChooser.class, "LBL_NodeIsNotEJB"));
+                return false;                
+            }
+            
+            if (ejbRef.getLocal() == null && ejbRef.getRemote() == null) {
+                setErrorMessage(NbBundle.getMessage(EjbChooser.class,"MSG_MISSING_INTERFACE")); 
+                return false;
+            }
             
             return true;
         }

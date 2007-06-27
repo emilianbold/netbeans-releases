@@ -212,7 +212,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
         DataObject dobj = dTemplate.createFromTemplate(df, wsName);
         FileObject createdFile = dobj.getPrimaryFile();
         
-        /* don't rely on annotation listener to notify the service creation */
         final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
         if ( jaxWsModel!= null) {
             ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
@@ -227,8 +226,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     }
                 }
 
-            }); 
-            jaxWsModel.write();
+            });
             JaxWsUtils.openFileInEditor(dobj, service);
         }    
         
@@ -337,88 +335,93 @@ public class JaxWsServiceCreator implements ServiceCreator {
     }
     
     private void generateWebServiceFromEJB(String wsName, FileObject pkg, ProjectInfo projectInfo, Node[] nodes) throws IOException, ServiceAlreadyExistsExeption {
-        DataFolder df = DataFolder.findFolder(pkg);
-        FileObject template = Templates.getTemplate(wiz);
-        
-        if (projectType==ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
-            FileObject templateParent = template.getParent();
-            template = templateParent.getFileObject("EjbWebService","java"); //NOI18N
-        }        
-        DataObject dTemplate = DataObject.find(template);
-        DataObject dobj = dTemplate.createFromTemplate(df, wsName);
-        FileObject createdFile = dobj.getPrimaryFile();
-        
-        /* don't rely on annotation listener to notify the service creation */
-        final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
-        if ( jaxWsModel!= null) {
-            ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
-            String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
-            addReferences(createdFile, serviceImplPath, nodes);
-            Service service = jaxWsModel.addService(wsName, serviceImplPath);
-            ProjectManager.mutex().writeAccess(new Runnable() {
-                public void run() {
-                    try {
-                        jaxWsModel.write();
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                }
 
-            });
-            jaxWsModel.write();
-            JaxWsUtils.openFileInEditor(dobj, service);      }           
-    }
-    
-    public void addReferences(FileObject targetFo, String beanClassName, Node[] nodes) throws IOException {
-        final int[] num = new int[1];
-        for(int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-         
+        if (nodes!=null && nodes.length == 1) {
             
-            final EjbReference ref = node.getLookup().lookup(EjbReference.class);
+            EjbReference ejbRef = nodes[0].getLookup().lookup(EjbReference.class);
+            if (ejbRef!=null) {
+                
+                DataFolder df = DataFolder.findFolder(pkg);
+                FileObject template = Templates.getTemplate(wiz);
 
-            JavaSource targetSource = JavaSource.forFileObject(targetFo);
-            CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws IOException {
-                    workingCopy.toPhase(Phase.RESOLVED);
+                if (projectType==ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
+                    FileObject templateParent = template.getParent();
+                    template = templateParent.getFileObject("EjbWebService","java"); //NOI18N
+                }        
+                DataObject dTemplate = DataObject.find(template);
+                DataObject dobj = dTemplate.createFromTemplate(df, wsName);
+                FileObject createdFile = dobj.getPrimaryFile();               
 
-                    TreeMaker make = workingCopy.getTreeMaker();
-
-                    SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
-                    if (srcUtils!=null) {
-                        ClassTree javaClass = srcUtils.getClassTree();
-                        VariableTree ejbRefInjection=null;
-                        String local = ref.getLocal();
-                        if (local!=null) {
-                            ejbRefInjection = generateEjbInjection(workingCopy, make, local, num[0]);
-                            num[0]++;
-                        } else {
-                            String remote = ref.getRemote();
-                            if (remote!=null) {
-                                ejbRefInjection = generateEjbInjection(workingCopy, make, remote, num[0]);
-                                num[0]++;
+                ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
+                String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
+                addReferences(createdFile, ejbRef);
+                    
+                final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
+                if ( jaxWsModel!= null) {
+                    Service service = jaxWsModel.addService(wsName, serviceImplPath);
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+                        public void run() {
+                            try {
+                                jaxWsModel.write();
+                            } catch (IOException ex) {
+                                ErrorManager.getDefault().notify(ex);
                             }
                         }
-                        if (ejbRefInjection != null) {
-                            
-                            String comment1 = "Add business logic below. (Right-click in editor and choose"; //NOI18N
-                            String comment2 = "\"Web Service > Add Operation\""; //NOI18N                        
-                            make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment1), false);
-                            make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment2), false);
-                            
-                            ClassTree modifiedClass = make.insertClassMember(javaClass, 0, ejbRefInjection);
-                            workingCopy.rewrite(javaClass, modifiedClass);
-                        }
+
+                    });
+                    JaxWsUtils.openFileInEditor(dobj, service);
+                }
+            } 
+        }
+    }
+
+    public void addReferences(FileObject targetFo, final EjbReference ref) throws IOException {
+        final boolean[] onClassPath = new boolean[1];
+        final String[] interfaceClass = new String[1];
+
+        JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
+                if (srcUtils!=null) {
+                    ClassTree javaClass = srcUtils.getClassTree();
+                    VariableTree ejbRefInjection=null;
+                    interfaceClass[0] = ref.getLocal();
+                    if (interfaceClass[0] == null) interfaceClass[0] = ref.getRemote();
+                    
+                    ejbRefInjection = generateEjbInjection(workingCopy, make, interfaceClass[0], onClassPath);
+
+                    if (ejbRefInjection != null) {
+                        String comment1 = "Add business logic below. (Right-click in editor and choose"; //NOI18N
+                        String comment2 = "\"Web Service > Add Operation\""; //NOI18N                        
+                        make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment1), false);
+                        make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment2), false);
+
+                        ClassTree modifiedClass = make.insertClassMember(javaClass, 0, ejbRefInjection);
+                        workingCopy.rewrite(javaClass, modifiedClass);
                     }
                 }
-                public void cancel() {}
-            };
-            targetSource.runModificationTask(modificationTask).commit();       
-
+            }
+            public void cancel() {}
+        };
+        targetSource.runModificationTask(modificationTask).commit();
+        
+        if (!onClassPath[0]) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsServiceCreator.class,"MSG_EJB_NOT_ON_CLASSPATH",interfaceClass[0]),
+                            NotifyDescriptor.WARNING_MESSAGE));
+                }
+            });
         }
     }
     
-    private VariableTree generateEjbInjection(WorkingCopy workingCopy, TreeMaker make, String beanInterface, int num) {
+    private VariableTree generateEjbInjection(WorkingCopy workingCopy, TreeMaker make, String beanInterface, boolean[] onClassPath) {
         
         TypeElement ejbAnElement = workingCopy.getElements().getTypeElement("javax.ejb.EJB"); //NOI18N
         TypeElement interfaceElement = workingCopy.getElements().getTypeElement(beanInterface); //NOI18N
@@ -433,10 +436,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
             Collections.<AnnotationTree>singletonList(ejbAnnotation)
         );
         
+        onClassPath[0] = interfaceElement!=null;
         return make.Variable(
             methodModifiers,
-            num == 0? "ejbRef": "ejbRef"+String.valueOf(num), //NOI18N
-            make.Type(interfaceElement.asType()),
+            "ejbRef", //NOI18N
+            onClassPath[0]?make.Type(interfaceElement.asType()):make.Identifier(beanInterface),
             null);
     }
 }
