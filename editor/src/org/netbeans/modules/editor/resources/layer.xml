@@ -142,6 +142,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="1000"/>
             </file>
         
+            <file name="SeparatorAfterLineTools.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="2000"/>
+            </file>
             
             <file name="org-netbeans-modules-editor-MainMenuAction$CommentAction.instance">
                 <attr name="position" intvalue="1100"/>
