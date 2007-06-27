@@ -165,7 +165,7 @@ public class ElementMatcher {
 		while(iter1.hasNext()) {
 		    IParameter p1 = iter1.next();
 		    IParameter p2 = iter2.next();
-		    if (! p1.getTypeName().equals(p2.getTypeName())) {
+		    if (! Merger.compareParameters(p1, p2)) {
 			return false;
 		    }
 		}

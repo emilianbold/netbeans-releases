@@ -743,7 +743,7 @@ public class Merger implements IUMLParserEventsSink {
 
     protected static List<IParameter> getParameters(IOperation op) {
 	ArrayList<IParameter> res = new ArrayList<IParameter>();
-	String query = "./UML:Element.ownedElement/UML:Parameter[@direction=\"in\"]";
+	String query = "./UML:Element.ownedElement/UML:Parameter";
 	List pars = XMLManip.selectNodeList(op.getNode(), query);
 	if (pars != null)
 	{
@@ -751,13 +751,18 @@ public class Merger implements IUMLParserEventsSink {
 	    while(iter.hasNext()) 
 	    { 
 		Node n = (Node)iter.next();
-		IParameter p = (IParameter)retrieveElement(n);
-		if (p == null) {
-		    p = new Parameter();
-		    p.setNode(n);
-		    cacheElement(p);
+		String direction = XMLManip.getAttributeValue(n, "direction");
+		if (direction == null || ! direction.equals("result")) 
+		{ 
+		    IParameter p = (IParameter)retrieveElement(n);
+		    if (p == null) 
+		    {
+			p = new Parameter();
+			p.setNode(n);
+			cacheElement(p);
+		    }
+		    res.add(p);
 		}
-		res.add(p);
 	    }
 	}
 	return res;
