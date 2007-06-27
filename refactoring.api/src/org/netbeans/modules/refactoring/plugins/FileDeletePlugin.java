@@ -89,7 +89,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
         public void performChange() {
             try {
                 if (!fo.isValid()) {
-                    fo = FileUtil.toFileObject(new File(fo.getPath()));
+                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fo.getPath())));
                 }
                 
                 id = BackupFacility.getDefault().backup(fo);
