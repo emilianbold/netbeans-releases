@@ -51,7 +51,7 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             
             for (int i = 0; i < bookmarkLines.length; i++) {
                 editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
-                txtOper.pushKey(KeyEvent.VK_F2, KeyEvent.CTRL_MASK);
+                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
             }
             
         } finally {
@@ -84,7 +84,7 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             JEditorPaneOperator txtOper = editorOper.txtEditorPane();
             Document doc = txtOper.getDocument();
             editorOper.setCaretPosition(getLineOffset(doc, bookmarkLine));
-            txtOper.pushKey(KeyEvent.VK_F2, KeyEvent.CTRL_MASK);
+            txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);            
             editorOper.setCaretPosition(getLineOffset(doc,lineToDelete));
             txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_MASK);
             doc = txtOper.getDocument();
@@ -108,11 +108,11 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             Document doc = txtOper.getDocument();
             for (int i = 0; i < bookmarkLines.length; i++) {
                 editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
-                txtOper.pushKey(KeyEvent.VK_F2, KeyEvent.CTRL_MASK);
+                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
             }
             editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[0]));
-            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_MASK);
-            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_MASK);            
+            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
+            txtOper.pushKey(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);            
             BookmarkList bml = BookmarkList.get(doc);
             checkBookmarksAtLines(bml, new int[]{bookmarkLines[0]});
         } finally {
@@ -134,11 +134,11 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             Document doc = txtOper.getDocument();
             for (int i = 0; i < bookmarkLines.length; i++) {
                 editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
-                txtOper.pushKey(KeyEvent.VK_F2, KeyEvent.CTRL_MASK);
+                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
             }
             editorOper.setCaretPosition(getLineOffset(doc,1));
             for (int i = 0; i < expectedLines.length; i++) {
-                txtOper.pushKey(KeyEvent.VK_F2);
+                txtOper.pushKey(KeyEvent.VK_COMMA, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int j = expectedLines[i];
                 int actLine = getLineIndex(doc, txtOper.getCaretPosition());
                 assertEquals("Caret is at bad location", j, actLine);                
@@ -162,11 +162,11 @@ public class BookmarksPersistenceTest extends EditorBookmarksTestCase {
             Document doc = txtOper.getDocument();
             for (int i = 0; i < bookmarkLines.length; i++) {
                 editorOper.setCaretPosition(getLineOffset(doc, bookmarkLines[i]));
-                txtOper.pushKey(KeyEvent.VK_F2, KeyEvent.CTRL_MASK);
+                txtOper.pushKey(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
             }
             editorOper.setCaretPosition(getLineOffset(doc,14));
             for (int i = 0; i < expectedLines.length; i++) {
-                txtOper.pushKey(KeyEvent.VK_F2,KeyEvent.SHIFT_MASK);
+                txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int j = expectedLines[i];
                 int actLine = getLineIndex(doc, txtOper.getCaretPosition());
                 assertEquals("Caret is at bad location", j, actLine);                
