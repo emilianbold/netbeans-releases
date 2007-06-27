@@ -28,7 +28,7 @@ import org.openide.filesystems.FileObject;
  */
 public class VWPContentModelProvider implements PageContentModelProvider{
     private VWPContentModel vwpContentModel;
-    private Map<FileObject,VWPContentModel> map = new HashMap<FileObject,VWPContentModel>();
+    private final Map<FileObject,VWPContentModel> map = new HashMap<FileObject,VWPContentModel>();
     
     /** Creates a new instance of PageContentProviderImpl */
     public VWPContentModelProvider() {
