@@ -61,20 +61,22 @@ import org.w3c.dom.Element;
 public class VWPContentModel extends PageContentModel{
     private FacesModel facesModel;
     private Collection<PageContentItem> pageContentItems = new ArrayList<PageContentItem>();
+    private VWPContentModelProvider provider;
     
-    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
-    //
-    //    static {
-    //        LOGGER.setLevel(Level.ALL);
-    //    }
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.VWPContentModel");
+    
+//        static {
+//           LOGGER.setLevel(Level.ALL);
+//        }
     
     
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null
      * @param pageName can not be null
      */
-    public VWPContentModel(FacesModel facesModel) {
+    public VWPContentModel(VWPContentModelProvider provider, FacesModel facesModel) {
         this.facesModel = facesModel;
+        this.provider = provider;
         updatePageContentItems();
         initListeners();
     }
@@ -87,6 +89,7 @@ public class VWPContentModel extends PageContentModel{
     
     public void destroy() throws IOException {
         destroyListeners();
+        provider.removeModel(this);
     }
     
     public VWPContentModel() {

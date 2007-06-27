@@ -11,6 +11,8 @@ package org.netbeans.modules.visualweb.navigation;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
@@ -44,7 +46,7 @@ public class VWPContentModelProvider implements PageContentModelProvider{
             if( modelset !=  null ){
                 FacesModel facesModel = modelset.getFacesModel(fileObject);
                 if ( facesModel != null ) {
-                    model =  new VWPContentModel(facesModel);
+                    model =  new VWPContentModel(this, facesModel);
                     map.put(fileObject, model);
                     fileObject.addFileChangeListener( new FileChangeAdapter() {
                         @Override
@@ -58,6 +60,16 @@ public class VWPContentModelProvider implements PageContentModelProvider{
             }
         }
         return model;
+    }
+    
+    public void removeModel(VWPContentModel model ) {
+        Set<Entry<FileObject,VWPContentModel>> entrySet = map.entrySet();
+        for( Entry<FileObject, VWPContentModel> entry : entrySet ) {
+            if( entry.getValue().equals(model)){
+                map.remove(entry.getKey());
+                break;
+            }
+        }
     }
     
     
