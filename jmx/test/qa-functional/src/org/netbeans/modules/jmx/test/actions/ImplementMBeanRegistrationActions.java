@@ -23,11 +23,14 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Call menu actions "Implement MBeanRegistration interface".
+ * This action is activable either when selecting the class node or
+ * when clicking directly in the java file editor.
  * Check components and created files.
  */
 public class ImplementMBeanRegistrationActions extends ActionsTestCase {
@@ -86,6 +89,10 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         createJavaFile(name, DYNAMIC_1);
     }
     
+    //=========================================================================
+    // CALL IMPLEMENT MBEAN REGISTRATION ACTION FROM NODE
+    //=========================================================================
+    
     public void test1() {
         
         System.out.println("====================  test1  ====================");
@@ -141,15 +148,51 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         assertTrue(compareFileContents(eo.getText(), content));
     }
     
+    //=========================================================================
+    // CALL IMPLEMENT MBEAN REGISTRATION ACTION FROM EDITOR
+    //=========================================================================
+    
     public void test4() {
+        
+        System.out.println("====================  test4  ====================");
+        
+        System.out.println("Check action menu components for " + SIMPLE_1);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
+        System.out.println("Open java file " + SIMPLE_1);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(SIMPLE_1);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertFalse(jmio.isEnabled());
+    }
+    
+    public void test5() {
+        
+        System.out.println("====================  test5  ====================");
+        
+        System.out.println("Check action menu components for " + DYNAMIC_2);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_2);
+        System.out.println("Open java file " + DYNAMIC_2);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(DYNAMIC_2);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertFalse(jmio.isEnabled());
+    }
+    
+    public void test6() {
         
         String className = "U2" + DYNAMIC_1;
         
-        System.out.println("====================  test4  ====================");
+        System.out.println("====================  test6  ====================");
         
         System.out.println("Check action menu components for " + className);
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        System.out.println("Open java file " + className);
+        new Action(null, "Open").perform(node);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertTrue(jmio.isEnabled());
