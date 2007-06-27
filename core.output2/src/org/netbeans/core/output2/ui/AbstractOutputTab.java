@@ -197,7 +197,6 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
             return;
         }
         inputVisible = val;
-        System.out.println("setting editable");
         this.outputPane.textView.setEditable(val);
         validate();
         getOutputPane().ensureCaretPosition();
