@@ -23,10 +23,13 @@ package org.netbeans.installer.product;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -451,12 +454,7 @@ public class Registry {
             final Product target = getProduct(uid, version);
             
             if (target != null) {
-                final List<Product> dependents = new ArrayList<Product>();
-                for (Product product: getProducts()) {
-                    if (satisfiesRequirement(target, product)) {
-                        dependents.add(product);
-                    }
-                }
+                final List<Product> dependents = getInavoidableDependents(target);
                 
                 for (Product product: getProducts()) {
                     if (!target.equals(product) &&
@@ -480,7 +478,9 @@ public class Registry {
                 }
             }
             
-            product.setVisible(compatible);
+            if (!compatible) {
+                product.setVisible(false);
+            }
         }
         
         // hide empty groups
@@ -678,7 +678,7 @@ public class Registry {
      *      satisfying their requirements.
      */
     private List<Product> getInavoidableDependents(final Product product) {
-        final List<Product> dependents = new LinkedList<Product>();
+        final Set<Product> dependents = new HashSet<Product>();
         
         for (Product candidate: getProducts()) {
             for (Dependency requirement: candidate.getDependencies(Requirement.class)) {
@@ -710,7 +710,7 @@ public class Registry {
             }
         }
         
-        return dependents;
+        return new ArrayList<Product>(dependents);
     }
     
     private void validateInstallations(
