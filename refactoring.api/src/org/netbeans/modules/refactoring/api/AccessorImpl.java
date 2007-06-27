@@ -33,6 +33,10 @@ final class AccessorImpl extends APIAccessor {
         assert refactoring != null;
         return refactoring.getGBHandlers();
     }
+    
+    public boolean hasPluginsWithProgress(AbstractRefactoring refactoring) {
+        return !refactoring.pluginsWithProgress.isEmpty();
+    }
 
     public Problem chainProblems(Problem p, Problem p1) {
         return AbstractRefactoring.chainProblems(p, p1);

@@ -49,4 +49,5 @@ public abstract class APIAccessor {
     public abstract ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi);
     public abstract boolean isCommit(RefactoringSession session);
     public abstract RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) ;
+    public abstract boolean hasPluginsWithProgress(AbstractRefactoring refactoring);
 }

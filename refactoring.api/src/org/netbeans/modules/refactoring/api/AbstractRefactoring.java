@@ -82,7 +82,7 @@ public abstract class AbstractRefactoring {
     
     private ArrayList plugins;
     
-    private ArrayList pluginsWithProgress;
+    ArrayList pluginsWithProgress;
     
     private ArrayList gbHandlers;
     
