@@ -97,6 +97,9 @@ public final class InsertModuleAllTargets extends Task {
                 for( String cluster: clusters) {
                     String[] clusterModules = props.get(cluster).split(", *");
                     for( String module: clusterModules) {
+                        if (module.equals("xtest")) { // XXX special case, needed at least for javadoc-nbms
+                            continue;
+                        }
                         if (!foundModules.contains(module)) {
                             missingModules = true;
                             log("This module is missing from checkout: " + module);
