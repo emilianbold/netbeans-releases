@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -50,6 +51,7 @@ import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
 import org.netbeans.modules.mobility.end2end.classdata.ClassData;
 import org.netbeans.modules.mobility.end2end.classdata.MethodData;
 import org.netbeans.modules.mobility.end2end.classdata.OperationData;
+import org.netbeans.modules.mobility.end2end.classdata.WSDLService;
 import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationReader;
@@ -303,7 +305,12 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         for( final ClassData ccd : classes ) {
             JavonMappingImpl.Service javonService = new JavonMappingImpl.Service();
             javonService.setPackageName( ccd.getPackageName());
-            javonService.setClassName( ccd.getClassName());
+            if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())) {
+                WSDLService wsdlService = (WSDLService)services.get(0);
+                javonService.setClassName( wsdlService.getType());
+            } else {
+                javonService.setClassName( ccd.getClassName());
+            }
             
             String className = ccd.getProxyClassType();
             if( className == null ){
@@ -311,7 +318,9 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             }
             mapping.setProperty( "instance", className );
             
-            Thread.sleep( 5000 ); // FIXME: Dirty, dirty, dirty hack :(
+//            while( SourceUtils.isScanInProgress()) {}
+            Thread.sleep( 5000 );
+            
             registry.updateClassDataTree();
             final org.netbeans.modules.mobility.e2e.classdata.ClassData classData = registry.getClassData( className );
             System.err.println(" - classdata = " + classData);
@@ -320,8 +329,14 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             final List<OperationData> methods = ccd.getOperations();
             final List<org.netbeans.modules.mobility.e2e.classdata.MethodData> methodsData = classData.getMethods();
             for( int j = 0; j < methods.size(); j++ ) {
-                System.err.println(" - method: " + methods.get( j ).getName());
-                final int methodIndex = findMethodIndex( methodsData, methods.get( j ).getName());
+                System.err.println(" - method: " + methods.get( j ).getMethodName());
+                String methodName = null;
+                if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())) {
+                    methodName = methods.get( j ).getMethodName();
+                } else {
+                    methodName = methods.get( j ).getName();
+                }
+                final int methodIndex = findMethodIndex( methodsData, methodName );
                 if( methodIndex >= 0 ) {
                     org.netbeans.modules.mobility.e2e.classdata.MethodData mmd = methodsData.get(methodIndex);
                     mmd.setRequestID( methodID++ );

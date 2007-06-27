@@ -193,8 +193,8 @@ public class ConfigurationWriter {
                     final List<OperationData> operations = portData.getOperations();
                     for ( final OperationData operation : operations ) {
                         final Element m = doc.createElement( "operation" );  // NOI18N
-                        m.setAttribute( "method", operation.getName());  // NOI18N
-                        m.setAttribute( NAME, operation.getMethodName()); // NOI18N
+                        m.setAttribute( "method", operation.getMethodName());  // NOI18N
+                        m.setAttribute( NAME, operation.getName()); // NOI18N
                         final Element returnType = doc.createElement( "return" ); // NOI18N
                         returnType.setAttribute( TYPE, operation.getReturnType()); // NOI18N
                         m.appendChild( returnType );

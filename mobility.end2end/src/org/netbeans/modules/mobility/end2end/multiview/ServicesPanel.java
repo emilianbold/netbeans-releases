@@ -237,11 +237,11 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         } else {
             final List<AbstractService> services = configuration.getServices();
 //            //assert services.length != 1; //there is problem
-            final WSDLService service = (WSDLService)services.get(0);
-            final WebServicesRegistryView wsrv = Lookup.getDefault().lookup(WebServicesRegistryView.class);
-            if (servicePcl != null){
-                wsrv.removePropertyChangeListener(servicePcl);
-            }
+            final WSDLService service = (WSDLService)services.get( 0 );
+//            final WebServicesRegistryView wsrv = Lookup.getDefault().lookup(WebServicesRegistryView.class);
+//            if (servicePcl != null){
+//                wsrv.removePropertyChangeListener(servicePcl);
+//            }
 //            if (dataObject != null && wsrv != null && !wsrv.isServiceRegistered(service.getName())){
 //                if (servicePcl == null){
 //                    servicePcl = new ServicePCL();
@@ -251,13 +251,13 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
 //                waitNode.setDisplayName(NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices"));
 //                return;
 //            }
-            rootNode = WebServiceNodeManager.getAvailableWSRootNode( serverProject, service.getFile() );
             
             final JAXWSClientView a = JAXWSClientView.getJAXWSClientView();
-            Node n = a.createJAXWSClientView( serverProject );
-            for( Node nn : n.getChildren().getNodes()) {
-                if( nn.getDisplayName().equals( service.getName()))
+            rootNode = a.createJAXWSClientView( serverProject );
+            for( Node nn : rootNode.getChildren().getNodes()) {
+                if( nn.getName().equals( service.getName()))
                     rootNode = nn;
+                    break;
             }
             if (rootNode.getChildren().getNodesCount() == 0){
                 repaintingTask = RequestProcessor.getDefault().create( updater  );
@@ -279,12 +279,13 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 for( Node serviceNode : rootNode.getChildren().getNodes()) {
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
                         WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
-                        String serviceFQN = wsdlPort.getJavaName();
+//                        String serviceFQN = wsdlPort.getJavaName();
                         if( port != null && !portNode.getName().equals( port.getName())) continue;
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                         for( Node operationNode : portNode.getChildren().getNodes()) {
                             WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
                             org.netbeans.modules.mobility.e2e.classdata.MethodData methodData = null;
+                            if( cd != null )
                             for( org.netbeans.modules.mobility.e2e.classdata.MethodData md : cd.getMethods()) {
                                 if( md.getName().equals( wsdlOperation.getJavaName())) {
                                     methodData = md;
@@ -403,9 +404,9 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 final String port = portData.getName();
                 final List<OperationData> operations = portData.getOperations();
                 for ( final OperationData operationData : operations ) {
-                    final String operation = operationData.getMethodName();
+                    final String operation = operationData.getName();
                     try {
-                        final Node pkgNode = NodeOp.findPath( rootNode, new String[]{serviceName, port, operation});
+                        final Node pkgNode = NodeOp.findPath( rootNode, new String[] { wsdlService.getType(), port, operation } );
                         checkedTreeView.setState( pkgNode, true );
                     } catch (Exception e){
                         final SectionView sectionView = getSectionView();
@@ -486,9 +487,9 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                                 continue;
                             }
 //                            final OperationData md = getMethodData( serviceClassInfo.getFqPortTypeName(), operationName );
-                            final OperationData md = new OperationData( operationName );
                             WsdlOperation wsdlOp = operationNodes[k].getLookup().lookup( WsdlOperation.class );
-                            md.setMethodName( wsdlOp.getName());
+                            final OperationData md = new OperationData( operationName );
+                            md.setMethodName( wsdlOp.getJavaName());
                             md.setReturnType( wsdlOp.getReturnTypeName());
                             List<WsdlParameter> wsdlParams = wsdlOp.getParameters();
                             List<TypeData> params = new ArrayList<TypeData>();
@@ -523,8 +524,9 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
 //                wsdlService.setUrl( fileURL );
 //                wsdlService.setFile( wsdlObj.getPrimaryFile().getNameExt());
 //                final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
-//                wsdlService.setName( normalizeAgainstWsdl(serviceNodes[i].getName(), si.getServiceNames()));
-                wsdlService.setName( serviceNodes[i].getDisplayName());
+                wsdlService.setName( rootNode.getName());
+                wsdlService.setType( serviceNodes[i].getName());
+//                wsdlService.setName( serviceNodes[i].getDisplayName());
                 servicesData.add( wsdlService );
             }
             configuration.setServices( servicesData );

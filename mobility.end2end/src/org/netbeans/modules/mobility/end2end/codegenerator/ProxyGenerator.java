@@ -44,27 +44,13 @@ import javax.script.ScriptEngineManager;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-//import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-//import org.netbeans.jmi.javamodel.ClassMember;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.classdata.MethodData;
-//import org.netbeans.jmi.javamodel.Feature;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.JavaModelPackage;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Parameter;
-//import org.netbeans.jmi.javamodel.PrimitiveType;
-//import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-//import org.netbeans.jmi.javamodel.Type;
-//import org.netbeans.jmi.javamodel.UnresolvedClass;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-//import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.classdata.OperationData;
 import org.netbeans.modules.mobility.end2end.classdata.PortData;
@@ -79,6 +65,7 @@ import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -127,7 +114,7 @@ public class ProxyGenerator {
             }
             
             final PortData pd = (PortData)wsdlService.getData().get( 0 );
-            String proxyClassName = pd.getClassName();
+            String proxyClassName = wsdlService.getType();
             proxyClassName = proxyClassName.substring(proxyClassName.lastIndexOf('.') + 1); // NOI18N
             proxyClassName = proxyClassName + "_Proxy"; // NOI18N
             
@@ -158,9 +145,10 @@ public class ProxyGenerator {
             String portClassName = null;
             String portGetterName = null;
             List<MethodData> methodList = new ArrayList<MethodData>();
-            for( Node serviceNode : rootNode.getChildren().getNodes()) {
+            for( Node serviceNode : rootNode.getChildren().getNodes()) {                
                 for( Node portNode : serviceNode.getChildren().getNodes()) {
                     WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
+                    if( wsdlPort == null ) break;
                     portGetterName = wsdlPort.getPortGetter();
                     portClassName = wsdlPort.getJavaName();
                     String nnn = wsdlPort.getJavaName();
@@ -215,7 +203,6 @@ public class ProxyGenerator {
                 }
                 if( is != null ) is.close();
                 off.close();
-                outputFile.refresh(false);
             }                  
         } catch( Exception e ) {                
             ErrorManager.getDefault().notify( e );

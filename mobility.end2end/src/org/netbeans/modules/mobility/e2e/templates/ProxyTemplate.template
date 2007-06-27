@@ -12,7 +12,7 @@ import ${servicePackage}.*;
 public class ${proxyClassName} {
 
     @WebServiceRef( wsdlLocation = "${service.getUrl()}" )
-    public ${service.getName()} service;
+    public ${service.getType()} service;
 
 <#list methods as method>
     public ${method.getReturnType().getName()} ${method.getName()}(<#rt>
