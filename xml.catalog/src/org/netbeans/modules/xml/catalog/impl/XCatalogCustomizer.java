@@ -124,7 +124,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         try {
             String location = f.toURL().toExternalForm();
             locationTextField.setText(location);
-            model.setLocation(location);
+            model.setSource(location);
         } catch (MalformedURLException ex) {
             // ignore
         }
