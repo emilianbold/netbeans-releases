@@ -130,12 +130,21 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     // CREATE
     // ==================================================================================================
     
-    public void beforeCreate(FileObject parent, String name, boolean isFolder) {
-        File file = FileUtil.toFile(parent);
-        if (file == null) return;
-        file = new File(file, name); 
-        DelegatingInterceptor dic = getInterceptor(file, isFolder);
-        dic.beforeCreate();
+    /**
+     * Due to limitations of create interceptor we will ALWAYS call beforeCreate() and doCreate() when the file/folder 
+     * has been already created.
+     * 
+     * @param fo a new file
+     */
+    public void createSuccess(FileObject fo) {
+        DelegatingInterceptor dic = getInterceptor(new FileEvent(fo));
+        if (dic.beforeCreate()) {
+            try {
+                dic.doCreate();
+            } catch (Exception e) {
+                // ignore errors, the file is already created anyway
+            }
+        }
     }
 
     public void fileFolderCreated(FileEvent fe) {
@@ -205,11 +214,11 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
                     name += "." + ext;  // NOI18N
                 }
                 File from = new File(parent, name);
-                return new DelegatingInterceptor(vsInterceptor, lhInterceptor, from, file, false);
+                return new DelegatingInterceptor(vsInterceptor, lhInterceptor, from, file, from.isDirectory());
             }
             return nullDelegatingInterceptor;
         } else {
-            return new DelegatingInterceptor(vsInterceptor, lhInterceptor, file, null, false);
+            return new DelegatingInterceptor(vsInterceptor, lhInterceptor, file, null, file.isDirectory());
         }
     }
 

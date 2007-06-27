@@ -112,8 +112,7 @@ public abstract class VCSInterceptor {
      * Notifies the interceptor that the file or folder is about to be created. The interceptor MUST NOT create
      * the file here.
      * 
-     * Beware: It may happen on some filesystems that the file will be ALREADY created. If so, returning true from this method has no effect and
-     * doCreate will NOT be called.
+     * Beware: It may happen on some filesystems that the file will be ALREADY created.
      * 
      * @param file file or folder to be created
      * @return true if this interceptor wants to handle this operation (doCreate will be called), false otherwise
@@ -124,6 +123,8 @@ public abstract class VCSInterceptor {
 
     /**
      * Called if beforeCreate() returns true and delegates the create operation to this interceptor.
+     * 
+     * Beware: It may happen on some filesystems that the file will be ALREADY created.
      * 
      * @param file the file to create
      * @param isDirectory true if the new file should be a directory, false otherwise

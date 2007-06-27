@@ -162,19 +162,7 @@ class FilesystemHandler extends VCSInterceptor {
     
     public boolean beforeCreate(File file, boolean isDirectory) {
         if (ignoringEvents()) return false;
-        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVS)) {
-            if (file.isDirectory()) {
-                File f = new File(file, CvsLiteAdminHandler.INVALID_METADATA_MARKER);
-                try {
-                    f.createNewFile();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return isDirectory && file.getName().equals(CvsVersioningSystem.FILENAME_CVS);
     }
 
     public void doCreate(File file, boolean isDirectory) throws IOException {
