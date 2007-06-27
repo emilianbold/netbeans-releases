@@ -36,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
 
 /**
  * TODO - implement refresh of only components those were claimed as dirty by their ScreenPresenters - similar to Flow
@@ -96,6 +97,9 @@ public final class ScreenAccessController implements AccessController, EditedScr
     
     // Called in document transaction
     public void notifyEventFired(DesignEvent event) {
+        //TODO Debug warnig when device presenter is not present
+        if (!isDeviceInfoExists())
+            return;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 document.getTransactionManager().readAccess(new Runnable() {
@@ -196,10 +200,19 @@ public final class ScreenAccessController implements AccessController, EditedScr
             super.getListCellRendererComponent(list, label[0], index, isSelected, cellHasFocus);
             if (image[0] != null)
                 setIcon(new ImageIcon(image[0]));
-            
-            
+
             return this;
         }
+    }
+    
+    private boolean isDeviceInfoExists() {
+        DesignComponent rootComponent = document.getRootComponent();
+        if (rootComponent == null)
+            return false;
+        ScreenDeviceInfoPresenter presenter = rootComponent.getPresenter(ScreenDeviceInfoPresenter.class);
+        if (presenter == null || presenter.getScreenDeviceInfo() == null)
+            return false;
+        return true;
     }
     
 }
