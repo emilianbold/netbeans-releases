@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-vmd-midp-converter-wizard-ConvertAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <attr name="org-netbeans-modules-vmd-midp-converter-wizard-ConvertAction.shadow/Separator1.instance" boolvalue="true"/>
+            <attr name="org-openide-actions-ToolsAction.instance/org-netbeans-modules-vmd-midp-converter-wizard-ConvertAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-vmd-midp-converter-wizard-ImportAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-vmd-midp-converter-wizard-ConvertAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
