@@ -18,6 +18,7 @@ cvs -z6 -q -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" nb
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
+    tail -100 $CVS_CHECKOUT_LOG
     echo "ERROR: $ERROR_CODE - Checkout of nbbuild module failed"
     exit $ERROR_CODE;
 fi
@@ -31,7 +32,9 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-CVS_MODULES=`echo ${CVS_MODULES} jemmy jellytools xtest` # | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "
+CVS_MODULES=`echo ${CVS_MODULES} testtools jemmy jellytools xtest` # | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "
+
+set +x
 
 for module in ${CVS_MODULES}; do
     #Need to improve the errors checking...
@@ -46,18 +49,10 @@ for module in ${CVS_MODULES}; do
 
     if [ -d $module ]; then
 	#Module already checked out - updating
-	cvs -z6 -q -d :pserver:anoncvs@cvs.netbeans.org:/cvs update -dPA -D "$CVS_STAMP" $module >> $CVS_CHECKOUT_LOG 2>&1 &
-	if [ $ERROR_CODE != 0 ]; then
-	    echo "ERROR: $ERROR_CODE - Update of ${module} module failed"
-	    exit $ERROR_CODE;
-	fi
+	cvs -z6 -q -d :pserver:anoncvs@cvs.netbeans.org:/cvs update -dPA -D "$CVS_STAMP" $module &
     else
 	#Need to checkout
-	cvs -z6 -q  -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -PA -D "$CVS_STAMP" $module >> $CVS_CHECKOUT_LOG 2>&1 &
-	if [ $ERROR_CODE != 0 ]; then
-	    echo "ERROR: $ERROR_CODE - Checkout of ${module} module failed"
-	    exit $ERROR_CODE;
-	fi
+	cvs -z6 -q  -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -PA -D "$CVS_STAMP" $module &
     fi
 done
 
@@ -69,3 +64,4 @@ while [ $RUNNING_JOBS_COUNT -ge 1 ]; do
     jobs
     RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
 done
+set -x
