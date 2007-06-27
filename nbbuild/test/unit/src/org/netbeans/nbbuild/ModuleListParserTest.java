@@ -53,6 +53,8 @@ public class ModuleListParserTest extends TestCase {
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
+        new File(nball, "nbproject/private/scan-cache-full.ser").delete();
+        new File(nball, "nbproject/private/scan-cache-standard.ser").delete();
     }
     
     public void testScanSourcesInNetBeansOrg() throws Exception {

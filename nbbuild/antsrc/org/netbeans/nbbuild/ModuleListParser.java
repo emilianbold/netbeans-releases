@@ -19,8 +19,18 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -71,7 +81,6 @@ final class ModuleListParser {
     private static Map<String,Entry> scanNetBeansOrgSources(File root, Hashtable<String,String> properties, Project project) throws IOException {
         Map<String,Entry> entries = SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
-            entries = new HashMap<String,Entry>();
             // Similar to #62221: if just invoked from a module in standard clusters, only scan those clusters (faster):
             Set<String> standardModules = new HashSet<String>();
             boolean doFastScan = false;
@@ -101,29 +110,93 @@ final class ModuleListParser {
                     }
                 }
             }
-            if (doFastScan) {
+            File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
+                    "private" + File.separatorChar + "scan-cache-" + (doFastScan ? "standard" : "full") + ".ser");
+            if (scanCache.isFile()) {
                 if (project != null) {
-                    project.log("Scanning for modules in " + root + " among standard clusters");
+                    project.log("Loading module list from " + scanCache);
                 }
-                Iterator it = standardModules.iterator();
-                while (it.hasNext()) {
-                    String module = (String) it.next();
-                    scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, properties, module, ParseProjectXml.TYPE_NB_ORG, project);
+                try {
+                    InputStream is = new FileInputStream(scanCache);
+                    try {
+                        ObjectInput oi = new ObjectInputStream(new BufferedInputStream(is));
+                        @SuppressWarnings("unchecked") Map<File,Long[]> timestampsAndSizes = (Map) oi.readObject();
+                        boolean matches = true;
+                        for (Map.Entry<File,Long[]> entry : timestampsAndSizes.entrySet()) {
+                            File f = entry.getKey();
+                            if (f.lastModified() != entry.getValue()[0] || f.length() != entry.getValue()[1]) {
+                                if (project != null) {
+                                    project.log("Cache ignored due to modifications in " + f);
+                                }
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
+                            entries = _entries;
+                            if (project != null) {
+                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                            }
+                        }
+                    } finally {
+                        is.close();
+                    }
+                } catch (IOException x) {
+                    if (project != null) {
+                        project.log("Error loading " + scanCache + ": " + x, Project.MSG_WARN);
+                    }
+                } catch (ClassNotFoundException x) {
+                    if (project != null) {
+                        project.log("Error loading " + scanCache + ": " + x, Project.MSG_WARN);
+                    }
                 }
-            } else {
-                // Might be an extra module (e.g. something in contrib); need to scan everything.
-                if (project != null) {
-                    project.log("Scanning for modules in " + root);
-                    project.log("Quick scan mode disabled since " + basedir + " not among standard modules of " + root + " which are " + standardModules, project.MSG_VERBOSE);
-                }
-                doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null, project);
             }
-            if (project != null) {
-                project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
+            if (entries == null) {
+                entries = new HashMap<String,Entry>();
+                Map<File,Long[]> timestampsAndSizes = new HashMap<File,Long[]>();
+                registerTimestampAndSize(new File(root, "nbbuild" + File.separatorChar + "cluster.properties"), timestampsAndSizes);
+                registerTimestampAndSize(new File(root, "nbbuild" + File.separatorChar + "build.properties"), timestampsAndSizes);
+                registerTimestampAndSize(new File(root, "nbbuild" + File.separatorChar + "user.build.properties"), timestampsAndSizes);
+                if (doFastScan) {
+                    if (project != null) {
+                        project.log("Scanning for modules in " + root + " among standard clusters");
+                    }
+                    for (String module : standardModules) {
+                        scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, properties, module, ParseProjectXml.TYPE_NB_ORG, project, timestampsAndSizes);
+                    }
+                } else {
+                    // Might be an extra module (e.g. something in contrib); need to scan everything.
+                    if (project != null) {
+                        project.log("Scanning for modules in " + root);
+                        project.log("Quick scan mode disabled since " + basedir + " not among standard modules of " + root + " which are " + standardModules, project.MSG_VERBOSE);
+                    }
+                    doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null, project, timestampsAndSizes);
+                }
+                if (project != null) {
+                    project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                    project.log("Cache depends on files: " + timestampsAndSizes.keySet(), Project.MSG_DEBUG);
+                }
+                scanCache.getParentFile().mkdirs();
+                OutputStream os = new FileOutputStream(scanCache);
+                try {
+                    ObjectOutput oo = new ObjectOutputStream(os);
+                    oo.writeObject(timestampsAndSizes);
+                    oo.writeObject(entries);
+                    oo.flush();
+                } finally {
+                    os.close();
+                }
             }
             SOURCE_SCAN_CACHE.put(root, entries);
         }
         return entries;
+    }
+
+    private static void registerTimestampAndSize(File f, Map<File,Long[]> timestampsAndSizes) {
+        if (timestampsAndSizes != null) {
+            timestampsAndSizes.put(f, new Long[] {f.lastModified(), f.length()});
+        }
     }
     
     /** Borrowed from org.netbeans.modules.apisupport.project.universe.ModuleList; cf. #61579 */
@@ -139,7 +212,8 @@ final class ModuleListParser {
     /**
      * Scan a root for all NBM projects.
      */
-    private static void doScanNetBeansOrgSources(Map<String,Entry> entries, File dir, int depth, Hashtable<String,String> properties, String pathPrefix, Project project) throws IOException {
+    private static void doScanNetBeansOrgSources(Map<String,Entry> entries, File dir, int depth, Hashtable<String,String> properties,
+            String pathPrefix, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
         if (depth == 0) {
             return;
         }
@@ -158,20 +232,22 @@ final class ModuleListParser {
                 }
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name;
-            scanPossibleProject(kid, entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
-            doScanNetBeansOrgSources(entries, kid, depth - 1, properties, newPathPrefix, project);
+            scanPossibleProject(kid, entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project, timestampsAndSizes);
+            doScanNetBeansOrgSources(entries, kid, depth - 1, properties, newPathPrefix, project, timestampsAndSizes);
         }
     }
     
     /**
      * Check a single dir to see if it is an NBM project, and if so, register it.
      */
-    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Hashtable<String,String> properties, String path, int moduleType, Project project) throws IOException {
+    private static boolean scanPossibleProject(File dir, Map<String,Entry> entries, Hashtable<String,String> properties,
+            String path, int moduleType, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
         File nbproject = new File(dir, "nbproject");
         File projectxml = new File(nbproject, "project.xml");
         if (!projectxml.isFile()) {
             return false;
         }
+        registerTimestampAndSize(projectxml, timestampsAndSizes);
         Document doc;
         try {
             doc = XMLUtil.parse(new InputSource(projectxml.toURI().toString()),
@@ -229,9 +305,13 @@ final class ModuleListParser {
         default:
             assert false : moduleType;
         }
-        faketask.setFile(new File(nbproject, "private/private.properties".replace('/', File.separatorChar)));
+        File privateProperties = new File(nbproject, "private/private.properties".replace('/', File.separatorChar));
+        registerTimestampAndSize(privateProperties, timestampsAndSizes);
+        faketask.setFile(privateProperties);
         faketask.execute();
-        faketask.setFile(new File(nbproject, "project.properties"));
+        File projectProperties = new File(nbproject, "project.properties");
+        registerTimestampAndSize(projectProperties, timestampsAndSizes);
+        faketask.setFile(projectProperties);
         faketask.execute();
         faketask.setFile(null);
         faketask.setName("module.jar.dir");
@@ -533,7 +613,7 @@ final class ModuleListParser {
             if (!module.isDirectory()) {
                 throw new IOException("No such module " + module + " referred to from " + suite);
             }
-            if (!scanPossibleProject(module, entries, properties, null, ParseProjectXml.TYPE_SUITE, project)) {
+            if (!scanPossibleProject(module, entries, properties, null, ParseProjectXml.TYPE_SUITE, project, null)) {
                 throw new IOException("No valid module found in " + module + " referred to from " + suite);
             }
         }
@@ -544,7 +624,7 @@ final class ModuleListParser {
         Entry entry = STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
             Map<String,Entry> entries = new HashMap<String,Entry>();
-            if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project)) {
+            if (!scanPossibleProject(basedir, entries, properties, null, ParseProjectXml.TYPE_STANDALONE, project, null)) {
                 throw new IOException("No valid module found in " + basedir);
             }
             assert entries.size() == 1;
@@ -673,7 +753,8 @@ final class ModuleListParser {
     /**
      * One entry in the file.
      */
-    public static final class Entry {
+    @SuppressWarnings("serial") // really want it to be incompatible if format changes
+    public static final class Entry implements Serializable {
         
         private final String cnb;
         private final File jar;
@@ -684,9 +765,9 @@ final class ModuleListParser {
         private final String clusterName;
         private final String[] runtimeDependencies; 
         // dependencies on other tests
-        private final String[] testDepencies;
+        private final String[] testDependencies;
         
-        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName,String[] runtimeDependencies,String[] testDepencies) {
+        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName,String[] runtimeDependencies,String[] testDependencies) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
@@ -695,7 +776,7 @@ final class ModuleListParser {
             this.buildPrerequisites = buildPrerequisites;
             this.clusterName = clusterName;
             this.runtimeDependencies = runtimeDependencies;
-            this.testDepencies = testDepencies;
+            this.testDependencies = testDependencies;
         }
         
         /**
@@ -752,7 +833,7 @@ final class ModuleListParser {
         }
         
         public String [] getTestDependencies() {
-            return testDepencies;
+            return testDependencies;
         }
         public @Override String toString() {
             return (sourceLocation != null ? sourceLocation : jar).getAbsolutePath();
