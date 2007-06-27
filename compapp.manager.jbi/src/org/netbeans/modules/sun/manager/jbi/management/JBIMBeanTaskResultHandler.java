@@ -86,22 +86,23 @@ public class JBIMBeanTaskResultHandler {
             
             if (failed) {
                 ret = ret.append("Failed execution of ");  // NOI18N
-            } else if (frameworkTaskResults != null && frameworkTaskResults.size() > 0) {
+            } else { 
+                // complete or partial success, can't determine yet
+                // See the example in IZ #108114
                 ret = ret.append("Successful execution of ");  // NOI18N
-            } else {    // complete success
-                return;
             }
             
             ret = ret.append(actionName);
             ret = ret.append(": ");  // NOI18N
             ret = ret.append(target);
             
-//            if (partialSuccess) {
-//                ret = ret.append("  (partial success)");  // NOI18N
-//            }
-            
             List<TaskResult> componentTaskResults =
                     JBIMBeanTaskResultHandler.getTaskResultProblems(document, false);
+            
+            if (!failed && componentTaskResults.size() == 0) {
+                // complete success
+                return;
+            }
             
             for (TaskResult frameworkTaskResult : frameworkTaskResults) {
                 ret = ret.append("<br>"); // NOI18N
@@ -272,28 +273,16 @@ class TaskResult {
         return messageType;
     }
     
-    public void setMessageType(String messageType) {
-        this.messageType = messageType;
-    }
-    
     public String getLocToken() {
         return locToken;
     }
-    
-    public void setLocToken(String locToken) {
-        this.locToken = locToken;
-    }
-    
+        
     public String getLocMessage() {
         return locMessage;
     }
     
-    public void setLocMessage(String locMessage) {
-        this.locMessage = locMessage;
-    }
-    
     public String toString() {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         
         ret = ret.append(getMessageType());
         ret = ret.append(": ("); // NOI18N
@@ -305,7 +294,7 @@ class TaskResult {
     }
     
     public String toHtmlString() {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         
         ret = ret.append("<b>"); // NOI18N
         ret = ret.append(getMessageType());
@@ -326,19 +315,15 @@ class ComponentTaskResult extends TaskResult {
     
     ComponentTaskResult(String messageType, String locToken, String locMessage, String componentName) {
         super(messageType, locToken, locMessage);
-        this.setComponentName(componentName);
+        this.componentName = componentName;
     }
     
     public String getComponentName() {
         return componentName;
     }
     
-    public void setComponentName(String componentName) {
-        this.componentName = componentName;
-    }
-    
     public String toString() {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         
         ret = ret.append("    * Component: "); // NOI18N
         ret = ret.append(getComponentName());
@@ -350,7 +335,7 @@ class ComponentTaskResult extends TaskResult {
     }
     
     public String toHtmlString() {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         
         ret = ret.append("<li>"); // NOI18N
         ret = ret.append("Component: "); // NOI18N
