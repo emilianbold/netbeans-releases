@@ -288,7 +288,7 @@
 	<mapID target="about_wsc" url="webservice/consume/about_wsc.html" />
 	<mapID target="wsc_process" url="webservice/consume/wsc_process.html" />
 	<mapID target="wsc_proxy" url="webservice/consume/wsc_proxy.html" />
-<mapID target="wsc_refresh" url="webservice/consume/wsc_refresh.html" />
+        <mapID target="wsc_refresh" url="webservice/consume/wsc_refresh.html" />
 	<mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_change" url="webservice/consume/wsc_change.html" />
@@ -302,10 +302,11 @@
 	<mapID target="create_ws_soap_message" url="webservice/message/create_ws_soap_message.html" />
 	<mapID target="configure_ws_soap_message" url="webservice/message/configure_ws_soap_message.html" />
 	<mapID target="test_and_use_ws_soap_message" url="webservice/message/test_and_use_ws_soap_message.html" />
-
-<!-- TODO check to see if these IDs/topics are still relevant	<mapID target="example_logging" url="webservice/message/example_logging.html" />
-	<mapID target="example_auditing" url="webservice/message/example_auditing.html" />-->
 	<!-- End of "Message" section -->
+	<!-- Start of "JAXB" section -->
+	<mapID target="about_jaxb" url="webservice/jaxb/about_jaxb.html" />
+	<mapID target="jaxb_wizard" url="webservice/jaxb/jaxb_wizard.html" />
+	<!-- End of "JAXB" section -->
 
 <!-- Start of "WSIT" section -->
     <mapID target="org.netbeans.modules.websvc.wsitconf.about" url="webservice/about/wsitconf-about.html"/>

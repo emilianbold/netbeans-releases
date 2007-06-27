@@ -259,8 +259,10 @@
                 <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
                 <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
             </tocitem>
-           
-           
+             <tocitem text="Using JAXB" >
+                <tocitem text="About JAXB" target="about_jaxb" />
+                <tocitem text="Using the JAXB Wizard" target="jaxb_wizard" />
+            </tocitem>
                <tocitem text="Configuring WSIT">
                    <tocitem text="About WSIT" target="org.netbeans.modules.websvc.wsitconf.about"/>
                    <tocitem text="Message Security">
