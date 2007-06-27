@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.indent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +39,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
@@ -65,16 +67,6 @@ public final class TaskHandler {
     private Map<MimePath,MimeItem> mime2Item;
 
     private int maxMimePathSize;
-
-    /**
-     * Start position of the whole formatting.
-     */
-    private Position globalStartPos;
-
-    /**
-     * End position of the whole formatting.
-     */
-    private Position globalEndPos;
 
     /**
      * Start position of the currently formatted chunk.
@@ -119,12 +111,9 @@ public final class TaskHandler {
         return maxMimePathSize;
     }
 
-    void setGlobalBounds(Position globalStartPos, Position globalEndPos) {
-        this.globalStartPos = globalStartPos;
-        this.globalEndPos = globalEndPos;
-        
-        this.startPos = globalStartPos;
-        this.endPos = globalEndPos;
+    void setGlobalBounds(Position startPos, Position endPos) {
+        this.startPos = startPos;
+        this.endPos = endPos;
     }
 
     boolean collectTasks() {
@@ -138,6 +127,9 @@ public final class TaskHandler {
                 TokenHierarchy<?> hi = TokenHierarchy.get(document());
                 if (hi != null) {
                     LanguagePath[] languagePaths = sort(hi.languagePaths());
+                    // Don't know the range yet :(
+                    // TokenSequence<?> ts = hi.tokenSequence().subSequence(startPos.getOffset(), endPos.getOffset());
+                    // Collection<LanguagePath> activeEmbeddedPaths = getActiveEmbeddedPaths();
                     for (LanguagePath lp : languagePaths) {
                         mimePath = MimePath.parse(lp.mimePath());
                         addItem(mimePath);
@@ -209,6 +201,36 @@ public final class TaskHandler {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Collect language paths used within the given token sequence
+     * 
+     * @param ts non-null token sequence (or subsequence). <code>ts.moveNext()</code>
+     * is called first on it.
+     * @return collection of language paths present in the given token sequence.
+     */
+    private Collection<LanguagePath> getActiveEmbeddedPaths(TokenSequence ts) {
+        Collection<LanguagePath> lps = new HashSet<LanguagePath>();
+        lps.add(ts.languagePath());
+        List<TokenSequence<?>> tsStack = null;
+        while (true) {
+            while (ts.moveNext()) {
+                TokenSequence<?> eTS = ts.embedded();
+                if (eTS != null) {
+                    tsStack.add(ts);
+                    ts = eTS;
+                    lps.add(ts.languagePath());
+                }
+            }
+            if (tsStack != null && tsStack.size() > 0) {
+                ts = tsStack.get(tsStack.size() - 1);
+                tsStack.remove(tsStack.size() - 1);
+            } else {
+                break;
+            }
+        }
+        return lps;
     }
 
     private String docMimeType() {
