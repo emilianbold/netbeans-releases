@@ -124,9 +124,15 @@ public final class ReverseEngineerAction extends AbstractAction
             if (sourceProject == null)
             {
                 sourceProject = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+                if (sourceProject ==  null)
+                    return false;
             }
-            if (sourceProject ==  null)
+            
+            if (sourceProject != FileOwnerQuery.getOwner(dobj.getPrimaryFile()))
                 return false;
+            
+            if (projectSelected)
+                return true;
             
             Sources sources = (Sources)sourceProject
                     .getLookup().lookup(Sources.class);
