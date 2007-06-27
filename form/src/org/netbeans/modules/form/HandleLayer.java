@@ -1616,13 +1616,16 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 }
             }
             if (draggedComponent == null // component dragging has not started
-                && formDesigner.getTopDesignComponent() instanceof RADVisualContainer
                 && lastLeftMousePoint.distance(p) > 4
-                && !e.isAltDown() && !e.isControlDown()
-                && (e.isShiftDown() || getMetaComponentAt(lastLeftMousePoint, COMP_DEEPEST)
-                                       == formDesigner.getTopDesignComponent()))
-            {   // start selection dragging
-                selectionDragger = new SelectionDragger(lastLeftMousePoint);
+                && !e.isAltDown() && !e.isControlDown()) {
+                // check for possible selection dragging
+                RADComponent topComp = formDesigner.getTopDesignComponent();
+                RADComponent comp = getMetaComponentAt(lastLeftMousePoint, COMP_DEEPEST);
+                if (topComp != null
+                    && (e.isShiftDown() || comp == null || comp == topComp || comp.getParentComponent() == null)) {
+                    // start selection dragging
+                    selectionDragger = new SelectionDragger(lastLeftMousePoint);
+                }
             }
         }
 
@@ -1785,11 +1788,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 boolean intersects = selRect.intersects(bounds);
 
                 RADComponent metacomp = formDesigner.getMetaComponent(comp);
-                if (metacomp != null) {
-                    if (intersects)
-                        toSelect.add(metacomp);
-                    if (!(metacomp instanceof ComponentContainer))
-                        continue;
+                if (metacomp != null && intersects) {
+                    toSelect.add(metacomp);
                 }
 
                 if (intersects && comp instanceof Container)
