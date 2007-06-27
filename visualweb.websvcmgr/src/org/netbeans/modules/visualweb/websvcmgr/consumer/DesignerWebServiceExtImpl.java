@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor.JarEntry;
+import org.netbeans.modules.visualweb.websvcmgr.WebServiceManager;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceManagerExt;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderBeanInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderDesignInfoWriter;
@@ -79,7 +80,6 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     private static File wsImportCompileScript;
     
     private final String userDir = System.getProperty("netbeans.user");
-    private final String websvcHome = userDir + "/websvc";
     
     public DesignerWebServiceExtImpl() {
     }
@@ -160,7 +160,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         
         Properties properties = new Properties();
         
-        properties.put(WEBSVC_HOME_PROP, websvcHome);
+        properties.put(WEBSVC_HOME_PROP, WebServiceManager.WEBSVC_HOME);
         // INFO - This build properties file contains the classpath information
         // about all the library reference in the IDE
         properties.put(USER_FILE_PROP, userDir+"/build.properties");

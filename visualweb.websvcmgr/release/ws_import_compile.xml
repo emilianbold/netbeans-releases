@@ -109,7 +109,8 @@ Microsystems, Inc. All Rights Reserved.
                debug="on" source="1.5" fork="true">
             <compilerarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
         </javac>
-        <delete failonerror="false" dir="${jaxws.base}/../catalog"/>
+        <dirname property="catalog.dir" file="${catalog.file}"/>
+        <delete failonerror="false" dir="${catalog.dir}"/>
     </target>
     
     <target name="-create-proxy-jars" depends="-set-wsimport-base, -set-wscompile-base">
