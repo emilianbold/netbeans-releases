@@ -30,7 +30,7 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Call menu actions "Generate MBean Registration".
- * This action is activable only when clicking directly in the java file editor..
+ * This action is activable only when clicking directly in the java file editor.
  * Check components and created files.
  */
 public class GenerateMBeanRegistrationActions extends ActionsTestCase {
@@ -146,6 +146,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -169,9 +172,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         setTextFieldContent(MBEAN_CLASS_TEXT_FIELD, ndo, 
                 packageName + "." + DYNAMIC_1);
         System.out.println("Set MBean object name to " +
-                packageName + ":name=" + DYNAMIC_1);
+                packageName + ":type=" + DYNAMIC_1);
         setTextFieldContent(OBJECT_NAME_TEXT_FIELD, ndo, 
-                packageName + ":name=" + DYNAMIC_1);
+                packageName + ":type=" + DYNAMIC_1);
         System.out.println("Set MBean constructor to " + DYNAMIC_1 + "()");
         selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, DYNAMIC_1 + "()");
         assertTrue(ndo.btOK().isEnabled());
@@ -200,6 +203,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -213,9 +219,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         setTextFieldContent(MBEAN_CLASS_TEXT_FIELD, ndo, 
                 packageName + "." + DYNAMIC_1);
         System.out.println("Set MBean object name to " +
-                packageName + ":name=" + DYNAMIC_1);
+                packageName + ":type=" + DYNAMIC_1);
         setTextFieldContent(OBJECT_NAME_TEXT_FIELD, ndo, 
-                packageName + ":name=" + DYNAMIC_1);
+                packageName + ":type=" + DYNAMIC_1);
         System.out.println("Set MBean constructor to " + DYNAMIC_1 + "(int[])");
         selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, DYNAMIC_1 + "(int[])");
         ndo.ok();
@@ -244,6 +250,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -271,9 +280,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         setTextFieldContent(JAVA_CLASS_TEXT_FIELD, ndo, 
                 packageName + "." + SIMPLE_5);
         System.out.println("Set MBean object name to " +
-                packageName + ":name=" + SIMPLE_5);
+                packageName + ":type=" + SIMPLE_5);
         setTextFieldContent(OBJECT_NAME_TEXT_FIELD, ndo, 
-                packageName + ":name=" + SIMPLE_5);
+                packageName + ":type=" + SIMPLE_5);
         System.out.println("Set management interface applying " +
                 "JMX Design Pattern Management Interface");
         try {
@@ -316,6 +325,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -330,9 +342,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         setTextFieldContent(JAVA_CLASS_TEXT_FIELD, ndo, 
                 packageName + "." + SIMPLE_5);
         System.out.println("Set MBean object name to " +
-                packageName + ":name=" + SIMPLE_5);
+                packageName + ":type=" + SIMPLE_5);
         setTextFieldContent(OBJECT_NAME_TEXT_FIELD, ndo, 
-                packageName + ":name=" + SIMPLE_5);
+                packageName + ":type=" + SIMPLE_5);
         System.out.println("Set management interface to " +
                 packageName + "." + SIMPLE_5_INTF);
         selectComboBoxItem(MANAGEMENT_INTERFACE_COMBO_BOX, ndo, 
@@ -366,6 +378,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -380,13 +395,15 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         setTextFieldContent(JAVA_CLASS_TEXT_FIELD, ndo, 
                 packageName + "." + SIMPLE_5);
         System.out.println("Set MBean object name to " +
-                packageName + ":name=" + SIMPLE_5);
+                packageName + ":type=" + SIMPLE_5);
         setTextFieldContent(OBJECT_NAME_TEXT_FIELD, ndo, 
-                packageName + ":name=" + SIMPLE_5);
+                packageName + ":type=" + SIMPLE_5);
         System.out.println("Set management interface to " +
                 packageName + "." + SIMPLE_5_INTF);
         selectComboBoxItem(MANAGEMENT_INTERFACE_COMBO_BOX, ndo, 
                 packageName + "." + SIMPLE_5_INTF);
+        System.out.println("Set object wrapped as MXBean");
+        setCheckBoxSelection(OBJECT_WRAPPED_AS_MXBEAN_CHECK_BOX, ndo, true);
         System.out.println("Set MBean constructor to " + SIMPLE_5 + "(String)");
         selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, SIMPLE_5 + "(String)");
         assertTrue(ndo.btOK().isEnabled());
@@ -416,6 +433,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -430,9 +450,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         setTextFieldContent(JAVA_CLASS_TEXT_FIELD, ndo, 
                 packageName + "." + DYNAMIC_1);
         System.out.println("Set MBean object name to " +
-                packageName + ":name=" + DYNAMIC_1);
+                packageName + ":type=" + DYNAMIC_1);
         setTextFieldContent(OBJECT_NAME_TEXT_FIELD, ndo, 
-                packageName + ":name=" + DYNAMIC_1);
+                packageName + ":type=" + DYNAMIC_1);
         System.out.println("Set management interface to " +
                 "Apply JMX Design Pattern Management Interface");
         selectComboBoxItem(MANAGEMENT_INTERFACE_COMBO_BOX, ndo, 
@@ -466,6 +486,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         new Action(null, "Open").perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
+        // The generated code is inserted at the cursor position
+        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
+        eo.insert("\n");
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
