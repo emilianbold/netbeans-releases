@@ -447,6 +447,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         public void createSuccess(FileObject fo) {
             super.createSuccess(fo);
+            assertNotNull(FileUtil.toFile(fo));
             implsCreateSuccessCalls++;
         }
 
