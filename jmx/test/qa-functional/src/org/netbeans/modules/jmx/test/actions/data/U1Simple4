@@ -14,10 +14,14 @@ public class U1Simple4 {
     public void init() throws Exception {
 
         //TODO Add your MBean registration code here
+        try { // Register MBean in Platform MBeanServer
+            ManagementFactory.getPlatformMBeanServer().
+                    registerMBean(new Dynamic1(),
+                    new ObjectName("com.foo.bar:type=Dynamic1"));
+        }catch(JMException ex) {
+            // TODO handle exception
+        }
         
-        getMBeanServer().registerMBean(
-            new com.foo.bar.Dynamic1(),
-            new ObjectName("com.foo.bar:name=Dynamic1"));
     }
     
     /**

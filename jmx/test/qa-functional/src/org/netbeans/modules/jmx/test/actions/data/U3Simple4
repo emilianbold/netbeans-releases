@@ -15,11 +15,16 @@ public class U3Simple4 {
     public void init() throws Exception {
 
         //TODO Add your MBean registration code here
+        try { // Register MBean in Platform MBeanServer
+            ManagementFactory.getPlatformMBeanServer().
+                    // TODO provide a Simple5 reference to StandardMBean constructor
+                    registerMBean(new StandardMBean(null,
+                    Simple5Intf.class),
+                    new ObjectName("bar.foo.com:type=Simple5"));
+        }catch(JMException ex) {
+            // TODO handle exception
+        }
         
-        getMBeanServer().registerMBean(
-            //TODO replace first parameter by your own com.foo.bar.Simple5 object.
-            new javax.management.StandardMBean(null, com.foo.bar.Simple5Intf.class),
-            new ObjectName("com.foo.bar:name=Simple5"));
     }
     
     /**

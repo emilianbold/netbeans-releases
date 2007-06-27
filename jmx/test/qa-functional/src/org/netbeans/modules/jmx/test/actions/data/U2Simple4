@@ -14,11 +14,15 @@ public class U2Simple4 {
     public void init() throws Exception {
 
         //TODO Add your MBean registration code here
+        try { // Register MBean in Platform MBeanServer
+            ManagementFactory.getPlatformMBeanServer().
+                    // TODO Replace Dynamic1 Constructor parameters with valid values
+                    registerMBean(new Dynamic1((int[])null),
+                    new ObjectName("com.foo.bar:type=Dynamic1"));
+        }catch(JMException ex) {
+            // TODO handle exception
+        }
         
-        //TODO update Dynamic1(int[]) constructor parameters with valid values.
-        getMBeanServer().registerMBean(
-            new com.foo.bar.Dynamic1(null),
-            new ObjectName("com.foo.bar:name=Dynamic1"));
     }
     
     /**

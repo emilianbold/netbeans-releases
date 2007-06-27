@@ -4,7 +4,7 @@ import javax.management.ObjectName;
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 import javax.management.JMException;
-import com.foo.GenerateMBeanRegistrationActions.Dynamic1;
+import com.foo.bar.Dynamic1;
 import javax.management.StandardMBean;
 
 public class U6Simple4 {
@@ -15,12 +15,16 @@ public class U6Simple4 {
     public void init() throws Exception {
 
         //TODO Add your MBean registration code here
+        try { // Register MBean in Platform MBeanServer
+            ManagementFactory.getPlatformMBeanServer().
+                    // TODO Replace Dynamic1 Constructor parameters with valid values
+                    registerMBean(new StandardMBean(new Dynamic1(String),
+                    null),
+                    new ObjectName("bar.foo.com:type=Dynamic1"));
+        }catch(JMException ex) {
+            // TODO handle exception
+        }
         
-        //TODO update Dynamic1(String) constructor parameters with valid values.
-        getMBeanServer().registerMBean(
-            new javax.management.StandardMBean(
-            new com.foo.bar.Dynamic1(null), null),
-            new ObjectName("com.foo.bar:name=Dynamic1"));
     }
     
     /**

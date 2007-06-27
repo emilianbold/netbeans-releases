@@ -4,9 +4,9 @@ import javax.management.ObjectName;
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 import javax.management.JMException;
-import com.foo.GenerateMBeanRegistrationActions.Simple5;
+import com.foo.bar.Simple5;
 import javax.management.StandardMBean;
-import com.foo.GenerateMBeanRegistrationActions.Simple5Intf;
+import com.foo.bar.Simple5Intf;
 
 public class U5Simple4 {
     
@@ -16,12 +16,16 @@ public class U5Simple4 {
     public void init() throws Exception {
 
         //TODO Add your MBean registration code here
+        try { // Register MBean in Platform MBeanServer
+            ManagementFactory.getPlatformMBeanServer().
+                    // TODO Replace Simple5 Constructor parameters with valid values
+                    registerMBean(new StandardMBean(new Simple5(String),
+                    Simple5Intf.class, true),
+                    new ObjectName("bar.foo.com:type=Simple5"));
+        }catch(JMException ex) {
+            // TODO handle exception
+        }
         
-        //TODO update Simple5(String) constructor parameters with valid values.
-        getMBeanServer().registerMBean(
-            new javax.management.StandardMBean(
-            new com.foo.bar.Simple5(null), com.foo.bar.Simple5Intf.class),
-            new ObjectName("com.foo.bar:name=Simple5"));
     }
     
     /**
