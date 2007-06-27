@@ -145,7 +145,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Set up automatic all-* targets: -->
     <taskdef name="insert-module-all-targets" classname="org.netbeans.nbbuild.InsertModuleAllTargets" classpath="nbantext.jar"/>
-    <insert-module-all-targets/>
+    <property name="verify.checkout" value="true"/> 
+    <insert-module-all-targets checkModules="${verify.checkout}"/>
   </target>
   
   <target name="all-installer" description="Dummy target for build system compatibility"/>

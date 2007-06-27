@@ -55,6 +55,11 @@ import org.apache.tools.ant.taskdefs.Property;
 public final class InsertModuleAllTargets extends Task {
     
     public InsertModuleAllTargets() {}
+    
+    boolean checkModules = false;
+    public void setCheckModules( boolean check ) {
+        checkModules = check;
+    }
 
     public void execute() throws BuildException {
         try {
@@ -84,6 +89,26 @@ public final class InsertModuleAllTargets extends Task {
                 assert path != null : entry;
                 entries.put(path, entry);
             }
+            
+            if (checkModules) {
+                boolean missingModules = false;
+                String[] clusters = props.get("nb.clusters.list").split(", *");
+                Set<String> foundModules = entries.keySet();
+                for( String cluster: clusters) {
+                    String[] clusterModules = props.get(cluster).split(", *");
+                    for( String module: clusterModules) {
+                        if (!foundModules.contains(module)) {
+                            missingModules = true;
+                            log("This module is missing from checkout: " + module);
+                        }
+                    }
+                }
+                if (missingModules) {
+                    String clusterConfig = props.get("cluster.config");
+                    throw new BuildException("Some modules according your cluster config '" + clusterConfig + "' are missing from checkout, see messages above.",getLocation());
+                }
+            }
+            
             for (ModuleListParser.Entry entry : entries.values()) {
                 String path = entry.getNetbeansOrgPath();
                 assert path != null : entry;
