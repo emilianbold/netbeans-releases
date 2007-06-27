@@ -131,7 +131,8 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
             
             // find the end of the tag or directive
             while ((tokenSequence.token().id() != JspTokenId.SYMBOL
-                    || tokenSequence.token().text().toString().charAt(tokenSequence.token().text().toString().trim().length()-1) != '>')
+                    || tokenSequence.token().text().toString().trim().length() > 0 
+                    && tokenSequence.token().text().toString().charAt(tokenSequence.token().text().toString().trim().length()-1) != '>')
                     && tokenSequence.token().id() != JspTokenId.EOL && tokenSequence.moveNext());
         } else {
             // The error is in EL - start and offset are set properly - we have one big EL token now in JspLexer
