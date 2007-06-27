@@ -639,10 +639,18 @@ public class ActionManager {
         }
         
         if(!replaced) {
-            actions.add(action);
+            //don't add to the list of actions for this class if the class is null
+            // that probably means this action comes from the framework itself
+            if(getFileForClass(action.getClassname()) != null) {
+                actions.add(action);
+            }
             actionList.add(action);
         }
-        updateActionMethod(action, getFileForClass(action.getClassname()));
+        
+        // check for null in case this is an action in the framework itself
+        if(getFileForClass(action.getClassname()) != null) {
+            updateActionMethod(action, getFileForClass(action.getClassname()));
+        }
         // this will update the global action table
         //fireStructureChanged();
         fireActionChanged(action); //josh: is this enough of an update?
