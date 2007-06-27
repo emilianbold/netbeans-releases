@@ -117,7 +117,6 @@
                 <friend>org.netbeans.modules.j2ee.jpa.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
-                <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
