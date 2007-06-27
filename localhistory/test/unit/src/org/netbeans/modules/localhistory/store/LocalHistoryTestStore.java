@@ -29,7 +29,8 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
 
     private final LocalHistoryStore store;        
     private Method getStoreFolderMethod;
-    private Method getDataDileMethod;
+    private Method getDataFileMethod;
+    private Method getLabelsFileMethod;
     private Method getStoreFileMethod;
     private Method cleanUpImplMethod;
     
@@ -112,11 +113,19 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     }    
 
     File getDataFile(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
-        if(getDataDileMethod == null) {            
-            getDataDileMethod = store.getClass().getDeclaredMethod("getDataFile", new Class[] {File.class});
-            getDataDileMethod.setAccessible(true);            
+        if(getDataFileMethod == null) {            
+            getDataFileMethod = store.getClass().getDeclaredMethod("getDataFile", new Class[] {File.class});
+            getDataFileMethod.setAccessible(true);            
         }
-        return (File) getDataDileMethod.invoke(store, new Object[]{file});           
+        return (File) getDataFileMethod.invoke(store, new Object[]{file});           
+    }    
+
+    File getLabelsFile(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
+        if(getLabelsFileMethod == null) {            
+            getLabelsFileMethod = store.getClass().getDeclaredMethod("getLabelsFile", new Class[] {File.class});
+            getLabelsFileMethod.setAccessible(true);            
+        }
+        return (File) getLabelsFileMethod.invoke(store, new Object[]{file});           
     }    
     
     File getStoreFile(File file, long ts) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
