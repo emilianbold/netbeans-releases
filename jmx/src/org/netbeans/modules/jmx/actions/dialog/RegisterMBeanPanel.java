@@ -522,7 +522,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         northPanel.add(objectNameLabel, gridBagConstraints);
 
-        objectNameTextField.setName("objectNameTextField");
+        objectNameTextField.setName("objectNameTextField"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -535,7 +535,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
 
         stateLabel.setForeground(new java.awt.Color(0, 0, 128));
         stateLabel.setMinimumSize(new java.awt.Dimension(0, 20));
-        stateLabel.setName("stateLabel");
+        stateLabel.setName("stateLabel"); // NOI18N
         stateLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -547,7 +547,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         northPanel.add(stateLabel, gridBagConstraints);
 
-        classNameTextField.setName("classNameTextField");
+        classNameTextField.setName("classNameTextField"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -576,7 +576,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(mbeanClassLabel, gridBagConstraints);
 
         mbeanGroup.add(userMBeanRadioButton);
-        userMBeanRadioButton.setName("userMBeanRadioButton");
+        userMBeanRadioButton.setName("userMBeanRadioButton"); // NOI18N
         userMBeanRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userMBeanRadioButtonActionPerformed(evt);
@@ -592,7 +592,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(userMBeanRadioButton, gridBagConstraints);
 
         mbeanGroup.add(standardMBeanRadioButton);
-        standardMBeanRadioButton.setName("standardMBeanRadioButton");
+        standardMBeanRadioButton.setName("standardMBeanRadioButton"); // NOI18N
         standardMBeanRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stabdardMBeanRadioButtonActionPerformed(evt);
@@ -617,7 +617,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(interfaceLabel, gridBagConstraints);
 
         interfaceComboBox.setMinimumSize(new java.awt.Dimension(270, 25));
-        interfaceComboBox.setName("interfaceComboBox");
+        interfaceComboBox.setName("interfaceComboBox"); // NOI18N
         interfaceComboBox.setPreferredSize(new java.awt.Dimension(270, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -636,7 +636,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         northPanel.add(constructorLabel, gridBagConstraints);
 
-        constructorComboBox.setName("constructorComboBox");
+        constructorComboBox.setName("constructorComboBox"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -648,7 +648,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(constructorComboBox, gridBagConstraints);
 
         browseButton.setText("jButton1");
-        browseButton.setName("browseButton");
+        browseButton.setName("browseButton"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
@@ -657,7 +657,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         northPanel.add(browseButton, gridBagConstraints);
 
-        mbeanClassTextField.setName("mbeanClassTextField");
+        mbeanClassTextField.setName("mbeanClassTextField"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -668,7 +668,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(mbeanClassTextField, gridBagConstraints);
 
         mbeanBrowseButton.setText("jButton1");
-        mbeanBrowseButton.setName("mbeanBrowseButton");
+        mbeanBrowseButton.setName("mbeanBrowseButton"); // NOI18N
         mbeanBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mbeanBrowseButtonActionPerformed(evt);
@@ -683,7 +683,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(mbeanBrowseButton, gridBagConstraints);
 
         chooseLabel.setMinimumSize(new java.awt.Dimension(0, 20));
-        chooseLabel.setName("stateLabel");
+        chooseLabel.setName("stateLabel"); // NOI18N
         chooseLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -696,7 +696,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(chooseLabel, gridBagConstraints);
 
         addedInfosLabel.setMinimumSize(new java.awt.Dimension(0, 20));
-        addedInfosLabel.setName("stateLabel");
+        addedInfosLabel.setName("stateLabel"); // NOI18N
         addedInfosLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -711,6 +711,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         isMXBean.setText("jCheckBox1");
         isMXBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         isMXBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        isMXBean.setName("isMXBeanCheckBox"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
