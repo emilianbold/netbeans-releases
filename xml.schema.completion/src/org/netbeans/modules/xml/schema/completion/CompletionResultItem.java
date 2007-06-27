@@ -95,8 +95,6 @@ public abstract class CompletionResultItem implements CompletionItem {
             doc.insertString( offset, text, null);
             //for attributes, place the cursor between the double-quotes.
             if(this instanceof AttributeResultItem) {
-                System.out.println("offset: " + offset);
-                System.out.println("text: " + text);
                 component.setCaretPosition(offset+text.length()-1);
             }
             
