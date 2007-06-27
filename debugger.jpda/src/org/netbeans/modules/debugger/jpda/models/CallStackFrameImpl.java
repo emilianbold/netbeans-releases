@@ -259,7 +259,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                                                         getDefaultStratum());
         List<Value> argValues = getArgumentValues(sf);
         if (argValues == null) return null;
-        MethodArgument[] argumentNames = EditorContextBridge.getArguments(url, sf.location().lineNumber());
+        MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
         if (argumentNames == null) return null;
         LocalVariable[] arguments = new LocalVariable[argumentNames.length];
         for (int i = 0; i < arguments.length; i++) {
@@ -347,7 +347,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                     try {
                         Session session = debugger.getSession();
                         argumentNames =
-                            EditorContextBridge.getArguments(
+                            EditorContextBridge.getContext().getArguments(
                                 debuggerImpl.getEngineContext().getURL(tr.frames(0, 1).get(0),
                                                                        session.getCurrentLanguage()),
                                 operation);

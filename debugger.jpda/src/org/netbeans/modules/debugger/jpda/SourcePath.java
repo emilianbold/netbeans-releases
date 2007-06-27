@@ -257,13 +257,13 @@ public class SourcePath {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
         try {
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 getURL (convertSlash (t.getSourcePath (stratumn)), true),
                 lineNumber,
                 debugger
             );
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 getURL (
                     convertClassNameToRelativePath (t.getClassName ()), 
                     true
@@ -281,13 +281,13 @@ public class SourcePath {
             EditorContextBridge.getRelativePath (className), true
         );
         if (url == null) return false;
-        int lineNumber = lineNumber = EditorContextBridge.getFieldLineNumber (
+        int lineNumber = lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
             url,
             className,
             fieldName
         );
         if (lineNumber < 1) lineNumber = 1;
-        return EditorContextBridge.showSource (
+        return EditorContextBridge.getContext().showSource (
             url,
             lineNumber,
             debugger
@@ -315,14 +315,14 @@ public class SourcePath {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
         try {
-            return EditorContextBridge.annotate (
+            return EditorContextBridge.getContext().annotate (
                 getURL (convertSlash (t.getSourcePath (stratumn)), true),
                 lineNumber,
                 EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
             );
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.annotate (
+            return EditorContextBridge.getContext().annotate (
                 getURL (
                     convertClassNameToRelativePath (t.getClassName ()), true
                 ),
@@ -340,14 +340,14 @@ public class SourcePath {
         int lineNumber = csf.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
         try {
-            return EditorContextBridge.annotate (
+            return EditorContextBridge.getContext().annotate (
                 getURL (convertSlash (csf.getSourcePath (stratumn)), true),
                 lineNumber,
                 EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
                 debugger
             );
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.annotate (
+            return EditorContextBridge.getContext().annotate (
                 getURL (
                     convertClassNameToRelativePath (csf.getClassName ()), true
                 ),

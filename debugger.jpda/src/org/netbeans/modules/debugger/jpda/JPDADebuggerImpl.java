@@ -651,7 +651,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             List<String> staticImports = new ArrayList<String>();
             imports.add ("java.lang.*");
             try {
-                imports.addAll (Arrays.asList (EditorContextBridge.getImports (
+                imports.addAll (Arrays.asList (EditorContextBridge.getContext().getImports (
                     getEngineContext ().getURL (frame, "Java")
                 )));
                 final ThreadReference tr = frame.thread();

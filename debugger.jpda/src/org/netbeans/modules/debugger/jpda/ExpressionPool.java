@@ -133,7 +133,7 @@ public class ExpressionPool {
         
         int line = loc.lineNumber(language);
         
-        Operation[] ops = EditorContextBridge.getOperations(
+        Operation[] ops = EditorContextBridge.getContext().getOperations(
                 url, line, new EditorContext.BytecodeProvider() {
             public byte[] constantPool() {
                 return theConstantPool;

@@ -43,7 +43,7 @@ public class BreakpointCustomizeAction extends NodeAction {
     }
     
     static LineBreakpoint getCurrentLineBreakpoint() {
-        String currentURLStr = EditorContextBridge.getCurrentURL();
+        String currentURLStr = EditorContextBridge.getContext().getCurrentURL();
         if (currentURLStr == null) return null;
         URL currentURL;
         try {
@@ -51,7 +51,7 @@ public class BreakpointCustomizeAction extends NodeAction {
         } catch (MalformedURLException muex) {
             return null;
         }
-        int lineNumber = EditorContextBridge.getCurrentLineNumber();
+        int lineNumber = EditorContextBridge.getContext().getCurrentLineNumber();
         if (lineNumber < 0) return null;
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                 getBreakpoints ();

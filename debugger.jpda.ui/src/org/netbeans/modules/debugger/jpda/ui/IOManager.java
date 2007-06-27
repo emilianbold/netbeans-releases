@@ -204,7 +204,7 @@ public class IOManager {
         }
         
         void show () {
-            EditorContextBridge.showSource (url, lineNumber, debugger);
+            EditorContextBridge.getContext().showSource (url, lineNumber, debugger);
         }
     }
 }

@@ -264,13 +264,13 @@ public class SourcePath {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
         try {
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 getURL (convertSlash (t.getSourcePath (stratumn)), true),
                 lineNumber,
                 debugger
             );
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 getURL (
                     convertClassNameToRelativePath (t.getClassName ()), true
                 ),
@@ -299,7 +299,7 @@ public class SourcePath {
             }
             int lineNumber = csf.getLineNumber (stratumn);
             if (lineNumber < 1) lineNumber = 1;
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 url,
                 lineNumber,
                 debugger
@@ -314,7 +314,7 @@ public class SourcePath {
                         "\nThe reason is likely no opened project for the source file.");
                 return false;
             }
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 url,
                 1,
                 debugger
@@ -329,13 +329,13 @@ public class SourcePath {
             EditorContextBridge.getRelativePath (className), true
         );
         if (url == null) return false;
-        int lineNumber = lineNumber = EditorContextBridge.getFieldLineNumber (
+        int lineNumber = lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
             url,
             className,
             fieldName
         );
         if (lineNumber < 1) lineNumber = 1;
-        return EditorContextBridge.showSource (
+        return EditorContextBridge.getContext().showSource (
             url,
             lineNumber,
             debugger
@@ -373,7 +373,7 @@ public class SourcePath {
         List operationsAnn = annotateOperations(debugger, url, operation, t.getLastOperations(), lineNumber);
         if (operation == null) {
             if (operationsAnn.size() == 0) {
-                return EditorContextBridge.annotate (
+                return EditorContextBridge.getContext().annotate (
                     url,
                     lineNumber,
                     EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
@@ -411,7 +411,7 @@ public class SourcePath {
                     startOffset = operation.getStartPosition().getOffset();
                     endOffset = operation.getEndPosition().getOffset();
                 }
-                return EditorContextBridge.annotate (
+                return EditorContextBridge.getContext().annotate (
                     getURL (convertSlash (csf.getSourcePath (stratumn)), true),
                     startOffset,
                     endOffset,
@@ -419,7 +419,7 @@ public class SourcePath {
                     debugger
                 );
             } else {
-                return EditorContextBridge.annotate (
+                return EditorContextBridge.getContext().annotate (
                     getURL (convertSlash (csf.getSourcePath (stratumn)), true),
                     lineNumber,
                     EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
@@ -427,7 +427,7 @@ public class SourcePath {
                 );
             }
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.annotate (
+            return EditorContextBridge.getContext().annotate (
                 getURL (
                     convertClassNameToRelativePath (csf.getClassName ()), true
                 ),
@@ -453,7 +453,7 @@ public class SourcePath {
             } else {
                 lineNumber = currentOperation.getStartPosition().getLine();
             }
-            annotations.add(EditorContextBridge.annotate (
+            annotations.add(EditorContextBridge.getContext().annotate (
                 url,
                 lineNumber,
                 EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
@@ -474,7 +474,7 @@ public class SourcePath {
                                                      EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE,
                                                      false));
                     int lineNumber = lastOperation.getEndPosition().getLine();
-                    annotations.add(EditorContextBridge.annotate (
+                    annotations.add(EditorContextBridge.getContext().annotate (
                         url,
                         lineNumber,
                         EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE,
@@ -490,7 +490,7 @@ public class SourcePath {
             }
         }
         if (isNewLineExp) {
-            annotations.add(EditorContextBridge.annotate (
+            annotations.add(EditorContextBridge.getContext().annotate (
                 url,
                 locLineNumber,
                 EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
@@ -516,7 +516,7 @@ public class SourcePath {
             startOffset = operation.getStartPosition().getOffset();
             endOffset = operation.getEndPosition().getOffset();
         }
-        return EditorContextBridge.annotate (
+        return EditorContextBridge.getContext().annotate (
             url,
             startOffset,
             endOffset,

@@ -160,7 +160,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 // show current line
                 synchronized (currentPCLock) {
                     if (currentPC != null)
-                        EditorContextBridge.removeAnnotation (currentPC);
+                        EditorContextBridge.getContext().removeAnnotation (currentPC);
                     if (csf != null && sourcePath != null && currentThread != null) {
 
                         sourcePath.showSource (csf, language);
@@ -197,12 +197,12 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                                 return ;
                             }
                             if (currentPC != null)
-                                EditorContextBridge.removeAnnotation (currentPC);
+                                EditorContextBridge.getContext().removeAnnotation (currentPC);
                             currentPC = null;
                         }
                         Iterator i = stackAnnotations.values ().iterator ();
                         while (i.hasNext ())
-                            EditorContextBridge.removeAnnotation (i.next ());
+                            EditorContextBridge.getContext().removeAnnotation (i.next ());
                         stackAnnotations.clear ();
                     }
                 });
@@ -265,7 +265,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                         // delete old anotations
                         Iterator iter = stackAnnotations.values ().iterator ();
                         while (iter.hasNext ())
-                            EditorContextBridge.removeAnnotation (
+                            EditorContextBridge.getContext().removeAnnotation (
                                 iter.next ()
                             );
                         stackAnnotations = newAnnotations;

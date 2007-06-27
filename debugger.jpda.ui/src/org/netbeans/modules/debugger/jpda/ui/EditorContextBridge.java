@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Micro//S ystems, Inc. Portions Copyright 1997-2007 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.ui;
@@ -21,7 +21,6 @@ package org.netbeans.modules.debugger.jpda.ui;
 import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class EditorContextBridge {
 
     private static EditorContext context;
     
-    private static EditorContext getContext () {
+    public static EditorContext getContext () {
         if (context == null) {
             List l = DebuggerManager.getDebuggerManager ().lookup 
                 (null, EditorContext.class);
@@ -72,133 +71,6 @@ public class EditorContextBridge {
     
     // ContextProvider methods .................................................
     
-    /**
-     * Shows source with given url on given line number.
-     *
-     * @param url a url of source to be shown
-     * @param lineNumber a number of line to be shown
-     */
-    public static boolean showSource (
-        String url,
-        int lineNumber,
-        Object timeStamp
-    ) {
-        return getContext ().showSource (url, lineNumber, timeStamp);
-    }
-
-    /**
-     * Creates a new time stamp.
-     *
-     * @param timeStamp a new time stamp
-     */
-    public static void createTimeStamp (Object timeStamp) {
-        getContext ().createTimeStamp (timeStamp);
-    }
-
-    /**
-     * Disposes given time stamp.
-     *
-     * @param timeStamp a time stamp to be disposed
-     */
-    public static void disposeTimeStamp (Object timeStamp) {
-        getContext ().disposeTimeStamp (timeStamp);
-    }
-
-    /**
-     * Adds annotation to given url on given line.
-     *
-     * @param url a url of source annotation should be set into
-     * @param lineNumber a number of line annotation should be set into
-     * @param annotationType a type of annotation to be set
-     *
-     * @return annotation
-     */
-    public static Object annotate (
-        String url,
-        int lineNumber,
-        String annotationType,
-        Object timeStamp
-    ) {
-        return getContext ().annotate (url, lineNumber, annotationType, timeStamp);
-    }
-
-    /**
-     * Adds annotation to given url on given character range.
-     *
-     * @param url a url of source annotation should be set into
-     * @param startPosition the starting position of the annotation
-     * @param endPosition the ending position of the annotation
-     * @param annotationType a type of annotation to be set
-     *
-     * @return annotation
-     */
-    public static Object annotate (
-        String url,
-        int startPosition,
-        int endPosition,
-        String annotationType,
-        Object timeStamp
-    ) {
-        return getContext ().annotate (url, startPosition, endPosition, annotationType, timeStamp);
-    }
-
-    /**
-     * Removes given annotation.
-     */
-    public static void removeAnnotation (
-        Object annotation
-    ) {
-        getContext ().removeAnnotation (annotation);
-    }
-
-    /**
-     * Returns line number given annotation is associated with.
-     *
-     * @return line number given annotation is associated with
-     */
-    public static int getLineNumber (
-        Object annotation,
-        Object timeStamp
-    ) {
-        return getContext ().getLineNumber (annotation, timeStamp);
-    }
-    
-    /**
-     * Returns number of line currently selected in editor or <code>-1</code>.
-     *
-     * @return number of line currently selected in editor or <code>-1</code>
-     */
-    public static int getCurrentLineNumber () {
-        return getContext ().getCurrentLineNumber ();
-    }
-
-    /**
-     * Returns name of class currently selected in editor or <code>null</code>.
-     *
-     * @return name of class currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentClassName () {
-        return getContext ().getCurrentClassName ();
-    }
-
-    /**
-     * Returns URL of source currently selected in editor or <code>null</code>.
-     *
-     * @return URL of source currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentURL () {
-        return getContext ().getCurrentURL ();
-    }
-
-    /**
-     * Returns name of method currently selected in editor or <code>null</code>.
-     *
-     * @return name of method currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentMethodName () {
-        return getContext ().getCurrentMethodName ();
-    }
-
     /**
      * Returns signature of method currently selected in editor or <code>null</code>.
      *
@@ -223,114 +95,6 @@ public class EditorContextBridge {
         }
     }
 
-    /**
-     * Returns name of field currently selected in editor or <code>null</code>.
-     *
-     * @return name of field currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentFieldName () {
-        return getContext ().getCurrentFieldName ();
-    }
-
-    /**
-     * Returns identifier currently selected in editor or <code>null</code>.
-     *
-     * @return identifier currently selected in editor or <code>null</code>
-     */
-    public static String getSelectedIdentifier () {
-        return getContext ().getSelectedIdentifier ();
-    }
-
-    /**
-     * Returns method name currently selected in editor or <code>null</code>.
-     *
-     * @return method name currently selected in editor or <code>null</code>
-     */
-    public static String getSelectedMethodName () {
-        return getContext ().getSelectedMethodName ();
-    }
-    
-    /**
-     * Returns line number of given field in given class.
-     *
-     * @param url the url of file the class is deined in
-     * @param className the name of class (or innerclass) the field is 
-     *                  defined in
-     * @param fieldName the name of field
-     *
-     * @return line number or -1
-     */
-    public static int getFieldLineNumber (
-        String url, 
-        String className, 
-        String fieldName
-    ) {
-        return getContext ().getFieldLineNumber (url, className, fieldName);
-    }
-    
-    public static int getMethodLineNumber(
-        String url, 
-        String className, 
-        String methodName,
-        String methodSignature
-    ) {
-        return getContext ().getMethodLineNumber (url, className, methodName, methodSignature);
-    }
-    
-    public static String[] getCurrentMethodDeclaration() {
-        return getContext().getCurrentMethodDeclaration();
-    }
-
-    
-    /**
-     * Returns class name for given url and line number or null.
-     *
-     * @param url a url
-     * @param lineNumber a line number
-     *
-     * @return class name for given url and line number or null
-     */
-    public static String getClassName (
-        String url, 
-        int lineNumber
-    ) {
-        return getContext ().getClassName (url, lineNumber);
-    }
-    
-    /**
-     * Returns list of imports for given source url.
-     *
-     * @param url the url of source file
-     *
-     * @return list of imports for given source url
-     */
-    public static String[] getImports (String url) {
-        return getContext ().getImports (url);
-    }
-
-    public static void addPropertyChangeListener (PropertyChangeListener l) {
-        getContext ().addPropertyChangeListener (l);
-    }
-
-    public static void removePropertyChangeListener (PropertyChangeListener l) {
-        getContext ().removePropertyChangeListener (l);
-    }
-
-    /*
-    public static void addPropertyChangeListener (
-        String propertyName, 
-        PropertyChangeListener l
-    ) {
-        getContext ().addPropertyChangeListener (propertyName, l);
-    }
-
-    public static void removePropertyChangeListener (
-        String propertyName, 
-        PropertyChangeListener l
-    ) {
-        getContext ().removePropertyChangeListener (propertyName, l);
-    }
-     */
     
     
     // utility methods .........................................................
@@ -345,12 +109,12 @@ public class EditorContextBridge {
 
     public static boolean showSource (LineBreakpoint b, Object timeStamp) {
         if (b.getLineNumber () < 1)
-            return EditorContextBridge.showSource (
+            return EditorContextBridge.getContext().showSource (
                 b.getURL (),
                 1,
                 timeStamp
             );
-        return EditorContextBridge.showSource (
+        return EditorContextBridge.getContext().showSource (
             b.getURL (),
             b.getLineNumber (),
             timeStamp
@@ -358,11 +122,11 @@ public class EditorContextBridge {
     }
 
     public static String getDefaultType () {
-        String id = getSelectedIdentifier ();
+        String id = getContext().getSelectedIdentifier ();
         try {
             if (id != null) {
-                if (id.equals(getCurrentMethodName())) return METHOD;
-                String s = getCurrentClassName();
+                if (id.equals(getContext().getCurrentMethodName())) return METHOD;
+                String s = getContext().getCurrentClassName();
                 int i = s.lastIndexOf ('.');
                 if (i >= 0)
                     s = s.substring (i + 1);
@@ -370,14 +134,14 @@ public class EditorContextBridge {
                     return CLASS;
                 return FIELD;
             } else {
-                String s = getCurrentFieldName ();
+                String s = getContext().getCurrentFieldName ();
                 if (s != null && s.length () > 0)
                     return FIELD;
-                s = getCurrentMethodName();
+                s = getContext().getCurrentMethodName();
                 if (s != null && s.length () > 0)
                     return METHOD;
                 if (s != null && s.length () < 1) {
-                    s = getCurrentClassName ();
+                    s = getContext().getCurrentClassName ();
                     if (s.length () > 0)
                         return CLASS;
                 }
@@ -403,7 +167,7 @@ public class EditorContextBridge {
                              EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
         if (isInvalid && b.isEnabled ()) annotationType += "_broken";
 
-        return annotate (
+        return getContext().annotate (
             url,
             lineNumber,
             annotationType,
@@ -426,7 +190,7 @@ public class EditorContextBridge {
             URLs = getClassURLs(SourcePath.convertClassNameToRelativePath(className));
             lineNumbers = new int[URLs.length];
             for (int i = 0; i < URLs.length; i++) {
-                lineNumbers[i] = getFieldLineNumber(URLs[i], className, ((FieldBreakpoint) b).getFieldName());
+                lineNumbers[i] = getContext().getFieldLineNumber(URLs[i], className, ((FieldBreakpoint) b).getFieldName());
             }
             condition = ((FieldBreakpoint) b).getCondition();
         } else if (b instanceof MethodBreakpoint) {
@@ -439,7 +203,7 @@ public class EditorContextBridge {
                     String[] newUrls = getClassURLs(SourcePath.convertClassNameToRelativePath(filters[i]));
                     int[] newlns = new int[newUrls.length];
                     for (int j = 0; j < newUrls.length; j++) {
-                       newlns[j] = getMethodLineNumber(newUrls[j], filters[i],
+                       newlns[j] = getContext().getMethodLineNumber(newUrls[j], filters[i],
                                                        ((MethodBreakpoint) b).getMethodName(),
                                                        ((MethodBreakpoint) b).getMethodSignature());
                     }
@@ -493,7 +257,7 @@ public class EditorContextBridge {
         for (int i = 0; i < URLs.length; i++) {
             if (lineNumbers[i] >= 1) {
                 annotations.add(
-                        annotate (URLs[i], lineNumbers[i], annotationType, null)
+                        getContext().annotate (URLs[i], lineNumbers[i], annotationType, null)
                 );
             }
         }

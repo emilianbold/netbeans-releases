@@ -118,7 +118,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         final String[] className = new String[] { null };
         java.awt.IllegalComponentStateException cex;
         try {
-            className[0] = EditorContextBridge.getCurrentClassName();
+            className[0] = EditorContextBridge.getContext().getCurrentClassName();
             cex = null;
         } catch (java.awt.IllegalComponentStateException icsex) {
             cex = icsex;
@@ -126,7 +126,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         final String[] fieldName = new String[] { null };
         java.awt.IllegalComponentStateException fex;
         try {
-            fieldName[0] = EditorContextBridge.getCurrentFieldName();
+            fieldName[0] = EditorContextBridge.getContext().getCurrentFieldName();
             fex = null;
         } catch (java.awt.IllegalComponentStateException icsex) {
             fex = icsex;
@@ -138,7 +138,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             fieldName[0] = null;
             String[] methodInfo;
             try {
-                methodInfo = EditorContextBridge.getCurrentMethodDeclaration();
+                methodInfo = EditorContextBridge.getContext().getCurrentMethodDeclaration();
                 mex = null;
             } catch (java.awt.IllegalComponentStateException icsex) {
                 mex = icsex;
@@ -159,8 +159,8 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             methodSignature = null;
         }
         if (cex != null || fex != null || mex != null) {
-            final int ln = EditorContextBridge.getCurrentLineNumber ();
-            final String url = EditorContextBridge.getCurrentURL ();
+            final int ln = EditorContextBridge.getContext().getCurrentLineNumber ();
+            final String url = EditorContextBridge.getContext().getCurrentURL ();
             final java.awt.IllegalComponentStateException[] exs = new java.awt.IllegalComponentStateException[]
                     { cex, fex, mex };
             RequestProcessor.getDefault().post(new Runnable() {
@@ -249,13 +249,13 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     }
     
     static JPDABreakpoint getCurrentFieldMethodBreakpoint() {
-        String className = EditorContextBridge.getCurrentClassName();
-        String fieldName = EditorContextBridge.getCurrentFieldName();
+        String className = EditorContextBridge.getContext().getCurrentClassName();
+        String fieldName = EditorContextBridge.getContext().getCurrentFieldName();
         String methodName = null;
         String methodSignature = null;
         if (fieldName == null || fieldName.length() == 0) {
             fieldName = null;
-            String[] methodInfo = EditorContextBridge.getCurrentMethodDeclaration();
+            String[] methodInfo = EditorContextBridge.getContext().getCurrentMethodDeclaration();
             if (methodInfo != null) {
                 methodName = methodInfo[0];
                 methodSignature = methodInfo[1];

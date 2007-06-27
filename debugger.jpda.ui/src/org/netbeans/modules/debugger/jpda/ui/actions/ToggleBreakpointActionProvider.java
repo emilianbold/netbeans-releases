@@ -53,23 +53,23 @@ implements PropertyChangeListener {
 
     
     public ToggleBreakpointActionProvider () {
-        EditorContextBridge.addPropertyChangeListener (this);
+        EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
     public ToggleBreakpointActionProvider (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
-        EditorContextBridge.addPropertyChangeListener (this);
+        EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
     private void destroy () {
         debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
-        EditorContextBridge.removePropertyChangeListener (this);
+        EditorContextBridge.getContext().removePropertyChangeListener (this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        String url = EditorContextBridge.getCurrentURL();
+        String url = EditorContextBridge.getContext().getCurrentURL();
         FileObject fo;
         try {
             fo = URLMapper.findFileObject(new URL(url));
@@ -78,7 +78,7 @@ implements PropertyChangeListener {
         }
         setEnabled (
             ActionsManager.ACTION_TOGGLE_BREAKPOINT,
-            (EditorContextBridge.getCurrentLineNumber () >= 0) && 
+            (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
             (fo != null && "text/x-java".equals(fo.getMIMEType()))  // NOI18N
             //(EditorContextBridge.getCurrentURL ().endsWith (".java"))
         );
@@ -96,8 +96,8 @@ implements PropertyChangeListener {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
         // 1) get source name & line number
-        int ln = EditorContextBridge.getCurrentLineNumber ();
-        String url = EditorContextBridge.getCurrentURL ();
+        int ln = EditorContextBridge.getContext().getCurrentLineNumber ();
+        String url = EditorContextBridge.getContext().getCurrentURL ();
         if ("".equals (url.trim ())) return;
         
         // 2) find and remove existing line breakpoint

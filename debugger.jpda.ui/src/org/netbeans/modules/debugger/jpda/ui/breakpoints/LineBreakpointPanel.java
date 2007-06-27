@@ -64,8 +64,8 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     
     private static LineBreakpoint createBreakpoint () {
         LineBreakpoint mb = LineBreakpoint.create (
-            EditorContextBridge.getCurrentURL (),
-            EditorContextBridge.getCurrentLineNumber ()
+            EditorContextBridge.getContext().getCurrentURL (),
+            EditorContextBridge.getContext().getCurrentLineNumber ()
         );
         mb.setPrintText (
             NbBundle.getBundle (LineBreakpointPanel.class).getString 

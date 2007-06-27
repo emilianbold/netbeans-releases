@@ -100,7 +100,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         if (className == null) {
             className = reader.findCachedClassName(breakpoint);
             if (className == null) {
-                className = EditorContextBridge.getClassName (
+                className = EditorContextBridge.getContext().getClassName (
                     breakpoint.getURL (), 
                     lineNumber
                 );

@@ -51,7 +51,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     private static ExceptionBreakpoint creteBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getCurrentClassName();
+            className = EditorContextBridge.getContext().getCurrentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }

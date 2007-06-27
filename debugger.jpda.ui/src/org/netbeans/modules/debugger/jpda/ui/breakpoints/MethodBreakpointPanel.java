@@ -53,13 +53,13 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private static MethodBreakpoint createBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getCurrentClassName();
+            className = EditorContextBridge.getContext().getCurrentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
         String methodName;
         try {
-            methodName = EditorContextBridge.getCurrentMethodName();
+            methodName = EditorContextBridge.getContext().getCurrentMethodName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             methodName = "";
         }

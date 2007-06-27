@@ -47,7 +47,7 @@ public class EditorContextBridge {
 
     private static EditorContext context;
     
-    private static EditorContext getContext () {
+    public static EditorContext getContext () {
         if (context == null) {
             List l = DebuggerManager.getDebuggerManager ().lookup 
                 (null, EditorContext.class);
@@ -63,240 +63,7 @@ public class EditorContextBridge {
     }
 
     
-    // ContextProvider methods .................................................
-    
-    /**
-     * Shows source with given url on given line number.
-     *
-     * @param url a url of source to be shown
-     * @param lineNumber a number of line to be shown
-     */
-    public static boolean showSource (
-        String url,
-        int lineNumber,
-        Object timeStamp
-    ) {
-        return getContext ().showSource (url, lineNumber, timeStamp);
-    }
-
-    /**
-     * Creates a new time stamp.
-     *
-     * @param timeStamp a new time stamp
-     */
-    public static void createTimeStamp (Object timeStamp) {
-        getContext ().createTimeStamp (timeStamp);
-    }
-
-    /**
-     * Disposes given time stamp.
-     *
-     * @param timeStamp a time stamp to be disposed
-     */
-    public static void disposeTimeStamp (Object timeStamp) {
-        getContext ().disposeTimeStamp (timeStamp);
-    }
-
-    /**
-     * Adds annotation to given url on given line.
-     *
-     * @param url a url of source annotation should be set into
-     * @param lineNumber a number of line annotation should be set into
-     * @param annotationType a type of annotation to be set
-     *
-     * @return annotation
-     */
-    public static Object annotate (
-        String url,
-        int lineNumber,
-        String annotationType,
-        Object timeStamp
-    ) {
-        return getContext ().annotate (url, lineNumber, annotationType, timeStamp);
-    }
-
-    /**
-     * Removes given annotation.
-     */
-    public static void removeAnnotation (
-        Object annotation
-    ) {
-        getContext ().removeAnnotation (annotation);
-    }
-
-    /**
-     * Returns line number given annotation is associated with.
-     *
-     * @return line number given annotation is associated with
-     */
-    public static int getLineNumber (
-        Object annotation,
-        Object timeStamp
-    ) {
-        return getContext ().getLineNumber (annotation, timeStamp);
-    }
-    
-    /**
-     * Returns number of line currently selected in editor or <code>null</code>.
-     *
-     * @return number of line currently selected in editor or <code>0</code>
-     */
-    public static int getCurrentLineNumber () {
-        return getContext ().getCurrentLineNumber ();
-    }
-
-    /**
-     * Returns name of class currently selected in editor or <code>null</code>.
-     *
-     * @return name of class currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentClassName () {
-        return getContext ().getCurrentClassName ();
-    }
-
-    /**
-     * Returns URL of source currently selected in editor or <code>null</code>.
-     *
-     * @return URL of source currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentURL () {
-        return getContext ().getCurrentURL ();
-    }
-
-    /**
-     * Returns name of method currently selected in editor or <code>null</code>.
-     *
-     * @return name of method currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentMethodName () {
-        return getContext ().getCurrentMethodName ();
-    }
-
-    /**
-     * Returns name of field currently selected in editor or <code>null</code>.
-     *
-     * @return name of field currently selected in editor or <code>null</code>
-     */
-    public static String getCurrentFieldName () {
-        return getContext ().getCurrentFieldName ();
-    }
-
-    /**
-     * Returns identifier currently selected in editor or <code>null</code>.
-     *
-     * @return identifier currently selected in editor or <code>null</code>
-     */
-    public static String getSelectedIdentifier () {
-        return getContext ().getSelectedIdentifier ();
-    }
-
-    /**
-     * Returns method name currently selected in editor or <code>null</code>.
-     *
-     * @return method name currently selected in editor or <code>null</code>
-     */
-    public static String getSelectedMethodName () {
-        return getContext ().getSelectedMethodName ();
-    }
-    
-    /**
-     * Returns line number of given field in given class.
-     *
-     * @param url the url of file the class is deined in
-     * @param className the name of class (or innerclass) the field is 
-     *                  defined in
-     * @param fieldName the name of field
-     *
-     * @return line number or -1
-     */
-    public static int getFieldLineNumber (
-        String url, 
-        String className, 
-        String fieldName
-    ) {
-        return getContext ().getFieldLineNumber (url, className, fieldName);
-    }
-    
-    /**
-     * Returns class name for given url and line number or null.
-     *
-     * @param url a url
-     * @param lineNumber a line number
-     *
-     * @return class name for given url and line number or null
-     */
-    public static String getClassName (
-        String url, 
-        int lineNumber
-    ) {
-        return getContext ().getClassName (url, lineNumber);
-    }
-    
-    /*
-    public static EditorContext.ExpressionTree[] getExpressionTrees(String url, long lineNumber) {
-        return getContext().getExpressionTrees(url, lineNumber);
-    }
-    
-    public static EditorContext.ExpressionTree getExpressionTree(
-            String url, long lineNumber,
-            EditorContext.BytecodeProvider bytecodeProvider,
-            long locationInExpression) {
-        return getContext().getExpressionTree(url, lineNumber, bytecodeProvider,
-                                              locationInExpression);
-    }
-     */
-    
-    public static EditorContext.Operation[] getOperations(
-            String url, int lineNumber,
-            EditorContext.BytecodeProvider bytecodeProvider) {
-        return getContext().getOperations(url, lineNumber, bytecodeProvider);
-    }
-    
-    /**
-     * Returns list of imports for given source url.
-     *
-     * @param url the url of source file
-     *
-     * @return list of imports for given source url
-     */
-    public static String[] getImports (String url) {
-        return getContext ().getImports (url);
-    }
-    
-    public static MethodArgument[] getArguments(String url, Operation operation) {
-        return getContext().getArguments(url, operation);
-    }
-
-    public static MethodArgument[] getArguments(String url, int methodLineNumber) {
-        return getContext().getArguments(url, methodLineNumber);
-    }
-
-    public static void addPropertyChangeListener (PropertyChangeListener l) {
-        getContext ().addPropertyChangeListener (l);
-    }
-
-    public static void removePropertyChangeListener (PropertyChangeListener l) {
-        getContext ().removePropertyChangeListener (l);
-    }
-
-    /*
-    public static void addPropertyChangeListener (
-        String propertyName, 
-        PropertyChangeListener l
-    ) {
-        getContext ().addPropertyChangeListener (propertyName, l);
-    }
-
-    public static void removePropertyChangeListener (
-        String propertyName, 
-        PropertyChangeListener l
-    ) {
-        getContext ().removePropertyChangeListener (propertyName, l);
-    }
-     */
-    
-    
-    // utility methods .........................................................
+    // Utility methods .........................................................
 
     public static String getFileName (LineBreakpoint b) { 
         try {
@@ -308,12 +75,12 @@ public class EditorContextBridge {
 
     public static boolean showSource (LineBreakpoint b, Object timeStamp) {
         if (b.getLineNumber () < 1)
-            return EditorContextBridge.showSource (
+            return getContext().showSource (
                 b.getURL (),
                 1,
                 timeStamp
             );
-        return EditorContextBridge.showSource (
+        return getContext().showSource (
             b.getURL (),
             b.getLineNumber (),
             timeStamp

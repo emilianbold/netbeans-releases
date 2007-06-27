@@ -58,12 +58,12 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
         session = (Session) lookupProvider.lookupFirst 
                 (null, Session.class);
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
-        EditorContextBridge.addPropertyChangeListener (this);
+        EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
     private void destroy () {
         debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
-        EditorContextBridge.removePropertyChangeListener (this);
+        EditorContextBridge.getContext().removePropertyChangeListener (this);
     }
     
     static ActionsManager getCurrentActionsManager () {
@@ -93,8 +93,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
             ActionsManager.ACTION_RUN_TO_CURSOR,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
             (debugger.getState () == debugger.STATE_STOPPED) &&
-            (EditorContextBridge.getCurrentLineNumber () >= 0) && 
-            (EditorContextBridge.getCurrentURL ().endsWith (".java"))
+            (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
+            (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
         );
         if ( (debugger.getState () != debugger.STATE_RUNNING) &&
              (breakpoint != null)
@@ -116,8 +116,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
             breakpoint = null;
         }
         breakpoint = LineBreakpoint.create (
-            EditorContextBridge.getCurrentURL (),
-            EditorContextBridge.getCurrentLineNumber ()
+            EditorContextBridge.getContext().getCurrentURL (),
+            EditorContextBridge.getContext().getCurrentLineNumber ()
         );
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
@@ -137,8 +137,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
                 ActionsManager.ACTION_RUN_TO_CURSOR,
                 enabled &&
                 (debugger.getState () == debugger.STATE_STOPPED) &&
-                (EditorContextBridge.getCurrentLineNumber () >= 0) && 
-                (EditorContextBridge.getCurrentURL ().endsWith (".java"))
+                (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
+                (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
             );
         }
     }
