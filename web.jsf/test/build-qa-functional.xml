@@ -19,7 +19,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="web/jsf/test/qa-functional" basedir="." default="all">
-    
+    <!-- ignore jdk1.5 check -->
+    <property name="permit.jdk6.builds" value="true"/>
+ 
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
 </project>

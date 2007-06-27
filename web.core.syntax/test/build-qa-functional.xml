@@ -24,6 +24,9 @@ Microsystems, Inc. All Rights Reserved.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
+    <!-- ignore jdk1.5 check -->
+    <property name="permit.jdk6.builds" value="true"/>
+
     <!-- Adds property to IDE command line: suppress scanning of classpath -->
     <!--property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/-->
 
