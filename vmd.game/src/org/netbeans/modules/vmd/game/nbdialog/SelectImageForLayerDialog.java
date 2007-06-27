@@ -288,7 +288,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 		}
 		assert(imageURL != null);
 		try {
-			this.imagePreview.setImage(imageURL);
+			this.imagePreview.setImageURL(imageURL);
 			this.repaint();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();

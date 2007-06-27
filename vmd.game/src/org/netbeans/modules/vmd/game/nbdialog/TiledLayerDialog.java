@@ -35,13 +35,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -50,6 +51,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.vmd.game.dialog.AbstractImagePreviewComponent;
+import org.netbeans.modules.vmd.game.dialog.FullImageGridPreview;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
@@ -81,7 +84,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	public TiledLayerDialog(GlobalRepository gameDesign) {
 		this.gameDesign = gameDesign;
 		initComponents();
-		init();
+		manualInit();
 	}
 	
 	public TiledLayerDialog(Scene parent) {
@@ -110,6 +113,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         sliderHeight = new javax.swing.JSlider();
         labelTileWidth = new javax.swing.JLabel();
         labelTileHeight = new javax.swing.JLabel();
+        checkBoxZoom = new javax.swing.JCheckBox();
         panelError = new javax.swing.JPanel();
         labelError = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
@@ -150,7 +154,6 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         labelImagePreview.setText("Adjust tile size in pixels:");
 
         panelImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        this.panelImage.add(this.imagePreview, BorderLayout.CENTER);
         panelImage.setLayout(new java.awt.BorderLayout());
 
         sliderHeight.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -159,6 +162,10 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 
         labelTileHeight.setText("Tile height: 0 px");
 
+        checkBoxZoom.setText("Zoom");
+        checkBoxZoom.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        checkBoxZoom.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout panelPreviewLayout = new org.jdesktop.layout.GroupLayout(panelPreview);
         panelPreview.setLayout(panelPreviewLayout);
         panelPreviewLayout.setHorizontalGroup(
@@ -166,24 +173,30 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelPreviewLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelImagePreview)
                     .add(panelPreviewLayout.createSequentialGroup()
                         .add(labelTileWidth)
                         .add(51, 51, 51)
                         .add(labelTileHeight)
                         .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
-                        .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(panelPreviewLayout.createSequentialGroup()
                         .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
-                        .add(22, 22, 22))))
+                        .add(22, 22, 22))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
+                        .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
+                                .add(labelImagePreview)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 166, Short.MAX_VALUE)
+                                .add(checkBoxZoom))
+                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
         panelPreviewLayout.setVerticalGroup(
             panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
-                .add(labelImagePreview)
+                .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelImagePreview)
+                    .add(checkBoxZoom))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, sliderHeight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
@@ -274,6 +287,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroupLayers;
     private javax.swing.JButton buttonImportImages;
+    private javax.swing.JCheckBox checkBoxZoom;
     private javax.swing.JTextField fieldLayerName;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
@@ -300,7 +314,10 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	public static final boolean DEBUG = false;
 	
 	private SliderListener sliderListener = new SliderListener();
-	private PartialImageGridPreview imagePreview = new PartialImageGridPreview();
+	
+	private AbstractImagePreviewComponent imagePreview;
+	private PartialImageGridPreview partialImagePreview = new PartialImageGridPreview();
+	private FullImageGridPreview fullImagePreview = new FullImageGridPreview();
 	
 	private Scene scene;
 	
@@ -312,24 +329,9 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		this.dd = dd;
 	}
 	
-	private void init() {
+	private void manualInit() {
 		this.labelError.setIcon(ICON_ERROR);
 		
-//		SpinnerNumberModel snm1 = new SpinnerNumberModel();
-//		snm1.setMinimum(1);
-//		snm1.setMaximum(500);
-//		snm1.setStepSize(1);
-//		snm1.setValue(15);
-//		this.spinnerRows.setModel(snm1);
-//		
-//		SpinnerNumberModel snm2 = new SpinnerNumberModel();
-//		snm2.setMinimum(1);
-//		snm2.setMaximum(500);
-//		snm2.setStepSize(1);
-//		snm2.setValue(15);
-//		this.spinnerCols.setModel(snm2);
-		
-		this.panelImage.add(this.imagePreview, BorderLayout.CENTER);
 		this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
 		this.fieldLayerName.addFocusListener(new LayerFieldListener());
 		
@@ -358,10 +360,63 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 		
 		this.sliderWidth.setEnabled(false);
 		this.sliderHeight.setEnabled(false);
-
+		
 		this.buttonImportImages.addActionListener(this);
+		
+		this.setPreviewFull();
+		
+		this.checkBoxZoom.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+				if (TiledLayerDialog.this.checkBoxZoom.isSelected()) {
+					setPreviewPartial();
+				}
+				else {
+					setPreviewFull();
+				}
+            }
+		});		
 	}
 	
+	private void setPreviewPartial() {
+		if (this.imagePreview != null) {
+			try {
+				this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
+			} catch (MalformedURLException e) {
+				this.labelError.setText("Invalid image location.");
+				e.printStackTrace();
+				return;
+			}
+			this.partialImagePreview.setTileWidth(this.imagePreview.getTileWidth());
+			this.partialImagePreview.setTileHeight(this.imagePreview.getTileHeight());
+		}
+		this.panelImage.removeAll();
+		this.panelImage.add(this.partialImagePreview, BorderLayout.CENTER);
+		this.imagePreview = this.partialImagePreview;
+		this.repaint();
+		this.validate();
+	}
+	
+	private void setPreviewFull() {
+		if (this.imagePreview != null) {
+			try {
+				this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
+			} catch (MalformedURLException e) {
+				this.labelError.setText("Invalid image location.");
+				e.printStackTrace();
+				return;
+			} 
+			this.fullImagePreview.setTileWidth(this.imagePreview.getTileWidth());
+			this.fullImagePreview.setTileHeight(this.imagePreview.getTileHeight());
+		}
+		this.panelImage.removeAll();
+		JScrollPane scroll = new JScrollPane(this.fullImagePreview);
+		scroll.setBorder(BorderFactory.createEmptyBorder());
+		this.panelImage.add(scroll, BorderLayout.CENTER);
+		this.imagePreview = this.fullImagePreview;
+		this.repaint();
+		this.validate();
+	}
+			
 	private List<Map.Entry<FileObject, String>> getImageList() {
 		Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
 		List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
@@ -383,7 +438,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 			dlm.addElement(imageEntry);
 		}
 		return dlm;
-	}	
+	}
 	
 	private class SliderListener implements ChangeListener {
 		
@@ -540,7 +595,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 			this.sliderWidth.removeChangeListener(this.sliderListener);
 			this.sliderHeight.removeChangeListener(this.sliderListener);
 			
-			this.imagePreview.setImage(imageURL);
+			this.imagePreview.setImageURL(imageURL);
 			
 			this.tileWidths = this.imagePreview.getValidTileWidths();
 			this.tileHeigths = this.imagePreview.getValidTileHeights();

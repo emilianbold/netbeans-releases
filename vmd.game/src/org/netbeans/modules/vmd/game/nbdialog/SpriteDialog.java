@@ -35,12 +35,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -50,6 +52,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.vmd.game.dialog.AbstractImagePreviewComponent;
+import org.netbeans.modules.vmd.game.dialog.FullImageGridPreview;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
@@ -109,6 +113,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         sliderHeight = new javax.swing.JSlider();
         labelTileWidth = new javax.swing.JLabel();
         labelTileHeight = new javax.swing.JLabel();
+        checkBoxZoom = new javax.swing.JCheckBox();
         panelError = new javax.swing.JPanel();
         labelError = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
@@ -149,7 +154,6 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         labelImagePreview.setText("Adjust tile size in pixels:");
 
         panelImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        this.panelImage.add(this.imagePreview, BorderLayout.CENTER);
         panelImage.setLayout(new java.awt.BorderLayout());
 
         sliderHeight.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -157,6 +161,10 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         labelTileWidth.setText("Tile width: 0 px");
 
         labelTileHeight.setText("Tile height: 0 px");
+
+        checkBoxZoom.setText("Zoom");
+        checkBoxZoom.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        checkBoxZoom.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout panelPreviewLayout = new org.jdesktop.layout.GroupLayout(panelPreview);
         panelPreview.setLayout(panelPreviewLayout);
@@ -172,7 +180,10 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                         .addContainerGap(165, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, labelImagePreview)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
+                                .add(labelImagePreview)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 174, Short.MAX_VALUE)
+                                .add(checkBoxZoom))
                             .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                             .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -181,7 +192,9 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         panelPreviewLayout.setVerticalGroup(
             panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
-                .add(labelImagePreview)
+                .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(labelImagePreview)
+                    .add(checkBoxZoom))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sliderHeight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
@@ -274,6 +287,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroupLayers;
     private javax.swing.JButton buttonImportImages;
+    private javax.swing.JCheckBox checkBoxZoom;
     private javax.swing.JTextField fieldLayerName;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
@@ -300,7 +314,11 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	public static final boolean DEBUG = false;
 	
 	private SliderListener sliderListener = new SliderListener();
-	private PartialImageGridPreview imagePreview = new PartialImageGridPreview();
+	
+	private AbstractImagePreviewComponent imagePreview;
+	private PartialImageGridPreview partialImagePreview = new PartialImageGridPreview();
+	private FullImageGridPreview fullImagePreview = new FullImageGridPreview();
+	
 	
 	private Scene scene;
 	
@@ -321,7 +339,6 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		snm.setStepSize(1);
 		snm.setValue(5);
 		
-		this.panelImage.add(this.imagePreview, BorderLayout.CENTER);
 		this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
 		this.fieldLayerName.addFocusListener(new LayerFieldListener());
 		
@@ -352,8 +369,61 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		this.sliderHeight.setEnabled(false);
 		
 		this.buttonImportImages.addActionListener(this);
-		//this.checkBoxShowTiles.addActionListener(this);
+		
+		this.setPreviewFull();
+		
+		this.checkBoxZoom.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+				if (checkBoxZoom.isSelected()) {
+					setPreviewPartial();
+				}
+				else {
+					setPreviewFull();
+				}
+            }
+		});		
 	}
+	
+	private void setPreviewPartial() {
+		if (this.imagePreview != null) {
+			try {
+				this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
+			} catch (MalformedURLException e) {
+				this.labelError.setText("Invalid image location.");
+				e.printStackTrace();
+				return;
+			}
+			this.partialImagePreview.setTileWidth(this.imagePreview.getTileWidth());
+			this.partialImagePreview.setTileHeight(this.imagePreview.getTileHeight());
+		}
+		this.panelImage.removeAll();
+		this.panelImage.add(this.partialImagePreview, BorderLayout.CENTER);
+		this.imagePreview = this.partialImagePreview;
+		this.repaint();
+		this.validate();
+	}
+	
+	private void setPreviewFull() {
+		if (this.imagePreview != null) {
+			try {
+				this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
+			} catch (MalformedURLException e) {
+				this.labelError.setText("Invalid image location.");
+				e.printStackTrace();
+				return;
+			} 
+			this.fullImagePreview.setTileWidth(this.imagePreview.getTileWidth());
+			this.fullImagePreview.setTileHeight(this.imagePreview.getTileHeight());
+		}
+		this.panelImage.removeAll();
+		JScrollPane scroll = new JScrollPane(this.fullImagePreview);
+		scroll.setBorder(BorderFactory.createEmptyBorder());
+		this.panelImage.add(scroll, BorderLayout.CENTER);
+		this.imagePreview = this.fullImagePreview;
+		this.repaint();
+		this.validate();
+	}
+			
 	
 	private List<Map.Entry<FileObject, String>> getImageList() {
 		Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
@@ -534,7 +604,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			this.sliderWidth.removeChangeListener(this.sliderListener);
 			this.sliderHeight.removeChangeListener(this.sliderListener);
 			
-			this.imagePreview.setImage(imageURL);
+			this.imagePreview.setImageURL(imageURL);
 			
 			this.tileWidths = this.imagePreview.getValidTileWidths();
 			this.tileHeigths = this.imagePreview.getValidTileHeights();

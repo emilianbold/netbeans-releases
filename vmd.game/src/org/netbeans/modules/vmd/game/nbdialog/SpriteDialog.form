@@ -129,7 +129,11 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="labelImagePreview" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="174" max="32767" attributes="0"/>
+                                  <Component id="checkBoxZoom" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <Component id="panelImage" pref="381" max="32767" attributes="2"/>
                               <Component id="sliderWidth" alignment="1" pref="381" max="32767" attributes="1"/>
                           </Group>
@@ -143,7 +147,10 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="labelImagePreview" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="checkBoxZoom" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="sliderHeight" pref="242" max="32767" attributes="1"/>
@@ -176,9 +183,6 @@
               </Border>
             </Property>
           </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this.panelImage.add(this.imagePreview, BorderLayout.CENTER);"/>
-          </AuxValues>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
         </Container>
@@ -197,6 +201,19 @@
         <Component class="javax.swing.JLabel" name="labelTileHeight">
           <Properties>
             <Property name="text" type="java.lang.String" value="Tile height: 0 px"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="checkBoxZoom">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Zoom"/>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+              </Border>
+            </Property>
+            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+              <Insets value="[0, 0, 0, 0]"/>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>

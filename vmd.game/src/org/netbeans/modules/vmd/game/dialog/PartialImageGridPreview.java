@@ -26,30 +26,29 @@ import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 
 import org.netbeans.modules.vmd.game.model.ImageUtils;
 
 
-public class PartialImageGridPreview extends JComponent {
+/**
+ *
+ * @author kherink
+ */
+public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 
     public static final boolean DEBUG = false;
     
 	private static final int TILE_GAP = 4;
 	
+	private URL imageURL;
 	private BufferedImage originalImage;
 	private Image preview;
 	private int tileWidth;
 	private int tileHeight;
-	
-	private boolean partialMode = true;
 	
 	public PartialImageGridPreview () {
 		this.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -58,19 +57,17 @@ public class PartialImageGridPreview extends JComponent {
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				if (DEBUG) System.out.println("resized - updating preview");
-				PartialImageGridPreview.this.createPreview();
+				PartialImageGridPreview.this.createPartialPreview();
 				PartialImageGridPreview.this.repaint();
 			}
 		});
 	}
 	
-	public void setImage(String imageFileName) throws MalformedURLException {
-		URL imgUrl = (new File(imageFileName)).toURL();
-		this.setImage(imgUrl);
-	}
-
-	public void setImage(URL imgUrl) throws MalformedURLException {
-		Image image = ImageUtils.loadImage(imgUrl);
+	public void setImageURL(URL imageURL) throws MalformedURLException {
+		this.imageURL = imageURL;
+		if (imageURL == null)
+			return;
+		Image image = ImageUtils.loadImage(imageURL);
 		BufferedImage bufImg = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics = (Graphics2D) bufImg.getGraphics();
 		graphics.drawImage(image, 0, 0, null);
@@ -78,25 +75,16 @@ public class PartialImageGridPreview extends JComponent {
 		this.tileWidth = originalImage.getWidth(this);
 		this.tileHeight = originalImage.getHeight(this);
 		
-		this.createPreview();
+		this.createPartialPreview();
 		this.repaint();
 	}
 
+	public URL getImageURL() {
+		return this.imageURL;
+	}
+	
 	public Image getImage() {
 		return this.originalImage;
-	}
-	
-	private void createPreview() {
-		if (this.partialMode) {
-			this.createPartialPreview();
-		}
-		else {
-			this.createWholePreview();
-		}
-	}
-	
-	private void createWholePreview() {
-		//TODO: implement this
 	}
 	
 	private void createPartialPreview() {
@@ -182,14 +170,14 @@ public class PartialImageGridPreview extends JComponent {
 	public void setTileWidth(int width) {
 		if (DEBUG) System.out.println("setting tile width to: " + width);
 		this.tileWidth = width;
-		this.createPreview();
+		this.createPartialPreview();
 		this.repaint();
 	}
 	
 	public void setTileHeight(int height) {
 		if (DEBUG) System.out.println("setting tile height to: " + height);
 		this.tileHeight = height;
-		this.createPreview();
+		this.createPartialPreview();
 		this.repaint();
 	}
 	
@@ -206,27 +194,13 @@ public class PartialImageGridPreview extends JComponent {
 			g.drawImage(this.preview, offX, offY, this);
 		}
 	}
-	
-	
-	public List<Integer> getValidTileWidths() {
-		int imgWidth = this.originalImage.getWidth(null);
-		return getEvenDivisors(imgWidth);
-	}
-	
-	public List<Integer> getValidTileHeights() {
-		int imgHeight = this.originalImage.getHeight(null);
-		return getEvenDivisors(imgHeight);
-	}
-	
-	public static List getEvenDivisors(int number) {
-		ArrayList divisors = new ArrayList();
-		
-		for (int i = 1; i <= number; i++) {
-			if (number % i == 0) {
-				divisors.add(new Integer(i));
-			}
-		}
-		return divisors;
-	}
 
+    public int getTileWidth() {
+        return this.tileWidth;
+    }
+
+    public int getTileHeight() {
+        return this.tileHeight;
+    }
+	
 }
