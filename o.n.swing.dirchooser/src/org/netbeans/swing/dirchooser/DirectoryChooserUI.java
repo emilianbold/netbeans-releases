@@ -89,6 +89,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
+
+    /** icon representing netbeans project folder */
+    private static Icon projectIcon;
     
     private JPanel centerPanel;
     
@@ -1499,6 +1502,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
+    private Icon getNbProjectIcon () {
+        if (projectIcon == null) {
+            projectIcon = new ImageIcon(Utilities.loadImage(
+                    "org/netbeans/swing/dirchooser/resources/main_project_16.png"));
+        }
+        return projectIcon;
+    }
+    
+    
     /*************** HELPER CLASSES ***************/
     
     private class IconIndenter implements Icon {
@@ -1543,7 +1555,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             File directory = (File)value;
             setText(getFileChooser().getName(directory));
-            Icon icon = getFileChooser().getIcon(directory);
+            Icon icon;
+            if (DirectoryNode.isNetBeansProject(directory)) {
+                icon = getNbProjectIcon();
+            } else {
+                icon = getFileChooser().getIcon(directory);
+            }
             indenter.icon = icon;
             indenter.depth = directoryComboBoxModel.getDepth(index);
             setIcon(indenter);
@@ -2121,7 +2138,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private class DirectoryTreeRenderer implements TreeCellRenderer {
         HtmlRenderer.Renderer renderer = HtmlRenderer.createRenderer();
-        
+
         public Component getTreeCellRendererComponent(
                 JTree tree,
                 Object value,
@@ -2146,14 +2163,21 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if(value instanceof DirectoryNode) {
                 tree.setShowsRootHandles(true);
                 DirectoryNode node = (DirectoryNode)value;
-                ((JLabel)stringDisplayer).setIcon(getNodeIcon(node.getFile()));
+                ((JLabel)stringDisplayer).setIcon(getNodeIcon(node));
                 ((JLabel)stringDisplayer).setText(getNodeText(node.getFile()));
             }
+
+            // allow some space around icon of items
+            ((JComponent)stringDisplayer).setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
             
             return stringDisplayer;
         }
         
-        private Icon getNodeIcon(File file) {
+        private Icon getNodeIcon(DirectoryNode node) {
+            if (node.isNetBeansProject()) {
+                return getNbProjectIcon();
+            }
+            File file = node.getFile();
             if(file.exists()) {
                 return fileChooser.getIcon(file);
             } else {

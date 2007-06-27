@@ -178,6 +178,10 @@ public class DirectoryNode extends DefaultMutableTreeNode {
     }
     
     public boolean isNetBeansProject() {
+        return isNetBeansProject(directory);
+    }
+    
+    public static boolean isNetBeansProject (File directory) {
         boolean retVal = false;
         if (directory != null) {
             FileObject fo = convertToValidDir(directory);
@@ -194,7 +198,7 @@ public class DirectoryNode extends DefaultMutableTreeNode {
         return retVal;
     }
     
-    private FileObject convertToValidDir(File f) {
+    private static FileObject convertToValidDir(File f) {
         FileObject fo;
         File testFile = new File(f.getPath());
         if (testFile == null || testFile.getParent() == null) {
