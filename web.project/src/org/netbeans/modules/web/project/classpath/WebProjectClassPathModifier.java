@@ -50,6 +50,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *@author Tomas Zezula
@@ -71,6 +72,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
 
     private boolean dontFireChange = false;
     
+    private final PropertyChangeListener listener = WeakListeners.propertyChange(this, null);
+
     /** Creates a new instance of J2SEProjectClassPathModifier */
     public WebProjectClassPathModifier(final Project project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
         assert project != null;
@@ -87,7 +90,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                                         WebProjectProperties.ANT_ARTIFACT_PREFIX );
         
         //#56140
-        eval.addPropertyChangeListener(this); //listen for changes of libraries list
+        eval.addPropertyChangeListener(listener); //listen for changes of libraries list
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 registerLibraryListeners();
@@ -309,7 +312,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     private void unregisterLibraryListeners() {
         Library libs [] = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
-            libs [i].removePropertyChangeListener(this);
+            libs [i].removePropertyChangeListener(listener);
         }
     }
     
@@ -327,7 +330,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         while (i.hasNext()) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
-                item.getLibrary().addPropertyChangeListener(this);
+                item.getLibrary().addPropertyChangeListener(listener);
             }
         }
     }
@@ -387,7 +390,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
 
     public void notifyDeleting() {
         projectDeleted = true;
-        eval.removePropertyChangeListener(this);
+        eval.removePropertyChangeListener(listener);
     }
 
     public ClassPathSupport getClassPathSupport () {
