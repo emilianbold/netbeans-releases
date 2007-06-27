@@ -29,6 +29,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.updater.UpdateTracking;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -79,7 +81,7 @@ public class InstallManager {
             // is local
             res = getUserDir ();
         }
-        
+        ERR.log (Level.FINEST, "UpdateElement " + update.getUpdateElement () + " has the target cluster " + res);
         return res;
     }
     
@@ -87,11 +89,25 @@ public class InstallManager {
         File res = null;
         UpdateElementImpl i = Trampoline.API.impl (installed);
         if (UpdateManager.TYPE.MODULE == i.getType ()) {
-            String configFile = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
-            res = InstalledFileLocator.getDefault ().locate (configFile, installed.getCodeName (), false);
-            // only fixed module cannot be located
-            assert res != null || 
-                    Utilities.toModule (installed.getCodeName (), installed.getSpecificationVersion ()).isFixed () : "Install cluster exists for UpdateElementImpl " + installed;
+            String configFileName = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
+            File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
+            if (configFile == null) {
+                // only fixed module cannot be located
+                if (Utilities.toModule (installed.getCodeName (), installed.getSpecificationVersion ()).isFixed ()) {
+                    res = UpdateTracking.getPlatformDir (); // XXX: all fixed modules should go to platform dir?
+                } else {
+                    assert false : "Config file found for " + installed;
+                }
+            }
+            FileObject searchForFO = FileUtil.toFileObject (configFile);
+            for (File cluster : UpdateTracking.clusters (true)) {
+                if (FileUtil.isParentOf (FileUtil.toFileObject (cluster), searchForFO)) {
+                    res = cluster;
+                    break;
+                }
+            }
+            assert res != null : "Install cluster exists for UpdateElementImpl " + installed;
+            
         } else {
             assert false : "Unsupported for type: " + i.getType (); // XXX
         }

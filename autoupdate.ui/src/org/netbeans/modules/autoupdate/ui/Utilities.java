@@ -318,7 +318,7 @@ public class Utilities {
     }
         
     public static boolean isGlobalInstallation() {
-        return getPreferences ().getBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, false);
+        return getPreferences ().getBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, Boolean.valueOf (System.getProperty ("plugin.manager.install.global")));
     }
 
     public static void setGlobalInstallation(boolean isGlobal) {
