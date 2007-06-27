@@ -21,7 +21,9 @@ package org.netbeans.modules.localhistory.store;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -46,11 +48,18 @@ public class StoreTest extends NbTestCase {
     public StoreTest(String testName) {
         super(testName);      
     }
-    
-    public void testFileCreate() throws Exception {
 
+    @Override
+    protected void setUp() throws Exception {        
+        super.setUp();
+        cleanUpDataFolder();
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); // cleanup imediately
+        store.cleanUp(1);        
+    }
+    
+    public void testFileCreate() throws Exception {  
+        LocalHistoryTestStore store = createStore();
+        
         long ts = System.currentTimeMillis();
         
         // create file1 in store
@@ -105,7 +114,7 @@ public class StoreTest extends NbTestCase {
 
     public void testFileChange() throws Exception {
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); // cleanup imediately
+        
         long ts = System.currentTimeMillis();
 
         // create file in store
@@ -129,8 +138,8 @@ public class StoreTest extends NbTestCase {
     }
 
     public void testFileDelete() throws Exception {
-        LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); // cleanup imediately
+        cleanUpDataFolder();        
+        LocalHistoryTestStore store = createStore();        
         long ts = System.currentTimeMillis();
 
         // create file in store
@@ -152,8 +161,8 @@ public class StoreTest extends NbTestCase {
     }
 
     public void testGetDeletedFiles() throws Exception {
+        cleanUpDataFolder();        
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
         
         cleanUpDataFolder();        
         File folder = getDataDir();        
@@ -194,10 +203,8 @@ public class StoreTest extends NbTestCase {
     }
 
     public void testGetStoreEntry() throws Exception { 
+        cleanUpDataFolder();        
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-            
-        cleanUpDataFolder();
         
         File folder = getDataDir();        
         folder.mkdirs();        
@@ -216,14 +223,11 @@ public class StoreTest extends NbTestCase {
         // get the files last state
         StoreEntry entry = store.getStoreEntry(file1, System.currentTimeMillis());
         assertNotNull(entry);
-        assertDataInStream(entry.getStoreFileInputStream(), "data1".getBytes());        
+        assertDataInStream(entry.getStoreFileInputStream(), "data1.1".getBytes());        
     }   
     
-    public void testGetFolderState() throws Exception {        
+    public void testGetFolderState() throws Exception {      
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); // cleanup imediately
-        
-        cleanUpDataFolder();
                 
         // check for deleted root folder
         File folder = new File(getDataDir(), "datafolder");
@@ -246,14 +250,14 @@ public class StoreTest extends NbTestCase {
         
         StoreEntry[] entries = store.getFolderState(folder, files , revertToTS);
         assertEquals(entries.length, 0);  // all are deleted
-        
+               
         
         store.cleanUp(1); 
-        cleanUpDataFolder();                
+        cleanUpDataFolder();             
+        
         folder = new File(getDataDir(), "datafolder");
         revertToTS = setupFirstFolderToRevert(store, folder);        
-        files = folder.listFiles(); 
-        files = folder.listFiles();              
+        files = folder.listFiles();           
         assertEquals(files.length, 7);  //   fileNotInStorage 
                                         //   fileUnchanged 
                                         //   fileChangedAfterRevert 
@@ -267,11 +271,7 @@ public class StoreTest extends NbTestCase {
         
        
         entries = store.getFolderState(folder, files , revertToTS);
-
-        for(StoreEntry se : entries) {
-            System.out.println(se.getFile().getName());
-        }    
-        
+         
         assertEquals(entries.length, 8);    
         //   * returned, X as to be deleted
         //   fileNotInStorage             - 
@@ -316,61 +316,221 @@ public class StoreTest extends NbTestCase {
     
     public void testCleanUp() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-            
-        cleanUpDataFolder();
+        File folder = new File(getDataDir(), "datafolder");        
+        folder.mkdirs();
+        
+        // create the files
+        File file1 = new File(folder, "file1");
+        File file2 = new File(folder, "file2");
+        File file3 = new File(folder, "file3");
+        File file4 = new File(folder, "file4");
+        File file5 = new File(folder, "file5");
+        
+        // lets get some history
+        
+        // 4 days ago
+        long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
+        createFile(store, folder, ts, null);
+        createFile(store, file1, ts + 10000, "data1");
+        createFile(store, file2, ts + 20000, "data2");
+        createFile(store, file3, ts + 30000, "data3");
+        createFile(store, file4, ts + 40000, "data4");
+        store.setLabel(file1, ts + 10000, "dil");                
+        store.setLabel(file2, ts + 20000, "dil2");                
+        
+        long tsCreateFile5 = ts + 50000; 
+        createFile(store, file5, tsCreateFile5, "data5"); // this one will get deleted by cleanup
+        
+        // 2 days ago
+        ts = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
+        changeFile(store, file1, ts + 10000, "data1.1");
+        changeFile(store, file2, ts + 20000, "data2.1");
+        changeFile(store, file3, ts + 30000, "data3.1");
+        changeFile(store, file4, ts + 40000, "data4.1");
+        long tsLabelFile2 = ts + 20000; 
+        String labelFile2 = "dil2.1";
+        store.setLabel(file2, tsLabelFile2, labelFile2);  // two labels - each timestamp got one               
+        
+        store.setLabel(file3, ts + 30000, "dil3");                
+        
+        // check the files created in storage
+        long now = System.currentTimeMillis();
+        assertFile(file1, store, ts + 10000, -1, 4, 2, "data1.1", TOUCHED);
+        assertFile(file2, store, ts + 20000, -1, 4, 2, "data2.1", TOUCHED);
+        assertFile(file3, store, ts + 30000, -1, 4, 2, "data3.1", TOUCHED);
+        assertFile(file4, store, ts + 40000, -1, 3, 2, "data4.1", TOUCHED);
+        assertFile(file5, store, tsCreateFile5, -1, 2, 2, "data5",   TOUCHED);
+        
+        // run clean up - time to live = 3 days 
+        long ttl = 3 * 24 * 60 * 60 * 1000;
+        store.cleanUp(ttl); 
+        
+        // check the cleaned storage
+        assertFile(file1, store, ts + 10000, -1, 2, 1, "data1.1", TOUCHED);
+        assertFile(file2, store, ts + 20000, -1, 3, 1, "data2.1", TOUCHED);
+        assertFile(file3, store, ts + 30000, -1, 3, 1, "data3.1", TOUCHED);
+        assertFile(file4, store, ts + 40000, -1, 2, 1, "data4.1", TOUCHED);
+        
+        // check labels for file2 - the first one should be deleted
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeLong(tsLabelFile2);
+        dos.writeInt(labelFile2.length());
+        dos.writeChars(labelFile2);        
+        dos.flush();
+        
+        File labelsFile = store.getLabelsFile(file2);
+        assertDataInFile(labelsFile, baos.toByteArray());
+        
+        dos.close();
         
     }   
     
     public void testGetStoreEntries() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-            
-        cleanUpDataFolder();
+        File folder = new File(getDataDir(), "datafolder");        
+        folder.mkdirs();
         
-        // XXX 
-
+        
+        // create the file
+        File file1 = new File(folder, "file1");
+        
+        // lets create some history        
+        long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
+        createFile(store, file1, ts + 1000, "data1");        
+        changeFile(store, file1, ts + 2000, "data1.1");
+        changeFile(store, file1, ts + 3000, "data1.2");
+        changeFile(store, file1, ts + 4000, "data1.3");
+        changeFile(store, file1, ts + 5000, "data1.4");                      
+        
+        StoreEntry[] se = store.getStoreEntries(file1);        
+        assertEntries(
+                se, file1, 
+                new long[] {ts + 1000, ts + 2000, ts + 3000, ts + 4000, ts + 5000}, 
+                new String[] {"data1", "data1.1", "data1.2", "data1.3", "data1.4" }
+        );
+        
+        // delete an entry
+        store.deleteEntry(file1, ts + 3000);                
+        
+        se = store.getStoreEntries(file1);        
+        assertEntries(
+                se, file1, 
+                new long[] {ts + 1000, ts + 2000, ts + 4000, ts + 5000}, 
+                new String[] {"data1", "data1.1", "data1.3", "data1.4" }
+        );
     }   
 
     public void testDeleteEntry() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-            
-        cleanUpDataFolder();
+        File folder = new File(getDataDir(), "datafolder");        
+        folder.mkdirs();
+                
+        // create the file
+        File file1 = new File(folder, "file1");
         
-        // XXX 
+        // lets create some history        
+        long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
+        createFile(store, file1, ts + 1000, "data1");        
+        changeFile(store, file1, ts + 2000, "data1.1");
+        changeFile(store, file1, ts + 3000, "data1.2");
+                                
+        StoreEntry[] se = store.getStoreEntries(file1);        
+        assertEntries(
+                se, file1, 
+                new long[] {ts + 1000, ts + 2000, ts + 3000}, 
+                new String[] {"data1", "data1.1", "data1.2"}
+        );
+        
+        // delete an entry
+        store.deleteEntry(file1, ts + 2000);
+        se = store.getStoreEntries(file1);        
+        assertEntries(
+                se, file1, 
+                new long[] {ts + 1000, ts + 3000}, 
+                new String[] {"data1", "data1.2"}
+        );        
+
+        store.deleteEntry(file1, ts + 3000);
+        se = store.getStoreEntries(file1);        
+        assertEntries(
+                se, file1, 
+                new long[] {ts + 1000}, 
+                new String[] {"data1"}
+        );        
+
+        store.deleteEntry(file1, ts + 1000);
+        se = store.getStoreEntries(file1);        
+        assertEquals(se.length, 0);
         
     }   
 
     public void testSetLabel() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
+        File folder = new File(getDataDir(), "datafolder");        
+        folder.mkdirs();        
         
+        // create the file
+        File file1 = new File(folder, "file1");
         
+        // lets create some history        
+        long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
+        createFile(store, file1, ts + 1000, "data1");        
+        changeFile(store, file1, ts + 2000, "data1.1");
+        changeFile(store, file1, ts + 3000, "data1.2");                
         
-        cleanUpDataFolder();
+        assertFile(file1, store, ts + 3000, -1, 4, 1, "data1.2", TOUCHED);
         
-        // XXX 
+        String label = "My most beloved label";
+        store.setLabel(file1, ts + 2000, label);
         
+        assertFile(file1, store, ts + 3000, -1, 5, 1, "data1.2", TOUCHED);
+        
+        File labelsFile = store.getLabelsFile(file1);
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeLong(ts + 2000);
+        dos.writeInt(label.length());
+        dos.writeChars(label);        
+        dos.flush();
+        
+        assertDataInFile(labelsFile, baos.toByteArray());
+        
+        label = "My second most beloved label";
+        store.setLabel(file1, ts + 1000, label);                
+                
+        dos.writeLong(ts + 1000);
+        dos.writeInt(label.length());
+        dos.writeChars(label);        
+        dos.flush();
+        
+        labelsFile = store.getLabelsFile(file1);
+        assertDataInFile(labelsFile, baos.toByteArray());
+        
+        store.setLabel(file1, ts + 2000, null);
+        
+        baos = new ByteArrayOutputStream();
+        dos = new DataOutputStream(baos);
+        dos.writeLong(ts + 1000);
+        dos.writeInt(label.length());
+        dos.writeChars(label);        
+        dos.flush();
+        
+        labelsFile = store.getLabelsFile(file1);
+        assertDataInFile(labelsFile, baos.toByteArray());
+        
+        dos.close();
     }   
 
     public void testFileDeleteFromMove() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-        
-        
-        
-        cleanUpDataFolder();
-        
-        // XXX 
+
         
     }       
     
     public void testFileCreateFromMove() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-        
-        cleanUpDataFolder();
         
         // XXX 
         
@@ -378,9 +538,6 @@ public class StoreTest extends NbTestCase {
 
     public void testMove() throws Exception { 
         LocalHistoryTestStore store = createStore();
-        store.cleanUp(1); 
-        
-        cleanUpDataFolder();
         
         // XXX 
         
@@ -404,11 +561,20 @@ public class StoreTest extends NbTestCase {
     }
     
     private LocalHistoryTestStore createStore() {
+        System.setProperty("netbeans.user", getDataDir().getAbsolutePath());  
         return new LocalHistoryTestStore(getDataDir().getAbsolutePath());
     }
     
     private void cleanUpDataFolder() {
-        FileUtils.deleteRecursively(getDataDir());
+        File[] files = getDataDir().listFiles();
+        if(files == null || files.length == 0) {
+            return;
+        }
+        for(File file : files) {
+            if(!file.getName().equals("var")) {
+                FileUtils.deleteRecursively(file);   
+            }
+        }        
     }
 
     private long setupFirstFolderToRevert(LocalHistoryStore store, File folder) throws Exception {
@@ -496,7 +662,7 @@ public class StoreTest extends NbTestCase {
             fail("no files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
         }
         if (files.length != siblings) {
-            fail("wrong files amount of files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+            fail("wrong amount of files in store folder " + files.length + " instead of expected " + siblings + " : file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
         }
 
         File storeParent = store.getStoreFolder(file.getParentFile());
@@ -505,7 +671,7 @@ public class StoreTest extends NbTestCase {
             fail("no files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
         }
         if (files.length != parentChildren) {
-            fail("wrong files amount of files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
+            fail("wrong amount of files in store parent " + files.length + " instead of expected " + parentChildren + " : file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
         }
 
         if (file.isFile()) {
@@ -585,6 +751,24 @@ public class StoreTest extends NbTestCase {
             }            
         }
     }
+
+    private void assertEntries(StoreEntry[] entries, File file, long[] ts, String[] data) throws Exception {
+        assertEquals(entries.length, ts.length);
+        for(int i = 0; i < ts.length; i++) {                        
+            boolean blContinue = false;
+            for(StoreEntry entry : entries) {
+                assertEquals(entry.getFile(), file);
+                if(entry.getTimestamp() == ts[i]) {
+                    assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
+                    blContinue = true;                    
+                    break;
+                }
+            }
+            if(!blContinue) {
+                fail("no store entry with timestamp " + ts[i]);
+            }            
+        }
+    }
     
     private void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
         if(data != null) {
@@ -632,11 +816,11 @@ public class StoreTest extends NbTestCase {
         BufferedInputStream bis = new BufferedInputStream(is);
         try {
             byte[] contents = new byte[data.length];
-            int l = bis.read(contents);
-            assertEquals(l, data.length);
+            int l = bis.read(contents);            
             for (int i = 0; i < contents.length; i++) {
                 assertEquals(contents[i], data[i]);
             }
+            assertTrue(bis.read() == -1);
         } catch (Exception e) {
             throw e;
         } finally {

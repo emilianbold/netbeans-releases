@@ -34,8 +34,7 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     private Method getStoreFileMethod;
     private Method cleanUpImplMethod;
     
-    public LocalHistoryTestStore(String storePath) {
-        System.setProperty("netbeans.user", storePath);        
+    public LocalHistoryTestStore(String storePath) {      
         store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage();
     }
 
