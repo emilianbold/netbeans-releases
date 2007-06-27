@@ -54,6 +54,8 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         suite.addTest(new ImplementMBeanRegistrationActions("test2"));
         suite.addTest(new ImplementMBeanRegistrationActions("test3"));
         suite.addTest(new ImplementMBeanRegistrationActions("test4"));
+        suite.addTest(new ImplementMBeanRegistrationActions("test5"));
+        suite.addTest(new ImplementMBeanRegistrationActions("test6"));
         return suite;
     }
     
