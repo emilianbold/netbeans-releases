@@ -18,6 +18,7 @@ cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" nbbuild >
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
+    tail -100 $CVS_CHECKOUT_LOG
     echo "ERROR: $ERROR_CODE - Checkout of nbbuild module failed"
     exit $ERROR_CODE;
 fi
@@ -27,15 +28,7 @@ ant -f nbbuild/build.xml checkout >> $CVS_CHECKOUT_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
+    tail -100 $CVS_CHECKOUT_LOG
     echo "ERROR: $ERROR_CODE - Checkout of ide modules failed"
-    exit $ERROR_CODE;
-fi
-
-#Checkout modules for the components
-cvs -z6 -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" mobility uml visualweb enterprise print identity  >> $CVS_CHECKOUT_LOG 2>&1
-ERROR_CODE=$?
-
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Checkout of the rest of components failed"
     exit $ERROR_CODE;
 fi
