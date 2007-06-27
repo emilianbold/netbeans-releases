@@ -40,6 +40,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -86,11 +87,15 @@ public final class AutoUpgrade {
             return;
         }
     }
+
+    private static final String CREATOR = ".Creator/2_1"; //NOI18N
+    private static final String VISUALWEB_REPRESENTATION = "modules/org-netbeans-modules-visualweb-insync.jar";//NOI18N
     
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
     final static private List VERSION_TO_CHECK = 
-            Arrays.asList (new String[] { ".netbeans/5.5.1",".netbeans/5.5",".netbeans/5.0",".Creator/2_1" });//NOI18N
+            Arrays.asList (new String[] { ".netbeans/5.5.1",".netbeans/5.5",".netbeans/5.0",CREATOR });//NOI18N
+
             
     static private File checkPrevious (String[] version, final List versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
@@ -102,6 +107,12 @@ public final class AutoUpgrade {
             String ver;
             while (it.hasNext () && sourceFolder == null) {
                 ver = (String) it.next ();
+                if (ver.equals(CREATOR)) {//NOI18N
+                    final boolean visualWebPresent = InstalledFileLocator.getDefault().locate(VISUALWEB_REPRESENTATION, null, false) != null;
+                    if (!visualWebPresent) {
+                        continue;
+                    }
+                }                
                 sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 
                 if (sourceFolder.isDirectory ()) {
