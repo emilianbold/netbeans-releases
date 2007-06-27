@@ -180,6 +180,7 @@ public class MenuEditLayer extends JPanel {
         Class clas = comp.getBeanClass();
         if(clas == null) return false;
         if(JMenu.class.isAssignableFrom(clas)) return true;
+        if(JPopupMenu.class.isAssignableFrom(clas)) return true;
         return false;
     }
     
