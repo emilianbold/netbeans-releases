@@ -21,7 +21,6 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.text.ParseException;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -174,7 +173,7 @@ class LuceneIndex extends Index {
             final Hits hits = searcher.search (query);
             for (Iterator<Hit> it = (Iterator<Hit>) hits.iterator(); it.hasNext();) {
                 if (cancel.get()) {
-                    throw new InterruptedIOException ();
+                    throw new InterruptedException ();
                 }
                 final Hit hit = it.next ();
                 final Document doc = hit.getDocument();
@@ -427,7 +426,7 @@ class LuceneIndex extends Index {
                 try {
                     do {
                         if (cancel.get()) {
-                            throw new InterruptedIOException ();
+                            throw new InterruptedException ();
                         }
                         final Term currentTerm = terms.term();
                         if (currentTerm != null && prefixField == currentTerm.field()) {
