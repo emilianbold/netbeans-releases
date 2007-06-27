@@ -292,7 +292,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             acceleratorListener.setEnabled(true);
             setAcceleratorPanelEnabled(true);
             iconButtonLarge.setEnabled(true);
+            setIconButtonLarge.setEnabled(true);
             iconButtonSmall.setEnabled(true);
+            setIconButtonSmall.setEnabled(true);
             selectedTextfield.setEnabled(true);
             enabledTextfield.setEnabled(true);
             backgroundTaskCheckbox.setEnabled(true);
@@ -1146,8 +1148,10 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         clearAcceleratorPanel();
         iconButtonLarge.setEnabled(false);
         iconButtonLarge.setIcon(null);
+        setIconButtonLarge.setEnabled(false);
         iconButtonSmall.setEnabled(false);
         iconButtonSmall.setIcon(null);
+        setIconButtonSmall.setEnabled(false);
         selectedTextfield.setEnabled(false);
         selectedTextfield.setText("");
         enabledTextfield.setText("");
@@ -1168,7 +1172,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         acceleratorListener.setEnabled(true);
         setAcceleratorPanelEnabled(true);
         iconButtonLarge.setEnabled(true);
+        setIconButtonLarge.setEnabled(true);
         iconButtonSmall.setEnabled(true);
+        setIconButtonSmall.setEnabled(true);
         selectedTextfield.setEnabled(true);
         selectedTextfield.setText("");
         enabledTextfield.setEnabled(true);

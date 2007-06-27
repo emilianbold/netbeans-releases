@@ -545,7 +545,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         String defClassName = act.getClassname();
         ActionEditor editor = new ActionEditor(actionManager.getFileForClass(defClassName));
         editor.setValue(act);
-        Component comp = editor.getCustomEditor();
+        ActionPropertyEditorPanel comp = (ActionPropertyEditorPanel) editor.getCustomEditor();
+        //make sure it's in the right mode
+        comp.setMode(ActionPropertyEditorPanel.Mode.Global);
         final DialogDescriptor dd = new DialogDescriptor(comp, getLocalizedString("editActionPropertiesDialog.title"), true, null);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
