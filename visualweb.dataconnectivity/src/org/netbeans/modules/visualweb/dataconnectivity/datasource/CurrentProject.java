@@ -52,14 +52,14 @@ public class CurrentProject {
     private final PropertyChangeListener topComponentRegistryListener = new TopComponentRegistryListener();
     private TopComponent.Registry registry  = null;
     Set listeners = new HashSet();
-    private Project previousProject = null;
-    
+    private Project previousProject = null;    
     protected ProjectsChangedListener changedProjectsListener = new ProjectsChangedListener();
+    
     
     /** Creates a new instance of CurrentProject */
     private CurrentProject() {                        
         DataObject obj = Utilities.actionsGlobalContext().lookup(DataObject.class);
-        OpenProjects.getDefault().addPropertyChangeListener(changedProjectsListener);
+        OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, changedProjectsListener, OpenProjects.getDefault()));
         
         if (obj != null) {
             FileObject fileObject = obj.getPrimaryFile();
@@ -144,10 +144,7 @@ public class CurrentProject {
                     if (!newOpenProjectsList.isEmpty()) {
                         _instance.previousProject = newOpenProjectsList.get(newOpenProjectsList.size()-1);
                         _instance.project = _instance.previousProject;
-                    } else {
-                        _instance.previousProject = null;
-                        OpenProjects.getDefault().removePropertyChangeListener(this);
-                    }
+                    } 
                 }                
                 
                 Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
