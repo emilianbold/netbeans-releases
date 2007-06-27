@@ -534,7 +534,7 @@ public class PluginProperties  {
                             FileObject instanceFO = null;
                             for (int j = 0; j < instanceFOs.length; j++) {
                                 if (dmUrl.equals(instanceFOs[j].getAttribute(InstanceProperties.URL_ATTR))) {
-                                    instanceFO = instanceFOs[j];
+                                    return;
                                 }
                             }
                             if (instanceFO == null) {
