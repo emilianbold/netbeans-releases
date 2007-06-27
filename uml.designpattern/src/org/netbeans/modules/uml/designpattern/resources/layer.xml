@@ -54,7 +54,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/> 
             <file name="DesignCenter.shadow">
                <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>    		
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="340"/>
                 </file>
          </folder>
       </folder>
