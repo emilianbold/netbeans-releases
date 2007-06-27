@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,16 +57,46 @@ public final class KitsTracker {
      * @param kitClass The editor kit class to get mime types for.
      * @return The <code>List&lt;String&gt;</code> of mime types.
      */
-    public List/*<String>*/ getMimeTypesForKitClass(Class kitClass) {
+    public List<String> getMimeTypesForKitClass(Class kitClass) {
+        boolean reload;
+        Map<String, Class> reloadedMap = new HashMap<String, Class>();
+        List<FileObject> newEventSources = new ArrayList<FileObject>();
+        
         synchronized (mimeType2kitClass) {
-            if (needsReloading) {
-                reload();
+            reload = needsReloading;
+        }
+        
+        // This needs to be outside of the synchronized block to prevent deadlocks
+        // See eg #107400
+        if (reload) {
+            reload(reloadedMap, newEventSources);
+        }
+            
+        synchronized (mimeType2kitClass) {
+            // Stop listening
+            if (eventSources != null) {
+                for(FileObject fo : eventSources) {
+                    fo.removeFileChangeListener(fcl);
+                }
             }
-
-            ArrayList list = new ArrayList();
-            for(Iterator i = mimeType2kitClass.keySet().iterator(); i.hasNext(); ) {
-                String mimeType = (String) i.next();
-                Class clazz = (Class) mimeType2kitClass.get(mimeType);
+            
+            // Update the cache
+            mimeType2kitClass.clear();
+            mimeType2kitClass.putAll(reloadedMap);
+            
+            // Start listening again
+            eventSources = newEventSources;
+            for(FileObject fo : eventSources) {
+                fo.addFileChangeListener(fcl);
+            }
+            
+            // Set the flag
+            needsReloading = false;
+            
+            // Compute the list
+            ArrayList<String> list = new ArrayList<String>();
+            for(String mimeType : mimeType2kitClass.keySet()) {
+                Class clazz = mimeType2kitClass.get(mimeType);
                 if (kitClass == clazz) {
                     list.add(mimeType);
                 }
@@ -107,8 +137,8 @@ public final class KitsTracker {
     // ------------------------------------------------------------------
     
     // The map of mime type -> kit class
-    private final HashMap/*<String, Class>*/ mimeType2kitClass = new HashMap();
-    private final ArrayList/*<FileObject>*/ eventSources = new ArrayList();
+    private final Map<String, Class> mimeType2kitClass = new HashMap<String, Class>();
+    private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
 
     private final FileChangeListener fcl = new FileChangeAdapter() {
@@ -133,16 +163,15 @@ public final class KitsTracker {
 
     }
 
-    private void reload() {
-        // Stop listening
-        for(Iterator i = eventSources.iterator(); i.hasNext(); ) {
-            FileObject fo = (FileObject) i.next();
-            fo.removeFileChangeListener(fcl);
-        }
-
-        // Clear the cache
-        mimeType2kitClass.clear();
-
+    /**
+     * Scans fonlders under 'Editors' and finds <code>EditorKit</code>s for
+     * each mime type.
+     * 
+     * @param map The map of a mime type to its registered <code>EditorKit</code>.
+     * @param eventSources The list of folders with registered <code>EditorKits</code>.
+     *   Changes in these folders mean that the map may need to be recalculated.
+     */
+    private static void reload(Map<String, Class> map, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 
@@ -175,7 +204,7 @@ public final class KitsTracker {
                                 "; mimeType from the kit is '" + kit.getContentType() + //NOI18N
                                 ", but the kit is registered for '" + mimeType + "'"); //NOI18N
                         }
-                        mimeType2kitClass.put(mimeType, kit.getClass());
+                        map.put(mimeType, kit.getClass());
                     } else {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("No kit for '" + mimeType + "'");
@@ -183,15 +212,11 @@ public final class KitsTracker {
                     }
                 }
 
-                types[i].addFileChangeListener(fcl);
                 eventSources.add(types[i]);
             }
 
-            fo.addFileChangeListener(fcl);
             eventSources.add(fo);
         }
-
-        needsReloading = false;
     }
 
     private void invalidateCache() {
