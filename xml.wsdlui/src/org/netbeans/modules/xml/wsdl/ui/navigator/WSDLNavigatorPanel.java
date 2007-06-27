@@ -80,6 +80,8 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
         selection = null;
         // If we set navigator to null its parent tc ref goes away.
         //navigator = null;
+        if(WSDLNavigatorContent.getDefault() != null)
+            WSDLNavigatorContent.getDefault().release(); //hide the UI
     }
 
     public void resultChanged(LookupEvent ev) {

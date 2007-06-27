@@ -46,6 +46,8 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -67,10 +69,7 @@ public class WSDLNavigatorContent extends JPanel
     private TreeView treeView;
     /** Root node of the tree. */
     private Node rootNode;
-    /** Indicates that the tree view is not in the component hierarchy. */
-    private boolean treeInHierarchy;
-    /** True if currently listening to topcomponent.registry.activatednodes **/
-    private boolean listeningOnActivatedNodes = false;
+    
     private final JLabel notAvailableLabel = new JLabel(
             NbBundle.getMessage(WSDLNavigatorContent.class, "MSG_NotAvailable"));
 
@@ -88,7 +87,6 @@ public class WSDLNavigatorContent extends JPanel
     private WSDLNavigatorContent() {
         setLayout(new BorderLayout());
         explorerManager = new ExplorerManager();
-        treeView = new BeanTreeView();
         explorerManager.addPropertyChangeListener(this);
         notAvailableLabel.setHorizontalAlignment(SwingConstants.CENTER);
         notAvailableLabel.setEnabled(false);
@@ -191,6 +189,7 @@ public class WSDLNavigatorContent extends JPanel
         }
     }
 
+    @Override
     public boolean requestFocusInWindow() {
         return treeView.requestFocusInWindow();
     }
@@ -198,7 +197,7 @@ public class WSDLNavigatorContent extends JPanel
     public void run() {
         // Initially expand root node and the folder nodes below it.
         treeView.expandNode(rootNode);
-        Utility.expandNodes(treeView, 2, rootNode);
+        Utility.expandNodes(treeView, 1, rootNode);
         selectActivatedNodes();
     }
 
@@ -216,23 +215,26 @@ public class WSDLNavigatorContent extends JPanel
         }
         TopComponent tc = (TopComponent) SwingUtilities.
                 getAncestorOfClass(TopComponent.class, this);
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(property) &&
-                tc == TopComponent.getRegistry().getActivated()) {
-            Node[] filteredNodes = (Node[])event.getNewValue();
-            if (filteredNodes != null && filteredNodes.length >= 1) {
-                // Set the active nodes for the parent TopComponent.
-                tc.setActivatedNodes(filteredNodes);
-            }
-        } else if (TopComponent.getRegistry().PROP_ACTIVATED_NODES.equals(property) &&
-                tc != null && tc != TopComponent.getRegistry().getActivated()) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    selectActivatedNodes();
+        if (tc != null) {
+            boolean isActivatedTC = (tc == TopComponent.getRegistry().getActivated());
+            if (ExplorerManager.PROP_SELECTED_NODES.equals(property) &&
+                    isActivatedTC) {
+                Node[] filteredNodes = (Node[])event.getNewValue();
+                if (filteredNodes != null && filteredNodes.length >= 1) {
+                    // Set the active nodes for the parent TopComponent.
+                    tc.setActivatedNodes(filteredNodes);
                 }
-            });
-        } else if (TopComponent.getRegistry().PROP_ACTIVATED.equals(property) &&
-                tc == TopComponent.getRegistry().getActivated()) {
-            tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
+            } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(property) &&
+                    !isActivatedTC) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        selectActivatedNodes();
+                    }
+                });
+            } else if (TopComponent.Registry.PROP_ACTIVATED.equals(property) &&
+                    isActivatedTC) {
+                tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
+            }
         }
     }
 
@@ -240,8 +242,7 @@ public class WSDLNavigatorContent extends JPanel
         Node[] activated = TopComponent.getRegistry().getActivatedNodes();
         List<Node> selNodes = new ArrayList<Node>();
         for (Node n : activated) {
-            WSDLComponent wc = (WSDLComponent) n.getLookup().
-                    lookup(WSDLComponent.class);
+            WSDLComponent wc = n.getLookup().lookup(WSDLComponent.class);
             if (wc != null) {
                 List<Node> path = UIUtilities.findPathFromRoot(
                         getExplorerManager().getRootContext(), wc);
@@ -264,7 +265,7 @@ public class WSDLNavigatorContent extends JPanel
         if (notAvailableLabel.isShowing()) {
             return;
         }
-        remove(treeView);
+        if (treeView != null && treeView.isShowing()) remove(treeView);
         add(notAvailableLabel, BorderLayout.CENTER);
         revalidate();
         repaint();
@@ -277,6 +278,7 @@ public class WSDLNavigatorContent extends JPanel
      */
     private void show(WSDLModel model) {
         remove(notAvailableLabel);
+        treeView = new BeanTreeView();
         add(treeView, BorderLayout.CENTER);
         NodesFactory factory = NodesFactory.getInstance();
         rootNode = factory.create(model.getDefinitions());
@@ -284,5 +286,17 @@ public class WSDLNavigatorContent extends JPanel
         EventQueue.invokeLater(this);
         revalidate();
         repaint();
+    }
+
+    public void release() {
+        //cleanup all the elements in the navigator.
+        removeAll();
+
+        Node dummyNode = new AbstractNode(Children.LEAF);
+        getExplorerManager().setRootContext(dummyNode);
+        getExplorerManager().setExploredContext(dummyNode);
+        
+        rootNode = null;
+        treeView = null;
     }
 }
