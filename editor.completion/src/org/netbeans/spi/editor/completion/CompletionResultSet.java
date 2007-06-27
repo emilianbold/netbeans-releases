@@ -157,6 +157,21 @@ public final class CompletionResultSet {
         impl.estimateItems(estimatedItemCount, estimatedItemWidth);
     }
     
+    
+    /**
+     * Indicate that additional items could be added to this result set. However,
+     * adding of these items will likely need a long time to complete so it is
+     * preferred to add them only on the special code completion invocation
+     * denoted by {@link CompletionProvider#COMPLETION_ALL_QUERY_TYPE}.
+     * <br>
+     * Calling this method is relevant only for tasks
+     * created by {@link CompletionProvider#createTask(int, javax.swing.text.JTextComponent)}
+     * with {@link CompletionProvider#COMPLETION_QUERY_TYPE}.
+     */
+    public void setHasAdditionalItems(boolean value) {
+        impl.setHasAdditionalItems(value);
+    }
+    
     /**
      * Set the documentation to this result set.
      * <br>

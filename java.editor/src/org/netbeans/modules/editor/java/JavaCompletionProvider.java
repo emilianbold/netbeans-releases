@@ -184,6 +184,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         };
         
         private List<JavaCompletionItem> results;
+        private boolean hasAdditionalItems;
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
@@ -241,6 +242,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);
+                            resultSet.setHasAdditionalItems(hasAdditionalItems);
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
                             if (toolTip != null)
                                 resultSet.setToolTip(toolTip);
@@ -2465,6 +2467,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     addSubtypesOf(env, baseType, false);
             } else {
                 addLocalAndImportedTypes(env, kinds, baseType, toExclude);
+                hasAdditionalItems = true;
             }
             addPackages(env, env.getPrefix());
         }

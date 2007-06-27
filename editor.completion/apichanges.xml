@@ -82,6 +82,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CompletionResultSet.setHasAdditionalItems">
+            <api name="completion"/>
+            <summary>Addition of CompletionResultSet.setHasAdditionalItems()</summary>
+            <version major="1" minor="9"/>
+            <date day="27" month="6" year="2007"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes"/>
+            <description>
+            <p>
+                <code>void CompletionResultSet.setHasAdditionalItems(boolean value)</code> was added
+                to indicate that some items could exist that will likely need a long time to be computed
+		and added to the result set. It is preferred to add them on the special 'all' code
+		completion invocation only.
+            </p>
+            </description>
+            <issue number="104409"/>
+        </change>
+
         <change id="ui.gestures.collector">
             <api name="completion"/>
             <summary>Support for UI Gestures Collector</summary>

@@ -713,6 +713,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final List<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>(sortedResultsSize);
         String title = null;
         int anchorOffset = -1;
+        boolean hasAdditionalItems = false;
         int cnt = 0;
         for (int i = 0; i < completionResultSets.size(); i++) {
             CompletionResultSetImpl resultSet = (CompletionResultSetImpl)completionResultSets.get(i);
@@ -732,6 +733,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
                 if (title == null)
                     title = resultSet.getTitle();
+                if (!hasAdditionalItems)
+                    hasAdditionalItems = resultSet.hasAdditionalItems();
                 if (anchorOffset == -1)
                     anchorOffset = resultSet.getAnchorOffset();
             }
@@ -748,7 +751,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         // Request displaying of the completion pane in AWT thread
         final String displayTitle = title;
         final int displayAnchorOffset = anchorOffset;
-        final int queryType = qType;
+        final boolean displayAdditionalItems = hasAdditionalItems;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
                 int caretOffset = getActiveComponent().getSelectionStart();
@@ -769,7 +772,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
-                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, queryType == CompletionProvider.COMPLETION_QUERY_TYPE ? completionShortcut : null, selectedIndex);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default

@@ -69,6 +69,8 @@ public final class CompletionResultSetImpl {
     
     private List<CompletionItem> items;
     
+    private boolean hasAdditionalItems;
+    
     private boolean finished;
     
     private CompletionDocumentation documentation;
@@ -180,6 +182,19 @@ public final class CompletionResultSetImpl {
         assert isFinished() : "Adding not finished";
         return (items != null) ? items : Collections.<CompletionItem>emptyList();
     }
+    
+    
+    public synchronized void setHasAdditionalItems(boolean value) {
+        checkNotFinished();
+        if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
+            return;
+        }
+        this.hasAdditionalItems = value;
+    }
+
+    public synchronized boolean hasAdditionalItems() {
+        return hasAdditionalItems;
+    }    
     
     public synchronized void setDocumentation(CompletionDocumentation documentation) {
         checkNotFinished();
