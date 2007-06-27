@@ -458,7 +458,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationToStream/relationStream.xml"/>
         </component_type>
         <!-- solicit stream-->
-        <component_type name="NotificationStream" icon="notificationStreamx16.gif" title="IEP.Operator.NotificationStream.title" description="IEP.Operator.NotificationStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="NotificationStream" icon="notificationStreamx16.png" title="IEP.Operator.NotificationStream.title" description="IEP.Operator.NotificationStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.NotificationStreamCustomEditor"/>
@@ -560,7 +560,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/minus.xml"/>
         </component_type>
         <!-- gap window -->
-        <component_type name="GapWindow" icon="gapWindowx16.gif" title="IEP.Operator.GapWindow.title" description="IEP.Operator.GapWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="GapWindow" icon="gapWindowx16.png" title="IEP.Operator.GapWindow.title" description="IEP.Operator.GapWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.GapWindowCustomEditor"/>
@@ -576,7 +576,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/GapWindow.xml"/>
         </component_type>
         <!-- stream sort -->
-        <component_type name="ContiguousOrder" icon="contiguousOrderx16.gif" title="IEP.Operator.ContiguousOrder.title" description="IEP.Operator.ContiguousOrder.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="ContiguousOrder" icon="contiguousOrderx16.png" title="IEP.Operator.ContiguousOrder.title" description="IEP.Operator.ContiguousOrder.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.ContiguousOrderCustomEditor"/>
