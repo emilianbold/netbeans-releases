@@ -62,6 +62,8 @@ public final class Utils {
      * class are streongly encouraged to call the {@link #setProject(Project)}
      * method prior to suing any other functionality.
      */
+    private static byte[] buffer = new byte[102400];
+    
     private static Project project = null;
     
     /**
@@ -303,7 +305,6 @@ public final class Utils {
     public static void copy(
             final InputStream in,
             final OutputStream out) throws IOException {
-        byte[] buffer = new byte[102400];
         
         while (in.available() > 0) {
             out.write(buffer, 0, in.read(buffer));
@@ -709,8 +710,6 @@ public final class Utils {
             InputStream input = null;
             try {
                 input = new FileInputStream(file);
-                
-                byte[] buffer = new byte[10240];
                 
                 while (input.available() > 0) {
                     md.update(buffer, 0, input.read(buffer));
