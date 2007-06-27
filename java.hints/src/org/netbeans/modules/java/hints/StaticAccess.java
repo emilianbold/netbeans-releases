@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
@@ -217,7 +218,7 @@ public class StaticAccess extends AbstractHint {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath path = expr.resolve(copy);
             Element element = type.resolveElement(copy);
-            IdentifierTree idt = copy.getTreeMaker().Identifier(element);
+            ExpressionTree idt = copy.getTreeMaker().QualIdent(element);
             copy.rewrite(path.getLeaf(), idt);
         }
     }
