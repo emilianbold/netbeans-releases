@@ -442,7 +442,7 @@ public final class AddDomainWizardIterator implements
                     arrnd[6] = "--user";
                 }
                 Profile selectedProfile  = (Profile) wizard.getProperty(PROFILE);
-                if (selectedProfile != Profile.DEFAULT) {
+                if (null != selectedProfile && selectedProfile != Profile.DEFAULT) {
                     String arrnd2[] = new String[arrnd.length+2];
                     System.arraycopy(arrnd, 0, arrnd2, 0, arrnd.length);
                     arrnd2[arrnd2.length-1] = arrnd2[arrnd2.length-3];
