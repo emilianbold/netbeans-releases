@@ -97,6 +97,7 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
      */
     public FacesJavaFileMoveRefactoringPlugin(MoveRefactoring refactoring) {
         super(refactoring);
+        // File or folder move
     	setup(refactoring.getRefactoringSource().lookupAll(FileObject.class), "", true);
     }
     
@@ -105,8 +106,10 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
         if (!isDelegatedRefactoring(getRefactoring())) {
 	        FileObject fo = refactoring.getRefactoringSource().lookup(FileObject.class);
 	        if (fo!=null) {
+	        	// Folder rename
 	            setup(Collections.singletonList(fo), "", true);
 	        } else {
+	        	// Package rename
 	            setup(Collections.singletonList((refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false);
 	        }
         }
@@ -154,32 +157,6 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
             return null;
         }
         
-        if (getRefactoring() instanceof RenameRefactoring) {
-            FileObject fileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
-            if (fileObject != null) {
-            	if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
-            		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotRenamePackageBeanRootFolder")); // NOI18N
-            	}
-            } else {
-            	NonRecursiveFolder nonRecursiveFolder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
-            	if (nonRecursiveFolder != null) {
-            		fileObject = nonRecursiveFolder.getFolder();
-            		if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
-                		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotRenamePackageBeanRoot")); // NOI18N
-                	}
-            		// Now check if they are renaming a package under default package to outside 
-            		if (FacesRefactoringUtils.isFolderUnderPageBeanRoot(fileObject)) {
-                        String newName = getRenameRefactoring().getNewName();
-                        Project fileObjectProject = FileOwnerQuery.getOwner(fileObject);
-                    	FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(fileObjectProject);
-                    	String pageBeanRootPackageName = FacesRefactoringUtils.getPackageName(pageBeanRoot);
-                    	if (!newName.startsWith(pageBeanRootPackageName)) {
-                    		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotMovePackageOutsideDefaultPackage")); // NOI18N                    		
-                    	}
-            		}
-            	}
-            }
-        }
         if (getRefactoring() instanceof MoveRefactoring) {
 	        FileObject fileObject = getMoveRefactoring().getRefactoringSource().lookup(FileObject.class);
 	        URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
@@ -289,324 +266,582 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
 	                }
 	            }
 	        }
-        }
+        } else if (getRefactoring() instanceof RenameRefactoring) {
+            FileObject fileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
+            if (fileObject != null) {
+            	if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
+            		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotRenamePackageBeanRootFolder")); // NOI18N
+            	}
+            } else {
+            	NonRecursiveFolder nonRecursiveFolder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+            	if (nonRecursiveFolder != null) {
+            		fileObject = nonRecursiveFolder.getFolder();
+            		if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
+                		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotRenamePackageBeanRoot")); // NOI18N
+                	}
+            		// Now check if they are renaming a package under default package to outside 
+            		if (FacesRefactoringUtils.isFolderUnderPageBeanRoot(fileObject)) {
+                        String newName = getRenameRefactoring().getNewName();
+                        Project fileObjectProject = FileOwnerQuery.getOwner(fileObject);
+                    	FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(fileObjectProject);
+                    	String pageBeanRootPackageName = FacesRefactoringUtils.getPackageName(pageBeanRoot);
+                    	if (!newName.startsWith(pageBeanRootPackageName)) {
+                    		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotMovePackageOutsideDefaultPackage")); // NOI18N                    		
+                    	}
+            		}
+            	}
+            }
+        }  
         return null;
     }
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        for (FileObject refactoringSourcefileObject : filesToMove) {
-            Project project = FileOwnerQuery.getOwner(refactoringSourcefileObject);
-            if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoringSourcefileObject)) {                
-                URL targetURL = null;
-                FileObject targetFileObject = null;
-                
-                if (getRefactoring() instanceof MoveRefactoring) {
-                	targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
-                
-	                if (targetURL == null) {
-	                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
-	                }
-	                
-	                targetFileObject = URLMapper.findFileObject(targetURL);
-	                if (targetFileObject == null) {
-	                    File file = null;
-	                    try {
-	                        file = new File(targetURL.toURI());
-	                    } catch (URISyntaxException e) {
-	                        Exceptions.printStackTrace(e);
-	                    }
-	                    if (file == null) {
-	                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
-	                    }
-	                    targetFileObject = FileUtil.toFileObject(file);
-	                    if (targetFileObject == null) {
-	                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
-	                    }
-	                }
-                } else if (getRefactoring() instanceof RenameRefactoring) {
-                	// compute the new target and make sure it exists
-                	String newPackageName = getRenameRefactoring().getNewName();
-                	String newPackageNameWithSlashes = newPackageName.replace('.', '/');
-                	
-                	NonRecursiveFolder nonRecursiveFolder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
-                	if (nonRecursiveFolder != null) {
-                		FileObject nonRecursiveFolderFileObject = nonRecursiveFolder.getFolder();
-                		if (nonRecursiveFolderFileObject != null) {
-                			FileObject sourceRootFileObject = FacesRefactoringUtils.getClassPathRoot(nonRecursiveFolderFileObject);
-                			if (sourceRootFileObject != null) {
-                				targetFileObject = sourceRootFileObject.getFileObject(newPackageNameWithSlashes);
-                                if (targetFileObject == null) {
-                                	try {
-                                		targetFileObject = FileUtil.createFolder(sourceRootFileObject, newPackageNameWithSlashes);
-        							} catch (IOException ioe) {
-        	                            // TODO return problem
-        	                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ioe);
-        							}
-                                }
-                			}
-                		}
-                	}
-                    if (targetFileObject == null) {
-                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
-                    }
+    	// File and folder move
+    	if (getRefactoring() instanceof MoveRefactoring) {
+    		URL targetURL = null;
+            FileObject targetFileObject = null;
+            
+        	targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
+        
+            if (targetURL == null) {
+                return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
+            }
+            
+            targetFileObject = URLMapper.findFileObject(targetURL);
+            if (targetFileObject == null) {
+                File file = null;
+                try {
+                    file = new File(targetURL.toURI());
+                } catch (URISyntaxException e) {
+                    Exceptions.printStackTrace(e);
                 }
-                Project targetFileObjectProject = FileOwnerQuery.getOwner(targetFileObject);
-                if (targetFileObjectProject == null) {
-                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
+                if (file == null) {
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
                 }
-                
-                if (!project.equals(targetFileObjectProject)) {
-                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInSameProject")); // NOI18N
-                }
-                
-                if (!targetFileObject.isFolder()) {
-                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
-                }
-                
-                String oldName = refactoringSourcefileObject.getName();
-                FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
-                if (pageBeanRoot == null) {
-                    // TODO
-                }
-                
-                FileObject fileObjectParent = refactoringSourcefileObject.getParent();
-                
-                String packagePostfixForFileToMove = (String) packagePostfix.get(refactoringSourcefileObject);
-                
-                // Compute relative path of parent folder to bean root.
-                String parentsRelativePathWithDollars = FileUtil.getRelativePath(pageBeanRoot, fileObjectParent).replace('/', '$'); // NOI18N
-                String targetRelativePath = FileUtil.getRelativePath(pageBeanRoot, targetFileObject); // NOI18N
-                String targetRelativePathWithDollars = targetRelativePath.replace('/', '$'); // NOI18N
-
-                if (packagePostfixForFileToMove != null && packagePostfixForFileToMove.length() > 0) {
-                	if (targetRelativePathWithDollars.length() > 0) {
-                		targetRelativePathWithDollars += "$" + packagePostfixForFileToMove.replace('.', '$');
-                	} else {
-                		targetRelativePathWithDollars = packagePostfixForFileToMove.replace('.', '$');                		
-                	}
-                }
-                
-                String oldBeanName = parentsRelativePathWithDollars 
-                    + (parentsRelativePathWithDollars.length() == 0 ? "" : "$") // NOI18N
-                    + oldName;
-                String newBeanName = targetRelativePathWithDollars
-                    + (targetRelativePathWithDollars.length() == 0 ? "" : "$") // NOI18N TODO compute target folder relative path
-                    + oldName;                
-                // Fix up
-                newBeanName = FacesUnit.fixPossiblyImplicitBeanName(newBeanName);
-                
-                String oldValueBindingPrefix = "#{" + oldBeanName + ".";
-                String newValueBindingPrefix = "#{" + newBeanName + ".";
-                
-                FileObject oldSrcRoot = JsfProjectUtils.getSourceRoot(project);
-                FileObject oldPageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
-                String oldDefaultPackage = FileUtil.getRelativePath(oldSrcRoot, oldPageBeanRoot).replace('/', '.');
-                String oldBeanClass = oldDefaultPackage + "." + oldBeanName.replace('$', '.');
-                FileObject newSrcRoot = JsfProjectUtils.getSourceRoot(targetFileObjectProject);
-                FileObject newPageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
-                String newDefaultPackage = FileUtil.getRelativePath(newSrcRoot, newPageBeanRoot).replace('/', '.');
-                String newBeanClass = newDefaultPackage + "." + newBeanName.replace('$', '.');
-                
-//              String oldBeanClass = JsfProjectUtils.get
-//              String oldBeanClass = JsfPr
-                
-                FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
-                
-                boolean isRefactoringSourcePageBean = false;
-                String refactoringSourceFQN = null;
-                Model refactoringSourceModel = facesModelSet.getModel(refactoringSourcefileObject);
-                if (refactoringSourceModel instanceof FacesModel) {
-                    FacesModel refactoringSourceFacesModel = (FacesModel) refactoringSourceModel;
-                    isRefactoringSourcePageBean = refactoringSourceFacesModel.isPageBean();
-                    if (!refactoringSourceFacesModel.isBusted()) {
-                        JavaUnit javaUnit = refactoringSourceFacesModel.getJavaUnit();
-                        if (javaUnit != null) {
-                            refactoringSourceFQN = javaUnit.getJavaClass().getName();
-                        }
-                    }
-                }
-                
-                Model[] models = facesModelSet.getModels();
-                // Rename the bean name in the value binding expressions
-                for (int i=0; i < models.length; i++) {
-                    Model iModel = models[i];
-                    if (iModel instanceof FacesModel) {
-                        FacesModel iFacesModel = (FacesModel) iModel;
-                        if (!iFacesModel.isBusted()) {
-                            FileObject javaFileObject = iFacesModel.getJavaFile();
-                            if (javaFileObject != null) {
-                                try {
-                                    // Replace #{oldBeanName. ...} with #{newBeanName....} in string literals in all java files of FacesModels (JavaUnits)
-                                    JavaSource javaSource = JavaSource.forFileObject(javaFileObject);
-                                    ModificationResult modificationResult = javaSource.runModificationTask(
-                                            new StringLiteralTask(oldValueBindingPrefix, newValueBindingPrefix, StringLiteralTransformer.MatchKind.PREFIX)
-                                            );
-                                    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
-                                    for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
-                                        for (Difference dif: modificationResult.getDifferences(jfo)) {
-                                            String old = dif.getOldText();
-                                            if (old!=null) {
-                                                //TODO: workaround
-                                                //generator issue?
-                                                refactoringElements.add(getRefactoring(),DiffElement.create(dif, jfo, modificationResult));
-                                            }
-                                        }
-                                    }
-                                } catch (IOException ex) {
-                                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                                }
-                            }
-                            
-                            JavaUnit javaUnit = iFacesModel.getJavaUnit();
-                            if (refactoringSourceFQN != null && javaUnit != null && !isRefactoringSourcePageBean) {
-                                final String finalRefactoringSourceFQN = refactoringSourceFQN;
-                                final JavaClass javaClass = javaUnit.getJavaClass();                                
-                                if (javaClass != null) {
-                                    Method method = javaClass.getMethod("get" + oldBeanName, new Class[0]);
-                                    if (method != null) {
-                                        final ElementHandle<ExecutableElement> elementHandle = method.getElementHandle();
-                                        if (elementHandle != null) {
-                                            FileObject facesJavaFileObject = iFacesModel.getJavaFile();
-                                            JavaSource javaSource = JavaSource.forFileObject(facesJavaFileObject);
-                                            if (javaSource != null) {
-                                                // Rename accessor methods
-                                                final RenameRefactoring[] methodRenameRefactoring = new RenameRefactoring[1];
-                                                try {
-                                                    javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                                                        public void cancel() {
-                                                        }
-
-                                                        public void run(CompilationController compilationController)
-                                                            throws Exception {
-                                                            compilationController.toPhase(Phase.RESOLVED);
-                                                            Element element = elementHandle.resolve(compilationController);
-                                                            if (element != null && element.getKind() ==  ElementKind.METHOD) {
-                                                                ExecutableElement executableElement = (ExecutableElement) element;
-                                                                TypeMirror typeMirror = executableElement.getReturnType();
-                                                                if (typeMirror != null && typeMirror.getKind() == TypeKind.DECLARED) {
-                                                                    DeclaredType declaredType = (DeclaredType) typeMirror;
-                                                                    TypeElement typeElement = (TypeElement) declaredType.asElement();
-                                                                    
-                                                                    if (typeElement.getQualifiedName().toString().equals(finalRefactoringSourceFQN)) {
-                                                                        TreePathHandle treePathHandle = TreePathHandle.create(compilationController.getTrees().getPath(element), compilationController);
-                                                                        methodRenameRefactoring[0] = new RenameRefactoring(Lookups.fixed(treePathHandle));
-                                                                        methodRenameRefactoring[0].getContext().add(compilationController);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }, true);                                                    
-                                                    
-                                                    if (methodRenameRefactoring[0] != null) {                                                        
-                                                        methodRenameRefactoring[0].setNewName("get" + newBeanName);
-                                                        
-                                                        // Flag delegation
-                                                        methodRenameRefactoring[0].getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
-                                                        
-                                                        Problem problem = methodRenameRefactoring[0].prepare(refactoringElements.getSession());
-                                                        if (problem != null) {
-                                                            return problem;
-                                                        }
-                                                    }
-                                                } catch (IOException ex) {
-                                                }
-                                                
-                                                try {
-                                                    ModificationResult modificationResult = javaSource.runModificationTask(
-                                                            new StringLiteralTask(oldBeanName, newBeanName, StringLiteralTransformer.MatchKind.EXACT)
-                                                            );
-                                                    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
-                                                    for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
-                                                        for (Difference dif: modificationResult.getDifferences(jfo)) {
-                                                            String old = dif.getOldText();
-                                                            if (old!=null) {
-                                                                //TODO: workaround
-                                                                //generator issue?
-                                                                refactoringElements.add(getRefactoring(),DiffElement.create(dif, jfo, modificationResult));
-                                                            }
-                                                        }
-                                                    }
-                                                } catch (IOException ex) {
-                                                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Replace #{oldBeanName. ...} with #{newBeanName....} in VBEs in all jsp files of FacesModels (MarkupUnits) 
-                for (int i=0; i < models.length; i++) {
-                    Model iModel = models[i];
-                    if (iModel instanceof FacesModel) {
-                        FacesModel iFacesModel = (FacesModel) iModel;
-                        if (!iFacesModel.isBusted()) {
-                            MarkupUnit markupUnit = iFacesModel.getMarkupUnit();
-                            if (markupUnit == null)
-                                continue;
-                            Document markupDocument = markupUnit.getSourceDom();
-                            ElBindingScanner scanner = new ElBindingScanner();
-                            int referenceCount = scanner.getReferenceCount(markupDocument, oldBeanName);
-                            if (referenceCount > 0) {
-                                refactoringElements.add(getRefactoring(), new RenameElExpressionReferencesRefactoringElement(iFacesModel.getFile(), markupUnit, oldBeanName, newBeanName));
-                            }
-                        }
-                    }
-                }
-                
-                // The renaming of bean class name is handled by NetBeans Web project JSF refcatoring.
-                // Rename the managed bean name. 
-                WebModule webModule = WebModule.getWebModule(refactoringSourcefileObject);
-                if (webModule != null){
-                    // For now also rename the bean class name as we/jsf refcatoring is not doing it
-                    List <FacesRefactoringUtils.OccurrenceItem> items =
-                        FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
-                    for (FacesRefactoringUtils.OccurrenceItem item : items) {
-                        refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanNameElement(item));
-                    }
-                }
-                
-                if (!isDelegatedRefactoring(getRefactoring())) {
-                    FileObject jspFileObject = FacesModel.getJspForJava(refactoringSourcefileObject);
-                    if (jspFileObject != null) {
-                        MoveRefactoring jspMoveRefactoring = new MoveRefactoring(Lookups.singleton(jspFileObject));
-                        FileObject targetDocumentRoot = JsfProjectUtils.getDocumentRoot(targetFileObjectProject);
-                        if (targetDocumentRoot == null) {
-                            // TODO
-                        }
-                        String targetRelativePathWithSlashes = targetRelativePathWithDollars.replace("$", "/");
-                        FileObject targetJspFolder = targetDocumentRoot.getFileObject(targetRelativePathWithSlashes);
-                        if (targetJspFolder == null) {
-                        	try {
-								targetJspFolder = FileUtil.createFolder(targetDocumentRoot, targetRelativePathWithSlashes);
-							} catch (IOException ioe) {
-	                            // TODO return problem
-	                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ioe);
-							}
-                        }
-                        
-                        URL url = URLMapper.findURL(targetJspFolder, URLMapper.EXTERNAL);
-                        try {
-                            jspMoveRefactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm())));
-                        } catch (MalformedURLException ex) {
-                            // TODO return problem
-                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-                        }
-                        
-                        // Flag delegation
-                        jspMoveRefactoring.getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
-  
-                        Problem problem = jspMoveRefactoring.prepare(refactoringElements.getSession());
-                        if (problem != null) {
-                            return problem;
-                        }
-                    }
+                targetFileObject = FileUtil.toFileObject(file);
+                if (targetFileObject == null) {
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
                 }
             }
+
+            Project targetFileObjectProject = FileOwnerQuery.getOwner(targetFileObject);
+            if (targetFileObjectProject == null) {
+                return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
+            }
+            
+            if (!targetFileObject.isFolder()) {
+                return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
+            }
+            
+	        for (FileObject refactoringSourcefileObject : filesToMove) {
+	            Project project = FileOwnerQuery.getOwner(refactoringSourcefileObject);
+            	if (!project.equals(targetFileObjectProject)) {
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInSameProject")); // NOI18N
+                }
+            	if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoringSourcefileObject)) {                
+	                
+	                String oldName = refactoringSourcefileObject.getName();
+	                FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
+	                if (pageBeanRoot == null) {
+	                    // TODO
+	                }
+	                
+	                FileObject fileObjectParent = refactoringSourcefileObject.getParent();
+	                
+	                String packagePostfixForFileToMove = (String) packagePostfix.get(refactoringSourcefileObject);
+	                
+	                // Compute relative path of parent folder to bean root.
+	                String parentsRelativePathWithDollars = FileUtil.getRelativePath(pageBeanRoot, fileObjectParent).replace('/', '$'); // NOI18N
+	                String targetRelativePath = FileUtil.getRelativePath(pageBeanRoot, targetFileObject); // NOI18N
+	                String targetRelativePathWithDollars = targetRelativePath.replace('/', '$'); // NOI18N
+	
+	                if (packagePostfixForFileToMove != null && packagePostfixForFileToMove.length() > 0) {
+	                	if (targetRelativePathWithDollars.length() > 0) {
+	                		targetRelativePathWithDollars += "$" + packagePostfixForFileToMove.replace('.', '$');
+	                	} else {
+	                		targetRelativePathWithDollars = packagePostfixForFileToMove.replace('.', '$');                		
+	                	}
+	                }
+	                
+	                String oldBeanName = parentsRelativePathWithDollars 
+	                    + (parentsRelativePathWithDollars.length() == 0 ? "" : "$") // NOI18N
+	                    + oldName;
+	                String newBeanName = targetRelativePathWithDollars
+	                    + (targetRelativePathWithDollars.length() == 0 ? "" : "$") // NOI18N TODO compute target folder relative path
+	                    + oldName;                
+	                // Fix up
+	                newBeanName = FacesUnit.fixPossiblyImplicitBeanName(newBeanName);
+	                
+	                String oldValueBindingPrefix = "#{" + oldBeanName + ".";
+	                String newValueBindingPrefix = "#{" + newBeanName + ".";
+
+	                FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
+	                
+	                boolean isRefactoringSourcePageBean = false;
+	                String refactoringSourceFQN = null;
+	                Model refactoringSourceModel = facesModelSet.getModel(refactoringSourcefileObject);
+	                if (refactoringSourceModel instanceof FacesModel) {
+	                    FacesModel refactoringSourceFacesModel = (FacesModel) refactoringSourceModel;
+	                    isRefactoringSourcePageBean = refactoringSourceFacesModel.isPageBean();
+	                    if (!refactoringSourceFacesModel.isBusted()) {
+	                        JavaUnit javaUnit = refactoringSourceFacesModel.getJavaUnit();
+	                        if (javaUnit != null) {
+	                            refactoringSourceFQN = javaUnit.getJavaClass().getName();
+	                        }
+	                    }
+	                }
+	                
+	                Model[] models = facesModelSet.getModels();
+	                // Rename the bean name in the value binding expressions
+	                for (int i=0; i < models.length; i++) {
+	                    Model iModel = models[i];
+	                    if (iModel instanceof FacesModel) {
+	                        FacesModel iFacesModel = (FacesModel) iModel;
+	                        if (!iFacesModel.isBusted()) {
+	                            FileObject javaFileObject = iFacesModel.getJavaFile();
+	                            if (javaFileObject != null) {
+	                                try {
+	                                    // Replace #{oldBeanName. ...} with #{newBeanName....} in string literals in all java files of FacesModels (JavaUnits)
+	                                    JavaSource javaSource = JavaSource.forFileObject(javaFileObject);
+	                                    ModificationResult modificationResult = javaSource.runModificationTask(
+	                                            new StringLiteralTask(oldValueBindingPrefix, newValueBindingPrefix, StringLiteralTransformer.MatchKind.PREFIX)
+	                                            );
+	                                    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
+	                                    for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
+	                                        for (Difference dif: modificationResult.getDifferences(jfo)) {
+	                                            String old = dif.getOldText();
+	                                            if (old!=null) {
+	                                                //TODO: workaround
+	                                                //generator issue?
+	                                                refactoringElements.add(getRefactoring(),DiffElement.create(dif, jfo, modificationResult));
+	                                            }
+	                                        }
+	                                    }
+	                                } catch (IOException ex) {
+	                                    throw (RuntimeException) new RuntimeException().initCause(ex);
+	                                }
+	                            }
+	                            
+	                            JavaUnit javaUnit = iFacesModel.getJavaUnit();
+	                            if (refactoringSourceFQN != null && javaUnit != null && !isRefactoringSourcePageBean) {
+	                                final String finalRefactoringSourceFQN = refactoringSourceFQN;
+	                                final JavaClass javaClass = javaUnit.getJavaClass();                                
+	                                if (javaClass != null) {
+	                                    Method method = javaClass.getMethod("get" + oldBeanName, new Class[0]);
+	                                    if (method != null) {
+	                                        final ElementHandle<ExecutableElement> elementHandle = method.getElementHandle();
+	                                        if (elementHandle != null) {
+	                                            FileObject facesJavaFileObject = iFacesModel.getJavaFile();
+	                                            JavaSource javaSource = JavaSource.forFileObject(facesJavaFileObject);
+	                                            if (javaSource != null) {
+	                                                // Rename accessor methods
+	                                                final RenameRefactoring[] methodRenameRefactoring = new RenameRefactoring[1];
+	                                                try {
+	                                                    javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+	                                                        public void cancel() {
+	                                                        }
+	
+	                                                        public void run(CompilationController compilationController)
+	                                                            throws Exception {
+	                                                            compilationController.toPhase(Phase.RESOLVED);
+	                                                            Element element = elementHandle.resolve(compilationController);
+	                                                            if (element != null && element.getKind() ==  ElementKind.METHOD) {
+	                                                                ExecutableElement executableElement = (ExecutableElement) element;
+	                                                                TypeMirror typeMirror = executableElement.getReturnType();
+	                                                                if (typeMirror != null && typeMirror.getKind() == TypeKind.DECLARED) {
+	                                                                    DeclaredType declaredType = (DeclaredType) typeMirror;
+	                                                                    TypeElement typeElement = (TypeElement) declaredType.asElement();
+	                                                                    
+	                                                                    if (typeElement.getQualifiedName().toString().equals(finalRefactoringSourceFQN)) {
+	                                                                        TreePathHandle treePathHandle = TreePathHandle.create(compilationController.getTrees().getPath(element), compilationController);
+	                                                                        methodRenameRefactoring[0] = new RenameRefactoring(Lookups.fixed(treePathHandle));
+	                                                                        methodRenameRefactoring[0].getContext().add(compilationController);
+	                                                                    }
+	                                                                }
+	                                                            }
+	                                                        }
+	                                                    }, true);                                                    
+	                                                    
+	                                                    if (methodRenameRefactoring[0] != null) {                                                        
+	                                                        methodRenameRefactoring[0].setNewName("get" + newBeanName);
+	                                                        
+	                                                        // Flag delegation
+	                                                        methodRenameRefactoring[0].getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
+	                                                        
+	                                                        Problem problem = methodRenameRefactoring[0].prepare(refactoringElements.getSession());
+	                                                        if (problem != null) {
+	                                                            return problem;
+	                                                        }
+	                                                    }
+	                                                } catch (IOException ex) {
+	                                                }
+	                                                
+	                                                try {
+	                                                    ModificationResult modificationResult = javaSource.runModificationTask(
+	                                                            new StringLiteralTask(oldBeanName, newBeanName, StringLiteralTransformer.MatchKind.EXACT)
+	                                                            );
+	                                                    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
+	                                                    for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
+	                                                        for (Difference dif: modificationResult.getDifferences(jfo)) {
+	                                                            String old = dif.getOldText();
+	                                                            if (old!=null) {
+	                                                                //TODO: workaround
+	                                                                //generator issue?
+	                                                                refactoringElements.add(getRefactoring(),DiffElement.create(dif, jfo, modificationResult));
+	                                                            }
+	                                                        }
+	                                                    }
+	                                                } catch (IOException ex) {
+	                                                    throw (RuntimeException) new RuntimeException().initCause(ex);
+	                                                }
+	                                            }
+	                                        }
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    }
+	                }
+	                
+	                // Replace #{oldBeanName. ...} with #{newBeanName....} in VBEs in all jsp files of FacesModels (MarkupUnits) 
+	                for (int i=0; i < models.length; i++) {
+	                    Model iModel = models[i];
+	                    if (iModel instanceof FacesModel) {
+	                        FacesModel iFacesModel = (FacesModel) iModel;
+	                        if (!iFacesModel.isBusted()) {
+	                            MarkupUnit markupUnit = iFacesModel.getMarkupUnit();
+	                            if (markupUnit == null)
+	                                continue;
+	                            Document markupDocument = markupUnit.getSourceDom();
+	                            ElBindingScanner scanner = new ElBindingScanner();
+	                            int referenceCount = scanner.getReferenceCount(markupDocument, oldBeanName);
+	                            if (referenceCount > 0) {
+	                                refactoringElements.add(getRefactoring(), new RenameElExpressionReferencesRefactoringElement(iFacesModel.getFile(), markupUnit, oldBeanName, newBeanName));
+	                            }
+	                        }
+	                    }
+	                }
+	                
+	                // The renaming of bean class name is handled by NetBeans Web project JSF refcatoring.
+	                // Rename the managed bean name. 
+	                WebModule webModule = WebModule.getWebModule(refactoringSourcefileObject);
+	                if (webModule != null){
+	                    List <FacesRefactoringUtils.OccurrenceItem> items =
+	                        FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
+	                    for (FacesRefactoringUtils.OccurrenceItem item : items) {
+	                        refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanNameElement(item));
+	                    }
+	                }
+	                
+	                if (!isDelegatedRefactoring(getRefactoring())) {
+	                    FileObject jspFileObject = FacesModel.getJspForJava(refactoringSourcefileObject);
+	                    if (jspFileObject != null) {
+	                        MoveRefactoring jspMoveRefactoring = new MoveRefactoring(Lookups.singleton(jspFileObject));
+	                        FileObject targetDocumentRoot = JsfProjectUtils.getDocumentRoot(targetFileObjectProject);
+	                        if (targetDocumentRoot == null) {
+	                            // TODO
+	                        }
+	                        String targetRelativePathWithSlashes = targetRelativePathWithDollars.replace("$", "/");
+	                        FileObject targetJspFolder = targetDocumentRoot.getFileObject(targetRelativePathWithSlashes);
+	                        if (targetJspFolder == null) {
+	                        	try {
+									targetJspFolder = FileUtil.createFolder(targetDocumentRoot, targetRelativePathWithSlashes);
+								} catch (IOException ioe) {
+		                            // TODO return problem
+		                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ioe);
+								}
+	                        }
+	                        
+	                        URL url = URLMapper.findURL(targetJspFolder, URLMapper.EXTERNAL);
+	                        try {
+	                            jspMoveRefactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm())));
+	                        } catch (MalformedURLException ex) {
+	                            // TODO return problem
+	                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+	                        }
+	                        
+	                        // Flag delegation
+	                        jspMoveRefactoring.getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
+	  
+	                        Problem problem = jspMoveRefactoring.prepare(refactoringElements.getSession());
+	                        if (problem != null) {
+	                            return problem;
+	                        }
+	                    }
+	                }
+	            }
+	        }
+        } else if (getRefactoring() instanceof RenameRefactoring) { // Package or folder rename
+        	// compute the new target and make sure it exists
+        	String newName = getRenameRefactoring().getNewName();
+        	
+        	String oldPackageName = null;
+        	String newPackageName = null;
+        	
+        	// Is this a package rename?
+        	NonRecursiveFolder nonRecursiveFolder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+        	if (nonRecursiveFolder != null) { // Package rename
+        		FileObject nonRecursiveFolderFileObject = nonRecursiveFolder.getFolder();
+        		if (nonRecursiveFolderFileObject != null) {
+        			oldPackageName = FacesRefactoringUtils.getPackageName(nonRecursiveFolderFileObject);
+        			newPackageName = newName;
+        		}
+        	} else {
+        		// Is this a folder rename
+        		FileObject folder = getRefactoring().getRefactoringSource().lookup(FileObject.class);
+        		if (folder != null) { // Folder rename
+        			assert folder.isFolder();
+        			oldPackageName = FacesRefactoringUtils.getPackageName(folder);
+        			String oldParentPackageName = FacesRefactoringUtils.getPackageName(folder.getParent());
+        			if (oldParentPackageName.length() == 0) {
+        				newPackageName = newName;        				
+        			} else {
+        				newPackageName = oldParentPackageName + "." + newName;
+        			}
+        		}        		
+        	}
+        	if (oldPackageName != null || newPackageName != null) {
+    	        for (FileObject refactoringSourcefileObject : filesToMove) {  	        	
+                	if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoringSourcefileObject)) {                   	                
+        	        	Project project = FileOwnerQuery.getOwner(refactoringSourcefileObject);        	        	
+        	        	assert project != null;
+        	        	
+        	        	FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
+                        if (pageBeanRoot == null) {
+                            // TODO
+                        }
+                        String pageBeanRootPackageName = FacesRefactoringUtils.getPackageName(pageBeanRoot);
+                        int pageBeanRootPackageNameLength = pageBeanRootPackageName.length();
+                        String oldPageBeanRootRelativePackageName = (pageBeanRootPackageNameLength == 0) ? oldPackageName : oldPackageName.substring(pageBeanRootPackageNameLength + 1);
+                        String oldPageBeanRootRelativePackageNameWithDollars = oldPageBeanRootRelativePackageName.replace('.', '$');
+                        String newPageBeanRootRelativePackageName = (pageBeanRootPackageNameLength == 0) ? newPackageName : newPackageName.substring(pageBeanRootPackageNameLength + 1);
+                        String newPageBeanRootRelativePackageNameWithDollars = newPageBeanRootRelativePackageName.replace('.', '$');
+    	                
+    	                String oldName = refactoringSourcefileObject.getName();
+
+    	                String packageName = FacesRefactoringUtils.getPackageName(refactoringSourcefileObject.getParent());
+    	                String relativePackageName = "";
+    	                if (!packageName.equals(oldPackageName)) {
+    	                	relativePackageName = packageName.substring(oldPackageName.length() + 1);
+    	                }
+    	                
+    	                String relativePackageNameWithDollars = relativePackageName.replace('.', '$');
+    	                
+    	                String oldBeanName = oldPageBeanRootRelativePackageNameWithDollars 
+    	                    + (oldPageBeanRootRelativePackageNameWithDollars.length() == 0 ? "" : "$") // NOI18N
+    	                    + (relativePackageNameWithDollars.length() == 0 ? "" : relativePackageNameWithDollars + "$")
+    	                    + oldName;
+    	                String newBeanName = newPageBeanRootRelativePackageNameWithDollars
+    	                    + (newPageBeanRootRelativePackageNameWithDollars.length() == 0 ? "" : "$") // NOI18N TODO compute target folder relative path
+    	                    + (relativePackageNameWithDollars.length() == 0 ? "" : relativePackageNameWithDollars + "$")
+    	                    + oldName;                
+    	                // Fix up
+    	                newBeanName = FacesUnit.fixPossiblyImplicitBeanName(newBeanName);
+    	                
+    	                String oldValueBindingPrefix = "#{" + oldBeanName + ".";
+    	                String newValueBindingPrefix = "#{" + newBeanName + ".";
+
+    	                FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
+    	                
+    	                boolean isRefactoringSourcePageBean = false;
+    	                String refactoringSourceFQN = null;
+    	                Model refactoringSourceModel = facesModelSet.getModel(refactoringSourcefileObject);
+    	                if (refactoringSourceModel instanceof FacesModel) {
+    	                    FacesModel refactoringSourceFacesModel = (FacesModel) refactoringSourceModel;
+    	                    isRefactoringSourcePageBean = refactoringSourceFacesModel.isPageBean();
+    	                    if (!refactoringSourceFacesModel.isBusted()) {
+    	                        JavaUnit javaUnit = refactoringSourceFacesModel.getJavaUnit();
+    	                        if (javaUnit != null) {
+    	                            refactoringSourceFQN = javaUnit.getJavaClass().getName();
+    	                        }
+    	                    }
+    	                }
+    	                
+    	                Model[] models = facesModelSet.getModels();
+    	                // Rename the bean name in the value binding expressions
+    	                for (int i=0; i < models.length; i++) {
+    	                    Model iModel = models[i];
+    	                    if (iModel instanceof FacesModel) {
+    	                        FacesModel iFacesModel = (FacesModel) iModel;
+    	                        if (!iFacesModel.isBusted()) {
+    	                            FileObject javaFileObject = iFacesModel.getJavaFile();
+    	                            if (javaFileObject != null) {
+    	                                try {
+    	                                    // Replace #{oldBeanName. ...} with #{newBeanName....} in string literals in all java files of FacesModels (JavaUnits)
+    	                                    JavaSource javaSource = JavaSource.forFileObject(javaFileObject);
+    	                                    ModificationResult modificationResult = javaSource.runModificationTask(
+    	                                            new StringLiteralTask(oldValueBindingPrefix, newValueBindingPrefix, StringLiteralTransformer.MatchKind.PREFIX)
+    	                                            );
+    	                                    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
+    	                                    for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
+    	                                        for (Difference dif: modificationResult.getDifferences(jfo)) {
+    	                                            String old = dif.getOldText();
+    	                                            if (old!=null) {
+    	                                                //TODO: workaround
+    	                                                //generator issue?
+    	                                                refactoringElements.add(getRefactoring(),DiffElement.create(dif, jfo, modificationResult));
+    	                                            }
+    	                                        }
+    	                                    }
+    	                                } catch (IOException ex) {
+    	                                    throw (RuntimeException) new RuntimeException().initCause(ex);
+    	                                }
+    	                            }
+    	                            
+    	                            JavaUnit javaUnit = iFacesModel.getJavaUnit();
+    	                            if (refactoringSourceFQN != null && javaUnit != null && !isRefactoringSourcePageBean) {
+    	                                final String finalRefactoringSourceFQN = refactoringSourceFQN;
+    	                                final JavaClass javaClass = javaUnit.getJavaClass();                                
+    	                                if (javaClass != null) {
+    	                                    Method method = javaClass.getMethod("get" + oldBeanName, new Class[0]);
+    	                                    if (method != null) {
+    	                                        final ElementHandle<ExecutableElement> elementHandle = method.getElementHandle();
+    	                                        if (elementHandle != null) {
+    	                                            FileObject facesJavaFileObject = iFacesModel.getJavaFile();
+    	                                            JavaSource javaSource = JavaSource.forFileObject(facesJavaFileObject);
+    	                                            if (javaSource != null) {
+    	                                                // Rename accessor methods
+    	                                                final RenameRefactoring[] methodRenameRefactoring = new RenameRefactoring[1];
+    	                                                try {
+    	                                                    javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+    	                                                        public void cancel() {
+    	                                                        }
+    	
+    	                                                        public void run(CompilationController compilationController)
+    	                                                            throws Exception {
+    	                                                            compilationController.toPhase(Phase.RESOLVED);
+    	                                                            Element element = elementHandle.resolve(compilationController);
+    	                                                            if (element != null && element.getKind() ==  ElementKind.METHOD) {
+    	                                                                ExecutableElement executableElement = (ExecutableElement) element;
+    	                                                                TypeMirror typeMirror = executableElement.getReturnType();
+    	                                                                if (typeMirror != null && typeMirror.getKind() == TypeKind.DECLARED) {
+    	                                                                    DeclaredType declaredType = (DeclaredType) typeMirror;
+    	                                                                    TypeElement typeElement = (TypeElement) declaredType.asElement();
+    	                                                                    
+    	                                                                    if (typeElement.getQualifiedName().toString().equals(finalRefactoringSourceFQN)) {
+    	                                                                        TreePathHandle treePathHandle = TreePathHandle.create(compilationController.getTrees().getPath(element), compilationController);
+    	                                                                        methodRenameRefactoring[0] = new RenameRefactoring(Lookups.fixed(treePathHandle));
+    	                                                                        methodRenameRefactoring[0].getContext().add(compilationController);
+    	                                                                    }
+    	                                                                }
+    	                                                            }
+    	                                                        }
+    	                                                    }, true);                                                    
+    	                                                    
+    	                                                    if (methodRenameRefactoring[0] != null) {                                                        
+    	                                                        methodRenameRefactoring[0].setNewName("get" + newBeanName);
+    	                                                        
+    	                                                        // Flag delegation
+    	                                                        methodRenameRefactoring[0].getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
+    	                                                        
+    	                                                        Problem problem = methodRenameRefactoring[0].prepare(refactoringElements.getSession());
+    	                                                        if (problem != null) {
+    	                                                            return problem;
+    	                                                        }
+    	                                                    }
+    	                                                } catch (IOException ex) {
+    	                                                }
+    	                                                
+    	                                                try {
+    	                                                    ModificationResult modificationResult = javaSource.runModificationTask(
+    	                                                            new StringLiteralTask(oldBeanName, newBeanName, StringLiteralTransformer.MatchKind.EXACT)
+    	                                                            );
+    	                                                    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(modificationResult)));
+    	                                                    for (FileObject jfo : modificationResult.getModifiedFileObjects()) {
+    	                                                        for (Difference dif: modificationResult.getDifferences(jfo)) {
+    	                                                            String old = dif.getOldText();
+    	                                                            if (old!=null) {
+    	                                                                //TODO: workaround
+    	                                                                //generator issue?
+    	                                                                refactoringElements.add(getRefactoring(),DiffElement.create(dif, jfo, modificationResult));
+    	                                                            }
+    	                                                        }
+    	                                                    }
+    	                                                } catch (IOException ex) {
+    	                                                    throw (RuntimeException) new RuntimeException().initCause(ex);
+    	                                                }
+    	                                            }
+    	                                        }
+    	                                    }
+    	                                }
+    	                            }
+    	                        }
+    	                    }
+    	                }
+    	                
+    	                // Replace #{oldBeanName. ...} with #{newBeanName....} in VBEs in all jsp files of FacesModels (MarkupUnits) 
+    	                for (int i=0; i < models.length; i++) {
+    	                    Model iModel = models[i];
+    	                    if (iModel instanceof FacesModel) {
+    	                        FacesModel iFacesModel = (FacesModel) iModel;
+    	                        if (!iFacesModel.isBusted()) {
+    	                            MarkupUnit markupUnit = iFacesModel.getMarkupUnit();
+    	                            if (markupUnit == null)
+    	                                continue;
+    	                            Document markupDocument = markupUnit.getSourceDom();
+    	                            ElBindingScanner scanner = new ElBindingScanner();
+    	                            int referenceCount = scanner.getReferenceCount(markupDocument, oldBeanName);
+    	                            if (referenceCount > 0) {
+    	                                refactoringElements.add(getRefactoring(), new RenameElExpressionReferencesRefactoringElement(iFacesModel.getFile(), markupUnit, oldBeanName, newBeanName));
+    	                            }
+    	                        }
+    	                    }
+    	                }
+    	                
+    	                // The renaming of bean class name is handled by NetBeans Web project JSF refcatoring.
+    	                // Rename the managed bean name. 
+    	                WebModule webModule = WebModule.getWebModule(refactoringSourcefileObject);
+    	                if (webModule != null){
+    	                    List <FacesRefactoringUtils.OccurrenceItem> items =
+    	                        FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
+    	                    for (FacesRefactoringUtils.OccurrenceItem item : items) {
+    	                        refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanNameElement(item));
+    	                    }
+    	                }
+    	                
+    	                if (!isDelegatedRefactoring(getRefactoring())) {
+    	                    FileObject jspFileObject = FacesModel.getJspForJava(refactoringSourcefileObject);
+    	                    if (jspFileObject != null) {
+    	                        MoveRefactoring jspMoveRefactoring = new MoveRefactoring(Lookups.singleton(jspFileObject));
+    	                        FileObject targetDocumentRoot = JsfProjectUtils.getDocumentRoot(project);
+    	                        if (targetDocumentRoot == null) {
+    	                            // TODO
+    	                        }    	                            	                        
+    	                        String targetRelativePathWithSlashes = "";
+    	                        if (!newPackageName.equals(pageBeanRootPackageName)) {
+    	                        	targetRelativePathWithSlashes = newPackageName.substring(pageBeanRootPackageNameLength + 1).replace('.', '/');
+    	                        }
+    	                        FileObject targetJspFolder = targetDocumentRoot.getFileObject(targetRelativePathWithSlashes);
+    	                        if (targetJspFolder == null) {
+    	                        	try {
+    									targetJspFolder = FileUtil.createFolder(targetDocumentRoot, targetRelativePathWithSlashes);
+    								} catch (IOException ioe) {
+    		                            // TODO return problem
+    		                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ioe);
+    								}
+    	                        }
+    	                        
+    	                        URL url = URLMapper.findURL(targetJspFolder, URLMapper.EXTERNAL);
+    	                        try {
+    	                            jspMoveRefactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm())));
+    	                        } catch (MalformedURLException ex) {
+    	                            // TODO return problem
+    	                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+    	                        }
+    	                        
+    	                        // Flag delegation
+    	                        jspMoveRefactoring.getContext().add(FacesRefactoringsPluginFactory.DELEGATED_REFACTORING);
+    	  
+    	                        Problem problem = jspMoveRefactoring.prepare(refactoringElements.getSession());
+    	                        if (problem != null) {
+    	                            return problem;
+    	                        }
+    	                    }
+    	                }
+    	            }
+    	        }
+        	}
         }
 
         return null;

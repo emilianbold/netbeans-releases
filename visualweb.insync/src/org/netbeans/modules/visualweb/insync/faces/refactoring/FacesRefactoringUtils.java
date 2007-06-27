@@ -203,16 +203,20 @@ final class FacesRefactoringUtils {
             if (isOnSourceClasspath(fo)) {
                 if (isJavaFile(fo)) {
                     FacesModel facesModel = FacesModel.getFacesModel(fo);
-                    if (facesModel != null && !facesModel.isBusted()) {
-                        JavaUnit javaUnit = facesModel.getJavaUnit();
-                        if (javaUnit != null) {
-                            JavaClass javaClass = javaUnit.getJavaClass();
-                            for (String className : FacesModel.managedBeanNames) {
-                                if (javaClass.isSubTypeOf(className)) {
-                                    return true;
-                                }
-                            }
-                        }
+                    if (facesModel != null) {
+                    	// ensure it is synced
+                    	facesModel.sync();
+                    	if (!facesModel.isBusted()) {
+	                        JavaUnit javaUnit = facesModel.getJavaUnit();
+	                        if (javaUnit != null) {
+	                            JavaClass javaClass = javaUnit.getJavaClass();
+	                            for (String className : FacesModel.managedBeanNames) {
+	                                if (javaClass.isSubTypeOf(className)) {
+	                                    return true;
+	                                }
+	                            }
+	                        }
+                    	}
                     }
                 }
             }

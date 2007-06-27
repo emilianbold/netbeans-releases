@@ -75,7 +75,6 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
         FileObject refactoredFileObject = refactoringSource.lookup(FileObject.class);
         if (refactoredFileObject != null) {
             if (FacesRefactoringUtils.isVisualWebJspFile(refactoredFileObject)) {
-                FacesModelSet.getInstance(refactoredFileObject);
                 if (refactoring instanceof RenameRefactoring) {
                 	// Ensure the modelling has happened
                 	FacesModelSet.getInstance(refactoredFileObject);
@@ -101,8 +100,7 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
 		                    return new FacesJavaFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
 		                }
 	            	}
-            	}
-            	if (FacesRefactoringUtils.isFileUnderDocumentRoot(refactoredFileObject) &&
+            	} else if (FacesRefactoringUtils.isFileUnderDocumentRoot(refactoredFileObject) &&
                 		(!FacesRefactoringUtils.isSpecialFolderName(refactoredFileObject.getNameExt()))) {
 	            	if (refactoring instanceof RenameRefactoring) {
 	                	// Ensure the modelling has happened
