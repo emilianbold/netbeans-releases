@@ -258,7 +258,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         Thread.sleep(1000);
         deleteProject();
         //Timeout needed
-        Thread.sleep(10000);
+        Thread.sleep(30000);
     }
     
     public void testFormFile(String formfile) throws IOException {
