@@ -65,12 +65,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     implements ActionListener, TreeModelListener, ListSelectionListener
 {
     private TemplateFamiliesHandler dataHandler = null;
-    private List<String> checkedTree = null;
-    private UMLProjectProperties projectProperties = null;
     private boolean dirtyTreeExpand = false;
-    private boolean isCustomizer = false;
-    
-    Map<String, Boolean> treeExpandState = new HashMap<String, Boolean>();
+    private Map<String, Boolean> treeExpandState = new HashMap<String, Boolean>();
     
     private static final Icon DOMAIN_OBJECT_NODE_ICON =
         new ImageIcon(Utilities.loadImage(
@@ -84,15 +80,6 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     public DomainTemplatesManagerPanel(UMLProjectProperties properties)
     {
         initComponents();
-        
-        if (properties != null)
-        {
-            isCustomizer = true;
-            projectProperties = properties;
-            checkedTree = projectProperties.getCodeGenTemplatesArray();
-            showButtons(false);
-        }
-
         registerListeners();
         populateTemplatesTreeValues(false);
 
@@ -111,25 +98,6 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     
     private void registerListeners()
     {
-        // tree model listeners
-//        templatesTree.getModel().addTreeModelListener(this);
-//        templatesTree.addTreeExpansionListener(this);
-        
-        if (isCustomizer)
-        {
-            templatesTree.addMouseListener(
-                new NodeSelectionListener(templatesTree));
-        }
-        
-        // table model listeners
-//        templatesTable.getModel().addTableModelListener(this);
-//        templatesTable.getSelectionModel().addListSelectionListener(this);
-        
-        // input field listeners
-//        modelElementCombo.addItemListener(this);
-//        stereotypeText.getDocument().addDocumentListener(this);
-//        descriptionTextArea.getDocument().addDocumentListener(this);
-        
         // button listeners
         addButton.addActionListener(this);
         removeButton.addActionListener(this);
@@ -150,24 +118,12 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             org.openide.util.NbBundle.getMessage(
                 DomainTemplatesManagerPanel.class, "LBL_TemplateFamilies")));
         
-        if (isCustomizer)
-        {
-            DomainTreeNodeRendererEditor renderer = 
-                new DomainTreeNodeRendererEditor();
-            
-            templatesTree.setCellRenderer(renderer);
-            templatesTree.setEditable(false);
-        }
-        
-        else
-        {
-            DefaultTreeCellRenderer iconRenderer =
-                (DefaultTreeCellRenderer)templatesTree.getCellRenderer();
-            
-            iconRenderer.setLeafIcon(DOMAIN_OBJECT_NODE_ICON);
-            iconRenderer.setClosedIcon(TEMPLATE_FAMILY_NODE_ICON);
-            iconRenderer.setOpenIcon(TEMPLATE_FAMILY_NODE_ICON);
-        }
+        DefaultTreeCellRenderer iconRenderer =
+            (DefaultTreeCellRenderer)templatesTree.getCellRenderer();
+
+        iconRenderer.setLeafIcon(DOMAIN_OBJECT_NODE_ICON);
+        iconRenderer.setClosedIcon(TEMPLATE_FAMILY_NODE_ICON);
+        iconRenderer.setOpenIcon(TEMPLATE_FAMILY_NODE_ICON);
         
         Family[] familyList = dataHandler.getTemplateFamilies().getFamily();
         
@@ -201,8 +157,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 
                 domainNode.setUserObject(new DomainTreeNode(
                     domainName, 
-                    isCustomizer ? 
-                        getCheckedValue(familyName, domainName) : false, 
+                    false, 
                     familyName,
                     domainName));
                 
@@ -226,16 +181,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 }
             }
         }
-        
-//        templatesTree.getModel().addTreeModelListener(this);
     }
     
-    
-    
-    private boolean getCheckedValue(String familyName, String domainName)
-    {
-        return checkedTree.indexOf(familyName + ':' + domainName) != -1;
-    }
     
     
     // called by UMLOptionsPanel
@@ -262,20 +209,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     {
         String cmd = event.getActionCommand();
         
-        // listener of the OK button in the Project Customizer
-        if (cmd.equals("OK")) // NOI18N
-        {
-            // Project Customizer UI
-            if (projectProperties != null)
-            {
-                projectProperties.setCodeGenTemplates(checkedTree);
-                projectProperties.save();
-                persistTreeExpandState();
-                dataHandler.save();
-            }
-        }
-        
-        else if (cmd.equals("Cancel")) // NOI18N
+        if (cmd.equals("Cancel")) // NOI18N
         {
             dataHandler.reset();
             persistTreeExpandState();
@@ -1046,10 +980,6 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     
     private void enableTemplatePropsFields(boolean flag)
     {
-        // if called from project customizer, always disable these fields
-        if (flag && checkedTree != null)
-            flag = false;
-        
         templatePropsPanel.setEnabled(flag);
         modelElementCombo.setEnabled(flag);
         stereotypeText.setEnabled(flag);
@@ -1161,9 +1091,6 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     
     public void treeNodesChanged(TreeModelEvent event)
     {
-        if (projectProperties != null)
-            return;
-        
         TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
         int index = event.getChildIndices()[0];
         
@@ -1228,117 +1155,6 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
         }
     }
     
-    protected void setItemState(DefaultMutableTreeNode node, boolean checked) 
-    {
-        DomainTreeNode domainTreeNode = (DomainTreeNode)node.getUserObject();
-        domainTreeNode.setChecked(checked);
-        int childrenCount = node.getChildCount();
-        
-        for (int index = 0; index < childrenCount; index++) 
-        {
-            DefaultMutableTreeNode childNode = (DefaultMutableTreeNode)
-                templatesTree.getModel().getChild(node, index);
-            
-            if (childNode != null) 
-                ((DomainTreeNode)childNode.getUserObject()).setChecked(checked);
-        }
-    }
-
-    
-    int rowLastClicked = -1;
-    
-    class NodeSelectionListener extends MouseAdapter
-    {
-        JTree tree;
-        
-        public NodeSelectionListener(JTree tree)
-        {
-            this.tree = tree;
-        }
-        
-        public void mouseClicked(MouseEvent event)
-        {
-            int x = event.getX();
-            int y = event.getY();
-            int row = tree.getRowForLocation(x, y);
-            
-            if (row == -1)
-            {
-                row = rowLastClicked;
-                return;
-            }
-            
-            if (row != rowLastClicked)
-            {
-                rowLastClicked = row;
-                return;
-            }
-
-            rowLastClicked = row;
-            TreePath path = tree.getPathForRow(row);
-            
-            if (path != null)
-            {
-                DefaultMutableTreeNode node = 
-                    (DefaultMutableTreeNode)path.getLastPathComponent();
-                
-                DomainTreeNode domainTreeNode = 
-                    (DomainTreeNode)node.getUserObject();
-                
-                if (!domainTreeNode.isDomain())
-                    return;
-                
-                boolean isSelected = !(domainTreeNode.isChecked());
-                boolean state = isSelected;
-
-                // domain node checked/unchecked
-                if (domainTreeNode.isDomain())
-                {
-                    updateCheckedTree(
-                        state, 
-                        domainTreeNode.getFamilyName() + ":" + // NOI18N
-                        domainTreeNode.getDomainName());
-                }
-
-                // family node checked/unchecked, so update all domain 
-                // children to have the same state as its parent
-//                else if (node.getChildCount() > 0)
-//                {
-//                    for (int i=0; i < node.getChildCount(); i++)
-//                    {
-//                        DomainTreeNode childDomainTreeNode = 
-//                            (DomainTreeNode)((DefaultMutableTreeNode)node
-//                            .getChildAt(i)).getUserObject();
-//                        
-//                        updateCheckedTree(state, 
-//                            childDomainTreeNode.getFamilyName() + ":" + // NOI18N
-//                            childDomainTreeNode.getDomainName());
-//                    }
-//                }
-
-                setItemState(node, state);
-                ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
-
-                if (row == 0)
-                {
-                    tree.revalidate();
-                    tree.repaint();
-                }
-            }
-        }
-    }
-    
-    private void updateCheckedTree(boolean checkedState, String value)
-    {
-        int index = checkedTree.indexOf(value);
-
-        if (index == -1 && checkedState)
-            checkedTree.add(value);
-        
-        else if (index > -1 && !checkedState)
-            checkedTree.remove(index);
-    }
-
     
     public void valueChanged(ListSelectionEvent event)
     {
@@ -1368,53 +1184,5 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     private javax.swing.JPanel templatesTreePanel;
     private javax.swing.JScrollPane treeScroll;
     // End of variables declaration//GEN-END:variables
- 
-    
-//    private void initSpacebarListener()
-//    {
-//        ActionListener action = new ActionListener()
-//        {
-//            public void actionPerformed(ActionEvent e)
-//            {
-//                int selectedRows[] = templatesTree.getSelectionRows();
-//                
-//                if (selectedRows == null || selectedRows.length == 0)
-//                    return;
-//                
-//                // get the path of the 1st selected row
-//                int row = selectedRows[0];
-//                TreePath path = templatesTree.getPathForRow(row);
-//                
-//                if (path != null)
-//                {
-//                    DomainTemplatesManagerPanel.CheckBoxTreeNode node = 
-//                        (DomainTemplatesManagerPanel.CheckBoxTreeNode) 
-//                        path.getLastPathComponent();
-//                    
-//                    boolean isSelected = !(node.isSelected());
-//                    
-////                    int state = IFilterItem.FILTER_STATE_OFF;
-////                    if (isSelected == true)
-////                    {
-////                        state = IFilterItem.FILTER_STATE_ON;
-////                    }
-////                    setItemState(node, state);
-//                    
-////                    ((DefaultTreeModel) templatesTree.getModel()).nodeChanged(node);
-//                    
-//                    if (row == 0)
-//                    {
-//                        templatesTree.revalidate();
-//                        templatesTree.repaint();
-//                    }
-//                }
-//            }
-//        };
-//        
-//        // use SPACE bar to select/deselect the m_Tree node
-//        templatesTree.registerKeyboardAction(action, 
-//            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,0), 
-//                JComponent.WHEN_FOCUSED);
-//    }
-    
+   
 }
