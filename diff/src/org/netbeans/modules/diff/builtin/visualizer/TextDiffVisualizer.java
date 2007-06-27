@@ -297,6 +297,14 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
         return new ByteArrayInputStream(content.toString().getBytes("utf8"));  // NOI18N
     }
     
+    /**
+     * Produces textual diff output in unified format.
+     */
+    public static String differenceToUnifiedDiffText(TextDiffInfo diffInfo) throws IOException {
+        UnifiedDiff ud = new UnifiedDiff(diffInfo);
+        return ud.computeDiff();
+    }
+
     private static int[] getContextRange(Difference[] diffs, int i,
                                        int contextNumLines) {
         int line1 = diffs[i].getFirstStart();

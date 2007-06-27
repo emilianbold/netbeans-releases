@@ -276,7 +276,8 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         */
         public InputStream inputStream() throws IOException {
             if (diff.isContextMode()) {
-                return TextDiffVisualizer.differenceToContextDiffText(diff);
+                String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(diff);
+                return new ByteArrayInputStream(diffText.getBytes("utf8"));  // NOI18N                
             } else {
                 return TextDiffVisualizer.differenceToLineDiffText(diff.getDifferences());
             }

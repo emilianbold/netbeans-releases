@@ -340,7 +340,8 @@ public class ExportDiffAction extends AbstractSystemAction {
                 differences
             );
             info.setContextMode(true, 3);
-            InputStream is = TextDiffVisualizer.differenceToContextDiffText(info);
+            String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(info);
+            InputStream is = new ByteArrayInputStream(diffText.getBytes("utf8"));  // NOI18N                
             while(true) {
                 int i = is.read();
                 if (i == -1) break;
