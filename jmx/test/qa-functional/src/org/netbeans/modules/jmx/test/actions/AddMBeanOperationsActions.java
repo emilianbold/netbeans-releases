@@ -26,6 +26,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.modules.jmx.test.helpers.Parameter;
 import org.netbeans.modules.jmx.test.helpers.Exception;
@@ -34,6 +35,8 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Call menu actions "Add MBean Operations".
+ * This action is activable either when selecting the class node or
+ * when clicking directly in the java file editor.
  * Check components and created files.
  */
 public class AddMBeanOperationsActions extends ActionsTestCase {
@@ -57,6 +60,9 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         suite.addTest(new AddMBeanOperationsActions("test1"));
         suite.addTest(new AddMBeanOperationsActions("test2"));
         suite.addTest(new AddMBeanOperationsActions("test3"));
+        suite.addTest(new AddMBeanOperationsActions("test4"));
+        suite.addTest(new AddMBeanOperationsActions("test5"));
+        suite.addTest(new AddMBeanOperationsActions("test6"));
         return suite;
     }
     
@@ -101,7 +107,31 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         name = "U1" + ADD_OPERATIONS_1;
         System.out.println("Create new java class " + name);
         createJavaFile(name, ADD_OPERATIONS_1);
+        
+        // Update 2
+        name = "U2" + ADD_OPERATIONS_1_SUPER;
+        System.out.println("Create new java class " + name);
+        createJavaFile(name, ADD_OPERATIONS_1_SUPER);
+        
+        name = "U2" + ADD_OPERATIONS_1_SUPER_MBEAN;
+        System.out.println("Create new java interface " + name);
+        createJavaFile(name, ADD_OPERATIONS_1_SUPER_MBEAN);
+        
+        name = "U2" + ADD_OPERATIONS_1_MBEAN;
+        System.out.println("Create new java interface " + name);
+        properties = new Properties();
+        properties.put(ADD_OPERATIONS_1_SUPER_MBEAN,
+                "U2" + ADD_OPERATIONS_1_SUPER_MBEAN);
+        createJavaFile(name, ADD_OPERATIONS_1_MBEAN, properties);
+        
+        name = "U2" + ADD_OPERATIONS_1;
+        System.out.println("Create new java class " + name);
+        createJavaFile(name, ADD_OPERATIONS_1);
     }
+    
+    //=========================================================================
+    // CALL ADD ATTRIBUTES ACTION FROM NODE
+    //=========================================================================
     
     public void test1() {
         
@@ -131,9 +161,6 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         
         String className = "U1" + ADD_OPERATIONS_1;
         String interfaceName = "U1" + ADD_OPERATIONS_1_MBEAN;
-        ArrayList<Operation> opList = null;
-        ArrayList<Parameter> parameters = null;
-        ArrayList<Exception> exceptions = null;
         
         System.out.println("====================  test3  ====================");
         
@@ -143,6 +170,73 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertTrue(jmio.isEnabled());
+        
+        addOperationsTest(jmio, className, interfaceName);
+    }
+    
+    //=========================================================================
+    // CALL ADD ATTRIBUTES ACTION FROM NODE
+    //=========================================================================
+    
+    public void test4() {
+        
+        System.out.println("====================  test4  ====================");
+        
+        System.out.println("Check action menu components for " + SIMPLE_1);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
+        System.out.println("Open java file " + SIMPLE_1);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(SIMPLE_1);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertFalse(jmio.isEnabled());
+    }
+    
+    public void test5() {
+        
+        System.out.println("====================  test5  ====================");
+        
+        System.out.println("Check action menu components for " + DYNAMIC_1);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_1);
+        System.out.println("Open java file " + DYNAMIC_1);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(DYNAMIC_1);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertFalse(jmio.isEnabled());
+    }
+    
+    public void test6() {
+        
+        String className = "U2" + ADD_OPERATIONS_1;
+        String interfaceName = "U2" + ADD_OPERATIONS_1_MBEAN;
+        
+        System.out.println("====================  test6  ====================");
+        
+        System.out.println("Check action menu components for " + className);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        // Check menu item
+        System.out.println("Open java file " + className);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(className);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertTrue(jmio.isEnabled());
+        
+        addOperationsTest(jmio, className, interfaceName);
+    }
+    
+    private void addOperationsTest(
+            JMenuItemOperator jmio, 
+            String className, 
+            String interfaceName) {
+        
+        ArrayList<Operation> opList = null;
+        ArrayList<Parameter> parameters = null;
+        ArrayList<Exception> exceptions = null;
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
