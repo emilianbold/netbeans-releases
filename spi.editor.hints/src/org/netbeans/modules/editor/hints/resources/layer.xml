@@ -85,13 +85,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-    <folder name="OptionsDialog">
+<!--    <folder name="OptionsDialog">
      <folder name="Advanced">
          <file name="ErrorProviders.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.hints.options.AdvancedHintsOptions"/>
          </file>
      </folder>
- </folder>
+ </folder>-->
  
  <folder name="EditorHints">
      
