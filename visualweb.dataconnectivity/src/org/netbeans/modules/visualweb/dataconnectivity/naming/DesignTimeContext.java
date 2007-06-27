@@ -306,13 +306,13 @@ class DesignTimeContext implements Context {
             
         }
         
-        if (bindings.isEmpty()) {
-            if (!dsHelper.isFound(dsInfo)) {
-                if (ImportDataSource.isLegacyProject(CurrentProject.getInstance().getProject())) {
-                    ImportDataSource.showAlert();
-                }
-            }
-        }
+//        if (bindings.isEmpty()) {
+//            if (!dsHelper.isFound(dsInfo)) {
+//                if (ImportDataSource.isLegacyProject(CurrentProject.getInstance().getProject())) {
+//                    ImportDataSource.showAlert();
+//                }
+//            }
+//        }
 }
     
 }

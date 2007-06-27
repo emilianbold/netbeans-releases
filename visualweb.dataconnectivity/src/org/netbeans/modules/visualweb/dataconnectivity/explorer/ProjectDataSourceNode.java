@@ -30,10 +30,10 @@ import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.Projec
 import java.awt.Image;
 import java.io.CharConversionException;
 import java.util.Enumeration;
-import java.util.Set;
 import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
@@ -57,6 +57,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     private static Image brokenDsReferenceBadge = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
     protected WaitForModelingListener modelingListener = new WaitForModelingListener() ;
+    private volatile boolean firstTimeShowAlert = false;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
@@ -123,7 +124,19 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
         
          // Model project to retrieve data sources
-        modelProjectForDataSources();
+//        modelProjectForDataSources();
+        
+        if (ImportDataSource.isLegacyProject(nbProject)) {
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (!firstTimeShowAlert) {
+                        ImportDataSource.showAlert();
+                        firstTimeShowAlert = true;
+                    }
+                }
+            });
+        }
+    
 
         try {
             ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
@@ -209,7 +222,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         fireDisplayNameChange(null, null);
     }
     
-    private class WaitForModelingListener implements ModelSetsListener, ModelSetListener {
+    public class WaitForModelingListener implements ModelSetsListener, ModelSetListener {
         
         /*---------- ModelSetsListener------------*/
         

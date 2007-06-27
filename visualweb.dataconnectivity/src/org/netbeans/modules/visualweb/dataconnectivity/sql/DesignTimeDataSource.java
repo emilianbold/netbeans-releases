@@ -264,11 +264,6 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
 
         } catch (Exception e) {
             
-            if (DesignTimeDataSourceHelper.isFound(this)) {
-                if (ImportDataSource.isLegacyProject(CurrentProject.getInstance().getProject())) {
-                    ImportDataSource.showAlert();
-                }
-            }
             if (e instanceof SQLException) {
                 setLastConnectFail( (SQLException)e ) ;
                 throw (SQLException)e;

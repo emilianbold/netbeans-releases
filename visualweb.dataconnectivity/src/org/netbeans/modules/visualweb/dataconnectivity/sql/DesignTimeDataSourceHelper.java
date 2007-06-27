@@ -679,19 +679,5 @@ public class DesignTimeDataSourceHelper {
             }
         }
         return true;
-    }       
-    
-    /**
-     * Show alert dialog if project is a legacy project
-     */
-    public void showAlert() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (!firstTimeShowAlert) {
-                    ImportDataSource.showAlert();
-                    firstTimeShowAlert = true;
-                }
-            }
-        });
-    }
+    }              
 }

@@ -273,7 +273,8 @@ public class ImportDataSource {
      * @param project  Project from which the Update action occurred
      */
     public static synchronized void showUpdate(final Project project) {
-         UpdateDataSourcesDialog.updateDatasources(
+        UpdateDataSourcesDialog updateDataSourcesDialog = new UpdateDataSourcesDialog(project);
+        updateDataSourcesDialog.updateDatasources(
                 NbBundle.getMessage(ImportDataSource.class,"LBL_UpdateDatasources_Title"),org.openide.util.NbBundle.getMessage(ImportDataSource.class, "ACSD_UpdateDatasources"), project); //  NOI18N
     }
     
