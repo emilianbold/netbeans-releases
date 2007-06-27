@@ -636,10 +636,12 @@ public class CasualDiff {
         copyTo(localPointer, selectorBounds[0]);
         localPointer = diffTree(oldT.selector, newT.selector, selectorBounds);
         
-        int castListHint = oldT.cases.size() > 0 ? oldT.cases.head.pos : Query.NOPOS;
+        tokenSequence.move(selectorBounds[1]);
+        while (tokenSequence.moveNext() && JavaTokenId.LBRACE != tokenSequence.token().id()) ;
+        tokenSequence.moveNext();
+        copyTo(localPointer, localPointer = tokenSequence.offset());
         PositionEstimator est = EstimatorFactory.deprecated(oldT.getCases(), newT.getCases(), workingCopy);
-        copyTo(localPointer, castListHint);
-        localPointer = diffList(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
+        localPointer = diffList(oldT.cases, newT.cases, localPointer, est, Measure.MEMBER, printer);
         
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -651,10 +653,16 @@ public class CasualDiff {
             int[] patBounds = getBounds(oldT.pat);
             copyTo(localPointer, patBounds[0]);
             localPointer = diffTree(oldT.pat, newT.pat, patBounds);
+            tokenSequence.move(patBounds[1]);
+            while (tokenSequence.moveNext() && JavaTokenId.COLON != tokenSequence.token().id()) ;
+            copyTo(localPointer, localPointer = tokenSequence.offset());
         }
-        copyTo(localPointer, localPointer = oldT.stats.head.pos);
-        PositionEstimator est = EstimatorFactory.deprecated(oldT.getStatements(), newT.getStatements(), workingCopy);
-        localPointer = diffList(oldT.stats, newT.stats, localPointer, est, Measure.DEFAULT, printer);
+        PositionEstimator est = EstimatorFactory.statements(
+                oldT.getStatements(),
+                newT.getStatements(),
+                workingCopy
+        );
+        localPointer = diffList(oldT.stats, newT.stats, localPointer, est, Measure.MEMBER, printer);
         
         copyTo(localPointer, bounds[1]);
         
