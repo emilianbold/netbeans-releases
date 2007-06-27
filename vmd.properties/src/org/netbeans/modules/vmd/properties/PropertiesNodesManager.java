@@ -104,9 +104,10 @@ public final class PropertiesNodesManager {
         
         if (components.isEmpty()) {
             for (InstanceContent ic : tempIcs) {
-                ic.add(new Object());
+                WeakSet<Node> nodesToRemove = nodesToRemoveMap.get(ic);
+                ic.add(Node.EMPTY);
+                ic.remove(Node.EMPTY);
             }
-            return;
         }
         
         for (InstanceContent ic : tempIcs) {
@@ -117,6 +118,8 @@ public final class PropertiesNodesManager {
                 nodesToRemove.add(node);
             }
         }
+        
+        
     }
     
     public synchronized Sheet getSheet(DesignComponent component) {
