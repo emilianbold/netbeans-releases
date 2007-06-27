@@ -27,6 +27,7 @@ import java.util.Random;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -178,6 +179,15 @@ public final class DomainCreator {
                     
                     // Set all needed default properties
                     factory.setProperty(PROP_DISPLAY_NAME, DEFAULT_SERVER_NAME);
+                    int versionId = ServerLocationManager.getAppServerPlatformVersion(serverRoot);
+                    if (versionId == ServerLocationManager.GF_V1) {
+                        factory.setProperty(PROP_DISPLAY_NAME,
+                                NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V1"));   // NOI18N
+                    }
+                    if (versionId > ServerLocationManager.GF_V1) {
+                        factory.setProperty(PROP_DISPLAY_NAME,
+                                NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2"));   // NOI18N
+                    }
                     factory.setProperty(PROP_USER_NAME, DEFAULT_USERNAME);
                     factory.setProperty(PROP_PASSWORD, DEFAULT_PASSWORD);
                     factory.setProperty(PROP_HOST, DEFAULT_HOST);

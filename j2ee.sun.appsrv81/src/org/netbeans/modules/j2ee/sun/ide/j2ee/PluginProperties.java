@@ -518,7 +518,12 @@ public class PluginProperties  {
                             String dmUrl = "["+platformRoot.getAbsolutePath()+"]" +SunURIManager.SUNSERVERSURI+hp; //NOI18N
                             String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name") ;//NOI18N
                             if (ServerLocationManager.isGlassFish(platformRoot)){
-                                displayName+=" 9";//NOI18N for new name
+                                int versionId = ServerLocationManager.getAppServerPlatformVersion(platformRoot);
+                                if (versionId == ServerLocationManager.GF_V1) {
+                                    displayName = NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V1");  // NOI18N   
+                                } else if (versionId == ServerLocationManager.GF_V2) {
+                                    displayName = NbBundle.getMessage(PluginProperties.class, "LBL_GLASSFISH_V2");  // NOI18N
+                                }
                             }
                             if (i!=0) {//not the first one, but other possible domains
                                 displayName = domainsList[i].getName();
