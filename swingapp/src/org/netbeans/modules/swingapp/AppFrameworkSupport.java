@@ -234,6 +234,11 @@ class AppFrameworkSupport {
         return cp.getResourceName(fo, '.', false);
     }
 
+    static FileObject getFileForClass(FileObject fileInProject, String className) {
+        ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
+        return cp.findResource(className.replace('.', '/') + ".java"); // NOI18N
+    }
+
     static ClassPath getSourcePath(Project project) {
         FileObject root = getSourceRoot(project);
         return root != null ? ClassPath.getClassPath(root, ClassPath.SOURCE) : null;

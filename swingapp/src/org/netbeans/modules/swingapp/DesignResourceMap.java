@@ -84,7 +84,7 @@ final class DesignResourceMap extends ResourceMap {
      * @param level the level of resources this DesignResourceMap targets
      *         (one of CLASS_LEVEL, PACKAGE_LEVEL, APP_LEVEL)
      */
-    DesignResourceMap(DesignResourceMap parent,
+    DesignResourceMap(ResourceMap parent,
                       ClassLoader classLoader,
                       FileObject srcFile,
                       String[] bundleNames,
@@ -101,8 +101,9 @@ final class DesignResourceMap extends ResourceMap {
         storageLevel = level;
     }
 
-    public DesignResourceMap getParent() {
-        return (DesignResourceMap) super.getParent();
+    public DesignResourceMap getDesignParent() {
+        ResourceMap parent = super.getParent();
+        return parent instanceof DesignResourceMap ? (DesignResourceMap) parent : null;
     }
 
     /**
@@ -114,7 +115,7 @@ final class DesignResourceMap extends ResourceMap {
             return this;
         }
         else {
-            DesignResourceMap parent = getParent();
+            DesignResourceMap parent = getDesignParent();
             if (parent != null)
                 return parent.getLevel(level);
         }
@@ -145,7 +146,7 @@ final class DesignResourceMap extends ResourceMap {
             localeBundleNames[i] = locale != null && !locale.equals("") ? // NOI18N
                 shortName + locale : shortName;
         }
-        DesignResourceMap parent = getParent();
+        DesignResourceMap parent = getDesignParent();
         if (parent != null)
             parent.setLocalization(locale);
     }
@@ -179,7 +180,7 @@ final class DesignResourceMap extends ResourceMap {
             if (dobj != null)
                 return dobj;
         }
-        DesignResourceMap parent = getParent();
+        DesignResourceMap parent = getDesignParent();
         return parent != null ? parent.getRepresentativeDataObject() : null;
     }
 
@@ -219,7 +220,7 @@ final class DesignResourceMap extends ResourceMap {
                 }
             }
         }
-        DesignResourceMap parent = getParent();
+        DesignResourceMap parent = getDesignParent();
         return parent != null ? parent.getResourceValue(key, type) : null;
     }
 
@@ -291,11 +292,12 @@ final class DesignResourceMap extends ResourceMap {
             }
         }
         if (wholeChain) {
-            DesignResourceMap parent = getParent();
+            DesignResourceMap parent = getDesignParent();
             if (parent != null)
                 col = parent.collectKeys(regex, col, wholeChain);
         }
         return col;
+         // TBD perhaps should also collect the keys from the framework's default app resource map
     }
 
     /**
@@ -320,7 +322,7 @@ final class DesignResourceMap extends ResourceMap {
                 col.addAll(dobj.secondaryEntries());
             }
         }
-        DesignResourceMap parent = getParent();
+        DesignResourceMap parent = getDesignParent();
         return parent != null ? parent.collectLocaleEntries(col) : col;
     }
 
@@ -331,7 +333,7 @@ final class DesignResourceMap extends ResourceMap {
      */
     void removeResourceValue(ResourceValueImpl resValue) {
         if (resValue.getStorageLevel() != storageLevel) {
-            DesignResourceMap parent = getParent();
+            DesignResourceMap parent = getDesignParent();
             if (parent != null)
                 parent.removeResourceValue(resValue);
         }
@@ -362,7 +364,7 @@ final class DesignResourceMap extends ResourceMap {
      */
     void addResourceValue(ResourceValueImpl resValue) {
         if (resValue.getStorageLevel() != storageLevel) {
-            DesignResourceMap parent = getParent();
+            DesignResourceMap parent = getDesignParent();
             if (parent != null)
                 parent.addResourceValue(resValue);
         }
@@ -478,7 +480,7 @@ final class DesignResourceMap extends ResourceMap {
             changes.clear();
         }
         if (wholeChain) {
-            DesignResourceMap parent = getParent();
+            DesignResourceMap parent = getDesignParent();
             if (parent != null)
                 parent.save(wholeChain);
         }
@@ -504,7 +506,7 @@ final class DesignResourceMap extends ResourceMap {
         }
 //        changes.clear();
 
-        DesignResourceMap parent = getParent();
+        DesignResourceMap parent = getDesignParent();
         if (parent != null)
             parent.revertChanges();
 

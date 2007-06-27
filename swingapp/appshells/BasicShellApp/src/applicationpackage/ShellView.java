@@ -5,7 +5,6 @@
 package applicationpackage;
 
 import application.Action;
-import application.ApplicationContext;
 import application.ResourceMap;
 import application.SingleFrameApplication;
 import application.FrameView;
@@ -123,16 +122,18 @@ public class ShellView extends FrameView {
             .add(0, 252, Short.MAX_VALUE)
         );
 
-        fileMenu.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class).getString("fileMenu.text")); // NOI18N
+        application.ResourceMap resourceMap = application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class);
+        fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
 
-        exitMenuItem.setAction(application.Application.getInstance(ShellApp.class).getContext().getActionMap(ShellView.class, this).get("quit"));
+        javax.swing.ActionMap actionMap = application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellView.class, this);
+        exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
 
-        helpMenu.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class).getString("helpMenu.text")); // NOI18N
+        helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
 
-        aboutMenuItem.setAction(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellView.class, this).get("showAboutBox"));
+        aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
         helpMenu.add(aboutMenuItem);
 
         menuBar.add(helpMenu);

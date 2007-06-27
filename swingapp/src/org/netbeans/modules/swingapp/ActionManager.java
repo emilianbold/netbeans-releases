@@ -46,9 +46,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
 import java.io.IOException;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -1233,25 +1236,42 @@ public class ActionManager {
         }
     }
     
-    private static void getActionsFromFile(FileObject fo,
+    private static void getActionsFromFile(FileObject sourceFile,
             Map<String, List<ProxyAction>> classNameToActions) {
         try {
-            List<ProxyAction> result = (List<ProxyAction>) new ClassTask(fo) {
+            List<ProxyAction> result = (List<ProxyAction>) new ClassTask(sourceFile) {
                 Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+                    // collect the superclasses (e.g. to get actions also from the base Application class)
+                    List<TypeElement> classList = new LinkedList<TypeElement>();
+                    Tree superT = classTree.getExtendsClause();
+                    if (superT != null) {
+                        TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
+                        Element superEl = controller.getTrees().getElement(superTPath);
+                        while (superEl != null && superEl.getKind() == ElementKind.CLASS) {
+                            TypeElement superClassEl = (TypeElement) superEl;
+                            classList.add(0, superClassEl);
+                            TypeMirror superType = superClassEl.getSuperclass();
+                            superEl = (superType.getKind() == TypeKind.DECLARED)
+                                ? ((DeclaredType)superType).asElement() : null;
+                        }
+                    }
+                    classList.add(classElement);
+
+                    // go through the classes and look for annotated methods
                     List<ProxyAction> list = null;
-                    for (ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
-                        if (el.getModifiers().contains(Modifier.PUBLIC)) {
-                            application.Action ann = el.getAnnotation(application.Action.class);
-                            if (ann != null) {
-                                ProxyAction action = new ProxyAction(classElement.getQualifiedName().toString(),
-                                        el.getSimpleName().toString());
-                                initActionFromSource(action, el, ann);
-                                action.setResourceMap(ResourceUtils.getDesignResourceMap(sourceFile, true));
-                                action.loadFromResourceMap();
-                                if (list == null) {
-                                    list = new ArrayList<ProxyAction>();
+                    for (TypeElement cls : classList) {
+                        for (ExecutableElement el : ElementFilter.methodsIn(cls.getEnclosedElements())) {
+                            if (el.getModifiers().contains(Modifier.PUBLIC)) {
+                                application.Action ann = el.getAnnotation(application.Action.class);
+                                if (ann != null) {
+                                    ProxyAction action = new ProxyAction(cls.getQualifiedName().toString(),
+                                            el.getSimpleName().toString());
+                                    initActionFromAnnotation(action, el, ann);
+                                    if (list == null) {
+                                        list = new ArrayList<ProxyAction>();
+                                    }
+                                    list.add(action);
                                 }
-                                list.add(action);
                             }
                         }
                     }
@@ -1260,14 +1280,19 @@ public class ActionManager {
             }.execute();
             
             if (result != null && !result.isEmpty()) {
-                String className = result.get(0).getClassname();
+                // remember the actions, load resources
+                String className = AppFrameworkSupport.getClassNameForFile(sourceFile);
                 classNameToActions.put(className, result);
+                for (ProxyAction action : result) {
+                    action.setResourceMap(ResourceUtils.getDesignResourceMap(sourceFile, true));
+                    action.loadFromResourceMap();
+                }
             }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-    
+
     static List<String> findBooleanProperties(FileObject fo) {
         try {
             return (List<String>)new ClassTask(fo) {
@@ -1298,7 +1323,7 @@ public class ActionManager {
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     application.Action ann = methodElement.getAnnotation(application.Action.class);
                     if (ann != null) {
-                        initActionFromSource(action, methodElement, ann);
+                        initActionFromAnnotation(action, methodElement, ann);
                     }
                     return null;
                 }
@@ -1308,7 +1333,7 @@ public class ActionManager {
         }
     }
     
-    static void initActionFromSource(ProxyAction action, ExecutableElement methodElement, application.Action annotation) {
+    static void initActionFromAnnotation(ProxyAction action, ExecutableElement methodElement, application.Action annotation) {
         boolean returnsTask = isAsyncActionMethod(methodElement);
         action.setTaskEnabled(returnsTask);
         action.setEnabledName(annotation.enabledProperty());
@@ -1346,8 +1371,7 @@ public class ActionManager {
     }
     
     FileObject getFileForClass(String className) {
-        ClassPath cp = ClassPath.getClassPath(getRoot(), ClassPath.SOURCE);
-        return cp.findResource(className.replace('.', '/') + ".java"); // NOI18N
+        return AppFrameworkSupport.getFileForClass(getRoot(), className);
     }
     
     private FormModel getFormModel(final FileObject formfile) throws DataObjectNotFoundException {

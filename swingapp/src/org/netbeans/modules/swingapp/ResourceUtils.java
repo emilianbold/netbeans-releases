@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.swingapp;
 
+import application.ResourceMap;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
@@ -68,9 +69,11 @@ class ResourceUtils {
 
         DesignResourceMap resMap = null;
 
-        String bundleName = getBundleName(AppFrameworkSupport.getApplicationClassName(srcFile));
+        String appClassName = AppFrameworkSupport.getApplicationClassName(srcFile);
+        String bundleName = getBundleName(appClassName);
         if (bundleName != null) {
-            resMap = new DesignResourceMap(null, classLoader, srcFile,
+            resMap = new DesignResourceMap(getAppDefaultResourceMap(srcFile, appClassName),
+                                           classLoader, srcFile,
                                            new String[] { bundleName },
                                            DesignResourceMap.APP_LEVEL);
         }
@@ -105,6 +108,17 @@ class ResourceUtils {
             resMap = createDesignResourceMap(srcFile, null);
         }
         return resMap;
+    }
+
+    private static ResourceMap getAppDefaultResourceMap(FileObject srcFile, String appClassName) {
+        FileObject appFO = AppFrameworkSupport.getFileForClass(srcFile, appClassName);
+        // TBD this is provisional code - we should go through all subclasses of
+        // the current user's application
+        appClassName = application.Application.class.getName();
+        String[] bundleNames = new String[] { getBundleName(appClassName) };
+        return new ResourceMap(null,
+                ClassPath.getClassPath(srcFile, ClassPath.EXECUTE).getClassLoader(true),
+                bundleNames);
     }
 
     static DesignResourceMap getAppDesignResourceMap(Project project) {
