@@ -1164,6 +1164,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         blockingType.setEnabled(false);
         
         backgroundTaskCheckbox.setEnabled(false);
+        backgroundTaskCheckbox.setSelected(false);
     }
     
     private void clearFieldsForNewAction() {
@@ -1202,6 +1203,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         backgroundTaskLabel.setText("");
         backgroundTaskLabel.setVisible(false);
         backgroundTaskCheckbox.setSelected(false);
+        backgroundTaskCheckbox.setEnabled(true);
         backgroundTaskCheckbox.setVisible(true);
     }
     
