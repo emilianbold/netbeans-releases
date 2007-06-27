@@ -117,7 +117,9 @@ public abstract class JMXTestCase extends JellyTestCase {
      * Compile the specified project.
      */
     public void compileProject(String name) {
-        ProjectRootNode prn = (ProjectRootNode)selectNode(name);
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(name);
+        prn.select();
         prn.buildProject();
     }
     
@@ -125,8 +127,10 @@ public abstract class JMXTestCase extends JellyTestCase {
      * Test the specified project.
      */
     public void testProject(String name) {
-        ProjectRootNode prn = (ProjectRootNode)selectNode(name);
-        prn.performPopupAction("Test Project");
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(name);
+        prn.select();
+        prn.performPopupAction("Test");
     }
     
     // ==================================================================
