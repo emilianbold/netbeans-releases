@@ -268,7 +268,7 @@ public class J2SEProjectGenerator {
         ep.setProperty(J2SEProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+        ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, "${"+J2SEProjectProperties.SOURCE_ENCODING+"}"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc.name());
