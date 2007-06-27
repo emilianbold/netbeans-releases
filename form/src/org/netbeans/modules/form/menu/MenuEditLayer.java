@@ -710,31 +710,13 @@ public class MenuEditLayer extends JPanel {
     
     
     void addRadComponentToBefore(RADVisualComponent payloadRad, JComponent target) {
-        try {
-            JComponent targetParent = getMenuParent(target);
-            if(target.getParent() instanceof JMenuBar) {
-                targetParent = (JComponent) target.getParent();
-            }
-            p("target parent = " + targetParent);
-            RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
-            p("target rad = " + targetRad);
-            RADVisualContainer targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-            p("target parent rad = " + targetParentRad);
-            
-            assert targetParentRad != null;
-            
-            p("=== inserting before drop target component ===");
-            int index2 = targetParentRad.getIndexOf(targetRad);
-            p("inserting at index: " + index2);
-            FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
-            formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        
+        addRadComponentTo(payloadRad, target, +0);
     }
     
     void addRadComponentToAfter(RADVisualComponent payloadRad, JComponent target) {
+        addRadComponentTo(payloadRad, target, +1);
+    }
+    private void addRadComponentTo(RADVisualComponent payloadRad, JComponent target, int offset) {
         try {
             JComponent targetParent = getMenuParent(target);
             if(target.getParent() instanceof JMenuBar) {
@@ -749,7 +731,7 @@ public class MenuEditLayer extends JPanel {
             assert targetParentRad != null;
             
             p("=== inserting before drop target component ===");
-            int index2 = targetParentRad.getIndexOf(targetRad) + 1;
+            int index2 = targetParentRad.getIndexOf(targetRad) + offset;
             p("inserting at index: " + index2);
             FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
             formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);
@@ -802,12 +784,12 @@ public class MenuEditLayer extends JPanel {
     }
     
     void moveRadComponentToBefore(JComponent payload, JComponent target) {
-        moveRadComponentToBefore(payload, target, 0);
+        moveRadComponentTo(payload, target, 0);
     }
     void moveRadComponentToAfter(JComponent payload, JComponent target) {
-        moveRadComponentToBefore(payload, target, 1);
+        moveRadComponentTo(payload, target, 1);
     }
-    void moveRadComponentToBefore(JComponent payload, JComponent target, int offset) {
+    private void moveRadComponentTo(JComponent payload, JComponent target, int offset) {
         try {
             if(payload == target) {
                 p("can't move onto self");
