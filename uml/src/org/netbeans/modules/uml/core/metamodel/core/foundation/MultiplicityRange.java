@@ -404,7 +404,7 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
         String retVal = super.getAttributeValue("collectionType");
         
         Preferences prefs = NbPreferences.forModule (MultiplicityRange.class);
-        boolean useCollection = prefs.getBoolean("UML_USE_GENERICS_DEFAULT", false);
+        boolean useCollection = prefs.getBoolean("UML_USE_GENERICS_DEFAULT", true);
         
         if((retVal == null) || (retVal.length() == 0))
         {
