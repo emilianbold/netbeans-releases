@@ -58,6 +58,11 @@ public final class MidpDocumentSupport {
     
     public static DesignComponent getCategoryComponent(DesignDocument document, TypeID categoryType) {
         List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(document.getRootComponent(), categoryType);
+        if (list.size () == 0  &&  document.getTransactionManager ().isWriteAccess ()) {
+            DesignComponent categoryComponent = document.createComponent (categoryType);
+            document.getRootComponent ().addComponent (categoryComponent);
+            return categoryComponent;
+        }
         assert list.size() == 1;
         return list.get(0);
     }
