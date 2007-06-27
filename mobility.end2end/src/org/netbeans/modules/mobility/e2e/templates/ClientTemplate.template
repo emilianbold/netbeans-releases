@@ -34,7 +34,7 @@ public class ${service.getClassName()} {
      */
     public ${service.getClassName()}() {
     <#assign server = mapping.getServerMapping()/>
-        this("http://${server.getLocation()}:${server.getPort()}/servlet/${server.getPackageName()}.${server.getClassName()}");
+        this("http://${server.getLocation()}:${server.getPort()}/${server.getServletLocation()}");
     }
     
     /**
