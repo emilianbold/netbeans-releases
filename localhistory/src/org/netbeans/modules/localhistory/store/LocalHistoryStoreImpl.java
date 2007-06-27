@@ -672,7 +672,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         File labelsFile = new File(store, LABELS_FILE);        
         Map<Long, String> labels = emptyLabels;
         if(labelsFile.exists()) {
-            labels = getLabels(labelsFile);
+            labels = getLabels(labelsFile);            
         }
         for(File f : files) {      
             // XXX check the timestamp when touched
@@ -693,7 +693,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } else {
             if(labels.size() > 0) {
                 writeLabels(labelsFile, labels);
-            } 
+            } else {
+                labelsFile.delete();            
+            }
         }                       
         return !skipped;
     }
