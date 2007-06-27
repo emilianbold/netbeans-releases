@@ -56,9 +56,9 @@ public final class StyleBuilderTopComponent extends TopComponent {
     
     private static StyleBuilderTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/css/resources/style_builder_view_toolbar.png";
+    static final String ICON_PATH = "org/netbeans/modules/css/resources/style_builder_view_toolbar.png"; //NOI18N
     
-    private static final String PREFERRED_ID = "StyleBuilderTC";
+    private static final String PREFERRED_ID = "StyleBuilderTC"; //NOI18N
     
     private StyleBuilderPanel styleBuilderPanel = StyleBuilderPanel.createInstance();
     
@@ -124,7 +124,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(StyleBuilderTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
             return getDefault();
         }
         if (win instanceof StyleBuilderTopComponent) {
@@ -132,7 +132,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
         }
         Logger.getLogger(StyleBuilderTopComponent.class.getName()).warning(
                 "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
     }
     
@@ -162,7 +162,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
     
     public void setContent(CssPreviewable.Content content){
         CssRule rule = content.selectedRule();
-        setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);
+        setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
         styleBuilderPanel.setContent(content);
     }
     
@@ -185,7 +185,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
             jScrollPane1.setViewportView(NO_RULE_SELECTED_PANEL);
             break;
         default:
-            throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode);
+            throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode); //NOI18N
         }
         
         
