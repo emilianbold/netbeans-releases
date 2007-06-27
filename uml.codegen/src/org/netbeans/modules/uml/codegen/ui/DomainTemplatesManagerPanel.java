@@ -21,16 +21,12 @@ package org.netbeans.modules.uml.codegen.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JTree;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -181,6 +177,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 }
             }
         }
+        
+        templatesTree.getModel().addTreeModelListener(this);
     }
     
     
@@ -891,19 +889,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
                 (DefaultTableModel)templatesTable.getModel());
         }
     }
-    
-    
-    private void showButtons(boolean flag)
-    {
-        // tree buttons
-        addButton.setVisible(flag);
-        removeButton.setVisible(flag);
-        
-        // table buttons
-        addRowButton.setVisible(flag);
-        modifyRowButton.setVisible(flag);
-        removeRowButton.setVisible(flag);
-    }
+
     
     private final static int ENABLE_ADD_REMOVE_BUTTONS = 0;
     private final static int ENABLE_ADD_BUTTON = 1;
@@ -1003,8 +989,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             tblMdl = new DefaultTableModel();
         
         templatesTable.setModel(tblMdl);
-//        templatesTable.getModel().addTableModelListener(this);
-//        templatesTable.getSelectionModel().addListSelectionListener(this);
+        // templatesTable.getSelectionModel().addListSelectionListener(this);
     }
     
     private void clearTemplatesTable()
@@ -1019,7 +1004,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     }
     
     
-    public void treeExpanded(TreeExpansionEvent event)
+    private void treeExpanded(TreeExpansionEvent event)
     {
         // if root node, no need to proceed
         if (event.getPath().getPathCount() == 1)
@@ -1029,7 +1014,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             .getLastPathComponent()).toString()), true);
     }
     
-    public void treeCollapsed(TreeExpansionEvent event)
+    private void treeCollapsed(TreeExpansionEvent event)
     {
         // if root node, no need to proceed
         if (event.getPath().getPathCount() == 1)
