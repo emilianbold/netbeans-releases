@@ -186,7 +186,6 @@ public class CompletionUtil {
         if(element == null)
             return null;
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
-        String typedChars = context.getTypedChars();
         for(AbstractAttribute aa: element.getAttributes()) {
             if(aa.getTargetNamespace() == null) {  //no namespace
                 results.add(createResultItem(aa, null, context));
@@ -211,7 +210,6 @@ public class CompletionUtil {
             return null;
         
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
-        String typedChars = context.getTypedChars();
         for(AbstractElement ae: element.getChildElements()) {
             if(ae.getTargetNamespace() == null) {  //no namespace
                 results.add(createResultItem(ae, null, context));

@@ -93,11 +93,17 @@ public abstract class CompletionResultItem implements CompletionItem {
         try {
             doc.remove( offset, len );
             doc.insertString( offset, text, null);
+            //for attributes, place the cursor between the double-quotes.
+            if(this instanceof AttributeResultItem) {
+                System.out.println("offset: " + offset);
+                System.out.println("text: " + text);
+                component.setCaretPosition(offset+text.length()-1);
+            }
+            
             StartTag docRoot = context.getDocRoot();
             String prefix = CompletionUtil.getPrefixFromTag(text);
             if(prefix == null)
-                return true;
-            
+                return true;            
             //insert namespace declaration for the new prefix
             if(!context.isPrefixBeingUsed(prefix)) {
                 String tns = context.getTargetNamespaceByPrefix(prefix);
@@ -105,10 +111,7 @@ public abstract class CompletionResultItem implements CompletionItem {
                         docRoot.getElementLength()-1, " "+
                         XMLConstants.XMLNS_ATTRIBUTE+":"+prefix+"=\"" +
                         tns + "\"", null);
-            }
-            //reformat the line
-            //((ExtFormatter)doc.getFormatter()).reformat(doc,
-            //Utilities.getRowStart(doc, offset), offset+text.length(), true);
+            }            
         } catch( BadLocationException exc ) {
             return false;    //not sucessfull
         } finally {
