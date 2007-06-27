@@ -72,6 +72,7 @@ import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
+import org.netbeans.modules.web.jsf.navigation.graph.actions.MyActionMapAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
@@ -166,7 +167,10 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         
         InputMap inputMap = MapActionUtility.initInputMap();
         ActionMap actionMap = MapActionUtility.initActionMap();
-        actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
+        //Temporary workaround  ISSUE# 107506
+        actions.addAction(new MyActionMapAction(inputMap, actionMap));    
+        MyActionMapAction action = new MyActionMapAction(null,null);
+//        actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         
         
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
@@ -213,9 +217,11 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         ActionMap actionMap = tc.getActionMap();
         CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(DeleteAction.class);
         //        Action action = new PageFlowDeleteAction(this);
-        actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));
+        actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));        
         
-        return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
+        //Temporary workaround  ISSUE# 107506
+//        return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
+        return new MyActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
         
     }
     
@@ -294,7 +300,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         return nodeWidget;
     }
     
-    private WidgetAction createActionMapAction( Page page){
+    private WidgetAction createActionMapAction( Page page ){
         InputMap inputMap = new InputMap();
         ActionMap actionMap = new ActionMap();
         Action[] actions = page.getActions(true);
@@ -308,8 +314,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         if (actionMap.size() < 1 ) {
             return null;
         }
-        
-        return  ActionFactory.createActionMapAction(inputMap, actionMap);
+        return new MyActionMapAction(inputMap, actionMap);
+//        return  ActionFactory.createActionMapAction(inputMap, actionMap);
     
     }
     
