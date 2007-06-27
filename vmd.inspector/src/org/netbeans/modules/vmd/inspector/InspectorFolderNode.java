@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
@@ -57,6 +58,7 @@ final class InspectorFolderNode extends AbstractNode {
     private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
     private Transferable transferable;
+    static long i = 0;
     
     
     InspectorFolderNode(DataObjectContext context) {
@@ -95,6 +97,10 @@ final class InspectorFolderNode extends AbstractNode {
         return folder.canRename();
     }
     
+    public AcceptSuggestion createSuggestion(Transferable transferable) {
+        return folder.createSuggestion(transferable);
+    }
+    
     public void setName(final String name) {
         if (name == null)
             throw new IllegalArgumentException("Argument name cant be null"); //NOI18N
@@ -131,15 +137,18 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     protected void createPasteTypes(Transferable t, java.util.List s) {
+        System.out.println(component.get());
         super.createPasteTypes(t, s);
-        if (!t.isDataFlavorSupported(INSPECTOR_NODE_DATA_FLAVOR))
+        
+        if (!t.isDataFlavorSupported(INSPECTOR_NODE_DATA_FLAVOR)) 
             return;
-        PasteType paste = getDropType(t, DnDConstants.ACTION_COPY_OR_MOVE, -1 );
+        
+        PasteType paste = getDropType(t, DnDConstants.ACTION_COPY_OR_MOVE, -1);
         if( paste != null)
             s.add(paste);
     }
     
-    public PasteType getDropType(final Transferable t, final int action, int index) {
+    public PasteType getDropType(final Transferable t, final int action, final int index) {
         final PasteType[] pasteType = new PasteType[1];
         if (!t.isDataFlavorSupported(INSPECTOR_NODE_DATA_FLAVOR))
             return null;
@@ -147,14 +156,14 @@ final class InspectorFolderNode extends AbstractNode {
             return null;
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (component.get() != null && AcceptSupport.isAcceptable(component.get(), t, null)) {
+                final AcceptSuggestion suggestion = createSuggestion(t);
+                if (component.get() != null && AcceptSupport.isAcceptable(component.get(), t, suggestion)) {
                     pasteType[0] = new PasteType() {
                         public Transferable paste() throws IOException {
                             component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
                                 public void run() {
-                                    if (component.get() != null && AcceptSupport.isAcceptable(component.get(), t, null)) {
+                                    if (component.get() != null && AcceptSupport.isAcceptable(component.get(), t, suggestion)) {
                                         AcceptSupport.accept(component.get(), t, null);
-                                        System.out.println("Drop " + component.get());
                                     }
                                 }
                             });
@@ -164,7 +173,6 @@ final class InspectorFolderNode extends AbstractNode {
                 }
             }
         });
-        
         return pasteType[0];
     }
     
@@ -190,7 +198,7 @@ final class InspectorFolderNode extends AbstractNode {
     public Transferable clipboardCut() throws IOException {
         return transferable;
     }
-
+    
     public boolean canDestroy() {
         return true;
     }
@@ -217,7 +225,7 @@ final class InspectorFolderNode extends AbstractNode {
     private class NodeTransferable implements Transferable {
         
         private WeakReference<DesignComponent> component;
-
+        
         public NodeTransferable(DesignComponent component) {
             assert (component != null);
             this.component = new WeakReference<DesignComponent>(component);

@@ -78,6 +78,8 @@ public class MidpAcceptTrensferableKindPresenter extends AcceptPresenter {
     }
     
     public boolean isAcceptable(Transferable transferable, AcceptSuggestion suggestion) {
+        if (getComponent().getDocument().getSelectedComponents().size() > 1) 
+            return false;
         if (typesMap.values().isEmpty())
             throw new IllegalArgumentException("No types to check. Use addNewType method to add types to check"); //NOI18N
         

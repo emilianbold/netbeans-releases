@@ -36,7 +36,6 @@ import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import org.netbeans.modules.vmd.midp.components.categories.*;
 import org.netbeans.modules.vmd.midp.inspector.controllers.RootPC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -48,6 +47,9 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.InputEvent;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
+import org.netbeans.modules.vmd.midp.screen.MidpScreenDeviceInfo;
+
 
 /**
  * @author David Kaspar
@@ -55,6 +57,8 @@ import java.util.List;
 public final class RootCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#Root");  // NOI18N 
+
+    private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/mobile_device_16.png";  // NOI18N 
 
     public static final String  PROP_VERSION = "version";  // NOI18N
 
@@ -98,7 +102,7 @@ public final class RootCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic("MIDP Visual Design", null, MobileDeviceCD.ICON_PATH),
+            InfoPresenter.createStatic("MIDP Visual Design", null, ICON_PATH),
             // properties
             createPropertiesPresenter(),
             // validator
@@ -120,7 +124,9 @@ public final class RootCD extends ComponentDescriptor {
                     "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while"
             ),
             // delete
-            DeletePresenter.createIndeliblePresenter ()
+            DeletePresenter.createIndeliblePresenter (),
+            // screen
+            ScreenDeviceInfoPresenter.create(new MidpScreenDeviceInfo())
         );
     }
 

@@ -53,13 +53,18 @@ public final class FormAcceptPresenterSupport {
     public static Presenter createImageAcceptPresenter() {
         return new FormTypeAccepter().addType(ImageCD.TYPEID, ImageItemCD.PROP_IMAGE);
     }
-    
+    /*
+    public static Presenter createItemAtLastIndexAcceptPresenter() {
+        return new ItemFormAcceptPresenter();
+    }
+    */
     private static class FormFileAcceptPresenter extends FileAcceptPresenter {
         
         private FormFileAcceptPresenter(String... fileExtensions) {
             super(FormCD.PROP_ITEMS, ImageItemCD.TYPEID, fileExtensions);
         }
         
+        @Override
         public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
             DesignDocument document = getComponent().getDocument();
             Result result = super.accept(transferable, suggestion);
@@ -80,6 +85,7 @@ public final class FormAcceptPresenterSupport {
     
     private static class FormTypeAccepter extends MidpAcceptTrensferableKindPresenter {
         
+        @Override
         public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
             DesignDocument document = getComponent().getDocument();
             DesignComponent image = DesignComponentDataFlavorSupport.getTransferableDesignComponent(transferable);
@@ -93,5 +99,39 @@ public final class FormAcceptPresenterSupport {
             return new Result(imageItem);
         }
     }
-    
+    /*
+    private static class ItemFormAcceptPresenter extends AcceptPresenter {
+
+        private ItemFormAcceptPresenter() {
+            super(AcceptPresenter.Kind.TRANSFERABLE);
+        }
+        
+        @Override
+        public boolean isAcceptable(Transferable transferable, AcceptSuggestion suggestion) {
+            if (getComponent().getDocument().getSelectedComponents().size() > 1)
+                return false;
+            DesignComponent component = DesignComponentDataFlavorSupport.getTransferableDesignComponent(transferable);
+            List<PropertyValue> array = getComponent().readProperty(FormCD.PROP_ITEMS).getArray();
+            for (PropertyValue value : array) {
+                if (value.getComponent() == component)
+                    return true;
+            }
+            return false;
+        }
+        
+        @Override
+        public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
+            DesignComponent component = DesignComponentDataFlavorSupport.getTransferableDesignComponent(transferable);
+            List<PropertyValue> array = getComponent().readProperty(FormCD.PROP_ITEMS).getArray();
+            List<PropertyValue> newArray = new ArrayList<PropertyValue>(array);
+            for (PropertyValue value : array) {
+                if (value.getComponent() == component)
+                    newArray.remove(value);
+            }
+            newArray.add(PropertyValue.createComponentReference(component));
+            getComponent().writeProperty(FormCD.PROP_ITEMS, PropertyValue.createArray(ItemCD.TYPEID , newArray));        
+            return super.accept(transferable, suggestion);
+        }
+    }
+    */
 }

@@ -30,6 +30,8 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenFileObjectListener;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -37,11 +39,13 @@ import java.awt.*;
  */
 public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
     
-    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/image-broken.png"; // NOI18N
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JLabel imageLabel;
     private JLabel stringLabel;
+    private ScreenFileObjectListener imageFileListener;
+    private FileObject imageFileObject;
     
     public AbstractInfoDisplayPresenter() {
         imageLabel = new JLabel();
@@ -67,28 +71,41 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
         DesignComponent imageComponent = getComponent().readProperty(AbstractInfoScreenCD.PROP_IMAGE).getComponent();
         String path = null;
         if (imageComponent != null)
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
+        if (imageFileObject != null) {
+            imageFileObject.removeFileChangeListener(imageFileListener);
+            imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
+            imageFileObject.addFileChangeListener(imageFileListener);
+        }
         if (icon != null) {
-            imageLabel.setText (null);
+            imageLabel.setText(null);
             imageLabel.setIcon(icon);
         } else if (path != null) {
             imageLabel.setText(path);
             imageLabel.setIcon(ICON_BROKEN);
         } else {
             imageLabel.setIcon(null);
-            imageLabel.setText("<image not specified>"); //NOI18N
+            imageLabel.setText("<image not specified>"); //TODO
         }
         
         String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
         stringLabel.setText(text);
-
+        
         DesignComponent font = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT).getComponent();
         stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));
+    }
+    
+    @Override
+    protected void notifyDetached(DesignComponent component) {
+        if (imageFileObject != null && imageFileListener != null)
+            imageFileObject.removeFileChangeListener(imageFileListener);
+        imageFileObject = null;
+        imageFileListener = null;
     }
     
 }

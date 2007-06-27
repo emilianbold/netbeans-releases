@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -33,7 +32,6 @@ import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Exceptions;
@@ -47,6 +45,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -73,6 +72,8 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     private JLabel state;
     private JLabel image;
     private JLabel label;
+    private ScreenFileObjectListener imageFileListener;
+    private FileObject imageFileObject;
     
     public ChoiceElementDisplayPresenter() {
         view = new JPanel();
@@ -125,6 +126,12 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         if (imageComponent != null)
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
+        if (imageFileObject != null) {
+            imageFileObject.removeFileChangeListener(imageFileListener);
+            imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
+            imageFileObject.addFileChangeListener(imageFileListener);
+        }
         if (icon != null) {
             image.setIcon(icon);
         } else if (path != null) {
@@ -163,18 +170,26 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR)))
             return null;
         
-        Position horizontalPosition = null;
-        Position verticalPosition = null;
+        ScreenDeviceInfo.Edge horizontalPosition = null;
+        ScreenDeviceInfo.Edge verticalPosition = null;
         
         try {
-            horizontalPosition = (Position) transferable.getTransferData(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR);
-            verticalPosition = (Position) transferable.getTransferData(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR);
+            horizontalPosition = (ScreenDeviceInfo.Edge) transferable.getTransferData(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR);
+            verticalPosition = (ScreenDeviceInfo.Edge) transferable.getTransferData(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR);
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new MoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
+        return new ScreenMoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
+    }
+    
+    @Override
+    protected void notifyDetached(DesignComponent component) {
+        if (imageFileObject != null && imageFileListener != null)
+            imageFileObject.removeFileChangeListener(imageFileListener);
+        imageFileObject = null;
+        imageFileListener = null;
     }
     
 }

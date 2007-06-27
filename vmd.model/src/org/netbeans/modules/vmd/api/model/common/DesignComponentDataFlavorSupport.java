@@ -31,7 +31,11 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 public final class DesignComponentDataFlavorSupport {
 
     private static String HUMAN_READABLE_NAME = "Design Component flavor"; //NOI18N
+    
     public static DataFlavor DESIGN_COMPONENT_DATA_FLAVOR = new DataFlavor(DesignComponent.class, HUMAN_READABLE_NAME);
+    
+    private DesignComponentDataFlavorSupport() {
+    }
     
     public static DesignComponent getTransferableDesignComponent(Transferable transferable) {
         if (!transferable.isDataFlavorSupported(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR))

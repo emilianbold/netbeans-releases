@@ -309,9 +309,10 @@ public final class PropertyValue {
         if (type == null)
             return true;
         if (kind == Kind.REFERENCE)
-            return component.getDocument ().getDescriptorRegistry ().isInHierarchy (requiredType, component.getType ());        return type.equals (requiredType);
+            return component.getDocument ().getDescriptorRegistry ().isInHierarchy (requiredType, component.getType ());        
+        return type.equals (requiredType);
     }
-
+    
     /**
      * Returns whether the property value is compatible with a specified property descriptor.
      * @param propertyDescriptor the property descriptor

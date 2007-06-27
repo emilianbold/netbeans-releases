@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 
 /**
@@ -105,6 +106,7 @@ public final class FormCD extends ComponentDescriptor {
                 // accept
                 FormAcceptPresenterSupport.createImageAcceptPresenter(),
                 FormAcceptPresenterSupport.createFileAcceptPresenter("png","jpg","gif"), //NOI18N
+                new ScreenMoveArrayAcceptPresenter(FormCD.PROP_ITEMS, ItemCD.TYPEID),
                 new AcceptTypePresenter(ItemCD.TYPEID) {
                     protected void notifyCreated(DesignComponent component) {
                         super.notifyCreated(component);
@@ -115,7 +117,8 @@ public final class FormCD extends ComponentDescriptor {
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
                 // inspector
                 InspectorPositionPresenter.create(new DisplayablePC()),
-                MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() , ItemCD.TYPEID), //NOI18N //TODO
+                MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() ,
+                ItemCD.TYPEID), //NOI18N //TODO
                 // code
                 createSetterPresenter(),
                 // flow
@@ -125,7 +128,6 @@ public final class FormCD extends ComponentDescriptor {
                 // screen
                 new FormDisplayPresenter(),
                 new FormResourceCategoriesPresenter()
-                
                 );
     }
     

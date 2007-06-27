@@ -29,7 +29,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  *
  * @author Karol Harezlak
  */
-abstract class CategoryFolder implements InspectorFolder {
+abstract class CategoryFolder extends InspectorFolder {
 
     public Long getComponentID() {
         return null;

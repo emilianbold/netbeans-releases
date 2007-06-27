@@ -31,6 +31,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -44,6 +45,8 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JLabel label;
+    private ScreenFileObjectListener imageFileListener;
+    private FileObject imageFileObject;
     
     public ImageItemDisplayPresenter() {
         label = new JLabel();
@@ -58,7 +61,12 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         String alternText = (String) getComponent().readProperty(ImageItemCD.PROP_ALT_TEXT).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        
+        imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
+        if (imageFileObject != null) {
+            imageFileObject.removeFileChangeListener(imageFileListener);
+            imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
+            imageFileObject.addFileChangeListener(imageFileListener);
+        }
         if (icon != null) {
             label.setText(null);
             label.setIcon(icon);
@@ -76,5 +84,13 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         descriptors.addAll(super.getPropertyDescriptors());
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), label, imagePropertyEditor));
         return descriptors;
+    }
+     
+     @Override
+    protected void notifyDetached(DesignComponent component) {
+        if (imageFileObject != null && imageFileListener != null)
+            imageFileObject.removeFileChangeListener(imageFileListener);
+        imageFileObject = null;
+        imageFileListener = null;
     }
 }

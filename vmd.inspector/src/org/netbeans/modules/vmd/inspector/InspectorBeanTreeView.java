@@ -71,7 +71,6 @@ final class InspectorBeanTreeView extends BeanTreeView {
                 }
                 collapseNode(parentNode);
             }
-            
         });
         
         tree.addMouseListener(new MouseListener() {
@@ -100,5 +99,6 @@ final class InspectorBeanTreeView extends BeanTreeView {
             putValue(Action.SMALL_ICON, new ImageIcon(icon));
         }
     }
+    
     
 }

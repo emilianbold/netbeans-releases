@@ -37,7 +37,6 @@ import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -49,6 +48,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ChoiceElementDisplayPresente
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 /**
  * @author David Kaspar
@@ -102,6 +102,8 @@ public final class ChoiceElementCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // general
+                
+                // general
                 InfoPresenter.create(ElementSupport.createChoiceElementInfoResolver()),
                 // inspector
                 new InspectorFolderComponentPresenter(true),
@@ -120,11 +122,11 @@ public final class ChoiceElementCD extends ComponentDescriptor {
             }
         },
                 // screen
-                new ChoiceElementDisplayPresenter(),
-                new MoveArrayAcceptPresenter(ChoiceGroupCD.PROP_ELEMENTS, ChoiceElementCD.TYPEID),
+                new ChoiceElementDisplayPresenter(),new ScreenMoveArrayAcceptPresenter(ChoiceGroupCD.PROP_ELEMENTS, ChoiceElementCD.TYPEID),
                 new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), //NOI18N
                 MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
                 MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
+                
                 );
     }
     

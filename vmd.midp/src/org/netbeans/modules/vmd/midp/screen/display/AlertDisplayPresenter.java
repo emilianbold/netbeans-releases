@@ -28,6 +28,7 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -40,6 +41,8 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
     
     private JLabel imageLabel;
     private JLabel stringLabel;
+    private ScreenFileObjectListener imageFileListener;
+    private FileObject imageFileObject;
     
     public AlertDisplayPresenter() {
         imageLabel = new JLabel();
@@ -74,6 +77,12 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         if (imageComponent != null)
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+        imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
+        if (imageFileObject != null) {
+            imageFileObject.removeFileChangeListener(imageFileListener);
+            imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
+            imageFileObject.addFileChangeListener(imageFileListener);
+        }
         if (icon != null) {
             imageLabel.setIcon(icon);
         } else if (path != null) {
@@ -81,5 +90,13 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         } else {
             imageLabel.setIcon(null);
         }
+    }
+    
+    @Override
+    protected void notifyDetached(DesignComponent component) {
+        if (imageFileObject != null && imageFileListener != null)
+            imageFileObject.removeFileChangeListener(imageFileListener);
+        imageFileObject = null;
+        imageFileListener = null;
     }
 }

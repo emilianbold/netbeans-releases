@@ -18,19 +18,33 @@
  */
 package org.netbeans.modules.vmd.api.screen.display;
 
-import java.awt.datatransfer.DataFlavor;
+import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
  *
  * @author Karol Harezlak
  */
-public final class ScreenDisplayDataFlavorSupport {
-   
-    /**
-     */ 
-    public static DataFlavor HORIZONTAL_POSITION_DATA_FLAVOR = new DataFlavor(ScreenDisplayDataFlavorSupport.class,"Horizontal position"); //NOI18N
-    /**
-     */ 
-    public static DataFlavor VERTICAL_POSITION_DATA_FLAVOR = new DataFlavor(ScreenDisplayDataFlavorSupport.class,"Vertical position"); //NOI18N
+
+public abstract class ScreenDeviceInfoPresenter extends Presenter{
     
+    public static ScreenDeviceInfoPresenter create(ScreenDeviceInfo deviceInfo) {
+        return new DefaultDeviceInfoPresenter(deviceInfo);
+    }
+    
+    public abstract ScreenDeviceInfo getScreenDeviceInfo();
+    
+    
+    private static class DefaultDeviceInfoPresenter extends ScreenDeviceInfoPresenter {
+        
+        private ScreenDeviceInfo deviceInfo;
+
+        public DefaultDeviceInfoPresenter(ScreenDeviceInfo deviceInfo) {
+            this.deviceInfo = deviceInfo;
+        }
+        
+        public ScreenDeviceInfo getScreenDeviceInfo() {
+            return deviceInfo;
+        }
+        
+    }
 }

@@ -21,9 +21,7 @@ package org.netbeans.modules.vmd.api.inspector.common;
 
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
-
 import javax.swing.SwingUtilities;
-
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;

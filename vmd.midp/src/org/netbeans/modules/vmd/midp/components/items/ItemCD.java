@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemCommandListenerCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
@@ -171,6 +171,8 @@ public class ItemCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
+                
+                // properties
                 createPropertiesPresenter(),
                 // inspector
                 new InspectorFolderComponentPresenter(true),
@@ -178,7 +180,7 @@ public class ItemCD extends ComponentDescriptor {
                 MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
                 // accept
                 new AcceptItemCommandPresenter (),
-                new MoveArrayAcceptPresenter(FormCD.PROP_ITEMS, ItemCD.TYPEID),
+                new ScreenMoveArrayAcceptPresenter(FormCD.PROP_ITEMS, ItemCD.TYPEID),
                 // action
                 EditDependencyPresenter.createEditablePresenter(),
                 // code
@@ -206,6 +208,8 @@ public class ItemCD extends ComponentDescriptor {
                 // screen
                 new ItemDisplayPresenter (),
                 new DisplayableResourceCategoriesPresenter()
+        
+        
         
         );
     }

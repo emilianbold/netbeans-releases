@@ -20,6 +20,8 @@
 
 package org.netbeans.modules.vmd.screen.device;
 
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -28,6 +30,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.screen.display.DeviceTheme;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 
 /**
@@ -55,7 +58,7 @@ public class DummyDisplayPresenter extends ScreenDisplayPresenter {
     }
 
     public void reload (ScreenDeviceInfo deviceInfo) {
-        panel.setBackground (deviceInfo.getDeviceTheme ().getColor (ScreenDeviceInfo.DeviceTheme.COLOR_BACKGROUND));
+        panel.setBackground (deviceInfo.getDeviceTheme ().getColor (DeviceTheme.Colors.BACKGROUND));
     }
 
     public JComponent getView () {

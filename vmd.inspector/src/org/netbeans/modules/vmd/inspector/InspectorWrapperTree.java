@@ -464,7 +464,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         return componentsToAdd;
     }
     
-    private class RootFolder implements InspectorFolder {
+    private class RootFolder extends InspectorFolder {
         
         public TypeID getTypeID() {
             return new TypeID(TypeID.Kind.PRIMITIVE, ""); //NOI18N

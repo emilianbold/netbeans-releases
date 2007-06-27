@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.inspector;
 
+import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.openide.nodes.AbstractNode;
 
 
@@ -149,6 +151,10 @@ final class InspectorFolderWrapper {
     
     Collection<InspectorFolder> getChildrenFolders() {
         return childrenFolders;
+    }
+    
+    public AcceptSuggestion createSuggestion(Transferable transferable) {
+        return folder.createSuggestion(transferable);
     }
     
     private void executeOrder() {

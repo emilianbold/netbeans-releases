@@ -39,7 +39,6 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresent
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -51,6 +50,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDispla
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 /**
  * @author David Kaspar
@@ -104,13 +104,13 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
+            
+            // info
             InfoPresenter.create (ElementSupport.createListElementInfoResolver ()),
             // properties
             createPropertiesPresenter (),
             // inspector
-            InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
-            // accept
-            new MoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
+            InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),new ScreenMoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
             new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
             MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
             MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
@@ -166,6 +166,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             },
             // screen
             new ListElementEventSourceDisplayPresenter()
+        
         );
     }
 

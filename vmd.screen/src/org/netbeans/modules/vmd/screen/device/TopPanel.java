@@ -52,8 +52,8 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
 import org.openide.util.Exceptions;
 
 
@@ -82,8 +82,8 @@ public class TopPanel extends JPanel {
     
     private DevicePanel devicePanel;
     private List<SelectionShape> selectionShapes = Collections.emptyList();
-    private Position horizontalPosition;
-    private Position verticalPosition;
+    private ScreenDeviceInfo.Edge horizontalPosition;
+    private ScreenDeviceInfo.Edge verticalPosition;
     
     private Point lastHoverPoint = null;
     private SelectionShape hoverShape = null;
@@ -241,13 +241,13 @@ public class TopPanel extends JPanel {
                 gr.setStroke(STROKE_DND_LINE);
                 gr.setColor(COLOR_DRAW_DND_LINE);
                 int space = 3;
-                if (verticalPosition == Position.SOUTH) {
+                if (verticalPosition == ScreenDeviceInfo.Edge.BOTTOM) {
                     int x1 = (int) hoverShape.x + space;
                     int y1 = hoverShape.y + (int) hoverShape.shape.getBounds().getHeight();
                     int x2 = (int) hoverShape.x + (int) hoverShape.shape.getBounds().getWidth() - space;
                     int y2 = (int) hoverShape.y + (int) hoverShape.shape.getBounds().getHeight();
                     gr.drawLine(x1, y1 , x2, y2);
-                } else if (verticalPosition == Position.NORTH) {
+                } else if (verticalPosition == ScreenDeviceInfo.Edge.TOP) {
                     int x1 = (int) hoverShape.x + space;
                     int y1 = hoverShape.y;
                     int x2 = (int) hoverShape.x + (int) hoverShape.shape.getBounds().getWidth() - space;
@@ -373,8 +373,7 @@ public class TopPanel extends JPanel {
             repaint();
     }
     
-    private Position[] updatePosition(final Point point) {
-        //lastHoverPoint = point != null ? point : null;
+    private void updatePosition(final Point point) {
         final DesignDocument document = devicePanel.getController().getDocument();
         if (document != null)
             document.getTransactionManager().readAccess(new Runnable() {
@@ -386,14 +385,18 @@ public class TopPanel extends JPanel {
                     if (presenter == null)
                         return;
                     Point editorOrigin = devicePanel.calculateTranslation(presenter.getView());
-                    double half = presenter.getView().getHeight() / 2;
-                    if ((editorOrigin.getY() + half) > point.getY())
-                        verticalPosition = Position.NORTH;
-                    else if ((editorOrigin.getY() + half) < point.getY())
-                        verticalPosition = Position.SOUTH;
+                    double halfVertical = presenter.getView().getHeight() / 2;
+                    double halfHorizontal = presenter.getView().getWidth() / 2;
+                    if ((editorOrigin.getY() + halfVertical) > point.getY())
+                        verticalPosition = ScreenDeviceInfo.Edge.TOP;
+                    else if ((editorOrigin.getY() + halfVertical) < point.getY())
+                        verticalPosition = ScreenDeviceInfo.Edge.BOTTOM;
+                    if ((editorOrigin.getX() + halfHorizontal) > point.getX())
+                        horizontalPosition = ScreenDeviceInfo.Edge.LEFT;
+                    else if ((editorOrigin.getX() + halfHorizontal) < point.getX())
+                        horizontalPosition = ScreenDeviceInfo.Edge.RIGHT;
                 }
             });
-            return null;
     }
     
     public boolean isAcceptable(final Point point, final Transferable transferable, final AcceptSuggestion suggestion) {
@@ -595,3 +598,5 @@ public class TopPanel extends JPanel {
     }
     
 }
+
+

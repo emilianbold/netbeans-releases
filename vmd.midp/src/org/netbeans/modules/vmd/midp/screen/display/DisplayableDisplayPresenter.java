@@ -32,7 +32,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
+
 
 /**
  * A presenter for Displayable MIDP class. ALl other presenters should

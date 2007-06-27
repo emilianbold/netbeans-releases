@@ -74,7 +74,7 @@ public final class InspectorFolderCategoryPresenter extends InspectorFolderPrese
     
     protected void presenterChanged(PresenterEvent event) {}
     
-    private class CategoryFolder implements InspectorFolder {
+    private class CategoryFolder extends InspectorFolder {
         
         private Image icon;
         private String displayName;

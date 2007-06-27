@@ -23,10 +23,10 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontFace;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontStyle;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontType;
+import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontFace;
+import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontSize;
+import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontStyle;
+import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontType;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
@@ -105,7 +105,6 @@ public final class ScreenSupport {
      * @return icon
      */
     public static Icon getIconFromImageComponent(DesignComponent imageComponent) {
-        // System.out.println("imageComponent: " + imageComponent);
         if (imageComponent == null)
             return null;
         String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
@@ -120,6 +119,26 @@ public final class ScreenSupport {
         FileObject imageFileObject = fileMap.keySet().iterator().next();
         if (imageFileObject != null) {
             return resolveImageForRoot(imageFileObject, imagePath);
+        }
+        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
+        return null;
+    }
+    
+     public static FileObject getFileObjectFromImageComponent(DesignComponent imageComponent) {
+        if (imageComponent == null)
+            return null;
+        String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+        
+        if (imagePath == null)
+            return null;
+        DesignDocument document = imageComponent.getDocument();
+        
+        Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
+        if (fileMap ==  null || fileMap.keySet().iterator().hasNext() == false)
+            return null;
+        FileObject imageFileObject = fileMap.keySet().iterator().next();
+        if (imageFileObject != null) {
+            return imageFileObject;
         }
         Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
         return null;

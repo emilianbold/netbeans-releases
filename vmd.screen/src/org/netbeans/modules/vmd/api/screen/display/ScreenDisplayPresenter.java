@@ -20,12 +20,15 @@
 package org.netbeans.modules.vmd.api.screen.display;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.DesignEvent;
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.DynamicPresenter;
+import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 
 /**
@@ -34,7 +37,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
  *
  * @author breh
  */
-public abstract class ScreenDisplayPresenter extends Presenter {
+public abstract class ScreenDisplayPresenter extends DynamicPresenter {
 
     public final DesignComponent getRelatedComponent () {
         return getComponent ();
@@ -95,5 +98,21 @@ public abstract class ScreenDisplayPresenter extends Presenter {
     public AcceptSuggestion createSuggestion(Transferable transferable) {
         return null;
     }
+
+    protected void designChanged(DesignEvent event) {
+    }
+
+    protected void notifyAttached(DesignComponent component) {
+    }
+
+    protected void notifyDetached(DesignComponent component) {
+    }
     
+    protected DesignEventFilter getEventFilter() {
+        return null;
+    }
+
+    protected void presenterChanged(PresenterEvent event) {
+    }
+   
 }

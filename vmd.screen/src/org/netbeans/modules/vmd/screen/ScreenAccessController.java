@@ -46,8 +46,8 @@ public final class ScreenAccessController implements AccessController, EditedScr
     
     private final DesignDocument document;
     
-    private final JPanel mainPanel;
-    private final DevicePanel devicePanel;
+    private JPanel mainPanel;
+    private DevicePanel devicePanel;
     private final ResourcePanel resourcePanel;
     
     private final JComboBox editedScreenCombo;
@@ -59,11 +59,7 @@ public final class ScreenAccessController implements AccessController, EditedScr
     // Called in document transaction
     public ScreenAccessController(final DesignDocument document) {
         this.document = document;
-        
-        devicePanel = new DevicePanel(this);
         resourcePanel = new ResourcePanel(this);
-        mainPanel = new MainPanel(devicePanel, resourcePanel);
-        
         editedScreenCombo = new JComboBox();
         editedScreenCombo.setRenderer(new EditedComboRenderer());
         editedScreenComboListener = new ActionListener() {
@@ -86,9 +82,9 @@ public final class ScreenAccessController implements AccessController, EditedScr
         editedScreenCombo.setSelectedItem(editedScreen);
         editedScreenCombo.addActionListener(editedScreenComboListener);
         
-        refreshPanels ();
+        refreshPanels();
     }
-
+    
     // Called in document transaction
     public void writeAccess(Runnable runnable) {
         runnable.run();
@@ -114,6 +110,10 @@ public final class ScreenAccessController implements AccessController, EditedScr
     // called in AWT and document transaction
     // call this method from notifyEventFired only
     private void refreshModel() {
+        if (devicePanel == null) {
+            devicePanel = new DevicePanel(this);
+            mainPanel = new MainPanel(devicePanel, resourcePanel);
+        }
         allEditableScreens = EditedScreenSupport.getAllEditableScreensInDocument(document);
         
         editedScreenCombo.removeActionListener(editedScreenComboListener);
@@ -123,7 +123,7 @@ public final class ScreenAccessController implements AccessController, EditedScr
         editedScreenCombo.setSelectedItem(editedScreen);
         editedScreenCombo.addActionListener(editedScreenComboListener);
         
-        if (editedScreen == null  &&  allEditableScreens.size () > 0) {
+        if (editedScreen == null  &&  allEditableScreens.size() > 0) {
             editedScreen = allEditableScreens.get(0);
             EditedScreenSupport.getSupportForDocument(document).setEditedScreenComponentID(editedScreen.getComponentID());
             return;
@@ -133,6 +133,8 @@ public final class ScreenAccessController implements AccessController, EditedScr
     }
     
     public void refreshPanels() {
+        if (devicePanel == null)
+            return;
         devicePanel.reload();
         resourcePanel.reload();
         mainPanel.validate();
@@ -170,11 +172,12 @@ public final class ScreenAccessController implements AccessController, EditedScr
         assert document.getTransactionManager().isAccess();
         return editedScreen;
     }
-
-    public void setScreenSize (Dimension deviceScreenSize) {
-        devicePanel.setScreenSize (deviceScreenSize);
+    
+    public void setScreenSize(Dimension deviceScreenSize) {
+        if (devicePanel != null)
+            devicePanel.setScreenSize(deviceScreenSize);
     }
-
+    
     private class EditedComboRenderer extends DefaultListCellRenderer {
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

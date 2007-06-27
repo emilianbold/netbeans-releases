@@ -108,6 +108,8 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // accept
+            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), //NOI18N
+            new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT),
             new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
             // properties
             createPropertiesPresenter(),
@@ -115,9 +117,8 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
             // screen
-            new AbstractInfoDisplayPresenter(),new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT).addType(ImageCD.TYPEID, PROP_IMAGE),
-            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
-            new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT)
+            new AbstractInfoDisplayPresenter(),
+            new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT).addType(ImageCD.TYPEID, PROP_IMAGE)
         );
     }
 
