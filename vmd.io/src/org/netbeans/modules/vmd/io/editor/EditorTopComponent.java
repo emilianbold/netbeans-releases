@@ -34,6 +34,7 @@ import java.awt.*;
 public class EditorTopComponent extends TopComponent {
     
     private JComponent view;
+    private ProxyLookup lookup;
 //    private InstanceContent ic;
     
     public EditorTopComponent(DataObjectContext context, Lookup lookup, JComponent view) {
@@ -42,7 +43,11 @@ public class EditorTopComponent extends TopComponent {
         setFocusable(true);
         add(view, BorderLayout.CENTER);
 //        ic = new InstanceContent();
-        associateLookup (new ProxyLookup(lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap())));
+        this.lookup = new ProxyLookup (lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap()));
+    }
+
+    public ProxyLookup getLookup () {
+        return lookup;
     }
 
     JComponent getView() {
