@@ -26,13 +26,18 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+// import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+// import org.netbeans.modules.web.jsf.JSFUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -49,7 +54,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private JSFConfigurationPanel panel;
     
     private ArrayList <Library> jsfLibraries;
-    private boolean webModule25Version = true;
+    private boolean addJSF = false;
 
     // <RAVE> Default Bean Package
     private boolean beanPackageModified = false;
@@ -60,7 +65,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         initComponents();
         this.panel = panel;
         initLibraries();
-        
+
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
         if (customizer){
@@ -472,6 +477,14 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
           return false;
         }
         
+        if (addJSF) {
+            if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtVersion.getText().trim().length() <= 0))
+                    || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
+                return false;
+            }
+        }
+        
         if (rbNewLibrary.isSelected()) {
             String folder = jtFolder.getText().trim();
             String version = jtVersion.getText().trim();
@@ -510,15 +523,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 return false;
             }
         }
-        
-        if (!webModule25Version && jsfLibraries.size() <= 0) {
-            if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtVersion.getText().trim().length() <= 0))
-                    || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
-                    NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF"));
-                return false;
-            }
-        }
+                
         
         if(wizardDescriptor!=null)
             wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
@@ -548,10 +553,44 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
     
     void read (WizardDescriptor d) {
+        boolean webModule25Version;
         if (d.getProperty("j2eeLevel").equals("1.5")) //NOI81N
             webModule25Version = true;
         else
             webModule25Version = false;
+        
+        String serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
+        try {
+            addJSF = false;
+            File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
+            boolean isJSF = JSFUtils.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
+            if (isJSF)
+                rbNoneLibrary.setSelected(true);
+            else if (webModule25Version) {
+                Library jsf12 = LibraryManager.getDefault().getLibrary("jsf12");
+                if (jsf12 != null) {
+                    rbRegisteredLibrary.setSelected(true);
+                    cbLibraries.setSelectedItem(jsf12.getDisplayName());
+                } else
+                    rbNewLibrary.setSelected(true);
+            } else {
+                Library[] libs = LibraryManager.getDefault().getLibraries();
+                Library lib = null;
+                for (int i = 0; i < libs.length; i++) {
+                    if (libs[i].getDisplayName().startsWith("JSF-")) {
+                        lib = libs[i];
+                        break;
+                    }
+                }
+                if (lib != null) {
+                    rbRegisteredLibrary.setSelected(true);
+                    cbLibraries.setSelectedItem(lib.getDisplayName());
+                } else
+                    rbNewLibrary.setSelected(true);
+                    addJSF = true;
+            }
+        } catch (IOException exc) {
+        }
         
 //        projectLocationPanel.read(d);
 //        optionsPanel.read(d);
