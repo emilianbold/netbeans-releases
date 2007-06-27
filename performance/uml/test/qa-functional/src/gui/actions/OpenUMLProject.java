@@ -19,6 +19,7 @@
 
 package gui.actions;
 
+import gui.UMLUtilities;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.WizardOperator;
@@ -75,6 +76,8 @@ public class OpenUMLProject extends org.netbeans.performance.test.utilities.Perf
     
     public ComponentOperator open(){
         openButton.pushNoBlock();
+        UMLUtilities.waitScanFinished();
+        UMLUtilities.waitForPendingBackgroundTasks();
         return null;
     }
     
