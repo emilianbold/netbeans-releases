@@ -32,7 +32,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Action to shutdown one or more JBI Components and/or Service Assemblies.
- * 
+ *
  * @author jqian
  */
 public abstract class ShutdownAction extends NodeAction {
@@ -74,7 +74,7 @@ public abstract class ShutdownAction extends NodeAction {
             ret = true;
             for (Node node : nodes) {
                 Lookup lookup = node.getLookup();
-                Shutdownable shutdownable = lookup.lookup(Shutdownable.class);                
+                Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
                 try {
                     if (shutdownable != null && !shutdownable.canShutdown()) {
                         ret = false;
@@ -97,8 +97,14 @@ public abstract class ShutdownAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    public void clearEnabledState() {
+        putProperty(PROP_ENABLED, null);
+    }
+    
     protected abstract boolean isForceAction();
     
+    
+    //========================================================================//
     
     /**
      * Normal shutdown action.
@@ -117,29 +123,11 @@ public abstract class ShutdownAction extends NodeAction {
     /**
      * Force shutdown action.
      */
-    public static class Force extends ShutdownAction /*implements DynamicMenuContent*/ {
+    public static class Force extends ShutdownAction {
         
         public String getName() {
             return NbBundle.getMessage(ShutdownAction.class, "LBL_ForceShutdownAction");  // NOI18N
         }
-        
-        /*
-        public JComponent[] getMenuPresenters() {
-            return new JComponent [] { createMenu() };
-        }
-         
-        public JComponent[] synchMenuPresenters(JComponent[] items) {
-            return new JComponent [] { createMenu() };
-        }
-         
-        private JMenu createMenu() {
-            JMenu result = new JMenu(
-                    NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
-            result.add(new JMenuItem(this));
-            result.add(new JMenuItem(SystemAction.get(UninstallAction.Force.class)));
-            return result;
-        }
-         */
         
         protected boolean isForceAction() {
             return true;

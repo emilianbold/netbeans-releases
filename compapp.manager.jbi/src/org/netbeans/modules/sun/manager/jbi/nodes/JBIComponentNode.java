@@ -30,6 +30,7 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler
 
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
+import org.netbeans.modules.sun.manager.jbi.actions.AdvancedAction;
 import org.netbeans.modules.sun.manager.jbi.actions.ShutdownAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StartAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
@@ -499,9 +500,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             AppserverJBIMgmtController controller, boolean sort) throws Exception;
     
     //==========================================================================
-    
-    
-    
+        
     //========================= Concrete Nodes =================================
     
     /**
@@ -524,8 +523,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 SystemAction.get(ShutdownAction.Normal.class),
                 SystemAction.get(UninstallAction.Normal.class),
                 null,
-                //SystemAction.get(ShutdownAction.Force.class),
-                SystemAction.get(UninstallAction.Force.class),
+                SystemAction.get(AdvancedAction.class),
                 null,
                 SystemAction.get(PropertiesAction.class),
             };
@@ -605,8 +603,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 SystemAction.get(ShutdownAction.Normal.class),
                 SystemAction.get(UninstallAction.Normal.class),
                 null,
-                //SystemAction.get(ShutdownAction.Force.class),
-                SystemAction.get(UninstallAction.Force.class),
+                SystemAction.get(AdvancedAction.class),
                 null,
                 SystemAction.get(PropertiesAction.class),
             };
