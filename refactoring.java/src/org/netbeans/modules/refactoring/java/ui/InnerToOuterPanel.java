@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
@@ -57,10 +58,13 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
     /** Initialization of the panel (called by the parent window).
      */
     public void initialize() {
+        final boolean isInterface = RetoucheUtils.getElementKind(refactoring.getSourceType()).isInterface();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 classNameField.setText(refactoring.getClassName());
-                if (refactoring.getReferenceName() != null) {
+                if (isInterface) {
+                    fieldCheckBox.setEnabled(false);
+                } else if (refactoring.getReferenceName() != null) {
                     fieldNameField.setText(refactoring.getReferenceName());
                     fieldCheckBox.setSelected(true);
                 }
