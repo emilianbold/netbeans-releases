@@ -27,7 +27,7 @@ public class Test3Manager {
         
         //Manager instantiation and connection to the remote agent
         Test3Manager manager = Test3Manager.getDefault();
-        // Close connection
+        /* Close connection */
         manager.close();
         System.out.println("Connection closed.");
     }
@@ -37,13 +37,14 @@ public class Test3Manager {
      * This method is called automatically when <CODE>getDefault()</CODE>
      * is called
      */
-    public void connect() throws Exception {        // Create JMX Agent URL
+    public void connect() throws Exception {
+        /* Create JMX Agent URL */ 
         JMXServiceURL url = new JMXServiceURL("service:jmx:jmxmp://server.sun.com:6000/jmxmppath");
         Map env = new HashMap();
         env.put(JMXConnector.CREDENTIALS, new String[]{"username", "password"});
-        // Connect the JMXConnector
+        /* Connect the JMXConnector */ 
         connector = JMXConnectorFactory.connect(url, env);
-        // Get the MBeanServerConnection
+        /* Get the MBeanServerConnection */ 
         mbsc = connector.getMBeanServerConnection();
     }
     
