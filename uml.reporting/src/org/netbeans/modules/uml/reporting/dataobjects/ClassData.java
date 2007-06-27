@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
@@ -201,9 +202,12 @@ public class ClassData extends ElementDataObject
                     continue;
                 if (param.getType()!=null)
                     buff.append("<A HREF=\"" + getLinkTo(param.getType()) + "\">" +
-                            param.getType().getName() + "</A>&nbsp;" + param.getName());
-                else
-                    buff.append("&nbsp;" + param.getName());
+                            param.getType().getName() + "</A>");
+                buff.append("&nbsp;" + param.getName());
+                IMultiplicity mul = param.getMultiplicity();
+                if (mul != null)
+                    buff.append(mul.getRangeAsString(true));
+
                 if (j!=params.size()-1)
                     buff.append(",&nbsp;");
             }
@@ -302,9 +306,13 @@ public class ClassData extends ElementDataObject
                 {
                     if (param.getType()!=null)
                         buff.append("<A HREF=\"" + getLinkTo(param.getType()) + "\">" +
-                                param.getType().getName() + "</A>&nbsp;" + param.getName());
-                    else
-                        buff.append("&nbsp;" + param.getName());
+                                param.getType().getName() + "</A>");
+                    
+                    buff.append("&nbsp;" + param.getName());
+                    IMultiplicity mul = param.getMultiplicity();
+                    if (mul != null)
+                        buff.append(mul.getRangeAsString(true));
+                    
                     if (j!=params.size()-1)
                         buff.append(",&nbsp;");
                 }
@@ -719,7 +727,11 @@ public class ClassData extends ElementDataObject
                     type = attr.getType();
                     
                     out.write("<A NAME=\"" + attr.getName() + "\"></A><H3>" + attr.getName() + "</H3>\r\n");
-                    out.write("<PRE>" + formatAttribute(attr) + "<B>" + attr.getName() + "</B></PRE>");
+                    out.write("<PRE>" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>");
+                    IMultiplicity mul = attr.getMultiplicity();
+                    if (mul != null)
+                        out.write(mul.getRangeAsString(true));
+                    out.write("</PRE>");
                     out.write("<DL>\r\n");
                     
                     out.write("<DD><PRE>" + StringUtilities.unescapeHTML(
