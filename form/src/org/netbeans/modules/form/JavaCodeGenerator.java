@@ -1210,13 +1210,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (!preCode.endsWith("\n")) // NOI18N
                     writer.write("\n"); // NOI18N
             }
-
-            if (localVariable)
-                generateDeclarationPre(comp, writer, codeData);
         }
-
-        String customCode = null; // for code data editing
-        boolean codeCustomized = false; // for code data editing
 
         Integer generationType = (Integer)comp.getAuxValue(AUX_CODE_GENERATION);
         if (comp.hasHiddenState() || VALUE_SERIALIZE.equals(generationType)) {
@@ -1251,49 +1245,54 @@ class JavaCodeGenerator extends CodeGenerator {
             writer.write("} catch (java.io.IOException e) {\n"); // NOI18N
             writer.write("e.printStackTrace();\n"); // NOI18N
             writer.write("}\n"); // NOI18N
+            if (codeData != null) {
+                codeData.addGuardedBlock(indentCode(initCodeWriter.extractString()));
+            }
         }
         else { // generate standard component creation code
             if (codeData == null)
                 generateEmptyLineIfNeeded(writer);
 
-            StringBuffer varBuf = new StringBuffer();
+            StringBuffer buf = new StringBuffer(); // we need the entire creation statement written at once
 
             if (localVariable || isFinalFieldVariable(varType)) { // also generate declaration
-                varBuf.append(Modifier.toString(
-                                varType & CodeVariable.ALL_MODIF_MASK));
-                varBuf.append(" "); // NOI18N
-                varBuf.append(getSourceClassName(comp.getBeanClass()));
-                
+                generateDeclarationPre(comp, writer, codeData);
+                buf.append(Modifier.toString(varType & CodeVariable.ALL_MODIF_MASK));
+                buf.append(" "); // NOI18N
+                buf.append(getSourceClassName(comp.getBeanClass()));
                 String typeParameters = var.getDeclaredTypeParameters();
                 if ((typeParameters != null) && !"".equals(typeParameters)) { // NOI18N
-                    varBuf.append(typeParameters);
+                    buf.append(typeParameters);
                 }
-
-                varBuf.append(" "); // NOI18N
+                buf.append(" "); // NOI18N
             }
 
-            varBuf.append(var.getName());
+            buf.append(var.getName()); // now buf contains variable code, more code added later
 
-            String customCreateCode = (String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
-            if (customCreateCode != null && !customCreateCode.equals("")) { // NOI18N
+            // only for code data editing
+            String customCode = null;
+            boolean codeCustomized = false;
+            String variableCode = buf.toString();
+
+            String customCreationCode = (String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
+            if (customCreationCode != null && !customCreationCode.equals("")) { // NOI18N
                 // there is a custom creation code provided
+                if (customCreationCode.endsWith(";")) { // NOI18N
+                    customCreationCode = customCreationCode.substring(0, customCreationCode.length()-1);
+                }
                 if (codeData == null) { // normal code generation
-                    writer.write(varBuf.toString());
-                    writer.write(" = "); // NOI18N
-                    writer.write(customCreateCode);
-                    if (!customCreateCode.endsWith(";")) // NOI18N
-                        writer.write(";"); // NOI18N
-                    writer.write("\n"); // NOI18N
+                    buf.append(" = ").append(customCreationCode).append(";\n"); // NOI18N
+                    initCodeWriter.write(buf.toString());
+                    // and we are done
                 }
                 else { // build code data for editing
-                    if (customCreateCode.endsWith(";")) // NOI18N
-                        customCreateCode = customCreateCode.substring(0, customCreateCode.length()-1);
-                    customCode = composeCustomCreationCode(varBuf, customCreateCode);
+                    customCode = composeCustomCreationCode(variableCode, customCreationCode);
                     codeCustomized = true;
                 }
             }
-            if (customCreateCode == null || customCreateCode.equals("") || codeData != null) { // NOI18N
-                // compose default creation code
+            if (customCreationCode == null || customCreationCode.equals("") || codeData != null) { // NOI18N
+                // compose default creation code (if building code data for editing 
+                // we need both custom and default creation code)
                 CreationDescriptor desc = CreationFactory.getDescriptor(
                                                               comp.getBeanClass());
                 if (desc == null)
@@ -1308,19 +1307,17 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 Class[] exceptions = creator.getExceptionTypes();
                 if (insideMethod && needTryCode(exceptions)) {
-                    if (localVariable) {
-                        writer.write(varBuf.toString());
-                        writer.write(";\n"); // NOI18N
+                    if (localVariable) { // separate the declaration statement
+                        buf.append(";\n"); // NOI18N
+                        writer.write(buf.toString());
+                        buf.delete(0, buf.length());
+                        buf.append(var.getName());
                     }
                     writer.write("try {\n"); // NOI18N
-                    writer.write(var.getName());
                 }
                 else {
-                    writer.write(varBuf.toString());
                     exceptions = null;
                 }
-
-                writer.write(" = "); // NOI18N
 
                 String[] propNames = creator.getPropertyNames();		
                 FormProperty[] props;
@@ -1341,27 +1338,33 @@ class JavaCodeGenerator extends CodeGenerator {
                 else props = RADComponent.NO_PROPERTIES;
 
                 String defaultCreationCode = creator.getJavaCreationCode(props, null);
-                initCodeWriter.write(defaultCreationCode + ";\n"); // NOI18N
+                buf.append(" = ").append(defaultCreationCode).append(";\n"); // NOI18N
+                initCodeWriter.write(buf.toString());
 
-                if (codeData != null && customCode == null) // get default custom code (without try/catch)
-                    customCode = composeCustomCreationCode(varBuf, defaultCreationCode);
+                if (codeData != null && !codeCustomized) { // get default code for custom editing (without try/catch)
+                    customCode = composeCustomCreationCode(variableCode, defaultCreationCode);
+                    // TODO: the default creation code might contain code marks from property editor - should be filtered out
+                }
 
-                if (exceptions != null)
+                if (exceptions != null) {
                     generateCatchCode(exceptions, writer);
+                }
             }
-        }
-        if (codeData != null) {
-            String defaultCode = indentCode(initCodeWriter.extractString());
-            codeData.addGuardedBlock(defaultCode, customCode, CUSTOM_CODE_MARK, codeCustomized,
-                                     (FormProperty) comp.getSyntheticProperty(PROP_CREATE_CODE_CUSTOM),
-                                     FormUtils.getBundleString("CustomCode-Creation"), // NOI18N
-                                     FormUtils.getBundleString("CustomCode-Creation_Hint")); // NOI18N
+
+            if (codeData != null) { // code data for creation code
+                String defaultCode = indentCode(initCodeWriter.extractString());
+                codeData.addGuardedBlock(defaultCode, customCode, CUSTOM_CODE_MARK, codeCustomized,
+                                         (FormProperty) comp.getSyntheticProperty(PROP_CREATE_CODE_CUSTOM),
+                                         FormUtils.getBundleString("CustomCode-Creation"), // NOI18N
+                                         FormUtils.getBundleString("CustomCode-Creation_Hint")); // NOI18N
+            }
+
+            if (localVariable || isFinalFieldVariable(varType)) { // declaration generated
+                generateDeclarationPost(comp, writer, codeData);
+            }
         }
 
         if (insideMethod) {
-            if (localVariable)
-                generateDeclarationPost(comp, writer, codeData);
-
             String postCode = (String) comp.getAuxValue(AUX_CREATE_CODE_POST);
             if (codeData != null) { // build code data for editing
                 codeData.addEditableBlock(postCode,
@@ -1380,13 +1383,8 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     // used only when building "code data" for editing
-    private String composeCustomCreationCode(StringBuffer buf, String creationCode) {
-        buf.append(" = "); // NOI18N
-        buf.append(CUSTOM_CODE_MARK);
-        buf.append(creationCode);
-        buf.append(CUSTOM_CODE_MARK);
-        buf.append(";\n"); // NOI18N
-        return indentCode(buf.toString());
+    private String composeCustomCreationCode(String variableCode, String creationCode) {
+        return indentCode(variableCode + " = " + CUSTOM_CODE_MARK + creationCode + CUSTOM_CODE_MARK + ";\n"); // NOI18N
     }
 
     private void generateComponentProperties(RADComponent comp,
@@ -2506,13 +2504,12 @@ class JavaCodeGenerator extends CodeGenerator {
         // optimization - only properties need to go through CodeWriter
         Writer writer = codeWriter.getWriter();
 
-        generateDeclarationPre(metacomp, writer, codeData);
-
         CodeVariable var = metacomp.getCodeExpression().getVariable();
         if (isFinalFieldVariable(var.getType())) { // add also creation assignment
             generateComponentCreate(metacomp, codeWriter, false, codeData);
         }
         else { // simple declaration
+            generateDeclarationPre(metacomp, writer, codeData);
             writer.write(var.getDeclaration().getJavaCodeString(null, null));
             writer.write("\n"); // NOI18N
 
@@ -2520,9 +2517,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 String code = indentCode(codeWriter.extractString());
                 codeData.addGuardedBlock(code);
             }
+            generateDeclarationPost(metacomp, writer, codeData);
         }
-
-        generateDeclarationPost(metacomp, writer, codeData);
     }
 
     private static boolean isFinalFieldVariable(int varType) {
@@ -3611,13 +3607,14 @@ class JavaCodeGenerator extends CodeGenerator {
                         part = null;
                         if (codeToSubst == null) {
                             codeToSubst = s;
-                            if (!inMethod) { // can't replace when in member field variable init
-                                part = s;
-                            }
                         } else if (varType == null) {
                             varType = s;
                         } else {
-                            part = replaceCodeWithVariable(codeToSubst, varType, s, lineComment, writer);
+                            if (inMethod) {
+                                part = replaceCodeWithVariable(codeToSubst, varType, s, lineComment, writer);
+                            } else { // can't replace when in member field variable init
+                                part = codeToSubst;
+                            }
                             codeToSubst = varType = null;
                         }
                         if (part == null) { // no real code in this fragment
