@@ -155,7 +155,7 @@ public class WebProjectUtilities {
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
         
-        final FileObject fo = Utils.getValidEmptyDir(dir);
+        final FileObject fo = FileUtil.createFolder(dir);
         AntProjectHelper h = setupProject(fo, name, serverInstanceID, j2eeLevel);
         
         FileObject srcFO = fo.createFolder(DEFAULT_SRC_FOLDER);
@@ -384,7 +384,7 @@ public class WebProjectUtilities {
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
         
-        FileObject fo = Utils.getValidDir(dir);
+        FileObject fo = FileUtil.createFolder(dir);
         
         final AntProjectHelper antProjectHelper = setupProject(fo, name, serverInstanceID, j2eeLevel);
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());

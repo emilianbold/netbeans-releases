@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,12 +21,10 @@ package org.netbeans.modules.web.project;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.Vector;
 
 import javax.swing.*;
 
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -54,18 +52,6 @@ public class Utils {
     
     private static final String PLATFORM_ANT_NAME = "platform.ant.name"; //NOI18N
     public static final String SPECIFICATION_J2SE = "j2se";              //NOI18N
-
-    public static FileObject getValidDir(File dir) throws IOException {
-        return FileUtil.createFolder(dir);
-    }
-    
-    public static FileObject getValidEmptyDir(File dir) throws IOException {
-        final FileObject fo = getValidDir(dir);
-        if (fo.getChildren().length != 0) {
-            throw new IOException("Dir has to be empty: " + dir);
-        }
-        return fo;
-    }
 
     /** Create a valid default for context path from project name.
      */
