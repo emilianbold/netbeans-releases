@@ -97,7 +97,7 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
                 cleanUpImplMethod = store.getClass().getDeclaredMethod("cleanUpImpl", new Class[] {long.class});
                 cleanUpImplMethod.setAccessible(true);            
             }
-            cleanUpImplMethod.invoke(store, new Object[]{1});           
+            cleanUpImplMethod.invoke(store, new Object[]{ttl});           
         } catch (Exception e) {
             e.printStackTrace();
         }
