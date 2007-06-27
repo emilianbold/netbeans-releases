@@ -113,8 +113,8 @@ public class StaticAccess extends AbstractHint {
             if (member.getSimpleName().equals(mst.getIdentifier())) {
                 if (member.getModifiers().contains(Modifier.STATIC)) {
                     foundStatic = true;
-                    break;
                 }
+                break;
             }
         }
         if (!foundStatic) {

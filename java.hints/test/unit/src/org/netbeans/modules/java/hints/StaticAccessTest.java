@@ -86,6 +86,18 @@ public class StaticAccessTest extends TreeRuleTestBase {
         );
     }
     
+    public void testCallingNonStaticStringMethod() throws Exception {
+        String before = "package test; class Test {\n" +
+            "public void nic() {\n" +
+            "String s = \"some\";\n" +
+            "int x = s.last";
+        String after = "IndexOf('x');" +
+            "}" +
+            "";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+    
     
     public void testOkCallingStaticMethod() throws Exception {
         String before = "package test; class Test {" +
