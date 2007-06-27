@@ -52,9 +52,9 @@ public final class CssPreviewTopComponent extends TopComponent {
     private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.Utilities.VISUAL_EDITOR_LOGGER);
     
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/css/resources/css.gif";
+    static final String ICON_PATH = "org/netbeans/modules/css/resources/css.gif";//NOI18N
     
-    private static final String PREFERRED_ID = "CssPreviewTC";
+    private static final String PREFERRED_ID = "CssPreviewTC";//NOI18N
     
     CssPreviewPanel previewPanel = new CssPreviewPanel();
     
@@ -70,11 +70,11 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private CssPreviewable.Listener PREVIEWABLE_LISTENER = new CssPreviewable.Listener() {
         public void activate(final Content content) {
-            LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);
+            LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);//NOI18N
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     preview(content);
-                    LOGGER.log(Level.FINE, "Previewable activated - " + content);
+                    LOGGER.log(Level.FINE, "Previewable activated - " + content);//NOI18N
                 }
             });
         }
@@ -83,7 +83,7 @@ public final class CssPreviewTopComponent extends TopComponent {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     showNoSelectedRulePanel();
-                    LOGGER.log(Level.FINE, "Preview deactivated");
+                    LOGGER.log(Level.FINE, "Preview deactivated");//NOI18N
                 }
             });
             
@@ -97,10 +97,10 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private CssPreviewTopComponent() {
         initComponents();
-        setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent"));
+        setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent"));//NOI18N
         setIcon(Utilities.loadImage(ICON_PATH, true));
         
-        NO_PREVIEW_PANEL = makeMsgPanel("No Preview");
+        NO_PREVIEW_PANEL = makeMsgPanel(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
         
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
         previewing = false;
@@ -113,7 +113,7 @@ public final class CssPreviewTopComponent extends TopComponent {
                 for(Node n : activatedNodes) {
                     CssPreviewable previewable = n.getCookie(CssPreviewable.class);
                     if(previewable != null) {
-                        LOGGER.log(Level.FINE, "Previewable selected " + previewable);
+                        LOGGER.log(Level.FINE, "Previewable selected " + previewable);//NOI18N
                         previewableSelected(previewable);
                         break; //use the first selected previewable
                     }
@@ -137,7 +137,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     private void showNoSelectedRulePanel() {
         if(previewing) {
             setName(DEFAULT_TC_NAME); //set default TC name
-            LOGGER.log(Level.FINE, "Previewable deactivated");
+            LOGGER.log(Level.FINE, "Previewable deactivated");//NOI18N
             remove(previewPanel);
             add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
             previewing = false;
@@ -180,7 +180,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(CssPreviewTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
         if (win instanceof CssPreviewTopComponent) {
@@ -188,7 +188,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
         Logger.getLogger(CssPreviewTopComponent.class.getName()).warning(
                 "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
     }
     
@@ -241,7 +241,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     }
     
     private void setPreviewContent(CharSequence content, String relativeURL) throws Exception {
-        LOGGER.log(Level.FINE, "preview - setting content " + content);
+        LOGGER.log(Level.FINE, "preview - setting content " + content);//NOI18N
         previewPanel.panel().setDocument(new ByteArrayInputStream(content.toString().getBytes()), relativeURL);
     }
     
@@ -250,12 +250,12 @@ public final class CssPreviewTopComponent extends TopComponent {
             if(lastSelectedPreviewable.equals(previewable)) {
                 return ; //ignore
             } else {
-                LOGGER.log(Level.FINE, "removed listener from " + lastSelectedPreviewable);
+                LOGGER.log(Level.FINE, "removed listener from " + lastSelectedPreviewable);//NOI18N
                 lastSelectedPreviewable.removeListener(PREVIEWABLE_LISTENER);
             }
         }
         lastSelectedPreviewable = previewable;
-        LOGGER.log(Level.FINE, "added listener to " + previewable);
+        LOGGER.log(Level.FINE, "added listener to " + previewable);//NOI18N
         lastSelectedPreviewable.addListener(PREVIEWABLE_LISTENER);
         
         //preview the content is available
