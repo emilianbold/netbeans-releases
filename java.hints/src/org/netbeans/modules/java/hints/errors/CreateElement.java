@@ -226,7 +226,7 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
         
-        modifiers.addAll(getAccessModifiers(source, target));
+        modifiers.addAll(getAccessModifiers(info, source, target));
         
         if (methodInvocation != null) {
             //create method:
@@ -268,7 +268,7 @@ public final class CreateElement implements ErrorRule<Void> {
             
             target = (TypeElement) clazz;
             
-            return prepareCreateMethodFix(info, newClass, getAccessModifiers(source, target), target, "<init>", nct.getArguments(), null);
+            return prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, target), target, "<init>", nct.getArguments(), null);
         }
         
         //field like or class (type):
@@ -398,7 +398,7 @@ public final class CreateElement implements ErrorRule<Void> {
         
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
-        TypeElement outer = SourceUtils.getOutermostEnclosingTypeElement(source);
+        TypeElement outer = info.getElementUtilities().outermostTypeElement(source);
         PackageElement packageElement = (PackageElement) outer.getEnclosingElement();
         
         return Collections.<Fix>singletonList(new CreateOuterClassFix(info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters));
@@ -470,13 +470,13 @@ public final class CreateElement implements ErrorRule<Void> {
         }
     }
     
-    private static EnumSet<Modifier> getAccessModifiers(TypeElement source, TypeElement target) {
+    private static EnumSet<Modifier> getAccessModifiers(CompilationInfo info, TypeElement source, TypeElement target) {
         if (target.getKind().isInterface()) {
             return EnumSet.of(Modifier.PUBLIC);
         }
         
-        TypeElement outterMostSource = SourceUtils.getOutermostEnclosingTypeElement(source);
-        TypeElement outterMostTarget = SourceUtils.getOutermostEnclosingTypeElement(target);
+        TypeElement outterMostSource = info.getElementUtilities().outermostTypeElement(source);
+        TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
         
         if (outterMostSource.equals(outterMostTarget)) {
             return EnumSet.of(Modifier.PRIVATE);
