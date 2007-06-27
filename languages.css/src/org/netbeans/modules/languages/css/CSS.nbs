@@ -128,12 +128,12 @@ COLOR:key: {
 ########### code folding #######################################################
 
 FOLD:body: {
-    expand_type_action_name:"Expand CSS Rulesets";
-    collapse_type_action_name:"Collapse CSS Rulesets";
+    expand_type_action_name:"LBL_Expand_Rulesets";
+    collapse_type_action_name:"LBL_Collapse_Rulesets";
 }
 FOLD:mediaBody: {
-    expand_type_action_name:"Expand CSS Rulesets";
-    collapse_type_action_name:"Collapse CSS Rulesets";
+    expand_type_action_name:"LBL_Expand_Rulesets";
+    collapse_type_action_name:"LBL_Collapse_Rulesets";
 }
 
 ########### navigator ##########################################################
@@ -300,6 +300,8 @@ PROPERTIES {
     #printRules:"true";
     #printFirst:"true";
 }
+
+BUNDLE "org.netbeans.modules.languages.css.Bundle"
 
 COMMENT_LINE {
     prefix:"/*";
