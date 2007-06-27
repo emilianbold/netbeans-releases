@@ -65,10 +65,6 @@ public class VWPContentModel extends PageContentModel{
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.VWPContentModel");
     
-//        static {
-//           LOGGER.setLevel(Level.ALL);
-//        }
-    
     
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null
