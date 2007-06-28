@@ -95,6 +95,7 @@ public final class FormCD extends ComponentDescriptor {
     }
     
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, ScreenResourceCategoriesPresenter.class);
@@ -108,6 +109,7 @@ public final class FormCD extends ComponentDescriptor {
                 FormAcceptPresenterSupport.createFileAcceptPresenter("png","jpg","gif"), //NOI18N
                 new ScreenMoveArrayAcceptPresenter(FormCD.PROP_ITEMS, ItemCD.TYPEID),
                 new AcceptTypePresenter(ItemCD.TYPEID) {
+                    @Override
                     protected void notifyCreated(DesignComponent component) {
                         super.notifyCreated(component);
                         MidpArraySupport.append(getComponent(), PROP_ITEMS, component);

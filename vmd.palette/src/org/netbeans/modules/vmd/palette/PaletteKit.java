@@ -346,6 +346,7 @@ public class PaletteKit implements Runnable {
             return null; // TODO
         }
         
+        @Override
         public Action getRefreshAction() {
             return new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
@@ -355,6 +356,7 @@ public class PaletteKit implements Runnable {
             };
         }
 
+        @Override
         public Action getResetAction() {
             return new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
@@ -370,7 +372,7 @@ public class PaletteKit implements Runnable {
         }
         
         public boolean isValidItem(Lookup lkp) {
-            PaletteItemDataNode node = (PaletteItemDataNode) lkp.lookup(PaletteItemDataNode.class);
+            PaletteItemDataNode node = lkp.lookup(PaletteItemDataNode.class);
             return node != null ? node.isValid() : true;
         }
     }

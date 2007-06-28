@@ -36,6 +36,7 @@ public class PaletteItemDataLoader extends UniFileLoader {
         super("org.netbeans.modules.vmd.palette.PaletteItemDataObject"); // NOI18N
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
         getExtensions().addExtension(EXTENSION);

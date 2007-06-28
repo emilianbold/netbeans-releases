@@ -208,7 +208,7 @@ public final class FontCD extends ComponentDescriptor {
                     break;
                 case VALUE_KIND_CUSTOM:
 
-                    writer.write ("Font.getFont (");
+                    writer.write ("Font.getFont ("); // NOI18N
 
                     propertyValue = component.readProperty (PROP_FACE);
                     if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {

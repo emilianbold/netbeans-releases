@@ -72,7 +72,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     public static final int VALUE_READ_WRITE = 3;
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/PIM_browser_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = null;
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/PIM_browser_32.png"; // NOI18N
     
     public static final String PROP_PIM_TYPE = "pimType"; //NOI18N
 

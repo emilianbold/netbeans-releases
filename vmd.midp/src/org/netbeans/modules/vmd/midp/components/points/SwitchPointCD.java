@@ -67,6 +67,7 @@ public class SwitchPointCD extends ComponentDescriptor {
         return MidpVersionDescriptor.FOREVER;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_OPERAND, MidpTypes.createJavaCodeValue ("0"));
     }
@@ -78,6 +79,7 @@ public class SwitchPointCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     public PaletteDescriptor getPaletteDescriptor () {
         return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch", "Switch", ICON_PATH, LARGE_ICON_PATH);
     }
@@ -90,6 +92,7 @@ public class SwitchPointCD extends ComponentDescriptor {
     }
 
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         MidpActionsSupport.addNewActionPresenter(presenters, SwitchCaseEventSourceCD.TYPEID);
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, true, true, true);
@@ -99,11 +102,18 @@ public class SwitchPointCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
+            
+            // general
+            
+            // general
+            
+            // general
             InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, "Switch")),
             //inspector
             InspectorOrderingPresenter.create(createOrderingArrayController()),
             // accept
             new AcceptTypePresenter(SwitchCaseEventSourceCD.TYPEID) {
+                @Override
                 protected void notifyCreated (DesignComponent switchCase) {
                     super.notifyCreated (switchCase);
                     DesignComponent switchComponent = getComponent ();
@@ -121,6 +131,7 @@ public class SwitchPointCD extends ComponentDescriptor {
             new FlowSwitchPointPinOrderPresenter (),
             // code
             new CodeClassLevelPresenter.Adapter () {
+                @Override
                 protected void generateClassBodyCode (StyledDocument document) {
                     DesignComponent component = getComponent ();
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-switch"); // NOI18N
@@ -150,6 +161,9 @@ public class SwitchPointCD extends ComponentDescriptor {
                     section.close ();
                 }
             }
+        
+        
+        
         );
     }
     

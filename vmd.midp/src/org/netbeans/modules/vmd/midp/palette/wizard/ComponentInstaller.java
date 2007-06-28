@@ -77,9 +77,8 @@ public final class ComponentInstaller {
         final HashMap<String, Item> result = new HashMap<String, Item> ();
 
         try {
-            JavaSource.create (info).runUserActionTask (new CancellableTask<CompilationController>() {
-                public void cancel () {
-                }
+            JavaSource.create (info).runUserActionTask (new Task<CompilationController>() {
+
                 public void run (CompilationController parameter) throws Exception {
                     HashSet<TypeElement> elements = new HashSet<TypeElement> ();
                     for (ElementHandle<TypeElement> handle : allHandles) {

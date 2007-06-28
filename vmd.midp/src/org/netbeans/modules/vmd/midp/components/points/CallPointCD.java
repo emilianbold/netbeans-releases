@@ -54,6 +54,7 @@ public class CallPointCD extends ComponentDescriptor {
         return MidpVersionDescriptor.FOREVER;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_ACCESS_CODE, MidpTypes.createJavaCodeValue ("")); // NOI18N
     }
@@ -64,6 +65,7 @@ public class CallPointCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     public PaletteDescriptor getPaletteDescriptor () {
         return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Call Point", "Call Point", ICON_PATH, LARGE_ICON_PATH);
     }
@@ -75,6 +77,7 @@ public class CallPointCD extends ComponentDescriptor {
                     .addProperty ("Call Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_ACCESS_CODE);
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, false, false, true, true);
         super.gatherPresenters (presenters);

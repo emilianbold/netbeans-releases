@@ -92,6 +92,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 .addProperty("Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_FONT);
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters(presenters, true, true, false, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, ChoiceGroupCD.PROP_ELEMENTS);
@@ -115,12 +116,12 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_IMAGE),
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_FONT),
                 new DeletePresenter() {
-            protected void delete() {
-                DesignComponent component = getComponent();
-                DesignComponent list = component.getParentComponent();
-                ArraySupport.remove(list, ChoiceGroupCD.PROP_ELEMENTS, component);
-            }
-        },
+                    protected void delete() {
+                        DesignComponent component = getComponent();
+                        DesignComponent list = component.getParentComponent();
+                        ArraySupport.remove(list, ChoiceGroupCD.PROP_ELEMENTS, component);
+                    }
+                },
                 // screen
                 new ChoiceElementDisplayPresenter(),new ScreenMoveArrayAcceptPresenter(ChoiceGroupCD.PROP_ELEMENTS, ChoiceElementCD.TYPEID),
                 new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), //NOI18N

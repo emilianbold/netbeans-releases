@@ -57,7 +57,6 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
     
     private DesignDocument document;
     private DesignComponent list;
-    private DesignComponent listSelectCommand;
     
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
@@ -77,7 +76,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         return new PropertyEditorSVGMenuSelectCommand(SVGMenuSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem);
     }
     
-    public PropertyEditorSVGMenuSelectCommand(TypeID typeID, String mnemonic, String none_item, String defaultItem) {
+    public PropertyEditorSVGMenuSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem) {
         super();
         initComponents();
         this.typeID = typeID;
@@ -112,6 +111,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         return false;
     }
     
+    @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
@@ -151,12 +151,14 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         }
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
     
+    @Override
     public String[] getTags() {
         if (isCurrentValueAUserCodeType()) {
             return null;
@@ -167,7 +169,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         values.clear();
         values.put(noneItem, null);
         
-        document.getTransactionManager().writeAccess( new Runnable() {
+        document.getTransactionManager().readAccess( new Runnable() {
             public void run() {
                 Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
                 Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
@@ -193,12 +195,10 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
     }
     
     private DesignComponent getListSelectCommand() {
-        if (listSelectCommand == null) {
-            listSelectCommand = MidpDocumentSupport.getSingletonCommand(document, typeID);
-        }
-        return listSelectCommand;
+        return MidpDocumentSupport.getSingletonCommand(document, typeID);
     }
     
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         list = component;

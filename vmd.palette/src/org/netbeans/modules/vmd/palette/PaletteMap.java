@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.palette;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
@@ -37,7 +38,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -209,9 +209,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             return;
         }
         try {
-            Future future = JavaSource.create(info).runWhenScanFinished(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
+            Future future = JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
                 
                 public void run(CompilationController controller) throws Exception {
                     kit.update();
@@ -231,7 +229,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         
         String projID = document.getDocumentInterface().getProjectID();
         if (!registeredProjects.contains(projID)) {
-            CancellableTask<CompilationController> ct = new ListenerCancellableTask(info);
+            Task<CompilationController> ct = new ListenerCancellableTask(info);
             try {
                 JavaSource.create(info).runUserActionTask(ct, true);
                 registeredProjects.add(projID);
@@ -325,14 +323,11 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         });
     }
     
-    private final class ListenerCancellableTask implements CancellableTask<CompilationController> {
+    private final class ListenerCancellableTask implements Task<CompilationController> {
         private ClasspathInfo info;
         
         public ListenerCancellableTask(ClasspathInfo info) {
             this.info = info;
-        }
-        
-        public void cancel() {
         }
         
         public void run(CompilationController controller) throws Exception {

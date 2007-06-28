@@ -61,6 +61,7 @@ public final class ResourceCD extends ComponentDescriptor {
         return null;
     }
 
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
         super.gatherPresenters(presenters);

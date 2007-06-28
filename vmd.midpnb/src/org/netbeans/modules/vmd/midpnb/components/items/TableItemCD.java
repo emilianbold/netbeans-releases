@@ -48,9 +48,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
-import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 
 
@@ -64,6 +62,7 @@ public class TableItemCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.TableItem"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/table_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/table_32.png"; // NOI18N
 
     public static final String PROP_TITLE = "title"; //NOI18N
     public static final String PROP_MODEL = "model"; //NOI18N
@@ -84,6 +83,7 @@ public class TableItemCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
@@ -99,6 +99,7 @@ public class TableItemCD extends ComponentDescriptor {
         );
     }
     
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);

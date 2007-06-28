@@ -36,7 +36,8 @@ public class SVGMenuElementEventSourceProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#SVGMenuElementEventSourceProducer"; // NOI18N
     
     public SVGMenuElementEventSourceProducer() {
-        super(PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu Element", "SVG Menu Element", SVGMenuElementEventSourceCD.ICON_PATH, null));
+        super(PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
+                "SVG Menu Element", "SVG Menu Element", SVGMenuElementEventSourceCD.ICON_PATH, SVGMenuElementEventSourceCD.ICON_LARGE_PATH));
     }
     
     public Result createComponent(DesignDocument document) {

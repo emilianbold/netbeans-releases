@@ -66,7 +66,7 @@ public final class TickerCD extends ComponentDescriptor {
         return new CodeSetterPresenter ()
                 .addParameters(MidpParameter.create(PROP_STRING))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(PROP_STRING))
-                .addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_STRING));
+                .addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_STRING)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {

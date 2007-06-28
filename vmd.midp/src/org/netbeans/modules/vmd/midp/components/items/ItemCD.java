@@ -112,6 +112,7 @@ public class ItemCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_LABEL, component.readProperty (ClassCD.PROP_INSTANCE_NAME));
 
@@ -147,14 +148,15 @@ public class ItemCD extends ComponentDescriptor {
                 .addParameters (ItemCode.createItemCommandListenerParameter ())
                 .addParameters (ItemCode.createItemLayoutParameter ())
                 .addParameters (ItemCode.createDefaultCommandParameter ())
-                .addSetters(MidpSetter.createSetter("addCommand", MidpVersionable.MIDP_2).setArrayParameter(ItemCode.PARAM_COMMAND).addParameters(ItemCode.PARAM_COMMAND))
-                .addSetters(MidpSetter.createSetter("setItemCommandListener", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_ITEM_COMMAND_LISTENER))
-                .addSetters(MidpSetter.createSetter("setDefaultCommand", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_DEFAULT_COMMAND))
-                .addSetters(MidpSetter.createSetter("setLabel", MidpVersionable.MIDP).addParameters(PROP_LABEL))
-                .addSetters(MidpSetter.createSetter("setLayout", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_LAYOUT))
-                .addSetters(MidpSetter.createSetter("setPreferredSize", MidpVersionable.MIDP_2).addParameters(PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT));
+                .addSetters(MidpSetter.createSetter("addCommand", MidpVersionable.MIDP_2).setArrayParameter(ItemCode.PARAM_COMMAND).addParameters(ItemCode.PARAM_COMMAND)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setItemCommandListener", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_ITEM_COMMAND_LISTENER)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setDefaultCommand", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_DEFAULT_COMMAND)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setLabel", MidpVersionable.MIDP).addParameters(PROP_LABEL)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setLayout", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_LAYOUT)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setPreferredSize", MidpVersionable.MIDP_2).addParameters(PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT)); // NOI18N
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         for (Presenter presenter : presenters.toArray(new Presenter[presenters.size()])) {
             if (presenter instanceof ActionsPresenter)
@@ -224,11 +226,13 @@ public class ItemCD extends ComponentDescriptor {
             super(Kind.COMPONENT_PRODUCER);
         }
 
+        @Override
         public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
             DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
             return registry.isInHierarchy (CommandCD.TYPEID, producer.getComponentTypeID ());
         }
 
+        @Override
         public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
             DesignComponent item = getComponent ();
             DesignDocument document = item.getDocument ();

@@ -147,24 +147,26 @@ public final class CommandCD extends ComponentDescriptor {
             super (PARAM);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_TYPE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                 int i = MidpTypes.getInteger (propertyValue);
                 switch (i) {
-                    case VALUE_SCREEN: section.getWriter ().write ("Command.SCREEN"); return;
-                    case VALUE_BACK: section.getWriter ().write ("Command.BACK"); return;
-                    case VALUE_CANCEL: section.getWriter ().write ("Command.CANCEL"); return;
-                    case VALUE_OK: section.getWriter ().write ("Command.OK"); return;
-                    case VALUE_HELP: section.getWriter ().write ("Command.HELP"); return;
-                    case VALUE_STOP: section.getWriter ().write ("Command.STOP"); return;
-                    case VALUE_EXIT: section.getWriter ().write ("Command.EXIT"); return;
-                    case VALUE_ITEM: section.getWriter ().write ("Command.ITEM"); return;
+                    case VALUE_SCREEN: section.getWriter ().write ("Command.SCREEN"); return; // NOI18N
+                    case VALUE_BACK: section.getWriter ().write ("Command.BACK"); return; // NOI18N
+                    case VALUE_CANCEL: section.getWriter ().write ("Command.CANCEL"); return; // NOI18N
+                    case VALUE_OK: section.getWriter ().write ("Command.OK"); return; // NOI18N
+                    case VALUE_HELP: section.getWriter ().write ("Command.HELP"); return; // NOI18N
+                    case VALUE_STOP: section.getWriter ().write ("Command.STOP"); return; // NOI18N
+                    case VALUE_EXIT: section.getWriter ().write ("Command.EXIT"); return; // NOI18N
+                    case VALUE_ITEM: section.getWriter ().write ("Command.ITEM"); return; // NOI18N
                 }
             }
             super.generateParameterCode (component, section, index);
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component) {
             return true;
         }

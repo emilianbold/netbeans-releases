@@ -65,7 +65,7 @@ public class IfPointCD extends ComponentDescriptor {
 
     public java.util.List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return Arrays.asList (
-            new PropertyDescriptor (PROP_CONDITION, MidpTypes.TYPEID_JAVA_CODE, MidpTypes.createJavaCodeValue ("true"), false, false, Versionable.FOREVER),
+            new PropertyDescriptor (PROP_CONDITION, MidpTypes.TYPEID_JAVA_CODE, MidpTypes.createJavaCodeValue ("true"), false, false, Versionable.FOREVER), // NOI18N
             new PropertyDescriptor (PROP_TRUE, IfTrueEventSourceCD.TYPEID, PropertyValue.createNull (), false, false, Versionable.FOREVER),
             new PropertyDescriptor (PROP_FALSE, IfFalseEventSourceCD.TYPEID, PropertyValue.createNull (), false, false, Versionable.FOREVER)
         );
@@ -75,9 +75,10 @@ public class IfPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Condition Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CONDITION);
+                    .addProperty ("Condition Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CONDITION); // NOI18N
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, true, true, true);
         super.gatherPresenters (presenters);
@@ -86,6 +87,8 @@ public class IfPointCD extends ComponentDescriptor {
     protected java.util.List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // flow
+            
+            // flow
             new FlowIfPointPinOrderPresenter (),
             // general
             InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, "If")),
@@ -93,6 +96,7 @@ public class IfPointCD extends ComponentDescriptor {
             createPropertiesPresenter (),
             // code
             new CodeClassLevelPresenter.Adapter () {
+                @Override
                 protected void generateClassBodyCode (StyledDocument document) {
                     DesignComponent component = getComponent ();
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-if"); // NOI18N

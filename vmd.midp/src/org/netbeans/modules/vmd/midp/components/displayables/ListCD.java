@@ -89,6 +89,7 @@ public final class ListCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters(presenters);
@@ -115,18 +116,19 @@ public final class ListCD extends ComponentDescriptor {
                 .addParameters (ListCode.createListTypeParameter (), ListCode.createFitPolicyParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE, ListCode.PARAM_LIST_TYPE))
 //                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE, ListCode.PARAM_LIST_TYPE, ListCode.PARAM_STRING_ARRAY, ListCode.PARAM_IMAGE_ARRAY)) // HINT - not used because of more J2ME Polish friendly
-                .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(ListCode.PARAM_STRING).addParameters(Parameter.PARAM_INDEX, ListCode.PARAM_STRING, ListCode.PARAM_IMAGE))
-                .addSetters(MidpSetter.createSetter("append", MidpVersionable.MIDP).setArrayParameter(ListCode.PARAM_STRING).addParameters(ListCode.PARAM_STRING, ListCode.PARAM_IMAGE))
-                .addSetters(MidpSetter.createSetter("setFitPolicy", MidpVersionable.MIDP_2).addParameters(ListCode.PARAM_FIT_POLICY))
-                .addSetters(MidpSetter.createSetter("setSelectCommand", MidpVersionable.MIDP_2).addParameters(ListCode.PARAM_SELECT_COMMAND))
-                .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).setArrayParameter(ListCode.PARAM_FONT).addParameters(Parameter.PARAM_INDEX, ListCode.PARAM_FONT))
-                .addSetters(MidpSetter.createSetter("setSelectedFlags", MidpVersionable.MIDP).addParameters(ListCode.PARAM_SELECTED_ARRAY));
+                .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(ListCode.PARAM_STRING).addParameters(Parameter.PARAM_INDEX, ListCode.PARAM_STRING, ListCode.PARAM_IMAGE)) //NOI18N
+                .addSetters(MidpSetter.createSetter("append", MidpVersionable.MIDP).setArrayParameter(ListCode.PARAM_STRING).addParameters(ListCode.PARAM_STRING, ListCode.PARAM_IMAGE)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setFitPolicy", MidpVersionable.MIDP_2).addParameters(ListCode.PARAM_FIT_POLICY)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setSelectCommand", MidpVersionable.MIDP_2).addParameters(ListCode.PARAM_SELECT_COMMAND)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).setArrayParameter(ListCode.PARAM_FONT).addParameters(Parameter.PARAM_INDEX, ListCode.PARAM_FONT)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setSelectedFlags", MidpVersionable.MIDP).addParameters(ListCode.PARAM_SELECTED_ARRAY)); //NOI18N
     }
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
                 new AcceptTypePresenter(ListElementEventSourceCD.TYPEID) {
+                    @Override
                     protected void notifyCreated (DesignComponent component) {
                         super.notifyCreated (component);
                         ArraySupport.append (getComponent (), ListCD.PROP_ELEMENTS, component);

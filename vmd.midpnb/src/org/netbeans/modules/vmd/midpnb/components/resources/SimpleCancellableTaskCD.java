@@ -54,6 +54,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_32.png"; // NOI18N
     
     public static final String PROP_CODE = "executableMethodBody"; //NOI18N
     
@@ -72,6 +73,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
     
+    @Override
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_CODE, MidpTypes.createJavaCodeValue("// write task-execution user code here")); // NOI18N
         MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
@@ -95,6 +97,8 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2))
                 .addSetters(MidpSetter.createSetter("setExecutable", MidpVersionable.MIDP_2).addParameters(ExecutableParameter.PARAM_EXECUTABLE));
     }
+    
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
         super.gatherPresenters(presenters);
@@ -135,7 +139,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             writer.write("public void execute () throws Exception {\n"); // NOI18N
             writer.commit();
             
-            section.switchToEditable(component.getComponentID() + "-execute");
+            section.switchToEditable(component.getComponentID() + "-execute"); // NOI18N
             writer = section.getWriter();
             String code = MidpTypes.getJavaCode(component.readProperty(PROP_CODE));
             if (code != null)

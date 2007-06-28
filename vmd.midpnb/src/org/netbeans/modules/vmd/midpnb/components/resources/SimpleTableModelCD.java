@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midpnb.components.resources;
 
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -63,6 +62,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     public static final String PROP_COLUMN_NAMES = "columnNames"; // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_32.png"; // NOI18N
     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -76,6 +76,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
@@ -97,10 +98,11 @@ public class SimpleTableModelCD extends ComponentDescriptor {
         return new CodeSetterPresenter ()
             .addParameters (MidpParameter.create (PROP_VALUES, PROP_COLUMN_NAMES))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (PROP_VALUES, PROP_COLUMN_NAMES))
-            .addSetters (MidpSetter.createSetter ("setValues", MidpVersionable.MIDP_2).setArrayParameter(PROP_VALUES).addParameters (PROP_VALUES))
-            .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).setArrayParameter(PROP_COLUMN_NAMES).addParameters (PROP_COLUMN_NAMES));
+            .addSetters (MidpSetter.createSetter ("setValues", MidpVersionable.MIDP_2).setArrayParameter(PROP_VALUES).addParameters (PROP_VALUES)) // NOI18N
+            .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).setArrayParameter(PROP_COLUMN_NAMES).addParameters (PROP_COLUMN_NAMES)); // NOI18N
     }
 
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
         super.gatherPresenters(presenters);

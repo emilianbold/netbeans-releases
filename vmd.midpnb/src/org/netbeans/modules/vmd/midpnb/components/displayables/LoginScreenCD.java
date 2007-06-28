@@ -64,7 +64,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.LoginScreen"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/login_screen_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = null;
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/login_screen_32.png"; // NOI18N
 
     public static final String PROP_USERNAME = "username"; //NOI18N
     public static final String PROP_PASSWORD = "password"; //NOI18N

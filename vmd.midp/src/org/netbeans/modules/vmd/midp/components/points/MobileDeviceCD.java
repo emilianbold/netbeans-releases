@@ -42,7 +42,7 @@ public final class MobileDeviceCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#MobileDevice"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/mobile_device_16.png"; // NOI18N
-//    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/mobile_device_32.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/mobile_device_32.png"; // NOI18N
 
     public static final String PROP_START = "start"; // NOI18N
     public static final String PROP_RESUME = "resume"; // NOI18N

@@ -53,6 +53,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
     public static final String PROP_STRING = "string"; // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_element_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_element_32.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (EventSourceCD.TYPEID, TYPEID, true, false);

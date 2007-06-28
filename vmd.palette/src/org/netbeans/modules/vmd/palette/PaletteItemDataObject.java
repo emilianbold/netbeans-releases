@@ -44,6 +44,7 @@ public class PaletteItemDataObject extends MultiDataObject {
         readProperties(pf);
     }
     
+    @Override
     protected Node createNodeDelegate() {
         return new PaletteItemDataNode(this);
     }

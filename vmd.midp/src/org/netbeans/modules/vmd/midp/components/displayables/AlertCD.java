@@ -78,6 +78,7 @@ public final class AlertCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_TIMEOUT, FOREVER_VALUE);
     }

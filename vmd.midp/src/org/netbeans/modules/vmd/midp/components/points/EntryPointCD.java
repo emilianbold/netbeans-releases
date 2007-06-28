@@ -61,6 +61,7 @@ public class EntryPointCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, true, true, true);
         super.gatherPresenters (presenters);
@@ -72,6 +73,7 @@ public class EntryPointCD extends ComponentDescriptor {
             InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, "Entry")),
             // code
             new CodeClassLevelPresenter.Adapter () {
+                @Override
                 protected void generateClassBodyCode (StyledDocument document) {
                     DesignComponent component = getComponent ();
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-entry"); // NOI18N

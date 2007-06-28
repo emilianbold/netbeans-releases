@@ -67,6 +67,7 @@ public class TextBoxCD extends ComponentDescriptor{
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_MAX_SIZE, MidpTypes.createIntegerValue (100));
     }
@@ -80,6 +81,7 @@ public class TextBoxCD extends ComponentDescriptor{
          );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -99,10 +101,10 @@ public class TextBoxCD extends ComponentDescriptor{
                 .addParameters (MidpParameter.create (PROP_STRING, PROP_MAX_SIZE, PROP_INITIAL_INPUT_MODE))
                 .addParameters (new TextFieldCD.TextFieldConstraintsParameter ())
                 .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP).addParameters (DisplayableCD.PROP_TITLE, PROP_STRING, PROP_MAX_SIZE, TextFieldCD.TextFieldConstraintsParameter.PARAM_CONSTRAINTS))
-                .addSetters (MidpSetter.createSetter ("setConstraint", MidpVersionable.MIDP).addParameters (PROP_CONSTRAINTS))
-                .addSetters (MidpSetter.createSetter ("setInitialInputMode", MidpVersionable.MIDP_2).addParameters (PROP_INITIAL_INPUT_MODE))
-                .addSetters (MidpSetter.createSetter ("setString", MidpVersionable.MIDP).addParameters (PROP_STRING))
-                .addSetters (MidpSetter.createSetter ("setMaxSize", MidpVersionable.MIDP).addParameters (PROP_MAX_SIZE));
+                .addSetters (MidpSetter.createSetter ("setConstraint", MidpVersionable.MIDP).addParameters (PROP_CONSTRAINTS)) // NOI18N
+                .addSetters (MidpSetter.createSetter ("setInitialInputMode", MidpVersionable.MIDP_2).addParameters (PROP_INITIAL_INPUT_MODE)) // NOI18N
+                .addSetters (MidpSetter.createSetter ("setString", MidpVersionable.MIDP).addParameters (PROP_STRING)) // NOI18N
+                .addSetters (MidpSetter.createSetter ("setMaxSize", MidpVersionable.MIDP).addParameters (PROP_MAX_SIZE)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

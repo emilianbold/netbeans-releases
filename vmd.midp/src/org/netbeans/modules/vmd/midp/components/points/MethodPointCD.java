@@ -41,7 +41,7 @@ public class MethodPointCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#MethodPoint"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/method_point_16.png"; // NOI18N
-//    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/method_point_32.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/method_point_32.png"; // NOI18N
 
     public static final String PROP_METHOD_NAME = "methodName"; // NOI18N
 
@@ -57,8 +57,9 @@ public class MethodPointCD extends ComponentDescriptor {
         return MidpVersionDescriptor.FOREVER;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
-        component.writeProperty (PROP_METHOD_NAME, InstanceNameResolver.createFromSuggested (component, "method"));
+        component.writeProperty (PROP_METHOD_NAME, InstanceNameResolver.createFromSuggested (component, "method")); // NOI18N
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
@@ -84,7 +85,7 @@ public class MethodPointCD extends ComponentDescriptor {
             createPropertiesPresenter (),
             // code
             new CodeReferencePresenter () {
-                protected String generateAccessCode () { return generateDirectAccessCode () + " ()"; }
+                protected String generateAccessCode () { return generateDirectAccessCode () + " ()"; } // NOI18N
                 protected String generateDirectAccessCode () { return MidpTypes.getString (getComponent ().readProperty (PROP_METHOD_NAME)); }
                 protected String generateTypeCode () { throw Debug.illegalState (); }
             },

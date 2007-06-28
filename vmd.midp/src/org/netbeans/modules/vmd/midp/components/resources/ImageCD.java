@@ -71,7 +71,7 @@ public final class ImageCD extends ComponentDescriptor {
                 .addParameters (new ImageResourceParameter ())
                 .addParameters (new NullImageResourceParameter ())
                 .addSetters (MidpSetter.createFactoryMethod (TYPEID, null, "Image", "createImage", MidpVersionable.MIDP).addParameters (ImageResourceParameter.PARAM_RESOURCE_PATH).addExceptions ("java.io.IOException")) // NOI18N
-                .addSetters (MidpSetter.createFactoryMethod (TYPEID, null, "Image", "createImage", MidpVersionable.MIDP).addParameters (NullImageResourceParameter.PARAM_NULL_RESOURCE_PATH));
+                .addSetters (MidpSetter.createFactoryMethod (TYPEID, null, "Image", "createImage", MidpVersionable.MIDP).addParameters (NullImageResourceParameter.PARAM_NULL_RESOURCE_PATH)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
@@ -91,6 +91,7 @@ public final class ImageCD extends ComponentDescriptor {
             super (PARAM_RESOURCE_PATH);
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component) {
             return component.readProperty (PROP_RESOURCE_PATH).getKind () != PropertyValue.Kind.NULL;
         }
@@ -105,10 +106,12 @@ public final class ImageCD extends ComponentDescriptor {
             super (PARAM_NULL_RESOURCE_PATH);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             section.getWriter ().write ("0, 0"); // NOI18N
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component) {
             return component.readProperty (PROP_RESOURCE_PATH).getKind () == PropertyValue.Kind.NULL;
         }

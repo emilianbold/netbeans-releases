@@ -78,6 +78,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
         return MidpVersionDescriptor.FOREVER;
     }
 
+    @Override
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_START_ANIM_IMMEDIATELY, MidpTypes.createBooleanValue(true));
         component.writeProperty(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.createBooleanValue(true));
@@ -93,6 +94,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
                 );
     }
 
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters(presenters);

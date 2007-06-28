@@ -64,7 +64,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SMSComposer"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = null;
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_32.png"; // NOI18N
 
     public static final String PROP_PHONE_NUMBER = "phoneNumber"; //NOI18N
     public static final String PROP_MESSAGE = "message"; //NOI18N

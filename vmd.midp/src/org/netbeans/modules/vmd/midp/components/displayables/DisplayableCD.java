@@ -78,6 +78,7 @@ public final class DisplayableCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_TITLE, component.readProperty (ClassCD.PROP_INSTANCE_NAME));
 
@@ -113,6 +114,7 @@ public final class DisplayableCD extends ComponentDescriptor {
                 .addSetters (MidpSetter.createSetter ("setCommandListener", MidpVersionable.MIDP).addParameters (PROP_COMMAND_LISTENER));
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         // actions
         MidpActionsSupport.addNewActionPresenter(presenters, CommandCD.TYPEID);

@@ -52,6 +52,7 @@ public final class DisplayCD extends ComponentDescriptor {
         return null;
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InspectorFolderPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
@@ -62,7 +63,7 @@ public final class DisplayCD extends ComponentDescriptor {
         return Arrays.asList (
             // code
             createSwitchDisplayCodePresenter (),
-            CodeNamePresenter.fixed ("switchDisplayable", "getDisplay", "__previousDisplayables", "switchToPreviousDisplayable"),
+            CodeNamePresenter.fixed ("switchDisplayable", "getDisplay", "__previousDisplayables", "switchToPreviousDisplayable"), // NOI18N
             // delete
             DeletePresenter.createIndeliblePresenter ()
         );
@@ -70,11 +71,13 @@ public final class DisplayCD extends ComponentDescriptor {
 
     private CodeClassLevelPresenter.Adapter createSwitchDisplayCodePresenter () {
         return new CodeClassLevelPresenter.Adapter() {
+            @Override
             protected void generateFieldSectionCode (MultiGuardedSection section) {
                 if (isPreviousScreenEventHandlerUsed ())
-                    section.getWriter ().write ("private java.util.Hashtable __previousDisplayables = new java.util.Hashtable ();\n");
+                    section.getWriter ().write ("private java.util.Hashtable __previousDisplayables = new java.util.Hashtable ();\n"); // NOI18N
             }
 
+            @Override
             protected void generateMethodSectionCode (MultiGuardedSection section) {
                 if (isPreviousScreenEventHandlerUsed ()) {
                     section.getWriter ().write ("private void switchToPreviousDisplayable () {\n"); // NOI18N
@@ -89,6 +92,7 @@ public final class DisplayCD extends ComponentDescriptor {
                 }
             }
 
+            @Override
             protected void generateClassBodyCode (StyledDocument document) {
                 MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-switchDisplayable"); // NOI18N
 

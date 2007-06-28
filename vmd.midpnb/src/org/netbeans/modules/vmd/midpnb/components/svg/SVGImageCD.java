@@ -52,15 +52,17 @@ public class SVGImageCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.m2g.SVGImage"); // NOI18N
     
-    public static final String PROP_RESOURCE_PATH = "resourcePath";  // NOI18N
+    public static final String PROP_RESOURCE_PATH = "resourcePath"; // NOI18N
     public static final String PROP_EXTERNAL_RESOURCE_HANDLER = "externalResourceHandler"; // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_32.png"; // NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
     
+    @Override
     public void postInitialize(DesignComponent component) {
         MidpProjectSupport.addLibraryToProject(component.getDocument(), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
@@ -133,6 +135,7 @@ public class SVGImageCD extends ComponentDescriptor {
         });
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
         super.gatherPresenters(presenters);

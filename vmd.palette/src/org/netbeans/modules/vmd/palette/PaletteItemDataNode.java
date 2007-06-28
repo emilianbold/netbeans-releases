@@ -58,14 +58,17 @@ public class PaletteItemDataNode extends DataNode {
         lookup = Lookups.singleton(this);
     }
     
+    @Override
     public String getDisplayName() {
         return obj.getDisplayName();
     }
     
+    @Override
     public String getShortDescription() {
         return obj.getToolTip();
     }
     
+    @Override
     public Image getIcon(int type) {
         if (needCheck) {
             PaletteMap.getInstance().checkValidity(getProjectType(), lookup);
@@ -100,6 +103,7 @@ public class PaletteItemDataNode extends DataNode {
         return icon;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
@@ -124,22 +128,27 @@ public class PaletteItemDataNode extends DataNode {
         this.needCheck = needCheck;
     }
     
+    @Override
     public boolean canRename() {
         return false;
     }
     
+    @Override
     public boolean canDestroy() {
         return false;
     }
     
+    @Override
     public void destroy() throws IOException {
         super.destroy();
     }
     
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public boolean canCut() {
         return false;
     }
