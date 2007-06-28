@@ -22,6 +22,7 @@
 package projects.apitest;
 
 import java.io.File;
+import java.io.IOException;
 import junit.framework.*;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -83,7 +84,12 @@ public class CreateProjectTest extends JellyTestCase {
  
      
     public void testCreateAndOpenProject_API_2() throws Exception {
-        File projectDir = new File(getWorkDir(), projName2);
+        File  projectDir = createProject(projName2);
+        assertNotNull(Utilities.openProject(projectDir));
+    }
+  
+    public File createProject(String prjName) throws IOException {
+        File projectDir = new File(getWorkDir(), prjName);
         projectDir.mkdir();
         
         File[] sourceFolders = new File[2];
@@ -101,13 +107,11 @@ public class CreateProjectTest extends JellyTestCase {
         test2.mkdirs();
         testFolders[0] = test1;
         testFolders[1] = test2;
-        
-        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
-        assertNotNull(Utilities.openProject(projectDir));
+        org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
+        return projectDir;
     }
-    
     public void testCloseProject_API_2() throws Exception {
-        File f = new File(getWorkDir(), projName2);
+        File f = createProject(projName2);
         assertTrue("File is folder",f.isDirectory());
         Utilities.openProject(f);
         assertTrue(Utilities.closeProject(projName2));
