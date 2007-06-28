@@ -77,7 +77,7 @@ public class BuildServiceAssembly extends Task {
     
     private Logger logger = Logger.getLogger(getClass().getName());
     
-    private File catalogFile;
+    private File mergedCatalogFile;
     
     // private boolean jbiRouting = true;
     private String serviceUnitsDirLoc;
@@ -155,8 +155,8 @@ public class BuildServiceAssembly extends Task {
             jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;
             
             String catalogDirLoc = serviceUnitsDirLoc
-                    + File.separator + "META-INF"
-                    + File.separator + "catalogData";
+                    + File.separator + "META-INF";
+                    //+ File.separator + "catalogData";
             
             // String mapFileLoc = projPath + confDir + File.separator + "portmap.xml";
             String connectionsFileLoc = confDirLoc + "connections.xml";
@@ -320,88 +320,105 @@ public class BuildServiceAssembly extends Task {
         return bFlag;
     }
     
-    private void MergeSeJarCatalogs(String catalogDirLoc) {
+    // catalogDirLoc: <compapp>/src/jbiServiceUnits/META-INF
+    private void MergeSeJarCatalogs(String catalogDirLoc) { 
         File catalogDir = new File(catalogDirLoc);
         if (!catalogDir.exists()) {  // no catalog...
             return;
         }
         
         // 1. loop thru project subdirs
-        List<File> cats = new ArrayList<File>();
+        List<File> catalogFiles = new ArrayList<File>();
         File[] children = catalogDir.listFiles();
         if (children == null) {
             return; // no children...
         }
-        for(int i = 0; i < children.length; i++) {
-            File child = children[i];
-            File catFile = new File(child, SU_CATALOGXML_PATH);
-            if (catFile.exists()) {
-                cats.add(catFile);
+        
+        for (File child : children) {
+            File catalogFile = new File(child, "catalog.xml"); //SU_CATALOGXML_PATH);
+            if (catalogFile.exists()) {
+                catalogFiles.add(catalogFile);
             }
         }
         
-        // 2. merge catalog.xml
-        if (cats.size() < 1) {
+        if (catalogFiles.size() < 1) {
             return; // no catalog..
         }
-        int ncat = 0;
-        Document catlogDoc = null;
-        Node catlogRoot = null;
-        catalogFile = new File(catalogDir.getParentFile(), "catalog.xml"); // NOI18N
+        
+        // 2. merge catalog.xml
+        Document mergedCatalogDoc = null;
+        
+        // src/jbiServiceUnits/catalog.xml
+        mergedCatalogFile = new File(catalogDir.getParentFile(), "catalog.xml"); // NOI18N
         try {
             DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = fact.newDocumentBuilder();
             
-            for(File catalog: cats) {
-                ncat++;
-                if (ncat == 1) { // copy the first one...
-                    catalogFile.createNewFile();
-                    InputStream in = new FileInputStream(catalog);
-                    OutputStream out = new FileOutputStream(catalogFile);
-                    
-                    // Transfer bytes from in to out
-                    byte[] buf = new byte[1024];
-                    int len;
-                    while ((len = in.read(buf)) > 0) {
-                        out.write(buf, 0, len);
-                    }
-                    in.close();
-                    out.close();
-                } else if (ncat == 2) {
-                    catlogDoc = builder.parse(catalogFile);
-                    catlogRoot = catlogDoc.getDocumentElement();
-                    importCatalog(builder, catalog, catlogRoot);
-                } else { // merge next..
-                    importCatalog(builder, catalog, catlogRoot);
+            for (int i = 0; i < catalogFiles.size(); i++) {
+                File catalogFile = catalogFiles.get(i);
+                if (i == 0) {                    
+                    mergedCatalogDoc = 
+                            getUpdatedCatalogDocument(catalogFile, builder);
+                } else {
+                    Document catalogDoc = 
+                            getUpdatedCatalogDocument(catalogFile, builder);                    
+                    importCatalog(mergedCatalogDoc, catalogDoc);
                 }
             }
             
-            if (ncat > 1) {
-                DOMSource src = new DOMSource(catlogRoot);
-                FileOutputStream fos = new FileOutputStream(catalogFile);
-                StreamResult rest = new StreamResult(fos);
-                TransformerFactory transFact = TransformerFactory.newInstance();
-                Transformer transformer = transFact.newTransformer();
-                transformer.transform(src, rest);
-            }
+            mergedCatalogFile.createNewFile();       
+            
+            DOMSource src = new DOMSource(mergedCatalogDoc);
+            FileOutputStream fos = new FileOutputStream(mergedCatalogFile);
+            StreamResult rest = new StreamResult(fos);
+            TransformerFactory transFact = TransformerFactory.newInstance();
+            Transformer transformer = transFact.newTransformer();
+            transformer.transform(src, rest);
         } catch (Exception ex) {
             log("Exception: A processing error occurred; " + ex);
-        }
-        
+        }        
     }
     
-    private void importCatalog(DocumentBuilder builder, File catFile, Node catRoot) {
+    // Before merging the catalog file, we need to update the catalog to 
+    // include the extra SE SU directory under src/jbiServiceUnits/META-INF/ 
+    // to avoid conflict from multiple SE SUs.
+    private Document getUpdatedCatalogDocument(File catalogFile, 
+            DocumentBuilder builder)
+            throws Exception {
+        
+        File sesuDir = catalogFile.getParentFile();
+        String sesuName = sesuDir.getName();
+        
+        Document doc = builder.parse(catalogFile);
+        
+        // TODO: this might not be enough
+        NodeList systemNodes = doc.getElementsByTagName("system");
+        for (int i = 0; i < systemNodes.getLength(); i++) {
+            Element systemNode = (Element) systemNodes.item(i);
+            String uri = systemNode.getAttribute("uri");
+            if (uri != null && 
+                    // make sure the catalog data is along with the catalog.xml
+                    new File(sesuDir, uri).exists()) {
+                uri = sesuName + "/" + uri;
+                systemNode.setAttribute("uri", uri);
+            }
+        }
+        
+        return doc;
+    }
+    
+    private void importCatalog(Document mergedDoc, Document doc) {
         try {
-            Document doc = builder.parse(catFile);
+            Element mergedRoot = mergedDoc.getDocumentElement();
             Element root = doc.getDocumentElement();
-            NodeList nl = root.getChildNodes();
-            for (int i = 0; i < nl.getLength(); i++) {
-                Node n = nl.item(i);
+            NodeList childNodes = root.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                Node childNode = childNodes.item(i);
                 
                 // todo: Need to check for duplicated entries...
                 
-                n = catRoot.getOwnerDocument().importNode(n, true);
-                catRoot.appendChild(n);
+                childNode = mergedDoc.importNode(childNode, true);
+                mergedRoot.appendChild(childNode);
             }
         } catch (Exception ex) {
             log("Exception: A processing error occurred; " + ex);
@@ -847,10 +864,10 @@ public class BuildServiceAssembly extends Task {
             newJar.write(dd.writeToBytes());
             
             // create the catalog.xml
-            if (catalogFile != null) {
+            if (mergedCatalogFile != null) {
                 JarEntry catalogentry = new JarEntry(SU_CATALOGXML_PATH);
                 newJar.putNextEntry(catalogentry);
-                InputStream in = new FileInputStream(catalogFile);
+                InputStream in = new FileInputStream(mergedCatalogFile);
                 byte[] buf = new byte[1024];
                 int len;
                 while ((len = in.read(buf)) > 0) {

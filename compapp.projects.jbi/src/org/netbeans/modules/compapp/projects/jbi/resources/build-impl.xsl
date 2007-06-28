@@ -384,22 +384,12 @@ Microsystems, Inc. All Rights Reserved.
             
             <target name="compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
-            </target>
-            
+            </target>            
             
             <xsl:comment>
                 DIST BUILDING SECTION
             </xsl:comment>
             
-            <!--<target name="jbi-gen-depath">
-            <xsl:attribute name="depends">init,init-deploy</xsl:attribute>
-            <jbi-generate-deployment-path
-            jarFileClasspath="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-projects-jbi.jar"
-            privatePropertiesFileLocation="${{basedir}}/nbproject/private/private.properties"
-            netBeansUserPropertyValue="${{netbeans.user}}">
-            </jbi-generate-deployment-path>
-            </target>-->
-
             <target name="jbi-build">
                 <xsl:attribute name="depends">init,init-deploy,deps-jar, deps-javaee-jar</xsl:attribute>
                 <xsl:attribute name="description">Build Service Assembly.</xsl:attribute>
@@ -410,7 +400,7 @@ Microsystems, Inc. All Rights Reserved.
                 <mkdir dir="${{build.dir}}/META-INF"/>
                 <jar compress="true" jarfile="${{build.dir}}/BCDeployment.jar">
                     <fileset dir="${{src.dir}}/../jbiServiceUnits">
-                        <exclude name="META-INF/catalogData/**" />
+                        <exclude name="META-INF/*/catalog.xml" />
                         <exclude name="**/jbi.xml"/>
                     </fileset>
                 </jar>
@@ -443,19 +433,6 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
                 
                 <mkdir dir="${{build.dir}}/META-INF"/>
-                <!--
-                <jbi-generate-jbi-descriptors
-                serviceAssemblyDescription="${{org.netbeans.modules.compapp.jbiserver.description.assembly-unit}}"
-                serviceEngineServiceUnitDescription="${{org.netbeans.modules.compapp.jbiserver.description.serviceEngineASA}}"
-                    
-                soapBindingComponentServiceUnitDescription="${{org.netbeans.modules.compapp.jbiserver.description.soapBindingComponentASA}}"
-                soapBindingComponentArtifactJarName="BCDeployment.jar"
-                privatePropertiesFileLocation="${{basedir}}/nbproject/private/private.properties"
-                jbiDescriptorFileLocation="${{basedir}}/${{build.dir}}/META-INF">
-                </jbi-generate-jbi-descriptors>
-                -->
-
-
 
                 <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
                     <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
@@ -475,16 +452,7 @@ Microsystems, Inc. All Rights Reserved.
                     <fileset dir="${{build.dir}}"/>
                 </jar>
             </target>
-            <!--
-            <target name="do-dist">
-            <xsl:attribute name="depends">init,compile,pre-dist</xsl:attribute>
-            <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
-            <mkdir dir="${{dist.jar.dir}}"/>
-            <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.classes.dir}}"/>
-            </jar>
-            </target>
-            -->
+            
             <target name="post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -518,19 +486,7 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             
             <target name="run-jbi-deploy">
-                <xsl:attribute name="depends">jbi-build</xsl:attribute>    
-                <!--
-                <jbi-generate-deployment-path
-                jarFileClasspath="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-projects-jbi.jar"
-                privatePropertiesFileLocation="${{basedir}}/nbproject/private/private.properties"
-                netBeansUserPropertyValue="${{netbeans.user}}">
-                </jbi-generate-deployment-path>
-                <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
-                <condition property="com.sun.aas.installRoot"
-                value="${{com.sun.appserver.instance.location}}">
-                <not><isset property="com.sun.aas.installRoot"/></not>
-                </condition>
-                -->
+                <xsl:attribute name="depends">jbi-build</xsl:attribute>   
                 <!--
                 <echo>JBI Location is: ${com.sun.aas.installRoot}/platform/bin/jbi_admin.xml</echo>
                 <echo>JBI JMX Port is: ${com.sun.jbi.management.JmxPort}</echo>
@@ -881,17 +837,18 @@ Microsystems, Inc. All Rights Reserved.
                             <include name="**/*.wsdl"/>
                             <include name="**/*.xsd"/>
                             <include name="META-INF/jbi.xml"/>
+                            <include name="META-INF/catalog.xml"/>
                         </patternset>
                     </unzip>  
                     <property>
                         <xsl:attribute name="name"><xsl:value-of select="$subproj"/><xsl:text>.su.dir</xsl:text></xsl:attribute>
                         <xsl:attribute name="value">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     </property>
-                    <copyfile> 
-                        <xsl:attribute name="src">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF/jbi.xml</xsl:text></xsl:attribute>
-                        <xsl:attribute name="dest">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/jbi.xml</xsl:text></xsl:attribute>
-                    </copyfile>
-                    <delete> 
+                    <move> 
+                        <xsl:attribute name="file">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF/jbi.xml</xsl:text></xsl:attribute>
+                        <xsl:attribute name="todir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}</xsl:text></xsl:attribute>
+                    </move>
+                    <!--<delete> 
                         <xsl:attribute name="dir">${<xsl:value-of select="$subproj"/><xsl:text>.su.dir}/META-INF</xsl:text></xsl:attribute>
                     </delete>
                     <unzip>
@@ -900,7 +857,26 @@ Microsystems, Inc. All Rights Reserved.
                         <patternset>
                             <include name="META-INF/catalog.xml"/>
                         </patternset>
-                    </unzip>
+                    </unzip>-->
+                    
+          <!--
+        <unzip src="${project.TestForNBRepro}/build/${se.jar.name}" dest="${src.dir}/../jbiServiceUnits/META-INF/catalogData/TestForNBRepro">
+            <patternset>
+                <include name="META-INF/catalog.xml"/>
+            </patternset>
+        </unzip>
+        
+        <move todir="${src.dir}/../jbiServiceUnits/META-INF/TestForNBRepro">
+            <fileset dir="${TestForNBRepro.su.dir}/META-INF/"/>                
+        </move>
+        -->
+        
+                    <move>
+                        <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/</xsl:text><xsl:value-of select="$subproj"/></xsl:attribute>                        
+                        <fileset>
+                            <xsl:attribute name="dir">${<xsl:value-of select="$subproj"/>.su.dir}<xsl:text>/META-INF</xsl:text></xsl:attribute>
+                        </fileset>
+                    </move>
                 </xsl:if>
             </xsl:for-each>
         </target>
@@ -978,7 +954,7 @@ Microsystems, Inc. All Rights Reserved.
                 </unzip>  
                 <unzip>
                     <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.dist}</xsl:attribute>
-                    <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/catalogData/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
+                    <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
                     <patternset>
                         <include name="META-INF/catalog.xml"/>
                     </patternset>
