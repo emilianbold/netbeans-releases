@@ -73,7 +73,6 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public void initialize(){
         log("::initialize::");
-        PerformanceCounters.initPerformanceCounters(this);
     }
     
     public void prepare(){
@@ -110,8 +109,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     }
     
     public ComponentOperator open(){
-        log("::open");
-        PerformanceCounters.addPerformanceCounter("Wait Wizard closed");        
+        log("::open");    
         wizard_location.finish();
         
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
@@ -119,17 +117,15 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         wizard_location.waitClosed();
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
         
-        PerformanceCounters.endPerformanceCounter("Wait Wizard closed");
-        PerformanceCounters.addPerformanceCounter("Wait document");
+
         WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
-        
-        PerformanceCounters.endPerformanceCounter("Wait document");
+
         return null;
     }
     
     public void close(){
         log("::close");
-        PerformanceCounters.reportPerformanceCounters();
+
         try {
             new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
         } catch (Exception ex) {
