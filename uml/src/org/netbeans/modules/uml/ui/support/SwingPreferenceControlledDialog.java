@@ -182,14 +182,10 @@ public class SwingPreferenceControlledDialog implements IPreferenceControlledDia
 	 */
 	public void setPreferenceValue(String value)
 	{
-		boolean autoUpdate = getAutoUpdatePreference();
+ 		boolean autoUpdate = getAutoUpdatePreference();
 		if (autoUpdate)
 		{
-			IPreferenceManager2 pManager = ProductHelper.getPreferenceManager();
-			if (pManager != null)
-			{
-				pManager.setPreferenceValue(m_PrefKey, m_PrefPath, m_PrefName, value);
-			}
+		    NbPreferences.forModule(DummyCorePreference.class).put(m_PrefName, value) ;
 		}
 	}
 
@@ -205,7 +201,7 @@ public class SwingPreferenceControlledDialog implements IPreferenceControlledDia
 	 *
 	 */
 	public String getPreferenceValue() {
-            
+
             //kris richards - set to use NbPreferences
             return NbPreferences.forModule(DummyCorePreference.class).get(m_PrefName,"") ;
         }

@@ -153,22 +153,19 @@ public class FilterAction extends CookieAction
     {
         String key = "Default"; // NOI18N
         String path = ""; // NOI18N
-        String name = "FilterCollapseNodesWarning"; // NOI18N
+        String name = "UML_ShowMe_Dont_Show_Filter_Warning_Dialog"; // NOI18N
         
         //Kris Richards - This is a "show me dialog" preference. Need to get the 
         // preference value for the propertysupport module.
-        String showMe = NbPreferences.forModule(DummyCorePreference.class).get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK");
+        String showMe = NbPreferences.forModule(DummyCorePreference.class).get(name, "PSK_ASK");
         
-        if (showMe.equals("PSK_ALWAYS"))
+        if (showMe.equals("PSK_NEVER"))
             return true ;
-        else if (showMe.equals("PSK_NEVER"))
-            return false ;
-        
-        
+
         int result = 0;
         boolean userClickedYes = true;
         IPreferenceQuestionDialog dialog = new SwingPreferenceQuestionDialog ();
-        
+       
         String title = NbBundle.getMessage (FilterAction.class,
                 "LBL_FilterCollapseNodesWarning_Title"); // NOI18N
         
@@ -180,8 +177,8 @@ public class FilterAction extends CookieAction
                 key,
                 path,
                 name,
-                "PSK_ALWAYS", // NOI18N
-                "",
+                "PSK_NEVER", // NOI18N
+                "PSK_NEVER",
                 "PSK_ASK", // NOI18N
                 msg,
                 SimpleQuestionDialogResultKind.SQDRK_RESULT_YES,
