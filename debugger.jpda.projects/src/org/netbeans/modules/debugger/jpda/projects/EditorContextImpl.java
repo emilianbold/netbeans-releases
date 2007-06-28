@@ -52,8 +52,10 @@ import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.SourcePositions;
 
 import javax.lang.model.util.Elements;
@@ -62,6 +64,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -90,9 +94,11 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.netbeans.editor.JumpList;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -1348,6 +1354,24 @@ public class EditorContextImpl extends EditorContext {
         // TODO: Can be called outside of AWT? Probably need invokeAndWait()
         EditorCookie ec = nodes[0].getCookie(EditorCookie.class);
         final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
+        
+        JEditorPane[] op = ec.getOpenedPanes ();
+        JEditorPane ep = (op != null && op.length == 1) ? op[0] : null;
+        final String selectedIdentifier;
+        if (ep != null) {
+            String s = ep.getSelectedText ();
+            if (ep.getSelectionStart() > currentOffset || ep.getSelectionEnd() < currentOffset) {
+                s = null; // caret outside of the selection
+            }
+            if (s != null && Utilities.isJavaIdentifier (s)) {
+                selectedIdentifier = s;
+            } else {
+                selectedIdentifier = null;
+            }
+        } else {
+            selectedIdentifier = null;
+        }
+        
         //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentElementPtr = new String[] { null };
         final Future<Void> scanFinished;
@@ -1361,12 +1385,27 @@ public class EditorContextImpl extends EditorContext {
 
                     Element el = null;
                     if (kind == ElementKind.CLASS) {
-                        Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
-                        TypeElement te = scope.getEnclosingClass();
-                        if (te != null) {
-                            currentElementPtr[0] = ElementUtilities.getBinaryName(te);
+                        boolean isMemberClass = false;
+                        if (selectedIdentifier != null) {
+                            Tree tree = ci.getTreeUtilities().pathFor(currentOffset).getLeaf();
+                            if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                                MemberSelectTree mst = (MemberSelectTree) tree;
+                                el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), mst.getExpression()));
+                                TypeMirror tm = el.asType();
+                                if (tm.getKind().equals(TypeKind.DECLARED)) {
+                                    currentElementPtr[0] = tm.toString();
+                                    isMemberClass = true;
+                                }
+                            }
+                        } 
+                        if (!isMemberClass) {
+                            Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
+                            TypeElement te = scope.getEnclosingClass();
+                            if (te != null) {
+                                currentElementPtr[0] = ElementUtilities.getBinaryName(te);
+                            }
+                            el = te;
                         }
-                        el = te;
                     } else if (kind == ElementKind.METHOD) {
                         Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
                         el = scope.getEnclosingMethod();
@@ -1380,39 +1419,45 @@ public class EditorContextImpl extends EditorContext {
                     } else if (kind == ElementKind.FIELD) {
                         int offset = currentOffset;
                         
-                        String text = ci.getText();
-                        int l = text.length();
-                        char c = 0; // Search for the end of the field declaration
-                        while (offset < l && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
-                        if (offset < l && c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
-                            int endOffset = --offset;
-                            int setOffset = -1;
-                            while(offset >= 0 && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
-                                if (c == '=') setOffset = offset;
-                                offset--;
+                        if (selectedIdentifier == null) {
+                            String text = ci.getText();
+                            int l = text.length();
+                            char c = 0; // Search for the end of the field declaration
+                            while (offset < l && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
+                            if (offset < l && c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
+                                int endOffset = --offset;
+                                int setOffset = -1;
+                                while(offset >= 0 && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
+                                    if (c == '=') setOffset = offset;
+                                    offset--;
+                                }
+                                if (setOffset > -1) {
+                                    offset = setOffset;
+                                } else {
+                                    offset = endOffset;
+                                }
+                                while (offset >= 0 && Character.isWhitespace(text.charAt(offset))) offset--;
                             }
-                            if (setOffset > -1) {
-                                offset = setOffset;
-                            } else {
-                                offset = endOffset;
-                            }
-                            while (offset >= 0 && Character.isWhitespace(text.charAt(offset))) offset--;
+                            if (offset < 0) offset = 0;
                         }
-                        if (offset < 0) offset = 0;
-                         
                         Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
                             el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
                             if (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT) {
                                 currentElementPtr[0] = ((VariableTree) tree).getName().toString();
                             }
+                        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
+                            IdentifierTree it = (IdentifierTree) tree;
+                            currentElementPtr[0] = it.getName().toString();
+                        } else if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                            MemberSelectTree mst = (MemberSelectTree) tree;
+                            currentElementPtr[0] = mst.getIdentifier().toString();
+                            el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), mst.getExpression()));
+                            TypeMirror tm = el.asType();
+                            if (tm.getKind().equals(TypeKind.DECLARED)) {
+                                String fieldClassName = el.toString();
+                            }
                         }
-                        /*
-                        Element el = ci.getTrees().getElement(ci.getTreeUtilities().pathFor(offset));
-                        if (el != null && el.getKind() == ElementKind.FIELD) {
-                            currentElementPtr[0] = el.getSimpleName().toString();
-                        }
-                         */
                     }
                     if (elementPtr != null) {
                         elementPtr[0] = el;
