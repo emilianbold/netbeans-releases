@@ -47,7 +47,7 @@
     <folder name="MainTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <file name="nokiaS80">
-                <attr name="templateName" stringvalue="Templates/GUIForms/AWTForms/Frame.java"/>
+                <attr name="templateName" stringvalue="Templates/AWTForms/Frame.java"/>
                 <attr name="templateType" stringvalue="main"/>
             </file>
         </folder>
