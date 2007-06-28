@@ -6,6 +6,8 @@ import java.lang.reflect.Constructor;
 
 public class U1Dynamic1 implements DynamicMBean, MBeanRegistration
 {
+    private ObjectName objectName;
+    private MBeanServer mbeanServer;
     /* Creates a new instance of U1Dynamic1 */
     public U1Dynamic1() {
         buildDynamicMBeanInfo();
@@ -139,8 +141,9 @@ public class U1Dynamic1 implements DynamicMBean, MBeanRegistration
      * @throws Exception This exception will be caught by the MBean server and
      * re-thrown as an MBeanRegistrationException.
      */
-
     public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception {
+        objectName = name;
+        mbeanServer = server;
         return name;
     }
 
@@ -152,7 +155,6 @@ public class U1Dynamic1 implements DynamicMBean, MBeanRegistration
      * successfully registered in the MBean server. The value false means
      * that the registration has failed.
      */
-
     public void postRegister(Boolean registrationDone) {
     }
 
@@ -162,7 +164,6 @@ public class U1Dynamic1 implements DynamicMBean, MBeanRegistration
      * @throws Exception This exception will be caught by the MBean server and
      * re-thrown as an MBeanRegistrationException.
      */
-
     public void preDeregister() throws Exception {
     }
 
@@ -170,7 +171,6 @@ public class U1Dynamic1 implements DynamicMBean, MBeanRegistration
      * Allows the MBean to perform any operations needed after having been
      * unregistered in the MBean server.
      */
-
     public void postDeregister() {
     }
 
