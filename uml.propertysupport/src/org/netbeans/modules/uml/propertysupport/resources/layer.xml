@@ -50,7 +50,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <file name="UMLOptionsCategory.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.UMLOptions"/>
         </file>
-        </folder>
+        <attr name="UMLOptionsCategory.instance/Advanced.instance" boolvalue="true"/>
+    </folder>
     
     <folder name="UML">
         <folder name="UMLOptions">
