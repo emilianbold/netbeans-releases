@@ -71,7 +71,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     }
     
     public void switchToFinished () {
-        progress.setEnabled(false);
+        progress.setIndeterminate(false);
         finishMessage.setVisible(true);
         descriptor.setOptions(new Object[] { finishButton });
     }

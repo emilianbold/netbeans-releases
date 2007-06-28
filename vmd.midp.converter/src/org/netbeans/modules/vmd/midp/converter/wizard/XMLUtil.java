@@ -31,6 +31,8 @@ import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author David Kaspar
@@ -92,6 +94,27 @@ public class XMLUtil {
         for (int i = 0; i < nodes.length; i++)
             nodes[i] = childNodes.item (i);
         return nodes;
+    }
+
+    public static List<Node> getChildren (Node node, String nodeName) {
+        ArrayList<Node> children = new ArrayList<Node> ();
+        NodeList nodes = node.getChildNodes ();
+        for (int i = 0; i < nodes.getLength (); i++) {
+            Node child = nodes.item (i);
+            if (nodeName.equals (child.getNodeName ()))
+                children.add (child);
+        }
+        return children;
+    }
+
+    public static Node getChild (Node node, String nodeName) {
+        NodeList nodes = node.getChildNodes ();
+        for (int i = 0; i < nodes.getLength (); i ++) {
+            Node child = nodes.item (i);
+            if (nodeName.equals (child.getNodeName ()))
+                return child;
+        }
+        return null;
     }
 
     public static String getAttributeValue (Node node, String attr) {
