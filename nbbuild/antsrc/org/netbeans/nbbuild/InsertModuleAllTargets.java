@@ -19,6 +19,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -72,6 +73,30 @@ public final class InsertModuleAllTargets extends Task {
             }
             @SuppressWarnings("unchecked")
             Hashtable<String,String> props = project.getProperties();
+
+            if (checkModules) {
+                boolean missingModules = false;
+                String[] clusters = props.get("nb.clusters.list").split(", *");
+                String nb_all = props.get("nb_all");
+                if (nb_all == null)
+                    throw new BuildException("Can't file 'nb_all' property, probably not in the NetBeans build system");
+                File nbRoot = new File(nb_all);
+                for( String cluster: clusters) {
+                    String[] clusterModules = props.get(cluster).split(", *");
+                    for( String module: clusterModules) {
+                        File moduleBuild = new File(nbRoot, module + File.separator + "build.xml");
+                        if (!moduleBuild.exists() || !moduleBuild.isFile()) {
+                            missingModules = true;
+                            log("This module is missing from checkout: " + module + " - at least can't find: " + moduleBuild.getAbsolutePath());
+                        }
+                    }
+                }
+                if (missingModules) {
+                    String clusterConfig = props.get("cluster.config");
+                    throw new BuildException("Some modules according your cluster config '" + clusterConfig + "' are missing from checkout, see messages above.",getLocation());
+                }
+            }
+            
             Map<String,String> clustersOfModules = new HashMap<String,String>();
             for (Map.Entry<String,String> pair : props.entrySet()) {
                 String cluster = pair.getKey();
@@ -89,29 +114,7 @@ public final class InsertModuleAllTargets extends Task {
                 assert path != null : entry;
                 entries.put(path, entry);
             }
-            
-            if (checkModules) {
-                boolean missingModules = false;
-                String[] clusters = props.get("nb.clusters.list").split(", *");
-                Set<String> foundModules = entries.keySet();
-                for( String cluster: clusters) {
-                    String[] clusterModules = props.get(cluster).split(", *");
-                    for( String module: clusterModules) {
-                        if (module.equals("xtest")) { // XXX special case, needed at least for javadoc-nbms
-                            continue;
-                        }
-                        if (!foundModules.contains(module)) {
-                            missingModules = true;
-                            log("This module is missing from checkout: " + module);
-                        }
-                    }
-                }
-                if (missingModules) {
-                    String clusterConfig = props.get("cluster.config");
-                    throw new BuildException("Some modules according your cluster config '" + clusterConfig + "' are missing from checkout, see messages above.",getLocation());
-                }
-            }
-            
+           
             for (ModuleListParser.Entry entry : entries.values()) {
                 String path = entry.getNetbeansOrgPath();
                 assert path != null : entry;
