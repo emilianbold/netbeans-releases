@@ -5525,7 +5525,7 @@ public class UMLParsingIntegrator
         if (pSpace == null || m_Project == null || m_Project == null)
             return false;
         
-        boolean prefVal = NbPreferences.forModule (UMLParsingIntegrator.class).getBoolean("UML_Prompt_to_Save_Project", true);
+        boolean prefVal = NbPreferences.forModule (UMLParsingIntegrator.class).getBoolean("UML_Prompt_to_Save_Project", false);
         
 
         if (!m_Project.isDirty() || ! prefVal)

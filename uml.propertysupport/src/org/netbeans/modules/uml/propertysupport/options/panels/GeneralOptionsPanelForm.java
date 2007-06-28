@@ -92,7 +92,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
             showAlias.setSelected(true);
         }
         
-        if (prefs.getBoolean("UML_Prompt_to_Save_Project", true)) {
+        if (prefs.getBoolean("UML_Prompt_to_Save_Project", false)) {
             promptToSaveCB.setSelected(true);
         }
         
