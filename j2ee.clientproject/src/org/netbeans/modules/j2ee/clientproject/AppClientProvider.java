@@ -138,7 +138,14 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public File getDeploymentConfigurationFile(String name) {
-        return new File(getMetaInfAsFile(), name);
+        String path = getConfigSupport().getContentRelativePath(name);
+        if (path == null) {
+            path = name;
+        }
+        if (path.startsWith("META-INF/")) { // NOI18N
+            path = path.substring(8); // removing "META-INF/"
+        }
+        return new File(getMetaInfAsFile(), path);
     }
     
     public ClassPathProvider getClassPathProvider() {

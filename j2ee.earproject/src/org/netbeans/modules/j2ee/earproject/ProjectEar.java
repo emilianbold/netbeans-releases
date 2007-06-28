@@ -460,9 +460,16 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
     
     public File getDeploymentConfigurationFile(String name) {
+        String path = getConfigSupport().getContentRelativePath(name);
+        if (path == null) {
+            path = name;
+        }
+        if (path.startsWith("META-INF/")) { // NOI18N
+            path = path.substring(8); // removing "META-INF/"
+        }
         FileObject moduleFolder = getMetaInf();
         File configFolder = FileUtil.toFile(moduleFolder);
-        return new File(configFolder, name);
+        return new File(configFolder, path);
     }
     
     public void addEjbJarModule(EjbJar module) {
