@@ -86,7 +86,7 @@ public class ServerJavonTemplate extends JavonTemplate {
         
         if( SERVLET.equals( target )) {
             templateName = "Templates/Server/Servlet.java";
-            outputFileName = "WebToMobileServlet";
+            outputFileName = mapping.getServerMapping().getClassName();
         } else if( GATEWAYS.equals( target )) {
             templateName = "Templates/Server/Gateways.java";
             outputFileName = "JavonGateways";

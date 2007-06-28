@@ -22,7 +22,7 @@ import java.util.Map;
  *  <li> sq.webtomobileservletsupport.StockQuoteSoapProxy.getQuote
  * </ul>
  */
-public class WebToMobileServlet extends HttpServlet {
+public class ${mapping.getServerMapping().getClassName()} extends HttpServlet {
 
     /**
      *  This constant indicates the command code for an invocation in the standard
