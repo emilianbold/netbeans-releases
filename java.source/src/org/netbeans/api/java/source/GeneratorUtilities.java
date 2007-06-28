@@ -343,7 +343,10 @@ public final class GeneratorUtilities {
         boolean isAbstract = flags.remove(Modifier.ABSTRACT);
         flags.remove(Modifier.NATIVE);
         
-        ExecutableType et = (ExecutableType)copy.getTypes().asMemberOf(type, element);
+        ExecutableType et = (ExecutableType)element.asType();
+        try {
+            et = (ExecutableType)copy.getTypes().asMemberOf(type, element);
+        } catch (IllegalArgumentException iae) {}
         List<TypeParameterTree> typeParams = new ArrayList<TypeParameterTree>();
         for (TypeParameterElement tpe: element.getTypeParameters()) {
             List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
