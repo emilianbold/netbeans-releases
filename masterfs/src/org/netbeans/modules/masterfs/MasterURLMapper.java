@@ -41,7 +41,7 @@ public final class MasterURLMapper extends URLMapper {
     public MasterURLMapper() {
     }
 
-    public FileObject[] getFileObjects(final URL url) {
+    public FileObject[] getFileObjects(final URL url) {                
         final FileSystem hfs = MasterFileSystem.getDefault();
         if (!url.getProtocol().equals("file")) return null;  //NOI18N
         //TODO: review and simplify         
@@ -64,6 +64,7 @@ public final class MasterURLMapper extends URLMapper {
         retVal = hfs.findResource(filePath);
         if (!(retVal instanceof MasterFileObject)) return null;
         if (!retVal.isValid()) return null;
+        ProvidedExtensionsProxy.checkReentrancy();
         return new FileObject[]{retVal};
     }
 
