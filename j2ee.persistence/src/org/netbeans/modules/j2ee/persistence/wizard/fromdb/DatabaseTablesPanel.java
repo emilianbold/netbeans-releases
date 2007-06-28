@@ -357,11 +357,11 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 } else {
                     String drvClass = ds.getDriverClassName();
                     if (drvClass == null) {
-                        notify("ERR_NoDriverClassName");
+                        notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_NoDriverClassName"));
                     } else {
                         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(drvClass);
                         if (drivers.length == 0) {
-                            notify("ERR_NoDriverError");
+                            notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_NoDriverError", drvClass));
                         } else {
                             JDBCDriver driver = JDBCDriverManager.getDefault().getDrivers(drvClass)[0];
                             dbconn = ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(
@@ -374,7 +374,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                         sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
                         datasourceName = ds.getJndiName();
                     } catch (SQLException e) {
-                        notify("ERR_DatabaseError");
+                        notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_DatabaseError"));
                     }
                 }
             } else if (item instanceof DatabaseConnection) {
@@ -382,7 +382,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 try {
                     sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
                 } catch (SQLException e) {
-                    notify("ERR_DatabaseError");
+                    notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_DatabaseError"));
                 }
             }
         } else if (dbschemaRadioButton.isSelected()) {
@@ -412,10 +412,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         changeSupport.fireChange();
     }
 
-    private static void notify(String msgName) {
-        NotifyDescriptor nd = new NotifyDescriptor.Message(
-                NbBundle.getMessage(DatabaseTablesPanel.class, msgName),
-                NotifyDescriptor.ERROR_MESSAGE);
+    private static void notify(String message) {
+        NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(nd);
     }
 
