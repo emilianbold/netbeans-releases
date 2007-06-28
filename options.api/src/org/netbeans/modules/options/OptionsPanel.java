@@ -28,7 +28,6 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
-import java.awt.SystemColor;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
@@ -55,7 +54,6 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
@@ -64,15 +62,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
-import org.openide.util.Utilities;
 
 public class OptionsPanel extends JPanel {
     private CategoryModel model = CategoryModel.getInstance();
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
-    private JLabel lTitle;
-    private JPanel pTitle;    
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");    
@@ -156,10 +151,6 @@ public class OptionsPanel extends JPanel {
         pOptions.add("Center",component);
         // set title
         Icon icon = category.getIcon ();
-        if (icon != null) {
-            lTitle.setIcon (icon);
-        }
-        lTitle.setText (category.getTitle ());
         
         // repaint
         // repaint
@@ -216,34 +207,6 @@ public class OptionsPanel extends JPanel {
         label.setHorizontalAlignment (label.CENTER);
         pOptions.add ("Center", label);
 
-        // title bar
-        JPanel pTitle = new JPanel (new BorderLayout ());
-        lTitle = new JLabel ();
-        if (Utilities.isWindows ()) {
-            lTitle.setBackground (SystemColor.activeCaption);
-            lTitle.setForeground (SystemColor.activeCaptionText);
-        } else {
-            lTitle.setBackground (Color.white);
-            lTitle.setForeground (Color.black);
-        }
-        Font f = lTitle.getFont ();
-        lTitle.setFont (new Font (f.getName (), Font.BOLD, 16));
-        lTitle.setIconTextGap (8);
-        lTitle.setOpaque (true);
-        if (Utilities.isWindows ()) {
-            pTitle.setBorder (new CompoundBorder (
-                new LoweredBorder (),
-                new LineBorder (SystemColor.activeCaption, 1)
-            ));
-        } else {
-            pTitle.setBorder (new CompoundBorder (
-                new LineBorder (iconViewBorder, 1),
-                new LineBorder (Color.white, 2)
-            ));
-        }
-        
-        pTitle.add ("Center", lTitle);
-
         // icon view
         pCategories2 = new JPanel (new GridBagLayout());        
         pCategories2.setBackground (Color.white);
@@ -251,14 +214,7 @@ public class OptionsPanel extends JPanel {
         addCategoryButtons();        
 
         pCategories = new JPanel (new BorderLayout ());
-        if (isMac) {
-            pCategories.setBorder (new CompoundBorder (
-                new VariableBorder (null, null, borderMac, null),
-                BorderFactory.createEmptyBorder (0, 4, 0, 4)
-            ));
-        } else {
-            pCategories.setBorder (new LineBorder (iconViewBorder));
-        }
+        pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
         pCategories.setBackground (Color.white);
         pCategories.add ("Center", pCategories2);
         
@@ -268,7 +224,7 @@ public class OptionsPanel extends JPanel {
         //TODO: other border for non Mac
         pOptions.setBorder(new CompoundBorder(
                 new VariableBorder(null, null, borderMac, null),
-                BorderFactory.createEmptyBorder(0, 20, 5, 20)
+                BorderFactory.createEmptyBorder(0, 5, 5, 5)
                 ));
         add(pCategories, BorderLayout.NORTH);
         add(pOptions, BorderLayout.CENTER);
@@ -276,11 +232,6 @@ public class OptionsPanel extends JPanel {
         categoryName = getCategoryID(categoryName);
         if (categoryName != null) {
             CategoryModel.Category c = model.getCategory(getCategoryID(categoryName));
-            Icon icon = c.getIcon();
-            if (icon != null) {
-                lTitle.setIcon(icon);
-            }
-            lTitle.setText(c.getTitle());
             
             CategoryButton b = (CategoryButton) buttons.get(categoryName);
             if (b != null) {

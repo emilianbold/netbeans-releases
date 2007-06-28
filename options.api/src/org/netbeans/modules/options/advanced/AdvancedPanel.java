@@ -78,7 +78,7 @@ public final class AdvancedPanel extends JPanel {
     
     void init (Lookup masterLookup) {
         // init components
-        tabbedPanel = new JTabbedPane();
+        tabbedPanel = new JTabbedPane();        
         tabbedPanel.setBorder (null);
         tabbedPanel.addChangeListener(new ChangeListener () {
             public void stateChanged(ChangeEvent e) {
