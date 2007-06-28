@@ -81,10 +81,11 @@ public final class AdvancedPanel extends JPanel {
         tabbedPanel.addChangeListener(new ChangeListener () {
             public void stateChanged(ChangeEvent e) {
                 firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
-                if(tabbedPanel.getSelectedComponent() instanceof JLabel) {
-                    String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
-                    tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel (category));
+                String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
+                if(tabbedPanel.getSelectedComponent() instanceof JLabel) {                                                            
+                    tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel (category));                    
                 }
+                model.update(category);
             }
         });
         

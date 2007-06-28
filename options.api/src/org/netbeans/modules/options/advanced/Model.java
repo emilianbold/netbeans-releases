@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.options.advanced;
 
+import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,14 +65,13 @@ public final class Model extends TabbedPanelModel {
     
     public JComponent getPanel (String category) {
         init ();
-        JComponent panel = categoryToPanel.get (category);
+        JComponent panel = categoryToPanel.get (category);        
         if (panel != null) return panel;
         AdvancedOption option = categoryToOption.get (category);
-        OptionsPanelController controller = option.create ();
+        OptionsPanelController controller = new DelegatingController(option.create ());
         categoryToController.put (category, controller);
         panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
-        controller.update();
         Border b = panel.getBorder ();
         if (b != null)
             b = new CompoundBorder (
@@ -88,11 +88,11 @@ public final class Model extends TabbedPanelModel {
     
     
     // implementation ..........................................................
-    
-    void update () {
-        Iterator it = categoryToController.values ().iterator ();
-        while (it.hasNext ())
-            ((OptionsPanelController) it.next ()).update ();
+    void update (String category) {
+        OptionsPanelController controller = categoryToController.get(category);
+        if (controller != null) {
+            controller.update();
+        }
     }
     
     void applyChanges () {
@@ -162,6 +162,54 @@ public final class Model extends TabbedPanelModel {
     void setLoookup (Lookup masterLookup) {
         this.masterLookup = masterLookup;
     }
+    
+    private static final class DelegatingController extends OptionsPanelController {
+        private OptionsPanelController delegate;
+        private boolean isUpdated;
+        private DelegatingController(OptionsPanelController delegate) {
+            this.delegate = delegate;
+        }
+        public void update() {
+            if (!isUpdated) {
+                isUpdated = true;
+                delegate.update();
+            }
+        }
+
+        public void applyChanges() {
+            isUpdated = false;
+            delegate.applyChanges();
+        }
+
+        public void cancel() {
+            isUpdated = false;
+            delegate.cancel();
+        }
+
+        public boolean isValid() {
+            return delegate.isValid();
+        }
+
+        public boolean isChanged() {
+            return delegate.isChanged();
+        }
+
+        public JComponent getComponent(Lookup masterLookup) {
+            return delegate.getComponent(masterLookup);
+        }
+
+        public HelpCtx getHelpCtx() {
+            return delegate.getHelpCtx();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            delegate.addPropertyChangeListener(l);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            delegate.removePropertyChangeListener(l);
+        }        
+    }            
 }
 
 
