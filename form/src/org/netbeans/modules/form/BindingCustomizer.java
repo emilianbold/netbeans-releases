@@ -1119,19 +1119,6 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         typeChangeSupport.firePropertyChange(null, null, null);
     }
 
-    private static TypeHelper typeHelperForRADComponent(RADComponent comp) {
-        TypeHelper type = null;
-        if (comp.getFormModel().getTopRADComponent() == comp) {
-            FileObject fob = FormEditor.getFormDataObject(comp.getFormModel()).getPrimaryFile();
-            ClassPath cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
-            String className = cp.getResourceName(fob, '.', false);
-            type = new TypeHelper(className);
-        } else {
-            type = new TypeHelper(comp.getBeanClass());
-        }
-        return type;
-    }
-
    public class ExpressionNode extends JTree.DynamicUtilTreeNode {
        private BindingDescriptor descriptor;
        private RADComponent comp;
@@ -1139,7 +1126,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        private TypeHelper type;
        
        ExpressionNode(RADComponent comp) {
-           this(typeHelperForRADComponent(comp));
+           this(BindingDesignSupport.determineType(comp));
            this.comp = comp;
        }
        

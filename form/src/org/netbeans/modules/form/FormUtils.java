@@ -1241,7 +1241,12 @@ public class FormUtils
         }
 
         public TypeHelper(String name) {
+            this(name, null);
+        }
+
+        public TypeHelper(String name, Map<String,TypeHelper> actualTypeArgs) {
             this.name = name;
+            this.actualTypeArgs = actualTypeArgs;
         }
 
         /**

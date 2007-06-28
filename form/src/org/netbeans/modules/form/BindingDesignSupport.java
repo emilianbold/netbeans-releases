@@ -32,6 +32,7 @@ import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.binding.ParameterKeys;
 import javax.swing.binding.TextChangeStrategy;
@@ -42,6 +43,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  * Design support for beans binding.
@@ -152,7 +154,8 @@ public class BindingDesignSupport {
             || javax.swing.JComboBox.class.isAssignableFrom(clazz));
     }
 
-    public List<BindingDescriptor>[] getBindingDescriptors(RADComponent component) {
+    // Used to determine binding properties only
+    List<BindingDescriptor>[] getBindingDescriptors(RADComponent component) {
         BeanDescriptor beanDescriptor = component.getBeanInfo().getBeanDescriptor();
         return getBindingDescriptors(null, beanDescriptor, component.getBeanInstance());
     }
@@ -335,40 +338,28 @@ public class BindingDesignSupport {
                                         propName = Character.toLowerCase(propName.charAt(0)) + propName.substring(1);
                                     }
 
-                                    String typeName;
+                                    TypeHelper type;
                                     if (returnType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                                         PrimitiveTypeTree ptree = (PrimitiveTypeTree)returnType;
                                         if (ptree.getPrimitiveTypeKind() == TypeKind.VOID) {
                                             continue; // void return type
                                         }
-                                        typeName = ptree.toString();
+                                        type = new TypeHelper(ptree.toString());
                                     } else {
-                                        typeName = treeToClassName(cc, returnType);
+                                        type = treeToType(cc, returnType, formModel);
                                     }
-                                    types.add(0, new BindingDescriptor(propName, new TypeHelper(typeName)));
+                                    types.add(0, new BindingDescriptor(propName, type));
                                 }
                             }
                             Tree superTree = clazz.getExtendsClause();
-                            superClass[0] = treeToClassName(cc, superTree);
+                            TypeHelper type = treeToType(cc, superTree, formModel);
+                            String typeName = type.getName();
+                            superClass[0] = (typeName == null) ? FormUtils.typeToClass(type).getName() : typeName;
                         }
 
                         public void cancel() {
                         }
 
-                        private String treeToClassName(CompilationController cc, Tree tree) {
-                            String typeName = Object.class.getName();
-                            if (tree != null) {
-                                CompilationUnitTree cu = cc.getCompilationUnit();
-                                Trees trees = cc.getTrees();
-                                TreePath path = trees.getPath(cu, tree);
-                                Element el = trees.getElement(path);
-                                if ((el != null) && (el.getKind() == ElementKind.CLASS)) {
-                                    TypeElement tel = (TypeElement)el;
-                                    typeName = tel.getQualifiedName().toString();
-                                }
-                            }
-                            return typeName;
-                        }
                     }, true);
                 } catch (IOException ioex) {
                     ioex.printStackTrace();
@@ -409,6 +400,45 @@ public class BindingDesignSupport {
         return list;
     }
 
+    private static TypeHelper treeToType(CompilationController cc, Tree tree, FormModel model) {
+        String typeName = Object.class.getName();
+        Map<String,TypeHelper> map = null;
+        if (tree != null) {
+            CompilationUnitTree cu = cc.getCompilationUnit();
+            Trees trees = cc.getTrees();
+            if (tree.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
+                tree = ((WildcardTree)tree).getBound();
+            }
+            TreePath path = trees.getPath(cu, tree);
+            Element el = trees.getElement(path);
+            if ((el != null) && ((el.getKind() == ElementKind.CLASS) || (el.getKind() == ElementKind.INTERFACE))) {
+                TypeElement tel = (TypeElement) el;
+                typeName = tel.getQualifiedName().toString();
+                if (tree.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                    List<? extends Tree> params = ((ParameterizedTypeTree)tree).getTypeArguments();
+                    List<? extends TypeParameterElement> elems = tel.getTypeParameters();
+                    map = new HashMap<String,TypeHelper>();
+                    for (int i=0; i<params.size() && i<elems.size(); i++) {
+                        Tree param = params.get(0);
+                        TypeHelper paramType = treeToType(cc, param, model);
+                        TypeParameterElement elem = elems.get(0);
+                        map.put(elem.toString(), paramType);
+                    }
+                }
+            }
+        }
+        TypeHelper type = new TypeHelper(typeName, map);
+        if (typeName.indexOf('.') != -1) {
+            try {
+                Class clazz = FormUtils.loadClass(typeName, model);
+                type = new TypeHelper(clazz, map);
+            } catch (ClassNotFoundException cnfex) {
+                // not compiled - use just the name
+            }
+        }
+        return type;
+    }
+
     private static Map<String,BindingDescriptor> listToMap(List<BindingDescriptor> list) {
         Map<String,BindingDescriptor> map = new TreeMap<String,BindingDescriptor>();
         for (BindingDescriptor descriptor : list) {
@@ -425,33 +455,128 @@ public class BindingDesignSupport {
      * @return <code>TypeHelper</code> that corresponds to the type of the given component.
      */
     static TypeHelper determineType(RADComponent comp) {
-        Type t = null;
-        Map<String,TypeHelper> newMap = null;
-        Class clazz = comp.getBeanClass();
-        t = clazz;
-        // PENDING generalize
-        if (clazz.getTypeParameters().length == 1) {
-            try {
-                Object value = comp.getSyntheticProperty("typeParameters").getValue(); // NOI18N
-                if (value instanceof String) {
-                    // PENDING generalize
-                    String type = (String)value;
-                    if (type.startsWith("<")) { // NOI18N
-                        type = type.substring(1, type.length()-1);
+        TypeHelper type;
+        if (comp.getFormModel().getTopRADComponent() == comp) {
+            FileObject fob = FormEditor.getFormDataObject(comp.getFormModel()).getPrimaryFile();
+            ClassPath cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+            String className = cp.getResourceName(fob, '.', false);
+            type = new TypeHelper(className);
+        } else {
+            Type t = null;
+            Map<String,TypeHelper> newMap = null;
+            Class clazz = comp.getBeanClass();
+            t = clazz;
+            if (clazz.getTypeParameters().length == 1) {
+                try {
+                    TypeHelper elemType = determineTypeParameter(comp);
+                    if (elemType != null) {
                         newMap = new HashMap<String,TypeHelper>();
-                        try {
-                            Class elemType = ClassPathUtils.loadClass(type, FormEditor.getFormDataObject(comp.getFormModel()).getFormFile());
-                            newMap.put(clazz.getTypeParameters()[0].getName(), new TypeHelper(elemType));
-                        } catch (ClassNotFoundException cnfex) {
-                            newMap.put(clazz.getTypeParameters()[0].getName(), new TypeHelper(type));
+                        newMap.put(clazz.getTypeParameters()[0].getName(), elemType);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            type = new TypeHelper(t, newMap);
+        }
+        return type;
+    }
+
+    static TypeHelper determineTypeParameter(final RADComponent comp) {
+        FileObject fob = FormEditor.getFormDataObject(comp.getFormModel()).getPrimaryFile();
+        JavaSource source = JavaSource.forFileObject(fob);
+        final String varName = comp.getName();
+        final TypeHelper[] result = new TypeHelper[1];
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = cc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            clazz = (ClassTree) typeDecl;
+                            break;
+                        }
+                    }
+                    Node.Property prop = comp.getSyntheticProperty("useLocalVariable"); // NOI18N
+                    Object value = prop.getValue();
+                    VariableTree variable = null;
+                    if (Boolean.TRUE.equals(value)) {
+                        // local variable in initComponents()
+                        for (Tree clMember : clazz.getMembers()) {
+                            if (clMember.getKind() == Tree.Kind.METHOD) {
+                                MethodTree method = (MethodTree)clMember;
+                                String methodName = method.getName().toString();
+                                if ("initComponents".equals(methodName)) { // NOI18N
+                                    for (StatementTree statement : method.getBody().getStatements()) {
+                                        if (statement.getKind() == Tree.Kind.VARIABLE) {
+                                            VariableTree var = (VariableTree)statement;
+                                            if (varName.equals(var.getName().toString())) {
+                                                variable = var;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // fields in class
+                        for (Tree clMember : clazz.getMembers()) {
+                            if (clMember.getKind() == Tree.Kind.VARIABLE) {
+                                VariableTree var = (VariableTree)clMember;
+                                if (varName.equals(var.getName().toString())) {
+                                    variable = var;
+                                }
+                            }
+                        }
+                    }
+                    if (variable != null) {
+                        Tree type = variable.getType();
+                        if (type.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                            ParameterizedTypeTree params = (ParameterizedTypeTree)type;
+                            List<? extends Tree> args = params.getTypeArguments();
+                            if (args.size() == 1) {
+                                Tree tree = args.get(0);
+                                result[0] = treeToType(cc, tree, comp.getFormModel());
+                            }
                         }
                     }
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+
+                public void cancel() {
+                }
+            }, true);
+        } catch (IOException ioex) {
+            ioex.printStackTrace();
+        }
+        if (result[0] == null) {
+            // fallback - covers the situation where the component
+            // has been added but the code hasn't been generated yet
+            Class clazz = comp.getBeanClass();
+            if (clazz.getTypeParameters().length == 1) {
+                try {
+                    Object value = comp.getSyntheticProperty("typeParameters").getValue(); // NOI18N
+                    if (value instanceof String) {
+                        String type = (String)value;
+                        if (type.startsWith("<")) { // NOI18N
+                            type = type.substring(1, type.length()-1);
+                            Map<String,TypeHelper> newMap = new HashMap<String,TypeHelper>();
+                            try {
+                                Class elemType = ClassPathUtils.loadClass(type, FormEditor.getFormDataObject(comp.getFormModel()).getFormFile());
+                                newMap.put(clazz.getTypeParameters()[0].getName(), new TypeHelper(elemType));
+                            } catch (ClassNotFoundException cnfex) {
+                                newMap.put(clazz.getTypeParameters()[0].getName(), new TypeHelper(type));
+                            }
+                            result[0] = new TypeHelper(type, newMap);
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
-        return new TypeHelper(t, newMap);
+        return result[0];
     }
 
     /**
