@@ -183,8 +183,10 @@ public class RADComponentNode extends FormNode
                 Iterator iter = actionProps.iterator();
                 while (iter.hasNext()) {
                     final RADProperty prop = (RADProperty)iter.next();
-                    Action action = new PropertyAction(prop);
-                    actions.add(action);
+                    Action action = PropertyAction.createIfEditable(prop);
+                    if (action != null) {
+                        actions.add(action);
+                    }
                 }
                 addSeparator(actions);
 

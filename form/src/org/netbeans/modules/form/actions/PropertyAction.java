@@ -46,7 +46,13 @@ public class PropertyAction extends AbstractAction {
     private static final String RESTORE_COMMAND = "Restore"; // NOI18N
     private RADProperty property;
     private Dialog dialog;
-    
+
+    public static PropertyAction createIfEditable(RADProperty property) {
+        PropertyEditor propEd = property.getCurrentEditor();
+        return propEd != null && propEd.supportsCustomEditor()
+                ? new PropertyAction(property) : null;
+    }
+
     public PropertyAction(RADProperty property) {
         this.property = property;
         String name = (String)property.getValue("actionName"); // NOI18N
