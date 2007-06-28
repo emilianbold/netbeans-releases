@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class XMLUtil {
 
-    public static Node getRootNode (final FileObject fileObject) throws IOException {
+    static Node getRootNode (final FileObject fileObject) throws IOException {
         final Node[] node = new Node[1];
         fileObject.getFileSystem ().runAtomicAction (new FileSystem.AtomicAction() {
             public void run () throws IOException {
@@ -88,7 +88,7 @@ public class XMLUtil {
         return doc;
     }
 
-    public static Node[] getChildren (Node node) {
+    static Node[] getChildren (Node node) {
         NodeList childNodes = node.getChildNodes ();
         Node[] nodes = new Node[childNodes != null ? childNodes.getLength () : 0];
         for (int i = 0; i < nodes.length; i++)
@@ -96,7 +96,7 @@ public class XMLUtil {
         return nodes;
     }
 
-    public static List<Node> getChildren (Node node, String nodeName) {
+    static List<Node> getChildren (Node node, String nodeName) {
         ArrayList<Node> children = new ArrayList<Node> ();
         NodeList nodes = node.getChildNodes ();
         for (int i = 0; i < nodes.getLength (); i++) {
@@ -107,7 +107,7 @@ public class XMLUtil {
         return children;
     }
 
-    public static Node getChild (Node node, String nodeName) {
+    static Node getChild (Node node, String nodeName) {
         NodeList nodes = node.getChildNodes ();
         for (int i = 0; i < nodes.getLength (); i ++) {
             Node child = nodes.item (i);
@@ -117,7 +117,7 @@ public class XMLUtil {
         return null;
     }
 
-    public static String getAttributeValue (Node node, String attr) {
+    static String getAttributeValue (Node node, String attr) {
         try {
             if (node != null) {
                 NamedNodeMap map = node.getAttributes ();

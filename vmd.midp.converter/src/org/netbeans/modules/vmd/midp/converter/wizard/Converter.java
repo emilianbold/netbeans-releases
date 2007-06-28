@@ -19,11 +19,13 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
+import static org.netbeans.modules.vmd.midp.converter.wizard.ConverterUtil.*;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
@@ -137,46 +139,16 @@ public class Converter {
         for (ConverterItem item : components.values ()) {
             if (item.isUsed ())
                 return;
-            if ("javax.microedition.lcdui.Font".equals (item.getTypeID ()))
-                convertFont (item, document);
-            if ("javax.microedition.lcdui.Command".equals (item.getTypeID ()))
+            String typeID = item.getTypeID ();
+            if ("javax.microedition.lcdui.Command".equals (typeID))
                 convertCommand (item, document);
+            else if ("javax.microedition.lcdui.Font".equals (typeID))
+                convertFont (item, document);
             // TODO - all components
+            else
+                Debug.warning ("Unrecognized component: " + typeID);
         }
     }
-
-    private static Boolean getBoolean (String value) {
-        if (value == null)
-            return null;
-        return "true".equalsIgnoreCase (value);
-    }
-
-    private static Integer getInteger (String value) {
-        if (value == null)
-            return null;
-        try {
-            return Integer.parseInt (value);
-        } catch (NumberFormatException e) {
-            // TODO - invalid value
-            return null;
-        }
-    }
-
-    private static PropertyValue getStringWithUserCode (String value) {
-        if (value == null)
-            return null;
-        if (value.startsWith ("CODE:"))
-            return PropertyValue.createUserCode (value.substring (5));
-        if (value.startsWith ("STRING:"))
-            return MidpTypes.createStringValue (value.substring (7));
-        // TODO - invalid value
-        return null;
-    }
-
-//    private static String getCodeValueClass (String value) {
-//        assert value.startsWith ("CODE-");
-//        return value.substring (5);
-//    }
 
     private static void convertObject (ConverterItem item) {
         item.setUsed ();
