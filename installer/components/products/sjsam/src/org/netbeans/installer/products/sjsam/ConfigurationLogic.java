@@ -179,10 +179,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.start.as"), // NOI18N
                     e);
         }
-        
         progress.addPercentage(DELTA_PROGRESS);
-        Thread th = new MoveProgressThread(progress, 5L * 60L, DELTA_PROGRESS * 7);
-        th.start();
         
         // stop the default domain //////////////////////////////////////////////////
         try {
@@ -194,11 +191,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.stop.as"), // NOI18N
                     e);
         }
+        progress.addPercentage(DELTA_PROGRESS * 7);
         
-        if(th.isAlive()) {
-            LogManager.log("stopping moving progress thread...");
-            th.stop();
-        }
         // remove the jvm option ///////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.remove.jvm.option")); // NOI18N
@@ -274,50 +268,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public boolean registerInSystem() {
         return false;
     }
-    private class MoveProgressThread extends NbiThread {
-        private Progress progress;
-        public MoveProgressThread(final Progress progress, final long seconds, final int percentageDelta)  {
-            super(new Runnable() {
-                public void run() {
-                    final long MLSEC = 1000L;
-                    long startTime = System.currentTimeMillis();
-                    long endTime   = startTime + MLSEC * seconds;
-                    final int startPercentage = progress.getPercentage();
-                    LogManager.log("... starting percentage : " + startPercentage);
-                    LogManager.log("... end percentage : " + 
-                            (startPercentage + percentageDelta));
-                    long timePosition = startTime;
-                    
-                    while(timePosition < endTime) {
-                        try {
-                            sleep(MLSEC);
-                            timePosition = System.currentTimeMillis();
-                            final long current = startPercentage +
-                                    ((timePosition - startTime) * percentageDelta) / (seconds * MLSEC);
-                            if(current <= 100) {
-                                if(progress.getPercentage()!=current) {
-                                    LogManager.log("... setting percentage to " + current);
-                                    progress.setPercentage(current);
-                                }
-                            } else {
-                                LogManager.log("... 100% has been reached");
-                            }
-                        } catch (InterruptedException e) {
-                            LogManager.log("Interrupted while sleeping", e);
-                        }
-                    }
-                     LogManager.log("... end of progress moving thread");
-                }
-            });
-        }
-        
-    }
     
     @Override
     public int getLogicPercentage() {
         return 90 ;
     }
-
+    
+    @Override
+    public RemovalMode getRemovalMode() {
+        return RemovalMode.LIST;
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
     private String getAMServerLinkName(final File asLocation) {
         final File file = new File(asLocation, AMSERVER_DIR_INSIDE_AS);
@@ -329,9 +290,5 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 replace(File.separatorChar, '_');
         
         return "AMConfig" + "_" + result + "_";
-    }
-    @Override
-    public RemovalMode getRemovalMode() {
-        return RemovalMode.LIST;
     }
 }
