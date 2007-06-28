@@ -43,7 +43,7 @@ public class EntityMappingsMetadataModelImpl implements MetadataModelImplementat
         ClasspathInfo cpi = ClasspathInfo.create(bootPath, compilePath, sourcePath);
         helper = AnnotationModelHelper.create(cpi);
         root = new EntityMappingsImpl(helper);
-        metadata = new EntityMappingsMetadataImpl(root);
+        metadata = new EntityMappingsMetadataImpl(cpi, root);
     }
 
     public <R> R runReadAction(final MetadataModelAction<EntityMappingsMetadata, R> action) throws IOException {

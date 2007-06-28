@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.persistence.api.metadata.orm;
 
+import org.netbeans.api.java.source.JavaSource;
+
 /**
  *
  * @author Andrei Badea
@@ -26,4 +28,14 @@ package org.netbeans.modules.j2ee.persistence.api.metadata.orm;
 public interface EntityMappingsMetadata {
 
     public EntityMappings getRoot();
+
+    /**
+     * Returns a {@link JavaSource} which allows to use the Java Source API
+     * to retrieve information about the entity classes in the model. This method
+     * can return a new Java Source upon each invocation, so callers are
+     * encouraged to cache the returned object.
+     *
+     * @return a <code>JavaSource</code> object; never null.
+     */
+    public JavaSource createJavaSource();
 }

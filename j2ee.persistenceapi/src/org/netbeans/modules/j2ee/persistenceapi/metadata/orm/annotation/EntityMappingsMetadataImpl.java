@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 
@@ -28,13 +30,19 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
  */
 public class EntityMappingsMetadataImpl implements EntityMappingsMetadata {
 
+    private final ClasspathInfo cpi;
     private final EntityMappingsImpl entityMappings;
 
-    public EntityMappingsMetadataImpl(EntityMappingsImpl entityMappings) {
+    public EntityMappingsMetadataImpl(ClasspathInfo cpi, EntityMappingsImpl entityMappings) {
+        this.cpi = cpi;
         this.entityMappings = entityMappings;
     }
 
     public EntityMappings getRoot() {
         return entityMappings;
+    }
+
+    public JavaSource createJavaSource() {
+        return JavaSource.create(cpi);
     }
 }
