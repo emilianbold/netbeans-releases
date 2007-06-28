@@ -166,6 +166,7 @@ public class DiffStreamSource extends StreamSource {
                             Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
                             if (isBase) {
                                 remoteFile = newRemoteFile;
+                                Utils.associateEncoding(file, newRemoteFile);                            
                             }
                         }
                     } catch (Exception e) {
