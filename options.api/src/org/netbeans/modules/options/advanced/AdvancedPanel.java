@@ -48,6 +48,8 @@ public final class AdvancedPanel extends JPanel {
     AdvancedPanel () {}
     
     public void update () {
+        String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
+        model.update (category);        
     }
     
     public void applyChanges () {
