@@ -301,8 +301,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-                        if (info.getFileObject().getName().equals(selected.getSimpleName().toString())) {
-                            return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement), b!=null && b==true);
+                        FileObject file = SourceUtils.getFile(selected, info.getClasspathInfo());
+                        if (file.getName().equals(selected.getSimpleName().toString())) {
+                            return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b!=null && b==true);
                         }
                     }
                     return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
