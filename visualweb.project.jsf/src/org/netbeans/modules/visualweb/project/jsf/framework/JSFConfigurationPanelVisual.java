@@ -54,6 +54,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private JSFConfigurationPanel panel;
     
     private ArrayList <Library> jsfLibraries;
+    private boolean webModule25Version;
+    private String serverInstanceID;
     private boolean addJSF = false;
 
     // <RAVE> Default Bean Package
@@ -477,6 +479,18 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
           return false;
         }
         
+        boolean currentWebModule25Version;
+        if (wizardDescriptor.getProperty("j2eeLevel").equals("1.5")) //NOI81N
+            currentWebModule25Version = true;
+        else
+            currentWebModule25Version = false;
+        String currentServerInstanceID = (String) wizardDescriptor.getProperty("serverInstanceID"); //NOI18N
+        if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
+            webModule25Version = currentWebModule25Version;
+            serverInstanceID = currentServerInstanceID;
+            initLibSettings(webModule25Version, serverInstanceID);
+        }
+        
         if (addJSF) {
             if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtVersion.getText().trim().length() <= 0))
                     || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
@@ -553,13 +567,19 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
     
     void read (WizardDescriptor d) {
-        boolean webModule25Version;
         if (d.getProperty("j2eeLevel").equals("1.5")) //NOI81N
             webModule25Version = true;
         else
             webModule25Version = false;
         
-        String serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
+        serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
+        initLibSettings(webModule25Version, serverInstanceID);
+                
+//        projectLocationPanel.read(d);
+//        optionsPanel.read(d);
+    }
+    
+    private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
         try {
             addJSF = false;
             File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
@@ -591,9 +611,6 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             }
         } catch (IOException exc) {
         }
-        
-//        projectLocationPanel.read(d);
-//        optionsPanel.read(d);
     }
 
     void store(WizardDescriptor d) {
