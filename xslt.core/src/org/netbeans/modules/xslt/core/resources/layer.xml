@@ -107,12 +107,7 @@
 
     <folder name="Windows2">
         <folder name="Groups">
-            <file name="xslt_designer.wsgrp" url="windowmanager/xslt_designer.wsgrp"/>
             <file name="xslt_mapper.wsgrp" url="windowmanager/xslt_mapper.wsgrp"/>
-            <folder name="xslt_designer">
-                <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
-                <file name="navigatorTC.wstcgrp" url="windowmanager/navigatorTC.wstcgrp"/>
-            </folder>
             <folder name="xslt_mapper">
                 <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
                 <file name="navigatorTC.wstcgrp" url="windowmanager/navigatorTC.wstcgrp"/>
