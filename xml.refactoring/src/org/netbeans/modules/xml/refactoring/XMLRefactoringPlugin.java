@@ -10,9 +10,12 @@
 package org.netbeans.modules.xml.refactoring;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
 
 /**
@@ -34,4 +37,25 @@ public interface XMLRefactoringPlugin {
      * otherwise returns null.
      */
     public String getModelReference(Component component) ;
+    
+    /**
+     * Sets the model reference location of the component
+     * @param component the component to set the model reference for.
+     * @param string the string to set the model reference to.
+     */    
+    public void setModelReference(Component component, String location);
+    
+    /**
+     * For a given model, returns all references to external models
+     * @param model 
+     * @return A collection of components that reference external models
+     */
+    public Collection<Component> getExternalReferences(Model model); 
+    
+    /**
+     * Gets the new model from each domain model factory class using the model source
+     * @param source the source for which the model is returned 
+     * @return model 
+     */
+    public Model getModel(ModelSource source);
 }

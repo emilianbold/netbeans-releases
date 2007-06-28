@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +51,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -98,7 +100,7 @@ public class XMLRefactoringTransaction implements Transaction {
     public void commit() {
         //when commit is called, there is no way of knowing if its for refactoring or a redo
         //since for rename redo, we use undoManagers, keep a flag and call redo when appropriate
-      //  System.out.println("COMMIT called");
+        //System.out.println("COMMIT called");
         try {
             if(commited){
                redo();
@@ -313,13 +315,19 @@ public class XMLRefactoringTransaction implements Transaction {
                referencedFO = SharedUtils.renameFile(referencedFO,((RenameRefactoring)request).getNewName());
                refreshCatalogModel(referencedFO);
            } else if (request instanceof MoveRefactoring ) {
-               FileObject target = SharedUtils.getOrCreateFolder(((MoveRefactoring)request).getTarget().lookup(URL.class));
-               referencedFO = SharedUtils.moveFile(referencedFO, target);
+               FileObject targetFolder = SharedUtils.getOrCreateFolder(((MoveRefactoring)request).getTarget().lookup(URL.class));
+               //for move, we do the following
+               //first in the target model, update any references to external models
+               //then move the target model
+               //please note -- we update and then move
+               updateTargetModelReferences(targetModel, targetFolder);
+               RefactoringUtil.saveTargetFile(targetModel, all);
+               referencedFO = SharedUtils.moveFile(referencedFO, targetFolder);
                if(referencedFO != null) {
-                   this.movedTargetModelSource = Utilities.getModelSource(referencedFO, true);
-                  // request.getContext().add(movedTargetModelSource);
-                   refreshCatalogModel(referencedFO);
-                   //addUndoableRefactorListener(movedTargetModelSource);
+                   //we have a new file and new model source
+                   //keep a reference since we need this do undo
+                 this.movedTargetModelSource = Utilities.getModelSource(referencedFO, true); 
+                 refreshCatalogModel(referencedFO);
                }
            }
    
@@ -377,14 +385,56 @@ public class XMLRefactoringTransaction implements Transaction {
                 throw new IOException("Unable to undo refactoring. Cannot retrieve old file name"); //not i118N
             }
             fo = SharedUtils.renameFile(fo, oldName);
+            refreshCatalogModel(fo);
         } else if(request instanceof MoveRefactoring) {
             FileObject origFolder = SharedUtils.getOrCreateFolder(((MoveRefactoring)request).getContext().lookup(URL.class));
-            if(movedTargetModelSource != null) {
-                FileObject movedFile = this.movedTargetModelSource.getLookup().lookup(FileObject.class);
+            //to undo the move, do the following
+            // first get the model for the new file
+            // update the external references, if any, in the new model
+            // move the model back to the original location
+            if(this.movedTargetModelSource != null){
+                Model model = null;
+                
+                //get the model from the plugin since the domain specific factory will create the model
+                for(XMLRefactoringPlugin plugin:plugins){
+                    model = plugin.getModel(movedTargetModelSource);
+                    if(model != null){
+                        break;
+                    }
+                 }    
+            
+                //update embedded references to external models
+                if(model!= null) {
+                    if(modelsInRefactoring == null)
+                        modelsInRefactoring = getModels();
+                    Set<Model> all = modelsInRefactoring.keySet();
+                    updateTargetModelReferences(model, origFolder);
+                    RefactoringUtil.saveTargetFile(model, all);
+                }
+                
+                //finally, move the file
+                FileObject movedFile = movedTargetModelSource.getLookup().lookup(FileObject.class);
                 fo = SharedUtils.moveFile(movedFile, origFolder);
-            }
+                if(fo != null) {
+                    ModelSource temp = Utilities.getModelSource(fo, true); 
+                    model = null;
+                    //after the file is moved, we need to do one final thing.
+                    //for redo, we need to point to the right target model
+                    //which is the newly moved file
+                    for(XMLRefactoringPlugin plugin:plugins){
+                        model = plugin.getModel(temp);
+                        if(model != null){
+                            targetModel = model;
+                            break;
+                        }
+                    }
+                 refreshCatalogModel(fo);
+                   //addUndoableRefactorListener(movedTargetModelSource);
+               }
+            } else
+                throw new IOException("Unable to undo Move Refactoring");
         }
-        refreshCatalogModel(fo);
+        
     }
     
        
@@ -522,7 +572,56 @@ public class XMLRefactoringTransaction implements Transaction {
         
         exec.removeUndoableEditListener(genericChangeUndoManager);
     } 
-     
+    
+    private void updateTargetModelReferences(Model model, FileObject targetFolder)throws IOException {
+        //before moving the targetFile, check if the targetFile has any external model references
+               Collection<Component> refs = new ArrayList<Component>();
+               for(XMLRefactoringPlugin plugin:plugins){
+                   refs.addAll(plugin.getExternalReferences(model));
+               }
+               
+               if(refs.size() > 0 ){
+                 boolean startTransaction = ! (model).isIntransaction();
+                 try {
+                   CatalogModel cat = (CatalogModel) (model).getModelSource().getLookup().lookup(CatalogModel.class);
+                   if (startTransaction) {
+                      // ((Model)target).startTransaction();
+                       model.startTransaction();
+                   }
+                   for(Component ref: refs){
+                       for(XMLRefactoringPlugin plugin:plugins){
+                           String location = plugin.getModelReference(ref);
+                           if(location != null){
+                               URI uri = new URI(location);
+                               ModelSource source = null;
+                               FileObject fobj = null;
+                               try {
+                                   source = cat.getModelSource(uri);
+                                   fobj = source.getLookup().lookup(FileObject.class);
+                               } catch (CatalogModelException e){
+                                   //this means the model source could be in the same project 
+                                   fobj = SharedUtils.getFileObject(model, uri);
+                               }
+                               
+                               if(fobj == null)
+                                  break;
+                               String newLocation = SharedUtils.getReferenceURI(targetFolder, fobj).toString();
+                               plugin.setModelReference(ref, newLocation);
+                               break;
+                           }
+                       }
+                   }
+                 } catch(Exception e){
+                     e.printStackTrace();
+                 
+                 }finally {
+                     if (startTransaction && (model).isIntransaction()) {
+                         model.endTransaction();
+                     }
+                 }
+               }
+}
+    
    class GeneralChangeExecutor  {
     private UndoableEditSupport ues;
     

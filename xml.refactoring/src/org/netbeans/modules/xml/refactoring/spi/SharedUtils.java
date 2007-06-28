@@ -22,9 +22,11 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,9 +34,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -59,6 +65,7 @@ import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
@@ -93,6 +100,8 @@ public class SharedUtils {
     public static final String WSDL_MIME_TYPE = "text/xml-wsdl";  // NOI18N
     public static final String SOURCES_TYPE_XML = "xml";
     public static final String SOURCES_TYPE_JAVA = "java";
+    public static final String TYPE_DOC_ROOT = "doc_root";
+    public static final String TYPE_WEB_INF = "web_inf";
       
     
     public static void renameTarget(Nameable target, String newName) throws IOException {
@@ -258,20 +267,20 @@ public class SharedUtils {
         return sb.toString();
     }
      
-     public static String calculateNewLocationString(Model model, MoveRefactoring request) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        URL url = ((MoveRefactoring)request).getTarget().lookup(URL.class);
-        FileObject tfo = getOrCreateFolder(url);
-        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
-        fo = fo.getParent();
-        String path = getRelativePath(tfo, fo);
-        sb.append(path);
-        Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
-        Model mod = SharedUtils.getModel(ref);
-        FileObject ofo = mod.getModelSource().getLookup().lookup(FileObject.class);
-        sb.append(File.separator + ofo.getNameExt());
-        return sb.toString();
-    }
+     public static String calculateNewLocationString(Model model, MoveRefactoring request) throws IOException, URISyntaxException {
+         StringBuilder sb = new StringBuilder();
+         URL url = ((MoveRefactoring)request).getTarget().lookup(URL.class);
+         FileObject sfo = getOrCreateFolder(url);
+         FileObject tfo = model.getModelSource().getLookup().lookup(FileObject.class);
+         URI uri = getReferenceURI(tfo, sfo);
+         sb.append(uri.toString());
+         Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
+         Model mod = SharedUtils.getModel(ref);
+         FileObject ofo = mod.getModelSource().getLookup().lookup(FileObject.class);
+         sb.append("/");
+         sb.append(ofo.getNameExt());
+         return sb.toString();
+     }
      
    /*  public static String calculateNewLocationString(ModelSource source, ModelSource target) throws Exception {
          FileObject sourceFO = source.getLookup().lookup(FileObject.class);
@@ -593,7 +602,7 @@ public class SharedUtils {
         return getRelativePath(origFile, origRelativeTo);
     }
     
-     public  static String getRelativePath(FileObject origFile, FileObject origRelativeTo) throws IOException {
+     /*public  static String getRelativePath(FileObject origFile, FileObject origRelativeTo) throws IOException {
         File file = FileUtil.toFile(origFile);
         File relativeTo = FileUtil.toFile(origRelativeTo);
         List filePathStack = new ArrayList();
@@ -632,7 +641,8 @@ public class SharedUtils {
             relString.append(((File)filePathStack.get(filePathStack.size()-1)).getName());
         return relString.toString();
         }
-     
+    */
+    
      public static List<String> getSourceGroups() {
         List<String> srcGroups = new ArrayList<String>();
         srcGroups.add(SOURCES_TYPE_JAVA);
@@ -651,5 +661,133 @@ public class SharedUtils {
         }
         return null;
     }
+     
+     public static URI getReferenceURI(FileObject source, FileObject target) throws URISyntaxException, IOException {
+        Project targetProject = FileOwnerQuery.getOwner(target);
+        Project project = FileOwnerQuery.getOwner(source);
+        FileObject sourceFolder = getSourceFolder(project, source);
+                
+        if (sourceFolder == null) {
+            sourceFolder = source.getParent();
+           // throw new IllegalArgumentException(source.getPath()+" is not in project source"); //NOI18N
+        }
+        String relPathToSrcGroup = getRelativePath(source.getParent(), sourceFolder);
+        String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
+            relPathToSrcGroup.concat("/");
+        if(project!=targetProject) {
+            FileObject folder = getSourceFolder(targetProject,target);
+            if (folder == null) {
+                throw new IllegalArgumentException(target.getPath()+" is not in target project source"); //NOI18N
+            }
+            String relPathFromTgtGroup = getRelativePath(folder,target);
+            return new URI(relPathToSrcGroupWithSlash.concat(
+                    getUsableProjectName(targetProject)).
+                    concat("/").concat(relPathFromTgtGroup));
+        } else {
+            FileObject targetSourceFolder = getSourceFolder(targetProject, target);
+            if (targetSourceFolder == null) {
+                throw new IllegalArgumentException(target.getPath()+" is not in project source"); //NOI18N
+            }
+            String relPathFromTgtGroup =
+                    getRelativePath(targetSourceFolder,target);
+            return new URI(relPathToSrcGroupWithSlash.concat(relPathFromTgtGroup));
+        }
+    }
+     
+     public static String getRelativePath(FileObject source, FileObject target) {
+        File sourceLocationFile = FileUtil.toFile(source);
+        File targetLocationFile = FileUtil.toFile(target);
+        String sourceLocation = sourceLocationFile.toURI().toString();
+        String targetLocation = targetLocationFile.toURI().toString();
+        StringTokenizer st1 = new StringTokenizer(sourceLocation,"/");
+        StringTokenizer st2 = new StringTokenizer(targetLocation,"/");
+        String relativeLoc = "";
+        while (st1.hasMoreTokens() && st2.hasMoreTokens()) {
+            relativeLoc = st2.nextToken();
+            if (!st1.nextToken().equals(relativeLoc)) {
+                break;
+            }
+            if(!st1.hasMoreTokens() || !st2.hasMoreTokens()) {
+                // seems like one of the file is parent directory of other file
+                if(st1.hasMoreElements()) {
+                    // seems like target is parent of source
+                    relativeLoc = "..";
+                    st1.nextToken();
+                } else if(st2.hasMoreTokens()) {
+                    // seems like source is parent of target
+                    relativeLoc = st2.nextToken();
+                } else {
+                    // both represent same file
+                    relativeLoc = "";
+                }
+            }
+        }
+        while (st1.hasMoreTokens()) {
+            relativeLoc = "../".concat(relativeLoc);
+            st1.nextToken();
+        }
+        while(st2.hasMoreTokens()) {
+            relativeLoc = relativeLoc.concat("/").concat(st2.nextToken());
+        }
+        return relativeLoc;
+    }
+     
+         
+    private static String[] sourceTypes = new String[] {
+        SOURCES_TYPE_XML,
+        SOURCES_TYPE_JAVA,
+        TYPE_DOC_ROOT,
+        TYPE_WEB_INF
+    };
+    
+    private static FileObject getSourceFolder(Project project, FileObject source) {
+        Sources sources = ProjectUtils.getSources(project);
+        assert sources !=null;
+        ArrayList<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
+        for (String type : sourceTypes) {
+            SourceGroup[] groups = sources.getSourceGroups(type);
+            if (groups != null) {
+                sourceGroups.addAll(Arrays.asList(groups));
+            }
+        }
+            
+        assert sourceGroups.size()>0;
+        for(SourceGroup sourceGroup:sourceGroups) {
+            if(FileUtil.isParentOf(sourceGroup.getRootFolder(),source))
+                return sourceGroup.getRootFolder();
+        }
+        
+        FileObject metaInf = project.getProjectDirectory().getFileObject("src/conf"); //NOI18N
+        if (metaInf != null) {
+            if (FileUtil.isParentOf(metaInf, source)) {
+                return metaInf;
+            }
+        }
+        return null;
+    }
+    
+    private static String getUsableProjectName(Project project) {
+        return  PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation
+                (project).getName()).replace('.','_');
+    }
+    
+    public static FileObject getFileObject(Model model, URI uri ){
+        File result = null;
+        FileObject fobj = model.getModelSource().getLookup().lookup(FileObject.class);
+        File sourceFile = FileUtil.toFile(fobj);
+        if (sourceFile != null) {
+            URI sourceFileObjectURI = sourceFile.toURI();
+            URI resultURI = sourceFileObjectURI.resolve(uri);
+            try{
+            	result = new File(resultURI);
+                if(result.isFile()){
+                    return FileUtil.toFileObject(result);
+                }
+            } catch(Exception e){
+            		//do nothing
+           }
+        }
+        return null;
+     }
 
    }

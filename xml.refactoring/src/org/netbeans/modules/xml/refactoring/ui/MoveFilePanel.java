@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -48,6 +50,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -101,11 +104,23 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
     public void initValues(String preselectedFolder ) {
         
         Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
-        Arrays.sort( openProjects, new ProjectByDisplayNameComparator());
-        Project[] o = new Project[1];
-        o[0] = project;
+        List<Project> op = Arrays.asList(openProjects);
+        java.util.List projectRoots = new java.util.ArrayList();
+        SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
+        Set refProjects= provider.getSubprojects();
+        Iterator it = refProjects.iterator();
+        projectRoots.add(project);
+        
+        while(it.hasNext()){
+             Object o = it.next();
+             Project refPrj = (Project) o;
+             if(op.contains(refPrj))
+                 projectRoots.add(refPrj);
+        }
+        Project[] roots = (Project[])projectRoots.toArray(new Project[projectRoots.size()]);
+        Arrays.sort( roots, new ProjectByDisplayNameComparator());
         //DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( o );
-        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( roots );
         projectsComboBox.setModel( projectsModel );                
         projectsComboBox.setSelectedItem( project );
         
