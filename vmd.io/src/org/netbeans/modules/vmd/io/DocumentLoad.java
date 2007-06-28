@@ -59,7 +59,7 @@ public class DocumentLoad {
         }
 
         if (! DocumentSave.VERSION_VALUE_1.equals (getAttributeValue (rootNode, DocumentSave.VERSION_ATTR))) {
-            Debug.warning ("Invalid version of VisualDesign");
+            Debug.warning ("Invalid version of VisualDesign"); // NOI18N
             return false;
         }
 
@@ -108,6 +108,8 @@ public class DocumentLoad {
         loadingDocument.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
                 loadDocumentCore (context, loadingDocument, documentVersion, hierarchy);
+                for (DocumentSerializationController controller : getDocumentSerializationControllers ())
+                    controller.postValidateDocument (context, loadingDocument);
             }
         });
     }

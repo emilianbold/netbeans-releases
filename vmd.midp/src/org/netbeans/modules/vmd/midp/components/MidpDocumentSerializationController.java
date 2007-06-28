@@ -58,4 +58,7 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         }
     }
 
+    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument) {
+    }
+
 }
