@@ -137,7 +137,9 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         // create exactly (full match) and case sensitively comparing comparator
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
         wizard.lstFileTypes().setComparator(comparator);
-        
+        log("Selected Project: "+wizard.getSelectedProject());
+        wizard.selectProject(project_name);
+        log("Selected Project: "+wizard.getSelectedProject());
         wizard.selectCategory(doccategory);
         wizard.selectFileType(doctype);
 	
@@ -156,7 +158,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     public void close(){
         log("::close");
         try {
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
+            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
         } catch (Exception ex) {
             log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
         }        
@@ -167,12 +169,12 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log(":: do cleanup.....");
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-
+        waitNoEvent(2000);
+        
         try {
-            waitNoEvent(2000);
             Node projectRootNode = pto.getProjectRootNode(project_name);
             projectRootNode.select();
-            waitNoEvent(2000);
+            //waitNoEvent(2000);
             Node objNode;
             objNode = new Node(projectRootNode,projectfolder);
             objNode.select();
@@ -183,7 +185,8 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
             new NbDialogOperator(dialogCaption).yes();
             
         } catch (TimeoutExpiredException timeoutExpiredException) {
-            log("Cleanup failed because of: "+timeoutExpiredException.getMessage());
+            
+            log("Cleanup failed because of: "+timeoutExpiredException.getMessage() +" at: "+timeoutExpiredException.getStackTrace()[0] );
             pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
             return;
         }
