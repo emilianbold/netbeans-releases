@@ -128,7 +128,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         File parent = file.getParentFile();
         if(parent != null) {
             // XXX consider also touching the parent - yes (collisions, ...)
-            writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)});                        
+            writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)}, true);                        
         }
         fireChanged(null, file);        
     }
@@ -193,7 +193,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         File parent = file.getParentFile();
         if(parent != null) {
             // XXX consider also touching the parent
-            writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, DELETED)});                     
+            writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, DELETED)}, true);                     
         }
     }
     
@@ -689,7 +689,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(!skipped) {
             // all entries are gone -> remove also the metadata             
             labelsFile.delete();            
-            writeStoreData(dataFile, null, false);                                  
+            writeStoreData(dataFile, null, false);  // null stands for remove                                
         } else {
             if(labels.size() > 0) {
                 writeLabels(labelsFile, labels);
@@ -734,8 +734,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         boolean historyObsolete = !historyFile.exists() || historyFile.lastModified() < now - ttl;
                                
         if(!historyObsolete) {
-            List<HistoryEntry> entries = readHistory(historyFile);                  
-            historyFile.delete();            
+            List<HistoryEntry> entries = readHistory(historyFile);                                        
             List<HistoryEntry> newEntries = new ArrayList<HistoryEntry>();            
             for(HistoryEntry entry : entries) {
                 // XXX check the timestamp when touched - and you also should to write it with the historywhen 
@@ -744,8 +743,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 }                                
             }
             if(newEntries.size() > 0) {
-                writeHistory(historyFile, newEntries.toArray(new HistoryEntry[newEntries.size()]));                        
+                writeHistory(historyFile, newEntries.toArray(new HistoryEntry[newEntries.size()]), false);                        
             } else {
+                historyFile.delete();  
                 historyObsolete = true;                
             }                        
         }         
@@ -881,20 +881,20 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyLabels;
     }
                 
-    private void writeHistoryForFile(File file, HistoryEntry[] entries) { 
+    private void writeHistoryForFile(File file, HistoryEntry[] entries, boolean append) { 
         if(Diagnostics.ON) {                
             if(getDataFile(file) == null) {
                 Diagnostics.println("writing history for file without data : " + file);    // NOI18N                                  
             }            
         }                 
         File history = getHistoryFile(file);
-        writeHistory(history, entries);
+        writeHistory(history, entries, append);
     }
     
-    private void writeHistory(File history, HistoryEntry[] entries) {                 
+    private void writeHistory(File history, HistoryEntry[] entries, boolean append) {                 
         DataOutputStream dos = null;
         try {
-            dos = getOutputStream(history, true);            
+            dos = getOutputStream(history, append);            
             for(HistoryEntry entry : entries) {
                 dos.writeLong(entry.getTimestamp());                        
                 writeString(dos, entry.getFrom());        
