@@ -217,7 +217,6 @@
                 <tocitem text="Generate the Web Service from a WSDL File" >
                     <tocitem text="Creating a WSDL File" target="create_wsdl_file" />
                     <tocitem text="Creating a Web Service from a WSDL File" target="create_ws_from_wsdl" />
-                    <tocitem text="Refreshing Web Services and Clients" target="wsc_refresh" />
                 </tocitem>
                 
             </tocitem>
