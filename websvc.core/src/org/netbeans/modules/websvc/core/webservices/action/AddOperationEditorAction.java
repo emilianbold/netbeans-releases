@@ -43,14 +43,17 @@ import org.openide.util.actions.NodeAction;
  */
 public class AddOperationEditorAction extends NodeAction {
     private Service service;
+    AddOperationCookie cookie;
+    FileObject fo;
+    
     public String getName() {
         return NbBundle.getMessage(AddOperationEditorAction.class, "LBL_AddOperationEditorAction");
     }
     
     public HelpCtx getHelpCtx() {
-        // If you will provide context help then use:  
+        // If you will provide context help then use:
         return HelpCtx.DEFAULT_HELP;
-  }
+    }
     
     protected boolean asynchronous() {
         return false;
@@ -58,15 +61,10 @@ public class AddOperationEditorAction extends NodeAction {
     
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
-            FileObject fo = getFileObjectFromNode(activatedNodes[0]);
+            fo = getFileObjectFromNode(activatedNodes[0]);
             if (fo!=null) {
-                AddOperationCookie cookie = WebServiceActionProvider.getAddOperationAction(fo);
-                return cookie!=null && activatedNodes.length == 1 &&
-// Retouche
-//                  ( activatedNodes[0].getLookup().lookup(ClassMember.class) != null || JMIUtils.getClassMemberFromNode(activatedNodes[0])!=null ) &&
-//                  JMIUtils.getJavaClassFromNode(activatedNodes[0]) != null &&
-                    (isJaxWsImplementationClass(activatedNodes[0]) /*|| (isWsImplBeanOrInterface(activatedNodes[0]) */
-                    && !isFromWSDL(activatedNodes[0]));
+                cookie = WebServiceActionProvider.getAddOperationAction(fo);
+                return cookie!=null && activatedNodes.length == 1 && cookie.isEnabledInEditor(fo);
             }
         }
         return false;
@@ -79,86 +77,15 @@ public class AddOperationEditorAction extends NodeAction {
         else return null;
     }
     
-    private boolean isWsImplBeanOrInterface(Node node) {
-// Retouche
-//        JavaClass ce = JMIUtils.getJavaClassFromNode(node);
-//        Resource r = ce.getResource();
-//        FileObject f = JavaModel.getFileObject(r);
-//        if (f != null) {
-//
-//            WebserviceDescription wsDesc = WebServiceCookieFactory.findWSDescriptionFromClass(ce, f);
-//            if (wsDesc != null) {
-//                return true;
-//            }
-//        }
-        return false;
-    }
-
-    
-    private boolean isJaxWsImplementationClass(Node node) {
-        FileObject fo = getFileObjectFromNode(node);
-        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
-        if (jaxWsSupport!=null) {
-            List services = jaxWsSupport.getServices();
-            for (int i=0;i<services.size();i++) {
-                Service serv = (Service)services.get(i);
-                if (serv.getWsdlUrl()==null) {
-                    String implClass = serv.getImplementationClass();
-                    if (implClass.equals(getPackageName(fo))) {
-                        service=serv;
-                        return true;
-                    }
-                }
-            }
-        }
-        service=null;
-        return false;
-    }
-    
-    private boolean isFromWSDL(Node node) {
-        if (service!=null) {
-            return service.getWsdlUrl()!=null;
-        }
-// Retouche
-//        JavaClass ce = JMIUtils.getJavaClassFromNode(node);
-//        Resource r = ce.getResource();
-//        FileObject f = JavaModel.getFileObject(r);
-//        if (f != null) {
-//            WebserviceDescription wsDesc = WebServiceCookieFactory.findWSDescriptionFromClass(ce, f);
-//            if (wsDesc != null) {
-//                String wsName = wsDesc.getWebserviceDescriptionName();
-//                WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(f);
-//                assert wsSupport != null;
-//                return wsSupport.isFromWSDL(wsName);
-//            }
-//        }
-        return false;
-    }
-    
-    private String getPackageName(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        Sources sources = (Sources)project.getLookup().lookup(Sources.class);
-        if (sources!=null) {
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (groups!=null) {
-                List<FileObject> roots = new ArrayList<FileObject>();
-                for (SourceGroup group: groups) {   
-                    FileObject rootFolder = group.getRootFolder();
-                    if (FileUtil.isParentOf(rootFolder, fo)) {
-                        String relativePath = FileUtil.getRelativePath(rootFolder, fo).replace('/', '.');
-                        return (relativePath.endsWith(".java")? //NOI18N
-                            relativePath.substring(0,relativePath.length()-5):
-                            relativePath);
-                    }
-                }
-            }   
-        }
-        return null;
-    }
-    
     protected void performAction(Node[] activatedNodes) {
-            FileObject fo = getFileObjectFromNode(activatedNodes[0]);
-            AddOperationCookie cookie = WebServiceActionProvider.getAddOperationAction(fo);
-            cookie.addOperation(fo);
+        if(fo == null){
+            fo = getFileObjectFromNode(activatedNodes[0]);
+        }
+        if (fo == null) return;
+        if(cookie == null) {
+            cookie = WebServiceActionProvider.getAddOperationAction(fo);
+        }
+        if(cookie == null) return;
+        cookie.addOperation(fo);
     }
 }

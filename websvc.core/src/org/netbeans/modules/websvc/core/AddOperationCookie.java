@@ -31,4 +31,6 @@ public interface AddOperationCookie extends Node.Cookie {
      */
     public void addOperation(FileObject implementationClass);
     
+    public boolean isEnabledInEditor(FileObject implClass);
+    
 }

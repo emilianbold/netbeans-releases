@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
+import org.openide.ErrorManager;
 
 public class AddOperationAction extends CookieAction {
     //private Service service;
@@ -85,8 +86,8 @@ public class AddOperationAction extends CookieAction {
             if (addOperationCookie!=null) addOperationCookie.addOperation(implClassFo);
         }
     }
-
-    private static WebserviceDescription findWSDescriptionFromClass(FileObject implClassFO) {
+    
+    public static WebserviceDescription findWSDescriptionFromClass(FileObject implClassFO) {
         WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFO);
         String implClassPath = implClassFO.getPath();
         int dotIndex = implClassPath.lastIndexOf('.');
@@ -98,22 +99,14 @@ public class AddOperationAction extends CookieAction {
             try {
                 webServices = wsDDProvider.getDDRoot(wsSupport.getWebservicesDD());
             } catch(java.io.IOException e) {
-                throw new RuntimeException(e.getMessage());
+                ErrorManager.getDefault().notify(e);
             }
-		  
+            
             if(webServices != null) {
                 WebserviceDescription[] wsDescriptions = webServices.getWebserviceDescription();
                 for (int i = 0; i < wsDescriptions.length; i++) {
                     WebserviceDescription wsDescription = wsDescriptions[i];
                     PortComponent portComponent = wsDescription.getPortComponent(0);
-                    
-                    // first check the interface
-                    String wsSEI = portComponent.getServiceEndpointInterface();
-                    if ((wsSEI != null) && (implClassPath.endsWith(wsSEI))) {
-                        return wsDescription;
-                    }
-                    
-                    // then the implementation bean
                     ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
                     String link = serviceImplBean.getServletLink();
                     if (link == null) {
@@ -128,5 +121,5 @@ public class AddOperationAction extends CookieAction {
         }
         return null;
     }
-
+    
 }

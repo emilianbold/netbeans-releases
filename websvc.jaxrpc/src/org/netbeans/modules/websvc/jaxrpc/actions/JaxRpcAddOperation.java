@@ -24,12 +24,14 @@ import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
- /** JaxWsAddOperation.java
+/** JaxWsAddOperation.java
  * Created on December 12, 2006, 4:36 PM
  *
  * @author mkuchtiak
@@ -55,5 +57,21 @@ public class JaxRpcAddOperation implements AddOperationCookie {
             ErrorManager.getDefault().notify(ex);
         }
     }
+    
+    public boolean isEnabledInEditor(FileObject implClass) {
+        return isWsImplBeanOrInterface(implClass);
+    }
+    
+    private boolean isWsImplBeanOrInterface(FileObject implClassFo) {
+        WebserviceDescription wsDesc = AddOperationAction.findWSDescriptionFromClass(implClassFo);
+        if (wsDesc != null) {
+            WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFo);
+            if(wsSupport != null){
+                return !wsSupport.isFromWSDL(wsDesc.getWebserviceDescriptionName());
+            }
+        }
+        return false;
+    }
+    
     
 }
