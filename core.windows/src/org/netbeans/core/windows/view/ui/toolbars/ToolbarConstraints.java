@@ -241,6 +241,11 @@ public class ToolbarConstraints {
         if (prev == null)
             return;
         prevBars.add (prev);
+        
+       // #102450 - keep structure correct
+        if (nextBars.contains(prev)) {
+            nextBars.remove(prev);
+        }
     }
 
     /** Add toolbar to list of next toolbars.
@@ -250,6 +255,11 @@ public class ToolbarConstraints {
         if (next == null)
             return;
         nextBars.add (next);
+        
+       // #102450 - keep structure correct
+        if (prevBars.contains(next)) {
+            prevBars.remove(next);
+        }
     }
 
     /** Remove toolbar from previous toolbars.
@@ -276,14 +286,18 @@ public class ToolbarConstraints {
     void setPreferredSize (Dimension size) {
         Dimension oldSize = prefSize;
         prefSize = size;
-        rowCount = Toolbar.rowCount (prefSize.height);
+        // #102450 - don't allow row rearrangement during icon size toggle 
+        if (!toolbarConfig.isTogglingIconSize()) {
+            rowCount = Toolbar.rowCount (prefSize.height);
+        }
 
         if (ownRows.isEmpty())
             return;
 
         ToolbarRow row;
 
-        if (visible) {
+        // #102450 - don't allow row rearrangement during icon size toggle 
+        if (visible && !toolbarConfig.isTogglingIconSize()) {
             boolean emptyRow = false;
             while (rowCount < ownRows.size()) {
                 row = ownRows.lastElement();
@@ -592,7 +606,7 @@ public class ToolbarConstraints {
     static boolean canSwitchRight (int p1, int w1, int p2, int w2) {
         return (p1 > (p2));
     }
-
+    
 
     /** Class to store toolbar in xml format. */
     static class WritableToolbar {
@@ -616,6 +630,7 @@ public class ToolbarConstraints {
         }
 
         /** @return ToolbarConstraints int xml format. */
+        @Override
         public String toString () {
             StringBuffer sb = new StringBuffer();
             String quotedName = name;

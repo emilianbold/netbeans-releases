@@ -21,7 +21,6 @@ package org.netbeans.core.windows.view.ui.toolbars;
 
 import java.util.logging.Logger;
 import org.netbeans.core.NbPlaces;
-import org.openide.awt.JPopupMenuPlus;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.filesystems.FileLock;
@@ -127,6 +126,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     private String      configDisplayName;
     /** Cached preferred width. */
     private int         prefWidth;
+    /** true during toggling big/small toolbar buttons */
+    private boolean togglingIconSize = false;
     /** variable to signal that we are just writing the content of configuration
      * and we should ignore all changes. In such case set to Boolean.TRUE
      */
@@ -214,12 +215,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             }
         }
         
+        @Override
         public void endElement(String name) throws SAXException {
             if (TAG_ROW.equals(name)) {
                 currentRow = null;
             }
         }
         
+        @Override
         public InputSource resolveEntity(String pubid, String sysid) {
             return new InputSource(new java.io.ByteArrayInputStream(new byte[0]));
         }
@@ -409,7 +412,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      */
     int getPrefHeight () {
         if (getRowCount() == 0) return 0;
-        ToolbarRow lastRow = (ToolbarRow)toolbarRows.lastElement();
+        ToolbarRow lastRow = toolbarRows.lastElement();
         return getRowVertLocation(lastRow) + lastRow.getPreferredHeight();
     }
 
@@ -477,7 +480,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             name = waNas[i];
             if (toolbarPool ().findToolbar (name) != null) {  /* If there is new toolbar in the pool
 							      which was sometimes described ... */
-                ToolbarConstraints tc = (ToolbarConstraints)waitingToolbars.remove (name);
+                ToolbarConstraints tc = waitingToolbars.remove(name);
 		                                           /* ... it's removed from waiting ... */
                 allToolbars.put (name, tc);                /* ... so it's added to correct toolbars ... */
                 addVisible (tc);                         /* ... and added to visible toolbars. */
@@ -558,7 +561,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             row = new ToolbarRow (this);
             addRow (row);
         } else {
-            row = (ToolbarRow)toolbarRows.elementAt (rI);
+            row = toolbarRows.elementAt(rI);
         }
         return row;
     }
@@ -589,7 +592,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         for (int i = 0; i < tbs.length; i++) {
             tb = tbs[i];
             name = tb.getName();
-            tc = (ToolbarConstraints)allToolbars.get (name);
+            tc = allToolbars.get(name);
             if (tc == null) { /* If there is no toolbar constraints description defined yet ... */
                 if (lastRow == null) {
                     if( toolbarRows.isEmpty() )
@@ -633,7 +636,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                     }
                 }
             }
-            tc = (ToolbarConstraints)allToolbars.get (name);
+            tc = allToolbars.get(name);
             if (tc == null) { /* If there is no toolbar constraints description defined yet ... */
                 if (newRow == null) {
                     newRow = createLastRow();
@@ -721,7 +724,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @return popup menu to be displayed
      */
     public JPopupMenu getContextMenu () {
-        JPopupMenu menu = new JPopupMenuPlus();
+        JPopupMenu menu = new JPopupMenu();
         fillToolbarsMenu(menu);
         return menu;
     }
@@ -756,8 +759,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         while (it.hasNext()) {
             final Toolbar tb = (Toolbar)it.next();
             final String tbName = tb.getName();
-            ToolbarConstraints tc = 
-                (ToolbarConstraints)allToolbars.get (tb.getName());
+            ToolbarConstraints tc = allToolbars.get(tb.getName());
 /*            
             if (tc == null) {
                 System.err.println("ToolbarConfiguration.java - error"); // NOI18N
@@ -785,7 +787,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                         // for some reason (unknown to me - mkleint) the menu gets recreated repeatedly, which 
                         // can cause the formerly final ToolbarConstraints instance to be obsolete.
                         // that's why we each time look up the current instance on the allToolbars map.
-                        ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (tbName );
+                        ToolbarConstraints tc = allToolbars.get(tbName);
                         setToolbarVisible(tb, !tc.isVisible());
                     }
                 });
@@ -805,6 +807,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
               public void actionPerformed (ActionEvent ev) {
                   if (ev.getSource() instanceof JCheckBoxMenuItem) {
                       JCheckBoxMenuItem cb = (JCheckBoxMenuItem) ev.getSource();
+                      // toggle big/small icons
                       boolean state = cb.getState();
                       if (state) {
                           ToolbarPool.getDefault().setPreferredIconSize(16);
@@ -816,7 +819,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                       String name = ToolbarPool.getDefault().getConfiguration();
                       ToolbarConfiguration tbConf = findConfiguration(name);
                       if (tbConf != null) {
+                          // #102450 - don't allow row rearrangement during icon size toggle 
+                          togglingIconSize = true;
                           tbConf.rebuildPanel();
+                          togglingIconSize = false;
                       }
                       rebuildMenu();
                   }
@@ -840,6 +846,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         menuItem.setEnabled( !fullScreen );
         menu.add( menuItem );
     } // getContextMenu
+    
+    boolean isTogglingIconSize () {
+        return togglingIconSize;
+    }
 
     /** Make toolbar visible/invisible in this configuration
      * @param tb toolbar
@@ -1076,7 +1086,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         void removeEmptyRows () {
             ToolbarRow.WritableToolbarRow row;
             for (int i = rows.size() - 1; i >= 0; i--) {
-                row = (ToolbarRow.WritableToolbarRow)rows.elementAt (i);
+                row = rows.elementAt(i);
                 if (row.isEmpty())
                     rows.removeElement (row);
             }
@@ -1096,6 +1106,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         }
 
         /** @return ToolbarConfiguration in xml format. */
+        @Override
         public String toString () {
             StringBuffer sb = new StringBuffer();
 
