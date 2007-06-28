@@ -58,8 +58,8 @@ public class EntityRESTServicesCodeGeneratorTest extends TestBase {
                 entities.add(js);
             }
         }
-        EntityRESTServicesCodeGenerator gen = new EntityRESTServicesCodeGenerator(
-                entities, entityClassDirFO,  PACKAGE_ACME, "AcmePU");
+        /*EntityRESTServicesCodeGenerator gen = new EntityRESTServicesCodeGenerator(
+                entities, entityClassDirFO,  PACKAGE_ACME, "AcmePU");*/
         
         //FIXME faile on generic java template processing on include of default-license.text
         //gen.generate();

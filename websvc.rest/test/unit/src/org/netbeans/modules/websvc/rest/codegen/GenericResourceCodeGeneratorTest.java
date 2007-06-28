@@ -42,7 +42,7 @@ public class GenericResourceCodeGeneratorTest extends TestBase {
     
     public void testGenerate() throws Exception {
         GenericResourceBean bean = new GenericResourceBean("TestGenericResource", PACKAGE_ACME, "/com/acme/{generic}");
-        GenericResourceCodeGenerator generator = new GenericResourceCodeGenerator(entityClassDirFO, bean);
+        //GenericResourceCodeGenerator generator = new GenericResourceCodeGenerator(entityClassDirFO, bean);
         //FIXME
         //generator.generate();
     }
