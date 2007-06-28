@@ -55,6 +55,7 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
@@ -74,7 +75,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Sonali Kochar
  */
-public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin implements XMLRefactoringPlugin {
+public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin {
     
    private SafeDeleteRefactoring delete;
    //private List<RefactoringElementImplementation> elements;
@@ -291,7 +292,7 @@ public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin i
         }
         return null;
     }
-    
-    
+
+        
 }
 

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.schema.refactoring;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -128,6 +129,10 @@ public class SchemaWhereUsedRefactoringPlugin extends SchemaRefactoringPlugin  {
        
         
       return null;
+    }
+
+    public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
+       //do nothing
     }
     
       

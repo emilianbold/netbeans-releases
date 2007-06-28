@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Sonali Kochar
  */
-public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  implements XMLRefactoringPlugin{
+public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin {
     
     private RenameRefactoring request;
   //  List<RefactoringElementImplementation> elements;
@@ -175,9 +175,7 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
             }
         }
        
-        if(findErrors.size() > 0)
-            return processErrors(findErrors);
-        
+       
         if(elements.size() > 0) {
             List<Model> models = getModels(elements);
             List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
@@ -206,7 +204,10 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
        if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
            refactoringElements.add(request, new FauxRefactoringElement(obj, "Rename"));
        }
-              
+       
+       if(findErrors.size() > 0)
+           return processErrors(findErrors);
+        
         fireProgressListenerStop();
         return null;
     }
@@ -265,6 +266,6 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
         }
         return null;
     }
-  
-}
+
+   }
 

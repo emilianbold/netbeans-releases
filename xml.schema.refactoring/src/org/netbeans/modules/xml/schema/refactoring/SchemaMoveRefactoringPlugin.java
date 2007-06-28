@@ -36,6 +36,7 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
+import org.netbeans.modules.xml.refactoring.FauxRefactoringElement;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
@@ -156,7 +157,13 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
             fireProgressListenerStep();
          }
         
-              
+        //add a faux refactoring element to represent the target/object being refactored
+        //this element is to be added to the bag only as it will not participate in actual refactoring
+        Model mod = SharedUtils.getModel(obj);
+        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+        if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+           refactoringElements.add(request, new FauxRefactoringElement(obj, "Move"));
+        }      
         if(findErrors.size() > 0)
             return processErrors(findErrors);
         
@@ -208,18 +215,22 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
             }
         }
     }
-    /**
-     * @param component the component to check for model reference.
-     * @return the reference string if this component is a reference to an 
-     * external model, for example, the schema <import> component, 
-     * otherwise returns null.
-     */
-     public String getModelReference(Component component) {
-        if (component instanceof SchemaModelReference) {
-            return ((SchemaModelReference)component).getSchemaLocation();
+    
+     
+     public void setModelReference(Component component, String location) {
+        if(component instanceof SchemaModelReference){
+            Model model = component.getModel();
+            boolean startTransaction = ! model.isIntransaction();
+            if (startTransaction) {
+                model.startTransaction();
+            }
+            ((SchemaModelReference)component).setSchemaLocation(location);
+            
+            if (startTransaction && model.isIntransaction()) 
+               model.endTransaction();
         }
-        return null;
     }
-  
+
+     
 }
 
