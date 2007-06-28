@@ -21,8 +21,12 @@ package org.netbeans.api.progress;
 
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
+import javax.swing.Timer;
 import junit.framework.TestCase;
+import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.progress.spi.ProgressEvent;
+import org.netbeans.progress.spi.ProgressUIWorker;
 import org.openide.util.Cancellable;
 
 /**
@@ -58,17 +62,15 @@ public class ProgressHandleFactoryTest extends TestCase {
 
     
     public void testCustomComponentIsInitialized() {
+        Controller.defaultInstance = new TestController();
+        
         ProgressHandle handle = ProgressHandleFactory.createHandle("task 1");
         JComponent component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(15);
         handle.progress(2);
-        try {
-            // need to sleep longer than is the cycle..
-            Thread.sleep(600);
-        } catch (Exception exc) {
-            
-        }
+        waitForTimerFinish();
+        
         assertEquals(15, ((JProgressBar) component).getMaximum());
         assertEquals(2, ((JProgressBar) component).getValue());
         
@@ -76,12 +78,8 @@ public class ProgressHandleFactoryTest extends TestCase {
         component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(20);
-        try {
-            // need to sleep longer than is the cycle..
-            Thread.sleep(600);
-        } catch (Exception exc) {
-            
-        }
+        waitForTimerFinish();
+        
         assertEquals(20, ((JProgressBar) component).getMaximum());
         assertEquals(0, ((JProgressBar) component).getValue());
         
@@ -94,5 +92,36 @@ public class ProgressHandleFactoryTest extends TestCase {
          
    }
    
+     
+    private class TestController extends Controller {
+        public TestController() {
+            super(new ProgressUIWorker() {
+                public void processProgressEvent(ProgressEvent event) { }
+                public void processSelectedProgressEvent(ProgressEvent event) { }
+            });
+        }
+        
+        public Timer getTestTimer() {
+            return timer;
+        }
+    }
+    
+    private void waitForTimerFinish() {
+        TestController tc = (TestController)Controller.defaultInstance;
+        int count = 0;
+        do {
+            if (count > 10) {
+                fail("Takes too much time");
+            }
+            try {
+                count = count + 1;
+                Thread.sleep(300);
+            } catch (InterruptedException exc) {
+                System.out.println("interrupted");
+            }        
+        } while (tc.getTestTimer().isRunning());
+
+    }
+     
     
 }

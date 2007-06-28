@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
@@ -47,10 +48,7 @@ public class ProgressHandleTest extends NbTestCase {
     // public void testHello() {}
 
     protected void setUp() throws Exception {
-        Controller.defaultInstance = new Controller(new ProgressUIWorker() {
-            public void processProgressEvent(ProgressEvent event) { }
-            public void processSelectedProgressEvent(ProgressEvent event) { }
-        });
+        Controller.defaultInstance = new TestController();
         proghandle = ProgressHandleFactory.createHandle("displayName",new Cancellable() {
             public boolean cancel() {
                 // empty
@@ -58,6 +56,36 @@ public class ProgressHandleTest extends NbTestCase {
             }
         });
         handle = proghandle.getInternalHandle();
+    }
+    
+    private class TestController extends Controller {
+        public TestController() {
+            super(new ProgressUIWorker() {
+                public void processProgressEvent(ProgressEvent event) { }
+                public void processSelectedProgressEvent(ProgressEvent event) { }
+            });
+        }
+        
+        public Timer getTestTimer() {
+            return timer;
+        }
+    }
+    
+    private void waitForTimerFinish() {
+        TestController tc = (TestController)Controller.defaultInstance;
+        int count = 0;
+        do {
+            if (count > 10) {
+                fail("Takes too much time");
+            }
+            try {
+                count = count + 1;
+                Thread.sleep(300);
+            } catch (InterruptedException exc) {
+                System.out.println("interrupted");
+            }        
+        } while (tc.getTestTimer().isRunning());
+
     }
 
     /**
@@ -145,12 +173,7 @@ public class ProgressHandleTest extends NbTestCase {
         proghandle.start();
         proghandle.setDisplayName("test1");
         proghandle.progress("message1");
-        // kind of bad to have the wait here to overcome the scheduling..
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException exc) {
-            System.out.println("interrupted");
-        }
+        waitForTimerFinish();
         assertEquals("test1", main.getText());
         assertEquals("message1", detail.getText());
     }
