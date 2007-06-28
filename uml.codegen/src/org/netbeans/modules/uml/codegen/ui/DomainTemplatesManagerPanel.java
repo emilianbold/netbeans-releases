@@ -541,10 +541,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, templatesTreePanelLayout.createSequentialGroup()
                 .add(templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                    .add(treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                     .add(templatesTreePanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                        .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
                         .add(4, 4, 4)))
@@ -553,7 +553,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         templatesTreePanelLayout.setVerticalGroup(
             templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, templatesTreePanelLayout.createSequentialGroup()
-                .add(treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                .add(treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(removeButton)
@@ -573,10 +573,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         stereotypeLabel.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Stereotype")); // NOI18N
 
         stereotypeText.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 stereotypeTextInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
 
@@ -588,10 +588,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         descriptionTextArea.setTabSize(4);
         descriptionTextArea.setWrapStyleWord(true);
         descriptionTextArea.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 descriptionTextAreaInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         descriptionScroll.setViewportView(descriptionTextArea);
@@ -652,7 +652,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             templatePropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(templatePropsPanelLayout.createSequentialGroup()
                 .add(templatePropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, templatesTableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, templatesTableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, templatePropsPanelLayout.createSequentialGroup()
                         .add(templatePropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(stereotypeLabel)
@@ -663,7 +663,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                             .add(stereotypeText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
                             .add(modelElementCombo, 0, 444, Short.MAX_VALUE)
                             .add(descriptionScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)))
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, templatePropsPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(addRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 111, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
