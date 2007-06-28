@@ -711,16 +711,25 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             // no dataobject, never mind
         }
 
-        try {
+        DiffFileEncodingQueryImpl encodinqQuery = Lookup.getDefault().lookup(DiffFileEncodingQueryImpl.class);
+        List<File> originalFiles = new ArrayList<File>();
+        try {            
             for (File file : filesToCheckout) {
                 File originalFile = new File(tempFolder, file.getName());
                 vs.getOriginalFile(file, originalFile);
+                originalFiles.add(originalFile);
+            }         
+            if(encodinqQuery != null) {
+                encodinqQuery.associateEncoding(mainFile, originalFiles);
             }
             return createReader(new File(tempFolder, fileObject.getNameExt()));
         } catch (Exception e) {
             // let providers raise errors when they feel appropriate
             return null;
         } finally {
+            if(encodinqQuery != null) {
+                encodinqQuery.resetEncodingForFiles(originalFiles);
+            }
             Utils.deleteRecursively(tempFolder);
         }
     }
