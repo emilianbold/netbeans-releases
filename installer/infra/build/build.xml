@@ -195,7 +195,7 @@
             prefix="sjsas"/>
 
         <get
-            src="${openesb.builds.host}/kits/ojc/main/latestGlassfish/log/"
+            src="${openesb.builds.host}/kits/ojc/main/latestSDK/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
