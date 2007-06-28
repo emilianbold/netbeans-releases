@@ -28,7 +28,7 @@ ant -f nbbuild/build.xml checkout >> $CVS_CHECKOUT_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-    tail -100 $CVS_CHECKOUT_LOG
+    tail -200 $CVS_CHECKOUT_LOG
     echo "ERROR: $ERROR_CODE - Checkout of ide modules failed"
     exit $ERROR_CODE;
 fi
