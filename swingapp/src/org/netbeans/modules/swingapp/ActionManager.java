@@ -1067,8 +1067,8 @@ public class ActionManager {
                 buf.append(attrName);
                 buf.append("="); // NOI18N
                 if (value instanceof ProxyAction.BlockingType) {
-                    buf.append("application.Action.Block."); // NOI18N
-                    buf.append(value);
+                    buf.append(application.Task.BlockingScope.class.getCanonicalName());
+                    buf.append(".").append(value); // NOI18N
                 } else {
                     buf.append("\""); // NOI18N
                     buf.append(value);
