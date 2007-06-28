@@ -1025,7 +1025,11 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         }
 
         public void stateChanged(ChangeEvent e) {
-            if (container.isShowing()) {
+            if (container.isShowing() 
+             //a special case for property sheet dialog window - the selection 
+             //change must be processed otherwise the tabbed container may have
+             //undefined preferred size so the property window will be too small
+             || container.getClientProperty("tc") != null) { //NOI18N
                 int idx = tabDisplayer.getSelectionModel().getSelectedIndex();
                 if (idx != -1) {
                     Component c = toComp(container.getModel().getTab(idx));
