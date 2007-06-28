@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -29,10 +29,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         <!-- 
       <folder name="Tools">
-          <file name="javadoc-Search-Doc-Action.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
-          </file>
-      </folder>
+            <file name="javadoc-Search-Doc-Action.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
+            </file>
+        </folder>
       -->
   </folder>  <!-- Main menu -->
 
@@ -45,13 +45,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Tools">
-      <!-- XXX disabled until the org.netbeans.modules.javadoc.comments package will be rewritten.
-      <file name="Auto Comment Action.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.AutoCommentAction"/>
-      </file>      
-      <file name="Correct Javadoc Action.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction"/>
-      </file-->
       <file name="javadoc-Search-Doc-Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.SearchDocAction"/>
       </file>
@@ -65,16 +58,6 @@ Microsystems, Inc. All Rights Reserved.
       </file>
   </folder> 
   
-  <!-- XXX likely needless since node factories seems to be dead
-  <folder name="NodeFactories">
-    <folder name="java">
-		  <folder name="explorer">
-        <file name="org-netbeans-modules-javadoc-comments-JavaDocPropertySupportFactory.instance"/>
-			</folder> 
-    </folder>
-  </folder-->
-   
-
 <!--  Services part -->
 
     <folder name="Services">
