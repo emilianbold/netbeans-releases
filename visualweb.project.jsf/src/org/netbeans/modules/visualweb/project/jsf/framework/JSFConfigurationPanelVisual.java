@@ -479,16 +479,19 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
           return false;
         }
         
-        boolean currentWebModule25Version;
-        if (wizardDescriptor.getProperty("j2eeLevel").equals("1.5")) //NOI81N
-            currentWebModule25Version = true;
-        else
-            currentWebModule25Version = false;
+        String j2eeLevel = (String) wizardDescriptor.getProperty("j2eeLevel"); //NOI18N
         String currentServerInstanceID = (String) wizardDescriptor.getProperty("serverInstanceID"); //NOI18N
-        if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
-            webModule25Version = currentWebModule25Version;
-            serverInstanceID = currentServerInstanceID;
-            initLibSettings(webModule25Version, serverInstanceID);
+        if (j2eeLevel != null && currentServerInstanceID != null) {
+            boolean currentWebModule25Version;
+            if (j2eeLevel.equals("1.5")) //NOI81N
+                currentWebModule25Version = true;
+            else
+                currentWebModule25Version = false;
+            if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
+                webModule25Version = currentWebModule25Version;
+                serverInstanceID = currentServerInstanceID;
+                initLibSettings(webModule25Version, serverInstanceID);
+            }
         }
         
         if (addJSF) {
