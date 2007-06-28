@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ParamModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,9 +52,9 @@ public class ParametersTableModel implements TableModel<ParamModel>{
     public String getColumnName(int columnIndex) {
         switch(columnIndex) {
         case 0:
-            return "Parameter Name";
+            return NbBundle.getMessage(ParametersTableModel.class, "LBL_Parameter_Name");
         case 1:
-            return "Parameter Type";
+            return NbBundle.getMessage(ParametersTableModel.class, "LBL_Parameter_Type");
         default:
             throw new IllegalArgumentException("");
         }
