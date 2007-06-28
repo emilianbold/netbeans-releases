@@ -142,7 +142,9 @@ public class SchemaUsageRefactoringEngine {
                     if(request instanceof RenameRefactoring ) {
                         newLocation = SharedUtils.calculateNewLocationString(im.getLocation(), (RenameRefactoring)request);
                      } else if (request instanceof MoveRefactoring) {
-                        newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
+                        try {
+                            newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
+                        } catch (Exception e){}
                      }
                     im.setLocation(newLocation);
                 } else if (u.getLookup().lookup(SchemaModelReference.class)!=null) {
@@ -151,8 +153,9 @@ public class SchemaUsageRefactoringEngine {
                     if(request instanceof RenameRefactoring ) {
                          newLocation = calculateNewLocationString(ref.getSchemaLocation(), (RenameRefactoring)request);
                     } else if (request instanceof MoveRefactoring){
-                        newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
-                        
+                        try {
+                             newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
+                        }catch (Exception e){}
                     }
                     ref.setSchemaLocation(newLocation);
                 }

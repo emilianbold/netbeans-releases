@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.refactoring;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -119,6 +121,10 @@ public class WSDLWhereUsedRefactoringPlugin extends WSDLRefactoringPlugin {
         //System.out.println("done");
         
       return null;
+    }
+
+    public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
+        //do nothing
     }
     
       

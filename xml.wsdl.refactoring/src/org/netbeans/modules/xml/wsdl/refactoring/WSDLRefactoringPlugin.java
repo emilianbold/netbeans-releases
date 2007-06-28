@@ -11,6 +11,8 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +26,7 @@ import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
@@ -32,20 +35,23 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.refactoring.xsd.FindSchemaUsageVisitor;
 import org.netbeans.modules.xml.wsdl.refactoring.xsd.SchemaUsageRefactoringEngine;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Sonali
  */
-public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
+public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, XMLRefactoringPlugin {
     
     /**
      * Creates a new instance of WSDLRefactoringPlugin
@@ -211,5 +217,36 @@ public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter impl
         
        
         return head;
+    }
+     
+     
+     
+    public String getModelReference(Component component) {
+        if (component instanceof Import) {
+            return ((Import)component).getLocation();
+        }
+        return null;
+    }
+
+    public void setModelReference(Component component, String location) {
+        //do nothing
+    }
+
+      
+    public Collection<Component> getExternalReferences(Model model) {
+        Collection<Component> refs = new ArrayList<Component>();
+        if(model instanceof WSDLModel){
+            refs.addAll(((WSDLModel)model).getDefinitions().getImports());
+        }
+        return refs;
+    }
+    
+    public Model getModel(ModelSource source) {
+       FileObject fo = source.getLookup().lookup(FileObject.class);
+       if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+           WSDLModel model = WSDLModelFactory.getDefault().getModel(source);
+           return model;
+       }
+       return null;
     }
 }

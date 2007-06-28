@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
+import org.netbeans.modules.xml.refactoring.FauxRefactoringElement;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
@@ -42,6 +44,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
@@ -154,6 +157,13 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
             fireProgressListenerStep();
          }
        
+        //add a faux refactoring element to represent the target/object being refactored
+        //this element is to be added to the bag only as it will not participate in actual refactoring
+        Model mod = SharedUtils.getModel(obj);
+        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+        if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+           refactoringElements.add(request, new FauxRefactoringElement(obj, "Move"));
+        }
         if(findErrors.size() > 0)
             return processErrors(findErrors);
         
@@ -166,7 +176,8 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
      * @param refactoringElements Collection of refactoring elements 
      */
       public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
-        Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModelMap(elements);
+        //System.out.println("WSDL Move refactoring called");
+          Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModelMap(elements);
         Set<Model> models = modelsInRefactoring.keySet();
         Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
         for (Model model : models) {
@@ -176,21 +187,20 @@ public class WSDLMoveRefactoringPlugin extends WSDLRefactoringPlugin  implements
                 new SchemaUsageRefactoringEngine()._refactorUsages(model, modelsInRefactoring.get(model), request);
             }
         }
-    }   
+      }   
     
-    
-    /**
-     * @param component the component to check for model reference.
-     * @return the reference string if this component is a reference to an 
-     * external model, for example, the schema <import> component, 
-     * otherwise returns null.
-     */
-      public String getModelReference(Component component) {
-        if (component instanceof Import) {
-            return ((Import)component).getLocation();
+  public void setModelReference(Component component, String location) {
+        if(component instanceof Import){
+            Model model = component.getModel();
+            boolean startTransaction = ! model.isIntransaction();
+            if (startTransaction) {
+                model.startTransaction();
+            }
+            ((Import)component).setLocation(location);
+            
+            if (startTransaction && model.isIntransaction()) 
+               model.endTransaction();
         }
-        return null;
-    }
-  
+    }  
 }
 

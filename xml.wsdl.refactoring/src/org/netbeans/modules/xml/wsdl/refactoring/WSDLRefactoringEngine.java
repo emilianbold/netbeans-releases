@@ -110,7 +110,7 @@ public class WSDLRefactoringEngine {//extends RefactoringEngine {
                     } else if (request instanceof MoveRefactoring) {
                         try {
                              newLocation = SharedUtils.calculateNewLocationString(model , (MoveRefactoring)request);
-                        } catch (IOException io) {
+                        } catch (Exception io) {
                             //do nothing, let the old schema location remain
                         }
                     }

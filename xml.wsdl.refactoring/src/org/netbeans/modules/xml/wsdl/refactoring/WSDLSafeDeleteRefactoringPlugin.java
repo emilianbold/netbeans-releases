@@ -72,7 +72,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Sonali Kochar
  */
-public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin implements XMLRefactoringPlugin {
+public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin {
     
    private SafeDeleteRefactoring delete;
   

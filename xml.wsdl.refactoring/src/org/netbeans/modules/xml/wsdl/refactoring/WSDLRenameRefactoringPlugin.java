@@ -62,7 +62,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Sonali Kochar
  */
-public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implements XMLRefactoringPlugin {
+public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
     
     private RenameRefactoring rename;
           
@@ -176,10 +176,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
             }
         }
         
-        //were there any errors during find??
-        if(findErrors.size() > 0)
-            return processErrors(findErrors);
-        
+                
         if(elements.size() > 0) {
             List<Model> models = getModels(elements);
             List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
@@ -206,7 +203,10 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
            refactoringElements.add(rename, new FauxRefactoringElement(obj, "Rename"));
        }
          
-              
+        //were there any errors during find??
+        if(findErrors.size() > 0)
+            return processErrors(findErrors);
+        
         fireProgressListenerStop();
         return null;
     }
@@ -245,7 +245,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
         }
         return null;
     }
-    
-  
+
+      
 }
 
