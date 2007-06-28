@@ -20,4 +20,5 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="apisupport/project/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <property name="xtest.jvm.args" value="-Xmx256m"/>
 </project>
