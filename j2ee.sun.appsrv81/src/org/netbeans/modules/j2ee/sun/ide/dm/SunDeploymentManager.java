@@ -825,7 +825,15 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
     }
     
+    // TODO : remove this method when GFV2/SJSAS9.1 is the "legacy" version 
+    // for the plugin.
     private TargetModuleID[] weedOutAppClientTMID(TargetModuleID[] tmids) {
+        // the server team resolved 641 and also 3248 in v2... but since we
+        // allow users to work with older server versions, we have to dance here.
+        if (ServerLocationManager.getAppServerPlatformVersion(platformRoot) >
+                ServerLocationManager.GF_V1) {
+            return tmids;
+        }
         ArrayList<TargetModuleID> retList = new ArrayList<TargetModuleID>();
         try{
             Class[] argClass = new Class[1];
