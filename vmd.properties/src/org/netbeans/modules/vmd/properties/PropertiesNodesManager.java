@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.properties;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import org.netbeans.modules.vmd.properties.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
-
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -46,24 +44,25 @@ import org.openide.util.lookup.InstanceContent;
  * @author Karol Harezlak
  */
 public final class PropertiesNodesManager {
-    
+
     private static final WeakHashMap<DataEditorView, PropertiesNodesManager> INSTANCES = new WeakHashMap<DataEditorView, PropertiesNodesManager>();
-    
+
     private WeakHashMap<DataEditorView, InstanceContent> icMap;
     private Collection<InstanceContent> ics;
     private WeakHashMap<InstanceContent, WeakSet<Node>> nodesToRemoveMap;
     private WeakReference<DataEditorView> view;
     private WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>> propertySupportMap;
     private WeakHashMap<DesignComponent, Sheet> sheetMap;
-    
-    public synchronized static PropertiesNodesManager getDefault(DataEditorView view) {
+    private WeakHashMap<DesignComponent, PropertiesNode> nodesMap;
+
+    public static synchronized PropertiesNodesManager getDefault(DataEditorView view) {
         if (INSTANCES.get(view) == null) {
             PropertiesNodesManager manager = new PropertiesNodesManager(view);
             INSTANCES.put(view, manager);
         }
         return INSTANCES.get(view);
     }
-    
+
     private PropertiesNodesManager(DataEditorView view) {
         nodesToRemoveMap = new WeakHashMap<InstanceContent, WeakSet<Node>>();
         this.view = new WeakReference<DataEditorView>(view);
@@ -71,25 +70,28 @@ public final class PropertiesNodesManager {
         ics = new HashSet<InstanceContent>();
         propertySupportMap = new WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>>();
         sheetMap = new WeakHashMap<DesignComponent, Sheet>();
+        nodesMap = new WeakHashMap<DesignComponent, PropertiesNode>();
     }
-    
+
     public void add(InstanceContent ic) {
-        assert(ic != null);
+        assert (ic != null);
         this.ics.add(ic);
     }
-    
+
     public void add(DataEditorView view, InstanceContent ic) {
-        assert(ic != null);
+        assert (ic != null);
         icMap.put(view, ic);
     }
-    
-    synchronized void changeLookup(DataEditorView view, Collection<DesignComponent> components) {
-        if (components == null)
+
+    void changeLookup(DataEditorView view, Collection<DesignComponent> components) {
+        if (components == null) 
             return;
+        
         Collection<InstanceContent> tempIcs = new HashSet<InstanceContent>();
         tempIcs.addAll(ics);
-        if (icMap.get(view) != null)
+        if (icMap.get(view) != null) {
             tempIcs.add(icMap.get(view));
+        }
         for (InstanceContent ic : tempIcs) {
             WeakSet<Node> nodesToRemove = nodesToRemoveMap.get(ic);
             if (nodesToRemove == null) {
@@ -101,56 +103,59 @@ public final class PropertiesNodesManager {
             }
             nodesToRemove.clear();
         }
-        
         if (components.isEmpty()) {
             for (InstanceContent ic : tempIcs) {
-                WeakSet<Node> nodesToRemove = nodesToRemoveMap.get(ic);
                 ic.add(Node.EMPTY);
                 ic.remove(Node.EMPTY);
             }
         }
-        
         for (InstanceContent ic : tempIcs) {
-            for(DesignComponent component : components) {
-                Set<Node> nodesToRemove = nodesToRemoveMap.get(ic);
-                PropertiesNode node = new PropertiesNode(view, component);
-                ic.add(node);
+            Set<Node> nodesToRemove = nodesToRemoveMap.get(ic);
+            for (DesignComponent component : components) {
+                PropertiesNode node = nodesMap.get(component);
+                if (node == null) {
+                    node = new PropertiesNode(view, component);
+                    nodesMap.put(component, node);
+                }
                 nodesToRemove.add(node);
             }
+            if (nodesToRemove != null && !nodesToRemove.isEmpty())
+                ic.set(nodesToRemove, new PropertiesNodeConverter());
         }
-        
-        
     }
-    
+
     public synchronized Sheet getSheet(DesignComponent component) {
         assert (component != null);
-        if (sheetMap.get(component) == null)
+        if (sheetMap.get(component) == null) {
             sheetMap.put(component, createSheet(component));
+        }
         return sheetMap.get(component);
     }
-    
-    private synchronized static void createCategoriesSet(Sheet sheet, List<String> categories) {
+
+    private static synchronized void createCategoriesSet(Sheet sheet, List<String> categories) {
         for (String propertyCategory : categories) {
             sheet.put(createPropertiesSet(propertyCategory));
         }
     }
-    
-    private synchronized static Sheet.Set createPropertiesSet(String categoryName) {
+
+    private static synchronized Sheet.Set createPropertiesSet(String categoryName) {
         Sheet.Set setSheet = new Sheet.Set();
         setSheet.setName(categoryName);
         setSheet.setDisplayName(categoryName);
         return setSheet;
     }
-    
+
     private static Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
+
         public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
             return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
         }
     };
-    
+
     public Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
                 List<DesignPropertyDescriptor> designerPropertyDescriptors;
                 List<String> categories;
@@ -160,16 +165,17 @@ public final class PropertiesNodesManager {
                     designerPropertyDescriptors.addAll(propertiesPresenter.getDesignPropertyDescriptors());
                     categories.addAll(propertiesPresenter.getPropertiesCategories());
                 }
-                if (designerPropertyDescriptors != null)
+                if (designerPropertyDescriptors != null) {
                     Collections.sort(designerPropertyDescriptors, compareByDisplayName);
+                }
                 createCategoriesSet(sheet, categories);
                 for (DesignPropertyDescriptor designerPropertyDescriptor : designerPropertyDescriptors) {
                     DefaultPropertySupport property;
                     DesignPropertyEditor propertyEditor = designerPropertyDescriptor.getPropertyEditor();
-                    
-                    if (propertyEditor instanceof GroupPropertyEditor && designerPropertyDescriptor.getPropertyNames().size() == 0)
+
+                    if (propertyEditor instanceof GroupPropertyEditor && designerPropertyDescriptor.getPropertyNames().size() == 0) {
                         throw new IllegalStateException("To use AdvancedPropertyEditorSupport you need to specific at least one propertyName"); //NOI18N
-                    
+                    }
                     if (propertyEditor instanceof GroupPropertyEditor) {
                         property = new AdvancedPropertySupport(designerPropertyDescriptor, designerPropertyDescriptor.getPropertyEditorType());
                         addPropertySupport(component, property);
@@ -179,8 +185,9 @@ public final class PropertiesNodesManager {
                     } else {
                         throw new IllegalArgumentException();
                     }
-                    if (propertyEditor != null &&  propertyEditor.canEditAsText() != null)
+                    if (propertyEditor != null && propertyEditor.canEditAsText() != null) {
                         property.setValue("canEditAsText", propertyEditor.canEditAsText()); //NOI18N
+                    }
                     property.setValue("changeImmediate", false); // NOI18
                     sheet.get(designerPropertyDescriptor.getPropertyCategory()).put(property);
                 }
@@ -188,24 +195,27 @@ public final class PropertiesNodesManager {
         });
         return sheet;
     }
-    
+
     public void updateSheet(Collection<DesignComponent> components) {
-        if (components == null || components.isEmpty())
+        if (components == null || components.isEmpty()) {
             return;
+        }
         for (DesignComponent component : components) {
             Sheet sheet = sheetMap.get(component);
-            if (sheet == null)
+            if (sheet == null) {
                 continue;
+            }
             for (Node.PropertySet set : sheet.toArray()) {
-                for(Property property : set.getProperties()) {
-                    if (!(property instanceof DefaultPropertySupport))
+                for (Property property : set.getProperties()) {
+                    if (!(property instanceof DefaultPropertySupport)) {
                         continue;
+                    }
                     ((DefaultPropertySupport) property).update();
                 }
             }
         }
     }
-    
+
     private void addPropertySupport(DesignComponent component, DefaultPropertySupport propertySupport) {
         WeakSet<DefaultPropertySupport> propertySupports = propertySupportMap.get(component);
         if (propertySupports == null) {
@@ -214,18 +224,21 @@ public final class PropertiesNodesManager {
         }
         propertySupports.add(propertySupport);
     }
-    
+
     public void updatePropertyEditorsValues(DataEditorView view, Collection<DesignComponent> components) {
-        if (components == null)
+        if (components == null) {
             return;
+        }
         Collection<InstanceContent> tempIcs = new HashSet<InstanceContent>();
         tempIcs.addAll(ics);
-        if (icMap.get(view) != null)
+        if (icMap.get(view) != null) {
             tempIcs.add(icMap.get(view));
+        }
         for (InstanceContent ic : tempIcs) {
             WeakSet<Node> nodesToRemove = nodesToRemoveMap.get(ic);
-            if (nodesToRemove == null)
+            if (nodesToRemove == null) {
                 continue;
+            }
             for (Node node : nodesToRemove) {
                 PropertiesNode pn = (PropertiesNode) node;
                 pn.updateNode(getSheet(pn.getComponent()));
@@ -233,5 +246,23 @@ public final class PropertiesNodesManager {
         }
     }
     
-}
+    private class PropertiesNodeConverter implements InstanceContent.Convertor {
 
+        public Object convert(Object object) {
+            return object;
+        }
+
+        public Class type(Object object) {
+            return object.getClass();
+        }
+
+        public String id(Object object) {
+            return object.toString();
+        }
+
+        public String displayName(Object object) {
+            return object.toString();
+        }
+        
+    }
+}

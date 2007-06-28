@@ -42,7 +42,7 @@ public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFa
     
     public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
         if (view.getKind() == DataEditorView.Kind.MODEL) {
-            PropertiesManager.register();
+            PropertiesWindowManager.register();
             InstanceContent ic = new InstanceContent();
             ic.add(context.getDataObject().getLookup());
             PropertiesSupport.addInstanceContent(view, ic);
