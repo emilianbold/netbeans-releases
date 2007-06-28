@@ -247,6 +247,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     void openMenu(RADComponent metacomp, Component comp) {
+        getPopupFactory();
         configureGlassLayer();
         registerKeyListeners();
         configureFormListeners();
@@ -294,6 +295,13 @@ public class MenuEditLayer extends JPanel {
             glassLayer.addKeyListener(keyboardMenuNavigator);
             keyboardMenuNavigator.selectedRADComponent = this.selectedRADComponent;
         }
+    }
+    
+    private VisualDesignerPopupFactory getPopupFactory() {
+        if(hackedPopupFactory == null) {
+            hackedPopupFactory = new VisualDesignerPopupFactory(this);
+        }
+        return hackedPopupFactory;
     }
     
     private void configureGlassLayer() {
@@ -368,9 +376,7 @@ public class MenuEditLayer extends JPanel {
     }
 
     void showMenuPopup(final JMenu menu) {
-        if(hackedPopupFactory == null) {
-            hackedPopupFactory = new VisualDesignerPopupFactory(this);
-        }
+        getPopupFactory();
         // if already created then just make it visible
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             JPanel view = hackedPopupFactory.containerMap.get(menu);
@@ -436,7 +442,7 @@ public class MenuEditLayer extends JPanel {
         Component[] subComps = menu.getMenuComponents();
         // if this isn't the first time this menu has been opened then the sub components
         // will have been moved to the popupPanel already, so we will find them there instead.
-        JPanel popupPanel = hackedPopupFactory.containerMap.get(menu);
+        JPanel popupPanel = getPopupFactory().containerMap.get(menu);
         if(popupPanel != null) {
             subComps = popupPanel.getComponents();
         }
