@@ -19,15 +19,19 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xtest-dist" default="all" basedir=".">
-    <target name="all">
+    <target name="init">
         <property name="xtest.home" location="../xtest"/>
         <property name="xtest.templates.dir" location="nbbuild/templates"/>
         <property name="xtest.results" location="results"/>
+        <property name="junit.results" location="junit-results"/>
         <property name="test.fail.on.error" value="true"/>
         <property name="nbantext.jar" location="../nbbuild/nbantext.jar"/>
         <property name="test.dist.dir" location=".."/>
         <!-- only for these module on runtime classpath -->
         <property name="test.required.modules" value=""/>
+    </target>    
+    
+    <target name="all" depends="init" description="Run tests in xtest mode">
         <taskdef name="validatepath" classname="org.netbeans.nbbuild.ValidatePath" classpath="${nbantext.jar}"/>
         <delete dir="${xtest.results}"/>
         <mkdir dir="${xtest.results}"/>
@@ -57,4 +61,13 @@ Microsystems, Inc. All Rights Reserved.
             <property name="test.dist.dir" value="${test.dist.dir}"/>
         </subant>    
     </target>
+    
+ <target name="junit-format" depends="init" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
+    <taskdef name="xtest2junit" classname="org.netbeans.nbbuild.XTest2JUnitResultFormatter" classpath="${nbantext.jar}"/>
+    <mkdir dir="${junit.results}"/>
+    <xtest2junit outputdir="${junit.results}">
+        <input dir="${xtest.results}" includes="testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
+    </xtest2junit>
+  </target>
+
 </project>
