@@ -42,8 +42,9 @@ public class VWPMeasureActions  {
         suite.addTest(new OpenBeanFiles("testRequestBean","Open Request  Bean"));
         suite.addTest(new OpenBeanFiles("testSessionBean","Open Session Bean"));
         suite.addTest(new OpenNavigationPage("measureTime","Open Navigation Page"));
-        	
-        suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS table"));	
+        
+        //TODO Disabled because throws exception. See bugid #103971
+        //suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS table"));	
 	suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment for VWP project"));
         suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP page for VWP project"));
 
@@ -52,6 +53,8 @@ public class VWPMeasureActions  {
         suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
 	suite.addTest(new ComponentAddTest("testAddButtonComponent","Adding Button Component"));
 	suite.addTest(new ComponentAddTest("testAddListboxComponent","Adding Listbox Component"));
+        
+        suite.addTest(new CreateWebPackProjectSBS("testCreateWebPackProject","Create Visual Web Project SBS"));
         
         suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
         suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
