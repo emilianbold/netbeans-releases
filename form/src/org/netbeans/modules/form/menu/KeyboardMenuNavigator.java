@@ -263,6 +263,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     private void startEditing() {
+        menuEditLayer.configureEditedComponent(selectedRADComponent);
         menuEditLayer.formDesigner.startInPlaceEditing(selectedRADComponent);
     }
     

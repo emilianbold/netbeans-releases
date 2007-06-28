@@ -331,6 +331,10 @@ public class MenuEditLayer extends JPanel {
                                 hideMenuLayer();
                                 isAlive = false;
                             }
+                            if(evt.getChangeType() == evt.COMPONENT_ADDED) {
+                                p("component was added");
+                                configureNewComponent(evt.getComponent());
+                            }
                             
                         }
                     }
@@ -598,28 +602,37 @@ public class MenuEditLayer extends JPanel {
             ex.printStackTrace();
         }
     }
-    
-    
-    private Color getNormalBackground(JComponent c) {
-        Color color = null;
+
+    private String getComponentDefaultsPrefix(JComponent c) {
         if(c instanceof JMenuBar) {
-            color = UIManager.getDefaults().getColor("MenuBar.background");
+            return "MenuBar";
         }
         if(c instanceof JMenu) {
-            color = UIManager.getDefaults().getColor("Menu.background");
+            return "Menu";
         }
         if(c instanceof JCheckBoxMenuItem) {
-            color = UIManager.getDefaults().getColor("CheckBoxMenuItem.background");
+            return "CheckBoxMenuItem";
         }
         if(c instanceof JRadioButtonMenuItem) {
-            color = UIManager.getDefaults().getColor("RadioButtonMenuItem.background");
+            return "RadioButtonMenuItem";
         }
-               
-        if(color == null) {
-            color = UIManager.getDefaults().getColor("MenuItem.background");
-        }
+        return "MenuItem";
+    }
+    
+    private Color getNormalBackground(JComponent c) {
+        String prefix = getComponentDefaultsPrefix(c);
+        Color color = UIManager.getDefaults().getColor(prefix+".background");
         if(color == null) {
             color = Color.WHITE;
+        }
+        return color;
+    }
+    
+    private Color getNormalForeground(JComponent c) {
+        String prefix = getComponentDefaultsPrefix(c);
+        Color color = UIManager.getDefaults().getColor(prefix+".foreground");
+        if(color == null) {
+            color = Color.BLACK;
         }
         return color;
     }
@@ -746,6 +759,15 @@ public class MenuEditLayer extends JPanel {
             ex.printStackTrace();
         }
         
+    }
+    
+    boolean addRadComponentToEnd(JComponent targetComponent, MetaComponentCreator creator) {
+        RADVisualContainer targetContainer = (RADVisualContainer) formDesigner.getMetaComponent(targetComponent);
+        p("target container = " + targetContainer);
+        Object constraints = null;
+        boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+        p("added comp: " + creator.getPrecreatedMetaComponent());
+        return added;
     }
     
     void moveRadComponentInto(JComponent payload, JComponent targetMenu) {
@@ -879,7 +901,31 @@ public class MenuEditLayer extends JPanel {
         RADVisualComponent precreated = creator.precreateVisualComponent(
                 paletteItem.getComponentClassSource());
         JComponent newComponent = (JComponent) precreated.getBeanInstance();
-        return creator.addPrecreatedComponent(targetContainer, null);
+        boolean added = creator.addPrecreatedComponent(targetContainer, null);
+        return added;
+    }
+    
+    
+    // change the look of the component to reflect the newly added state.
+    // this mainly means making the foreground color light gray.
+    private void configureNewComponent(RADComponent item) {
+        p("configuring a new component: "+ item);
+        if(item != null) {
+            JComponent c = (JComponent) formDesigner.getComponent(item);
+            c.setForeground(Color.LIGHT_GRAY);
+        }
+    }
+    
+    
+    // change the look of the component to reflect the fully edited state
+    void configureEditedComponent(JComponent c) {
+        p("configuring an edited component");
+        if(c.getForeground() == Color.LIGHT_GRAY) {
+            c.setForeground(getNormalForeground(c));
+        }
+    }
+    void configureEditedComponent(RADComponent c) {
+        configureEditedComponent((JComponent)formDesigner.getComponent(c));
     }
 
     //listens to see if this particular menu has been changed
@@ -1128,6 +1174,7 @@ public class MenuEditLayer extends JPanel {
                     p("this is a top level JMenu");
                     if(e.getClickCount() > 1) {
                         isEditing = true;
+                        configureEditedComponent(c);
                         formDesigner.startInPlaceEditing(rad);
                     } else {
                         openMenu(rad, c);
@@ -1166,6 +1213,7 @@ public class MenuEditLayer extends JPanel {
                     SelectedPortion portion = DropTargetLayer.calculateSelectedPortion(item, pt);
                     p("selected portion = " + portion);
                     RADComponent radcomp = formDesigner.getMetaComponent(item);
+                    configureEditedComponent(c);
                     if(portion == SelectedPortion.Icon) {
                         p("editing icon");
                         showIconEditor(radcomp);
