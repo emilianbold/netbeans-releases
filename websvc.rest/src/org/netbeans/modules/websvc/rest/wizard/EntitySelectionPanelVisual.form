@@ -39,9 +39,9 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane2" pref="302" max="32767" attributes="2"/>
+                  <Component id="jScrollPane2" pref="308" max="32767" attributes="2"/>
                   <Component id="panelButtons" alignment="0" max="32767" attributes="2"/>
-                  <Component id="jScrollPane1" alignment="0" pref="302" max="32767" attributes="2"/>
+                  <Component id="jScrollPane1" alignment="0" pref="308" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
           </Group>
@@ -100,6 +100,10 @@
               <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/Bundle.properties" key="ACSD_SelectedEntitiesList" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <Events>
+            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="listSelectedValueChanged"/>
+            <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="listSelectedPropertyChange"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

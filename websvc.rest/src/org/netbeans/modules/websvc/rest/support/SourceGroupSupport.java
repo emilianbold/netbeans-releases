@@ -212,7 +212,7 @@ public class SourceGroupSupport {
                         if (fo.isFolder() || ! "java".equals(fo.getExt())) {
                             continue;
                         }
-                        if (qualifiedClassName.contains(fo.getName())) {
+                        if (qualifiedClassName.endsWith(fo.getName())) {
                             return JavaSource.forFileObject(fo);
                         }
                     }

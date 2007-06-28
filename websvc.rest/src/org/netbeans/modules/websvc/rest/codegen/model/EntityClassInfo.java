@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -24,6 +26,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
 /**
  *
@@ -31,7 +37,7 @@ import org.netbeans.api.java.source.JavaSource;
  */
 public class EntityClassInfo {
     
-    private JavaSource source;
+    private Entity entity;
     private String name;
     private String type;
     private String packageName;
@@ -40,21 +46,24 @@ public class EntityClassInfo {
     
     
     /** Creates a new instance of ClassInfo */
-    public EntityClassInfo(JavaSource source) {
-        this.source = source;
+    public EntityClassInfo(Entity entity, Project project) {
         this.fieldInfos = new ArrayList<FieldInfo>();
         
         try {
+            final JavaSource source = SourceGroupSupport.getJavaSourceFromClassName(entity.getClass2(), project);
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.RESOLVED);
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(controller);
+                    assert controller.getCompilationUnit() != null : source.getFileObjects().iterator().next().getPath();
+                    assert controller.getCompilationUnit().getPackageName() != null : "NULL package "+source.getFileObjects().iterator().next().getPath();
                     packageName = controller.getCompilationUnit().getPackageName().toString();     
                     name = tree.getSimpleName().toString();
                     type = packageName + "." + name;
-                    
+
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
-                    
+            
                     for (VariableElement field : fields) {
                         FieldInfo fieldInfo = new FieldInfo();
                         
@@ -87,7 +96,7 @@ public class EntityClassInfo {
                 }
             }, true);
         } catch (IOException ex) {
-            
+            Logger.getLogger(getClass().getName()).log(Level.ALL, "init", ex);
         }
     }
     

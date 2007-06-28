@@ -59,11 +59,6 @@ public final class EntitySelectionPanel extends AbstractPanel {
                 setErrorMessage("MSG_EntitySelectionPanel_NoSWDP");
                 return false;
             }
-            List availableEntities = JavaSourceHelper.getEntityClasses(project);
-            if (availableEntities == null || availableEntities.size() == 0) {
-                setErrorMessage("MSG_EntitySelectionPanel_NoEntities");
-                return false;
-            }
             if (getPersistenceUnitName(project) == null) {
                 setErrorMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
                 return false;
@@ -80,11 +75,15 @@ public final class EntitySelectionPanel extends AbstractPanel {
         return component;
     }
     
-    String getPersistenceUnitName(Project project) {
-        String puName = (String) wizardDescriptor.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
+    private String getPersistenceUnitName(Project project) {
+        return getPersistenceUnitName(wizardDescriptor, project);
+    }
+    
+    static String getPersistenceUnitName(WizardDescriptor wizard, Project project) {
+        String puName = (String) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
         if (puName == null || puName.trim().length() == 0) {
             puName = PersistenceHelper.getPersistenceUnitName(project);
-            wizardDescriptor.putProperty(WizardProperties.PERSISTENCE_UNIT_NAME, puName);
+            wizard.putProperty(WizardProperties.PERSISTENCE_UNIT_NAME, puName);
         }
         return puName;
     }

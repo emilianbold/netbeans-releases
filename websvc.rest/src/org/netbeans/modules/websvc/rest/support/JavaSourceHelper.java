@@ -125,6 +125,9 @@ public class JavaSourceHelper {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     
                     TypeElement classElement = getTopLevelClassElement(controller);
+                    if (classElement == null) {
+                        return;
+                    }
                     
                     List<? extends AnnotationMirror> annotations =
                             controller.getElements().getAllAnnotationMirrors(classElement);
@@ -237,6 +240,9 @@ public class JavaSourceHelper {
     
     public static TypeElement getTopLevelClassElement(CompilationController controller) {
         ClassTree classTree = getTopLevelClassTree(controller);
+        if (classTree == null) {
+            return null;
+        }
         Trees trees = controller.getTrees();
         TreePath path = trees.getPath(controller.getCompilationUnit(), classTree);
         

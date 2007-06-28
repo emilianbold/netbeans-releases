@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import javax.swing.event.ChangeListener;
@@ -90,19 +91,27 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         }
     }
 
-    protected void setErrorMessage(java.lang.String key) {
-        if (key == null) {
-            setLocalizedErrorMessage("");
-        } else {
-            setLocalizedErrorMessage(NbBundle.getMessage(EntitySelectionPanel.class, key));
+    static void clearErrorMessage(WizardDescriptor wizard) {
+        setErrorMessage(wizard, null);
+    }
+    
+    static void setErrorMessage(WizardDescriptor wizard, java.lang.String key) {
+        String message = "";
+        if (key != null) {
+            message = (NbBundle.getMessage(EntitySelectionPanel.class, key));
         }
+        wizard.putProperty("WizardPanel_errorMessage", message);
     }
 
-    private void setLocalizedErrorMessage(java.lang.String message) {
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+    protected void setErrorMessage(java.lang.String key) {
+        setErrorMessage(wizardDescriptor, key);
     }
 
     public void stateChanged(javax.swing.event.ChangeEvent e) {
+        Component c = getComponent();
+        if (c instanceof Settings) {
+            ((Settings)c).valid(wizardDescriptor);
+        }
         fireChangeEvent(e);
     }
     

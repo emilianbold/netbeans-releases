@@ -79,6 +79,12 @@ public class GenericResourceBean {
         this.uriTemplate = uriTemplate;
         this.methodTypes = new HashSet(Arrays.asList(methodTypes));
         
+        if (representationTypes == null) {
+            representationTypes = new String[mediaTypes.length];
+            for (int i=0; i<representationTypes.length; i++) {
+                representationTypes[i] = String.class.getName();
+            }
+        }
         if (mediaTypes.length != representationTypes.length) {
             throw new IllegalArgumentException("Unmatched media types and representation types");
         }

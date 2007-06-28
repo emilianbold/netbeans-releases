@@ -243,6 +243,7 @@ public class Util {
     }
     
     public static String pluralize(String name) {
+        name = Inflector.getInstance().singularize(name);
         return Inflector.getInstance().pluralize(name);
     }
 

@@ -25,6 +25,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.ResourceBeanModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -69,11 +71,11 @@ public class PersistenceHelper {
         return null;
     }
     
-    public static void addEntityClasses(Project project, List<JavaSource> entityClasses) throws IOException {
+    public static void addEntityClasses(Project project, ResourceBeanModel model) throws IOException {
         List<String> classNames = new ArrayList<String>();
         
-        for (JavaSource source : entityClasses) {
-            classNames.add(JavaSourceHelper.getClassType(source));
+        for (EntityClassInfo entityClass : model.getEntityClassInfos()) {
+            classNames.add(entityClass.getType());
         }
         
         FileObject fobj = getPersistenceXML(project);
