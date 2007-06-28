@@ -51,13 +51,11 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	private ArrayList<TiledLayer> tiledLayers = new ArrayList<TiledLayer>();
 	private ArrayList<Sprite> sprites = new ArrayList<Sprite>();
 	private ArrayList<Scene> scenes = new ArrayList<Scene>();	
-	private Map<String, ImageResource> imgResourceMap = new HashMap<String, ImageResource>();	
+	private Map<String, ImageResource> imgResourceMap = new HashMap<String, ImageResource>();
 	
 	
 	public GlobalRepository(DesignDocument designDocument) {
 		this.designDocument = designDocument;
-		this.mainView = new MainView();
-		this.addGlobalRepositoryListener(this.mainView);
 	}
 	
 	public DesignDocument getDesignDocument() {
@@ -73,6 +71,11 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	
 	public MainView getMainView() {
 		return this.mainView;
+	}
+	
+	public void initUI() {
+		this.mainView = new MainView();
+		this.addGlobalRepositoryListener(this.mainView);
 	}
 	
 	/**

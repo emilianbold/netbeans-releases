@@ -168,8 +168,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			view = this.loadingPanel;
 		}
 		else {
-			gameDesign.getMainView().addEditorManagerListener(gameEditorView);
-			view = gameDesign.getMainView().getRootComponent();
 			designDocument.getTransactionManager().readAccess(new Runnable() {
 				public void run() {
 					if (true) {
@@ -177,11 +175,24 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 						DesignComponent root = designDocument.getRootComponent();
 						GameController.this.modelComponent(root);
 						GameController.this.registerAllListeners();
-						gameDesign.addGlobalRepositoryListener(GameController.this);
-						gameDesign.getMainView().requestEditing(gameDesign);
 					}
 				}
 			});
+			
+			//get user to fix invalid image resources - i.e. those with null URLs
+			Collection<ImageResource> imageResources = gameDesign.getImageResources();
+			for (ImageResource imageResource : imageResources) {
+				if (imageResource.getURL() == null) {
+					DesignComponent imageResourceDC = designIdMap.get(imageResource);
+					this.validateImageResource(imageResource, imageResourceDC);
+				}
+			}
+			gameDesign.initUI();
+			gameDesign.getMainView().addEditorManagerListener(gameEditorView);
+			view = gameDesign.getMainView().getRootComponent();
+
+			gameDesign.addGlobalRepositoryListener(GameController.this);
+			gameDesign.getMainView().requestEditing(gameDesign);
 		}
 		this.panel.add(view);
 		this.panel.validate();
@@ -401,17 +412,38 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	private ImageResource constructImageResource(final DesignComponent imageResourceDC) {
-		ImageResource imgRes;
-		FileObject fo;
-		URL imgResUrl;
-
-		final String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
+		URL imgResUrl = null;
 		
-		imgRes = this.getGameDesign().getImageResource(imgResPath);
+		final String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
+		ImageResource imgRes = this.getGameDesign().getImageResource(imgResPath);
 		if (imgRes != null) {
 			return imgRes;
 		}
-				
+
+		Map<FileObject, FileObject> imagesMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imgResPath);
+		
+		//if there is a single image matching this image resource path then excellent - all is as it should be and we have
+		//no image name conflicts
+		if (imagesMap.size() == 1) {
+			FileObject fo = imagesMap.keySet().iterator().next();
+			try {
+				imgResUrl = fo.getURL();
+			} catch (FileStateInvalidException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//if at this point imgResUrl is null then we need to resolve image name conflicts or missing
+		//images after the design document is loaded by running method validateImageResource() on
+		//all imageResources that have null imageURL
+		return this.getGameDesign().getImageResource(imgResUrl, imgResPath);
+	}
+		
+	private void validateImageResource(ImageResource imageResource, final DesignComponent imageResourceDC) {
+		FileObject fo;
+		URL imgResUrl;
+		final String imgResPath = imageResource.getRelativeResourcePath();
+		
 		Map<FileObject, FileObject> imagesMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imgResPath);
 		if (imagesMap.size() > 1) {
 			//multiple locations (e.g. jars) contain the same image - show a dialog to let the
@@ -431,7 +463,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			dd.setButtonListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
-						//XXX stop loading the document!
+						//XXX close the document - user did not choose one of the available images
 					}
 				}
 			});
@@ -466,7 +498,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			dd.setButtonListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
-						//XXX stop loading the document!
+						//XXX close the document - missing image could not be recovered by the user
 					}
 				}
 			});
@@ -492,11 +524,11 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		
 		try {
 			imgResUrl = fo.getURL();
+			imageResource.setURL(imgResUrl);
 		} catch (FileStateInvalidException e) {
 			throw new RuntimeException(e);
 		}
-		imgRes = this.getGameDesign().getImageResource(imgResUrl, imgResPath);
-		return imgRes;
+		
 	}
 	
 	private Scene constructScene(DesignComponent sceneDC) {

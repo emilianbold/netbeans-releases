@@ -258,8 +258,6 @@ public class ImageResource {
 		return new Key(tileWidth, tileHeight, zeroBasedIndex);
 	}
 	
-	
-	
 	public int getStaticTileCount(int tileWidth, int tileHeight) {
 		return this.getRowCount(tileWidth, tileHeight) * this.getColumnCount(tileWidth, tileHeight);
 	}
@@ -270,8 +268,9 @@ public class ImageResource {
 	
 	public Tile getTile(int index, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
 		if (zeroBasedIndex) {
-			int[] coordinates = this.translateIndex(index, tileWidth, tileHeight, zeroBasedIndex);
-			return this.getStaticTileGrid(tileWidth, tileHeight, zeroBasedIndex)[coordinates[0]][coordinates[1]];
+			return new StaticTile(this, index, tileWidth, tileHeight, zeroBasedIndex);
+//			int[] coordinates = this.translateIndex(index, tileWidth, tileHeight, zeroBasedIndex);
+//			return this.getStaticTileGrid(tileWidth, tileHeight, zeroBasedIndex)[coordinates[0]][coordinates[1]];
 		}
 		else {
 			//zero is empty tile
@@ -279,8 +278,9 @@ public class ImageResource {
 				return this.getEmptyTile(tileWidth, tileHeight);
 			//bigger than zero is a static tile
 			if (index > Tile.EMPTY_TILE_INDEX) {
-				int[] coordinates = this.translateIndex(index, tileWidth, tileHeight, zeroBasedIndex);
-				return this.getStaticTileGrid(tileWidth, tileHeight, zeroBasedIndex)[coordinates[0]][coordinates[1]];
+				//int[] coordinates = this.translateIndex(index, tileWidth, tileHeight, zeroBasedIndex);
+				//return this.getStaticTileGrid(tileWidth, tileHeight, zeroBasedIndex)[coordinates[0]][coordinates[1]];
+				return new StaticTile(this, index, tileWidth, tileHeight, zeroBasedIndex);
 			}
 			//smaller than zero is an animated tile
 			else {
@@ -394,6 +394,10 @@ public class ImageResource {
 	
 	public URL getURL() {
 		return this.imageURL;
+	}
+	
+	public void setURL(URL imageURL) {
+		this.imageURL = imageURL;
 	}
 	
 	public String getName() {
