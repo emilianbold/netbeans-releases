@@ -118,6 +118,7 @@ public final class MimePath {
     private static final Set<String> WELL_KNOWN_TYPES = new HashSet<String>(Arrays.asList(
         "application", //NOI18N
         "audio", //NOI18N
+        "content", //NOI18N   for content/unknown mime type
         "image", //NOI18N
         "message", //NOI18N
         "model", //NOI18N
