@@ -40,27 +40,27 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(ClassMemberTest.class);
-        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
-        suite.addTest(new ClassMemberTest("testAddAtIndex2"));
-        suite.addTest(new ClassMemberTest("testAddToEmpty"));
-        suite.addTest(new ClassMemberTest("testAddConstructor"));
-        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
-        suite.addTest(new ClassMemberTest("testModifyFieldName"));
-        suite.addTest(new ClassMemberTest("testModifyModifiers"));
-        suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
-        suite.addTest(new ClassMemberTest("testAddNewClassWithNewMembers"));
-        suite.addTest(new ClassMemberTest("testAddInnerInterface"));
-        suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
-        suite.addTest(new ClassMemberTest("testAddInnerEnum"));
-        suite.addTest(new ClassMemberTest("testAddMethodAndModifyConstr"));
+        suite.addTestSuite(ClassMemberTest.class);
+//        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
+//        suite.addTest(new ClassMemberTest("testAddAtIndex2"));
+//        suite.addTest(new ClassMemberTest("testAddToEmpty"));
+//        suite.addTest(new ClassMemberTest("testAddConstructor"));
+//        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
+//        suite.addTest(new ClassMemberTest("testModifyFieldName"));
+//        suite.addTest(new ClassMemberTest("testModifyModifiers"));
+//        suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
+//        suite.addTest(new ClassMemberTest("testAddNewClassWithNewMembers"));
+//        suite.addTest(new ClassMemberTest("testAddInnerInterface"));
+//        suite.addTest(new ClassMemberTest("testAddInnerAnnotationType"));
+//        suite.addTest(new ClassMemberTest("testAddInnerEnum"));
+//        suite.addTest(new ClassMemberTest("testAddMethodAndModifyConstr"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit1"));
 //        suite.addTest(new ClassMemberTest("testAddAfterEmptyInit2"));
-        suite.addTest(new ClassMemberTest("testMemberIndent93735_1"));
-        suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
-        suite.addTest(new ClassMemberTest("testAddArrayMember"));
-        suite.addTest(new ClassMemberTest("testAddCharMember"));
-        suite.addTest(new ClassMemberTest("testRenameReturnTypeInAbstract"));
+//        suite.addTest(new ClassMemberTest("testMemberIndent93735_1"));
+//        suite.addTest(new ClassMemberTest("testMemberIndent93735_2"));
+//        suite.addTest(new ClassMemberTest("testAddArrayMember"));
+//        suite.addTest(new ClassMemberTest("testAddCharMember"));
+//        suite.addTest(new ClassMemberTest("testRenameReturnTypeInAbstract"));
         return suite;
     }
 
@@ -90,7 +90,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -137,7 +137,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -176,7 +176,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -228,7 +228,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -296,7 +296,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -348,7 +348,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -394,7 +394,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -430,7 +430,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -445,7 +445,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                         MethodTree methodC = make.Method(method.getModifiers(),
                                 method.getName(),
                                 method.getReturnType(),
-                                (List<TypeParameterTree>) method.getTypeParameters(),
+                                method.getTypeParameters(),
                                 method.getParameters(),
                                 method.getThrows(),
                                 (BlockTree) null,
@@ -482,7 +482,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 "}\n";
         
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -494,7 +494,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 MethodTree methodC = make.Method(method.getModifiers(),
                         method.getName(),
                         method.getReturnType(),
-                        (List<TypeParameterTree>) method.getTypeParameters(),
+                        method.getTypeParameters(),
                         method.getParameters(),
                         method.getThrows(),
                         "{}",
@@ -526,14 +526,14 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         MethodTree newMethod = make.Method(
             make.Modifiers( 
                 Collections.singleton(Modifier.PUBLIC), // modifiers
-                Collections.EMPTY_LIST // annotations
+                Collections.<AnnotationTree>emptyList() // annotations
             ), // modifiers and annotations
             "newlyCreatedMethod", // name
             make.PrimitiveType(TypeKind.VOID), // return type
-            Collections.EMPTY_LIST, // type parameters for parameters
+            Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
             parList, // parameters
             Collections.singletonList(make.Identifier("java.io.IOException")), // throws 
-            make.Block(Collections.EMPTY_LIST, false), // empty statement block
+            make.Block(Collections.<StatementTree>emptyList(), false), // empty statement block
             null // default value - not applicable here, used by annotations
         );
         return newMethod;
@@ -568,7 +568,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -600,21 +600,24 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
     public void testAddAfterEmptyInit2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
             "public class Test {\n" +
             "    ;\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "public class Test {\n\n" +
-            "    ;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    ;\n" +
+            "\n" +
             "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException {\n" +
             "    }\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -656,7 +659,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -698,7 +701,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -738,7 +741,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -792,7 +795,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -845,7 +848,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -897,7 +900,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -949,7 +952,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1008,7 +1011,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1081,7 +1084,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1115,7 +1118,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
