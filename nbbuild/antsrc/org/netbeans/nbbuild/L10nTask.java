@@ -35,6 +35,7 @@ import java.util.Vector;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Ant;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.GZip;
 import org.apache.tools.ant.taskdefs.MatchingTask;
@@ -334,7 +335,7 @@ public class L10nTask extends MatchingTask {
                 // file module.l10n.list.all.
                 // THEN delete files.
                 
-                mkTars(topdirs[i]+File.separator, buildDir+File.separator+shortTopdir+File.separator+topModule+".tar", topdirs[i]+File.separator+topModule+File.separator+topModule+"."+changedFile, topModule);
+                mkTars(topdirs[i]+File.separator, buildDir+File.separator+shortTopdir+File.separator+topModule+".tar", topdirs[i]+File.separator+topModule+File.separator+topModule+"."+allFile, topModule);
                 Delete delete = (Delete)p.createTask("delete");
                 FileSet fs = new FileSet();
                 fs.setDir(new File(topdirs[i]+File.separator+topModule));
@@ -679,7 +680,7 @@ public class L10nTask extends MatchingTask {
         }
         
         try {
-            sbholder = processListFile(includes, module);
+            sbholder = processListFile(topRoot, includes, module);
         } catch (java.io.IOException ioe) {
             log("Error processing file. "+ioe, Project.MSG_WARN);
         }
@@ -852,7 +853,18 @@ public class L10nTask extends MatchingTask {
         return line;
     }
     
-    public StringBuffer[] processListFile(File inc,String module) throws IOException {
+    public void executeLocalTarget(File topRoot, String module, String target) throws BuildException {
+        log("Going to execute custom target '"+target+"' in directory '"+topRoot.getAbsolutePath()+File.separator+module.replace('/', File.separatorChar)+"'", Project.MSG_INFO);
+        
+        Ant ant = (Ant) this.getProject().createTask("ant");
+        ant.setDir(new File(topRoot, module.replace('/', File.separatorChar)));
+        ant.setTarget(target);
+        ant.setTaskName("custom-call-"+module+"-"+target);
+        ant.execute();
+        log("Finished execution of custom target '"+target+"' in directory '"+topRoot.getAbsolutePath()+File.separator+module.replace('/', File.separatorChar)+"'", Project.MSG_INFO);
+    }
+
+    public StringBuffer[] processListFile(File topRoot, File inc,String module) throws IOException,BuildException {
         log("Reading "+ module+"'s list file: "+inc.toString(), Project.MSG_INFO);
         StringBuffer[] sbholder=new StringBuffer[2];
         StringBuffer sbi = new StringBuffer();
@@ -871,12 +883,15 @@ public class L10nTask extends MatchingTask {
                 if (line.trim().indexOf("#") == 0) {
                     log("Skipping commented-out line: '" + line + "'", Project.MSG_DEBUG);
                 } else if (line.indexOf("exclude") >= 0) {
-                    sbe.append(" "+line.substring("exclude".length()+1));
-                    log("Added exclude: '" + line.substring("exclude".length()+1) + "'", Project.MSG_DEBUG);
+                    sbe.append(" "+line.trim().substring("exclude".length()+1));
+                    log("Added exclude: '" + line.trim().substring("exclude".length()+1) + "'", Project.MSG_DEBUG);
+                } else if (line.indexOf("antcall") >= 0) {
+                    String target = line.trim().substring("antcall".length()+1).trim();
+                    executeLocalTarget(topRoot, module, target);
                 } else if (line.indexOf("read global") >= 0) {
                     if (globalFile != null && ! globalFile.equals("") && !(inc.getAbsolutePath().equals((new File (globalFile)).getAbsolutePath()))) {
                         log("Loading and interpreting global includes/excludes file "+globalFile+" for module "+module, Project.MSG_INFO);
-                        StringBuffer[] globalarray = processListFile(new File(globalFile),module);
+                        StringBuffer[] globalarray = processListFile(topRoot, new File(globalFile),module);
                         if (globalarray[0] != null) {
                             sbi.append(" "+globalarray[0]);
                         }
@@ -888,7 +903,7 @@ public class L10nTask extends MatchingTask {
                     String l = line.trim() ;
                     l = l.substring( 4) ;
                     l = l.trim() ;
-                    StringBuffer[] sbarr = processListFile( new File( l),  module) ;
+                    StringBuffer[] sbarr = processListFile( topRoot, new File( l),  module) ;
                     if ( sbarr[0] != null ) { sbi.append( " " + sbarr[ 0]) ;}
                     if ( sbarr[1] != null ) { sbe.append( " " + sbarr[ 1]) ;}
                 } else {
