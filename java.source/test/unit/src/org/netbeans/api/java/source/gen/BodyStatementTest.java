@@ -8,7 +8,7 @@
  *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
+ * If applicable, add the following below the CDDL Heade, azr, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.Collections;
 import com.sun.source.tree.*;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
@@ -88,6 +89,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameClazzInNewParameter"));
 //        suite.addTest(new BodyStatementTest("test99445"));
 //        suite.addTest(new BodyStatementTest("test101717"));
+//        suite.addTest(new BodyStatementTest("testModifyingIf"));
         return suite;
     }
     
@@ -115,7 +117,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -174,7 +176,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -239,7 +241,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -296,7 +298,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -351,7 +353,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -422,7 +424,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -499,7 +501,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -508,7 +510,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 // rename in parameter
                 TryTree tryStmt = (TryTree) method.getBody().getStatements().get(0);
-                BlockTree tryBlock = (BlockTree) tryStmt.getBlock();
+                BlockTree tryBlock = tryStmt.getBlock();
                 ExpressionStatementTree exprStmt = (ExpressionStatementTree) tryStmt.getBlock().getStatements().get(0);
                 NewClassTree newClassTree = (NewClassTree) exprStmt.getExpression();
                 ClassTree anonClassTree = newClassTree.getClassBody();
@@ -572,7 +574,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -632,7 +634,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -675,7 +677,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -718,7 +720,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -763,7 +765,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -804,7 +806,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -856,7 +858,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -917,7 +919,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -975,7 +977,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1039,7 +1041,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1053,7 +1055,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 ParenthesizedTree petecko = (ParenthesizedTree) syncro.getExpression();
                 IdentifierTree ident = (IdentifierTree) petecko.getExpression();
                 workingCopy.rewrite(ident, make.setLabel(ident, "zamek"));
-                BlockTree body = (BlockTree) syncro.getBlock();
+                BlockTree body = syncro.getBlock();
                 ExpressionStatementTree est = (ExpressionStatementTree) body.getStatements().get(1);
                 MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
                 MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
@@ -1102,7 +1104,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1114,7 +1116,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 TryTree tryTree = (TryTree) method.getBody().getStatements().get(1);
                 CatchTree ct = tryTree.getCatches().get(0);
                 workingCopy.rewrite(ct.getParameter(), make.setLabel(ct.getParameter(), "vyjimka"));
-                BlockTree body = (BlockTree) ct.getBlock();
+                BlockTree body = ct.getBlock();
                 ExpressionStatementTree est = (ExpressionStatementTree) body.getStatements().get(0);
                 MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
                 MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
@@ -1155,7 +1157,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1208,7 +1210,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1265,7 +1267,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1322,7 +1324,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1371,7 +1373,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1416,7 +1418,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1642,7 +1644,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1696,7 +1698,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1748,7 +1750,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1800,7 +1802,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1848,7 +1850,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1903,7 +1905,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1946,7 +1948,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2012,7 +2014,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2070,7 +2072,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2116,7 +2118,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2171,7 +2173,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2190,6 +2192,62 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void testModifyingIf() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public boolean method(int i) {\n" +
+            "        int y = 0;\n" +
+            "        if (i == 0) {y = 2;} else {y = 9;}\n" +
+            "        return y == 8;\n" +
+            "    }\n" +
+            "}\n");
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public boolean method(int i) {\n" +
+            "        int y = 0;\n" +
+            "        if (method(null)) {\n" + 
+            "            return true;\n" +
+            "        }\n" +
+            "        return y == 8;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                IfTree mit = (IfTree) block.getStatements().get(1);
+                IfTree nue = make.If(
+                    make.Parenthesized(
+                        make.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(), 
+                            make.Identifier("method"), 
+                            Arrays.asList(make.Literal(null))
+                        )
+                    ), 
+                    make.Return(make.Literal(true)), null
+                );
+                workingCopy.rewrite(mit, nue);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
