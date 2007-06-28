@@ -19,24 +19,21 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
-import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.handlers.ExitMidletEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
+import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import java.util.List;
 
 /**
  *
@@ -57,7 +54,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(eventSource.getDocument(), PointsCategoryCD.TYPEID);
         List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
         if (list.size() != 1) {
-            Debug.warning("Can not retrieve mobileDevice from document");
+            Debug.warning("Can not retrieve MobileDevice from document");
             return;
         }
         DesignComponent mobileDevice = list.get(0);

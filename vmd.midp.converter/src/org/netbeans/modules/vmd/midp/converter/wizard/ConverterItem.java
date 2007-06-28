@@ -19,6 +19,8 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+
 import java.util.HashMap;
 import java.util.ArrayList;
 
@@ -33,6 +35,7 @@ class ConverterItem {
     private HashMap<String, String> properties;
     private HashMap<String, ArrayList<String>> containerProperties;
     private boolean used;
+    private DesignComponent component;
 
     public ConverterItem (String uid, String id, String typeid) {
         this.uid = uid;
@@ -46,10 +49,14 @@ class ConverterItem {
         return used;
     }
 
-    public void setUsed () {
+    public void setUsed (DesignComponent component) {
+        this.component = component;
         used = true;
     }
 
+    public DesignComponent getRelatedComponent () {
+        return component;
+    }
 
     public String getUID () {
         return uid;

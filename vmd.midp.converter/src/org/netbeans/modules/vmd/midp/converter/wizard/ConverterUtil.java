@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midp.converter.wizard;
 import org.openide.ErrorManager;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
@@ -124,6 +125,24 @@ public class ConverterUtil {
             }
         }
         return sb.toString ();
+    }
+
+    static void convertStringWithUserCode (DesignComponent component, String propertyName, String value) {
+        PropertyValue propertyValue = getStringWithUserCode (value);
+        if (propertyValue != null)
+            component.writeProperty (propertyName, propertyValue);
+    }
+
+    public static void convertInteger (DesignComponent component, String propertyName, String value) {
+        Integer integer = getInteger (value);
+        if (integer != null)
+            component.writeProperty (propertyName, MidpTypes.createIntegerValue (integer));
+    }
+
+
+    public static void convertString (DesignComponent component, String propertyName, String value) {
+        if (value != null)
+            component.writeProperty (propertyName, MidpTypes.createStringValue (value));
     }
 
 }

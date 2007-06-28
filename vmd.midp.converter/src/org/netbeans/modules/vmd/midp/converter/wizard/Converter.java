@@ -19,19 +19,18 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
-import static org.netbeans.modules.vmd.midp.converter.wizard.ConverterUtil.*;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
-import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.components.resources.FontCD;
+import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
+import static org.netbeans.modules.vmd.midp.converter.wizard.ConverterUtil.getBoolean;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -42,6 +41,7 @@ import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author David Kaspar
@@ -57,7 +57,7 @@ public class Converter {
                 errors.add ("Unsupported version of the design file. The design has to saved in NetBeans 5.5 or newer.");
                 return errors;
             }
-            final HashMap<String, ConverterItem> components = getConverterComponents (rootNode);
+            final List<ConverterItem> components = getConverterComponents (rootNode);
 
             DataObject template = DataObject.find (Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates/MIDP/VisualMIDlet.java")); // NOI18N
             DataObject outputDesign = template.createFromTemplate (folder, outputFileName);
@@ -79,8 +79,8 @@ public class Converter {
         return errors;
     }
 
-    private static HashMap<String, ConverterItem> getConverterComponents (Node rootNode) {
-        HashMap<String, ConverterItem> components = new HashMap<String, ConverterItem> ();
+    private static List<ConverterItem> getConverterComponents (Node rootNode) {
+        ArrayList<ConverterItem> components = new ArrayList<ConverterItem> ();
         Node documentNode = XMLUtil.getChild (rootNode, "DesignDocument"); // NOI18N
         for (Node componentNode : XMLUtil.getChildren (documentNode, "DesignComponent")) { // NOI18N
             String typeid = XMLUtil.getAttributeValue (componentNode, "typeid");
@@ -102,7 +102,7 @@ public class Converter {
                 for (Node itemNode : XMLUtil.getChildren (containerPropertyNode, "ContainerPropertyItem")) // NOI18N
                     item.addContainerPropertyItem (name, XMLUtil.getAttributeValue (itemNode, "value")); // NOI18N
             }
-            components.put (item.getUID (), item);
+            components.add (item);
         }
         return components;
     }
@@ -135,78 +135,72 @@ public class Converter {
         return i >= 0 ? string.substring (i + 1) : string;
     }
 
-    private static void convert (ArrayList<String> errors, HashMap<String, ConverterItem> components, DesignDocument document) {
-        for (ConverterItem item : components.values ()) {
-            if (item.isUsed ())
-                return;
-            String typeID = item.getTypeID ();
-            if ("javax.microedition.lcdui.Command".equals (typeID))
-                convertCommand (item, document);
-            else if ("javax.microedition.lcdui.Font".equals (typeID))
-                convertFont (item, document);
-            // TODO - all components
-            else
-                Debug.warning ("Unrecognized component: " + typeID);
+    private static void convert (ArrayList<String> errors, List<ConverterItem> components, DesignDocument document) {
+        HashMap<String,ConverterItem> id2item = new HashMap<String, ConverterItem> ();
+        for (ConverterItem item : components)
+            id2item.put (item.getID (), item);
+        for (ConverterItem item : components)
+            convert (id2item, item, document);
+        for (ConverterItem item : components) {
+            if (! item.isUsed ())
+                Debug.warning ("Unrecognized component: " + item.getTypeID ());
         }
     }
 
-    private static void convertObject (ConverterItem item) {
-        item.setUsed ();
+    private static void convert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+        if (item.isUsed ())
+            return;
+        String id = item.getID ();
+        String typeID = item.getTypeID ();
+        if ("javax.microedition.lcdui.Command".equals (typeID))
+            ConverterResources.convertCommand (item, document);
+        else if ("javax.microedition.lcdui.Font".equals (typeID))
+            ConverterResources.convertFont (item, document);
+        else if ("javax.microedition.lcdui.Form".equals (typeID))
+            ConverterDisplayables.convertForm (id2item, item, document);
+        else if ("javax.microedition.lcdui.TextBox".equals (typeID))
+            ConverterDisplayables.convertTextBox (id2item, item, document);
+
+        // TODO - all components
+
+        if ("$MobileDevice".equals (id)) {
+            DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
+            List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
+            DesignComponent mobileDevice = list.get (0);
+            convertObject (item, mobileDevice);
+        } else if ("$StartPoint".equals (id)) {
+            DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
+            List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
+            DesignComponent mobileDevice = list.get (0);
+            DesignComponent startEventSource = mobileDevice.readProperty (MobileDeviceCD.PROP_START).getComponent ();
+            convertObject (item, startEventSource);
+            ConverterActions.convertCommandActionHandler (id2item, item, startEventSource);
+        }
+
+        // TODO - all components
     }
 
-    private static void convertClass (ConverterItem item, DesignComponent component) {
-        convertObject (item);
+    static ConverterItem convertConverterItem (HashMap<String, ConverterItem> id2item, String value, DesignDocument document) {
+        ConverterItem item = id2item.get (value);
+        if (item != null) {
+            convert (id2item, item, document);
+            if (item.isUsed ())
+                return item;
+        }
+        return null;
+    }
+
+    // Created: NO, Adds: NO
+    static void convertObject (ConverterItem item, DesignComponent component) {
+        item.setUsed (component);
+    }
+
+    // Created: NO, Adds: NO
+    static void convertClass (ConverterItem item, DesignComponent component) {
+        convertObject (item, component);
         component.writeProperty (ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue (item.getID ()));
         Boolean lazy = getBoolean (item.getPropertyValue ("lazyInitialized")); // NOI18N
         component.writeProperty (ClassCD.PROP_LAZY_INIT, MidpTypes.createBooleanValue (lazy == null  ||  lazy));
-    }
-
-    private static void convertFont (ConverterItem item, DesignDocument document) {
-        DesignComponent font = document.createComponent (FontCD.TYPEID);
-        convertClass (item, font);
-        MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (font);
-
-        // TODO - all properties
-    }
-
-    private static void convertCommand (ConverterItem item, DesignDocument document) {
-        DesignComponent command = document.createComponent (CommandCD.TYPEID);
-        convertClass (item, command);
-        MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (command);
-
-        PropertyValue label = getStringWithUserCode (item.getPropertyValue ("label")); // NOI18N
-        if (label != null)
-            command.writeProperty (CommandCD.PROP_LABEL, label);
-
-        PropertyValue longLabel = getStringWithUserCode (item.getPropertyValue ("longLabel")); // NOI18N
-        if (longLabel != null)
-            command.writeProperty (CommandCD.PROP_LONG_LABEL, longLabel);
-
-        Integer priority = getInteger (item.getPropertyValue ("priority")); // NOI18N
-        if (priority != null)
-            command.writeProperty (CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue (priority));
-
-        String typeValue = item.getPropertyValue ("type"); // NOI18N
-        int type;
-        if ("SCREEN".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_SCREEN;
-        else if ("BACK".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_BACK;
-        else if ("CANCEL".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_CANCEL;
-        else if ("OK".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_OK;
-        else if ("HELP".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_HELP;
-        else if ("STOP".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_STOP;
-        else if ("EXIT".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_EXIT;
-        else if ("ITEM".equals (typeValue)) // NOI18N
-            type = CommandCD.VALUE_ITEM;
-        else
-            type = CommandCD.VALUE_OK;
-        command.writeProperty (CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue (type));
     }
 
 }
