@@ -165,14 +165,11 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
                 buf.append("java.util.ResourceBundle"); // NOI18N
                 buf.append(CODE_MARK_VARIABLE_SUBST);
                 buf.append("bundle"); // NOI18N
-                buf.append(CODE_MARK_END); // indicates that real code follows
-                buf.append(javaString.substring(end));
-            } else {
-                buf.append(javaString);
+                javaString = javaString.substring(end);
             }
-        } else {
-            buf.append(javaString);
         }
+        buf.append(CODE_MARK_END); // indicates that real code follows
+        buf.append(javaString);
         return buf.toString();
     }
 
