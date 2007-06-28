@@ -22,7 +22,6 @@
 package gui.debuggercore;
 
 import java.awt.event.KeyEvent;
-import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -43,7 +42,6 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -51,15 +49,15 @@ import org.netbeans.junit.NbTestSuite;
  * @author cincura, ehucka
  */
 public class Actions extends JellyTestCase {
-    
+
     public Actions(String name) {
         super(name);
     }
-    
+
     public static void main(String[] args) {
         TestRunner.run(suite());
     }
-    
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new Actions("testCheckEnabledActions"));
@@ -76,12 +74,12 @@ public class Actions extends JellyTestCase {
         suite.addTest(new Actions("testPause"));
         return suite;
     }
-    
+
     /** setUp method  */
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
     }
-    
+
     public void tearDown() {
         JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
         if (getName().equals("testPause")) {
@@ -89,103 +87,88 @@ public class Actions extends JellyTestCase {
             Utilities.deleteAllBreakpoints();
         }
     }
-    
+
     public void testCheckEnabledActions() throws Throwable {
         try {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            
+
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
-            Utilities.verifyPopup(projectNode, new String[] {
-                //check build project action
-                Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_BuildAction_Name"),
-                //check run project action
-                Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_RunAction_Name"),
-                //check debug project action
-                Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_DebugAction_Name")
-            });
-            
+            Utilities.verifyPopup(projectNode, new String[]{Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_BuildAction_Name"), Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_RunAction_Name"), Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_DebugAction_Name")});
+
             //main menu actions
             //check main menu debug main project action
-            assertTrue(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.debugMainProjectItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.debugMainProjectItem, true));
             //Step into
-            assertTrue(Utilities.runMenu+"|"+Utilities.stepIntoItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.stepIntoItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepIntoItem, true));
             //new breakpoint
-            assertTrue(Utilities.runMenu+"|"+Utilities.newBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.newBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.newBreakpointItem, true));
             //new watch
-            assertTrue(Utilities.runMenu+"|"+Utilities.newWatchItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.newWatchItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.newWatchItem, true));
             //main menu actions disabled
             //check finish debugger
-            assertFalse(Utilities.runMenu+"|"+Utilities.finishSessionsItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.finishSessionsItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.finishSessionsItem, false));
             //pause
-            assertFalse(Utilities.runMenu+"|"+Utilities.pauseItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.pauseItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.pauseItem, false));
             //continue
-            assertFalse(Utilities.runMenu+"|"+Utilities.continueItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.continueItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.continueItem, false));
             //step over
-            assertFalse(Utilities.runMenu+"|"+Utilities.stepOverItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.stepOverItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepOverItem, false));
             //step over expression
-            assertFalse(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, false));
             //step out
-            assertFalse(Utilities.runMenu+"|"+Utilities.stepOutItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.stepOutItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepOutItem, false));
             //run to cursor
-            assertFalse(Utilities.runMenu+"|"+Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runToCursorItem, false));
             //run into method
-            assertFalse(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runIntoMethodItem, false));
             //apply code changes
-            assertFalse(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, false));
             //toggle breakpoint
-            assertFalse(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, false));
             //evaluate expression
-            assertFalse(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, false));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
-            
+
             //open source file
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.setCaret(eo, 80);
-            new EventTool().waitNoEvent(1000);  //because of issue 70731
+            new EventTool().waitNoEvent(1000); //because of issue 70731
             //main menu file actions
             //check run file action
-            String actionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Object[] {new Integer(1), "MemoryView.java"});
-            assertTrue(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName, true));
+            String actionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Object[]{new Integer(1), "MemoryView.java"});
+            assertTrue(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName, true));
             //check debug file action
-            actionName = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugSingleAction_Name", new Object[] {new Integer(1), "MemoryView.java"});
-            assertTrue(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runFileMenu+"|"+actionName, true));
+            actionName = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugSingleAction_Name", new Object[]{new Integer(1), "MemoryView.java"});
+            assertTrue(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runFileMenu + "|" + actionName, true));
             //run to cursor
-            assertTrue(Utilities.runMenu+"|"+Utilities.runToCursorItem+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.runToCursorItem + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runToCursorItem, true));
             //toggle breakpoint
-            assertTrue(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem+" is not enabled", Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, true));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
-            
+
             //source popup menu actions
             JPopupMenuOperator operator = new JPopupMenuOperator(JPopupMenuOperator.callPopup(eo, 50, 50));
-            Utilities.verifyPopup(operator, new String[] {
-                //check debug file
-                Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action"),
-                //new watch
-                Bundle.getString("org.netbeans.editor.Bundle", "add-watch"),
-                //check toggle breakpoint
-                Bundle.getString("org.netbeans.editor.Bundle", "toggle-breakpoint")
-            });
-            
+            Utilities.verifyPopup(operator, new String[]{Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action"), Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch"), Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Toggle_breakpoint")});
+
             //tools menu
             //debug is not visible
-            for (int i=0;i < MainWindowOperator.getDefault().getToolbarCount();i++) {
+            for (int i = 0; i < MainWindowOperator.getDefault().getToolbarCount(); i++) {
                 assertFalse("Debug toolbar is visible", MainWindowOperator.getDefault().getToolbarName(i).equals(Utilities.debugToolbarLabel));
             }
             //run
             ContainerOperator tbrop = MainWindowOperator.getDefault().getToolbar(Bundle.getString("org.netbeans.modules.project.ui.Bundle", "Toolbars/Build"));
-            assertTrue("Debug Main Project toolbar action is not enabled", MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name")).isEnabled());
-            //assertTrue(MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Connect")).isEnabled());
-            
+            assertTrue("Debug Main Project toolbar action is not enabled", MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name")).isEnabled());
+
             eo.close();
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
         }
     }
-    
+
     public void testCheckEnabledActionsDebugging() throws Throwable {
         try {
             //open source
@@ -201,63 +184,53 @@ public class Actions extends JellyTestCase {
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
             //check actions
-            
             //main menu actions
             //check main menu debug main project action
-            assertTrue(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.debugMainProjectItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.debugMainProjectItem, true));
             //Step into
-            assertTrue(Utilities.runMenu+"|"+Utilities.stepIntoItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.stepIntoItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepIntoItem, true));
             //new breakpoint
-            assertTrue(Utilities.runMenu+"|"+Utilities.newBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.newBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.newBreakpointItem, true));
             //new watch
-            assertTrue(Utilities.runMenu+"|"+Utilities.newWatchItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.newWatchItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.newWatchItem, true));
             //check finish debugger
-            assertTrue(Utilities.runMenu+"|"+Utilities.finishSessionsItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.finishSessionsItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.finishSessionsItem, true));
             //pause
-            assertFalse(Utilities.runMenu+"|"+Utilities.pauseItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
+            assertFalse(Utilities.runMenu + "|" + Utilities.pauseItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.pauseItem, false));
             //continue
-            assertTrue(Utilities.runMenu+"|"+Utilities.continueItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.continueItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.continueItem, true));
             //step over
-            assertTrue(Utilities.runMenu+"|"+Utilities.stepOverItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.stepOverItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepOverItem, true));
             //step over expression
-            assertTrue(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, true));
             //step out
-            assertTrue(Utilities.runMenu+"|"+Utilities.stepOutItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.stepOutItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.stepOutItem, true));
             //run to cursor
-            assertTrue(Utilities.runMenu+"|"+Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runToCursorItem, true));
             //run into method
-            assertTrue(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runIntoMethodItem, true));
             //apply code changes
-            assertTrue(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, true));
             //toggle breakpoint
-            assertTrue(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, true));
             //evaluate expression
-            assertTrue(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, true));
+            assertTrue(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.evaluateExpressionItem, true));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
-            
+
             //debug toolbar
             ContainerOperator debugToolbarOper = Utilities.getDebugToolbar();
-            assertTrue("Toolbar action Finish is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name")).isEnabled());
-            assertFalse("Toolbar action Pause is not disabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name")).isEnabled());
-            assertTrue("Toolbar action Continue is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name")).isEnabled());
+            assertTrue("Toolbar action Finish is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name")).isEnabled());
+            assertFalse("Toolbar action Pause is not disabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name")).isEnabled());
+            assertTrue("Toolbar action Continue is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name")).isEnabled());
             //step
-            assertTrue("Toolbar action Step ovet is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_over_action_name")).isEnabled());
-            assertTrue("Toolbar action Step over expression is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name")).isEnabled());
-            assertTrue("Toolbar action Step into is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name")).isEnabled());
-            assertTrue("Toolbar action Step out is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_out_action_name")).isEnabled());
+            assertTrue("Toolbar action Step ovet is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_over_action_name")).isEnabled());
+            assertTrue("Toolbar action Step over expression is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name")).isEnabled());
+            assertTrue("Toolbar action Step into is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name")).isEnabled());
+            assertTrue("Toolbar action Step out is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_out_action_name")).isEnabled());
             //run to cursor
-            assertTrue("Toolbar action Run to cursor is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name")).isEnabled());
-            assertTrue("Toolbar action Apply code changes is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Fix_action_name")).isEnabled());
-            
+            assertTrue("Toolbar action Run to cursor is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name")).isEnabled());
+            assertTrue("Toolbar action Apply code changes is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Fix_action_name")).isEnabled());
+
             //remove breakpoint
             Utilities.deleteAllBreakpoints();
             //finish debugging
@@ -269,7 +242,7 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testToggleBreakpoints() throws Throwable {
         try {
             //open source
@@ -285,9 +258,9 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     static int lastLineNumber = 0;
-    
+
     public void testStartDebugging() throws Throwable {
         try {
             //start debugging
@@ -304,7 +277,7 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testRemoveBreakpoint() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
@@ -316,11 +289,11 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testStepInto() throws Throwable {
         try {
             new StepIntoAction().performShortcut();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lastLineNumber+1);
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lastLineNumber + 1);
             //check 80, 92
             EditorOperator eo = new EditorOperator("MemoryView.java");
             assertTrue("CurrentPC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
@@ -330,11 +303,11 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testStepOver() throws Throwable {
         try {
             new StepOverAction().performShortcut();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:93", lastLineNumber+1);
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:93", lastLineNumber + 1);
             //check 80, 82
             EditorOperator eo = new EditorOperator("MemoryView.java");
             assertFalse("CurrentPC annotation remains on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
@@ -344,14 +317,14 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testRunToCursor() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.setCaret(eo, 109);
             //run to cursor
             new RunToCursorAction().perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lastLineNumber+1);
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lastLineNumber + 1);
             //check line
             assertFalse("Current PC annotation remains on line 93", Utilities.checkAnnotation(eo, 93, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
@@ -360,11 +333,11 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testStepOut() throws Throwable {
         try {
             new StepOutAction().performShortcut();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber+1);
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber + 1);
             //check 82, 92
             EditorOperator eo = new EditorOperator("MemoryView.java");
             assertFalse("Current PC annotation remains on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
@@ -374,14 +347,14 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testContinue() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 104, true);
             new ContinueAction().perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber+1);
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
             assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));
             Utilities.toggleBreakpoint(eo, 104, false);
@@ -390,36 +363,35 @@ public class Actions extends JellyTestCase {
             throw th;
         }
     }
-    
+
     public void testStepOverExpression() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber+1);
+
+            new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 105", Utilities.checkAnnotation(eo, 105, "CurrentExpressionLine"));
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber+1);
+            new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 106", Utilities.checkAnnotation(eo, 106, "CurrentExpressionLine"));
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber+1);
+            new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 107", Utilities.checkAnnotation(eo, 107, "CurrentExpressionLine"));
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber+1);
+            new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentExpressionLine"));
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber+1);
+            new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lastLineNumber + 1);
             assertTrue("CurrentExpressionLine annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentExpressionLine"));
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lastLineNumber+1);
+            new Action(Utilities.runMenu + "|" + Utilities.stepOverExpresItem, null).perform();
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lastLineNumber + 1);
             assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
-            
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
         }
     }
-    
+
     public void testPause() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
@@ -427,20 +399,20 @@ public class Actions extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 80);
             //continue
             new ContinueAction().perform();
-            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber+1);
+            lastLineNumber = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:80", lastLineNumber + 1);
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
             //continue
             new ContinueAction().perform();
-            String pausePath = Utilities.runMenu+"|"+Utilities.pauseItem;
+            String pausePath = Utilities.runMenu + "|" + Utilities.pauseItem;
             for (int i = 0; i < 10; i++) {
-                if(MainWindowOperator.getDefault().menuBar().showMenuItem(pausePath).isEnabled()) {
+                if (MainWindowOperator.getDefault().menuBar().showMenuItem(pausePath).isEnabled()) {
                     new Action(pausePath, null).perform();
                 }
                 MainWindowOperator.getDefault().menuBar().closeSubmenus();
                 new EventTool().waitNoEvent(500);
             }
-            Utilities.waitDebuggerConsole("Thread main stopped at ", lastLineNumber+1);
+            Utilities.waitDebuggerConsole("Thread main stopped at ", lastLineNumber + 1);
             eo = new EditorOperator("MemoryView.java");
             boolean found = false;
             for (int i = 79; i < 87; i++) {
