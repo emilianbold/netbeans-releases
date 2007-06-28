@@ -40,19 +40,19 @@ import org.openide.filesystems.FileUtil;
  */
 public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {                        
     
-    private Map<File, Charset> charsetToFile;
+    private Map<File, Charset> fileToCharset;
         
     public Charset getEncoding(FileObject fo) {   
         try {
-            if(charsetToFile == null || charsetToFile.isEmpty() || fo == null || fo.isFolder()) {
+            if(fileToCharset == null || fileToCharset.isEmpty() || fo == null || fo.isFolder()) {
                 return null;
             }       
             File file = FileUtil.toFile(fo);            
             if(file == null) {
                 return null;
             }
-            synchronized(charsetToFile) {
-                return charsetToFile.get(file);
+            synchronized(fileToCharset) {
+                return fileToCharset.get(file);
             }
         } catch (Throwable t) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
@@ -78,12 +78,12 @@ public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {
         if(c == null) {
             return;
         }
-        if(charsetToFile == null) {
-            charsetToFile = new WeakHashMap<File, Charset>();
+        if(fileToCharset == null) {
+            fileToCharset = new WeakHashMap<File, Charset>();
         }        
-        synchronized(charsetToFile) {
+        synchronized(fileToCharset) {
             for(File file : files) {
-                charsetToFile.put(file, c);    
+                fileToCharset.put(file, c);    
             }            
         }
     }   
@@ -94,12 +94,12 @@ public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {
      * @param files the files which have to be deregistered
      */ 
     void resetEncodingForFiles(List<File> files) {        
-        if(charsetToFile == null || files == null || files.size() == 0) {
+        if(fileToCharset == null || files == null || files.size() == 0) {
             return;
-        }       
-        synchronized(charsetToFile) {
+        }
+        synchronized(fileToCharset) {
             for(File file : files) {
-                charsetToFile.remove(file);
+                fileToCharset.remove(file);
             }
         }
     }
