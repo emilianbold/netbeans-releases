@@ -193,50 +193,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages/>
-            <class-path-extension>
-                <runtime-relative-path>ext/j2me_sg_ri.jar</runtime-relative-path>
-                <binary-origin>lib/j2me_sg_ri.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxrpc-api.jar</runtime-relative-path>
-                <binary-origin>lib/jaxrpc-api.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxrpc-spi.jar</runtime-relative-path>
-                <binary-origin>lib/jaxrpc-spi.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxrpc-impl.jar</runtime-relative-path>
-                <binary-origin>lib/jaxrpc-impl.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/schema2beansdev.jar</runtime-relative-path>
-                <binary-origin>lib/schema2beansdev.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/saaj-api.jar</runtime-relative-path>
-                <binary-origin>lib/saaj-api.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/saaj-impl.jar</runtime-relative-path>
-                <binary-origin>lib/saaj-impl.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/activation.jar</runtime-relative-path>
-                <binary-origin>lib/activation.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/mail.jar</runtime-relative-path>
-                <binary-origin>lib/mail.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/xsdlib.jar</runtime-relative-path>
-                <binary-origin>lib/xsdlib.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/xml-helper.jar</runtime-relative-path>
-                <binary-origin>lib/xml-helper.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>
