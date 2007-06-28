@@ -71,7 +71,7 @@ public class MimePathTest extends NbTestCase {
     public void testMimeTypeCorrectnessCheck() {
         String [] valid = new String [] {
             "text/plain",
-            "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$&.+-^_/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$&.+-^_"
+            "application/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$&.+-^_"
         };
         String [] invalid = new String [] {
             "/",
@@ -80,6 +80,7 @@ public class MimePathTest extends NbTestCase {
             "text@aaa",
             "text/aaa/bb",
             "text/ aaa",
+            "FontsColors/Make It Fun",
         };
 
         // Check an empty mime type.

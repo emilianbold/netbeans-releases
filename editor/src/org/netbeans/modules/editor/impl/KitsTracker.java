@@ -35,7 +35,7 @@ import org.openide.filesystems.Repository;
 public final class KitsTracker {
         
     private static final Logger LOG = Logger.getLogger(KitsTracker.class.getName());
-    private static final Set ALREADY_LOGGED = Collections.synchronizedSet(new HashSet(10));
+    private static final Set<String> ALREADY_LOGGED = Collections.synchronizedSet(new HashSet<String>(10));
     
     private static KitsTracker instance = null;
     
@@ -142,16 +142,19 @@ public final class KitsTracker {
     private boolean needsReloading = true;
 
     private final FileChangeListener fcl = new FileChangeAdapter() {
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             invalidateCache();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             if (fe.getFile().isFolder()) {
                 invalidateCache();
             }
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             if (fe.getFile().isFolder()) {
                 invalidateCache();
@@ -180,20 +183,20 @@ public final class KitsTracker {
             // Go through mime type types
             FileObject [] types = fo.getChildren();
             for(int i = 0; i < types.length; i++) {
-                if (!types[i].isFolder()) {
+                if (!isValidType(types[i])) {
                     continue;
                 }
 
                 // Go through mime type subtypes
                 FileObject [] subTypes = types[i].getChildren();
                 for(int j = 0; j < subTypes.length; j++) {
-                    if (!subTypes[j].isFolder()) {
+                    if (!isValidSubtype(subTypes[j])) {
                         continue;
                     }
 
                     String mimeType = types[i].getNameExt() + "/" + subTypes[j].getNameExt(); //NOI18N
                     MimePath mimePath = MimePath.parse(mimeType);
-                    EditorKit kit = (EditorKit) MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+                    EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
 
                     if (kit != null) {
                         String genericMimeType;
@@ -242,6 +245,24 @@ public final class KitsTracker {
             return null;
         }
     }
+    
+    private static boolean isValidType(FileObject typeFile) {
+        if (!typeFile.isFolder()) {
+            return false;
+        }
+
+        String typeName = typeFile.getNameExt();
+        return MimePath.validate(typeName, null);
+    }
+
+    private static boolean isValidSubtype(FileObject subtypeFile) {
+        if (!subtypeFile.isFolder()) {
+            return false;
+        }
+
+        String typeName = subtypeFile.getNameExt();
+        return MimePath.validate(null, typeName);
+    }        
     
     private static void logOnce(Level level, String msg) {
         if (!ALREADY_LOGGED.contains(msg)) {

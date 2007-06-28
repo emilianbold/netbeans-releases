@@ -22,16 +22,13 @@ package org.netbeans.modules.editor.settings.storage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -58,21 +55,6 @@ import org.openide.util.WeakListeners;
 public final class MimeTypesTracker {
         
     private static final Logger LOG = Logger.getLogger(MimeTypesTracker.class.getName());
-
-    private static final Pattern REG_NAME_PATTERN = Pattern.compile("^[[\\p{Alnum}][!#$&.+\\-^_]]{1,127}$"); //NOI18N
-    
-    private static final Set<String> WELL_KNOWN_TYPES = new HashSet<String>(Arrays.asList(
-        "application", //NOI18N
-        "audio", //NOI18N
-        "image", //NOI18N
-        "message", //NOI18N
-        "model", //NOI18N
-        "multipart", //NOI18N
-        "text", //NOI18N
-        "video" //NOI18N
-    ));
-    
-    private static final String ATTR_MIME_TYPE_FOLDER_MARKER = "org-netbeans-editor-MimeTypeDefinition"; //NOI18N
 
     /** The property for notifying changes in mime types tracked by this tracker. */
     public static final String PROP_MIME_TYPES = "mime-types"; //NOI18N
@@ -251,22 +233,7 @@ public final class MimeTypesTracker {
         }
 
         String typeName = typeFile.getNameExt();
-
-        if (!isValidRegName(typeName)) {
-            return false;
-        }
-        
-        if (WELL_KNOWN_TYPES.contains(typeName)) {
-            return true;
-        }
-
-        // XXX: undocumented backdoor
-        Object marker = typeFile.getAttribute(ATTR_MIME_TYPE_FOLDER_MARKER);
-        if ((marker instanceof Boolean) && ((Boolean) marker).booleanValue()) {
-            return true;
-        }
-        
-        return false;
+        return MimePath.validate(typeName, null);
     }
 
     private static boolean isValidSubtype(FileObject subtypeFile) {
@@ -275,14 +242,9 @@ public final class MimeTypesTracker {
         }
 
         String typeName = subtypeFile.getNameExt();
-        return isValidRegName(typeName) && !typeName.equals("base"); //NOI18N
+        return MimePath.validate(null, typeName) && !typeName.equals("base"); //NOI18N
     }        
     
-    private static boolean isValidRegName(String name) {
-        Matcher m = REG_NAME_PATTERN.matcher(name);
-        return m.matches();
-    }
-
     private static Object [] findTarget(String [] path) {
         FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
         boolean isTarget = 0 == path.length;
@@ -306,14 +268,17 @@ public final class MimeTypesTracker {
         public Listener() {
         }
         
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             notifyRebuild(fe.getFile());
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             notifyRebuild(fe.getFile());
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             notifyRebuild(fe.getFile());
         }
