@@ -141,7 +141,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.java.JavaKit"/>
                 </file>
-                <file name="org-netbeans-modules-editor-java-JavaBracesMatcher.instance"/>
+
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-editor-java-JavaBracesMatcher.instance"/>
+                </folder>
                 
                 <folder name="Popup">
                     <folder name="goto">

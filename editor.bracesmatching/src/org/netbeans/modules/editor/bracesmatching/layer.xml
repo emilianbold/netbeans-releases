@@ -40,13 +40,15 @@ Microsystems, Inc. All Rights Reserved.
 
         <file name="org-netbeans-modules-editor-bracesmatching-BracesMatchHighlighting$Factory.instance"/>
         
-        <file name="org-netbeans-modules-editor-bracesmatching-LegacyEssMatcher.instance">
-            <attr name="position" intvalue="100"/>
-        </file>
-        <file name="org-netbeans-modules-editor-bracesmatching-DefaultMatcher.instance">
-            <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory"/>
-            <attr name="instanceCreate" methodvalue="org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport.defaultMatcherFactory"/>
-            <attr name="position" intvalue="200"/>
-        </file>
+        <folder name="BracesMatchers">
+            <file name="org-netbeans-modules-editor-bracesmatching-LegacyEssMatcher.instance">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="org-netbeans-modules-editor-bracesmatching-DefaultMatcher.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport.defaultMatcherFactory"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
     </folder>
 </filesystem>
