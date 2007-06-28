@@ -48,6 +48,9 @@ import java.awt.Point;
 import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.ErrorManager;
 
 /**
  * Utilities class.
@@ -595,6 +598,59 @@ public final class Utils {
         ces.view();
     }
 
+    private static Map<File, Charset> fileToCharset;
+    
+    /**
+     * Retrieves the Charset for the referenceFile and associates it weakly with
+     * the given file. A following getAssociatedEncoding() call for 
+     * the file will then return the referenceFile-s Charset.      
+     * 
+     * @param referrenceFile the file which charset has to be used when encoding file
+     * @param file file to be encoded with the referenceFile-s charset 
+     * 
+     */
+    public static void associateEncoding(File referenceFile, File file) {
+        FileObject fo = FileUtil.toFileObject(referenceFile);
+        if(fo == null || fo.isFolder()) {
+            return;
+        }
+        Charset c = FileEncodingQuery.getEncoding(fo);        
+        if(c == null) {
+            return;
+        }
+        if(fileToCharset == null) {
+            fileToCharset = new WeakHashMap<File, Charset>();
+        }        
+        synchronized(fileToCharset) {
+            fileToCharset.put(file, c);
+        }
+    }   
+    
+    /**
+     * Returns a charset for the given file if it was previously registered via associateEncoding()
+     * 
+     * @param fo file for which the encoding has to be retrieved
+     * @return the charset the given file has to be encoded with
+     */ 
+    public static Charset getAssociatedEncoding(FileObject fo) {
+        try {
+            if(fileToCharset == null || fileToCharset.isEmpty() || fo == null || fo.isFolder()) {
+                return null;
+            }       
+            File file = FileUtil.toFile(fo);            
+            if(file == null) {
+                return null;
+            }
+            synchronized(fileToCharset) {
+                return fileToCharset.get(file);
+            }
+        } catch (Throwable t) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            return  null;
+        }        
+    }
+    
+    
     private static class ViewEnv implements CloneableEditorSupport.Env {
         
         private final FileObject    file;
