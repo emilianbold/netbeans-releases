@@ -27,8 +27,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSerializationController;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.categories.*;
-import org.netbeans.modules.vmd.midp.components.general.RootCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 
@@ -73,17 +71,7 @@ public class MidpCustomDocumentSerializationController extends DocumentSerializa
         }
     }
 
-    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument) {
-        DesignComponent rootComponent = loadingDocument.getRootComponent ();
-        if (rootComponent == null) {
-            rootComponent = loadingDocument.createComponent (RootCD.TYPEID);
-            loadingDocument.setRootComponent (rootComponent);
-        }
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, CommandsCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, ControllersCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, DisplayablesCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, PointsCategoryCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (loadingDocument, ResourcesCategoryCD.TYPEID);
+    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion) {
     }
 
 }

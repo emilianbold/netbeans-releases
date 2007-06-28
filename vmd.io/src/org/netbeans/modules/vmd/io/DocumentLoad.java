@@ -109,7 +109,7 @@ public class DocumentLoad {
             public void run () {
                 loadDocumentCore (context, loadingDocument, documentVersion, hierarchy);
                 for (DocumentSerializationController controller : getDocumentSerializationControllers ())
-                    controller.postValidateDocument (context, loadingDocument);
+                    controller.postValidateDocument (context, loadingDocument, documentVersion);
             }
         });
     }

@@ -34,6 +34,6 @@ public abstract class DocumentSerializationController {
 
     public abstract void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements);
 
-    public abstract void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument);
+    public abstract void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion);
 
 }

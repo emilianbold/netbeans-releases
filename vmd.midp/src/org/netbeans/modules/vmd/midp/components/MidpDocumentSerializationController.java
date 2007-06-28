@@ -26,6 +26,8 @@ import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midp.components.general.RootCD;
+import org.netbeans.modules.vmd.midp.components.categories.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +60,19 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         }
     }
 
-    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument) {
+    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
+            return;
+        DesignComponent rootComponent = loadingDocument.getRootComponent ();
+        if (rootComponent == null) {
+            rootComponent = loadingDocument.createComponent (RootCD.TYPEID);
+            loadingDocument.setRootComponent (rootComponent);
+        }
+        MidpDocumentSupport.getCategoryComponent (loadingDocument, CommandsCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent (loadingDocument, ControllersCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent (loadingDocument, DisplayablesCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent (loadingDocument, PointsCategoryCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent (loadingDocument, ResourcesCategoryCD.TYPEID);
     }
 
 }
