@@ -253,7 +253,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         document.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
                 ArrayList<DesignComponent> selection = new ArrayList<DesignComponent> ();
-                for (Object object : suggestedSelectedObjects) {
+                for (Object object : getSelectedObjects ()) {
                     DesignComponent component = object instanceof FlowDescriptor ? ((FlowDescriptor) object).getRepresentedComponent () : null;
                     if (component != null)
                         selection.add (component);
