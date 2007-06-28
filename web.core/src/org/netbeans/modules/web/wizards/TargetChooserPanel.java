@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,9 +21,12 @@ package org.netbeans.modules.web.wizards;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -227,7 +230,11 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             File f = new File(gui.getCreatedFilePath());
             File ff = new File(f.getParentFile().getPath());
             if ( !ff.exists() ) {
-                ff.mkdir();
+                try {
+                    FileUtil.createFolder(ff);
+                } catch (IOException exc) {
+                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                }
             }
             FileObject folder = FileUtil.toFileObject(ff);                
 
