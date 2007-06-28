@@ -181,8 +181,8 @@ public class JavaClassUtils {
                             parent = parent.getOwner()) {
                 if(!(parent instanceof IModel))
                 {
-                    if (parent instanceof IClass) {
-                        IClass p = (IClass)  parent;
+                    if (parent instanceof IClassifier) {
+                        IClassifier p = (IClassifier)  parent;
                         name.insert(0, '$');
                         name.insert(0, p.getName());
                     } else if (parent instanceof IPackage
