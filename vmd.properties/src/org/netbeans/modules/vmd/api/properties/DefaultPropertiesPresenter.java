@@ -28,7 +28,6 @@ import org.netbeans.modules.vmd.properties.DefaultDesignerPropertyDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  *
  * @author Karol Harezlak
@@ -53,86 +52,37 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         this.designEventFilterResolver = designEventFilterResolver;
     }
     
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  boolean editorEditableOnly,
-                                                  DesignPropertyEditor propertyEditor,
-                                                  String... propertyNames) {
-        
-        if (propertyEditor == null)
-            throw new IllegalArgumentException(); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category,
-            propertyEditor, propertyEditor.getClass(), propertyNames));
-        
-        return this;
-    }
-    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  DesignPropertyEditor propertyEditor,
-                                                  String... propertyNames) {
-        
+    public DefaultPropertiesPresenter addProperty(String displayName, String toolTip, DesignPropertyEditor propertyEditor, String... propertyNames) {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
-        
         descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, propertyEditor, propertyEditor.getClass(), propertyNames));
-        
         return this;
     }
    
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  DesignPropertyEditor propertyEditor,
-                                                  String... propertyNames) {
+    public DefaultPropertiesPresenter addProperty(String displayName, DesignPropertyEditor propertyEditor, String... propertyNames) {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), propertyNames));
-        
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), propertyNames));    
         return this;
     }
     
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  String toolTip,
-                                                  DesignPropertyEditor propertyEditor) {
+    public DefaultPropertiesPresenter addProperty(String displayName, String toolTip, DesignPropertyEditor propertyEditor) {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
-        
         descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass()));
-        
         return this;
     }
+    
     @Deprecated
-    public DefaultPropertiesPresenter addProperty(String displayName,
-                                                  Class propertyEditorType,
-                                                  String... propertyNames) {
-        
+    public DefaultPropertiesPresenter addProperty(String displayName, Class propertyEditorType, String... propertyNames) {
         if (propertyEditorType == null)
             throw new IllegalArgumentException(NULL_EDITOR); 
-        
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category,
-            null, propertyEditorType, propertyNames));
-        
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, null, propertyEditorType, propertyNames));
         return this;
     }
     
     public DefaultPropertiesPresenter addProperty(DesignPropertyDescriptor designerPropertyDescriptor) {
         descriptors.add(designerPropertyDescriptor);
-        return this;
-    }
-    
-    @Deprecated
-    public DefaultPropertiesPresenter removeProperty(String name) {
-        if ( name == null || name.trim().length() == 0)
-            throw new IllegalArgumentException("Name of removing property cant be null"); //NOI18N
-        
-        for (DesignPropertyDescriptor designerPropertyDescriptor : descriptors) {
-            if (designerPropertyDescriptor.getPropertyNames().equals(name)) {
-                descriptors.remove(designerPropertyDescriptor);
-                return this;
-            }
-        }
-        
         return this;
     }
     
@@ -142,7 +92,6 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         this.category = propertyCategory;
         if (!categories.contains(propertyCategory))
             categories.add(propertyCategory);
-        
         return this;
     }
     
@@ -158,9 +107,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         for (DesignPropertyDescriptor designerPropertyDescriptor : getDesignPropertyDescriptors()) {
             if (designerPropertyDescriptor.getPropertyEditor() != null) 
                 designerPropertyDescriptor.getPropertyEditor().init(component);
-
             designerPropertyDescriptor.init(component);
-        
         }
     }
     
@@ -170,7 +117,6 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     protected DesignEventFilter getEventFilter() {
         if (designEventFilterResolver != null) 
             return designEventFilterResolver.getEventFilter(getComponent());
-        
         return null;
     }
     
