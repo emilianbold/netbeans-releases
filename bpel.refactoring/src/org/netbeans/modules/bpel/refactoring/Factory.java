@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.refactoring;
 
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -42,6 +43,9 @@ public final class Factory implements RefactoringPluginFactory {
     if (refactoring instanceof SafeDeleteRefactoring) {
       // do nothing
       return null;
+    }
+    if (refactoring instanceof MoveRefactoring ){
+        return new Mover((MoveRefactoring)refactoring);
     }
     return null;
   }

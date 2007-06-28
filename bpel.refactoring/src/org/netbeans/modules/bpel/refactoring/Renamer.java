@@ -88,7 +88,7 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
-final class Renamer extends Plugin implements XMLRefactoringPlugin {
+final class Renamer extends Plugin {
     
   Renamer(RenameRefactoring refactoring) {
     myRequest = refactoring;
