@@ -37,7 +37,7 @@ import java.util.Hashtable;
  */
 public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase {
     
-    protected static final String warmup = "Warmup running ";
+    protected static final String warmup = "Warmup task executed ";
     protected static final String warmup_started = "Warmup started";
     protected static final String warmup_finished = "Warmup finished, took ";
     

@@ -40,8 +40,8 @@ import org.openide.util.RequestProcessor;
 
 class WarmUpSupport implements Runnable {
 
-    static final String WARMUP_FOLDER = "WarmUp"; // NOI18N
-    static final int WARMUP_DELAY = 1500; // 1.5 sec after main window is shown
+    private static final String WARMUP_FOLDER = "WarmUp"; // NOI18N
+    private static final int WARMUP_DELAY = 1500; // 1.5 sec after main window is shown
     
     static boolean finished = false;    // usefull for testability
 
@@ -65,29 +65,25 @@ class WarmUpSupport implements Runnable {
         DataObject[] warmObjects =
             fo != null ? DataFolder.findFolder(fo).getChildren() : new DataObject[0];
 
-        if (warmObjects.length == 0) {
-            if (willLog) {
-                err.fine("no warmp up task"); // NOI18N
-            }
+        if (willLog) {
+            err.log(Level.FINE, "Found {0} warm up task(s)", warmObjects.length); // NOI18N
         }
-        else {
-            for (int i = 0; i < warmObjects.length; i++) {
-                try {
-                    InstanceCookie ic = (InstanceCookie) warmObjects[i].getCookie(InstanceCookie.class);
 
-                    if (willLog) {
-                        StartLog.logProgress("Warmup running " +
-                                             ic.instanceName());
-                    }
-                    Object warmer = ic.instanceCreate();
+        for (int i = 0; i < warmObjects.length; i++) {
+            try {
+                InstanceCookie ic = warmObjects[i].getCookie(InstanceCookie.class);
+                Object warmer = ic.instanceCreate();
 
-                    if (warmer instanceof Runnable) {
-                        ((Runnable) warmer).run();
-                    }
+                if (warmer instanceof Runnable) {
+                    ((Runnable) warmer).run();
                 }
-                catch (Exception ex) {
-                    Logger.getLogger(WarmUpSupport.class.getName()).log(Level.WARNING, null, ex);
+                if (willLog) {
+                    StartLog.logProgress("Warmup task executed " + // NOI18N
+                                         ic.instanceName());
                 }
+            }
+            catch (Exception ex) {
+                Logger.getLogger(WarmUpSupport.class.getName()).log(Level.WARNING, null, ex);
             }
         }
         if (willLog){
