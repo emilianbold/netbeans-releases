@@ -49,21 +49,45 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </folder>
         </folder>
     </folder>
+    
     <folder name="UML">
         <folder name="UMLOptions">
             <folder name="Panels">
-            <file name="DomainTemplatesOptionsPanel.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.codegen.ui.DomainTemplatesOptionsPanel"/>
-            </file>
+                <file name="DomainTemplatesOptionsPanel.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.codegen.ui.DomainTemplatesOptionsPanel"/>
+                </file>
             </folder>
         </folder>
     </folder>
+    
     <folder name="Projects">
         <folder name="org-netbeans-modules-uml-project">
             <folder name="Customizer">
                 <file name="Templates.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.codegen.ui.customizer.ProjectTemplatesCustomizer.createTemplates"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Actions">
+        <folder name="UML">
+            <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance">
+                <attr name="instanceClass" stringvalue="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="contextmenu">
+        <folder name="uml">
+            <folder name="generate">
+                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+            </folder>
+            <folder name="element">
+                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
+            </folder>
+            <folder name="diagram">
+                <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance"/>
             </folder>
         </folder>
     </folder>

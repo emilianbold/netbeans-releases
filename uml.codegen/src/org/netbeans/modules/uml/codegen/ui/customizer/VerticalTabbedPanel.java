@@ -57,8 +57,8 @@ public class VerticalTabbedPanel extends TabbedPanel
         final JLabel label = new JLabel(
             name,
             isExpanded(index) 
-                ? (Icon)UIManager.get ("Tree.expandedIcon") // NOI18N
-                : (Icon)UIManager.get ("Tree.collapsedIcon"), // NOI18N
+                ? (Icon)UIManager.get("Tree.expandedIcon") // NOI18N
+                : (Icon)UIManager.get("Tree.collapsedIcon"), // NOI18N
             JLabel.LEFT
         );
         
@@ -121,7 +121,7 @@ public class VerticalTabbedPanel extends TabbedPanel
                 return;
             
             JLabel l = (JLabel)e.getSource();
-            int i = ((Integer)l.getClientProperty("index")).intValue();
+            int i = ((Integer)l.getClientProperty("index")).intValue(); // NOI18N
             
             if (i == getSelectedIndex())
             {

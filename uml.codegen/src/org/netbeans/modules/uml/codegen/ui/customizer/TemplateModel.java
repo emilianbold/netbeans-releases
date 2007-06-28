@@ -1,5 +1,25 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 package org.netbeans.modules.uml.codegen.ui.customizer;
 
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -24,14 +44,10 @@ public class TemplateModel extends TabbedPanelModel
     private UMLProjectProperties umlProjectProperties = null;
     private List<String> checkedTree = null;
     
-    public TemplateModel()
-    {
-        
-    }
-    
     public TemplateModel(UMLProjectProperties umlPrjProps)
     {
         setUMLProjectProperties(umlPrjProps);
+        propertyChangeSupport = new PropertyChangeSupport(this);
     }
     
     public List<String> getCategories()
@@ -49,7 +65,7 @@ public class TemplateModel extends TabbedPanelModel
 
     public String getToolTip(String category)
     {
-        return "";
+        return ""; // NOI18N
     }
 
     public JComponent getPanel(String category)
@@ -125,10 +141,36 @@ public class TemplateModel extends TabbedPanelModel
                 JCheckBox checkBox = (JCheckBox)evt.getSource();
                 
                 updateCheckedValue(
-                    checkBox.getClientProperty("familyName").toString(), 
+                    checkBox.getClientProperty("familyName").toString(), // NOI18N
                     checkBox.getText(), 
                     checkBox.isSelected());
+                
+                getPropertyChangeSupport().firePropertyChange(
+                    PROP_TEMPLATE_STATE_CHANGE, null, evt);
+                
+                if (checkBox.isSelected() && checkedTree.size() == 1)
+                {
+                    getPropertyChangeSupport().firePropertyChange(
+                        PROP_ONE_TEMPLATE_ENABLED, null, evt);
+                }
+                
+                else if (!checkBox.isSelected() && checkedTree.size() == 0)
+                {
+                    getPropertyChangeSupport().firePropertyChange(
+                        PROP_NO_TEMPLATES_ENABLED, null, evt);
+                }
             }
         });
     }    
+    
+    public final static String PROP_TEMPLATE_STATE_CHANGE = "TEMPLATE_STATE_CHANGE"; // NOI18N
+    public final static String PROP_NO_TEMPLATES_ENABLED = "NO_TEMPLATES_ENABLED"; // NOI18N
+    public final static String PROP_ONE_TEMPLATE_ENABLED = "ONE_TEMPLATE_ENABLED"; // NOI18N
+
+    private PropertyChangeSupport propertyChangeSupport = null;
+    
+    public PropertyChangeSupport getPropertyChangeSupport()
+    {
+        return propertyChangeSupport;
+    }
 }

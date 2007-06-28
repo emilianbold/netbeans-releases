@@ -1,4 +1,3 @@
-
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -47,7 +46,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import org.netbeans.modules.uml.common.generics.ETPairT;
 
 
 /**
@@ -69,7 +67,7 @@ public class TabbedPanel extends JPanel
     
     private TabbedPanelModel model;
     private int selectedIndex = -1;
-    private Set<Integer> selectedIndexes = new HashSet<Integer> ();
+    private Set<Integer> selectedIndexes = new HashSet<Integer>();
     private int expansionPolicy;
     private boolean fill;
     private JComponent selectedComponent;
@@ -143,8 +141,12 @@ public class TabbedPanel extends JPanel
     public String getSelectedCategory()
     {
         int i = getSelectedIndex();
-        if (i < 0) return null;
-        return (String) model.getCategories().get(i);
+        
+        if (i < 0)
+            return null;
+        
+        return 
+            (String)model.getCategories().get(i);
     }
     
     public void addActionListener(ActionListener listener)
@@ -159,8 +161,8 @@ public class TabbedPanel extends JPanel
     
     protected void fireActionPerformed(ActionEvent event)
     {
-        Vector l = (Vector) listeners.clone();
-        Iterator it = l.iterator();
+        Vector vector = (Vector) listeners.clone();
+        Iterator it = vector.iterator();
         
         while (it.hasNext())
             ((ActionListener) it.next()).actionPerformed(event);

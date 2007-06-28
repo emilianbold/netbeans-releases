@@ -9,7 +9,6 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reintegration;
 
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.util.ITaskFinishListener;
 import org.openide.util.NbBundle;
 
@@ -22,7 +21,7 @@ import org.netbeans.modules.uml.util.AbstractNBTask;
 
 /**
  *
- * @author IBM USER
+ * @author Craig Conover, craig.conover@sun.com
  */
 public class ReverseEngineerTask extends AbstractNBTask
 {

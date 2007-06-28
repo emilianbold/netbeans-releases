@@ -29,9 +29,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.netbeans.actions.ReverseEngineerAction"/>
             </file>
+            <!--
             <file name="org-netbeans-modules-uml-integration-ide-codegen-ExportCodeAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.netbeans.actions.ExportCodeAction"/>
             </file>
+            -->
             <file name="org-netbeans-modules-uml-integration-ide-actions-CreateDiagramFromSelectedElementsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.CreateDiagramFromSelectedElementsAction"/>
             </file>
@@ -122,17 +124,19 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <!-- context menu -->
     <folder name="contextmenu">
         <folder name="uml">
+            <!--
 	    <folder name="generate">
                 <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
 	    </folder>
+            -->
             <folder name="element">
-                <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
+                <!-- file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/ -->
                 <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance"/>
                 <file name="org-netbeans-modules-uml-integration-ide-actions-CreateDiagramFromSelectedElementsAction.instance"/>
                 <file name="org-netbeans-modules-uml-integration-ide-actions-DependencyDiagramAction.instance"/>
             </folder>
             <folder name="diagram">
-                <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
+                <!-- file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/ -->
                 <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance"/>
                 <file name="org-netbeans-modules-uml-integration-ide-actions-DependencyDiagramAction.instance"/>
             </folder>

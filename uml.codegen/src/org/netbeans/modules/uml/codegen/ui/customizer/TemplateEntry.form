@@ -21,21 +21,21 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="templateNameCheckBox" pref="343" max="32767" attributes="0"/>
+                      <Component id="templateNameCheckBox" pref="371" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="descContainer" alignment="0" pref="312" max="32767" attributes="0"/>
+                          <Component id="descContainer" alignment="0" pref="340" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="elementTypeLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="elementTypeValue" pref="79" max="32767" attributes="0"/>
+                              <Component id="elementTypeValue" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+                              <Component id="stereotypeLabel" min="-2" pref="53" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="stereotypeLabel" min="-2" pref="57" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="stereotypeValue" min="-2" pref="93" max="-2" attributes="0"/>
+                              <Component id="stereotypeValue" pref="121" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -78,7 +78,7 @@
           <Font name="Tahoma" size="10" style="2"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/model/Bundle.properties" key="LBL_ElementType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/Bundle.properties" key="LBL_ElementType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -96,7 +96,7 @@
           <Font name="Tahoma" size="10" style="2"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/model/Bundle.properties" key="LBL_Stereotype" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/Bundle.properties" key="LBL_Stereotype" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -106,7 +106,7 @@
           <Font name="Tahoma" size="10" style="2"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/model/Bundle.properties" key="LBL_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/Bundle.properties" key="LBL_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
