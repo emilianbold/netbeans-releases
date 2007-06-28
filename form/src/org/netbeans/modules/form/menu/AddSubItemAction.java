@@ -165,7 +165,7 @@ public class AddSubItemAction extends NodeAction {
                             if(JMenuBar.class.isAssignableFrom(paletteItem.getComponentClass())) continue;
                             if(JPopupMenu.class.isAssignableFrom(paletteItem.getComponentClass())) continue;
                             
-                            JMenuItem menuitem = new JMenuItem(paletteItem.getComponentClass().getSimpleName());
+                            JMenuItem menuitem = new JMenuItem(paletteItem.getNode().getDisplayName());
                             menuitem.addActionListener(new AddListener(paletteItem.getComponentClass()));
                             menu.add(menuitem);
                         }
