@@ -371,14 +371,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                         props.setProperty(reference, path);
                         helper.putProperties(propertiesFile, props);
                     }
-                    
-                    // #47541 - check that property is not defined in opposite
-                    props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (props.containsKey(reference)) {
-                        props.remove(reference);
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                    }
-                    
+                                        
                     if (proj != null) {
                         try {
                             ProjectManager.getDefault().saveProject(proj);
