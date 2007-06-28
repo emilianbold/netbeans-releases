@@ -137,10 +137,6 @@ public class TMapLogicalPanel extends JPanel
     }
     
     private void showNavTree(){
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-        }
         final BeanTreeView beanTree = getBeanTreeView();
         if (beanTree == null) {
             return;
