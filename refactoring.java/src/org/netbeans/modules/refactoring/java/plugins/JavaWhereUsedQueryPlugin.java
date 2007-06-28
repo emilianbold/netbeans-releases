@@ -62,6 +62,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    public Problem preCheck() {
+        if (!treePathHandle.getFileObject().isValid()) {
+            return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
+        }
+        return null;
+    }
     protected Problem preCheck(CompilationController info) {
 //        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
 //        if (p != null)
