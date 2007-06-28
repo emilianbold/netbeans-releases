@@ -39,8 +39,6 @@
                 <attr name="template" boolvalue="true"/>
             </file>
 
-            
-
             <file name="VisualDesign.java" url="templates/emptyvisualdesign_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="position" intvalue="500"/>
@@ -56,13 +54,28 @@
                 <attr name="template" boolvalue="true"/>
             </file>
 
+            <file name="HelloMIDlet.java" url="templates/hellovisualmidlet_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
+                <attr name="position" intvalue="700"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/hellovisualmidlet.html"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
+                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+		<attr name="hidden" boolvalue="true"/>
+            </file>
+            <file name="HelloMIDlet.vmd" url="templates/hellovisualmidlet_vmd.template">
+                <attr name="template" boolvalue="true"/>
+            </file>
+
         </folder>
     </folder>
 
     <folder name="vmd-midp">
 
         <folder name="components">
-            
             
             <file name="org-netbeans-modules-vmd-midp-components-general-RootCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-general-ClassCD.instance"/>

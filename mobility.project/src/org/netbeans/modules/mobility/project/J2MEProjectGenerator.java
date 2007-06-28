@@ -222,7 +222,7 @@ public class J2MEProjectGenerator {
                         hello = src;
                     final DataFolder helloFolder = DataFolder.findFolder(hello);
                     final FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-                    FileObject foTemplate = dfs.findResource("Templates/MIDP/HelloMidlet.java"); //NOI18N
+                    FileObject foTemplate = dfs.findResource("Templates/MIDP/HelloMIDlet.java"); //NOI18N
                     if (foTemplate == null) foTemplate = dfs.findResource("Templates/MIDP/Midlet.java"); //NOI18N
                     try {
                         if (foTemplate != null) {
