@@ -29,7 +29,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.api.DiffElement;
+import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
