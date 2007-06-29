@@ -28,6 +28,7 @@ import org.netbeans.api.visual.anchor.PointShape;
 import org.openide.util.Utilities;
 
 import java.awt.*;
+import org.netbeans.api.visual.anchor.PointShapeFactory;
 
 /**
  * @author David Kaspar
@@ -39,39 +40,15 @@ public class PFENotModifiableScheme extends VMDColorScheme {
     public static final Color COLOR60_HOVER_BACKGROUND = new Color (0xB0C3E1);
     public static final Color COLOR_NORMAL =  new Color(230,230,230);
 
-    private static final Border BORDER60 = VMDFactory.createVMDNodeBorder (PFEOriginalColorScheme.COLOR_NORMAL, 2, PFEOriginalColorScheme.COLOR1, PFEOriginalColorScheme.COLOR2, PFEOriginalColorScheme.COLOR3, PFEOriginalColorScheme.COLOR4, PFEOriginalColorScheme.COLOR5);
-    private static final Border BORDER60_SELECT = VMDFactory.createVMDNodeBorder (COLOR60_SELECT, 2, PFEOriginalColorScheme.COLOR1, PFEOriginalColorScheme.COLOR2, PFEOriginalColorScheme.COLOR3, PFEOriginalColorScheme.COLOR4, PFEOriginalColorScheme.COLOR5);
-    private static final Border BORDER60_HOVER = VMDFactory.createVMDNodeBorder (COLOR60_HOVER, 2, PFEOriginalColorScheme.COLOR1, PFEOriginalColorScheme.COLOR2, PFEOriginalColorScheme.COLOR3, PFEOriginalColorScheme.COLOR4, PFEOriginalColorScheme.COLOR5);
-
+    public static final Color COLOR_HIGHLIGHTED = new Color (0x316AC5);
     private static final Border BORDER60_PIN_SELECT = BorderFactory.createCompositeBorder (BorderFactory.createLineBorder (0, 1, 0, 1, COLOR60_SELECT), BorderFactory.createLineBorder (2, 7, 2, 7, COLOR60_SELECT));
 //        private static final Border BORDER60_PIN_HOVER = BorderFactory.createLineBorder (2, 8, 2, 8, COLOR60_HOVER);
 
     public void installUI (VMDNodeWidget widget) {
-        widget.setBorder (BORDER60);
-
-        Widget header = widget.getHeader ();
-        header.setBackground (COLOR60_HOVER_BACKGROUND);
-        header.setBorder (PFEOriginalColorScheme.BORDER_PIN);
-
-        Widget pinsSeparator = widget.getPinsSeparator ();
-        pinsSeparator.setForeground (PFEOriginalColorScheme.BORDER_CATEGORY_BACKGROUND);
     }
 
     public void updateUI (VMDNodeWidget widget, ObjectState previousState, ObjectState state) {
-        if (! previousState.isSelected ()  &&  state.isSelected ())
-            widget.bringToFront ();
 
-        boolean hover = state.isHovered () || state.isFocused ();
-        widget.getHeader ().setOpaque (hover);
-
-        if (state.isSelected ())
-            widget.setBorder (BORDER60_SELECT);
-        else if (state.isHovered ())
-            widget.setBorder (BORDER60_HOVER);
-        else if (state.isFocused ())
-            widget.setBorder (BORDER60_HOVER);
-        else
-            widget.setBorder (BORDER60);
     }
 
     public void installUI (VMDConnectionWidget widget) {
@@ -80,12 +57,13 @@ public class PFENotModifiableScheme extends VMDColorScheme {
         widget.setPaintControlPoints (true);
     }
 
+    static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
 
     public void updateUI (VMDConnectionWidget widget, ObjectState previousState, ObjectState state) {
         if (state.isSelected ())
             widget.setForeground (COLOR60_SELECT);
         else if (state.isHighlighted ())
-            widget.setForeground (PFEOriginalColorScheme.COLOR_HIGHLIGHTED);
+            widget.setForeground (COLOR_HIGHLIGHTED);
         else if (state.isHovered ()  ||  state.isFocused ())
             widget.setForeground (COLOR60_HOVER);
         else
@@ -97,13 +75,14 @@ public class PFENotModifiableScheme extends VMDColorScheme {
             widget.setControlPointCutDistance (0);
         } else {
             widget.setControlPointShape (PointShape.NONE);
-            widget.setEndPointShape (PFEOriginalColorScheme.POINT_SHAPE_IMAGE);
+            widget.setEndPointShape (POINT_SHAPE_IMAGE);
             widget.setControlPointCutDistance (5);
         }
     }
 
+    static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
     public void installUI (VMDPinWidget widget) {
-        widget.setBorder (PFEOriginalColorScheme.BORDER_PIN);
+        widget.setBorder (BORDER_PIN);
         widget.setBackground (COLOR60_HOVER_BACKGROUND);
     }
 
@@ -112,7 +91,7 @@ public class PFENotModifiableScheme extends VMDColorScheme {
         if (state.isSelected ())
             widget.setBorder (BORDER60_PIN_SELECT);
         else
-            widget.setBorder (PFEOriginalColorScheme.BORDER_PIN);
+            widget.setBorder (BORDER_PIN);
     }
 
     public int getNodeAnchorGap (VMDNodeAnchor anchor) {
