@@ -117,7 +117,7 @@ public class ConverterResources {
             type = CommandCD.VALUE_ITEM;
         else
             type = CommandCD.VALUE_OK;
-        command.writeProperty (CommandCD.PROP_PRIORITY, MidpTypes.createIntegerValue (type));
+        command.writeProperty (CommandCD.PROP_TYPE, MidpTypes.createIntegerValue (type));
     }
 
 }
