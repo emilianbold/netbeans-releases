@@ -217,10 +217,12 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         if (inModel != in) {
             inModel = in;
             formModel.updateMapping(this, in);
-            if (in)
+            if (in) {
                 createCodeExpression();
-            else
+            } else {
                 releaseCodeExpression();
+                setNodeReference(null);
+            }
         }
     }
 

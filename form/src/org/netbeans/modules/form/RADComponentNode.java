@@ -331,16 +331,17 @@ public class RADComponentNode extends FormNode
         if (MetaComponentCreator.isTransparentLayoutComponent(component.getParentComponent())) {
             component = component.getParentComponent();
         }
-        if (EventQueue.isDispatchThread()) {
-            component.getFormModel().removeComponent(component, true);
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    component.getFormModel().removeComponent(component, true);
-                }
-            });
-        }
-        component.setNodeReference(null);
+        if (component.getNodeReference() == this) {
+            if (EventQueue.isDispatchThread()) {
+                component.getFormModel().removeComponent(component, true);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        component.getFormModel().removeComponent(component, true);
+                    }
+                });
+            }
+        } // otherwise the component was likely already removed with a parent component
         super.destroy();
     }
     

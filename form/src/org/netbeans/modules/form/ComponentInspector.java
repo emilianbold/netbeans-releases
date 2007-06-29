@@ -22,6 +22,8 @@ package org.netbeans.modules.form;
 import java.awt.event.*;
 import java.beans.*;
 import java.awt.datatransfer.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.DefaultEditorKit;
 
 import org.openide.*;
@@ -300,6 +302,44 @@ public class ComponentInspector extends TopComponent
         return getExplorerManager().getSelectedNodes();
     }
 
+    private Node[] getSelectedRootNodes() {
+        // exclude nodes that are under other selected nodes
+        Node[] selected = getExplorerManager().getSelectedNodes();
+        if (selected != null && selected.length > 1) {
+            List<Node> list = new ArrayList<Node>(selected.length);
+            for (int i=0; i < selected.length; i++) {
+                Node node = selected[i];
+                boolean subcontained = false;
+                for (int j=0; j < selected.length; j++) {
+                    if (j != i && isSubcontainedNode(node, selected[j])) {
+                        subcontained = true;
+                        break;
+                    }
+                }
+                if (!subcontained) {
+                    list.add(node);
+                }
+            }
+            if (list.size() < selected.length) {
+                selected = list.toArray(new Node[list.size()]);
+            }
+        }
+        return selected;
+    }
+
+    private static boolean isSubcontainedNode(Node node, Node maybeParent) {
+        RADComponentCookie cookie = node.getCookie(RADComponentCookie.class);
+        RADComponent comp = (cookie != null) ? cookie.getRADComponent() : null;
+        if (comp != null) {
+            cookie = maybeParent.getCookie(RADComponentCookie.class);
+            RADComponent parentComp = (cookie != null) ? cookie.getRADComponent() : null;
+            if (parentComp != null && parentComp.isParentComponent(comp)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ---------------
     // actions
     
@@ -502,7 +542,7 @@ public class ComponentInspector extends TopComponent
         }
 
         public void performAction(SystemAction action) {
-            Node[] selected = getExplorerManager().getSelectedNodes();
+            Node[] selected = getSelectedRootNodes();
 
             if (selected == null || selected.length == 0)
                 return;
@@ -559,7 +599,7 @@ public class ComponentInspector extends TopComponent
 
         public void performAction(SystemAction action) {
             Transferable trans;
-            Node[] selected = getExplorerManager().getSelectedNodes();
+            Node[] selected = getSelectedRootNodes();
 
             if (selected == null || selected.length == 0)
                 trans = null;
