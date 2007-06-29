@@ -63,6 +63,9 @@ import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.vmd.VMDColorScheme;
+import org.netbeans.api.visual.vmd.VMDConnectionWidget;
+import org.netbeans.api.visual.vmd.VMDFactory;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
@@ -97,6 +100,7 @@ import org.openide.util.actions.SystemAction;
 // TODO - remove popup menu action
 public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     
+    private VMDColorScheme scheme = VMDFactory.getNetBeans60Scheme ();
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
@@ -269,7 +273,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      */
     protected Widget attachNodeWidget(Page node) {
         assert node != null;
-        VMDNodeWidget nodeWidget = new VMDNodeWidget(this);
+        VMDNodeWidget nodeWidget = new VMDNodeWidget(this, scheme);
         String displayName = node.getDisplayName();
         nodeWidget.setNodeName(displayName);
         
@@ -387,7 +391,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
             return null;
         }
         
-        VMDPinWidget widget = new VMDPinWidget(this);
+        VMDPinWidget widget = new VMDPinWidget(this, scheme);
         VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
         if( nodeWidget != null ) {
             nodeWidget.attachPinWidget(widget);
@@ -423,7 +427,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     protected Widget attachEdgeWidget(NavigationCaseEdge edge) {
         assert edge != null;
         
-        VMDConnectionWidget2 connectionWidget = new VMDConnectionWidget2(this, router, edge.isModifiable());
+        VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, scheme);
         
         LabelWidget label = new LabelWidget(this, edge.getName());
         label.setOpaque(true);
