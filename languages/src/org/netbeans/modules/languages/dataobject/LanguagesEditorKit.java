@@ -26,8 +26,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyListener;
-import java.security.KeyStore;
 import javax.swing.JLabel;
 import javax.swing.text.Document;
 import javax.swing.Action;
@@ -45,11 +43,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.editor.PopupManager;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.NbEditorUI;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -57,7 +52,6 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.features.AnnotationManager;
 import org.netbeans.modules.languages.features.BraceCompletionDeleteAction;
 import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
-import org.netbeans.modules.languages.features.BraceHighlighting;
 import org.netbeans.modules.languages.features.InstantRenameAction;
 import org.netbeans.modules.languages.features.MarkOccurrencesSupport;
 import org.netbeans.modules.languages.features.CollapseFoldTypeAction;
@@ -254,14 +248,16 @@ public class LanguagesEditorKit extends NbEditorKit {
 //        return syntax;
 //    }
 
-    public Syntax createSyntax(Document doc) {
-        return new PlainSyntax();
-    }
-
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return new BraceHighlighting (doc);
-    }
-    
+// Not neccessary, PlainSyntax is delivered by default, braces matching is done
+// through the new SPI
+//    public Syntax createSyntax(Document doc) {
+//        return new PlainSyntax();
+//    }
+//
+//    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
+//        return new BraceHighlighting (doc);
+//    }
+//    
     public void install (JEditorPane c) {
         super.install (c);
         HyperlinkListener hl = new HyperlinkListener ();
