@@ -1,23 +1,22 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
- 
-package Templates.JSP_Servlet;           
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+</#if>
 
 import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 
-/** 
+/**
  *
- * @author __USER__
- * @version 
+ * @author ${user}
  */
-
-public class __NAME__ extends __SUPERCLASS__ {
+public class ${name} extends ${superclass} {
     
    private String name;
 
@@ -54,7 +53,7 @@ public class __NAME__ extends __SUPERCLASS__ {
    /**
     *
     */
-   public __NAME__() {
+   public ${name}() {
        super();
        // TODO Auto-generated constructor stub
    }

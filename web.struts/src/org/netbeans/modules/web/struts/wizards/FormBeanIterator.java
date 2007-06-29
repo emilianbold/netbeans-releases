@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,8 @@ package org.netbeans.modules.web.struts.wizards;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -49,10 +51,7 @@ import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.config.model.FormBean;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.netbeans.modules.web.struts.editor.StrutsEditorUtilities;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.SaveCookie;
-
 
 /** A template wizard iterator for new struts action
  *
@@ -134,17 +133,10 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );
         
-        DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard )  );
-        
-        EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
-        if (editorCookie != null) {
-            javax.swing.text.Document doc = editorCookie.openDocument();
-            replaceInDocument(doc, "__SUPERCLASS__", (String) wizard.getProperty(WizardProperties.FORMBEAN_SUPERCLASS));    //NOI18N
-            SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
-            if (save != null)
-                save.save();
-        }
+        DataObject dTemplate = DataObject.find( template );   
+        Map<String, Object> attributes = new HashMap<String,Object>();
+        attributes.put("superclass", wizard.getProperty("formBeanSuperclass"));
+        DataObject dobj = dTemplate.createFromTemplate(df, Templates.getTargetName(wizard), attributes);        
 
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());

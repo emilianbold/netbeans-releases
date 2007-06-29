@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -87,21 +87,31 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="position" intvalue="800"/>
             <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsAction.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"/>          
             </file>
-            <file name="DispatchAction.java" url="templates/DispatchAction.template"/>
-            <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
-            <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
+            <file name="DispatchAction.java" url="templates/DispatchAction.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
             <file name="StrutsActionForm.java" url="templates/StrutsActionForm.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
                 <attr name="templateCategory" stringvalue="servlet-types"/>

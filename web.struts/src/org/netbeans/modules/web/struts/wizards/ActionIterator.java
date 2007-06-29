@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,8 @@ package org.netbeans.modules.web.struts.wizards;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -45,9 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.SaveCookie;
 
 /** A template wizard iterator for new struts action
  *
@@ -148,17 +148,9 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         String targetName = Templates.getTargetName(wizard);
         DataObject dTemplate = DataObject.find( template );
-        DataObject dobj = dTemplate.createFromTemplate( df, targetName  );
-        if (replaceSuperClass){
-            EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
-            if (editorCookie != null) {
-                javax.swing.text.Document doc = editorCookie.openDocument();
-                replaceInDocument(doc, "__SUPERCLASS__", superclass);    //NOI18N
-                SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
-                if (save != null)
-                    save.save();
-            }
-        }
+        Map<String, Object> attributes = new HashMap<String,Object>();
+        attributes.put("superclass", wizard.getProperty("action_superclass"));
+        DataObject dobj = dTemplate.createFromTemplate(df, targetName, attributes);
         
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());

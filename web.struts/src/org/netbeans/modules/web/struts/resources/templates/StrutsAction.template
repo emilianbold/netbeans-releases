@@ -1,10 +1,11 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
- 
-package Templates.JSP_Servlet;           
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+</#if>
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,13 +14,12 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionForward;
-/** 
- *
- * @author __USER__
- * @version 
- */
 
-public class __NAME__ extends __SUPERCLASS__ {
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends ${superclass} {
     
     /* forward name="success" path="" */
     private final static String SUCCESS = "success";
