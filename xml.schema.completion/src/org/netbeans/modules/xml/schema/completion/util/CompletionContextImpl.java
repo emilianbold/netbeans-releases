@@ -57,6 +57,7 @@ public class CompletionContextImpl extends CompletionContext {
     public CompletionContextImpl(FileObject primaryFile,
             XMLSyntaxSupport support, int offset) {
         try {
+            this.completionAtOffset = offset;
             this.primaryFile = primaryFile;
             this.document = support.getDocument();
             this.element = support.getElementChain(offset);
@@ -193,14 +194,31 @@ public class CompletionContextImpl extends CompletionContext {
                         break;
                     }
                     if(element instanceof EmptyTag) {
+                        EmptyTag tag = (EmptyTag)element;
+                        if(element.getElementOffset() + 1 == this.completionAtOffset) {
+                            completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                            pathFromRoot = getPathFromRoot(element.getPrevious());
+                            break;
+                        }
+                        if(completionAtOffset > element.getElementOffset() + 1 &&
+                           completionAtOffset <= element.getElementOffset() + 1 + tag.getTagName().length()) {
+                            completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                            typedChars = tag.getTagName();
+                            pathFromRoot = getPathFromRoot(element.getPrevious());
+                            break;
+                        }                        
                         completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
                         pathFromRoot = getPathFromRoot(element);
                         break;
                     }
                     
                     if(element instanceof StartTag) {
-                        StartTag tag = (StartTag)element;
-                        typedChars = tag.getTagName();
+                        if(element.getElementOffset() + 1 == this.completionAtOffset) {
+                            typedChars = null;
+                        } else {
+                            StartTag tag = (StartTag)element;
+                            typedChars = tag.getTagName();
+                        }
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element.getPrevious());
@@ -471,6 +489,7 @@ public class CompletionContextImpl extends CompletionContext {
         return null;
     }
         
+    private int completionAtOffset = -1;
     private FileObject primaryFile;
     private String typedChars;
     private TokenItem token;

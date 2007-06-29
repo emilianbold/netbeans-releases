@@ -37,7 +37,9 @@ public class BasicCompletionTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
-        suite.addTest(new BasicCompletionTest("testEmptyTag"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag1"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag2"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag3"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion"));
         suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
@@ -85,15 +87,51 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries an empty tag.
+     * Queries an empty tag. If cursor is before "A31" and after "<" in <A31 />
+     * we should show all qualifying elements that are children of the parent.
      */
-    public void testEmptyTag() throws Exception {
+    public void testEmptyTag1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<A:rootA3 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
         buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n");
-        buffer.append("  <A31 />\n");
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
+        buffer.append("  <A:A31 />\n"); //offset 20, caret is after '<'
+        buffer.append("</A:rootA3>\n");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(220);
+        String[] expectedResult = {"A:A31", "A:A32"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries an empty tag. If cursor is after 'A' in <A31 />
+     * we should show only A31 as the qualifying element.
+     */
+    public void testEmptyTag2() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<A:rootA3 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
+        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
+        buffer.append("  <A:A31 />\n"); //offset 21, caret is after '<A'
+        buffer.append("</A:rootA3>\n");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(223);
+        String[] expectedResult = {"A:A31"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries an empty tag.
+     */
+    public void testEmptyTag3() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<A:rootA3 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
+        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
+        buffer.append("  <A:A31 />\n"); //offset=8
         buffer.append("</A:rootA3>\n");
         setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
         List<CompletionResultItem> items = query(226);

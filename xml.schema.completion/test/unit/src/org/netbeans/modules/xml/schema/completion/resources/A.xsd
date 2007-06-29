@@ -36,6 +36,7 @@
                         <xsd:attribute name="attrA32" type="xsd:string"/>
                     </xsd:complexType>
                 </xsd:element>
+                <xsd:element name="A32" minOccurs="1"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
