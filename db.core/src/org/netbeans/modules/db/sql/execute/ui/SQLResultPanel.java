@@ -179,6 +179,8 @@ public class SQLResultPanel extends javax.swing.JPanel {
 
     static final class SQLResultTable extends JTable {
         
+        private final NullRenderer nullRenderer = new NullRenderer();
+        
         public SQLResultTable() {
             // issue 70521: rendering java.sql.Timestamp as date and time
             setDefaultRenderer(Timestamp.class, new DateTimeRenderer());
@@ -194,7 +196,7 @@ public class SQLResultPanel extends javax.swing.JPanel {
         public TableCellRenderer getCellRenderer(int row, int column) {
             Object value = getValueAt(row, column);
             if (value instanceof NullValue) {
-                return getDefaultRenderer(Object.class);
+                return nullRenderer;
             } else {
                 return super.getCellRenderer(row, column);
             }
@@ -232,6 +234,13 @@ public class SQLResultPanel extends javax.swing.JPanel {
                     formatter = DateFormat.getTimeInstance();
                 }
                 setText((value == null) ? "" : formatter.format(value)); // NOI18N
+            }
+        }
+        
+        private static final class NullRenderer extends DefaultTableCellRenderer.UIResource {
+            
+            public void setValue(Object value) {
+                setText(((NullValue)value).toString());
             }
         }
     }
