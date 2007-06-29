@@ -33,6 +33,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 
 /**
  * Test Reverse Engineering 
@@ -78,6 +79,9 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
                
         new EventTool().waitNoEvent(1000);
         NbDialogOperator reng = new NbDialogOperator("Reverse Engineer");
+        JRadioButtonOperator newUMLradio = new JRadioButtonOperator(reng,"Create New UML Project");
+        newUMLradio.push();
+        new EventTool().waitNoEvent(1000);
         suffix = System.currentTimeMillis(); 
         JTextFieldOperator textProject = new JTextFieldOperator(reng,1);
         textProject.clearText();
