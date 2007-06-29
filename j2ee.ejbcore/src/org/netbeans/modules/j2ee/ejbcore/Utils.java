@@ -267,7 +267,7 @@ public class Utils {
             if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFileObject, referencingClassName)) {
                 addProjectToClassPath(enterpriseProject, ejbReference);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbReference(ejbReference, ejbRefName, referencingFileObject, referencingClassName);
+                erc.addEjbLocalReference(ejbReference, ejbRefName, referencingFileObject, referencingClassName);
             }
             if (serviceLocator == null) {
                 generator.generateReferenceCode(referencingFileObject, referencingClassName, true, throwExceptions);
