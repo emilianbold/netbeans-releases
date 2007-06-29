@@ -261,6 +261,10 @@ is divided into following sections:
                         <xsl:attribute name="default">${excludes}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">javac.compilerargs.jaxws</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
