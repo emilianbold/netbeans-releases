@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -280,12 +281,34 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
     }
     
     @Override
-	public void componentOpened() {
+    public void componentOpened() {
 	super.componentOpened();
     }
     
+    
+    /*
+     * In other non-multiview editors, the text editor is the one that is docked into the editor mode.
+     * and super.canClose() returns true and schedules the clean up of editor kit, 
+     * which in turn calls uninstallUI in NbEditorUI class.
+     * 
+     * In our case, we need to explicitly call setEditorKit(null), so that uninstallUI gets called.
+     * So our editor gets removed from different caches and propertychangesupports.
+     * 
+     * (non-Javadoc)
+     * @see org.openide.text.CloneableEditor#componentClosed()
+     */
     @Override
-	public void componentClosed() {
+    public void componentClosed() {
+        SwingUtilities.invokeLater(
+                new Runnable() {
+                    public void run() {
+                        if (pane != null) {
+                            pane.setEditorKit(null);
+                        }
+                        removeAll();
+                    }
+                }
+        );
         super.componentClosed();
         multiViewObserver = null;
     }
@@ -312,7 +335,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         super.writeExternal(out);
         out.writeObject(wsdlDataObject);
     }
-    
+
     @Override
     public void readExternal(ObjectInput in)
     throws IOException, ClassNotFoundException {
@@ -323,65 +346,50 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
             initialize();
         }
     }
-    
-	// node support
-	/** Root node of schema model */
-	private Node rootNode;
-	/** current selection*/
-	private Node selectedNode;
+
+    // node support
+    /** Root node of schema model */
+    private Node rootNode;
+    /** current selection*/
+    private Node selectedNode;
     /** listens to selected node destroyed event */
     private NodeAdapter nl;
-	/** Timer which countdowns the "update selected element node" time. */
-	private Timer timerSelNodes;
-	/** Listener on caret movements */
-	private CaretListener caretListener;
-	/* task */
-	private transient RequestProcessor.Task selectionTask = null;
- /** Selects element at the caret position. */
-	void selectElementsAtOffset()
-	{
-		if(selectionTask!=null)
-		{
-			selectionTask.cancel();
-			selectionTask = null;
-		}
-		RequestProcessor rp = new RequestProcessor("schema source view processor "+hashCode());
-		selectionTask = rp.create(new Runnable()
-		{
-			public void run()
-			{
-				if (!isActiveTC() || wsdlDataObject == null ||
-						!wsdlDataObject.isValid() || wsdlDataObject.isTemplate())
-				{
-					return;
-				}
+    /** Timer which countdowns the "update selected element node" time. */
+    private Timer timerSelNodes;
+    /** Listener on caret movements */
+    private CaretListener caretListener;
+    /* task */
+    private transient RequestProcessor.Task selectionTask = null;
+    /** Selects element at the caret position. */
+    void selectElementsAtOffset() {
+        if(selectionTask!=null) {
+            selectionTask.cancel();
+            selectionTask = null;
+        }
+        RequestProcessor rp = new RequestProcessor("WSDL Source view processor "+hashCode());
+        selectionTask = rp.create(new Runnable() {
+            public void run() {
+                if (!isActiveTC() || wsdlDataObject == null ||
+                        !wsdlDataObject.isValid() || wsdlDataObject.isTemplate()) {
+                    return;
+                }
                 Node n = findNode(getEditorPane().getCaret().getDot());
                 // default to node delegate if node not found
-                if(n==null) 
-                {
+                if(n==null) {
                     setActivatedNodes(new Node[] { 
-                        wsdlDataObject.getNodeDelegate() });
-                } 
-                else
-                {
-                    if(selectedNode!=n)
-                    {
-                        if(nl==null)
-                        {
-                            nl = new NodeAdapter()
-                            {
+                            wsdlDataObject.getNodeDelegate() });
+                } else {
+                    if(selectedNode!=n) {
+                        if(nl==null) {
+                            nl = new NodeAdapter() {
                                 @Override
-								public void nodeDestroyed(NodeEvent ev)
-                                {
-                                    if(ev.getNode()==selectedNode)
-                                    {
+                                public void nodeDestroyed(NodeEvent ev) {
+                                    if(ev.getNode()==selectedNode) {
                                         selectElementsAtOffset();
                                     }
                                 }
                             };
-                        }
-                        else if(selectedNode!=null)
-                        {
+                        } else if(selectedNode!=null) {
                             selectedNode.removeNodeListener(nl);
                         }
                         selectedNode = n;
@@ -389,50 +397,49 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
                         setActivatedNodes(new Node[] { selectedNode });
                     }
                 }
-			}
-		});
+            }
+        });
         if(EventQueue.isDispatchThread()) {
-    		selectionTask.run();
+            selectionTask.run();
         } else {
             EventQueue.invokeLater(selectionTask);
         }
-	}
-	
-	private Node findNode(int offset) {
-		WSDLEditorSupport support = wsdlDataObject.getWSDLEditorSupport();
-		if (support == null) return null;
-		
-		WSDLModel model = support.getModel();
-		if (model == null || model.getState()!= WSDLModel.State.VALID) return null;
-		
-		if (rootNode == null) {
-			rootNode = NodesFactory.getInstance().create(model.getDefinitions());
-		}
+    }
 
-		if (rootNode == null) return null;
+    private Node findNode(int offset) {
+        WSDLEditorSupport support = wsdlDataObject.getWSDLEditorSupport();
+        if (support == null) return null;
 
-		Component sc = support.getModel().
-		findComponent(offset);
+        WSDLModel model = support.getModel();
+        if (model == null || model.getState()!= WSDLModel.State.VALID) return null;
 
-		if (sc == null) return null;
+        if (rootNode == null) {
+            rootNode = NodesFactory.getInstance().create(model.getDefinitions());
+        }
 
-		List<Node> path = null;
-		if (WSDLComponent.class.isInstance(sc)) {
-			path = UIUtilities.findPathFromRoot(rootNode, (WSDLComponent) sc);
-		} else if (SchemaComponent.class.isInstance(sc)) {
-			path = UIUtilities.findPathFromRoot(rootNode, (SchemaComponent) sc, model);
-		}
-		if(path != null && !path.isEmpty()) {
-			return path.get(path.size()-1);
-		}
-		return null;
-	}
-	
-    protected boolean isActiveTC()
-    {
+        if (rootNode == null) return null;
+
+        Component sc = support.getModel().
+        findComponent(offset);
+
+        if (sc == null) return null;
+
+        List<Node> path = null;
+        if (WSDLComponent.class.isInstance(sc)) {
+            path = UIUtilities.findPathFromRoot(rootNode, (WSDLComponent) sc);
+        } else if (SchemaComponent.class.isInstance(sc)) {
+            path = UIUtilities.findPathFromRoot(rootNode, (SchemaComponent) sc, model);
+        }
+        if(path != null && !path.isEmpty()) {
+            return path.get(path.size()-1);
+        }
+        return null;
+    }
+
+    protected boolean isActiveTC() {
         if (multiViewObserver != null)
             return getRegistry().getActivated() == multiViewObserver.getTopComponent();
-        
+
         return false;
     }
 }
