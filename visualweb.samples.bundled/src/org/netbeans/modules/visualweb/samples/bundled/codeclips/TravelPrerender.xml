@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codeclip_palette_item PUBLIC "-//NetBeans//CodeClip Palette Item 1.0//EN"
+  "http://www.netbeans.org/dtds/codeclip-palette-item-1_0.dtd">
+
+<codeclip_palette_item version="1.0">
+    <body>
+      <![CDATA[
+        // ~TravelPrerender1~
+        // ~TravelPrerender2~
+        try {
+            Integer personId = (Integer) getDropDown1().getSelected();
+            if (personId == null) {
+                personId = (Integer) getPersonDataProvider().getValue("PERSON.PERSONID");
+            }
+            getSessionBean1().getTripRowSet().setObject(1, personId);
+            getTripDataProvider().refresh();
+        } catch (Exception e) {
+            throw new FacesException(e);
+        }
+      ]]>
+    </body>
+    
+    <icon16 urlvalue="org/netbeans/modules/visualweb/spi/palette/resources/Codesnippet_C16.png" />
+    <icon32 urlvalue="org/netbeans/modules/visualweb/spi/palette/resources/Codesnippet_C32.png" />
+    <description localizing-bundle="org.netbeans.modules.visualweb.samples.bundled.codeclips.Bundle"    
+        display-name-key="NAME_java-TravelPrerender"
+        tooltip-key="HINT_java-TravelPrerender" />
+</codeclip_palette_item>

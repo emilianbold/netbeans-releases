@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <!--
+    <folder name="Templates">
+        <folder name="Project">
+            <attr name="Web/Samples" boolvalue="true"/>
+            <folder name="Samples">
+                <folder name="VisualWeb">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/webSamplesCategory.html"/>
+                    <file name="MovieAdmin.zip" url="MovieAdmin.zip">
+                       <attr name="template" boolvalue="true"/>
+                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/Movies.html"/>
+                       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.visualweb.samples.bundled.WebSampleProjectIterator"/>
+                       <attr name="prjType" stringvalue="web"/>
+                    </file>
+                    <attr name="MovieAdmin.zip/MoviesClassLibrary.zip" boolvalue="true"/>
+                    <file name="MoviesClassLibrary.zip" url="MoviesClassLibrary.zip">
+                       <attr name="template" boolvalue="true"/>
+                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/MoviesClassLibrary.html"/>
+                       <attr name="SystemFileSystem.localizingBundle" stringvalue="com.sun.rave.samples.bundled.Bundle"/>
+                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfproject/ui/resources/webProjectIcon.gif"/>
+                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.visualweb.project.jsfproject.examples.WebSampleProjectIterator"/>
+                       <attr name="prjType" stringvalue="web"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    -->
+    <!-- Java Code Clips in palette -->
+    <folder name="CreatorJavaPalette">
+        <attr name="OpenIDE-Folder-SortMode" stringvalue="O"/>
+        <attr name="Samples/DatabaseandWebServices" boolvalue="true"/>
+        <folder name="Samples"> 
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <!-- End Ordering --> 
+            
+            <file name="TravelPrerender.xml" url="codeclips/TravelPrerender.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="CreatorJavaPalette5">
+        <attr name="OpenIDE-Folder-SortMode" stringvalue="O"/>
+        <attr name="Samples/DatabaseandWebServices" boolvalue="true"/>
+        <folder name="Samples"> 
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <!-- End Ordering --> 
+            
+            <file name="TravelPrerender.xml" url="codeclips/TravelPrerender.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
+
