@@ -68,7 +68,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         } else if (refactoring instanceof MoveRefactoring) {
             return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
         } else if (refactoring instanceof SingleCopyRefactoring) {
-            return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
+            if (checkCopy(refactoring.getRefactoringSource())) {
+                return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
+            }
         } else if (refactoring instanceof ExtractInterfaceRefactoring) {
             return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
         } else if (refactoring instanceof ExtractSuperclassRefactoring) {
@@ -101,4 +103,12 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         
         return a;
     }
+    
+    private boolean checkCopy(Lookup object) {
+        FileObject f=object.lookup(FileObject.class);
+        if (f!=null && RetoucheUtils.isJavaFile(f))
+            return true;
+        return false;
+    }
+
 }
