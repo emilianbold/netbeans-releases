@@ -341,6 +341,7 @@ public class MetaComponentCreator {
             newMetaComp = addOtherComponent(compClass, targetComp);
 
         if (newMetaComp instanceof RADVisualComponent
+            && !((RADVisualComponent)newMetaComp).isMenuComponent()
             && (shouldBeLayoutContainer(targetComp)
                 || (shouldBeLayoutContainer(newMetaComp))))
         {   // container with new layout...
@@ -1545,6 +1546,7 @@ public class MetaComponentCreator {
             Dimension pref = comp.getPreferredSize();
             if (pref.width < 16 && pref.height < 12) {
                 if (comp instanceof Window || comp instanceof java.applet.Applet) {
+
                     width = 400;
                     height = 300;
                 }
