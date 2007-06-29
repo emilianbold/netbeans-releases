@@ -141,10 +141,9 @@ public class Converter {
             id2item.put (item.getID (), item);
         for (ConverterItem item : components)
             convert (id2item, item, document);
-        for (ConverterItem item : components) {
+        for (ConverterItem item : components)
             if (! item.isUsed ())
                 Debug.warning ("Unrecognized component: " + item.getTypeID ());
-        }
     }
 
     private static void convert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
@@ -152,23 +151,51 @@ public class Converter {
             return;
         String id = item.getID ();
         String typeID = item.getTypeID ();
+
+        // TODO - custom component is: both id and typeID is a valid Java identifier
+
+
         if ("javax.microedition.lcdui.Command".equals (typeID))
             ConverterResources.convertCommand (item, document);
-        else if ("javax.microedition.lcdui.Font".equals (typeID))
-            ConverterResources.convertFont (item, document);
+
+        else if ("javax.microedition.lcdui.Alert".equals (typeID))
+            ConverterDisplayables.convertAlert (id2item, item, document);
         else if ("javax.microedition.lcdui.Form".equals (typeID))
             ConverterDisplayables.convertForm (id2item, item, document);
+        else if ("javax.microedition.lcdui.List".equals (typeID))
+            ConverterDisplayables.convertList (id2item, item, document);
         else if ("javax.microedition.lcdui.TextBox".equals (typeID))
             ConverterDisplayables.convertTextBox (id2item, item, document);
 
+        else if ("javax.microedition.lcdui.Gauge".equals (typeID))
+            ConverterItems.convertGauge (id2item, item, document);
+        else if ("javax.microedition.lcdui.Gauge-AlertIndicator_Helper".equals (typeID))
+            ConverterItems.convertAlertIndicator (id2item, item, document);
+        else if ("javax.microedition.lcdui.ImageItem".equals (typeID))
+            ConverterItems.convertImageItem (id2item, item, document);
+        else if ("javax.microedition.lcdui.Spacer".equals (typeID))
+            ConverterItems.convertSpacer (id2item, item, document);
+        else if ("javax.microedition.lcdui.StringItem".equals (typeID))
+            ConverterItems.convertStringItem (id2item, item, document);
+
+        else if ("javax.microedition.lcdui.Font".equals (typeID))
+            ConverterResources.convertFont (item, document);
+        else if ("javax.microedition.lcdui.Ticker".equals (typeID))
+            ConverterResources.convertTicker (item, document);
+        else if ("javax.microedition.lcdui.Image".equals (typeID))
+            ConverterResources.convertImage (item, document);
+
+        else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ListElementDC".equals (typeID))
+            ConverterElements.convertListElement (id2item, item, document);
+
         // TODO - all components
 
-        if ("$MobileDevice".equals (id)) {
+        if ("$MobileDevice".equals (id)) { // NOI18N
             DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
             List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
             DesignComponent mobileDevice = list.get (0);
             convertObject (item, mobileDevice);
-        } else if ("$StartPoint".equals (id)) {
+        } else if ("$StartPoint".equals (id)) { // NOI18N
             DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
             List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
             DesignComponent mobileDevice = list.get (0);
@@ -188,6 +215,11 @@ public class Converter {
                 return item;
         }
         return null;
+    }
+
+    static DesignComponent convertConverterItemComponent (HashMap<String, ConverterItem> id2item, String propertyValue, DesignDocument document) {
+        ConverterItem item = convertConverterItem (id2item, propertyValue, document);
+        return item != null ? item.getRelatedComponent () : null;
     }
 
     // Created: NO, Adds: NO

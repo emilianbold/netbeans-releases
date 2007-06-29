@@ -90,4 +90,13 @@ class ConverterItem {
         containerProperties.get (name).add (item);
     }
 
+    public boolean isPropertyValueSet (String name) {
+        return properties.containsKey (name);
+    }
+
+
+    public String toString () {
+        return "ConverterItem: UID: "+ uid + ", ID: " + id + ", TypeID: " + typeid;
+    }
+
 }

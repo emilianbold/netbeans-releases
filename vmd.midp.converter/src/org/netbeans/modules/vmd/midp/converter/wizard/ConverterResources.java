@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 
 /**
  * @author David Kaspar
@@ -39,7 +40,42 @@ public class ConverterResources {
         Converter.convertClass (item, font);
         MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (font);
 
-        // TODO - all properties
+        String specifier = item.getPropertyValue ("specifier"); // NOI18N
+        if ("FONT_INPUT_TEXT".equals (specifier)) {
+            font.writeProperty (FontCD.PROP_FONT_KIND, MidpTypes.createIntegerValue (FontCD.VALUE_KIND_INPUT));
+        } else if ("FONT_STATIC_TEXT".equals (specifier)) {
+            font.writeProperty (FontCD.PROP_FONT_KIND, MidpTypes.createIntegerValue (FontCD.VALUE_KIND_STATIC));
+        } else {
+            ConverterUtil.convertInteger (font, FontCD.PROP_STYLE, item.getPropertyValue ("style")); // NOI18N
+
+            String face = item.getPropertyValue ("face"); // NOI18N
+            if ("FACE_MONOSPACE".equals (face)) // NOI18N
+                font.writeProperty (FontCD.PROP_FACE, MidpTypes.createIntegerValue (FontCD.VALUE_FACE_MONOSPACE));
+            else if ("FACE_PROPORTIONAL".equals (face)) // NOI18N
+                font.writeProperty (FontCD.PROP_FACE, MidpTypes.createIntegerValue (FontCD.VALUE_FACE_PROPORTIONAL));
+            else if ("FACE_SYSTEM".equals (face)) // NOI18N
+                font.writeProperty (FontCD.PROP_FACE, MidpTypes.createIntegerValue (FontCD.VALUE_FACE_SYSTEM));
+
+            String size = item.getPropertyValue ("size"); // NOI18N
+            if ("SIZE_SMALL".equals (size)) // NOI18N
+                font.writeProperty (FontCD.PROP_SIZE, MidpTypes.createIntegerValue (FontCD.VALUE_SIZE_SMALL));
+            else if ("SIZE_MEDIUM".equals (size)) // NOI18N
+                font.writeProperty (FontCD.PROP_SIZE, MidpTypes.createIntegerValue (FontCD.VALUE_SIZE_MEDIUM));
+            else if ("SIZE_LARGE".equals (size)) // NOI18N
+                font.writeProperty (FontCD.PROP_SIZE, MidpTypes.createIntegerValue (FontCD.VALUE_SIZE_LARGE));
+
+            boolean nonDefault = item.isPropertyValueSet ("style")  ||  item.isPropertyValueSet ("face")  ||  item.isPropertyValueSet ("size"); // NOI18N
+            font.writeProperty (FontCD.PROP_FONT_KIND, MidpTypes.createIntegerValue (nonDefault ? FontCD.VALUE_KIND_STATIC : FontCD.VALUE_KIND_DEFAULT));
+        }
+    }
+
+    // Created: YES, Adds: YES
+    static void convertImage (ConverterItem item, DesignDocument document) {
+        DesignComponent image = document.createComponent (ImageCD.TYPEID);
+        Converter.convertClass (item, image);
+        MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (image);
+
+        ConverterUtil.convertString (image, ImageCD.PROP_RESOURCE_PATH, item.getPropertyValue ("imageResourcePath"));
     }
 
     // Created: YES, Adds: YES
@@ -58,9 +94,7 @@ public class ConverterResources {
         MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (command);
 
         ConverterUtil.convertStringWithUserCode (command, CommandCD.PROP_LABEL, item.getPropertyValue ("label")); // NOI18N
-
         ConverterUtil.convertStringWithUserCode (command, CommandCD.PROP_LONG_LABEL, item.getPropertyValue ("longLabel")); // NOI18N
-
         ConverterUtil.convertInteger (command, CommandCD.PROP_PRIORITY, item.getPropertyValue ("priority")); // NOI18N
 
         String typeValue = item.getPropertyValue ("type"); // NOI18N

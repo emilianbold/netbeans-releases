@@ -23,7 +23,10 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+
+import java.util.HashMap;
 
 /**
  * @author David Kaspar
@@ -143,6 +146,18 @@ public class ConverterUtil {
     public static void convertString (DesignComponent component, String propertyName, String value) {
         if (value != null)
             component.writeProperty (propertyName, MidpTypes.createStringValue (value));
+    }
+
+    public static void convertBoolean (DesignComponent component, String propertyName, String value) {
+        Boolean bool = getBoolean (value);
+        if (bool != null)
+            component.writeProperty (propertyName, MidpTypes.createBooleanValue (bool));
+    }
+
+    public static void convertConverterItemComponent (DesignComponent component, String propertyName, HashMap<String, ConverterItem> id2item, String value, DesignDocument document) {
+        DesignComponent ref = Converter.convertConverterItemComponent (id2item, value, document);
+        if (ref != null)
+            component.writeProperty (propertyName, PropertyValue.createComponentReference (ref));
     }
 
 }
