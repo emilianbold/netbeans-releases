@@ -26,7 +26,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
 
 /**
- *
+ * For Loop generator tests.
+ * 
  * @author Pavel Flaska
  */
 public class ForLoopTest extends GeneratorTestMDRCompat {
@@ -41,7 +42,6 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
         return suite;
     }
 
-    @SuppressWarnings("unchecked")
     public void testReplaceStmtWithBlock() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -70,7 +70,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -144,7 +144,67 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testRenameInInfiniteFor() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public int a = 10;\n" +
+            "    \n" +
+            "    public void main(String[] args) {\n" +
+            "        for (;;) {\n" +
+            "            a = 12;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public int asdf = 10;\n" +
+            "    \n" +
+            "    public void main(String[] args) {\n" +
+            "        for (;;) {\n" +
+            "            asdf = 12;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(var, make.setLabel(var, "asdf"));
+                
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                ForLoopTree flt = (ForLoopTree) method.getBody().getStatements().get(0);
+                BlockTree block = (BlockTree) flt.getStatement();
+                AssignmentTree assign = (AssignmentTree) ((ExpressionStatementTree) block.getStatements().get(0)).getExpression();
+                ExpressionTree et = assign.getVariable();
+                workingCopy.rewrite(et, make.setLabel(et, "asdf"));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
