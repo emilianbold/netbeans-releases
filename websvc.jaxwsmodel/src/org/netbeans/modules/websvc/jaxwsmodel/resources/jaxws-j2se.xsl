@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
-                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
                 
             </xsl:if>
