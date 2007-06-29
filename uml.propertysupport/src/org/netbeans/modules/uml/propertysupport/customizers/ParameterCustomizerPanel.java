@@ -1018,6 +1018,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             }
             setErrorMessage(message.toString());
             editParamButton.setEnabled(valid);
+            addMulButton.setEnabled(valid);  
         }
     }
     
@@ -1196,13 +1197,18 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             super.setValueAt(value, rowIndex, columnIndex);
         }
         
-        // Adds new empty row to the data model
+        // Adds new row to the data model
         public void addRow() {
             ElementData newElement = createNewElement(multRangeDef, parentMultRangeElement);
             if (newElement != null) {
                 if (rowsData != null) {
                     rowsData.add(newElement);
-                    super.addRow(new Object[] {"", "", newElement});
+                    Vector <IPropertyElement> rowCells = newElement.getSubElements();
+                    if (rowCells != null && rowCells.size() >= 2) {
+                        rowCells.elementAt(0).setValue("0");
+                        rowCells.elementAt(1).setValue("*");
+                    }
+                    super.addRow(new Object[] {"0", "*", ""});
                 }
             }
         }

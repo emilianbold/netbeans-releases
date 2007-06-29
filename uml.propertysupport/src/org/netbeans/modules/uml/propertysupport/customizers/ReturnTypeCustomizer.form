@@ -25,7 +25,7 @@
                       <EmptySpace min="20" pref="20" max="20" attributes="0"/>
                       <Component id="returnTypeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="returnTypeCombo" pref="562" max="32767" attributes="0"/>
+                      <Component id="returnTypeCombo" pref="242" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -74,18 +74,23 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_TYPE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_TYPE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_TYPE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_TYPE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="returnTypeChangedHandler"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JPanel" name="multiplicityPanel">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Multiplicity"/>
+            <TitledBorder title="Multiplicity">
+              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="MULTIPLICITY" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </TitledBorder>
           </Border>
         </Property>
       </Properties>
@@ -95,7 +100,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="456" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="160" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="addMulButton" linkSize="1" min="-2" pref="82" max="-2" attributes="0"/>
@@ -111,10 +116,10 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="addMulButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="removeMulButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="jScrollPane1" alignment="1" pref="207" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" alignment="1" pref="97" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -131,10 +136,10 @@
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_REMOVERANGE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_REMOVERANGE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_REMOVERANGE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_REMOVERANGE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Events>
@@ -153,7 +158,7 @@
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_ADDRANGE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/uml/propertysupport/customizers/Bundle.properties" key="ACSN_ADDRANGE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Events>

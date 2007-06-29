@@ -45,9 +45,7 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.propertysupport.nodes.CustomPropertyEditor;
-
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import java.util.Vector;
@@ -80,6 +78,7 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
     {
         initComponents();
     }
+    
     public void setElement(IPropertyElement element, IPropertyDefinition def)
     {
         mElement = element;
@@ -135,10 +134,8 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
         if (typeEl != null)
         {
             returnTypeCombo.setSelectedItem(typeEl.getValue());
+            returnTypeChangedHandler(null);
         }
-        
-        //        IParameter param = (IParameter)mElement.getElement();
-        
     }
     
     protected void initializeMulti()
@@ -165,7 +162,6 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents()
     {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         returnTypeLabel = new javax.swing.JLabel();
         returnTypeCombo = new javax.swing.JComboBox();
@@ -183,8 +179,15 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
         returnTypeLabel.setText(bundle.getString("RETURN_TYPE")); // NOI18N
 
         returnTypeCombo.setEditable(true);
+        returnTypeCombo.addItemListener(new java.awt.event.ItemListener()
+        {
+            public void itemStateChanged(java.awt.event.ItemEvent evt)
+            {
+                returnTypeChangedHandler(evt);
+            }
+        });
 
-        multiplicityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Multiplicity"));
+        multiplicityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("MULTIPLICITY"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(removeMulButton, bundle.getString("BTN_REMOVERANGE")); // NOI18N
         removeMulButton.setActionCommand("REMOVE_MULTI");
@@ -227,7 +230,7 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
             multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, multiplicityPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addMulButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -243,15 +246,15 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
                 .add(multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(multiplicityPanelLayout.createSequentialGroup()
                         .add(addMulButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeMulButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        removeMulButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReturnTypeCustomizer.class, "ACSN_REMOVERANGE")); // NOI18N
-        removeMulButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReturnTypeCustomizer.class, "ACSN_REMOVERANGE")); // NOI18N
-        addMulButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReturnTypeCustomizer.class, "ACSN_ADDRANGE")); // NOI18N
+        removeMulButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_REMOVERANGE")); // NOI18N
+        removeMulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_REMOVERANGE")); // NOI18N
+        addMulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_ADDRANGE")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -263,7 +266,7 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
                         .add(20, 20, 20)
                         .add(returnTypeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(returnTypeCombo, 0, 562, Short.MAX_VALUE))
+                        .add(returnTypeCombo, 0, 242, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(multiplicityPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -283,9 +286,27 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
                 .addContainerGap())
         );
 
-        returnTypeCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReturnTypeCustomizer.class, "ACSN_TYPE")); // NOI18N
-        returnTypeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReturnTypeCustomizer.class, "ACSN_TYPE")); // NOI18N
+        returnTypeCombo.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TYPE")); // NOI18N
+        returnTypeCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_TYPE")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_returnTypeChangedHandler
+        String selectedType = (String)returnTypeCombo.getSelectedItem();
+        // if selected return type is 'void', remove all multiplicity ranges and
+        // disable the multiplicity buttons
+        if ("void".equals(selectedType)) 
+        {
+            if (model != null ) 
+            {
+                model.removeAllRanges();
+            }
+            enableButtons(false);
+        } 
+        else
+        {   
+            enableButtons(true);
+        }
+}//GEN-LAST:event_returnTypeChangedHandler
     
 private void removeMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeMulButtonactionHandler
     model.removeRange(multiplicityTable.getSelectedRow());
@@ -295,6 +316,11 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
     model.addRange();
 }//GEN-LAST:event_addMulButtonactionHandler
 
+    private void enableButtons(boolean enabled) 
+    {
+        this.removeMulButton.setEnabled(enabled);
+        this.addMulButton.setEnabled(enabled);
+    }
     ////////////////////////////////////////////////////////////////////////////
     // EnhancedCustomPropertyEditor Implementation
 
@@ -310,11 +336,13 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
     public Object getPropertyValue() throws IllegalStateException
     {   
         IParameter param = (IParameter)mElement.getElement();
-        
-        param.setType2((String)returnTypeCombo.getSelectedItem());
-        model.saveRanges();
-        
-        notifyChanged();
+        String selectedType = (String)returnTypeCombo.getSelectedItem();
+        if (selectedType != null && selectedType.trim().length() > 0) 
+        {
+            param.setType2(selectedType);
+            model.saveRanges();
+            notifyChanged();
+        }
         return null;
     }
     
@@ -405,22 +433,40 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
         
         public void removeRange(int row)
         {
+            // fix issue 108135.
+            if (row == -1)  // no selected row, remove nothing
+                return;
+            
             ranges.remove(row);
             fireRowRemoved(row);
+        }
+        
+        public void removeAllRanges()
+        {
+            if ( ranges != null)
+            {
+                for (int row = 0; row < ranges.size(); row++)
+                {
+                    ranges.remove(row);
+                    fireRowRemoved(row);
+                }
+            }
         }
         
         public void saveRanges()
         {
             multiplicity.removeAllRanges();
-            
-            for(RangeData data : ranges)
+            if (ranges != null) 
             {
-                IMultiplicityRange range = multiplicity.createRange();
-                
-                range.setRange(data.getLower(), data.getUpper());
-                range.setCollectionType(data.getCollection());
-                
-                multiplicity.addRange(range);
+                for(RangeData data : ranges) 
+                {
+                    IMultiplicityRange range = multiplicity.createRange();
+                    
+                    range.setRange(data.getLower(), data.getUpper());
+                    range.setCollectionType(data.getCollection());
+                    
+                    multiplicity.addRange(range);
+                }
             }
         }
         
