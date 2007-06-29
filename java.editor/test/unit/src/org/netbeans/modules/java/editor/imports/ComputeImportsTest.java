@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +66,15 @@ public class ComputeImportsTest extends NbTestCase {
     private static final Set<String> JDK16_MASKS = new HashSet(Arrays.asList(new String[] {
         "com.sun.xml.bind.v2.schemagen.xmlschema.List",
         "com.sun.xml.txw2.Document",
+        "com.sun.xml.internal.txw2.Document",
+        "com.sun.xml.internal.bind.v2.schemagen.xmlschema.List",
+        "com.sun.xml.internal.ws.wsdl.writer.document.Documented",
+        "com.sun.xml.internal.bind.v2.model.core.Element",
+        "com.sun.xml.internal.bind.v2.runtime.output.NamespaceContextImpl.Element",
+        "com.sun.xml.internal.bind.v2.schemagen.xmlschema.Element",
+        "sun.text.normalizer.RangeValueIterator.Element",
+        "javax.xml.bind.Element",
+        "javax.lang.model.element.Element",
     }));
     
     private static final Set<String> NO_MASKS = new HashSet();
@@ -131,7 +141,7 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     public void testException() throws Exception {
-        doTest("TestException", NO_MASKS, NO_MASKS);
+        doTest("TestException", JDK16_MASKS, JDK16_MASKS);
     }
     
     public void testEmptyCatch() throws Exception {
@@ -143,7 +153,7 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     public void testUnsupportedOperation1() throws Exception {
-        doTest("TestUnsupportedOperation1", NO_MASKS, NO_MASKS);
+        doTest("TestUnsupportedOperation1", JDK16_MASKS, NO_MASKS);
     }
     
     public void testPackageDoesNotExist() throws Exception {
@@ -155,11 +165,11 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     public void testAnnotation() throws Exception {
-        doTest("TestAnnotation", NO_MASKS, NO_MASKS);
+        doTest("TestAnnotation", JDK16_MASKS, JDK16_MASKS);
     }
     
     public void testAnnotation2() throws Exception {
-        doTest("TestAnnotation2", NO_MASKS, NO_MASKS);
+        doTest("TestAnnotation2", JDK16_MASKS, JDK16_MASKS);
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
@@ -210,17 +220,21 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     private void dump(PrintStream out, Map<String, List<TypeElement>> set, Set<String> masks) {
-        for (Map.Entry<String, List<TypeElement>> e : set.entrySet()) {
+        List<String> keys = new LinkedList<String>(set.keySet());
+        
+        Collections.sort(keys);
+        
+        for (String key : keys) {
             List<String> fqns = new ArrayList<String>();
             
-            for (TypeElement t : e.getValue()) {
+            for (TypeElement t : set.get(key)) {
                 String fqn = t.getQualifiedName().toString();
                 
                 if (!masks.contains(fqn))
                     fqns.add(fqn);
             }
             
-            out.println(e.getKey() + ":" + fqns.toString());
+            out.println(key + ":" + fqns.toString());
         }
     }
     
