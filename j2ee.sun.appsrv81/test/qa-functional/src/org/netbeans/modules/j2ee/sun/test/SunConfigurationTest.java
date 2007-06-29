@@ -41,7 +41,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport;
 //import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
