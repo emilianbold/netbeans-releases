@@ -169,7 +169,10 @@ public class GenerateJNLPApplicationTest extends TestBase {
         subobj.remove(suite.getProjectDirectory().getFileObject("build.xml"));
         FileObject master = suite.getProjectDirectory().getFileObject("master.jnlp");
         assertNotNull("Master must be created", master);
+        FileObject branding = suite.getProjectDirectory().getFileObject("branding.jnlp");
+        assertNotNull("Branding must be created", branding);
         subobj.remove(master);
+        subobj.remove(branding);
         subobj.remove(suite.getProjectDirectory().getFileObject("build"));
         FileObject dist = suite.getProjectDirectory().getFileObject("dist");
         assertNotNull("dist created", dist);
@@ -361,6 +364,9 @@ public class GenerateJNLPApplicationTest extends TestBase {
         FileObject dist = suite.getProjectDirectory().getFileObject("dist");
         assertNull("no dist created", dist);
 
+        FileObject branding = suite.getProjectDirectory().getFileObject("branding.jnlp");
+        assertNotNull("Branding must be created", branding);
+        subobj.remove(branding);
         
         if (!subobj.isEmpty()) {
             fail("There should be no created directories in the suite dir: " + subobj);
