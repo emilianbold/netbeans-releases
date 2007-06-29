@@ -20,7 +20,10 @@
 package org.netbeans.modules.apisupport.project.jnlp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,7 +35,15 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import junit.framework.Test;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -48,6 +59,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Checks JNLP support behaviour.
@@ -73,6 +85,10 @@ public class GenerateJNLPApplicationTest extends TestBase {
         return Level.FINE;
     }
 
+    public static Test suite() {
+        //return new GenerateJNLPApplicationTest("testBuildJNLPWhenLocalizedFilesAreMissing");
+        return new NbTestSuite(GenerateJNLPApplicationTest.class);
+    }
 
     protected @Override void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
@@ -374,6 +390,169 @@ public class GenerateJNLPApplicationTest extends TestBase {
         
     }
 
+    public void testBuildJNLPWhenLocalizedFilesAreMissing() throws Exception {
+        File openideUtil = new File(
+            Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI()
+        );
+        File platformC = openideUtil.getParentFile().getParentFile();
+        
+        File copyP = new File(new File(getWorkDir(), "netbeans"), "platform7");
+        copyP.mkdirs();
+        
+        copyFiles(platformC, copyP);
+        
+        EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty("app.name", "fakeapp");
+        
+        File someJar = createNewJarFile("fake-jnlp-servlet");
+        
+        
+        File platformProp = new File(new File(suite.getProjectDirectoryFile(), "nbproject"), "platform.properties");
+        FileWriter os = new FileWriter(platformProp, true);
+        os.write("\nharness.dir=" + platformC.getParent() + "/harness");
+        os.write("\nnetbeans.dest.dir=" + copyP.getParent());
+        os.write("\napp.name=fakeapp\n");
+        os.write("\njnlp.servlet.jar=" + someJar);
+        os.close();
+
+        File where = new File(copyP, "update_tracking");
+        Source xslt = new StreamSource(getClass().getResourceAsStream("GenerateJNLPApplicationTest.xsl"));
+        Transformer t = TransformerFactory.newInstance().newTransformer(xslt);
+        File f = new File(where, "org-netbeans-core-startup.xml");
+        assertTrue("core exists: " + f, f.exists());
+        {
+            Source s = new StreamSource(f);
+            File tmp = new File(f.getParent(), f.getName() + ".copy");
+            Result r = new StreamResult(tmp);
+            t.clearParameters();
+            t.setParameter("file", "core/locale/core_cs.jar");
+            t.transform(s, r);
+            f.delete();
+            tmp.renameTo(f);
+        }
+
+        ProjectManager.getDefault().saveProject(suite);
+        
+        ep.setProperty("enabled.clusters", TestBase.CLUSTER_PLATFORM);
+        ep.setProperty("disabled.modules", "org.netbeans.modules.autoupdate," +
+            "org.openide.compat," +
+            "org.netbeans.api.progress," +
+            "org.netbeans.core.multiview," +
+            "org.openide.filesystems," +
+            "org.openide.modules," +
+            "org.openide.util," +
+            "org.netbeans.core.execution," +
+            "org.netbeans.core.output2," +
+            "org.netbeans.core.ui," +
+            "org.netbeans.core.windows," +
+            "org.netbeans.core," +
+            "org.netbeans.modules.favorites," +
+            "org.netbeans.modules.javahelp," +
+            "org.netbeans.modules.masterfs," +
+            "org.netbeans.modules.queries," +
+            "org.netbeans.modules.settings," +
+            "org.netbeans.swing.plaf," +
+            "org.netbeans.swing.tabcontrol," +
+            "org.openide.actions," +
+            "org.openide.awt," +
+            "org.openide.dialogs," +
+            "org.openide.execution," +
+            "org.openide.explorer," +
+            "org.openide.io," +
+            "org.openide.loaders," +
+            "org.openide.nodes," +
+            "org.openide.options," +
+            "org.openide.text," +
+            "org.openide.windows," +
+            "org.openide.util.enumerations" +
+            "");
+        ep.setProperty("jnlp.servlet.jar", someJar.toString());
+        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(suite);
+        LOG.info("Properties stored");
+        
+        SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
+        assertNotNull("Provider is here");
+        
+        List l = Arrays.asList(p.getSupportedActions());
+        assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
+/*
+        WeakReference<?> ref = new WeakReference<Object>(suite);
+        suite = null;
+        assertGC("Project can go away", ref);
+        
+        NbPlatform nbp = suite.getPlatform(false);
+        assertNotNull("Platform is associated", nbp);
+        assertEquals(copyP.getParentFile(), nbp.getDestDir());
+        */
+        DialogDisplayerImpl.returnFromNotify(null);
+        LOG.info("invoking build-jnlp");
+        ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
+        LOG.info("Invocation started");
+        
+        assertNotNull("Task was started", task);
+        LOG.info("Waiting for task to finish");
+        task.waitFinished();
+        LOG.info("Checking the result");
+        assertEquals("Finished ok", 0, task.result());
+        LOG.info("Testing the content of the directory");
+        
+        FileObject[] arr = suite.getProjectDirectory().getChildren();
+        List<FileObject> subobj = new ArrayList<FileObject>(Arrays.asList(arr));
+        subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
+        subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
+        subobj.remove(suite.getProjectDirectory().getFileObject("build.xml"));
+        FileObject master = suite.getProjectDirectory().getFileObject("master.jnlp");
+        assertNotNull("Master must be created", master);
+        FileObject branding = suite.getProjectDirectory().getFileObject("branding.jnlp");
+        assertNotNull("Branding must be created", branding);
+        subobj.remove(master);
+        subobj.remove(branding);
+        subobj.remove(suite.getProjectDirectory().getFileObject("build"));
+        FileObject dist = suite.getProjectDirectory().getFileObject("dist");
+        assertNotNull("dist created", dist);
+        subobj.remove(dist);
+        
+        if (!subobj.isEmpty()) {
+            fail("There should be no created directories in the suite dir: " + subobj);
+        }   
+        
+        FileObject war = dist.getFileObject("fakeapp.war");
+        assertNotNull("War file created: " + war, war);
+        
+        File warF = FileUtil.toFile(war);
+        JarFile warJ = new JarFile(warF);
+        Enumeration en = warJ.entries();
+        int cntJnlp = 0;
+        while (en.hasMoreElements()) {
+            JarEntry entry = (JarEntry)en.nextElement();
+            if (!entry.getName().endsWith(".jnlp")) {
+                continue;
+            }
+            cntJnlp++;
+
+            byte[] data = new byte[(int)entry.getSize()];
+            int len = 0;
+            InputStream is = warJ.getInputStream(entry);
+            for(int pos = 0; pos < data.length; ) {
+                int r = is.read(data, pos, data.length - pos);
+                pos += r;
+                len += r;
+            }
+            is.close();
+            assertEquals("Correct data read: " + entry, data.length, len);
+            
+            String s = new String(data);
+            if (s.indexOf(getWorkDir().getName()) >= 0) {
+                fail("Name of work dir in a file, means that there is very likely local reference to a file: " + entry + "\n" + s);
+            }
+        }
+        
+        if (cntJnlp == 0) {
+            fail("There should be at least one jnlp entry");
+        }
+    }
+    
     private static String readFile(final FileObject fo) throws IOException, FileNotFoundException {
         // write user modified version of the file
         byte[] arr = new byte[(int)fo.getSize()];
@@ -383,6 +562,30 @@ public class GenerateJNLPApplicationTest extends TestBase {
         String s = new String(arr);
         is.close();
         return s;
+    }
+
+    private void copyFiles(File from, File to) throws IOException {
+        LOG.fine("Copy " + from + " to " + to);
+        if (from.isDirectory()) {
+            to.mkdirs();
+            for (File f : from.listFiles()) {
+                copyFiles(f, new File(to, f.getName()));
+            }
+        } else {
+            byte[] arr = new byte[4096];
+            FileInputStream is = new FileInputStream(from);
+            FileOutputStream os = new FileOutputStream(to);
+            for (;;) {
+                int r = is.read(arr);
+                if (r == -1) {
+                    break;
+                }
+                os.write(arr, 0, r);
+            }
+            is.close();
+            os.close();
+        }
+        
     }
     
     private File createNewJarFile (String prefix) throws IOException {

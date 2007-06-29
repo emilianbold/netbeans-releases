@@ -294,6 +294,64 @@ public class MakeJNLPTest extends NbTestCase {
         }
         
     }
+    public void testGenerateJNLPForMissingRegularModule() throws Exception {
+        Manifest m;
+        
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.netbeans.core.startup");
+        File simpleJar = generateJar ("modules/", new String[0], m, null);
+        File coreJar = new File(simpleJar.getParentFile(), "core.jar");
+        simpleJar.renameTo(coreJar);
+        simpleJar = coreJar;
+
+        File parent = simpleJar.getParentFile ();
+        File localizedJarCZ = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "core_cs.jar")));
+        
+        File updateTracking = new File(getWorkDir(), "update_tracking");
+        updateTracking.mkdirs();
+        assertTrue("Created", updateTracking.isDirectory());
+        
+        File trackingFile = new File(updateTracking, "org-netbeans-core-startup.xml");
+        FileWriter w = new FileWriter(trackingFile);
+        w.write(
+"<?xml version='1.0' encoding='UTF-8'?>\n" +
+"<module codename='org.my.module/3'>\n" +
+    "<module_version specification_version='3.22' origin='installer' last='true' install_time='1124194231878'>\n" +
+        "<file name='modules/" + simpleJar.getName() + "' crc='3245456472'/>\n" +
+        "<file name='config/Modules/org-netbeans-core-startup.xml' crc='43434' />\n" +
+        "<file name='modules/locale/core_cs.jar' crc='454244' />\n" +
+        "<file name='modules/locale/core_ja.jar' crc='779831' />\n" +
+        "<file name='modules/locale/core_zh_CN.jar' crc='475345' />\n" +
+"    </module_version>\n" +
+"</module>\n"
+        );
+        w.close();
+        
+        
+        File output = new File(parent, "output");
+        File ks = generateKeystore("jnlp", "netbeans-test");
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" + 
+            "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' verify='true' >" +
+            "    <modules dir='" + parent + "' >" +
+            "      <include name='" + simpleJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertFilenames(output, "org-netbeans-core-startup.jnlp",
+                "org-netbeans-core-startup/core.jar",
+                "org-netbeans-core-startup/locale-core_cs.jar");
+    }
     
     public void testGenerateJNLPAndSignedJarForSimpleLocalizedModule() throws Exception {
         Manifest m;
@@ -393,6 +451,64 @@ public class MakeJNLPTest extends NbTestCase {
             }
             fail ("File does not seem to be signed: " + jar);
         }
+    }
+    public void testGenerateJNLPForMissingCoreIssue103301() throws Exception {
+        Manifest m;
+        
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.netbeans.core.startup");
+        File simpleJar = generateJar ("core/", new String[0], m, null);
+        File coreJar = new File(simpleJar.getParentFile(), "core.jar");
+        simpleJar.renameTo(coreJar);
+        simpleJar = coreJar;
+
+        File parent = simpleJar.getParentFile ();
+        File localizedJarCZ = generateJar("core/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "core_cs.jar")));
+        
+        File updateTracking = new File(getWorkDir(), "update_tracking");
+        updateTracking.mkdirs();
+        assertTrue("Created", updateTracking.isDirectory());
+        
+        File trackingFile = new File(updateTracking, "org-netbeans-core-startup.xml");
+        FileWriter w = new FileWriter(trackingFile);
+        w.write(
+"<?xml version='1.0' encoding='UTF-8'?>\n" +
+"<module codename='org.my.module/3'>\n" +
+    "<module_version specification_version='3.22' origin='installer' last='true' install_time='1124194231878'>\n" +
+        "<file name='core/" + simpleJar.getName() + "' crc='3245456472'/>\n" +
+        "<file name='config/Modules/org-netbeans-core-startup.xml' crc='43434' />\n" +
+        "<file name='core/locale/core_cs.jar' crc='454244' />\n" +
+        "<file name='core/locale/core_ja.jar' crc='779831' />\n" +
+        "<file name='core/locale/core_zh_CN.jar' crc='475345' />\n" +
+"    </module_version>\n" +
+"</module>\n"
+        );
+        w.close();
+        
+        
+        File output = new File(parent, "output");
+        File ks = generateKeystore("jnlp", "netbeans-test");
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" + 
+            "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' verify='true' >" +
+            "    <modules dir='" + parent + "' >" +
+            "      <include name='" + simpleJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertFilenames(output, "org-netbeans-core-startup.jnlp",
+                "org-netbeans-core-startup/core.jar",
+                "org-netbeans-core-startup/locale-core_cs.jar");
     }
     
     public void testGenerateJNLPAndUnSignedJarForSimpleLocalizedModule() throws Exception {

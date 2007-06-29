@@ -147,6 +147,12 @@ public class MakeJNLP extends Task {
      * Signs or copies the given files according to the signJars variable value.
      */
     private void signOrCopy(File from, File to) {
+        if (!from.exists() && from.getParentFile().getName().equals("locale")) {
+            // skip missing locale files, probably the best fix for #103301
+            log("Localization file " + from + " is referenced, but cannot be found. Skipping.", Project.MSG_WARN);
+            return;
+        }
+        
         if (signJars) {
             getSignTask().setJar(from);
             getSignTask().setSignedjar(to);
@@ -256,6 +262,7 @@ public class MakeJNLP extends Task {
                     writeJNLP.write("  <resources locale='" + locale + "'>\n");
 
                     for (File n : files) {
+                        log("generating locale " + locale + " for " + n, Project.MSG_VERBOSE);
                         String name = n.getName();
                         String clusterRootPrefix = jar.getParent() + File.separatorChar;
                         String absname = n.getAbsolutePath();
