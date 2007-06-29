@@ -28,6 +28,7 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
@@ -68,6 +69,7 @@ public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
+    private CardLayout cLayout;
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");    
@@ -142,29 +144,15 @@ public class OptionsPanel extends JPanel {
         }
         
         model.setCurrent(category);                
-        // refresh central panel
-        pOptions.removeAll ();
-        final Dimension size;
-        JComponent component = category.getComponent();
         category.update(coltrollerListener, false);
-        size = component.getSize();
-        pOptions.add("Center",component);
-        // set title
-        Icon icon = category.getIcon ();
-        
-        // repaint
-        // repaint
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                if (!checkSize (size) && repaintAllowed) {
-                    revalidate ();                    
-                    repaint ();
-                }
-                if (model.getCurrent() != null) {
-                    ((CategoryButton) buttons.get (model.getCurrentCategoryID())).requestFocus ();
-                }
-            }
-        });
+        JComponent component = category.getComponent();        
+        final Dimension size = component.getSize();
+        pOptions.add(component, category.getCategoryName());
+        cLayout.show(pOptions, category.getCategoryName());
+        checkSize (size);
+        if (model.getCurrent() != null) {
+            ((CategoryButton) buttons.get (model.getCurrentCategoryID())).requestFocus();
+        }        
         firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
     }
         
@@ -201,11 +189,12 @@ public class OptionsPanel extends JPanel {
     private void initUI(String categoryName) {
         // central panel
         pOptions = new JPanel ();
-        pOptions.setLayout (new BorderLayout ());
+        cLayout = new CardLayout();
+        pOptions.setLayout (cLayout);
         pOptions.setPreferredSize (getUserSize());
         JLabel label = new JLabel (loc ("CTL_Loading_Options"));
         label.setHorizontalAlignment (label.CENTER);
-        pOptions.add ("Center", label);
+        pOptions.add (label, label.getText());//NOI18N
 
         // icon view
         pCategories2 = new JPanel (new GridBagLayout());        
@@ -221,7 +210,6 @@ public class OptionsPanel extends JPanel {
         // layout
         setLayout (new BorderLayout (10, 10));
 
-        //TODO: other border for non Mac
         pOptions.setBorder(new CompoundBorder(
                 new VariableBorder(null, null, borderMac, null),
                 BorderFactory.createEmptyBorder(0, 5, 5, 5)
@@ -506,5 +494,5 @@ public class OptionsPanel extends JPanel {
                 setNormal ();
             }
         }
-    }
+    }    
 }
