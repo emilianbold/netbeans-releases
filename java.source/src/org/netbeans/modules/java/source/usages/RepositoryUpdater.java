@@ -42,7 +42,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1636,33 +1635,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final SourceAnalyser sa = uqImpl.getSourceAnalyser();
                 assert sa != null;
                 List<String> classNames = new ArrayList<String>();
-                for (File f : affectedFiles) {
-                    if (f.getName().endsWith(FileObjects.RS)) {
-                        List<File> rsFiles = new LinkedList<File>();
-                        readRSFile(f, classCache, rsFiles);
-                        for (File rsf : rsFiles) {
-                            String className = FileObjects.getBinaryName (rsf,classCache);                                                                        
-                            classNames.add(className);
-                            removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                            rsf.delete();
-                        }
-                    }
-                    else {
-                        String className = FileObjects.getBinaryName (f,classCache);                                                                        
-                        classNames.add(className);
-                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                    }
-                    f.delete();                    
-                }
-                //find dependent files:
-                Collection<ElementHandle<TypeElement>> classes = new ArrayList<ElementHandle<TypeElement>>();
-                for (String s : classNames) {
-                    classes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, s));
-                }
+                getFiles (affectedFiles, classCache, classNames, removed);
+                //find dependent files:                
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
                 ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (rootFO, filter, true, false);
-                toReparse = RebuildOraculum.findAllDependent(rootFile, rootFO, cpInfo.getClassIndex(), classes);
+                toReparse = RebuildOraculum.findAllDependent(rootFile, rootFO, cpInfo.getClassIndex(), removed);
                 //actually delete the sig files:
                 for (String s : classNames) {
                     sa.delete(s);
@@ -1673,6 +1651,31 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             
             return toReparse;
         }
+        
+        private void getFiles (final File[] affectedFiles, final File classCache, final List<? super String> classNames, Set<ElementHandle<TypeElement>> removed) throws IOException {
+            for (File f : affectedFiles) {
+                if (f.isDirectory()) {
+                    getFiles (f.listFiles(),classCache, classNames, removed);
+                }
+                else if (f.getName().endsWith(FileObjects.RS)) {
+                    List<File> rsFiles = new LinkedList<File>();
+                    readRSFile(f, classCache, rsFiles);
+                    for (File rsf : rsFiles) {
+                        String className = FileObjects.getBinaryName (rsf,classCache);                                                                        
+                        classNames.add(className);
+                        removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                        rsf.delete();
+                    }
+                }
+                else {
+                    String className = FileObjects.getBinaryName (f,classCache);                                                                        
+                    classNames.add(className);
+                    removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                }
+                f.delete();                    
+            }
+        }
+        
         
         private void updateBinary (final URL file, final URL root) throws IOException {            
             CachingArchiveProvider.getDefault().clearArchive(root);                       
