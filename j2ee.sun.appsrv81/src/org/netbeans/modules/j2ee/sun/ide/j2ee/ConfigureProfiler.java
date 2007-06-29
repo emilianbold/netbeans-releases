@@ -74,14 +74,14 @@ public class ConfigureProfiler {
         String ext = (isUnix() ? "conf" : "bat");
         File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
         if (null == irf || !irf.exists()) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"installRoot issue");
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"installRoot issue");
             return false;
         }
         String installRoot = irf.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         String asEnvScriptFilePath  = installRoot+"/config/asenv." + ext;
         File asEnvScriptFile = new File(asEnvScriptFilePath);
         if (!asEnvScriptFile.canWrite()) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"asenv issue");
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"asenv issue");
             return false;
         }
         String lineBreak = System.getProperty("line.separator");
@@ -122,24 +122,24 @@ public class ConfigureProfiler {
             return true;
             
         } catch (RuntimeException re) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"",re);
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"",re);
             return false;
         } catch (Exception ex) {
-            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.SEVERE,"",ex);
+            Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINER,"",ex);
             return false;
         } finally {
             if (br != null) {
                 try {
                     br.close();
                 } catch (IOException ioe) {
-                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.WARNING,"",ioe);
+                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINEST,"",ioe);
                 }
             }
             if (fw != null) {
                 try {
                     fw.close();
                 } catch (IOException ioe) {
-                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.WARNING,"",ioe);
+                    Logger.getLogger(ConfigureProfiler.class.getName()).log(Level.FINEST,"",ioe);
                 }
             }
         }
