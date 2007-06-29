@@ -38,9 +38,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.earproject.EarProject.ProjectOpenedHookImpl;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
+import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -186,15 +186,15 @@ public class EarProjectTest extends NbTestCase {
      * case of suite for example generate the build.xml.
      */
     public static void openProject(final EarProject p) {
-        ProjectOpenedHookImpl hook = (ProjectOpenedHookImpl) p.getLookup().lookup(ProjectOpenedHook.class);
+        ProjectOpenedHook hook = p.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("has an OpenedHook", hook);
-        hook.projectOpened(); // protected but can use package-private access
+        ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
     }
 
     public static void closeProject(final EarProject p) {
-        ProjectOpenedHookImpl hook = (ProjectOpenedHookImpl) p.getLookup().lookup(ProjectOpenedHook.class);
+        ProjectOpenedHook hook = p.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("has an OpenedHook", hook);
-        hook.projectClosed(); // protected but can use package-private access
+        ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
     }
 
     /**
