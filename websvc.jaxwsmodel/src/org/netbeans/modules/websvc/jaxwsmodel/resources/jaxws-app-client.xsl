@@ -171,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:attribute>
                 </target>
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <carproject:javac srcdir="${{build.generated.dir}}/wsimport/client" destdir="${{classes.dir}}"/>
+                    <carproject:javac srcdir="${{build.generated.dir}}/wsimport/client" destdir="${{classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
             </xsl:if>
  
