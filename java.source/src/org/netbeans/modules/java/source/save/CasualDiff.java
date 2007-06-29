@@ -28,7 +28,6 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
-import org.netbeans.modules.java.source.query.Query;
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
@@ -574,19 +573,38 @@ public class CasualDiff {
     }
 
     protected int diffForLoop(JCForLoop oldT, JCForLoop newT, int[] bounds) {
-        int localPointer = bounds[0];
-
-        copyTo(bounds[0], localPointer = getOldPos(oldT.init.head));
+        int localPointer;
+        
+        // initializer
+        if (oldT.init.nonEmpty()) {
+            // there is something in the init section, using start offset
+            localPointer = getOldPos(oldT.init.head);
+        } else {
+            TokenUtilities.moveFwdToToken(tokenSequence, bounds[0], JavaTokenId.SEMICOLON);
+            localPointer = tokenSequence.offset();
+        }
+        copyTo(bounds[0], localPointer);
         localPointer = diffParameterList(oldT.init, newT.init, null, localPointer, Measure.ARGUMENT);
-        copyTo(localPointer, localPointer = getOldPos(oldT.cond));
-        localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
+        
+        // condition
+        if (oldT.cond != null) {
+            copyTo(localPointer, localPointer = getOldPos(oldT.cond));
+            localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
+        } else {
+            TokenUtilities.moveFwdToToken(tokenSequence, localPointer, JavaTokenId.SEMICOLON);
+            copyTo(localPointer, localPointer = tokenSequence.offset());
+        }
+        
+        // steps
         if (oldT.step.nonEmpty()) 
             copyTo(localPointer, localPointer = getOldPos(oldT.step.head));
         else {
-            int stepListHint = oldT.cond != null ? endPos(oldT.cond) + 1 : Query.NOPOS;
-            copyTo(localPointer, localPointer = stepListHint);
+            TokenUtilities.moveFwdToToken(tokenSequence, localPointer, JavaTokenId.SEMICOLON);
+            tokenSequence.moveNext();
+            copyTo(localPointer, localPointer = tokenSequence.offset());
         }
         localPointer = diffParameterList(oldT.step, newT.step, null, localPointer, Measure.ARGUMENT);
+        
         // body
         int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
         localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
