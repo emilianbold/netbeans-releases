@@ -187,28 +187,9 @@ MARK:html_attribute_name: {
     message:"Deprecated attribute.";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
 }
-#COMPLETION:TAG_OPEN: {
-#    text1:org.netbeans.modules.html.editor.HTML.tags; 
-#}
-#COMPLETION:TAG_CLOSE: {
-#    text1:org.netbeans.modules.html.editor.HTML.tags; 
-#}
-#COMPLETION:TAG_OPEN_SYMBOL: {
-#    text1:org.netbeans.modules.html.editor.HTML.tags; 
-#}
-#COMPLETION:ARGUMENT: {
-#    text1:org.netbeans.modules.html.editor.HTML.attributes; 
-#}
-#COMPLETION:WS: {
-#    text1:org.netbeans.modules.html.editor.HTML.attributes; 
-#}
-
-#PROPERTIES {
-#    ignoreCase:"true";
-#}
-
 
 #PROPERTIES {
 #    printFirst: "true";
 #    printRules: "true";
+#    ignoreCase:"true";
 #}
