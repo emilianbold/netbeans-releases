@@ -120,6 +120,7 @@ is divided into following sections:
                     <and>
                         <istrue value="${{display.browser}}"/>
                         <!-- See issue 107504 -->
+                        <isset property="client.module.uri"/>
                         <not>
                             <isset property="app.client"/>
                         </not>
