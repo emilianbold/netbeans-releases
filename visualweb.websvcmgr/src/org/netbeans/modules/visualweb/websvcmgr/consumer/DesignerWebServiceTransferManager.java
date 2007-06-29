@@ -153,6 +153,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
         }else {
             ClassPath cp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
             boolean hasJaxWs = cp.findResource("javax/xml/ws/Service.class") != null; // NOI18N
+            hasJaxWs = cp.findResource("com/sun/xml/ws/spi/ProviderImpl.class") != null; // NO18N
             return !hasJaxWs;
         }
     }
