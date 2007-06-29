@@ -427,8 +427,17 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     protected Widget attachEdgeWidget(NavigationCaseEdge edge) {
         assert edge != null;
         
-        VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, scheme);
-        
+
+        VMDConnectionWidget connectionWidget;
+ 
+        if( edge.isModifiable() ) {
+           connectionWidget = new VMDConnectionWidget(this, scheme);
+        } else {
+            connectionWidget = new VMDConnectionWidget(this, new PFENotModifiableScheme());
+        }
+        connectionWidget.setRouter(router);
+
+
         LabelWidget label = new LabelWidget(this, edge.getName());
         label.setOpaque(true);
         label.getActions().addAction(
@@ -449,7 +458,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     }
     
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName ){
-        VMDConnectionWidget2 edgeWidget = (VMDConnectionWidget2) findWidget(edge);
+        VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
         List<Widget> widgets = edgeWidget.getChildren();
         for( Widget widget : widgets ){
             if( widget instanceof LabelWidget && ((LabelWidget)widget).getLabel().equals(oldName)){
