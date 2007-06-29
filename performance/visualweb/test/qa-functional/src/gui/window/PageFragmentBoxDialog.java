@@ -127,7 +127,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         log("::shutdown");
         surface.closeDiscard();
         try {
-            new TopComponentOperator(Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
+            //new TopComponentOperator(Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
             new PropertySheetOperator("Page1").close();   
         } catch (TimeoutExpiredException timeoutExpiredException) {
             //do nothing...can be not opened properties and help tabs

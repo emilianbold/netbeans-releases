@@ -134,7 +134,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
     protected void shutdown() {
         log("::shutdown");        
         try {
-            new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
+            //new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
             new PropertySheetOperator("Page1").close();            
         } catch (TimeoutExpiredException timeoutExpiredException) {
             //do nothing...can be not opened properties and help tabs

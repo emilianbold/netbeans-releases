@@ -95,7 +95,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
         log(":: shutdown");
         surface.closeDiscard();
         try {
-            new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
+            //new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();            
             new PropertySheetOperator("Page1").close();            
             
         } catch (TimeoutExpiredException timeoutExpiredException) {

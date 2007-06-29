@@ -82,7 +82,7 @@ public class PageStyleSheetDialog extends org.netbeans.performance.test.utilitie
         log(":: shutdown");
         pto.close();
         try {
-            new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();
+            //new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.ravehelp.dynamichelp.Bundle", "MSG_DynamicHelpTab_name")).close();
         } catch (TimeoutExpiredException timeoutExpiredException) {
             // do nothing 
         }
