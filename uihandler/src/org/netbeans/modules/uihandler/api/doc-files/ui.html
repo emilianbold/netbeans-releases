@@ -9,7 +9,7 @@
 <body>
 <h1>UI of Gestures Collector</h1>
 <dl>
- <dt><em>Ve rsion:</em></dt>
+ <dt><em>Version:</em></dt>
  <dd>$Date$</dd>
  <dt><em>Author:</em></dt>
  <dd>Jaroslav  Tulach</dd>
@@ -28,7 +28,7 @@
 <h3>Scenario: We need returning users</h3>
 
 <p>
-    Important user actions are recorded and remember in the memory 
+    Important user actions are recorded and remember in the system
     when the UI Gestures Collector is installed. In order for the gesture
     collector to be useful, it is necessary to convince the user to 
     upload these information to our collecting server for processing.
@@ -40,14 +40,14 @@
     It is important to find the <q>right moment</q> for offering the user to do
     the upload. Current proposal counts with two options - when an exception
     occurs, the user is offered to send feedback to the server, also there
-    is a UI button in the toolbar that shall visually attract user attention
+    is a UI button in the status bar that shall visually attract user attention
     and encourage him to submit the data.
 </p>
 
 <p>
     The range of "useful information" is wide and can be improved in future,
     however for purposes of this document it is enough to think about it
-    just as a inteligent "Tip of the Day". Based on the submitted data and
+    just as an inteligent "Tip of the Day". Based on the submitted data and
     possibly the previous UI logs already submitted to the server, it
     is possible to select more appropriate "tip of the Day". In the simplest
     scenario it is definitely possible to find out what project types the
@@ -66,7 +66,8 @@
 <h3>Scenario: We need confident users</h3>
 
 <p>
-    People do not generally like to send information about themselves to someone
+    Not all people like to sign bianco checks. Many of them 
+    do not like to send information about themselves to someone
     else. We need to gain a certain amount of trust and convince them that
     sending data gathered by UI Gestures Collector is safe. Indeed one 
     way to built the trust up is the trading of useful information back as 
@@ -139,28 +140,28 @@
 <h3>Submittion Button</h3>
 
 <p>
-    This button shall be placed in a toolbar and shall encourage user to
+    This button shall be placed in a status bar and shall encourage user to
     click on it and upload data to the server:
 </p>
 
 <center>
 <pre>
 /---\
-| X |
+|   |
 \---/
 </pre>
 </center>
 <p>
-    The X represents the number of so far recorded events and the background
-    is a "circle" with an "arc" of already recorded actions from the expected
-    maximum (currently 1000). TBD: There needs to be some blicking and flicking
-    when the number of actions is above 500.
+    The button visually indicates the growing 
+    number of so far recorded events by being a "circle" with 
+    an "arc" of already recorded actions from the expected
+    maximum (currently 1000). 
 </p>
 
 <h3>Submittion Dialog</h3>
 
 <p>
-    This dialog appears when the user presses the button in toolbar:
+    This dialog appears when the user presses the button in status bar:
 </p>
 
 <pre>
