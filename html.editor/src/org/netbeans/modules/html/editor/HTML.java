@@ -120,9 +120,9 @@ public class HTML {
     // private methods .........................................................
 
     private static String tagName (TokenSequence ts) {
-        while (!ts.token ().id ().name ().equals ("html_element_name"))
+        while (!ts.token ().id ().name ().equals ("tag")) //NOI18N
             if (!ts.movePrevious ()) break;
-        if (!ts.token ().id ().name ().equals ("html_element_name")) 
+        if (!ts.token ().id ().name ().equals ("tag")) //NOI18N
             return null;
         return ts.token ().text ().toString ().toLowerCase ();
     }
