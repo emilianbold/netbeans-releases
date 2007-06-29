@@ -424,18 +424,20 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
           return false;
         }
         
-        String j2eeLevel = (String) wizardDescriptor.getProperty("j2eeLevel"); //NOI18N
-        String currentServerInstanceID = (String) wizardDescriptor.getProperty("serverInstanceID"); //NOI18N
-        if (j2eeLevel != null && currentServerInstanceID != null) {
-            boolean currentWebModule25Version;
-            if (j2eeLevel.equals("1.5")) //NOI81N
-                currentWebModule25Version = true;
-            else
-                currentWebModule25Version = false;
-            if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
-                webModule25Version = currentWebModule25Version;
-                serverInstanceID = currentServerInstanceID;
-                initLibSettings(webModule25Version, serverInstanceID);
+        if (wizardDescriptor != null) {
+            String j2eeLevel = (String) wizardDescriptor.getProperty("j2eeLevel"); //NOI18N
+            String currentServerInstanceID = (String) wizardDescriptor.getProperty("serverInstanceID"); //NOI18N
+            if (j2eeLevel != null && currentServerInstanceID != null) {
+                boolean currentWebModule25Version;
+                if (j2eeLevel.equals("1.5")) //NOI81N
+                    currentWebModule25Version = true;
+                else
+                    currentWebModule25Version = false;
+                if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
+                    webModule25Version = currentWebModule25Version;
+                    serverInstanceID = currentServerInstanceID;
+                    initLibSettings(webModule25Version, serverInstanceID);
+                }
             }
         }
         
@@ -509,7 +511,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
     
     void read (WizardDescriptor d) {
-        if (d.getProperty("j2eeLevel").equals("1.5")) //NOI81N
+        if ("1.5".equals(d.getProperty("j2eeLevel"))) //NOI81N
             webModule25Version = true;
         else
             webModule25Version = false;
