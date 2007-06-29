@@ -18,8 +18,8 @@
  */
 package org.netbeans.modules.localhistory.store;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
  *
@@ -30,11 +30,17 @@ public interface LocalHistoryStore {
     
     
     /**
-     * Indicates that the storage has changed.
+     * Indicates that a files history has changed. 
      * First parameter: File which history has changed
      */
-    public String PROPERTY_CHANGED = "LocalHistoryStore.changed";               // NOI18N  
-        
+    public Object EVENT_HISTORY_CHANGED = new Object();
+
+    /**
+     * Indicates that an enmtry from a files history has been deleted
+     * First parameter: File which entry has been deleted from its history
+     */    
+    public Object EVENT_ENTRY_DELETED = new Object();
+    
     /**
      * Marks in the given files history that it was created with timestamp ts. The files content won't 
      * be copied into the storage until a change is notified via fileChange(). 
@@ -95,14 +101,14 @@ public interface LocalHistoryStore {
      * 
      * @param l the property change listener
      */
-    public void addPropertyChangeListener(PropertyChangeListener l);
+    public void addVersioningListener(VersioningListener l);
     
     /**
      * Removes a property change listener
      * 
      * @param l the property change listener
      */
-    public void removePropertyChangeListener(PropertyChangeListener l);
+    public void removeVersioningListener(VersioningListener l);
     
     /**
      * Returns all entries for a file

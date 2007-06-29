@@ -21,8 +21,6 @@ package org.netbeans.modules.localhistory.ui.view;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -40,6 +38,8 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.Node;
@@ -51,7 +51,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryFileView implements PropertyChangeListener {
+public class LocalHistoryFileView implements VersioningListener {
            
     private FileTablePanel tablePanel;             
     private File[] files;
@@ -60,7 +60,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
     
     public LocalHistoryFileView() {                       
         tablePanel = new FileTablePanel();        
-        LocalHistory.getInstance().getLocalHistoryStore().addPropertyChangeListener(this); 
+        LocalHistory.getInstance().getLocalHistoryStore().addVersioningListener(this); 
     }            
 
     public void refresh(File[] files) {
@@ -71,12 +71,13 @@ public class LocalHistoryFileView implements PropertyChangeListener {
         this.files = files;                        
         refreshTablePanel(toSelect);                       
     }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(LocalHistoryStore.PROPERTY_CHANGED.equals(evt.getPropertyName())) {
+
+    public void versioningEvent(VersioningEvent evt) {
+        if(LocalHistoryStore.EVENT_HISTORY_CHANGED == evt.getId() ||
+           LocalHistoryStore.EVENT_ENTRY_DELETED == evt.getId()     ) {
             storeChanged(evt);
         }
-    }
+    }    
     
     public ExplorerManager getExplorerManager() {
         return tablePanel.getExplorerManager();
@@ -99,7 +100,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
     }
     
     public void close() {
-        LocalHistory.getInstance().getLocalHistoryStore().removePropertyChangeListener(this);
+        LocalHistory.getInstance().getLocalHistoryStore().removeVersioningListener(this);
     }    
     
     private Node getNode(long ts) {
@@ -122,12 +123,9 @@ public class LocalHistoryFileView implements PropertyChangeListener {
         return null;
     }
     
-    private void storeChanged(PropertyChangeEvent evt) {
-        Object newValue = evt.getNewValue();
-        Object oldValue = evt.getOldValue();
-        if( newValue != null && contains( (File) newValue ) || 
-            oldValue != null && contains( (File) oldValue ) ) 
-        {
+    private void storeChanged(VersioningEvent evt) {
+        Object value = evt.getParams()[0];
+        if(value != null && contains((File)value)) {
             refreshTablePanel(-1);   
         } 
     }

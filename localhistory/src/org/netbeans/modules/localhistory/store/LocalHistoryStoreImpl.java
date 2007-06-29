@@ -19,8 +19,6 @@
 package org.netbeans.modules.localhistory.store;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;  
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -51,6 +49,8 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
+import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
@@ -70,7 +70,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private File storage;
     private Turbo turbo;
     private DataFilesTurboProvider cacheProvider;
-    private final PropertyChangeSupport propertyChangeSupport;
+    private final ListenersSupport listenersSupport;
     
     private static List<HistoryEntry> emptyHistory = new ArrayList<HistoryEntry>(0);
     private static Map<Long, String> emptyLabels = new HashMap<Long, String>();
@@ -88,7 +88,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     LocalHistoryStoreImpl() {        
         initStorage();
         
-        propertyChangeSupport = new PropertyChangeSupport(this);
+        listenersSupport = new ListenersSupport(this);
         
         cacheProvider = new DataFilesTurboProvider();                
         turbo = Turbo.createCustom(
@@ -130,7 +130,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             // XXX consider also touching the parent - yes (collisions, ...)
             writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)}, true);                        
         }
-        fireChanged(null, file);        
+        fireChanged(file);        
     }
     
     public synchronized void fileChange(File file, long ts) {
@@ -158,7 +158,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
             }             
         }
-        fireChanged(null, file);        
+        fireChanged(file);        
     }
     
     public synchronized void fileDelete(File file, long ts) {
@@ -167,7 +167,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }      
-        fireChanged(null, file);
+        fireChanged(file);
     }
 
     private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {        
@@ -206,7 +206,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }
-        fireChanged(null, to);        
+        fireChanged(to);        
     }
 
     public synchronized void fileDeleteFromMove(File from, File to, long ts) {
@@ -215,7 +215,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }        
-        fireChanged(null, from);        
+        fireChanged(from);        
     }    
 
     private long lastModified(File file) {   
@@ -420,7 +420,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             storeFile.delete();    
         }                
         // XXX delete from parent history    
-        fireChanged(file, null);
+        fireDeleted(file);
     }
 
     public synchronized StoreEntry[] getDeletedFiles(File root) {
@@ -575,12 +575,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return;        
     }    
     
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(l);
+    public synchronized void addVersioningListener(VersioningListener l) {
+        listenersSupport.addListener(l);
     }
     
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener(l);
+    public synchronized void removeVersioningListener(VersioningListener l) {
+        listenersSupport.removeListener(l);
     }
 
     public void cleanUp(final long ttl) {        
@@ -765,13 +765,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }                
     }
     
-    private void fireChanged(File oldValue, File newValue) {
-        propertyChangeSupport.firePropertyChange(
-            new PropertyChangeEvent(
-                    this, 
-                    LocalHistoryStore.PROPERTY_CHANGED, 
-                    oldValue, 
-                    newValue));
+    private void fireChanged(File file) {
+        listenersSupport.fireVersioningEvent(EVENT_HISTORY_CHANGED, file);                
+    }        
+
+    private void fireDeleted(File file) {
+        listenersSupport.fireVersioningEvent(EVENT_ENTRY_DELETED, file);                
     }        
     
     private void touch(File file, StoreDataFile data) throws IOException {      
