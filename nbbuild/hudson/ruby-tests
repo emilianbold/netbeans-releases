@@ -1,7 +1,7 @@
 #!/bin/sh
 source ruby
 
-rm nbbuild/nbproject/private/scan-cache-full.ser nbbuild/nbproject/private/scan-cache-standard.ser
+rm -f nbbuild/nbproject/private/scan-cache-full.ser nbbuild/nbproject/private/scan-cache-standard.ser
 ant -f nbbuild/build.xml all-xtest
 ant -f lexer/test/build.xml buildtests
 ant -f scripting/ruby/build.xml runtests
