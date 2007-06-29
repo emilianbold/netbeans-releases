@@ -161,8 +161,8 @@ public final class CategoryModel implements LookupListener {
         item.setCurrent();
     }
 
-    void setHighlited(Category item) {
-        item.setHighlited();
+    void setHighlited(Category item,boolean highlited) {
+        item.setHighlited(highlited);
     }
             
     HelpCtx getHelpCtx() {
@@ -215,30 +215,38 @@ public final class CategoryModel implements LookupListener {
     }
     
     
-    void setNextCategoryAsCurrent() {
+    Category getNextCategory() {
         int idx =  findCurrentCategoryID(getCurrentCategoryID());
         String[] categoryIDs = getCategoryIDs();
-        if (idx >= 0 && idx+1 < categoryIDs.length) {
-            currentCategoryID = categoryIDs[idx+1];
-        }  else {
-            currentCategoryID = null;
-        }
-    }
-    
-    void setPreviousCategoryAsCurrent() {
-        int idx =  findCurrentCategoryID(getCurrentCategoryID());
-        String[] categoryIDs = getCategoryIDs();
+        String nextId = "";
         if (idx >= 0 && idx < categoryIDs.length && categoryIDs.length > 0) {
-            if (idx-1 >= 0) {
-                currentCategoryID = categoryIDs[idx-1];
+            if (idx+1 < categoryIDs.length) {
+                nextId = categoryIDs[idx+1];
             }  else {
-                currentCategoryID = categoryIDs[categoryIDs.length-1];
+                nextId = categoryIDs[0];
             }
         } else {
-            currentCategoryID = null;
+            nextId = null;
         }
+        return nextId != null ? getCategory(nextId) : null;
     }
     
+    Category getPreviousCategory() {
+        int idx =  findCurrentCategoryID(getCurrentCategoryID());
+        String[] categoryIDs = getCategoryIDs();
+        String previousId = "";
+        if (idx >= 0 && idx < categoryIDs.length && categoryIDs.length > 0) {
+            if (idx-1 >= 0) {
+                previousId = categoryIDs[idx-1];
+            }  else {
+                previousId = categoryIDs[categoryIDs.length-1];
+            }
+        } else {
+            previousId = null;
+        }
+        return previousId != null ? getCategory(previousId) : null;
+    }
+        
     
     Category getCategory(String categoryID) {
         categoryTask.waitFinished();
@@ -297,8 +305,12 @@ public final class CategoryModel implements LookupListener {
             setCurrentCategoryID(getID());
         }
 
-        private void setHighlited() {
-            highlitedCategoryID = getID();
+        private void setHighlited(boolean highlited) {
+            if (highlited) {
+                highlitedCategoryID = getID();
+            } else {
+                highlitedCategoryID = currentCategoryID;
+            }
         }
                         
         public Icon getIcon() {

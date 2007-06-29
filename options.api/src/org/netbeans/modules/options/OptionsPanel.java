@@ -31,6 +31,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -106,7 +108,7 @@ public class OptionsPanel extends JPanel {
         //generalpanel doesn't need lookup
         boolean isGeneralPanel = "General".equals(getCategoryID(categoryID));//NOI18N
         if (model.isLookupInitialized() || isGeneralPanel) {
-            setCurrentCategory(model.getCategory(getCategoryID(categoryID)), false);
+            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
             initActions();                        
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -122,7 +124,7 @@ public class OptionsPanel extends JPanel {
                             final Cursor cursor = frame.getCursor();
                             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            setCurrentCategory(model.getCategory(getCategoryID(categoryID)), true);
+                            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
                             initActions();
                             // reset cursor
                             frame.setCursor(cursor);
@@ -134,7 +136,7 @@ public class OptionsPanel extends JPanel {
         }
     }
     
-    private void setCurrentCategory (final CategoryModel.Category category, final boolean repaintAllowed) {
+    private void setCurrentCategory (final CategoryModel.Category category) {
         CategoryModel.Category oldCategory = model.getCurrent();
         if (oldCategory != null) {
             ((CategoryButton) buttons.get (oldCategory.getID())).setNormal ();
@@ -150,9 +152,9 @@ public class OptionsPanel extends JPanel {
         pOptions.add(component, category.getCategoryName());
         cLayout.show(pOptions, category.getCategoryName());
         checkSize (size);
-        if (model.getCurrent() != null) {
+        /*if (model.getCurrent() != null) {
             ((CategoryButton) buttons.get (model.getCurrentCategoryID())).requestFocus();
-        }        
+        } */       
         firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
     }
         
@@ -235,7 +237,7 @@ public class OptionsPanel extends JPanel {
             inputMap.put (
                 KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0), "UP"
             );
-            getActionMap ().put ("UP", new UpAction ());
+            getActionMap ().put ("UP", new PreviousAction ());
             inputMap.put (
                 KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0), 
                 "SPACE"
@@ -244,7 +246,7 @@ public class OptionsPanel extends JPanel {
             inputMap.put (
                 KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0),"DOWN"
             );
-            getActionMap ().put ("DOWN", new DownAction ());
+            getActionMap ().put ("DOWN", new NextAction ());
         }
     }
     
@@ -349,31 +351,28 @@ public class OptionsPanel extends JPanel {
             this.category = category;
         }
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (category, true);
+            setCurrentCategory (category);
         }
     }
-    
-    private class SelectCurrentAction extends AbstractAction {        
-        public void actionPerformed (ActionEvent e) {
-            Component c = FocusManager.getCurrentManager ().getFocusOwner ();
-            if (c instanceof CategoryButton) {
-                setCurrentCategory (((CategoryButton) c).category, true);
-                ((CategoryButton) c).setSelected ();
+        
+    private class SelectCurrentAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            CategoryModel.Category highlightedB = model.getCategory(model.getHighlitedCategoryID());            
+            if (highlightedB != null) {
+                setCurrentCategory(highlightedB);
             }
         }
     }
     
-    private class UpAction extends AbstractAction {
+    private class PreviousAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
-            model.setPreviousCategoryAsCurrent();
-            setCurrentCategory (model.getCurrent(), true);
+            setCurrentCategory (model.getPreviousCategory());
         }
     }
     
-    private class DownAction extends AbstractAction {
+    private class NextAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {            
-            model.setNextCategoryAsCurrent();
-            setCurrentCategory (model.getCurrent(), true);            
+            setCurrentCategory (model.getNextCategory());
         }
     }
     
@@ -405,18 +404,6 @@ public class OptionsPanel extends JPanel {
             }
             
             setNormal ();
-            addFocusListener(new FocusListener() {                
-                public void focusGained(FocusEvent e) {
-                    if (model.getCurrent() != null && !category.isCurrent()) {
-                        setHighlighted();
-                    }
-                }
-                public void focusLost(FocusEvent e) {
-                    if (model.getCurrent() != null && !category.isCurrent() && !isMac) {
-                        setNormal();
-                    }
-                }
-            });
         }
         
         void setNormal () {
@@ -464,7 +451,7 @@ public class OptionsPanel extends JPanel {
                         b.setNormal();
                     }
                 }
-                model.setHighlited(category);
+                model.setHighlited(category,true);
             }
         }
         
@@ -479,13 +466,15 @@ public class OptionsPanel extends JPanel {
 
         public void mouseReleased (MouseEvent e) {
             if (!category.isCurrent() && category.isHighlited() && model.getCurrent() != null) {
-                setCurrentCategory(category, true);
+                setCurrentCategory(category);
             }
         }
 
         public void mouseEntered (MouseEvent e) {
             if (!category.isCurrent() && model.getCurrent() != null) {
                 setHighlighted ();
+            } else {
+                model.setHighlited(model.getCategory(model.getHighlitedCategoryID()),false);
             }
         }
 
