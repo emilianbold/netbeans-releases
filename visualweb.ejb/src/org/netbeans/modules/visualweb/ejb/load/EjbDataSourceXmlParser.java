@@ -63,7 +63,8 @@ public class EjbDataSourceXmlParser extends DefaultHandler
             factory.setNamespaceAware( true );
             factory.setValidating( false );
             SAXParser parser = factory.newSAXParser();
-            parser.parse( xmlFileName, this );
+            File file = new File(xmlFileName);
+            parser.parse( file, this );
         }
         catch( java.io.IOException e )
         {
