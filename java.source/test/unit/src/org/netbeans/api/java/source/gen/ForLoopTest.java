@@ -93,7 +93,6 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    @SuppressWarnings("unchecked")
     public void testReplaceStmtWithBlock2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -122,7 +121,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
