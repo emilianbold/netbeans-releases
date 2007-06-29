@@ -124,8 +124,8 @@ public class ItemCD extends ComponentDescriptor {
         return Arrays.asList(
                 new PropertyDescriptor(PROP_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP),
                 new PropertyDescriptor(PROP_LAYOUT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (VALUE_LAYOUT_DEFAULT), false, true, MidpVersionable.MIDP),
-                new PropertyDescriptor(PROP_PREFERRED_HEIGHT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (0), false, true, MidpVersionable.MIDP_2),
-                new PropertyDescriptor(PROP_PREFERRED_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (0), false, true, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_PREFERRED_HEIGHT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (-1), false, true, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_PREFERRED_WIDTH, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (-1), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_COMMANDS, ItemCommandEventSourceCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(ItemCommandEventSourceCD.TYPEID), false, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_DEFAULT_COMMAND, ItemCommandEventSourceCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
                 new PropertyDescriptor(PROP_ITEM_COMMAND_LISTENER, ItemCommandListenerCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
