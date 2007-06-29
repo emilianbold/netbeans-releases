@@ -99,8 +99,9 @@ public class InstallManager {
                     assert false : "Config file found for " + installed;
                 }
             }
-            FileObject searchForFO = FileUtil.toFileObject (configFile);
-            for (File cluster : UpdateTracking.clusters (true)) {
+            FileObject searchForFO = FileUtil.toFileObject (configFile);            
+            for (File cluster : UpdateTracking.clusters (true)) {       
+                cluster = FileUtil.normalizeFile(cluster);
                 if (FileUtil.isParentOf (FileUtil.toFileObject (cluster), searchForFO)) {
                     res = cluster;
                     break;
