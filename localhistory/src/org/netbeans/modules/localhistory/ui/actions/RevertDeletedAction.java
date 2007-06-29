@@ -110,6 +110,11 @@ public class RevertDeletedAction extends NodeAction {
 
     private static void revert(StoreEntry se) {        
         File file = se.getFile();
+        if(file.exists()) {
+            // created externaly?
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping revert for file " + file.getAbsolutePath() + " which already exists.");
+            LocalHistory.getInstance().getLocalHistoryStore().fileCreate(file, file.lastModified());
+        }
         File storeFile = se.getStoreFile();
                 
         InputStream is = null;
