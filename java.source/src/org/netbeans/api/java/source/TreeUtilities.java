@@ -92,7 +92,20 @@ public final class TreeUtilities {
      * @throws NullPointerException if the given tree is null
      */
     public boolean isSynthetic(TreePath path) throws NullPointerException {
-        Tree leaf = path.getLeaf();
+        if (path == null)
+            throw new NullPointerException();
+        
+        while (path != null) {
+            if (isSynthetic(path.getCompilationUnit(), path.getLeaf()))
+                return true;
+            
+            path = path.getParentPath();
+        }
+        
+        return false;
+    }
+    
+    private boolean isSynthetic(CompilationUnitTree cut, Tree leaf) throws NullPointerException {
         JCTree tree = (JCTree) leaf;
         
         if (tree.pos == (-1))
@@ -100,7 +113,7 @@ public final class TreeUtilities {
         
         if (leaf.getKind() == Kind.METHOD) {
             //check for synthetic constructor:
-            return (((JCMethodDecl)path.getLeaf()).mods.flags & Flags.GENERATEDCONSTR) != 0L;
+            return (((JCMethodDecl)leaf).mods.flags & Flags.GENERATEDCONSTR) != 0L;
         }
         
         //check for synthetic superconstructor call:
@@ -116,7 +129,7 @@ public final class TreeUtilities {
                     if ("super".equals(it.getName().toString())) {
                         SourcePositions sp = info.getTrees().getSourcePositions();
                         
-                        return sp.getEndPosition(path.getCompilationUnit(), leaf) == (-1);
+                        return sp.getEndPosition(cut, leaf) == (-1);
                     }
                 }
             }
