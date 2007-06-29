@@ -192,6 +192,9 @@ public class ActionTracker {
     // awt event mask
     long awt_event_mask = -1;
     
+    /** Flag to print all logged events to System.out */
+    private boolean interactive;
+    
     //location for "actionTrackerXsl" file
     private static String actionTrackerXslLocation = "";
     
@@ -212,6 +215,13 @@ public class ActionTracker {
      * this is a singleton class. */
     private ActionTracker() {
         awt_event_mask = default_awt_event_mask;
+    }
+    
+    /** Turns on/off interactive mode.
+     */
+    void setInteractive(boolean interactive) {
+        this.interactive = interactive;
+        
     }
     
     /**
@@ -387,8 +397,7 @@ public class ActionTracker {
      */
     public void add(int code, String name, boolean measured) {
         EventList ce = getCurrentEvents();
-        Tuple t = new Tuple(code, name, ce != null ? ce.startMillies : (long)-1);
-        t.measured = measured;
+        Tuple t = new Tuple(code, name, System.nanoTime(), ce != null ? ce.startMillies : (long)-1, measured);
         add(t);
     }
     
@@ -785,12 +794,30 @@ public class ActionTracker {
         public String getName() {
             return name;
         }
+
+        @Override
+        public boolean add(Tuple o) {
+            if (interactive) {
+                int c = o.getCode();
+                if (c != TRACK_APPLICATION_MESSAGE && 
+                        c != TRACK_MOUSE_MOVED) {
+                    System.out.println(o.toString());
+                }
+                if (c == TRACK_MOUSE_RELEASE
+                        || c == TRACK_MOUSE_PRESS
+                        || c == TRACK_KEY_PRESS) {
+                    forgetAllEvents();
+                    startNewEventList("ad hoc");
+                }
+            }
+            return super.add(o);
+        }
         
         /**
          * String presentation of the event list
          * @return string presentation of the event list
          */
-        public String toString() {
+        @Override public String toString() {
             return getName()
                     + " (" + this.size() + ") "
                     + new Date(getStartMillis()).toString();
@@ -804,19 +831,19 @@ public class ActionTracker {
      */
     public final class Tuple {
         /** One of the ActionTracker.TRACK_xxx values */
-        int code;
+        private int code;
         
         /** name of the action */
-        String name;
+        private String name;
         
         /** time when action started */
-        long millies;
+        private long millies;
         
         /** difference from a "start" time in millis */
-        long diffies;
+        private long diffies;
         
         /** this tuple we measure - help to distinguish which action/paint has been measured */
-        boolean measured;
+        private boolean measured;
         
         /**
          * Create a tuple to track actions.
@@ -828,6 +855,16 @@ public class ActionTracker {
         public Tuple(int code, String name, long start) {
             this(code, name, System.nanoTime(), start);
         }
+        /**
+         * Create a tuple to track actions.
+         *
+         * @param code code of the action (one of the ActionTracker.TRACK_xxx values)
+         * @param name name of the action
+         * @param start time when action started
+         */
+        public Tuple(int code, String name, long millies, long start) {
+            this(code, name, millies, start, false);
+        }
         
         /**
          * Create a tuple to track actions.
@@ -836,12 +873,12 @@ public class ActionTracker {
          * @param start time when action started
          * @param millies current time
          */
-        public Tuple(int code, String name, long millies, long start) {
+        public Tuple(int code, String name, long millies, long start, boolean measured) {
             this.code = code;
             this.name = name;
             this.millies = millies;
             this.diffies = millies - start;
-            this.measured = false;
+            this.measured = measured;
             //System.err.println("new ActionTracker.Tuple " + toString()+" ,start="+start);
         }
         
