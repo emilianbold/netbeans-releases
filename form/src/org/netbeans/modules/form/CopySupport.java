@@ -313,12 +313,15 @@ class CopySupport {
                 // we can copy the layout to the new layout?
                 for (RADComponent sourceComp : sourceComponents) {
                     if (sourceComp instanceof RADVisualComponent) {
-                        RADVisualContainer parent = ((RADVisualComponent)sourceComp).getParentContainer();
-                        if (sourceContainer == null) {
-                            sourceContainer = parent;
-                        } else if (parent != sourceContainer) {
-                            sourceContainer = null;
-                            break;
+                        RADVisualComponent sourceCompVisual = (RADVisualComponent) sourceComp;
+                        if (!sourceCompVisual.isMenuComponent()) {
+                            RADVisualContainer parent = sourceCompVisual.getParentContainer();
+                            if (sourceContainer == null) {
+                                sourceContainer = parent;
+                            } else if (parent != sourceContainer) {
+                                sourceContainer = null;
+                                break;
+                            }
                         }
                     } else {
                         sourceContainer = null;
@@ -344,46 +347,47 @@ class CopySupport {
                         if (copiedComp == null) {
                             return null; // copy failed...
                         }
-                    } else {//if (canPasteCut(sourceComp, targetForm, targetComponent)
-                            //   && MetaComponentCreator.canAddComponent(sourceComp.getBeanClass(), targetComponent)) {
+                    } else { // move within the same form
                         targetForm.getComponentCreator().moveComponent(sourceComp, targetComponent);
                         copiedComp = sourceComp;
                     }
 
-                    // for visual components we must care about the layout model (new layout)
-                    if (targetNewLayout) {
-                        RADVisualContainer targetContainer = (RADVisualContainer) targetComponent;
-                        if (sourceContainer != null) { // source is one visual container, we can copy the layout
-                            if (sourceContainer.getLayoutSupport() == null) { // copying from new layout
-                                if (sourceToTargetId == null) {
-                                    sourceToTargetId = new HashMap<String, String>();
-                                }
-                                sourceToTargetId.put(sourceComp.getId(), copiedComp.getId());
-                                // remember the copied component - for next paste operation
-                                if (copiedComp != sourceComp) {
-                                    if (copiedComponents == null) {
-                                        copiedComponents = new ArrayList<RADComponent>(sourceComponents.size());
+                    if (copiedComp instanceof RADVisualComponent && !((RADVisualComponent)copiedComp).isMenuComponent()) {
+                        // for visual components we must care about the layout model (new layout)
+                        if (targetNewLayout) {
+                            RADVisualContainer targetContainer = (RADVisualContainer) targetComponent;
+                            if (sourceContainer != null) { // source is one visual container, we can copy the layout
+                                if (sourceContainer.getLayoutSupport() == null) { // copying from new layout
+                                    if (sourceToTargetId == null) {
+                                        sourceToTargetId = new HashMap<String, String>();
                                     }
-                                    copiedComponents.add(copiedComp);
+                                    sourceToTargetId.put(sourceComp.getId(), copiedComp.getId());
+                                    // remember the copied component - for next paste operation
+                                    if (copiedComp != sourceComp) {
+                                        if (copiedComponents == null) {
+                                            copiedComponents = new ArrayList<RADComponent>(sourceComponents.size());
+                                        }
+                                        copiedComponents.add(copiedComp);
+                                    }
+                                } else { // copying from old layout - requires conversion
+                                    if (idToBounds == null) {
+                                        idToBounds = new HashMap<String, Rectangle>();
+                                    }
+                                    idToBounds.put(copiedComp.getId(), getComponentBounds(sourceComp));
                                 }
-                            } else { // copying from old layout - requires conversion
-                                if (idToBounds == null) {
-                                    idToBounds = new HashMap<String, Rectangle>();
-                                }
-                                idToBounds.put(copiedComp.getId(), getComponentBounds(sourceComp));
+                            } else { // layout can't be copied, place component on a default location
+                                getLayoutDesigner().addUnspecifiedComponent(copiedComp.getId(),
+                                        sourceComp.getId(), getComponentSize(sourceComp),
+                                        targetComponent.getId());
                             }
-                        } else { // layout can't be copied, place component on a default location
-                            getLayoutDesigner().addUnspecifiedComponent(copiedComp.getId(),
-                                    sourceComp.getId(), getComponentSize(sourceComp),
-                                    targetComponent.getId());
-                        }
-                    } else if (move && sourceLayout != null) { // new-to-old layout copy
-                        // need to remove layout component
-                        LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceComp.getId());
-                        if (layoutComp != null) {
-                            sourceLayout.removeComponent(sourceComp.getId(), !layoutComp.isLayoutContainer());
-                        }
-                    } // old-to-old layout copy is fully handled by MetaComponentCreator
+                        } else if (move && sourceLayout != null) { // new-to-old layout copy
+                            // need to remove layout component
+                            LayoutComponent layoutComp = sourceLayout.getLayoutComponent(sourceComp.getId());
+                            if (layoutComp != null) {
+                                sourceLayout.removeComponent(sourceComp.getId(), !layoutComp.isLayoutContainer());
+                            }
+                        } // old-to-old layout copy is fully handled by MetaComponentCreator
+                    } // also copying menu component needs no additional treatment
                 }
 
                 // copy the layout for all visual components together
