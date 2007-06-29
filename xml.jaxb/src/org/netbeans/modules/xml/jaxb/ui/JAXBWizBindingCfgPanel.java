@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.openide.WizardValidationException;
 
 import org.openide.util.HelpCtx;
@@ -42,21 +43,13 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                                         WizardDescriptor.FinishablePanel{
     public static final int MODE_WIZARD  = 0;
     public static final int MODE_EDITING = 1; 
-    public static final String SRC_LOC_TYPE_URL = "url" ; // No I18N
-    public static final String SCHEMA_NAME = "schema.name"; // No I18N
-    public static final String PROJECT_NAME = "project.name"; // No I18N
-    public static final String XSD_FILE_LIST = "xsd.file.list"; // No I18N
-    public static final String SOURCE_LOCATION_TYPE = "xsd.locatiom.type"; // No I18N
-    public static final String PACKAGE_NAME = "xsd.package.name"; // No I18N
-    public static final String SCHEMA_TYPE = "jaxb.schema.type"; // No I18N
-    public static final String XJC_OPTIONS = "jaxb.xjc.options" ; // No I18N
-    public static final String JAXB_BINDING_FILES = "jaxb.binding.files" ; // No I18N
-    public static final String CATALOG_FILE = "jaxb.catalog.file" ; // No I18N
-    private static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage" ;    
+    
+    private static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage" ; //NOI18N
 
     private WizardDescriptor wd = null;
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();  
     private JAXBBindingInfoPnl bindingInfoPnl = null;
+    private List<String> existingSchemaNames = null;
     private Logger logger;
     
     public JAXBWizBindingCfgPanel() {
@@ -67,7 +60,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     private void initUI() {
         bindingInfoPnl = new JAXBBindingInfoPnl(this);
         bindingInfoPnl.setName(NbBundle.getMessage(this.getClass(), 
-                                    "LBL_JAXBWizTitle")); // No I18N        
+                "LBL_JAXBWizTitle")); //NOI18N        
     }
         
     public void removeChangeListener(ChangeListener cl) {
@@ -84,7 +77,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
 
     private boolean isEmpty(String str){
         boolean ret = true;
-        if ((str != null) && (!"".equals(str.trim()))){
+        if ((str != null) && (!"".equals(str.trim()))){ //NOI18N
             ret = false;
         }
         return ret;
@@ -99,20 +92,43 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
         boolean valid = true;
         
         if (isEmpty(this.bindingInfoPnl.getSchemaName())){
-            sb.append(NbBundle.getMessage(this.getClass(), 
-                                            "MSG_EnterSchemaName")); // NoI18N
+            sb.append(NbBundle.getMessage(this.getClass(),
+                    "MSG_EnterSchemaName")); //NOI18N
             valid = false;
             setError(sb.toString());
             return valid;
         } else {
             // XXX TODO make sure schema name is unique and does not contain white spaces
             // and OS file and path separaters.
+            String schemaName = this.bindingInfoPnl.getSchemaName();
+            if ((this.existingSchemaNames != null) && 
+                    (this.existingSchemaNames.contains(schemaName))){
+                sb.append(NbBundle.getMessage(this.getClass(),
+                        "MSG_SchemaNameExists")); //NOI18N
+                valid = false;
+                setError(sb.toString());
+                return valid;                
+            }
+            
+            // Do not allow characters (,.\\/;:)
+            if ((schemaName.indexOf(",") > -1) ||
+                    (schemaName.indexOf(".") > -1)  ||
+                    (schemaName.indexOf("\\") > -1) ||
+                    (schemaName.indexOf("/") > -1)  || 
+                    (schemaName.indexOf(";") > -1)  ||
+                    (schemaName.indexOf(":") > -1)  ){
+                sb.append(NbBundle.getMessage(this.getClass(),
+                        "MSG_InvalidCharInSchemaName")); //NOI18N
+                valid = false;
+                setError(sb.toString());
+                return valid;                
+            }
         }
         
         if ( isEmpty(this.bindingInfoPnl.getSchemaFile())
                 && isEmpty(this.bindingInfoPnl.getSchemaURL())){
             sb.append(NbBundle.getMessage(this.getClass(), 
-                                         "MSG_EnterSchemaFileOrURL")); // NoI18N
+                    "MSG_EnterSchemaFileOrURL")); //NOI18N
             valid = false;
             setError(sb.toString());
             return valid;
@@ -123,11 +139,11 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
         }
         
         Map<String, Boolean> options = this.bindingInfoPnl.getOptions();
-        if (Boolean.TRUE.equals(options.get("-quiet")) && // No I18N
-                Boolean.TRUE.equals(options.get("-verbose"))){ // No I18N
+        if (Boolean.TRUE.equals(options.get("-quiet")) && //NOI18N
+                Boolean.TRUE.equals(options.get("-verbose"))){ //NOI18N
             valid = false;
             sb.append(NbBundle.getMessage(this.getClass(), 
-                                  "MSG_CanNotSelectQuietAndVerbose")); // NoI18N
+                    "MSG_CanNotSelectQuietAndVerbose")); //NOI18N
             setError(sb.toString());
             return valid;
         }
@@ -181,69 +197,76 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     
     public void storeSettings(Object settings) {
         WizardDescriptor wd = (WizardDescriptor) settings;              
-        wd.putProperty("NewFileWizard_Title", null); // NOI18N        
+        wd.putProperty("NewFileWizard_Title", null); //NOI18N        
 
         if (this.bindingInfoPnl.getSchemaName() != null) {
-            wd.putProperty(SCHEMA_NAME, this.bindingInfoPnl.getSchemaName());    
+            wd.putProperty(JAXBWizModuleConstants.SCHEMA_NAME, 
+                    this.bindingInfoPnl.getSchemaName());    
         }
 
         if (this.bindingInfoPnl.getPackageName() != null) {
-            wd.putProperty(PACKAGE_NAME, this.bindingInfoPnl.getPackageName());    
+            wd.putProperty(JAXBWizModuleConstants.PACKAGE_NAME, 
+                    this.bindingInfoPnl.getPackageName());    
         }
 
         if (this.bindingInfoPnl.getSchemaType() != null) {
-            wd.putProperty(SCHEMA_TYPE, this.bindingInfoPnl.getSchemaType());    
+            wd.putProperty(JAXBWizModuleConstants.SCHEMA_TYPE, 
+                    this.bindingInfoPnl.getSchemaType());    
         }
         
         Map<String, Boolean> options =  this.bindingInfoPnl.getOptions();
-        wd.putProperty(XJC_OPTIONS, options);
+        wd.putProperty(JAXBWizModuleConstants.XJC_OPTIONS, options);
         
         List<String> xsdFileList = new ArrayList<String>();
         String schemaLoc = this.bindingInfoPnl.getSchemaFile();
         if (schemaLoc == null){
             xsdFileList.add(this.bindingInfoPnl.getSchemaURL());            
-            wd.putProperty(SOURCE_LOCATION_TYPE, SRC_LOC_TYPE_URL);
+            wd.putProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE, 
+                    JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
         } else {
             xsdFileList.add(this.bindingInfoPnl.getSchemaFile());            
         }
         
-        wd.putProperty(XSD_FILE_LIST, xsdFileList);            
+        wd.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, xsdFileList);            
     }
         
     public void readSettings(Object settings) {
         this.wd = (WizardDescriptor)settings;
 
-        if (wd.getProperty(SCHEMA_NAME) != null) {
-            this.bindingInfoPnl.setSchemaName((String)
-                                                wd.getProperty(SCHEMA_NAME));    
+        if (wd.getProperty(JAXBWizModuleConstants.SCHEMA_NAME) != null) {
+            this.bindingInfoPnl.setSchemaName((String) 
+                    wd.getProperty(JAXBWizModuleConstants.SCHEMA_NAME));    
         }
 
-        if (wd.getProperty(PROJECT_NAME) != null) {
-            this.bindingInfoPnl.setProjectName((String)
-                                                wd.getProperty(PROJECT_NAME));    
+        if (wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME) != null) {
+            this.bindingInfoPnl.setProjectName((String) 
+                    wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME));    
         }
         
-        if (wd.getProperty(PACKAGE_NAME) != null) {
+        if (wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME) != null) {
             this.bindingInfoPnl.setPackageName((String) 
-                                                wd.getProperty(PACKAGE_NAME));    
+                    wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME));    
         }
 
-        if (wd.getProperty(SCHEMA_TYPE) != null){
+        if (wd.getProperty(JAXBWizModuleConstants.SCHEMA_TYPE) != null){
             this.bindingInfoPnl.setSchemaType((String)
-                                                wd.getProperty(SCHEMA_TYPE));
+                    wd.getProperty(JAXBWizModuleConstants.SCHEMA_TYPE));
         }
         
         Map<String, Boolean> options =  (Map<String, Boolean>)
-                                                   wd.getProperty(XJC_OPTIONS);
+                wd.getProperty(JAXBWizModuleConstants.XJC_OPTIONS);
         if (options != null){
             this.bindingInfoPnl.setOptions(options);
         }
         
-        String origSrcLocType = (String) wd.getProperty(SOURCE_LOCATION_TYPE);  
-        List<String> xsdFileList = (List<String>) wd.getProperty(XSD_FILE_LIST);
+        String origSrcLocType = (String) wd.getProperty(
+                JAXBWizModuleConstants.SOURCE_LOCATION_TYPE);  
+        List<String> xsdFileList = (List<String>) wd.getProperty(
+                JAXBWizModuleConstants.XSD_FILE_LIST);
         
         if ((origSrcLocType != null) && 
-                (SRC_LOC_TYPE_URL.equals(origSrcLocType))){
+                (JAXBWizModuleConstants.SRC_LOC_TYPE_URL.equals(
+                origSrcLocType))){
             if ((xsdFileList != null) && (xsdFileList.size() > 0)){
                 Iterator<String> itr = xsdFileList.iterator();
                 String file = itr.next();
@@ -257,12 +280,15 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
             }                    
         }
         
+        this.existingSchemaNames = (List<String>) (List<String>) wd.getProperty(
+                JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES);
+        
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new 
         // wizard's title this name is used in NewFileWizard to modify the title
         if (wd instanceof TemplateWizard){
-            wd.putProperty("NewFileWizard_Title",        // No I18N
-                            NbBundle.getMessage(this.getClass(), 
-                            "LBL_TemplateWizardTitle")); // No I18N
+            wd.putProperty("NewFileWizard_Title", //NOI18N 
+                    NbBundle.getMessage(this.getClass(), 
+                    "LBL_TemplateWizardTitle")); //NOI18N
         }
     }    
 }

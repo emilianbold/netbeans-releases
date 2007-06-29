@@ -33,8 +33,8 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSources;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOption;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOptions;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardIterator;
-import org.netbeans.modules.xml.jaxb.ui.JAXBWizBindingCfgPanel;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardSchemaNode;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -57,10 +57,10 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                                              Project prj,
                                              Schema schema){
         String name = ProjectUtils.getInformation(prj).getName();
-        wiz.putProperty(JAXBWizBindingCfgPanel.SCHEMA_NAME, schema.getName());
-        wiz.putProperty(JAXBWizBindingCfgPanel.PROJECT_NAME, name);
-        wiz.putProperty(JAXBWizBindingCfgPanel.PACKAGE_NAME, schema.getPackage());
-        wiz.putProperty(JAXBWizBindingCfgPanel.SCHEMA_TYPE, schema.getType());
+        wiz.putProperty(JAXBWizModuleConstants.SCHEMA_NAME, schema.getName());
+        wiz.putProperty(JAXBWizModuleConstants.PROJECT_NAME, name);
+        wiz.putProperty(JAXBWizModuleConstants.PACKAGE_NAME, schema.getPackage());
+        wiz.putProperty(JAXBWizModuleConstants.SCHEMA_TYPE, schema.getType());
         
         XjcOptions opts = schema.getXjcOptions();
         if (opts != null){
@@ -81,7 +81,7 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                     }
                     options.put(key, boolVal);
                 }                
-                wiz.putProperty(JAXBWizBindingCfgPanel.XJC_OPTIONS, options);                
+                wiz.putProperty(JAXBWizModuleConstants.XJC_OPTIONS, options);                
             }
         }
         
@@ -98,9 +98,9 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                     origSrcLocType = ss.getOrigLocationType();
                 }
                 
-                wiz.putProperty(JAXBWizBindingCfgPanel.XSD_FILE_LIST, 
+                wiz.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, 
                                                                 xsdFileList);                
-                wiz.putProperty(JAXBWizBindingCfgPanel.SOURCE_LOCATION_TYPE, 
+                wiz.putProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE, 
                                                                 origSrcLocType); 
             }
         }
@@ -118,18 +118,27 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                                                 JAXBWizardSchemaNode.class );
             project = schemaNode.getProject();
             schema = schemaNode.getSchema();
-            
+
             if ( project != null ) {
                 JAXBWizardIterator wizardIter = new JAXBWizardIterator(project);
                 final WizardDescriptor descriptor = new WizardDescriptor(
-                                                                wizardIter );
-                descriptor.putProperty("WizardPanel_autoWizardStyle", 
-                                                                Boolean.TRUE);                
+                        wizardIter );
+                descriptor.putProperty("WizardPanel_autoWizardStyle", //NOI18N
+                        Boolean.TRUE);                
                 //descriptor.putProperty("WizardPanel_errorMessage", null);
-                descriptor.putProperty("WizardPanel_contentDisplayed",
-                                                                Boolean.TRUE);
-                descriptor.putProperty("WizardPanel_contentNumbered",
-                                                                Boolean.TRUE);    
+                descriptor.putProperty("WizardPanel_contentDisplayed", //NOI18N
+                        Boolean.TRUE);
+                descriptor.putProperty("WizardPanel_contentNumbered", //NOI18N
+                        Boolean.TRUE);  
+                
+                List<String> schemaNames = ProjectHelper.getSchemaNames(project);                
+                if (schemaNames != null){
+                    schemaNames.remove(schema.getName());
+                }
+                descriptor.putProperty(
+                        JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES,
+                        schemaNames);
+                
                 wizardIter.initialize(descriptor);                
                 populateSchemaBindingValues(descriptor, project, schema);
                 descriptor.setTitleFormat(new MessageFormat("{0}"));
@@ -140,7 +149,7 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                 
                 if ( descriptor.getValue() == descriptor.FINISH_OPTION ) {
                     String pkgName = (String) descriptor.getProperty(
-                                          JAXBWizBindingCfgPanel.PACKAGE_NAME);
+                                          JAXBWizModuleConstants.PACKAGE_NAME);
                     ProjectHelper.removeSchema(project, schema);
                     ProjectHelper.addSchema(project, descriptor);
                     ProjectHelper.compileXSDs(project, pkgName, true);

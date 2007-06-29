@@ -3,24 +3,26 @@
 <codetemplates>
     <codetemplate abbreviation="jaxbm" xml:space="preserve">
         <code>try {            
-                JAXBContext jaxbCtx= JAXBContext.newInstance( ${OBJ2M instanceof="java.lang.Object" default="obj2BMarshalled"}.getClass().getPackage().getName());
-                Marshaller marshaller = jaxbCtx.createMarshaller();
+                javax.xml.bind.JAXBContext jaxbCtx= javax.xml.bind.JAXBContext.newInstance( ${OBJ2M instanceof="java.lang.Object" default="obj2BMarshalled"}.getClass().getPackage().getName());
+                javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();
+                marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, "UTF-8"); //NOI18N
+                marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
                 marshaller.marshal(${OBJ2M} , System.out);
-            } catch (JAXBException ex) {
-                // TODO handle exception
-                Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            } catch (javax.xml.bind.JAXBException ex) {
+                // XXXTODO Handle exception
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N
         }</code>
         <description>Sample template to marshal JAXB objects.</description>
     </codetemplate>
     <codetemplate abbreviation="jaxbu" xml:space="preserve">
         <code>
             try {
-                JAXBContext jaxbCtx = JAXBContext.newInstance(${UM_OBJ instanceof="java.lang.Object" default="umObj"}.getClass().getPackage().getName());
-                Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
-                ${UM_OBJ} = ${TYPE_CAST cast default=""} unmarshaller.unmarshal(new File("File path"));
-            } catch (JAXBException ex) {
-                // TODO handle exception
-                Logger.getLogger("global").log(Level.SEVERE, null, ex);
+                javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(${UM_OBJ instanceof="java.lang.Object" default="umObj"}.getClass().getPackage().getName());
+                javax.xml.bind.Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
+                ${UM_OBJ} = ${TYPE_CAST cast default=""} unmarshaller.unmarshal(new java.io.File("File path")); //NOI18N
+            } catch (javax.xml.bind.JAXBException ex) {
+                // XXXTODO Handle exception
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N
             }
         </code>
         <description>Sample template to unmarshal JAXB objects.</description>

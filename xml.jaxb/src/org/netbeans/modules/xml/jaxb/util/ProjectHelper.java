@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,6 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSources;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOption;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOptions;
-import org.netbeans.modules.xml.jaxb.ui.JAXBWizBindingCfgPanel;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -82,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -93,21 +94,21 @@ public class ProjectHelper {
     public static final int PROJECT_TYPE_J2SE = 0;
     public static final int PROJECT_TYPE_EJB = 1;
     public static final int PROJECT_TYPE_WEB = 2;
-    private static final String JAXB_LIB_NAME = "jaxb20"; // No I18N
-    private static final String XML_BINDING_CONFIG_FILE_NAME = "xml_binding_cfg.xml"; // No I18N
-    private static final String XML_BINDING_BUILD_FILE_NAME = "xml_binding_build.xml"; // No I18N
-    private static final String FILE_OBJECT_SEPARATOR = "/" ; // NOI18N
-    private static final String NBPROJECT_DIR = "nbproject"; // No I18N
-    private static final String XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; // No I18N
-    private static final String BUILD_GEN_JAXB_DIR = "build/generated/addons/jaxb"; // No I18N
-    private static final String NON_JAVA_SE_CONFIG_DIR = "conf/xml-resources/jaxb"; // No I18N
-    private static final String JAVA_SE_CONFIG_DIR = "xml-resources/jaxb"; // No I18N
-    private static final String PLATFORM_ACTIVE = "platform.active"; // No I18N
-    private static final String DEFAULT_PLATFORM = "default_platform"; // No I18N
-    private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; // No I18N
-    private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; // No I18N
-    private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs=${" + PROP_ENDORSED + "}"; // No I18N
-    private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); // No I18N
+    private static final String JAXB_LIB_NAME = "jaxb20"; //NOI18N
+    private static final String XML_BINDING_CONFIG_FILE_NAME = "xml_binding_cfg.xml"; //NOI18N
+    private static final String XML_BINDING_BUILD_FILE_NAME = "xml_binding_build.xml"; //NOI18N
+    private static final String FILE_OBJECT_SEPARATOR = "/"; // NOI18N
+    private static final String NBPROJECT_DIR = "nbproject"; //NOI18N
+    private static final String XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; //NOI18N
+    private static final String BUILD_GEN_JAXB_DIR = "build/generated/addons/jaxb"; //NOI18N
+    private static final String NON_JAVA_SE_CONFIG_DIR = "conf/xml-resources/jaxb"; //NOI18N
+    private static final String JAVA_SE_CONFIG_DIR = "xml-resources/jaxb"; //NOI18N
+    private static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N
+    private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
+    private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; //NOI18N
+    private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; //NOI18N
+    private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs=${" + PROP_ENDORSED + "}"; //NOI18N
+    private static final SpecificationVersion JDK_1_6 = new SpecificationVersion("1.6"); //NOI18N
 
     // Make sure nobody instantiates this class.
     private ProjectHelper() {
@@ -171,7 +172,7 @@ public class ProjectHelper {
     }
 
     public static String getProjectSourceDir(Project prj) {
-        return getProperty(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH, "src.dir"); // No I18N
+        return getProperty(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH, "src.dir"); //NOI18N
     }
 
     public static File getSourceDirectoryFile(Project prj) {
@@ -179,11 +180,11 @@ public class ProjectHelper {
     }
 
     public static String getProjectBuildDir(Project prj) {
-        return getProperty(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH, "build.dir"); // No I18N
+        return getProperty(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH, "build.dir"); //NOI18N
     }
 
     public static String getProjectSourceRoot(Project prj) {
-        return getProperty(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH, "source.root"); // No I18N
+        return getProperty(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH, "source.root"); //NOI18N
     }
 
     public static File getProjectDirectory(Project prj) {
@@ -230,18 +231,17 @@ public class ProjectHelper {
     }
 
     //    private static String getBuildClassDir(Project prj){
-    //        String ret = "build/classes" ; // No I18N
+    //        String ret = "build/classes" ; //NOI18N
     //        int pType = getProjectType(prj);
     //        if (pType == PROJECT_TYPE_EJB){
-    //            ret = "build/jar"; // No I18N
+    //            ret = "build/jar"; //NOI18N
     //        }
     //
     //        if (pType == PROJECT_TYPE_WEB){
-    //            ret = "build/web/WEB-INF/classes"; // No I18N
+    //            ret = "build/web/WEB-INF/classes"; //NOI18N
     //        }
     //        return ret;
     //    }
-    
     private static void addLibraries(Project prj) {
         addJAXB20Library(prj);
         //setClasspath(prj);
@@ -250,9 +250,9 @@ public class ProjectHelper {
     public static int getProjectType(Project prj) {
         String prjClzName = prj.getClass().getName();
         int prjType = PROJECT_TYPE_J2SE;
-        if (prjClzName.indexOf("EjbJarProject") != -1) {// No I18N
+        if (prjClzName.indexOf("EjbJarProject") != -1) {//NOI18N
             prjType = PROJECT_TYPE_EJB;
-        } else if (prjClzName.indexOf("WebProject") != -1) { // No I18N
+        } else if (prjClzName.indexOf("WebProject") != -1) {//NOI18N
             prjType = PROJECT_TYPE_WEB;
         }
 
@@ -267,14 +267,16 @@ public class ProjectHelper {
             File projDir = FileUtil.toFile(fo);
             File configFile = null;
             try {
-                configFile = new File(projDir, NBPROJECT_DIR + File.separator + XML_BINDING_CONFIG_FILE_NAME);
+                configFile = new File(projDir, NBPROJECT_DIR + File.separator 
+                        + XML_BINDING_CONFIG_FILE_NAME);
                 if (configFile.exists()) {
                     scs = Schemas.read(configFile);
                 } else {
                     scs = new Schemas();
                     Lookup lookup = prj.getLookup();
                     if (lookup != null) {
-                        ProjectInformation pi = lookup.lookup(ProjectInformation.class);
+                        ProjectInformation pi = lookup.lookup(
+                                ProjectInformation.class);
                         if (pi != null) {
                             projName = pi.getName();
                         }
@@ -297,7 +299,8 @@ public class ProjectHelper {
             File projDir = FileUtil.toFile(fo);
 
             try {
-                buildFile = new File(projDir, NBPROJECT_DIR + File.separator + XML_BINDING_BUILD_FILE_NAME);
+                buildFile = new File(projDir, NBPROJECT_DIR + File.separator 
+                        + XML_BINDING_BUILD_FILE_NAME);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -313,7 +316,8 @@ public class ProjectHelper {
             File projDir = FileUtil.toFile(fo);
 
             try {
-                configFile = new File(projDir, NBPROJECT_DIR + File.separator + XML_BINDING_CONFIG_FILE_NAME);
+                configFile = new File(projDir, NBPROJECT_DIR + File.separator 
+                        + XML_BINDING_CONFIG_FILE_NAME);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -335,7 +339,7 @@ public class ProjectHelper {
     private static XjcOptions populateXjcOptions(WizardDescriptor wiz) {
         XjcOptions xjcOpts = new XjcOptions();
         Map<String, Boolean> options = (Map<String, Boolean>) wiz.getProperty(
-                JAXBWizBindingCfgPanel.XJC_OPTIONS);
+                JAXBWizModuleConstants.XJC_OPTIONS);
         if (options != null) {
             Set<String> keys = options.keySet();
             Iterator<String> itr = keys.iterator();
@@ -382,15 +386,19 @@ public class ProjectHelper {
         SchemaSources sss = new SchemaSources();
         XjcOptions xo = new XjcOptions();
 
-        schema.setName((String) wiz.getProperty(JAXBWizBindingCfgPanel.SCHEMA_NAME));
-        schema.setPackage((String) wiz.getProperty(JAXBWizBindingCfgPanel.PACKAGE_NAME));
+        schema.setName((String) wiz.getProperty(
+                JAXBWizModuleConstants.SCHEMA_NAME));
+        schema.setPackage((String) wiz.getProperty(
+                JAXBWizModuleConstants.PACKAGE_NAME));
         schema.setCatalog(catalog);
         schema.setBindings(bindings);
         schema.setSchemaSources(sss);
-        schema.setType((String) wiz.getProperty(JAXBWizBindingCfgPanel.SCHEMA_TYPE));
+        schema.setType((String) wiz.getProperty(
+                JAXBWizModuleConstants.SCHEMA_TYPE));
         schema.setXjcOptions(populateXjcOptions(wiz));
 
-        List<String> xsdFileList = (List<String>) wiz.getProperty(JAXBWizBindingCfgPanel.XSD_FILE_LIST );
+        List<String> xsdFileList = (List<String>) wiz.getProperty(
+                JAXBWizModuleConstants.XSD_FILE_LIST );
         SchemaSource ss = null;
 
         File schemaDir = new File(projSchemasDir, schema.getName());
@@ -404,7 +412,9 @@ public class ProjectHelper {
         FileObject newFileFO = null;
         String url = null;
         URL remoteSchema = null;
-        boolean srcLocTypeUrl = JAXBWizBindingCfgPanel.SRC_LOC_TYPE_URL.equals((String) wiz.getProperty(JAXBWizBindingCfgPanel.SOURCE_LOCATION_TYPE));
+        boolean srcLocTypeUrl = JAXBWizModuleConstants.SRC_LOC_TYPE_URL.equals(
+                (String) wiz.getProperty(
+                JAXBWizModuleConstants.SOURCE_LOCATION_TYPE));
 
         for (int i = 0; i < xsdFileList.size(); i++) {
             if (srcLocTypeUrl) {
@@ -419,7 +429,7 @@ public class ProjectHelper {
                 ss = new SchemaSource();
                 ss.setOrigLocation(url);
                 ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
-                ss.setOrigLocationType(JAXBWizBindingCfgPanel.SRC_LOC_TYPE_URL);
+                ss.setOrigLocationType(JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
                 sss.addSchemaSource(ss);
             } else {
                 // Local file
@@ -443,10 +453,11 @@ public class ProjectHelper {
 
     public static AntProjectHelper getAntProjectHelper(Project project) {
         try {
-            Method getAntProjectHelperMethod = project.getClass().getMethod("getAntProjectHelper");
+            Method getAntProjectHelperMethod = project.getClass().getMethod(
+                    "getAntProjectHelper"); //NOI18N
             if (getAntProjectHelperMethod != null) {
-                AntProjectHelper helper = (AntProjectHelper) getAntProjectHelperMethod.invoke(
-                        project );
+                AntProjectHelper helper = (AntProjectHelper) 
+                        getAntProjectHelperMethod.invoke(project);
 
                 return helper;
             }
@@ -487,7 +498,7 @@ public class ProjectHelper {
         FileObject buildFileFo = null;
         if (prj != null) {
             FileObject fo = prj.getProjectDirectory();
-            buildFileFo = fo.getFileObject("build.xml"); // No I18N
+            buildFileFo = fo.getFileObject("build.xml"); //NOI18N
         }
         return buildFileFo;
     }
@@ -516,8 +527,8 @@ public class ProjectHelper {
         if (prj != null) {
             FileObject fo = prj.getProjectDirectory();
             try {
-                buildFileFo = fo.getFileObject(NBPROJECT_DIR + 
-                        FILE_OBJECT_SEPARATOR + XML_BINDING_BUILD_FILE_NAME);
+                buildFileFo = fo.getFileObject(NBPROJECT_DIR 
+                        + FILE_OBJECT_SEPARATOR + XML_BINDING_BUILD_FILE_NAME);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -538,7 +549,8 @@ public class ProjectHelper {
         String srcDirStr = null;
         FileObject foSchemaDir = null;
         FileObject foProjDir = project.getProjectDirectory();
-        if ((getProjectType(project) == PROJECT_TYPE_EJB) || (getProjectType(project) == PROJECT_TYPE_WEB)) {
+        if ((getProjectType(project) == PROJECT_TYPE_EJB) 
+                || (getProjectType(project) == PROJECT_TYPE_WEB)) {
             srcDirStr = getProjectSourceRoot(project);
             FileObject srcDir = foProjDir.getFileObject(srcDirStr);
             createDirs(srcDir, NON_JAVA_SE_CONFIG_DIR);
@@ -553,7 +565,7 @@ public class ProjectHelper {
 
     private static String getEndorsedDirs(Project prj) {
         // XXX TODO:Find a better portable way to do this.
-        String ret = "\"${netbeans.home}/../java1/modules/ext/jaxws21/api" 
+        String ret = "\"${netbeans.home}/../java1/modules/ext/jaxws21/api" //NOI18N
                 + File.pathSeparator 
                 + "${netbeans.home}/../java1/modules/ext/jaxws21\""; //NOI18N
         return ret;
@@ -563,7 +575,7 @@ public class ProjectHelper {
         if (isJDK6(prj)) {
             String endorsedDirs = getProjectProperty(prj, PROP_ENDORSED);
 
-            if ((endorsedDirs == null) || ("".equals(endorsedDirs.trim()))) {
+            if ((endorsedDirs == null) || ("".equals(endorsedDirs.trim()))) {//NOI18N
                 endorsedDirs = getEndorsedDirs(prj);
 
                 saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
@@ -594,7 +606,7 @@ public class ProjectHelper {
             if (ext != null && ext.getExtension("jaxb") == null) {
                 //No I18N
                 FileObject jaxbBuildXml = getFOForBindingBuildFile(project);
-                AntBuildExtender.Extension jaxbBuild = ext.addExtension("jaxb", jaxbBuildXml); // No I18N
+                AntBuildExtender.Extension jaxbBuild = ext.addExtension("jaxb", jaxbBuildXml); //NOI18N
                 // XXX TODO Uncomment once all the supported project
                 // allow dependency on "-pre-compile.
                 jaxbBuild.addDependency("-pre-pre-compile", "jaxb-code-generation"); //No I18N
@@ -604,6 +616,21 @@ public class ProjectHelper {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
+    }
+
+    /**
+     * Returns list of String Schema/Binding names used in the project.
+     **/
+    public static List<String> getSchemaNames(Project project) {
+        List<String> ret = new ArrayList<String>();
+        Schemas scs = getXMLBindingSchemas(project);
+        if (scs != null) {
+            Schema[] schemas = scs.getSchema();
+            for (Schema schema : schemas) {
+                ret.add(schema.getName());
+            }
+        }
+        return ret;
     }
 
     public static void removeSchema(Project project, Schema schema) {
@@ -626,7 +653,7 @@ public class ProjectHelper {
     }
 
     public static void compileXSDs(final Project project, final String pkgName, final boolean addLibs) {
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle("JAXB Wizard Progress");
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectHelper.class, "MSG_JAXB_PROGRESS")); //NOI18N;
         progressHandle.start();
 
         Runnable run = new Runnable() {
@@ -640,7 +667,7 @@ public class ProjectHelper {
                         ExecutorTask task = ActionUtils.runTarget(buildXml, args, null);
                         task.waitFinished();
                         if (task.result() != 0) {
-                            String mes = "Error while compiling Schemas";
+                            String mes = NbBundle.getMessage(ProjectHelper.class, "MSG_ERROR_COMPILING"); //NOI18N
                             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                             DialogDisplayer.getDefault().notify(desc);
                         }
@@ -679,8 +706,7 @@ public class ProjectHelper {
                 JavaPlatform[] jp = jpm.getInstalledPlatforms();
                 if (jp != null) {
                     for (JavaPlatform jpi : jp) {
-                        if (jpi.getProperties().get("platform.ant.name").equals(platForm)) {
-                            //
+                        if (jpi.getProperties().get("platform.ant.name").equals(platForm)) {//NOI18N
                             SpecificationVersion sv = jpi.getSpecification().getVersion();
                             if (JDK_1_6.compareTo(sv) <= 0) {
                                 ret = true;

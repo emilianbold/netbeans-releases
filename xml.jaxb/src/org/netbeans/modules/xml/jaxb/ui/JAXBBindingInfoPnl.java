@@ -22,6 +22,8 @@ package org.netbeans.modules.xml.jaxb.ui;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -378,11 +380,11 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     }
     
     private void localFileSelected(boolean selected){
-            this.txtFilePath.setEnabled(selected);
-            this.txtFilePath.setEditable(selected);
-            this.txtURL.setEnabled(!selected);
-            this.txtURL.setEditable(!selected);
-            this.btnBrowseFile.setEnabled(selected);
+        this.txtFilePath.setEnabled(selected);
+        this.txtFilePath.setEditable(selected);
+        this.txtURL.setEnabled(!selected);
+        this.txtURL.setEditable(!selected);
+        this.btnBrowseFile.setEnabled(selected);
     }
 
     private void useBindingFileSelection(boolean selected){
@@ -427,7 +429,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
         if (evt.getSource() == this.btnBrowseFile){
             String filePath = selectFileFromFileSystem(this,
-                                                       LAST_BROWSED_SCHEMA_DIR);
+                    JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
             if (filePath != null){
                 this.txtFilePath.setText(filePath);
             }
@@ -472,29 +474,33 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
 
     // Custom code
-    private static final String LAST_BROWSED_SCHEMA_DIR = "last.browsed.schema.dir" ;
-    private static final String LAST_BROWSED_BINDING_DIR = "last.browsed.binding.dir" ;
-    private static final String LAST_BROWSED_CATALOG_DIR = "last.browsed.catalog.dir" ;
-    private static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage" ;
-
     private static java.util.Vector<ComboElement<String, String>> schemaTypes = null;
     private static java.util.Map<String, String> LAST_BROWSED_DIRS = new java.util.HashMap<String, String>();
     private JAXBWizBindingCfgPanel wizPanel = null;
 
+    private static String getMessage(String key){
+        return NbBundle.getMessage(JAXBBindingInfoPnl.class, key);
+    }
+    
     private static synchronized java.util.Vector<ComboElement<String, String>>
             getSchemaTypes(){
         if (schemaTypes == null){
             schemaTypes = new java.util.Vector<ComboElement<String, String>>();
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                "XML Schema", "-xmlschema")); // No I18N
+                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA), //NOI18N
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA)); 
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                "Relax NG", "-relaxng")); // No I18N
+                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG), //NOI18N
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG)); 
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                "Relax NG Compact", "-relaxng-compact")); // No I18N
+                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT), //NOI18N
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT)); 
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                "XML DTD", "-dtd")); // No I18N
+                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD), //NOI18N
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD)); 
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                "WSDL", "-wsdl")); // No I18N
+                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL), //NOI18N
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL)); 
         }
         return schemaTypes;
     }
@@ -517,9 +523,9 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         }
 
         jfc.setMultiSelectionEnabled(false);
-        jfc.setFileSelectionMode( jfc.FILES_ONLY );
+        jfc.setFileSelectionMode( JFileChooser.FILES_ONLY  );
         int iRt = jfc.showOpenDialog(panel);
-        if ( iRt == jfc.APPROVE_OPTION ) {
+        if ( iRt == JFileChooser.APPROVE_OPTION ) {
             file = jfc.getSelectedFile();
         }
         File currDir = jfc.getCurrentDirectory();
@@ -563,27 +569,33 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     }
 
     public void setOptions(java.util.Map<String, Boolean> options){
-        if (Boolean.TRUE.equals(options.get("-nv"))){ // No I18N
+        if (Boolean.TRUE.equals(options.get(
+                JAXBWizModuleConstants.JAXB_OPTION_NV))){
             this.chkbxNv.setSelected(true);
         }
 
-        if (Boolean.TRUE.equals(options.get("-readOnly"))){// No I18N
+        if (Boolean.TRUE.equals(options.get(
+                JAXBWizModuleConstants.JAXB_OPTION_READ_ONLY))){
             this.chkbxReadOnly.setSelected(true);
         }
 
-        if (Boolean.TRUE.equals(options.get("-npa"))){// No I18N
+        if (Boolean.TRUE.equals(options.get(
+                JAXBWizModuleConstants.JAXB_OPTION_NPA))){
             this.chkbxNpa.setSelected(true);
         }
 
-        if (Boolean.TRUE.equals(options.get("-verbose"))){// No I18N
+        if (Boolean.TRUE.equals(options.get(
+                JAXBWizModuleConstants.JAXB_OPTION_VERBOSE))){
             this.chkbxVerbose.setSelected(true);
         }
 
-        if (Boolean.TRUE.equals(options.get("-quiet"))){// No I18N
+        if (Boolean.TRUE.equals(options.get(
+                JAXBWizModuleConstants.JAXB_OPTION_QUIET))){
             this.chkbxQuiet.setSelected(true);
         }
         
-        if (Boolean.TRUE.equals(options.get("-extension"))){// No I18N
+        if (Boolean.TRUE.equals(options.get(
+                JAXBWizModuleConstants.JAXB_OPTION_EXTENSION))){
             this.chkbxUseExtension.setSelected(true);
         }
     }
@@ -628,27 +640,27 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         java.util.Map<String, Boolean> ret =
                 new java.util.HashMap<String, Boolean>();
         if (this.chkbxNv.isSelected()){
-            ret.put("-nv", Boolean.TRUE); // No I18N
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_NV, Boolean.TRUE); 
         }
 
         if (this.chkbxReadOnly.isSelected()){
-            ret.put("-readOnly", Boolean.TRUE); // No I18N
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_READ_ONLY, Boolean.TRUE); 
         }
 
         if (this.chkbxNpa.isSelected()){
-            ret.put("-npa", Boolean.TRUE); // No I18N
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_NPA, Boolean.TRUE); 
         }
 
         if (this.chkbxVerbose.isSelected()){
-            ret.put("-verbose", Boolean.TRUE); // No I18N
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_VERBOSE, Boolean.TRUE); 
         }
 
         if (this.chkbxQuiet.isSelected()){
-            ret.put("-quiet", Boolean.TRUE); // No I18N
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_QUIET, Boolean.TRUE); 
         }
         
         if (this.chkbxUseExtension.isSelected()){
-            ret.put("-extension", Boolean.TRUE); // No I18N
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_EXTENSION, Boolean.TRUE); 
         }
 
         return ret;
@@ -656,8 +668,8 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
     public String getSchemaType(){
         String ret = null;
-        ComboElement<String, String> elem = (ComboElement<String, String>)
-                                           this.cmbSchemaType.getSelectedItem();
+        ComboElement<String, String> elem = (ComboElement<String, String>) 
+                this.cmbSchemaType.getSelectedItem();
         if (elem != null){
             ret = elem.getValue();
         }
@@ -667,7 +679,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     // Getter and Setter for UI clients - end
     private boolean isEmpty(String str){
         boolean ret = true;
-        if ((str != null) && (!"".equals(str.trim()))){
+        if ((str != null) && (!"".equals(str.trim()))){ //NOI18N
             ret = false;
         }
         return ret;
@@ -687,6 +699,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             return this.value;
         }
 
+        @Override
         public String toString(){
             return this.display.toString();
         }
@@ -702,6 +715,10 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj){
+                return true;
+            }
+            
             // Only consider value
             boolean ret = false;
             if (obj instanceof ComboElement){

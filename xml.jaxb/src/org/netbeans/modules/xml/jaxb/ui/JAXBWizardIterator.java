@@ -22,11 +22,13 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -56,8 +58,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
     public static JAXBWizardIterator create() {
         return new JAXBWizardIterator();
     }
-
-    
+  
     private void initWizardPanels() {
         cursor = 0;
         panels = new WizardDescriptor.Panel[] {
@@ -102,7 +103,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty("WizardPanel_contentData"); //NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[]) prop;
@@ -115,10 +116,10 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", 
-                                                    new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+                                                    new Integer(i)); 
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
             }
         }        
     }
@@ -159,6 +160,8 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
     
     public void initialize(TemplateWizard wiz) {
         project = Templates.getProject(wiz);
+        List<String> schemas = ProjectHelper.getSchemaNames(project);
+        wiz.putProperty(JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES, schemas);
         initWizardPanels();     
 
         Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
@@ -168,16 +171,17 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         }
         String[] steps = createSteps(beforeSteps, panels);
         String name = ProjectUtils.getInformation(project).getName();
-         wiz.putProperty(JAXBWizBindingCfgPanel.PROJECT_NAME, name);
+         wiz.putProperty(JAXBWizModuleConstants.PROJECT_NAME, name);
         // Make sure list of steps is accurate.
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+                        new Integer(i)); 
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
             }
         }
         
@@ -186,7 +190,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
     public void uninitialize(TemplateWizard wiz) {
         if ( wiz.getValue() == TemplateWizard.FINISH_OPTION ) {
                 String pkgName = (String) wiz.getProperty(
-                                           JAXBWizBindingCfgPanel.PACKAGE_NAME);
+                        JAXBWizModuleConstants.PACKAGE_NAME);
                 ProjectHelper.addSchema(project, wiz);
                 ProjectHelper.compileXSDs(project, pkgName, true);
                 this.project = null;
