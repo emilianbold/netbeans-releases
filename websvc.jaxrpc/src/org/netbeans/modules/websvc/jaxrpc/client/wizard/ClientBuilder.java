@@ -20,8 +20,6 @@
 package org.netbeans.modules.websvc.jaxrpc.client.wizard;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -51,7 +49,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.execution.ExecutorTask;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -63,17 +60,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
-import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
-import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.modules.websvc.wsdl.config.WsCompileConfigDataObject;
 import org.netbeans.modules.websvc.wsdl.config.PortInformationHandler;
 
@@ -144,8 +133,8 @@ public class ClientBuilder {
             // web service registry with the soon-to-be-created client node.
 
             // 3. Find services in registry (add if necessary) -- DONE
-            WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
-            registryView.registerService(wsdlSource, true);
+            //WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
+            //registryView.registerService(wsdlSource, true);
             
             
             handle.progress(NbBundle.getMessage(ClientBuilder.class, "MSG_WizParsingWSDL"),20);
