@@ -35,14 +35,15 @@ import org.netbeans.api.visual.anchor.PointShapeFactory;
  */
 public class PFENotModifiableScheme extends VMDColorScheme {
 
-    public static final Color COLOR60_SELECT = new Color( 210,210,210);
-    public static final Color COLOR60_HOVER = new Color( 200, 200, 200);
-    public static final Color COLOR60_HOVER_BACKGROUND = new Color (0xB0C3E1);
-    public static final Color COLOR_NORMAL =  new Color(230,230,230);
+    private static final Color COLOR60_SELECT = new Color( 210,210,210);
+    private static final Color COLOR60_HOVER = new Color( 200, 200, 200);
+    private static final Color COLOR60_HOVER_BACKGROUND = new Color (0xB0C3E1);
+    private static final Color COLOR_NORMAL =  new Color(230,230,230);
+    private static final Color COLOR_HIGHLIGHTED = new Color (0x316AC5);
+    private static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
 
-    public static final Color COLOR_HIGHLIGHTED = new Color (0x316AC5);
+    private static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
     private static final Border BORDER60_PIN_SELECT = BorderFactory.createCompositeBorder (BorderFactory.createLineBorder (0, 1, 0, 1, COLOR60_SELECT), BorderFactory.createLineBorder (2, 7, 2, 7, COLOR60_SELECT));
-//        private static final Border BORDER60_PIN_HOVER = BorderFactory.createLineBorder (2, 8, 2, 8, COLOR60_HOVER);
 
     public void installUI (VMDNodeWidget widget) {
     }
@@ -57,8 +58,7 @@ public class PFENotModifiableScheme extends VMDColorScheme {
         widget.setPaintControlPoints (true);
     }
 
-    static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
-
+ 
     public void updateUI (VMDConnectionWidget widget, ObjectState previousState, ObjectState state) {
         if (state.isSelected ())
             widget.setForeground (COLOR60_SELECT);
@@ -80,7 +80,6 @@ public class PFENotModifiableScheme extends VMDColorScheme {
         }
     }
 
-    static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
     public void installUI (VMDPinWidget widget) {
         widget.setBorder (BORDER_PIN);
         widget.setBackground (COLOR60_HOVER_BACKGROUND);
