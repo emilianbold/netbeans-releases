@@ -79,12 +79,4 @@
                    portType="tns:MyCallbackPortType">
         </plnk:role>
     </plnk:partnerLinkType>
-    
-    <bpws:property name="correlator" type="xsd:byte"/>    
-    
-    <bpws:propertyAlias 
-        propertyName="tns:correlator"
-        messageType="tns:requestMessage"
-        part="inputType">
-    </bpws:propertyAlias>
 </wsdl:definitions>

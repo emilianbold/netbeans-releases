@@ -53,12 +53,4 @@
     <plink:partnerLinkType name="partnerlinktype1">
         <plink:role name="partnerlinktyperole1" portType="tns:portType1"/>
     </plink:partnerLinkType>
-
-    <bpws:property name="correlator" type="xsd:string"/>    
-    
-    <bpws:propertyAlias 
-        propertyName="tns:correlator"
-        messageType="tns:requestMessage"
-        part="inputType">
-    </bpws:propertyAlias>
 </definitions>

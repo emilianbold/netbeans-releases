@@ -23,10 +23,6 @@
         <variable name="outputVar" messageType="wsdlNS:responseMessage"/>
     </variables>
 
-    <correlationSets>
-        <bpws:correlationSet name="CorrelationSet" properties="wsdlNS:correlator"/>
-    </correlationSets>
-    
     <sequence>   
         <receive 
             name="start"
@@ -35,9 +31,6 @@
             operation="asyncOperation"
             variable="inputVar"
             createInstance="yes">
-            <bpws:correlations>
-                <bpws:correlation set="CorrelationSet" initiate="no"/>
-            </bpws:correlations>
         </receive>
         
         <assign name="assign">

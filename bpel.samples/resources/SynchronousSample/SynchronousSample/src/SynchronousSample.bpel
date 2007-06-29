@@ -20,15 +20,8 @@
         <variable name="inputVar" messageType="ns1:requestMessage"/>
     </variables>
 
-    <correlationSets>
-        <bpws:correlationSet name="CorrelationSet" properties="ns1:correlator"/>
-    </correlationSets>
-    
     <sequence>
         <receive name="start" partnerLink="SynchronousSample" operation="operation1" portType="ns1:portType1" variable="inputVar" createInstance="yes">
-            <bpws:correlations>
-                <bpws:correlation set="CorrelationSet" initiate="no"/>
-            </bpws:correlations>
         </receive>
         <assign name="Assign1">
             <copy>
