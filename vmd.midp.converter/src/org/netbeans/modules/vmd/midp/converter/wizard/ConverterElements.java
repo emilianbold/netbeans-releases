@@ -19,10 +19,10 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 
 import java.util.HashMap;
 
@@ -36,11 +36,7 @@ public class ConverterElements {
         Converter.convertObject (item, listElement);
 
         ConverterUtil.convertStringWithUserCode (listElement, ListElementEventSourceCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N
-
-        DesignComponent image = Converter.convertConverterItemComponent (id2item, item.getPropertyValue ("image"), document); // NOI18N
-        if (image != null)
-            listElement.writeProperty (ListElementEventSourceCD.PROP_IMAGE, PropertyValue.createComponentReference (image));
-
+        ConverterUtil.convertConverterItemComponent (listElement, ListElementEventSourceCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"), document); // NOI18N
         ConverterUtil.convertBoolean (listElement, ListElementEventSourceCD.PROP_SELECTED, item.getPropertyValue ("selected")); // NOI18N
 
         ConverterItem commandActionItem = id2item.get (item.getPropertyValue ("commandAction")); // NOI18N
@@ -48,6 +44,15 @@ public class ConverterElements {
             Converter.convertObject (commandActionItem, listElement);
             ConverterActions.convertCommandActionHandler (id2item, commandActionItem, listElement);
         }
+    }
+
+    public static void convertChoiceElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+        DesignComponent choiceElement = document.createComponent (ChoiceElementCD.TYPEID);
+        Converter.convertObject (item, choiceElement);
+
+        ConverterUtil.convertStringWithUserCode (choiceElement, ListElementEventSourceCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N
+        ConverterUtil.convertConverterItemComponent (choiceElement, ListElementEventSourceCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"), document); // NOI18N
+        ConverterUtil.convertBoolean (choiceElement, ListElementEventSourceCD.PROP_SELECTED, item.getPropertyValue ("selected")); // NOI18N
     }
 
 }

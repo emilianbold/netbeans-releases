@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.*;
@@ -165,6 +166,42 @@ public class ConverterItems {
             dateField.writeProperty (DateFieldCD.PROP_INPUT_MODE, MidpTypes.createIntegerValue (DateFieldCD.VALUE_DATE_TIME));
         else if ("TIME".equals (inputMode))
             dateField.writeProperty (DateFieldCD.PROP_INPUT_MODE, MidpTypes.createIntegerValue (DateFieldCD.VALUE_TIME));
+    }
+
+    // Created: YES, Adds: NO
+    public static void convertChoiceGroup (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+        DesignComponent choiceGroup = document.createComponent (ChoiceGroupCD.TYPEID);
+        convertItem (id2item, item, choiceGroup);
+
+        String choiceTypeValue = item.getPropertyValue ("choiceType"); // NOI18N
+        if ("EXCLUSIVE".equals (choiceTypeValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_CHOICE_TYPE, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_EXCLUSIVE));
+        else if ("IMPLICIT".equals (choiceTypeValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_CHOICE_TYPE, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_IMPLICIT));
+        else if ("MULTIPLE".equals (choiceTypeValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_CHOICE_TYPE, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_MULTIPLE));
+        else if ("POPUP".equals (choiceTypeValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_CHOICE_TYPE, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_POPUP));
+
+        String fitPolicyValue = item.getPropertyValue ("fitPolicy"); // NOI18N
+        if ("TEXT_WRAP_DEFAULT".equals (fitPolicyValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_FIT_POLICY, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_TEXT_WRAP_DEFAULT));
+        else if ("TEXT_WRAP_OFF".equals (fitPolicyValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_FIT_POLICY, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_TEXT_WRAP_OFF));
+        else if ("TEXT_WRAP_ON".equals (fitPolicyValue)) // NOI18N
+            choiceGroup.writeProperty (ChoiceGroupCD.PROP_FIT_POLICY, MidpTypes.createIntegerValue (ChoiceSupport.VALUE_TEXT_WRAP_ON));
+
+        ArrayList<String> elementsList = item.getContainerPropertyValue ("elements"); // NOI18N
+        if (elementsList != null)
+            for (String elementValue : elementsList) {
+                DesignComponent choiceElement = Converter.convertConverterItemComponent (id2item, elementValue, document);
+                if (choiceElement == null) {
+                    Debug.warning ("ChoiceElement not found", elementValue);
+                    continue;
+                }
+                choiceGroup.addComponent (choiceElement);
+                ArraySupport.append (choiceGroup, ChoiceGroupCD.PROP_ELEMENTS, choiceElement);
+            }
     }
 
 }

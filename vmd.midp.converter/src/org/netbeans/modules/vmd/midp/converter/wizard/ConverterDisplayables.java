@@ -19,10 +19,7 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
@@ -37,6 +34,7 @@ import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Collection;
 
 /**
  * @author David Kaspar
@@ -108,7 +106,8 @@ public class ConverterDisplayables {
 
     // Created: YES, Adds: NO
     public static void convertList (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent list = document.createComponent (ListCD.TYPEID);
+        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, ListCD.TYPEID);
+        DesignComponent list = producers.iterator ().next ().createComponent (document).getMainComponent ();
         convertScreen (id2item, item, list);
 
         ConverterItem selectCommandActionItem = id2item.get (item.getPropertyValue ("selectCommandAction")); // NOI18N
@@ -166,7 +165,7 @@ public class ConverterDisplayables {
 
     // Created: YES, Adds: NO
     public static void convertAlert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent alert = document.createComponent (ListCD.TYPEID);
+        DesignComponent alert = document.createComponent (AlertCD.TYPEID);
         convertScreen (id2item, item, alert);
 
         ConverterUtil.convertStringWithUserCode (alert, AlertCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N

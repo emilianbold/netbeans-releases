@@ -167,6 +167,10 @@ public class Converter {
         else if ("javax.microedition.lcdui.TextBox".equals (typeID))
             ConverterDisplayables.convertTextBox (id2item, item, document);
 
+        else if ("javax.microedition.lcdui.ChoiceGroup".equals (typeID))
+            ConverterItems.convertChoiceGroup (id2item, item, document);
+        else if ("javax.microedition.lcdui.DateField".equals (typeID))
+            ConverterItems.convertDateField (id2item, item, document);
         else if ("javax.microedition.lcdui.Gauge".equals (typeID))
             ConverterItems.convertGauge (id2item, item, document);
         else if ("javax.microedition.lcdui.Gauge-AlertIndicator_Helper".equals (typeID))
@@ -177,6 +181,8 @@ public class Converter {
             ConverterItems.convertSpacer (id2item, item, document);
         else if ("javax.microedition.lcdui.StringItem".equals (typeID))
             ConverterItems.convertStringItem (id2item, item, document);
+        else if ("javax.microedition.lcdui.TextField".equals (typeID))
+            ConverterItems.convertTextField (id2item, item, document);
 
         else if ("javax.microedition.lcdui.Font".equals (typeID))
             ConverterResources.convertFont (item, document);
@@ -185,6 +191,8 @@ public class Converter {
         else if ("javax.microedition.lcdui.Image".equals (typeID))
             ConverterResources.convertImage (item, document);
 
+        else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ChoiceElementDC".equals (typeID))
+            ConverterElements.convertChoiceElement (id2item, item, document);
         else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ListElementDC".equals (typeID))
             ConverterElements.convertListElement (id2item, item, document);
 
