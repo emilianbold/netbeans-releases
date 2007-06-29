@@ -144,7 +144,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
                         new UpdateReferences(
                         !fo.equals(source.getParent()) && 
                         FileOwnerQuery.getOwner(fo).equals(FileOwnerQuery.getOwner(source))
-                        , oldPackage));
+                        , oldPackage, oldPackage+"."+source.getName()));
                 results.iterator().next().commit();
             } catch (Exception ioe) {
                 ErrorManager.getDefault().notify(ioe);
@@ -161,9 +161,12 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
 
         private boolean insertImport;
         private String oldPackage;
-        public UpdateReferences(boolean insertImport, String oldPackage) {
+        private String oldFQN;
+        public UpdateReferences(boolean insertImport, String oldPackage, String oldFQN) {
             this.insertImport = insertImport;
             this.oldPackage = oldPackage;
+            this.oldFQN = oldFQN;
+            
         }
 
         public void cancel() {
@@ -177,7 +180,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
                 return;
             }
             
-            CopyTransformer findVisitor = new CopyTransformer(compiler, refactoring.getNewName(), insertImport, oldPackage);
+            CopyTransformer findVisitor = new CopyTransformer(compiler, oldFQN, refactoring.getNewName(), insertImport, oldPackage);
             findVisitor.scan(compiler.getCompilationUnit(), null);
             fireProgressListenerStep();
         }

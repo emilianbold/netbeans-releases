@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
@@ -35,13 +36,15 @@ public class CopyTransformer extends RefactoringVisitor {
     private String newName;
     private boolean insertImport;
     private String oldPackage;
+    private String oldFQN;
 
-    public CopyTransformer(WorkingCopy workingCopy, String newName, boolean insertImport, String oldPackage) {
+    public CopyTransformer(WorkingCopy workingCopy, String oldName, String newName, boolean insertImport, String oldPackage) {
         try {
             setWorkingCopy(workingCopy);
             this.newName = newName;
             this.insertImport = insertImport;
             this.oldPackage = oldPackage + ".*";
+            this.oldFQN = oldName;
         } catch (ToPhaseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -62,12 +65,38 @@ public class CopyTransformer extends RefactoringVisitor {
     @Override
     public Tree visitClass(ClassTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            //if (tree.getSimpleName().toString().equals(workingCopy.getFileObject().getName())) {
+            TypeElement currentClass = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
+            if (!currentClass.getNestingKind().isNested() && tree.getSimpleName().toString().endsWith("_1")) {
+                Tree nju = make.setLabel(tree, newName);
+                rewrite(tree, nju);
+            }
+        }
+        return super.visitClass(tree, p);
+    }
+    
+    @Override
+    public Tree visitIdentifier(IdentifierTree node, Element p) {
+        renameUsageIfMatch(getCurrentPath(), node,p);
+        return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Tree visitMemberSelect(MemberSelectTree node, Element p) {
+        renameUsageIfMatch(getCurrentPath(), node,p);
+        return super.visitMemberSelect(node, p);
+    }
+    
+    private void renameUsageIfMatch(TreePath path, Tree tree, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path))
+            return;
+        Element el = workingCopy.getTrees().getElement(path);
+        if (el==null)
+            return;
+        
+        if ((el instanceof TypeElement) && ((TypeElement) el).getQualifiedName().toString().equals(oldFQN)) {
             Tree nju = make.setLabel(tree, newName);
             rewrite(tree, nju);
-            //}
         }
-        return null;
     }
     
 }
