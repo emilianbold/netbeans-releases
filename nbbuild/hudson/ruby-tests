@@ -1,5 +1,5 @@
 #!/bin/sh
-source ruby
+source nbbuild/hudson/ruby
 
 rm -f nbbuild/nbproject/private/scan-cache-full.ser nbbuild/nbproject/private/scan-cache-standard.ser
 ant -f nbbuild/build.xml all-xtest
