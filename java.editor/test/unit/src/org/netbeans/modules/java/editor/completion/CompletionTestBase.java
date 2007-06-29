@@ -52,7 +52,6 @@ import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.JavaDataObject.JavaEditorSupport;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -62,6 +61,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.LifecycleManager;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -226,9 +226,7 @@ public class CompletionTestBase extends NbTestCase {
             assertFile(output2, goldenFile2, diffFile2, new WhitespaceIgnoringDiff());
         }
         
-        JavaEditorSupport s = (JavaEditorSupport) ec;        
-        SourceUtilsTestUtil2.ignoreCompileRequests();        
-        s.close(false);
+        LifecycleManager.getDefault().saveAll();
     }
 
     private void copyToWorkDir(File resource, File toFile) throws IOException {
