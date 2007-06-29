@@ -435,8 +435,8 @@ public class Utilities {
             log("Looking path = Servers");
             path = runtimeTree.findPath("Servers");
             runtimeTree.selectPath(path);
-            log("Looking path = Servers|Sun Java System Application Server");
-            path = runtimeTree.findPath("Servers|Sun Java System Application Server"); // NOI18N
+            log("Looking path = Servers|GlassFish V2");
+            path = runtimeTree.findPath("Servers|GlassFish V2"); // NOI18N
             runtimeTree.selectPath(path);
         } catch (Exception exc) {
             exc.printStackTrace(System.err);
