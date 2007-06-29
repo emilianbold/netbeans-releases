@@ -24,17 +24,19 @@ package org.netbeans.modules.uml.ui.products.ad.compartments;
 import java.awt.Point;
 import java.util.Iterator;
 import java.util.List;
-
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
 import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.drawengines.ETDrawEngineFactory;
 import org.netbeans.modules.uml.ui.products.ad.drawengines.INodeDrawEngine;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
+import org.openide.util.NbBundle;
 
 /**
  * @author Embarcadero Technologies Inc.
@@ -43,6 +45,8 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
  */
 public class ETRedefinedOperationListCompartment extends ETOperationListCompartment implements IADRedefinedOperationListCompartment{
 
+    public static ElementLocator locator = new ElementLocator();
+    
 	public ETRedefinedOperationListCompartment() {
 		super();
 		this.init();
@@ -59,7 +63,7 @@ public class ETRedefinedOperationListCompartment extends ETOperationListCompartm
 
 	public void initResources() {
 		super.initResources();
-		this.setName("Redefined Operations");
+//		this.setName("Redefined Operations");
 	}
 
 	// TODO need to use IElement instead of ICompartment
@@ -192,4 +196,18 @@ public class ETRedefinedOperationListCompartment extends ETOperationListCompartm
 	{
 		return "ADRedefinedOperationListCompartment";
 	}
+        
+        public String getName()
+        {
+            if (getModelElementXMIID()==null || getModelElementXMIID().trim().equals(""))
+                return super.getName();
+            
+            String name = "";
+            IElement element = locator.findElementByID(getModelElementXMIID());
+            if (element != null && element instanceof INamedElement)
+                name = ((INamedElement)element).getNameWithAlias();
+        
+            return NbBundle.getMessage(ETRedefinedOperationListCompartment.class,
+                    "IDS_REDEFINED_OPERATIONS", name);
+        }      
 }

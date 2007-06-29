@@ -24,10 +24,8 @@ package org.netbeans.modules.uml.ui.products.ad.drawengines;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -39,11 +37,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
-
-import javax.swing.border.BevelBorder;
-
 import org.netbeans.modules.uml.common.ETException;
-import org.netbeans.modules.uml.common.ETStrings;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -55,11 +49,9 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IAssociationClass;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ParameterableElement;
 import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
 import org.netbeans.modules.uml.core.support.umlsupport.ETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
@@ -69,7 +61,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.INamedCollection;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
-import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
@@ -79,8 +70,6 @@ import org.netbeans.modules.uml.ui.products.ad.compartments.ETClassNameCompartme
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETClassNameListCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETCompartmentDivider;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETOperationListCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETRedefinedOperationListCompartment;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETStereoTypeCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADAttributeListCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADClassNameListCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IADListCompartment;
@@ -89,42 +78,28 @@ import org.netbeans.modules.uml.ui.products.ad.compartments.INameListCompartment
 import org.netbeans.modules.uml.ui.products.ad.compartments.ITemplateParametersCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.TemplateParametersCompartment;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.IADCoreEngine;
-import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETBaseUI;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.IETGraphObjectUI;
 import org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation;
-import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
-import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuItem;
-import org.netbeans.modules.uml.ui.support.umltsconversions.RectConversions;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETRectEx;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IListCompartment;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.INotificationTargets;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ISetCursorEvent;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ModelElementChangedKind;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.UIResources;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.GDISupport;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDiagramEngine;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import com.tomsawyer.editor.TSEColor;
-import com.tomsawyer.editor.TSEFont;
 import com.tomsawyer.editor.TSENode;
-import com.tomsawyer.editor.TSESolidObject;
 import com.tomsawyer.editor.graphics.TSEGraphics;
 import com.tomsawyer.graph.TSEdge;
 import com.tomsawyer.graph.TSNode;
-//import com.tomsawyer.util.TSConstPoint;
-import com.tomsawyer.drawing.geometry.TSConstPoint;
-//import com.tomsawyer.util.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSConstRect;
-//import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 
 
 public class ETClassDrawEngine extends ETNodeDrawEngine
@@ -141,7 +116,9 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
     
     private static final String IDS_EXPAND_TOOL_TIP_TEXT
             = "IDS_EXPAND_TOOL_TIP_TEXT";
-    
+
+    private String redefined_attribute_compartment_ID = "ADAttributeListCompartment";
+    private String redefined_operation_compartment_ID = "ADRedefinedOperationListCompartment";
     
     public ETClassDrawEngine()
     {
@@ -171,47 +148,47 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
         super.initResources();
     }
     
-//   protected void drawBorder(IDrawInfo pDrawInfo)
-//   {
-//      TSEGraphics graphics = pDrawInfo.getTSEGraphics();
-//      IETGraphObjectUI parentUI = this.getParent();
-//      if (parentUI.getOwner() != null)
-//      {
-////         IETRect deviceRect = pDrawInfo.getDeviceBounds();
-////
-////         TSTransform transform = pDrawInfo.getTSTransform();
-////         TSConstRect localBounds = transform.boundsToWorld(deviceRect.getRectangle());
-//
-//         Color bkColor = getBkColor();
-////         BevelBorder border = new BevelBorder(BevelBorder.RAISED,
-////                                              bkColor.darker(),
-////                                              bkColor.brighter());
-////
-////         ADGraphWindow wnd = getDrawingArea().getGraphWindow();
-////         Point topLeft = deviceRect.getTopLeft();
-////         border.paintBorder((java.awt.Component)wnd,
-////                            (java.awt.Graphics2D)graphics,
-////                            topLeft.x,
-////                            topLeft.y,
-////                            (int)deviceRect.getWidth(),
-////                            (int)deviceRect.getHeight());
-//
-//         java.awt.BasicStroke stroke = new java.awt.BasicStroke(3);
-//         java.awt.Stroke curStroke = graphics.getStroke();
-//         graphics.setStroke(stroke);
-//
-//         Color curColor = graphics.getColor();
-//
-//         graphics.setColor(bkColor);
-//
-//         IETRect deviceRect = pDrawInfo.getDeviceBounds();
-//         graphics.draw(deviceRect.getRectangle());
-//
-//         graphics.setColor(curColor);
-//         graphics.setStroke(curStroke);
-//
-//      }
-//   }
+    //   protected void drawBorder(IDrawInfo pDrawInfo)
+    //   {
+    //      TSEGraphics graphics = pDrawInfo.getTSEGraphics();
+    //      IETGraphObjectUI parentUI = this.getParent();
+    //      if (parentUI.getOwner() != null)
+    //      {
+    ////         IETRect deviceRect = pDrawInfo.getDeviceBounds();
+    ////
+    ////         TSTransform transform = pDrawInfo.getTSTransform();
+    ////         TSConstRect localBounds = transform.boundsToWorld(deviceRect.getRectangle());
+    //
+    //         Color bkColor = getBkColor();
+    ////         BevelBorder border = new BevelBorder(BevelBorder.RAISED,
+    ////                                              bkColor.darker(),
+    ////                                              bkColor.brighter());
+    ////
+    ////         ADGraphWindow wnd = getDrawingArea().getGraphWindow();
+    ////         Point topLeft = deviceRect.getTopLeft();
+    ////         border.paintBorder((java.awt.Component)wnd,
+    ////                            (java.awt.Graphics2D)graphics,
+    ////                            topLeft.x,
+    ////                            topLeft.y,
+    ////                            (int)deviceRect.getWidth(),
+    ////                            (int)deviceRect.getHeight());
+    //
+    //         java.awt.BasicStroke stroke = new java.awt.BasicStroke(3);
+    //         java.awt.Stroke curStroke = graphics.getStroke();
+    //         graphics.setStroke(stroke);
+    //
+    //         Color curColor = graphics.getColor();
+    //
+    //         graphics.setColor(bkColor);
+    //
+    //         IETRect deviceRect = pDrawInfo.getDeviceBounds();
+    //         graphics.draw(deviceRect.getRectangle());
+    //
+    //         graphics.setColor(curColor);
+    //         graphics.setStroke(curStroke);
+    //
+    //      }
+    //   }
     
     public void drawContents(IDrawInfo pDrawInfo)
     {
@@ -276,17 +253,17 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
                     {
                         IETRect compartmentDrawRect = new ETRect(deviceRect.getLeft(), transform.yToDevice(this.getLastDrawPointWorldY()), deviceRect.getIntWidth(), nameListSize.getHeight());
                         
-//                  // Change if you want to demo the Class UI changes.
-//                  Color bk = getBkColor();
-//                  java.awt.GradientPaint paint = new java.awt.GradientPaint(compartmentDrawRect.getLeft(),
-//                                                                            compartmentDrawRect.getTop(),
-//                                                                            bk,
-//                                                                            compartmentDrawRect.getRight(),
-//                                                                            compartmentDrawRect.getBottom(),
-//                                                                            getLightGradientFillColor());
-//                  graphics.setPaint(paint);
-//                  graphics.fill(compartmentDrawRect.getRectangle());
-//                  graphics.setPaint(null);
+                        //                  // Change if you want to demo the Class UI changes.
+                        //                  Color bk = getBkColor();
+                        //                  java.awt.GradientPaint paint = new java.awt.GradientPaint(compartmentDrawRect.getLeft(),
+                        //                                                                            compartmentDrawRect.getTop(),
+                        //                                                                            bk,
+                        //                                                                            compartmentDrawRect.getRight(),
+                        //                                                                            compartmentDrawRect.getBottom(),
+                        //                                                                            getLightGradientFillColor());
+                        //                  graphics.setPaint(paint);
+                        //                  graphics.fill(compartmentDrawRect.getRectangle());
+                        //                  graphics.setPaint(null);
                         foundCompartment.draw(pDrawInfo, compartmentDrawRect);
                         
                         // advance to the next line
@@ -627,13 +604,13 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
                         {
                             ETList < IAttribute > elemCol = new ETArrayList < IAttribute > (col);
                             //sName.Format( IDS_REDEFINED_ATTRIBUTES, W2T( sCollectionName ) );
-                            compartmentTypeName = "ADAttributeListCompartment";
+                            compartmentTypeName = redefined_attribute_compartment_ID; //"ADAttributeListCompartment";
                             elements = (new CollectionTranslator < IAttribute, IElement > ()).copyCollection(elemCol);
                         }
                         else if (containedObj instanceof IOperation)
                         {
                             ETList < IOperation > elemCol = new ETArrayList < IOperation > (col);
-                            compartmentTypeName = "ADRedefinedOperationListCompartment";
+                            compartmentTypeName = redefined_operation_compartment_ID; // "ADRedefinedOperationListCompartment";
                             elements = (new CollectionTranslator < IOperation, IElement > ()).copyCollection(elemCol);
                         }
                     }
@@ -734,40 +711,30 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
      */
     private ICompartment getFeaturesRedefiningCompartment(IFeature pFeature, ETList < IElement > pElements, boolean bCreateIfNotFound)
     {
-        ICompartment retCompartment = null;
+        ICompartment foundComp = null;
         if (pFeature != null && pElements != null)
         {
             IClassifier pClassifier = pFeature.getFeaturingClassifier();
             if (pClassifier != null)
             {
-                // Determine the strings used to set the title of the list box, and create the list box
-                String strTitleWithAlias = null;
-                String strTitle = null;
-                String strTitleAlias = null;
                 String compartmentTypeName = null;
+                String xmiid = pClassifier.getXMIID();
+                
                 if (pFeature instanceof IAttribute)
                 {
-                    String attrRedef = loadString("IDS_REDEFINED_ATTRIBUTES");
-                    strTitleWithAlias = StringUtilities.replaceSubString(attrRedef, "%s", pClassifier.getNameWithAlias());
-                    strTitle = StringUtilities.replaceSubString(attrRedef, "%s", pClassifier.getName());
-                    strTitleAlias = StringUtilities.replaceSubString(attrRedef, "%s", pClassifier.getAlias());
-                    compartmentTypeName = "ADAttributeListCompartment";
+                    compartmentTypeName = redefined_attribute_compartment_ID; //"ADAttributeListCompartment";
                 }
                 else if (pFeature instanceof IOperation)
                 {
-                    String opRedef = loadString("IDS_REDEFINED_OPERATIONS");
-                    strTitleWithAlias = StringUtilities.replaceSubString(opRedef, "%s", pClassifier.getNameWithAlias());
-                    strTitle = StringUtilities.replaceSubString(opRedef, "%s", pClassifier.getName());
-                    strTitleAlias = StringUtilities.replaceSubString(opRedef, "%s", pClassifier.getAlias());
-                    compartmentTypeName = "ADRedefinedOperationListCompartment";
+                    compartmentTypeName = redefined_operation_compartment_ID; // "ADRedefinedOperationListCompartment";
                 }
                 
-                // check if this compartment already exists
-                ICompartment foundComp = findCompartmentByTitle(strTitle);
-                if (foundComp == null)
-                {
-                    foundComp = findCompartmentByTitle(strTitleAlias);
-                }
+                // check if this compartment already exists 79838
+                foundComp = findCompartmentByXMIID(xmiid+compartmentTypeName);
+                //                if (foundComp == null)
+                //                {
+                //                    foundComp = findCompartmentByTitle(strTitleAlias);
+                //                }
                 
                 // if we didn't find the compartment above, look for one that contains one of the elements in our list
                 if (foundComp == null)
@@ -793,23 +760,40 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
                     foundComp = createAndAddCompartment(compartmentTypeName);
                     if (foundComp != null && foundComp instanceof IADListCompartment)
                     {
-                        //((IADListCompartment)foundComp).setReadOnly(true);
+                        foundComp.setModelElementXMIID(xmiid);
                         ((IADListCompartment)foundComp).setDeleteIfEmpty(true);
                     }
-                }
-                
-                if (foundComp != null)
-                {
-                    retCompartment = foundComp;
-                    if (strTitleWithAlias != null && strTitleWithAlias.length() > 0)
-                    {
-                        retCompartment.setName(strTitleWithAlias);
-                    }
-                }
+                }   
             }
         }
-        return retCompartment;
+        return foundComp;
     }
+    
+    
+    public ICompartment findCompartmentByXMIID(String val)
+    {
+        
+        ICompartment retValue = null;
+        
+        Iterator<ICompartment> iterator = getCompartments().iterator();
+        
+        while (iterator.hasNext())
+        {
+            
+            ICompartment curObject = iterator.next();
+            ICompartment compartment = curObject;
+            
+            if (compartment != null && 
+               (compartment.getModelElementXMIID() + compartment.getCompartmentID()).equals(val))
+            {
+                retValue = curObject;
+                break;
+            }
+        }
+        
+        return retValue;
+    }
+    
     
     /**
      * Sets the static text compartment in the name list if necessary
@@ -955,13 +939,13 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
         
         switch (nKind)
         {
-            case IGraphEventKind.GEK_PRE_MOVE :
-                this.handlePreMove();
-                break;
-                
-            case IGraphEventKind.GEK_POST_MOVE :
-                this.handlePostMove();
-                break;
+        case IGraphEventKind.GEK_PRE_MOVE :
+            this.handlePreMove();
+            break;
+            
+        case IGraphEventKind.GEK_POST_MOVE :
+            this.handlePostMove();
+            break;
         }
     }
     
@@ -1523,7 +1507,7 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
                         .get(curCompartment.getCompartmentID());
                 
                 if ((divider != null)
-                && divider.containsDevicePoint(position.x, position.y))
+                        && divider.containsDevicePoint(position.x, position.y))
                 {
                     mouseOverDivider = true;
                     break;
