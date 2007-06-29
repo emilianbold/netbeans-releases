@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.db.sql.editor.ui.actions;
 
-import java.awt.Toolkit;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.db.explorer.DatabaseConnection;
