@@ -21,6 +21,7 @@ package org.netbeans.modules.form.j2ee.wizard;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -137,8 +138,10 @@ public class MasterDetailGenerator {
      * @throws IOException if the generation fails.
      */
     void generate() throws IOException {
-        String form = read(formFile);
-        String java = read(javaFile);
+        String formEncoding = "UTF-8"; // NOI18N
+        String javaEncoding = FileEncodingQuery.getDefaultEncoding().name();
+        String form = read(formFile, formEncoding);
+        String java = read(javaFile, javaEncoding);
         Map<String,String> replacements = replacements();
         for (Map.Entry<String,String> entry : replacements.entrySet()) {
             form = form.replace(entry.getKey(), entry.getValue());
@@ -163,8 +166,8 @@ public class MasterDetailGenerator {
         }
         java = deleteSections(java, JDK6ONLY, ClassPathUtils.isJava6ProjectPlatform(javaFile), true);
 
-        write(formFile, form);
-        write(javaFile, java);
+        write(formFile, form, formEncoding);
+        write(javaFile, java, javaEncoding);
     }
 
     /**
@@ -418,9 +421,9 @@ public class MasterDetailGenerator {
      * @return the content of the file.
      * @throws IOException when the reading fails.
      */
-    private static String read(FileObject file) throws IOException {
+    private static String read(FileObject file, String encoding) throws IOException {
         InputStream is = file.getInputStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         StringBuilder sb = new StringBuilder();
         String s;
         while ((s=br.readLine()) != null) {
@@ -437,13 +440,12 @@ public class MasterDetailGenerator {
      * @param content new content of the file.
      * @throws IOException when the writing fails.
      */
-    private static void write(FileObject file, String content) throws IOException {
+    private static void write(FileObject file, String content, String encoding) throws IOException {
         FileLock lock = file.lock();
         try {
             OutputStream os = file.getOutputStream(lock);
-            OutputStreamWriter w = new OutputStreamWriter(os);
-            w.write(content, 0, content.length());
-            w.close();
+            os.write(content.getBytes(encoding));
+            os.close();
         } finally {
             lock.releaseLock();
         }

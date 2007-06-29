@@ -23,9 +23,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.properties.UtilConvert;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -130,8 +135,19 @@ class AppProjectGenerator {
                     FileLock lock = destFile.lock();
                     try {
                         OutputStream output = destFile.getOutputStream(lock);
-                        if (isFileToReplaceContent(destFile)) {
-                            replacer.setOutput(output, false);
+                        String encoding = null;
+                        boolean propertiesEncoding = false;
+                        String ext = destFile.getExt().toLowerCase();
+                        if (ext.endsWith("java")) { // NOI18N
+                            encoding = FileEncodingQuery.getDefaultEncoding().name();
+                        } else if (ext.endsWith("form") || ext.endsWith("xml")) { // NOI18N
+                            encoding = "UTF-8"; // NOI18N
+                        } else if (ext.endsWith("properties")) { // NOI18N
+                            encoding = "ISO-8859-1"; // NOI18N
+                            propertiesEncoding = true;
+                        }
+                        if (encoding != null || propertiesEncoding) {
+                            replacer.setOutput(output, encoding, propertiesEncoding);
                             output = replacer;
                         }
                         try {
@@ -150,14 +166,6 @@ class AppProjectGenerator {
         finally {
             zip.close();
         }
-    }
-
-    private static boolean isFileToReplaceContent(FileObject fo) {
-        String ext = fo.getExt().toLowerCase();
-        return ext.endsWith("java") // NOI18N
-            || ext.endsWith("form") // NOI18N
-            || ext.endsWith("properties") // NOI18N
-            || ext.endsWith("xml"); // NOI18N
     }
 
     static FileObject getGeneratedFile(FileObject projectFolder, String templFileName,
@@ -211,6 +219,9 @@ class AppProjectGenerator {
 
         private boolean forcePathNames;
 
+        private String encoding;
+        private boolean propertiesEncoding;
+
         ReplacingOutputStream(String[] toReplace, String[] replaceWith) {
             this.toReplace = toReplace;
             this.replaceWith = replaceWith;
@@ -220,6 +231,16 @@ class AppProjectGenerator {
         void setOutput(OutputStream output, boolean forcePathNames) {
             this.output = output;
             this.forcePathNames = forcePathNames;
+            this.encoding = null;
+            this.propertiesEncoding = false;
+            matchCounts = new int[toReplace.length];
+        }
+
+        void setOutput(OutputStream output, String encoding, boolean propertiesEncoding) {
+            this.output = output;
+            this.forcePathNames = false;
+            this.encoding = encoding;
+            this.propertiesEncoding = propertiesEncoding;
             matchCounts = new int[toReplace.length];
         }
 
@@ -248,7 +269,7 @@ class AppProjectGenerator {
                 String subst = replaceWith[completeMatch];
                 if (forcePathNames) // convert possible package name to directory path
                     subst = subst.replace('.', '/'); // NOI18N
-                output.write(subst.getBytes());
+                output.write(encode(subst));
                 for (int i=0; i < matchCounts.length; i++) {
                     matchCounts[i] = 0;
                 }
@@ -261,6 +282,20 @@ class AppProjectGenerator {
                 writePendingBytes();
                 output.write(b);
             }
+        }
+
+        private byte[] encode(String str) {
+            if (propertiesEncoding) {
+                str = UtilConvert.saveConvert(str);
+            }
+            if (encoding != null) {
+                try {
+                    return str.getBytes(encoding);
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(AppProjectGenerator.class.getName()).log(Level.INFO, "", ex); // NOI18N
+                }
+            }
+            return str.getBytes();
         }
 
         private void writePendingBytes() throws IOException {

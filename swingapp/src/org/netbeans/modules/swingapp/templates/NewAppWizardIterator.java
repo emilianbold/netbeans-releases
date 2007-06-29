@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -241,7 +242,8 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             "applicationpackage", // NOI18N
             "ShellApp", // NOI18N
             "ShellView", // NOI18N
-            "ShellAboutBox" }; // NOI18N
+            "ShellAboutBox", // NOI18N
+            "UTF-\\u0038" }; // hack - replace UTF-8 only in project.properties (#107083) // NOI18N
     }
 
     private static String[] getSubstituteNames(String projectName, String appClassName) {
@@ -265,7 +267,8 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             packageName,
             appClassName,
             appPrefix + "View", // NOI18N
-            appPrefix + "AboutBox" // NOI18N
+            appPrefix + "AboutBox", // NOI18N
+            FileEncodingQuery.getDefaultEncoding().name() // for source.encoding in project.properties
         };
     }
 }
