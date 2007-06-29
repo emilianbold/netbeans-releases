@@ -16,12 +16,15 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import org.netbeans.modules.java.hints.introduce.IntroduceFieldPanel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import org.openide.util.NbPreferences;
 
 /**
@@ -36,6 +39,8 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     private static final int ACCESS_PRIVATE = 4;
     
     private boolean introduceConstant;
+    
+    private JButton btnOk;
     
     public IntroduceVariablePanel(int numDuplicates, String defaultName, boolean introduceConstant) {
         initComponents();
@@ -85,6 +90,35 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         return NbPreferences.forModule( IntroduceVariablePanel.class ).node( introduceConstant ? "introduceConstant" : "introduceVariable" ); //NOI18N
     }
 
+    public void setOkButton( JButton btn ) {
+        this.btnOk = btn;
+    }
+    
+    private JLabel createErrorLabel() {
+        ErrorLabel.Validator validator = new ErrorLabel.Validator() {
+
+            public String validate(String text) {
+                if( null == text 
+                    || text.length() == 0
+                    || text.indexOf( ' ' ) >= 0 )
+                    return getDefaultErrorMessage( text );
+                return null;
+            }
+        };
+        
+        final ErrorLabel errorLabel = new ErrorLabel( name.getDocument(), validator );
+        errorLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                btnOk.setEnabled( errorLabel.isInputTextValid() );
+            }
+        });
+        return errorLabel;
+    }
+    
+    String getDefaultErrorMessage( String inputText ) {
+        return "'" + inputText +"' is not a valid identifier";
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -103,6 +137,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         accessProtected = new javax.swing.JRadioButton();
         accessDefault = new javax.swing.JRadioButton();
         accessPrivate = new javax.swing.JRadioButton();
+        errorLabel = createErrorLabel();
 
         lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceVariablePanel.class).getString("LBL_Name")); // NOI18N
@@ -140,6 +175,8 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         accessPrivate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         accessPrivate.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "jLabel1");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -147,6 +184,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
                     .add(replaceAll)
                     .add(declareFinal)
                     .add(layout.createSequentialGroup()
@@ -155,7 +193,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                             .add(lblName))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                            .add(name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(accessPublic)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -184,7 +222,9 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 .add(declareFinal)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(replaceAll)
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 32, Short.MAX_VALUE)
+                .add(errorLabel)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -196,6 +236,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton accessProtected;
     private javax.swing.JRadioButton accessPublic;
     private javax.swing.JCheckBox declareFinal;
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel lblAccess;
     private javax.swing.JLabel lblName;
     private javax.swing.JTextField name;

@@ -16,12 +16,16 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.java.hints.introduce.IntroduceFieldPanel;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import org.openide.util.NbPreferences;
 
 /**
@@ -38,6 +42,8 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     private static final int ACCESS_PROTECTED = 2;
     private static final int ACCESS_DEFAULT = 3;
     private static final int ACCESS_PRIVATE = 4;
+    
+    private JButton btnOk;
     
     public IntroduceMethodPanel(String name) {
         initComponents();
@@ -66,7 +72,36 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     private Preferences getPreferences() {
         return NbPreferences.forModule( IntroduceFieldPanel.class ).node( "introduceField" ); //NOI18N
     }
+    
+    public void setOkButton( JButton btn ) {
+        this.btnOk = btn;
+    }
+    
+    private JLabel createErrorLabel() {
+        ErrorLabel.Validator validator = new ErrorLabel.Validator() {
 
+            public String validate(String text) {
+                if( null == text 
+                    || text.length() == 0
+                    || text.indexOf( ' ' ) >= 0 )
+                    return getDefaultErrorMessage( text );
+                return null;
+            }
+        };
+        
+        final ErrorLabel errorLabel = new ErrorLabel( name.getDocument(), validator );
+        errorLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                btnOk.setEnabled( errorLabel.isInputTextValid() );
+            }
+        });
+        return errorLabel;
+    }
+    
+    String getDefaultErrorMessage( String inputText ) {
+        return "'" + inputText +"' is not a valid identifier";
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -84,11 +119,11 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         accessProtected = new javax.swing.JRadioButton();
         accessDefault = new javax.swing.JRadioButton();
         accessPrivate = new javax.swing.JRadioButton();
+        errorLabel = createErrorLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceMethodPanel.class).getString("LBL_Name")); // NOI18N
 
         name.setColumns(20);
-        name.setText(org.openide.util.NbBundle.getBundle(IntroduceMethodPanel.class).getString("IntroduceFieldPanel.name.text")); // NOI18N
 
         lblAccess.setLabelFor(accessPublic);
         org.openide.awt.Mnemonics.setLocalizedText(lblAccess, org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "LBL_Access")); // NOI18N
@@ -114,6 +149,8 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         accessPrivate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         accessPrivate.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "jLabel1");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -121,19 +158,22 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblAccess)
-                    .add(lblName))
-                .add(21, 21, 21)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(accessPublic)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(accessProtected)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(accessDefault)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(accessPrivate)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblAccess)
+                            .add(lblName))
+                        .add(21, 21, 21)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(accessPublic)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(accessProtected)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(accessDefault)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(accessPrivate))))
+                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -150,7 +190,9 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                     .add(accessProtected)
                     .add(accessDefault)
                     .add(accessPrivate))
-                .addContainerGap(148, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
+                .add(errorLabel)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -161,6 +203,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton accessPrivate;
     private javax.swing.JRadioButton accessProtected;
     private javax.swing.JRadioButton accessPublic;
+    private javax.swing.JLabel errorLabel;
     private javax.swing.ButtonGroup initilizeIn;
     private javax.swing.JLabel lblAccess;
     private javax.swing.JLabel lblName;

@@ -28,7 +28,6 @@ import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ReturnTree;
@@ -41,7 +40,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,6 +60,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -921,10 +920,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
         
         public ChangeInfo implement() throws IOException, BadLocationException {
+            JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
+            JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
             IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, guessedName, kind == IntroduceKind.CREATE_CONSTANT);
+            panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_" + getKeyExt()); //NOI18N
-            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-            if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
+            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+            if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
                 return null;//cancel
             }
             final String name = panel.getVariableName();
@@ -1066,10 +1068,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
         
         public ChangeInfo implement() throws IOException, BadLocationException {
+            JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
+            JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
             IntroduceFieldPanel panel = new IntroduceFieldPanel(guessedName, initilizeIn, numDuplicates, allowFinalInCurrentMethod);
+            panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceField");
-            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-            if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
+            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+            if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
                 return null;//cancel
             }
             final String name = panel.getFieldName();
@@ -1251,10 +1256,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         public ChangeInfo implement() throws Exception {
+            JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
+            JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
             IntroduceMethodPanel panel = new IntroduceMethodPanel(""); //NOI18N
-            String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceField");
-            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-            if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
+            panel.setOkButton( btnOk );
+            String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
+            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+            if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
                 return null;//cancel
             }
             final String name = panel.getMethodName();
