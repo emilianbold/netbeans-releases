@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
     <folder name="Editors">
-        <folder name="junittest">
+        <folder name="text">
             <folder name="x-paletteswitchtest">
                 <file name="PaletteFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.palette.PaletteController"/>

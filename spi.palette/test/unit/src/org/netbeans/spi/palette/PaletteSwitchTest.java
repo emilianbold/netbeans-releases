@@ -45,7 +45,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
     
     static String mimePaletteRootName;
     private static FileObject mimePaletteRootFolder;
-    private static final String MIME_TYPE_NAME = "junittest/x-paletteswitchtest";
+    private static final String MIME_TYPE_NAME = "text/x-paletteswitchtest";
     
     private FileObject dummyDocumentFile;
     private final static String DUMMY_DOCUMENT_FILE_EXTENSION = "junitPaletteSwitchTest";
@@ -94,7 +94,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
     public void testNoMimePalette() throws IOException {
         PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
         
-        PaletteController foundPalette = paletteSwitch.getPaletteFromMimeType( "unknown/mimetype" );
+        PaletteController foundPalette = paletteSwitch.getPaletteFromMimeType( "text/_unknown" );
         
         assertNull( foundPalette );
     }
