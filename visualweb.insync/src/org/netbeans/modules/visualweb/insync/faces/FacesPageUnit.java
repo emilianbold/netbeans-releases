@@ -1607,6 +1607,10 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 
 // <copied from designer/FacesSupport>
     public static DocumentFragment renderHtml(FacesModel model, MarkupDesignBean bean) {
+        return renderHtml(model, bean, true);
+    }
+    
+    public static DocumentFragment renderHtml(FacesModel model, MarkupDesignBean bean, boolean markRendered) {
     	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
     	try {
             FacesModelSet facesModelSet = model.getFacesModelSet();
@@ -1659,10 +1663,10 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 //        // TODO: Rather than check for the box persistence side-effect flag, should I
 //        // be smarter here and only mark rendered nodes if the target is the DomSynchronizer's
 //        // DOM?
-//        if (markRendered) {
+        if (markRendered) {
 //            markRenderedNodes(null, df);
                 MarkupService.markRenderedNodes(df);
-//        }
+        }
     
             return df;
     	} finally {    		

@@ -85,6 +85,7 @@ import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
 
 // CVS note: This file used to be called XhtmlElement (same directory)
+import java.lang.ref.WeakReference;
 import org.w3c.dom.UserDataHandler;
 // if you need to look at older CVS history
 
@@ -180,12 +181,21 @@ implements CSSStylableElement,  CSSEngine.StyleElementLink /*, RaveElement*/ {
         return getAttributeNS(null, "id");
     }
 
+//    // XXX #105179 Performance, very slow impl of NamedNodesMap,
+//    // it uses a linear search.
+//    private WeakReference<String> classWRef = new WeakReference(null);
     // XXX Batik
     /**
      * Returns the class of this element.
      */
     public String getCSSClass() {
         return getAttributeNS(null, "class");
+//        String cl = classWRef.get();
+//        if (cl == null) {
+//            cl = getAttributeNS(null, "class"); // NOI18N
+//            classWRef = new WeakReference(cl);
+//        }
+//        return cl;
     }
 
     // XXX Batik

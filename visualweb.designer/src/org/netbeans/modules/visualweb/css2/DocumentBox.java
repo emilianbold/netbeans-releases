@@ -817,7 +817,7 @@ public abstract class DocumentBox extends ContainerBox {
                 // dynamically within them).
 //                while ((element != null) &&
 //                        (CssLookup.getValue(element, XhtmlCss.DISPLAY_INDEX) != CssValueConstants.TABLE_VALUE)) {
-                while (element != null
+                while (element != null && parent != null
                 && !CssProvider.getValueService().isTableValue(CssProvider.getEngineService().getComputedValueForElement(element, XhtmlCss.DISPLAY_INDEX))) {
                     element = (Element)parent;
                     parent = element.getParentNode();
@@ -879,6 +879,14 @@ public abstract class DocumentBox extends ContainerBox {
             return;
         }
         */
+        
+        // Unfortunately, we may have "preloaded" the component with styles above
+        // before we had actual containing blocks assigned to the elements, so
+        // clear the styles first
+//        CssLookup.clearComputedStyles(target.getElement());
+        // XXX This needs to be cleared before the new box is added into the hierarchy (see below).
+        CssProvider.getEngineService().clearComputedStylesForElement(element);
+        
         CreateContext cc = new CreateContext();
         cc.pushPage(webform);
 //        Font font = CssLookup.getFont(body, DesignerSettings.getInstance().getDefaultFontSize());
@@ -940,11 +948,11 @@ public abstract class DocumentBox extends ContainerBox {
             updateLayout(cc.prevChangedBox);
         }
 
-        // Unfortunately, we may have "preloaded" the component with styles above
-        // before we had actual containing blocks assigned to the elements, so
-        // clear the styles first
-//        CssLookup.clearComputedStyles(target.getElement());
-        CssProvider.getEngineService().clearComputedStylesForElement(target.getElement());
+//        // Unfortunately, we may have "preloaded" the component with styles above
+//        // before we had actual containing blocks assigned to the elements, so
+//        // clear the styles first
+////        CssLookup.clearComputedStyles(target.getElement());
+//        CssProvider.getEngineService().clearComputedStylesForElement(target.getElement());
 
         boolean redoDeleted = target.getParent() != parentBox;
         updateLayout(target);

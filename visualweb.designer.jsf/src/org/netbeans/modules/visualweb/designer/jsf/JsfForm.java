@@ -2707,9 +2707,12 @@ public class JsfForm {
         }
     } // End of DesignProjectListener.
 
-    
     DocumentFragment renderMarkupDesignBean(MarkupDesignBean markupDesignBean) {
-        return FacesPageUnit.renderHtml(getFacesModel(), markupDesignBean);
+        return renderMarkupDesignBean(markupDesignBean, true);
+    }
+    
+    DocumentFragment renderMarkupDesignBean(MarkupDesignBean markupDesignBean, boolean markRendered) {
+        return FacesPageUnit.renderHtml(getFacesModel(), markupDesignBean, markRendered);
     }
     
     LiveUnit getLiveUnit() {

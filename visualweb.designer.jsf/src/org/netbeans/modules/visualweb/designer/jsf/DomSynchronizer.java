@@ -42,8 +42,14 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.openide.ErrorManager;
+import org.w3c.dom.Attr;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * XXX Moved from designer.
@@ -689,20 +695,25 @@ FacesDndSupport.UpdateSuspender {
 //            Node previouslyRendered = ((RaveElement)bean.getElement()).getRendered();
             Node previouslyRendered = MarkupService.getRenderedElementForElement(bean.getElement());
 
-            if (!processDelete(bean)) {
+//            if (!processDelete(bean)) {
+//                processRefresh();
+////                webform.getPane().getPaneUI().modelChanged();
+//                jsfForm.modelChanged();
+//
+//                return;
+//            }
+//
+//            // Insert new version of component
+//            if (!processInsert(bean)) {
+//                processRefresh();
+////                webform.getPane().getPaneUI().modelChanged();
+//                jsfForm.modelChanged();
+//
+//                return;
+//            }
+            if (!processUpdate(bean)) {
                 processRefresh();
-//                webform.getPane().getPaneUI().modelChanged();
                 jsfForm.modelChanged();
-
-                return;
-            }
-
-            // Insert new version of component
-            if (!processInsert(bean)) {
-                processRefresh();
-//                webform.getPane().getPaneUI().modelChanged();
-                jsfForm.modelChanged();
-
                 return;
             }
 
@@ -712,21 +723,25 @@ FacesDndSupport.UpdateSuspender {
             Node rendered = MarkupService.getRenderedElementForElement(bean.getElement());
 
             if (rendered != null) {
-                if (rendered != previouslyRendered) {
-                    Node parent = rendered.getParentNode();
-//                    PageBox pageBox = webform.getPane().getPaneUI().getPageBox();
-//                    pageBox.changed(rendered, parent, false);
-                    jsfForm.nodeChanged(rendered, parent, false);
-                } else {
-                    // We've re-rendered but the bean-reference doesn't point
-                    // to a new node.  This means that the component must have
-                    // supplied bogus component references when rendering.
-                    // Note: With wrong element referenced we're not well off anyway -
-                    // the component won't be selectable!
-//                    PageBox pageBox = webform.getPane().getPaneUI().getPageBox();
-//                    webform.getPane().getPaneUI().modelChanged();
-                    jsfForm.modelChanged();
-                }
+//                if (rendered != previouslyRendered) {
+//                    Node parent = rendered.getParentNode();
+////                    PageBox pageBox = webform.getPane().getPaneUI().getPageBox();
+////                    pageBox.changed(rendered, parent, false);
+//                    jsfForm.nodeChanged(rendered, parent, false);
+//                } else {
+//                    // We've re-rendered but the bean-reference doesn't point
+//                    // to a new node.  This means that the component must have
+//                    // supplied bogus component references when rendering.
+//                    // Note: With wrong element referenced we're not well off anyway -
+//                    // the component won't be selectable!
+////                    PageBox pageBox = webform.getPane().getPaneUI().getPageBox();
+////                    webform.getPane().getPaneUI().modelChanged();
+//                    // XXX Now it means, that the node was updated, see the tryUpdateOriginalNode.
+//                    jsfForm.modelChanged();
+//                }
+                // Now the original node could be reused (see the tryUpdateOriginalNode).
+                Node parent = rendered.getParentNode();
+                jsfForm.nodeChanged(rendered, parent, false);
             } else if (previouslyRendered != null) {
                 // It was just deleted - for example when you change a component by
                 // switching off its "rendered" property
@@ -793,6 +808,263 @@ FacesDndSupport.UpdateSuspender {
                     InSyncServiceProvider.get().getHtmlStream(html));
             }
         }
+    }
+    
+    private boolean processUpdate(MarkupDesignBean bean) {
+        // Deleting
+//        if (!processDelete(bean)) {
+//            return false;
+//        }
+        
+        Element element = bean.getElement();
+        Node rendered = MarkupService.getRenderedElementForElement(element);
+        if (rendered == null) {
+            return false;
+        }
+
+        Node parent = rendered.getParentNode();
+        // Find leftmost node
+        Node curr = rendered.getPreviousSibling();
+        while (curr != null) {
+            if (curr.getNodeType() == Node.ELEMENT_NODE) {
+                Element xel = (Element)curr;
+                if (MarkupUnit.getMarkupDesignBeanForElement(xel) == bean) {
+                    rendered = curr;
+                } else {
+                    break;
+                }
+            }
+            curr = curr.getPreviousSibling();
+        }
+
+        deleteParent = parent;
+
+        List<Node> originalNodes = new ArrayList<Node>();
+        Node before = null;
+        // TODO - I ought to assert here that the parent is in the
+        // HTML DOM I'm attached to
+        // Remove all the rendered nodes
+        while (rendered != null) {
+//            Node before = rendered.getNextSibling();
+            before = rendered.getNextSibling();
+//            parent.removeChild(rendered);
+            originalNodes.add(rendered);
+            if (before == null) {
+                break;
+            }
+            // See if I need to delete additional siblings. This is slightly
+            // tricky because I can't just look at the next sibling. Components
+            // may separate tags with text nodes that are associated with the
+            // parent rather than the component being rendered; for example,
+            // a component renderer may do this:
+            //    writer.startElement(foo, component);
+            //    writer.endElement(foo);
+            //    writer.write("\n");
+            //    writer.startElement(bar, component);
+            //    ....
+            // Note that we want to delete both foo and bar even though there's
+            // a text node in between which is not associated with the component
+            // since it's not within a startElement for "component", it's within
+            // the element for the parent these children (foo and bar) are being
+            // added to.
+            // So, my strategy is to peek ahead and see if the next element
+            // found is associated with the same DesignBean, and if so, delete
+            // everything up to it.
+            if (!moreElements(before, bean)) {
+                break;
+            }
+            rendered = before;
+        }
+        
+        // Inserting
+//        if (!processInsert(bean)) {
+//            return false;
+//        }
+
+        // XXX TODO There is not needed webform here.
+        // Render the new element
+        // TODO - this should not necessarily have to involve FacesBeans!
+        // XXX Do not mark the new nodes as rendered for this case yet.
+        DocumentFragment df = jsfForm.renderMarkupDesignBean(bean, false);
+
+        // This seems to be not the correct place.
+//        // XXX FIXME Is this correct here?
+//        jsfForm.updateErrorsInComponent();
+
+        if (DEBUG) {
+            System.out.println("Got fragment from insert render html: " +
+                InSyncServiceProvider.get().getHtmlStream(df));
+        }
+
+        List<Node> newNodes = new ArrayList<Node>();
+        
+        if (df != null) {
+            // Insert nodes into the rendered dom
+            NodeList nl = df.getChildNodes();
+            int num = nl.getLength();
+
+            if (num == 0) {
+                // Rendered to nothing. This happens if you switch the Rendered attribute
+                // to off for example - this comes in as a change request rather than
+                // as a delete request - but we need to go and update the source element's
+                // rendered reference since it would now be obsolete in the future
+                // and we shouldn't attempt to use it
+//                ((RaveElement)bean.getElement()).setRendered(null);
+                // XXX FIXME Modifying the data structure!
+                MarkupService.setRenderedElementForElement(bean.getElement(), null);
+                return true;
+            }
+
+            // Can't remove from a NodeList while iterating over it - causes
+            // surprises like null siblings. So we need to copy first.
+            int n = nl.getLength();
+            Node[] nodes = new Node[n];
+
+            for (int i = 0; i < n; i++) {
+                nodes[i] = nl.item(i);
+            }
+
+            for (int i = 0; i < n; i++) {
+                Node nn = nodes[i];
+                if (DEBUG) {
+                    if (nn != null) {
+                        System.out.println("next node is: " + InSyncServiceProvider.get().getHtmlStream(nn));
+                        System.out.println("Fragment is now: " + InSyncServiceProvider.get().getHtmlStream(df));
+                    }
+                }
+
+                if (nn != null) {
+                    assert !isJspNode(nn);
+//                    parent.insertBefore(nn, before);
+                    newNodes.add(nn);
+                }
+            }
+        } else {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    new NullPointerException("Null DocumentFragment for JsfForm, jsfForm=" + jsfForm)); // NOI18N
+            return false;
+        }
+
+        if (originalNodes.size() == 1 && newNodes.size() == 1) {
+            Node originalNode = originalNodes.get(0);
+            Node newNode = newNodes.get(0);
+            if (tryUpdateOriginalNode(originalNode, newNode)) {
+                // XXX The original nodes are updated, do not mark the new as rendered, they are not used.
+                return true;
+            } else {
+                // XXX Mark the newly used nodes as rendered.
+                MarkupService.markRenderedNodes(df);
+                parent.replaceChild(newNode, originalNode);
+            }
+        } else {
+            // XXX Mark the newly used nodes as rendered.
+            MarkupService.markRenderedNodes(df);
+            for (Node toRemove : originalNodes) {
+                parent.removeChild(toRemove);
+            }
+            for (Node toAdd : newNodes) {
+                parent.insertBefore(toAdd, before);
+            }
+        }
+        
+        return true;
+    }
+    
+    private static boolean tryUpdateOriginalNode(Node originalNode, Node newNode) {
+        if (originalNode.getNodeType() != newNode.getNodeType()) {
+            return false;
+        }
+        
+        if (originalNode.isEqualNode(newNode)) {
+            return true;
+        }
+        
+        // Update children
+        NodeList originalNodeChildren = originalNode.getChildNodes();
+        NodeList newNodeChildren = newNode.getChildNodes();
+        if (originalNodeChildren == null) {
+            if (newNodeChildren != null) {
+                return false;
+            }
+        } else {
+            if (newNodeChildren == null) {
+                return false;
+            }
+            int originalNodeChildrenSize = originalNodeChildren.getLength();
+            int newNodeChildrenSize = newNodeChildren.getLength();
+            if (originalNodeChildrenSize != newNodeChildrenSize) {
+                return false;
+            }
+            
+            for (int i = 0; i < originalNodeChildrenSize; i++) {
+                boolean childOK = tryUpdateOriginalNode(originalNodeChildren.item(i), newNodeChildren.item(i));
+                if (!childOK) {
+                    return false;
+                }
+            }
+        }
+        
+        // Update value.
+        String originalValue = originalNode.getNodeValue();
+        String newValue = newNode.getNodeValue();
+        if ((originalValue == null && newValue != null)
+        || (originalValue != null && !originalValue.equals(newValue))) {
+            originalNode.setNodeValue(newValue);
+        }
+        
+        // Update attributes.
+        if (originalNode instanceof Element && newNode instanceof Element) {
+            Element originalElement = (Element)originalNode;
+            Element newElement = (Element)newNode;
+            
+            Map<String, Attr> originalMap = getAttributesMap(originalElement);
+            Map<String, Attr> newMap = getAttributesMap(newElement);
+            
+            // Remove redundant attributes.
+            for (String name : originalMap.keySet()) {
+                if (newMap.containsKey(name)) {
+                    continue;
+                }
+                originalElement.removeAttribute(name);
+            }
+            // Add/update the remaining attributes.
+            for (String name : newMap.keySet()) {
+                Attr newAttribute = newMap.get(name);
+                Attr originalAttribute = originalMap.get(name);
+                
+                if (originalAttribute == null) {
+                    originalElement.setAttributeNode((Attr)newAttribute.cloneNode(false));
+                } else {
+                    String oldAttributeValue = originalAttribute.getValue();
+                    String newAttributeValue = newAttribute.getValue();
+                    if (newAttributeValue == null) {
+                        if (oldAttributeValue != null) {
+                            originalElement.removeAttribute(name);
+                        }
+                    } else {
+                        if (!newAttributeValue.equals(oldAttributeValue)) {
+                            originalElement.setAttributeNode((Attr)newAttribute.cloneNode(false));
+                        }
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    private static Map<String, Attr> getAttributesMap(Element element) {
+        NamedNodeMap attributes = element.getAttributes();
+        Map<String, Attr> attributesMap = new HashMap<String, Attr>();
+        int size = attributes == null ? 0 : attributes.getLength();
+        for (int i = 0; i < size; i++) {
+            Node attr = attributes.item(i);
+            if (attr instanceof Attr) {
+                Attr attribute = (Attr)attr;
+                attributesMap.put(attribute.getName(), attribute);
+            }
+        }
+        return attributesMap;
     }
 
     /**
