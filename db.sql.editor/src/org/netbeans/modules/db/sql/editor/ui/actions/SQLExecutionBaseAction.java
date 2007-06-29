@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -184,7 +185,9 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
         }
 
         public Component getToolbarPresenter() {
-            return new Actions.ToolbarButton(this);
+            JButton button = new JButton();
+            Actions.connect(button, this);
+            return button;
         }
     }
 }
