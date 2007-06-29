@@ -26,9 +26,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <bindings>
     <bind actionName="abbrev-expand" key="S-SPACE"/>
-    <bind actionName="adjust-caret-bottom" key="DS-PAGE_UP"/>
+    <bind actionName="adjust-caret-bottom" key="OS-PAGE_DOWN"/>
     <bind actionName="adjust-caret-center" key="DS-INSERT"/>
-    <bind actionName="adjust-caret-top" key="DS-PAGE_DOWN"/>
+    <bind actionName="adjust-caret-top" key="OS-PAGE_UP"/>
 <!--    <bind actionName="adjust-window-bottom" key="O-U$B"/> -->
 <!--    <bind actionName="adjust-window-center" key="O-U$M"/> -->
 <!--    <bind actionName="adjust-window-top" key="O-U$T"/> -->
@@ -142,6 +142,6 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="tooltip-show" key="D-P"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="D-Z"/>
-    <bind actionName="word-match-next" key="D-L"/>
+    <bind actionName="word-match-next" key="DS-K"/>
     <bind actionName="word-match-prev" key="D-K"/>
 </bindings>

@@ -667,7 +667,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
             </file>
-            <file name="OS-PAGE_UP.shadow">
+            <file name="OD-PAGE_UP.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
             <file name="D-2.shadow">
@@ -691,7 +691,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="F9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
             </file>
-            <file name="A-PAGE_UP.shadow">
+            <file name="D-PAGE_UP.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
             <file name="O-F6.shadow">
@@ -703,7 +703,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
             </file>
-            <file name="F5.shadow">
+            <file name="D-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
             </file>
             <file name="D-Y.shadow">
@@ -724,7 +724,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SO-4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
             </file>
-            <file name="A-PAGE_DOWN.shadow">
+            <file name="D-PAGE_DOWN.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
             </file>
             <file name="S-F11.shadow">
@@ -739,7 +739,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-3.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
             </file>
-            <file name="D-PAGE_DOWN.shadow">
+            <file name="O-PAGE_DOWN.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
             </file>
             <file name="D-COMMA.shadow">
@@ -791,7 +791,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SO-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
             </file>
-            <file name="D-F5.shadow">
+            <file name="F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             </file>
             <file name="F7.shadow">
@@ -806,7 +806,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DS-M.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
             </file>
-            <file name="OS-PAGE_DOWN.shadow">
+            <file name="OD-PAGE_DOWN.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
             </file>
             <file name="DS-2.shadow">
@@ -825,6 +825,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
             </file>
             <file name="D-F4.shadow">
+        	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+        	</file>
+            <file name="D-W.shadow">
         	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
         	</file>
             <file name="F8.shadow">
@@ -887,7 +890,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SO-3.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
             </file>
-            <file name="D-PAGE_UP.shadow">
+            <file name="O-PAGE_UP.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance"/>
             </file>
             <file name="SO-5.shadow">
