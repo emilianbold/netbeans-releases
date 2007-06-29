@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -60,7 +61,11 @@ public class HTML {
         }
     }
     
+    private static int dt = 0; 
+    private static int da = 0;
+    
     public static boolean isDeprecatedAttribute (Context context) {
+        System.out.println("DA " + da++);
         if(!(context instanceof SyntaxContext)) {
             return false; //no AST
         }
@@ -70,6 +75,10 @@ public class HTML {
         if(ts == null) return false;
         Token t = ts.token ();
         if (t == null) return false;
+        if (t.id() != HTMLTokenId.ARGUMENT) {
+            System.out.println("isDeprecatedAttribute() for " + t.id().name());
+            return false;
+        }
         String attribName = t.text ().toString ().toLowerCase ();
         String tagName = tagName (context.getTokenSequence ());
         if (tagName == null) return false;
@@ -77,6 +86,7 @@ public class HTML {
     }
 
     public static boolean isDeprecatedTag (Context context) {
+        System.out.println("DT " + dt++);
         if(!(context instanceof SyntaxContext)) {
             return false; //no AST
         }
@@ -86,6 +96,10 @@ public class HTML {
         if(ts == null) return false;
         Token t = ts.token ();
         if (t == null) return false;
+        if (t.id() != HTMLTokenId.TAG_OPEN && t.id() != HTMLTokenId.TAG_CLOSE) {
+            System.out.println("isDeprecatedTag() for " + t.id().name());
+            return false;
+        }
         String tagName = t.text ().toString ().toLowerCase ();
         return "true".equals (getLibrary ().getProperty ("TAG", tagName, "deprecated"));
     }
@@ -120,9 +134,9 @@ public class HTML {
     // private methods .........................................................
 
     private static String tagName (TokenSequence ts) {
-        while (!ts.token ().id ().name ().equals ("tag")) //NOI18N
+        while (!ts.token ().id ().primaryCategory().equals ("tag")) //NOI18N
             if (!ts.movePrevious ()) break;
-        if (!ts.token ().id ().name ().equals ("tag")) //NOI18N
+        if (!ts.token ().id ().primaryCategory().equals ("tag")) //NOI18N
             return null;
         return ts.token ().text ().toString ().toLowerCase ();
     }
@@ -136,16 +150,24 @@ public class HTML {
     }
     
     private static ASTNode clone (String mimeType, String nt, int offset, List children) {
-        Iterator it = children.iterator ();
-        List l = new ArrayList ();
-        while (it.hasNext ()) {
-            Object o = it.next ();
-            if (o instanceof ASTToken)
-                l.add (clone ((ASTToken) o));
-            else
-                l.add (clone ((ASTNode) o));
+        return clone(mimeType, nt, offset, children, true);
+    }
+    
+    private static ASTNode clone (String mimeType, String nt, int offset, List children, boolean cloneChildren) {
+        if(cloneChildren) {
+            Iterator it = children.iterator ();
+            List l = new ArrayList ();
+            while (it.hasNext ()) {
+                Object o = it.next ();
+                if (o instanceof ASTToken)
+                    l.add (clone ((ASTToken) o));
+                else
+                    l.add (clone ((ASTNode) o));
+            }
+            return ASTNode.create (mimeType, nt, l, offset);
+        } else {
+            return ASTNode.create(mimeType, nt, children, offset);
         }
-        return ASTNode.create (mimeType, nt, l, offset);
     }
     
     private static ASTNode clone (ASTNode n) {
@@ -173,7 +195,7 @@ public class HTML {
     }
     
     private static ASTNode clone (ASTNode n, String nt) {
-        return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren ());
+        return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren (), false);
     }
     
     public static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
@@ -181,7 +203,8 @@ public class HTML {
         while (it.hasNext ()) {
             ASTItem item = it.next ();
             if (item instanceof ASTToken) {
-                l.add (clone ((ASTToken) item));
+                //l.add (clone ((ASTToken) item));
+                l.add ((ASTToken) item);
                 continue;
             }
             ASTNode node = (ASTNode) item;
@@ -241,7 +264,8 @@ public class HTML {
                 resolve (node, s, l, findUnpairedTags);
                 continue;
             }
-            l.add (clone (node));
+//            l.add (clone (node));
+            l.add(node);
         }
     }
 }
