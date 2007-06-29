@@ -331,7 +331,7 @@ public class MethodExceptionProcessingStateHandler
         {
             String nameString = null;
             if(m_ExceptionName != null)
-            	nameString = m_ExceptionName.getIdentifierAsUML();
+            	nameString = m_ExceptionName.getIdentifierAsUML("DUMMY_FLAG");
             setNodeAttribute(m_Signal, "name", nameString) ;
 
             if(m_ExceptionName != null)
@@ -378,7 +378,7 @@ public class MethodExceptionProcessingStateHandler
             IREClassLoader  pLoader = getClassLoader();
             IREClass pClass = getClassBeingProcessed();
             
-            String typeName = m_ExceptionName.getIdentifierAsUML();
+            String typeName = m_ExceptionName.getIdentifierAsUML("DUMMY_FLAG");
             IREClass  pExceptionClass = pLoader.loadClass(typeName, pClass);
             InstanceInformation ref = new ObjectInstanceInformation(m_ExceptionInstance,
                     typeName,

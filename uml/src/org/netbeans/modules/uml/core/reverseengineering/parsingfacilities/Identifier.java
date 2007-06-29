@@ -110,6 +110,11 @@ public class Identifier
         return getAnnotatedIdentifier("::");
     }
 
+    public String getIdentifierAsUML(String DUMMY_FLAG)
+    {
+        return getAnnotatedIdentifier(DUMMY_FLAG);
+    }
+    
     /**
      * The length of the identifer.  The length of the identifer will reflect the
      * source code version of the identifier.
@@ -198,7 +203,24 @@ public class Identifier
      */
     protected String getAnnotatedIdentifier(String replScope)
     {
+        if (m_TokenList == null) return null ;
+   
         StringBuffer ret = new StringBuffer();
+        
+        //kris richards - this is a terrible hack. The 
+        //MethodExceptionProcessingStateHandler.addParameterToSymbolTable()
+        //method is using this incorrectly to name the expression. So, I have
+        //make the naming work.
+        if (replScope !=null && replScope.equals ("DUMMY_FLAG")) {
+            int lastIndex = m_TokenList.getCount()-1 ;
+            if (lastIndex >= 0) {
+                ITokenDescriptor tok = m_TokenList.get (lastIndex);
+                if (tok != null)
+                    return tok.getValue() ;
+                else 
+                    return null ;
+            }
+        }
         
         for (int i = 0, count = m_TokenList.size(); i < count; ++i)
         {
