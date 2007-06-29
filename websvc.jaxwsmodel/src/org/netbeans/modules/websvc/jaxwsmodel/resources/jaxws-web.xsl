@@ -112,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
                                     <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
                                 </xsl:for-each>
                             </xsl:attribute>
-                            <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
+                            <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                         </target>
                     </xsl:if>
                 </xsl:if>
@@ -253,7 +253,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:attribute>
                 </target>
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
+                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
             </xsl:if>
             
@@ -273,7 +273,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:attribute>
                 </target>
                 <target name="wsimport-service-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
+                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
             </xsl:if>
             <!-- END: wsimport-client-generate and wsimport-client-compile targets -->

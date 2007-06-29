@@ -273,8 +273,8 @@ introduced by support for multiple source roots. -jglick
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
                     <attribute>
-                        <xsl:attribute name="name">jaxwsendorsed</xsl:attribute>
-                        <xsl:attribute name="default">${jaxws.endorsed.dir}</xsl:attribute>
+                        <xsl:attribute name="name">javac.compilerargs.jaxws</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
@@ -300,8 +300,7 @@ introduced by support for multiple source roots. -jglick
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <compilerarg line="-Djava.endorsed.dirs=&apos;@{{jaxwsendorsed}}&apos;"/>
-                            <compilerarg line="${{javac.compilerargs}}"/>
+                            <compilerarg line="${{javac.compilerargs}} @{{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
                     </sequential>
