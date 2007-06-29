@@ -28,7 +28,7 @@ public class JaxRpcAddOperationProvider implements AddOperationActionProvider {
 	public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
         WebServicesSupport support = WebServicesSupport.getWebServicesSupport(fileObject);
         if (support!=null && support.getServices().size()>0) 
-            return new JaxRpcAddOperation(fileObject);
+            return new JaxRpcAddOperation();
         return null;
     }
 

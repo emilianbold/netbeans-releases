@@ -26,11 +26,16 @@ import org.openide.nodes.Node;
  */
 public interface AddOperationCookie extends Node.Cookie {
     
-    /*
+    /**
      * Adds a method definition to the the implementation class, possibly to SEI
      */
     public void addOperation(FileObject implementationClass);
     
+    /**
+     * Determines if the Add Operation pop up menu should be enabled
+     * in the source editor.
+     * @param implClass Implementation class that is shown in the editor
+     */ 
     public boolean isEnabledInEditor(FileObject implClass);
     
 }
