@@ -827,8 +827,10 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         if (settings!=null){
             if (!applySettingsToDomain(settings)) {
                 // we need to fail here, now.
+                Asenv asenvContent = new Asenv(sunDm.getPlatformRoot());
+                String currentJdkRoot = asenvContent.get(Asenv.AS_JAVA);
                 pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
-                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));
+                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingProfiledServer",new Object[] {currentJdkRoot, "--"} ), StateType.FAILED));  //NOI18N
                 cmd = CMD_NONE;
                 pes.clearProgressListener();
                 Logger.getLogger(StartSunServer.class.getName()).log(Level.SEVERE,"Applying profiler changes");
@@ -865,24 +867,48 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
         Asenv asenvContent = new Asenv(sunDm.getPlatformRoot());
         String currentJdkRoot = asenvContent.get(Asenv.AS_JAVA);
+        File oldValue = new File(currentJdkRoot);
         if (!Utilities.isWindows()) {
             currentJdkRoot = "\""+currentJdkRoot+"\"";
         }
         String newJdkRoot = currentJdkRoot;
         Iterator<FileObject>  iter = settings.getJavaPlatform().getInstallFolders().iterator();
+        String jdkPath;
+        File newValue = null;
         if (iter.hasNext()) {
             FileObject fo = iter.next();
-            String jdkPath = FileUtil.toFile(fo).getAbsolutePath();
+            newValue = FileUtil.toFile(fo);
+            jdkPath = newValue.getAbsolutePath();            
             if (Utilities.isWindows()) {
                 newJdkRoot = jdkPath;
             } else {
                 newJdkRoot = "\""+jdkPath+"\"";
             }
         }
-        retVal = ConfigureProfiler.modifyAsEnvScriptFile(dm, newJdkRoot);
+        // make sure you don't rewrite the asenv file if there is no change.
+        boolean needToRewrite = false;
+        try {
+            if (newValue != null && oldValue.exists() && 
+                    !newValue.getCanonicalPath().equals(oldValue.getCanonicalPath())) {
+                    needToRewrite = true;
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(StartSunServer.class.getName()).log(Level.FINER, null, ioe);
+            needToRewrite = true;
+        }
+                
+        if (needToRewrite) {
+            retVal = ConfigureProfiler.modifyAsEnvScriptFile(dm, newJdkRoot);            
+        } else {
+            retVal = true;
+        }
         if (retVal) {
             ConfigureProfiler.instrumentProfilerInDomain(dm , null,settings.getJvmArgs());
-            oldJdkRoot = currentJdkRoot;
+            if (needToRewrite) {
+                oldJdkRoot = currentJdkRoot;
+            } else {
+                oldJdkRoot = null;
+            }
         }
         return retVal;
     }
