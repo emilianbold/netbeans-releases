@@ -97,7 +97,7 @@ public class ItemCD extends ComponentDescriptor {
     public static final String PROP_ITEM_COMMAND_LISTENER = "itemCommandListener"; //NOI18N
 
     public static final String PROP_APPEARANCE_MODE = "appearanceMode"; // NOI18N
-
+    
     public static final String PROP_OLD_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
 
     static {

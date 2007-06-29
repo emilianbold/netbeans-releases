@@ -50,7 +50,6 @@ public class StringItemCD extends ComponentDescriptor {
 
     public static final String PROP_TEXT = "text"; // NOI18N
     public static final String PROP_FONT = "font"; // NOI18N
-    public static final String PROP_APPEARANCE_MODE = "appearanceMode"; // NOI18N
     
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ItemCD.TYPEID, TYPEID, true, true);
@@ -64,7 +63,7 @@ public class StringItemCD extends ComponentDescriptor {
         return Arrays.asList(
             new PropertyDescriptor(PROP_TEXT, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP),
             new PropertyDescriptor(PROP_FONT, FontCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_APPEARANCE_MODE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ItemCD.VALUE_PLAIN), false, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(ItemCD.PROP_APPEARANCE_MODE, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (ItemCD.VALUE_PLAIN), false, true, MidpVersionable.MIDP_2)
         );
     }
 
@@ -77,7 +76,7 @@ public class StringItemCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT) 
-                .addProperty("Appearance", PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), PROP_APPEARANCE_MODE)
+                .addProperty("Appearance", PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE)
                 .addProperty("Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_FONT);
     }
 

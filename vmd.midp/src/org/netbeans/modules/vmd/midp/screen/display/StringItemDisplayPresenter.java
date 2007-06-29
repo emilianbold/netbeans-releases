@@ -43,7 +43,6 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
     
     public StringItemDisplayPresenter() {
         label = new JLabel();
-        Color color = label.getForeground ();
         setContentComponent(label);
     }
     
@@ -51,7 +50,7 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
         
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
-        int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(StringItemCD.PROP_APPEARANCE_MODE));
+        int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE));
         label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
         label.setForeground (appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults ().getColor ("Label.foreground"));
         label.setText(text);
