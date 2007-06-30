@@ -15,7 +15,7 @@
 <h1>Checkbox Group Component Properties Window </h1>
 <p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
 
-<p>You see the Properties window for a  Checkbox Group component <img src="../../../../images/checkboxlisticon.gif" alt="checkbox list icon">&nbsp;when you select the component on a page you are editing in the Visual Designer, after you have added the component to the page. This JavaServer Faces 1.2 component has the following properties.</p>
+<p>You see the Properties window for a  Checkbox Group component <img src="../../../../images/checkboxlisticon.gif" alt="checkbox list icon">&nbsp;when you select the component on a page you are editing in the Visual Designer. This JavaServer Faces 1.2 component has the following properties.</p>
 <h3>General</h3>
 <ul>
   <li><b>id.</b><code> Type: String</code><br>
@@ -104,12 +104,12 @@ that the correct value is entered by a user. If the conditions defined by the va
 <h3>Events</h3>
 <p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
 <ul>
-  <li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component, if any. If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.
+  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. If this method is not defined, the value of this property is <code>null</code>. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.</li>
+<li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component, if any. If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.
       <ul class="note">
         <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you will lose the connection to your validate method.</li>
       </ul>
   </li>
-  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. If this method is not defined, the value of this property is <code>null</code>. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.</li>
 </ul>
 <h3>Behavior</h3>
 <ul>
