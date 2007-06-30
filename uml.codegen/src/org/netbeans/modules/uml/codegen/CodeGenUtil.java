@@ -35,9 +35,10 @@ public class CodeGenUtil
     private CodeGenUtil() {}
 
     public static List<String> cleanProjectTemplatesList(
-        ArrayList<String> projectTemplates)
+        List<String> projectTemplates)
     {
-        List<String> cleanTemplates = new ArrayList<String>(projectTemplates.size());
+        ArrayList<String> cleanTemplates = 
+            new ArrayList<String>(projectTemplates.size());
         
         TemplateFamilies templateFamilies = 
             TemplateFamiliesHandler.getInstance().getTemplateFamilies();
@@ -55,5 +56,12 @@ public class CodeGenUtil
         }
         
         return cleanTemplates;
+    }
+    
+    
+    public static boolean areTemplatesEnabled(List<String> templates)
+    {
+        templates = cleanProjectTemplatesList(templates);
+        return templates != null && templates.size() > 0;
     }
 }

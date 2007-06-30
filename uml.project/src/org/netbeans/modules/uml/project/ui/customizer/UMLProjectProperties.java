@@ -63,7 +63,6 @@ public class UMLProjectProperties
     
     // Properties stored in the PROJECT.PROPERTIES
     public static final String MODELING_MODE = "uml.modeling.mode"; // NOI18N
-    public static final String GEN_CODE_SOURCE_FOLDER = "gen.code.source.folder"; // NOI18N
     public static final String UML_PROJECT_ANT_ARTIFACT = "uml.umlproject"; // NOI18N
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
     public static final String REFERENCED_JAVA_PROJECT = "uml.javaproject"; // NOI18N
@@ -71,7 +70,11 @@ public class UMLProjectProperties
     public static final String REFERENCED_JAVA_PROJECT_SRC = "uml.javaproject.src"; // NOI18N
     public static final String UML_PROJECT_IMPORTS = "uml.imports"; // NOI18N
     public static final String UML_ARTIFACT_PREFIX = "${uml.reference."; // NOI18N
+    public static final String CODE_GEN_FOLDER_LOCATION = "code.gen.folder.location"; // NOI18N
     public static final String CODE_GEN_TEMPLATES = "code.gen.templates"; // NOI18N
+    public static final String CODE_GEN_BACKUP_SOURCES = "code.gen.backup.sources"; // NOI18N
+    public static final String CODE_GEN_USE_MARKERS = "code.gen.use.markers"; // NOI18N
+    public static final String CODE_GEN_SHOW_DIALOG = "code.gen.show.dialog"; // NOI18N
     
     public static final String DEFAULT_JAVA_TEMPLATES = 
         "Java:Basic Class|Java:Basic Interface|Java:Basic Enumeration"; // NOI18N
@@ -79,12 +82,16 @@ public class UMLProjectProperties
     // MODELS FOR VISUAL CONTROLS
     
     // CustomizerSources
-    public ComboBoxModel MODELING_MODE_MODEL;
+    public ComboBoxModel modelingModeModel;
     public String modelingModeValue;
-    public ReferencedJavaProjectModel REFERENCED_JAVA_PROJECT_MODEL;
-    public JavaSourceRootsModel REFERENCED_JAVA_SOURCE_ROOTS_MODEL;
-    public DefaultTableModel UML_PROJECT_IMPORTS_MODEL;
+    public ReferencedJavaProjectModel referencedJavaProjectModel;
+    public JavaSourceRootsModel referencedJavaSourceRootsModel;
+    public DefaultTableModel umlProjectImportsModel;
     public String codeGenTemplates;
+    public String codeGenFolderLocation;
+    public String codeGenBackupSources;
+    public String codeGenUseMarkers;
+    public String codeGenShowDialog;
     
     UMLImportsSupport importsSupport;
     
@@ -145,24 +152,26 @@ public class UMLProjectProperties
         EditableProperties projectProperties = updateHelper.getProperties(
             AntProjectHelper.PROJECT_PROPERTIES_PATH );
         
-        MODELING_MODE_MODEL = CommonUiSupport.createModelingModeComboBoxModel(
+        modelingModeModel = CommonUiSupport.createModelingModeComboBoxModel(
             evaluator.getProperty(MODELING_MODE));
         
-        REFERENCED_JAVA_PROJECT_MODEL =
-            javaRefSupport.createReferencedJeavaProjectModel(
-            REFERENCED_JAVA_PROJECT, evaluator
-            .getProperty(REFERENCED_JAVA_PROJECT));
+        referencedJavaProjectModel = javaRefSupport.createReferencedJavaProjectModel(
+            REFERENCED_JAVA_PROJECT, evaluator.getProperty(REFERENCED_JAVA_PROJECT));
         
-        REFERENCED_JAVA_SOURCE_ROOTS_MODEL = javaRefSupport.
+        referencedJavaSourceRootsModel = javaRefSupport.
             createReferencedJavaSourceRootsModel(
-            REFERENCED_JAVA_PROJECT_MODEL,
+            referencedJavaProjectModel,
             (String) projectProperties.get(REFERENCED_JAVA_PROJECT_SRC));
         
-        UML_PROJECT_IMPORTS_MODEL = UMLImportsUiSupport.createTableModel(
+        umlProjectImportsModel = UMLImportsUiSupport.createTableModel(
             importsSupport.itemsIterator(
             (String)projectProperties.get(UML_PROJECT_IMPORTS)));
         
+        codeGenFolderLocation = projectProperties.get(CODE_GEN_FOLDER_LOCATION);
         codeGenTemplates = projectProperties.get(CODE_GEN_TEMPLATES);
+        codeGenBackupSources = projectProperties.get(CODE_GEN_BACKUP_SOURCES);
+        codeGenUseMarkers = projectProperties.get(CODE_GEN_USE_MARKERS);
+        codeGenShowDialog = projectProperties.get(CODE_GEN_SHOW_DIALOG);
     }
     
     public void save()
@@ -208,11 +217,11 @@ public class UMLProjectProperties
         resolveProjectDependencies();
         
         String[] umlImports = importsSupport.encodeToStrings(
-            UMLImportsUiSupport.getIterator(UML_PROJECT_IMPORTS_MODEL));
+            UMLImportsUiSupport.getIterator(umlProjectImportsModel));
         
         
         String[] refJavaSrcRoots = javaRefSupport
-            .encodeSrcGroupsToStrings(REFERENCED_JAVA_SOURCE_ROOTS_MODEL);
+            .encodeSrcGroupsToStrings(referencedJavaSourceRootsModel);
         
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties(
@@ -228,16 +237,23 @@ public class UMLProjectProperties
         
         projectProperties.setProperty(MODELING_MODE, getProjectMode());
         
-//        projectProperties.setProperty(
-//            GEN_CODE_SOURCE_FOLDER, getGenCodeSourceFolder());
-        
         projectProperties.setProperty(
             REFERENCED_JAVA_PROJECT_SRC, refJavaSrcRoots);
         
+        if (codeGenFolderLocation != null)
+            projectProperties.setProperty(CODE_GEN_FOLDER_LOCATION, codeGenFolderLocation);
+
         if (codeGenTemplates != null)
-        {
             projectProperties.setProperty(CODE_GEN_TEMPLATES, codeGenTemplates);
-        }
+
+        if (codeGenBackupSources != null)
+            projectProperties.setProperty(CODE_GEN_BACKUP_SOURCES, codeGenBackupSources);
+        
+        if (codeGenUseMarkers != null)
+            projectProperties.setProperty(CODE_GEN_USE_MARKERS, codeGenUseMarkers);
+
+        if (codeGenShowDialog != null)
+            projectProperties.setProperty(CODE_GEN_SHOW_DIALOG, codeGenShowDialog);
         
         projectProperties.setProperty(UML_PROJECT_IMPORTS, umlImports);
        
@@ -249,23 +265,9 @@ public class UMLProjectProperties
             AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
 		
         UMLProjectGenerator.fixJavaProjectReferences(
-            updateHelper.getAntProjectHelper(),
-            REFERENCED_JAVA_PROJECT_MODEL.getProject());
+            updateHelper.getAntProjectHelper(),referencedJavaProjectModel.getProject());
     }
-    
-    private static String getDocumentText(Document document)
-    {
-        try
-        {
-            return document.getText(0, document.getLength());
-        }
-        
-        catch( BadLocationException e )
-        {
-            return ""; // NOI18N
-        }
-    }
-    
+
     /** Finds out what are new and removed project dependencies and
      * applyes the info to the project
      */
@@ -300,7 +302,7 @@ public class UMLProjectProperties
         
         // now add the new ref
         // refHelper.addReference(artifact, uri);
-        Project javaSrcProj = REFERENCED_JAVA_PROJECT_MODEL.getProject();
+        Project javaSrcProj = referencedJavaProjectModel.getProject();
         
         if (javaSrcProj != null )
         {
@@ -404,10 +406,6 @@ public class UMLProjectProperties
         return evaluator.getProperty(MODELING_MODE);
     }
 
-//    public String getGenCodeSourceFolder()
-//    {
-//        return evaluator.getProperty(GEN_CODE_SOURCE_FOLDER);
-//    }
     
     public String getCodeGenTemplates()
     {
@@ -417,6 +415,22 @@ public class UMLProjectProperties
             templates = "";
         
         return templates;
+    }
+
+    public void setCodeGenFolderLocation(String val)
+    {
+        codeGenFolderLocation = val;
+    }
+    
+
+    public String getCodeGenFolderLocation()
+    {
+        String val = evaluator.getProperty(CODE_GEN_FOLDER_LOCATION);
+        
+        if (val == null)
+            val = "";
+        
+        return val;
     }
     
     public final static String TEMPLATE_DELIMITER = "|";
@@ -431,5 +445,60 @@ public class UMLProjectProperties
     {
         codeGenTemplates = 
             StringTokenizer2.delimitedString(val.toArray(), TEMPLATE_DELIMITER);
+    }
+
+    public boolean isCodeGenBackupSources()
+    {
+        String val = evaluator.getProperty(CODE_GEN_BACKUP_SOURCES);
+        
+        if (val == null)
+            val = "true"; // NOI18N
+        
+        return Boolean.valueOf(val);
+    }
+
+    public void setCodeGenBackupSources(boolean val)
+    {
+        codeGenBackupSources = String.valueOf(val);
+    }
+
+    public boolean isCodeGenUseMarkers()
+    {
+        String val = evaluator.getProperty(CODE_GEN_USE_MARKERS);
+        
+        if (val == null)
+            val = "true";
+        
+        return Boolean.valueOf(val);
+    }
+
+    public void setCodeGenUseMarkers(boolean val)
+    {
+        codeGenUseMarkers = String.valueOf(val);
+    }
+
+    public boolean isCodeGenShowDialog()
+    {
+        String val = evaluator.getProperty(CODE_GEN_SHOW_DIALOG);
+        
+        if (val == null)
+            val = "true";
+        
+        return Boolean.valueOf(val);
+    }
+
+    public void setCodeGenShowDialog(boolean val)
+    {
+        codeGenShowDialog = String.valueOf(val);
+    }
+
+    
+    public File getJavaSourceRootFolder()
+    {
+        if (referencedJavaSourceRootsModel == null)
+            return null;
+        
+        return FileUtil.toFile(referencedJavaSourceRootsModel.
+            getSourceGroup(0).getRootFolder());
     }
 }

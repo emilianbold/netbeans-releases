@@ -72,7 +72,7 @@ public class PanelUmlImports extends JPanel
         // we decided we don't want to show this button
         // leaving it in for testing purposes only
         addUMLProjectButton.setVisible(false);         
-        imports.setModel(uiProperties.UML_PROJECT_IMPORTS_MODEL);
+        imports.setModel(uiProperties.umlProjectImportsModel);
 
                 
         jScrollPane1.getViewport().setBackground( imports.getBackground() );
@@ -200,7 +200,7 @@ public class PanelUmlImports extends JPanel
 
 			if (artifactItems != null) {
 				int[] newSelection = UMLImportsUiSupport.addArtifacts( 
-					uiProperties.UML_PROJECT_IMPORTS_MODEL, artifactItems);
+					uiProperties.umlProjectImportsModel, artifactItems);
 			}
 		
         

@@ -337,7 +337,7 @@ public class UMLImportsUiSupport
                         }
 
                         UMLProjectProperties properties = umlRefProject.getUMLProjectProperties();
-                        UMLImportsUiSupport.addArtifacts(properties.UML_PROJECT_IMPORTS_MODEL, items);
+                        UMLImportsUiSupport.addArtifacts(properties.umlProjectImportsModel, items);
                         properties.save();
                     }
                 }
@@ -383,7 +383,7 @@ public class UMLImportsUiSupport
                         }
 
                         UMLProjectProperties properties = umlRefProject.getUMLProjectProperties();
-                        UMLImportsUiSupport.addArtifacts(properties.UML_PROJECT_IMPORTS_MODEL, items);
+                        UMLImportsUiSupport.addArtifacts(properties.umlProjectImportsModel, items);
                         properties.save();
                     }
                 }
@@ -403,7 +403,7 @@ public class UMLImportsUiSupport
         UMLProjectProperties properties = referencedProject.getUMLProjectProperties();
         
         // First check if the project as already been added to the table.        
-        DefaultTableModel tableModel = properties.UML_PROJECT_IMPORTS_MODEL;
+        DefaultTableModel tableModel = properties.umlProjectImportsModel;
         for(int i = 0; i < tableModel.getRowCount(); i++)
         {
             UMLImportsSupport.Item curItem = (UMLImportsSupport.Item)tableModel.getValueAt(i, COL_UML_PROJECT_NAME);

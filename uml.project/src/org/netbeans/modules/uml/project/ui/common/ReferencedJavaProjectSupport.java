@@ -79,7 +79,7 @@ public class ReferencedJavaProjectSupport
     
     
     
-    public ReferencedJavaProjectModel createReferencedJeavaProjectModel(
+    public ReferencedJavaProjectModel createReferencedJavaProjectModel(
         String property, String propertyValue)
     {
         

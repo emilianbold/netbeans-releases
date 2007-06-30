@@ -19,11 +19,11 @@
 
 package org.netbeans.modules.uml.codegen.action;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
 
 import org.netbeans.modules.uml.common.ui.SaveNotifier;
@@ -46,13 +46,9 @@ import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.util.AbstractNBTask;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -67,7 +63,11 @@ import org.openide.util.actions.CookieAction;
 public class GenerateCodeAction extends CookieAction
 {
     public enum CodeGenType {Class, Interface, Enumeration};
-    
+
+    private final static int GC_NODE_PROJECT = 1;
+    private final static int GC_NODE_NAMESPACES = 2;
+    private final static int GC_NODE_CODEGENS = 4;
+
     private IProject parentProject = null;
     
     /**
@@ -76,19 +76,8 @@ public class GenerateCodeAction extends CookieAction
     public GenerateCodeAction()
     {
     }
-    
-    private final static String PROJECT_SOURCES_SUFFIX = 
-        NbBundle.getMessage(GenerateCodeAction.class, 
-        "TXT_Project_sources_suffix"); // NOI18N
-    
-    private final static String PROJECT_SRC_FOLDER = 
-        NbBundle.getMessage(GenerateCodeAction.class, 
-        "TXT_Project_src_folder"); // NOI18N
 
-    private final static int GC_NODE_PROJECT = 1;
-    private final static int GC_NODE_NAMESPACES = 2;
-    private final static int GC_NODE_CODEGENS = 4;
-    
+
     protected void performAction(Node[] nodes)
     {
         int genCodeNodeType = 0;
@@ -161,53 +150,26 @@ public class GenerateCodeAction extends CookieAction
             } // for
         } // else - more than one node selected
 
-        // display gen code options dialog
-        GenerateCodePanel gcPanel = new GenerateCodePanel(
-            retrieveExportFolderDefault(nodes[0]), 
-            retrieveUMLProject().getUMLProjectProperties());
-        
-//        DialogDescriptor dd = new DialogDescriptor(
-//            gcPanel,NbBundle.getMessage(GenerateCodeAction.class, 
-//                "LBL_ExportCodeDialogTitle"), // NOI18N
-//            true, // modal flag
-//            NotifyDescriptor.OK_CANCEL_OPTION, // button option type
-//            NotifyDescriptor.OK_OPTION, // default button
-//            DialogDescriptor.DEFAULT_ALIGN, // button alignment
-//            new HelpCtx("uml_diagrams_generating_code"), // NOI18N
-//            gcPanel); // button action listener
-        
-        gcPanel.requestFocus();
+        UMLProjectProperties prjProps = retrieveUMLProject().getUMLProjectProperties();
 
-//        if (DialogDisplayer.getDefault().notify(dd) 
-//                != NotifyDescriptor.OK_OPTION)
-//        {
-//            return; // cancel this action
-//        }
+        if (prjProps.isCodeGenShowDialog() || 
+            CodeGenUtil.areTemplatesEnabled(prjProps.getCodeGenTemplatesArray()))
+        {
+            // display gen code options dialog
+            GenerateCodePanel gcPanel = new GenerateCodePanel(
+                // retrieveExportFolderDefault(nodes[0]), 
+                true,
+                retrieveUMLProject().getUMLProjectProperties());
 
-        if (!displayDialogDescriptor(gcPanel))
-            return;
-        
-        final String destFolderName = gcPanel.getSelectedFolderName();
-        final boolean backupSources = gcPanel.isBackupSources();
-	final boolean generateMarkers = gcPanel.isGenerateMarkers();
-        
-        AntProjectHelper antHlp = 
-            ProjectUtil.getAntProjectHelper(retrieveUMLProject());
-        
-        // save target source folder location in private.properties
-        EditableProperties edProps = antHlp.getProperties(
-            AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            
-        edProps.setProperty(
-            UMLProjectProperties.GEN_CODE_SOURCE_FOLDER, destFolderName);
-        
-        antHlp.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, edProps);
+            gcPanel.requestFocus();
+
+            if (!displayDialogDescriptor(gcPanel))
+                return;
+        }
         
         // if UML project is dirty, save it first
         if (parentProject.isDirty())
         {
-            UMLProject umlProject = retrieveUMLProject();
-
             boolean prefVal = NbPreferences.forModule(DummyCorePreference.class)
                 .getBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
             
@@ -289,6 +251,10 @@ public class GenerateCodeAction extends CookieAction
 
         settings.put(AbstractNBTask.SETTING_KEY_TOTAL_ITEMS, selElements.size());
         
+        final String destFolderName = prjProps.getCodeGenFolderLocation();
+        final boolean backupSources = prjProps.isCodeGenBackupSources();
+	final boolean generateMarkers = prjProps.isCodeGenUseMarkers();
+        
         GenerateCodeTask task = new GenerateCodeTask(
             settings, selElements, parentProject.getName(), 
             destFolderName, backupSources, generateMarkers);
@@ -307,7 +273,7 @@ public class GenerateCodeAction extends CookieAction
     
     private boolean displayDialogDescriptor(GenerateCodePanel gcPanel)
     {
-        GenerateCodeDescriptor red = new GenerateCodeDescriptor(
+        GenerateCodeDescriptor gcd = new GenerateCodeDescriptor(
                 gcPanel, // inner pane
                 NbBundle.getMessage(GenerateCodeAction.class,
                 "LBL_GenerateCodeDialog_Title"), // NOI18N
@@ -322,10 +288,9 @@ public class GenerateCodeAction extends CookieAction
                 .getMessage(GenerateCodeAction.class, "ACSN_CodeGenDialog")); // NOI18N
         gcPanel.getAccessibleContext().setAccessibleDescription(NbBundle
                 .getMessage(GenerateCodeAction.class, "ACSD_CodeGenDialog")); // NOI18N
-        
         gcPanel.requestFocus();
         
-        return (DialogDisplayer.getDefault().notify(red) ==
+        return (DialogDisplayer.getDefault().notify(gcd) ==
                 NotifyDescriptor.OK_OPTION);
     }
     
@@ -561,77 +526,6 @@ public class GenerateCodeAction extends CookieAction
 
     }
 
-
-    private String retrieveExportFolderDefault(Node node)
-    {
-        // get target source folder location in private.properties,
-        // if it has been set
-
-        AntProjectHelper antHlp = 
-            ProjectUtil.getAntProjectHelper(retrieveUMLProject());
-        
-        // save target source folder location in private.properties
-        EditableProperties edProps = antHlp.getProperties(
-            AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            
-        String lastFolderUsed = 
-            edProps.getProperty(UMLProjectProperties.GEN_CODE_SOURCE_FOLDER);
-        
-        if (lastFolderUsed != null && lastFolderUsed.length() > 0)
-            return lastFolderUsed;
-
-        // if the export source folder hasn't been saved to file yet,
-        // provide a suggestion for a place to put the sources
-
-        String folderName = null;
-        IElement element = (IElement)node.getCookie(IElement.class);
-        
-        // elment node was selected
-        if (element != null)
-        {
-            File path = FileUtil.toFile(ProjectUtil.findElementOwner(element)
-                .getProjectDirectory().getParent());
-            
-            if (path != null)
-                folderName = path.getPath();
-        }
-        
-        // project node was selected
-        else
-        {
-            File path = new File(lookupProject(node).getBaseDirectory());
-            folderName = path.getParent();
-        }
-
-        // defensive code: use user's home dir as the base dir
-        if (folderName == null || folderName.length() == 0)
-            folderName = System.getProperty("user.home"); // NOI18N
-
-        // append suggested Java project name + "src" dir
-        return folderName + File.separatorChar + parentProject.getName() + 
-            PROJECT_SOURCES_SUFFIX + File.separatorChar + PROJECT_SRC_FOLDER;
-    }
-
-    
-//    private void createJavaProject(org.netbeans.api.project.Project oldProject)
-//    {
-//        DataObject dobj =
-//            (DataObject)oldProject.getLookup().lookup(DataObject.class);
-//
-//        // TemplateWizard.Iterator it = TemplateWizard.getIteratorr(dobj);
-//        TemplateWizard templateWiz = new TemplateWizard();
-//        
-//        try
-//        {
-//            templateWiz.instantiate();
-//            // Set set = it.instantiate(templateWiz);
-//        }
-//        
-//        catch (IOException ex)
-//        {
-//            ex.printStackTrace();
-//        }
-//    }
     
     private String getUnnamedElementPreference()
     {

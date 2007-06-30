@@ -54,7 +54,7 @@
                       <Component id="treeScroll" alignment="1" pref="177" max="32767" attributes="1"/>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="addButton" pref="73" max="32767" attributes="1"/>
+                          <Component id="addButton" pref="86" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="removeButton" min="-2" max="-2" attributes="1"/>
                           <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
@@ -131,9 +131,9 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="stereotypeText" alignment="0" pref="444" max="32767" attributes="0"/>
-                              <Component id="modelElementCombo" alignment="0" pref="444" max="32767" attributes="0"/>
-                              <Component id="descriptionScroll" alignment="0" pref="444" max="32767" attributes="0"/>
+                              <Component id="stereotypeText" alignment="0" pref="469" max="32767" attributes="0"/>
+                              <Component id="modelElementCombo" alignment="0" pref="469" max="32767" attributes="0"/>
+                              <Component id="descriptionScroll" alignment="0" pref="469" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <Component id="jLabel2" alignment="0" pref="542" max="32767" attributes="0"/>
@@ -177,7 +177,7 @@
                       <Component id="modifyRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="addRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="71" max="32767" attributes="0"/>
+                  <EmptySpace pref="79" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

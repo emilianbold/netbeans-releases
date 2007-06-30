@@ -105,8 +105,8 @@ public class ReferencedJavaProjectPanel extends javax.swing.JPanel
         {
             // this mean we are called from customizer
             isWizard = false;
-            javaRefModel = uiProperties.REFERENCED_JAVA_PROJECT_MODEL;
-            javaRefSrcsModel = uiProperties.REFERENCED_JAVA_SOURCE_ROOTS_MODEL;
+            javaRefModel = uiProperties.referencedJavaProjectModel;
+            javaRefSrcsModel = uiProperties.referencedJavaSourceRootsModel;
             setSelectedProject(javaRefModel.getProject());
             sourceRoots.setModel(javaRefSrcsModel);
         }
@@ -414,17 +414,17 @@ public class ReferencedJavaProjectPanel extends javax.swing.JPanel
         
         else
         {
-            uiProperties.REFERENCED_JAVA_PROJECT_MODEL =
+            uiProperties.referencedJavaProjectModel =
                 ReferencedJavaProjectModel.createMounted(
                     uiProperties.REFERENCED_JAVA_PROJECT,
                     getSelectedProject());
             
-            uiProperties.REFERENCED_JAVA_SOURCE_ROOTS_MODEL =
+            uiProperties.referencedJavaSourceRootsModel =
                 javaRefSrcsModel = JavaSourceRootsUI
                     .createModel(getSelectedProject());
             
             sourceRoots.setModel(
-                uiProperties.REFERENCED_JAVA_SOURCE_ROOTS_MODEL);
+                uiProperties.referencedJavaSourceRootsModel);
             
             sourceRoots.getModel().addTableModelListener(this);
 //            firePropertyChange(JAVA_PROJECT_CHANGED_PROP, 

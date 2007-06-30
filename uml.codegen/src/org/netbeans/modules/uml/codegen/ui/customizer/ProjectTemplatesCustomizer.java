@@ -22,7 +22,7 @@ package org.netbeans.modules.uml.codegen.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.uml.codegen.ui.customizer.ProjectTemplatesPanel;
+import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -32,6 +32,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Jyothi
+ * @author Craig Conover, craig.conover@sun.com
  */
 public class ProjectTemplatesCustomizer 
     implements ProjectCustomizer.CompositeCategoryProvider
@@ -83,8 +84,9 @@ public class ProjectTemplatesCustomizer
             
 //            DomainTemplatesManagerPanel panel = 
 //                new DomainTemplatesManagerPanel(uiProps);
-            
-            ProjectTemplatesPanel panel = new ProjectTemplatesPanel(uiProps);
+//            ProjectTemplatesPanel panel = new ProjectTemplatesPanel(uiProps);
+
+            GenerateCodePanel panel = new GenerateCodePanel(false, uiProps);
             category.setOkButtonListener(panel);
             return panel;
         }

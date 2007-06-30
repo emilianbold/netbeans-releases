@@ -229,7 +229,7 @@ public class CustomizerProviderImpl implements CustomizerProvider
         
         public void actionPerformed( ActionEvent e )
         {
-            ReferencedJavaProjectModel m = uiProperties.REFERENCED_JAVA_PROJECT_MODEL;
+            ReferencedJavaProjectModel m = uiProperties.referencedJavaProjectModel;
             
             if (uiProperties.getProjectMode().equals(UMLProject.PROJECT_MODE_IMPL_STR) &&
                 m.getRefStatus() != ReferencedJavaProjectModel.ReferenceStatus.REF_STATUS_BROKEN)

@@ -59,7 +59,7 @@ public class AssociatedSourceProvider
     public boolean hasAssociatedSourceProject()
     {
         UMLProjectProperties props = umlProj.getUMLProjectProperties();
-        return props.REFERENCED_JAVA_PROJECT_MODEL.getRefStatus() ==
+        return props.referencedJavaProjectModel.getRefStatus() ==
             ReferencedJavaProjectModel.ReferenceStatus.REF_STATUS_UNSET;
     }
     
@@ -75,7 +75,7 @@ public class AssociatedSourceProvider
         }
         
         UMLProjectProperties props = umlProj.getUMLProjectProperties();
-        Project proj = props.REFERENCED_JAVA_PROJECT_MODEL.getProject();
+        Project proj = props.referencedJavaProjectModel.getProject();
         
         if(proj == null)
         {
@@ -131,7 +131,7 @@ public class AssociatedSourceProvider
         UMLProjectProperties props = umlProj.getUMLProjectProperties();
         
         JavaSourceRootsModel model =
-            (JavaSourceRootsModel)props.REFERENCED_JAVA_SOURCE_ROOTS_MODEL;
+            (JavaSourceRootsModel)props.referencedJavaSourceRootsModel;
         
         if (model != null)
         {

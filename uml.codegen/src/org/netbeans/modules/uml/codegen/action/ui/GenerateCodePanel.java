@@ -27,15 +27,20 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.GenerateCodeDescriptor;
 import org.netbeans.modules.uml.codegen.ui.customizer.TabbedPanel;
 import org.netbeans.modules.uml.codegen.ui.customizer.TemplateModel;
 import org.netbeans.modules.uml.codegen.ui.customizer.VerticalTabbedPanel;
+import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
+
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.openide.util.NbBundle;
 
@@ -44,23 +49,45 @@ import org.openide.util.NbBundle;
  * @author  Craig Conover, craig.conover@sun.com
  */
 public class GenerateCodePanel extends javax.swing.JPanel
-    implements ActionListener, PropertyChangeListener
+    implements ActionListener, PropertyChangeListener, DocumentListener
 {
+    public final static String PROP_SOURCE_FOLDER = "SOURCE_FOLDER"; // NOI18N
+    public final static String PROP_NO_SOURCE_FOLDER = "NO_SOURCE_FOLDER"; // NOI18N
+    
     private VerticalTabbedPanel templateFamilies = null;
     private TemplateModel model = null;
-    private String folderPath;
+    
+    private final static String PROJECT_SOURCES_SUFFIX = 
+        NbBundle.getMessage(GenerateCodePanel.class, 
+        "TXT_Project_sources_suffix"); // NOI18N
+    
+    private final static String PROJECT_SRC_FOLDER = 
+        NbBundle.getMessage(GenerateCodePanel.class, 
+        "TXT_Project_src_folder"); // NOI18N
     
     /**
      * Creates new form ExportCodeOptionsPanel
      */
     public GenerateCodePanel(
-        String folderPath, UMLProjectProperties prjProps)
+        boolean isCollapsable, UMLProjectProperties prjProps)
     {
         initComponents();
         
-        this.folderPath = folderPath;
-        locationText.setText(folderPath);
-            
+        String folder = prjProps.getCodeGenFolderLocation();
+        
+        if (folder == null || folder.length() == 0)
+            folder = retrieveFolderLocationDefault(prjProps);
+        
+        locationText.setText(folder);
+        locationText.getDocument().addDocumentListener(this);
+        
+        noSourceFolder = !(locationText.getText() != null && 
+            locationText.getText().length() > 0);
+        
+        backupSourcesCheck.setSelected(prjProps.isCodeGenBackupSources());
+        generateMarkersCheck.setSelected(prjProps.isCodeGenUseMarkers());
+        showDialogCheckBox.setSelected(prjProps.isCodeGenShowDialog());
+        
         scrollPlaceHolder.setVisible(true);
         templatesLabel.setVisible(true);
         statusLabel.setVisible(true);
@@ -75,31 +102,41 @@ public class GenerateCodePanel extends javax.swing.JPanel
         templateFamilies = new VerticalTabbedPanel(model, TabbedPanel.EXPAND_ALL);
         panelPlaceHolder.add(templateFamilies, BorderLayout.CENTER);
         
-        boolean flag = areTemplatesEnabled(prjProps);
+        noTemplatesEnabled = !CodeGenUtil.areTemplatesEnabled(
+            prjProps.getCodeGenTemplatesArray());
         
-        if (flag)
+        if (isCollapsable)
         {
-            advancedBtn.setText(NbBundle.getMessage(
-                GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
-             org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-                 NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
+            if (!noTemplatesEnabled)
+            {
+                advancedBtn.setText(NbBundle.getMessage(
+                    GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
+                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
+                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
 
-            setSize(getWidth(), getHeight() - 200);
-            scrollPlaceHolder.setVisible(false);
-            templatesLabel.setVisible(false);
+                setSize(getWidth(), getHeight() - 200);
+                scrollPlaceHolder.setVisible(false);
+                templatesLabel.setVisible(false);
 
-            statusLabel.setText(""); // NIO18N
+                statusLabel.setText(""); // NIO18N
+            }
+
+            else
+            {
+                advancedBtn.setText(NbBundle.getMessage(
+                    GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
+                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
+                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
+
+                statusLabel.setText(NbBundle.getMessage(
+                    GenerateCodePanel.class, "MSG_AtLeastOneTemplate")); // NIO18N
+            }
         }
         
         else
         {
-            advancedBtn.setText(NbBundle.getMessage(
-                GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-             org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-                 NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-
-            statusLabel.setText(NbBundle.getMessage(
-                GenerateCodePanel.class, "MSG_AtLeastOneTemplate")); // NIO18N
+            advancedBtn.setVisible(false);
+            statusLabel.setVisible(false);
         }
     }
 
@@ -107,13 +144,6 @@ public class GenerateCodePanel extends javax.swing.JPanel
     {
         locationText.requestFocus();
     }
-    
-    private boolean areTemplatesEnabled(UMLProjectProperties prjProps)
-    {
-        List<String> templates = prjProps.getCodeGenTemplatesArray();
-        return templates != null && templates.size() > 0;
-    }
-    
     
     
     /** This method is called from within the constructor to
@@ -135,6 +165,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
         scrollPlaceHolder = new javax.swing.JScrollPane();
         panelPlaceHolder = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
+        showDialogCheckBox = new javax.swing.JCheckBox();
 
         locationLabel.setLabelFor(locationText);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/uml/codegen/action/ui/Bundle"); // NOI18N
@@ -178,6 +209,11 @@ public class GenerateCodePanel extends javax.swing.JPanel
         statusLabel.setForeground(new java.awt.Color(255, 0, 0));
         statusLabel.setText("<status message>");
 
+        showDialogCheckBox.setSelected(true);
+        showDialogCheckBox.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_GenCodeShowDialog")); // NOI18N
+        showDialogCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        showDialogCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -189,9 +225,20 @@ public class GenerateCodePanel extends javax.swing.JPanel
                         .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
+                        .add(templatesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
                         .add(locationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(showDialogCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                                .add(18, 18, 18)
+                                .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
                             .add(layout.createSequentialGroup()
                                 .add(generateMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
                                 .addContainerGap())
@@ -202,16 +249,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
                                 .add(10, 10, 10))
                             .add(layout.createSequentialGroup()
                                 .add(backupSourcesCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
-                                .add(97, 97, 97))))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(templatesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
-                        .addContainerGap())))
+                                .add(97, 97, 97))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -225,12 +263,14 @@ public class GenerateCodePanel extends javax.swing.JPanel
                 .add(backupSourcesCheck)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(generateMarkersCheck)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(showDialogCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(templatesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(statusLabel)
                 .addContainerGap())
@@ -286,12 +326,16 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     {//GEN-HEADEREND:event_browseButtonActionPerformed
         javax.swing.JFrame parentFrame = new javax.swing.JFrame();
         parentFrame.setLocation(getLocationOnScreen());
+
+        String validFolder = findValidParentFolder(locationText.getText());
+        if (validFolder == null)
+            locationText.getText();
         
         chooser = new ChooseLocationDialog(
-            parentFrame, true, new File(folderPath), 
+            parentFrame, true, new File(validFolder), 
             NbBundle.getMessage(GenerateCodePanel.class, 
                 "LBL_GenCodeSourceFolderChooseDialog_Title")); // NOI18N
-        
+
         chooser.getLocationChooser().addActionListener(
             new java.awt.event.ActionListener()
             {
@@ -306,6 +350,21 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     }//GEN-LAST:event_browseButtonActionPerformed
 
     
+    private String findValidParentFolder(String startFolder)
+    {
+        File file = new File(startFolder);
+        
+        if (startFolder == null || startFolder.length() == 0)
+            return null;
+        
+        if (file.exists())
+            return file.getPath();
+        
+        else
+            return findValidParentFolder(new File(file.getParent()).getParent());
+    }
+    
+    
     public void locationChooserActionPerformed(ActionEvent evt)
     {
         if (evt.getActionCommand().equals(JFileChooser.APPROVE_SELECTION))
@@ -318,7 +377,12 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     {
         if (actionEvent.getActionCommand().equals("OK")) // NOI18N
         {
-            model.getUMLProjectProperties().save();
+            UMLProjectProperties props = model.getUMLProjectProperties();
+            props.setCodeGenFolderLocation(getSelectedFolderName());
+            props.setCodeGenBackupSources(isBackupSources());
+            props.setCodeGenUseMarkers(isGenerateMarkers());
+            props.setCodeGenShowDialog(isShowDialog());
+            props.save();
         }
     }
     
@@ -337,28 +401,95 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
         return generateMarkersCheck.isSelected();
     }
     
+    public boolean isShowDialog()
+    {
+        return showDialogCheckBox.isSelected();
+    }
+    
+    private String retrieveFolderLocationDefault(
+        UMLProjectProperties projectProps)
+    {
+        // get target source folder location in private.properties,
+        // if it has been set
+        AntProjectHelper antHlp = 
+            ProjectUtil.getAntProjectHelper(projectProps.getProject());
+        
+        // save target source folder location in private.properties
+        EditableProperties edProps = antHlp.getProperties(
+            AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+
+        File javaSrcRootFolder = projectProps.getJavaSourceRootFolder();
+        
+//        String javaPrjSrc = (String)edProps.get(
+//            UMLProjectProperties.REFERENCED_JAVA_PROJECT_SRC);
+
+        if (javaSrcRootFolder != null)
+            return javaSrcRootFolder.getPath();
+        
+        String lastFolderUsed = 
+            edProps.getProperty(UMLProjectProperties.CODE_GEN_FOLDER_LOCATION);
+        
+        if (lastFolderUsed != null && lastFolderUsed.length() > 0)
+            return lastFolderUsed;
+
+        // if the export source folder hasn't been saved to file yet,
+        // provide a suggestion for a place to put the sources
+
+        // defensive code: use user's home dir as the base dir
+        if (lastFolderUsed == null || lastFolderUsed.length() == 0)
+            lastFolderUsed = System.getProperty("user.home"); // NOI18N
+
+        // append suggested Java project name + "src" dir
+        return lastFolderUsed + File.separatorChar + projectProps.getProject().getName() + 
+            PROJECT_SOURCES_SUFFIX + File.separatorChar + PROJECT_SRC_FOLDER;
+    }
+
+    boolean noSourceFolder = false;
+    boolean noTemplatesEnabled = false;
+    
+    public void changedUpdate(DocumentEvent event)
+    {}
+    
+    public void insertUpdate(DocumentEvent event)
+    {
+        String text = locationText.getText();
+        noSourceFolder = !(text != null && text.length() > 0);
+        propertyChange(null);
+    }
+    
+    public void removeUpdate(DocumentEvent event)
+    {
+        String text = locationText.getText();
+        noSourceFolder = !(text != null && text.length() > 0);
+        propertyChange(null);
+    }
+    
     public void propertyChange(PropertyChangeEvent event)
     {
-        String propName = event.getPropertyName();
+        String propName = "";
+        
+        if (event != null)
+            propName = event.getPropertyName();
         
         if (propName.equals(TemplateModel.PROP_NO_TEMPLATES_ENABLED))
-        {
-            statusLabel.setText(NbBundle.getMessage(
-                GenerateCodePanel.class, "MSG_AtLeastOneTemplate")); // NIO18N
-            firePropertyChange(GenerateCodeDescriptor.PROP_VALID, null, Boolean.FALSE);
-        }
+            noTemplatesEnabled = true;
         
         else if (propName.equals(TemplateModel.PROP_ONE_TEMPLATE_ENABLED))
-        {
-            statusLabel.setText(""); // NOI18N
-            firePropertyChange(GenerateCodeDescriptor.PROP_VALID, null, Boolean.TRUE);
-        }
+            noTemplatesEnabled = false;
 
-//        else if (propName.equals(TemplateModel.PROP_TEMPLATE_STATE_CHANGE))
-//        {
-//            
-//        }
+        
+        String msg = "";
 
+        if (noSourceFolder)
+            msg = NbBundle.getMessage(GenerateCodePanel.class, "MSG_NoSourceFolder"); // NIO18N
+        
+        else if (noTemplatesEnabled)
+            msg = NbBundle.getMessage(GenerateCodePanel.class, "MSG_AtLeastOneTemplate"); // NIO18N
+        
+
+        statusLabel.setText(msg);
+        firePropertyChange(GenerateCodeDescriptor.PROP_VALID, null, 
+            !(noSourceFolder || noTemplatesEnabled));
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -370,6 +501,7 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     private javax.swing.JTextField locationText;
     private javax.swing.JPanel panelPlaceHolder;
     private javax.swing.JScrollPane scrollPlaceHolder;
+    private javax.swing.JCheckBox showDialogCheckBox;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel templatesLabel;
     // End of variables declaration//GEN-END:variables

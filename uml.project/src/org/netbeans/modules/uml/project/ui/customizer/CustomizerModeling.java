@@ -186,7 +186,7 @@ public class CustomizerModeling extends javax.swing.JPanel
     {
         boolean isBroken = false;
         
-        if (mUIProperties.REFERENCED_JAVA_PROJECT_MODEL.getRefStatus() == 
+        if (mUIProperties.referencedJavaProjectModel.getRefStatus() == 
             ReferencedJavaProjectModel.ReferenceStatus.REF_STATUS_BROKEN)
         {
             isBroken = true;
