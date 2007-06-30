@@ -36,6 +36,9 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -52,10 +55,13 @@ import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -178,11 +184,52 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public void setDefaultActivatedNode() {
         try {
-            Node node = DataObject.find(context.getFacesConfigFile()).getNodeDelegate();
+            Node node = new DefaultDataNode( DataObject.find(context.getFacesConfigFile()) );
             setActivatedNodes(new Node[] {node });
         } catch (DataObjectNotFoundException donfe ){
             Exceptions.printStackTrace(donfe);
         }
+    }
+    
+    private class DefaultDataNode extends FilterNode {
+        
+        Node srcFolderNode = null;
+        
+        public DefaultDataNode( DataObject dataObject ) {
+            this(dataObject.getNodeDelegate());
+            org.netbeans.api.project.Project p = org.netbeans.api.project.FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+            org.openide.filesystems.FileObject projectDirectory = p.getProjectDirectory();
+            org.netbeans.api.project.Sources sources = org.netbeans.api.project.ProjectUtils.getSources(p);
+            org.netbeans.api.project.SourceGroup[] groups = sources.getSourceGroups(org.netbeans.api.project.Sources.TYPE_GENERIC);
+            org.openide.filesystems.FileObject srcFolder;
+            
+            try {
+                if (groups != null && groups.length > 0) {
+                    srcFolder = groups[0].getRootFolder();
+                } else {
+                    srcFolder = dataObject.getFolder().getPrimaryFile();
+                }
+                srcFolderNode = org.openide.loaders.DataObject.find(srcFolder).getNodeDelegate();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+        }
+        
+        public DefaultDataNode(Node node) {
+            super(node);
+        }
+        
+        @Override
+        public <T extends Cookie> T getCookie(Class<T> type) {
+            if( type.equals(DataFolder.class) ){
+                assert srcFolderNode != null;
+                return srcFolderNode.getCookie(type);
+            }
+            return super.getCookie(type);
+        }
+        
+        
     }
     
     /**
