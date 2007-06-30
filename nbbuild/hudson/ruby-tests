@@ -1,8 +1,13 @@
 #!/bin/sh
-source nbbuild/hudson/ruby && \
-rm -f nbbuild/nbproject/private/scan-cache-full.ser nbbuild/nbproject/private/scan-cache-standard.ser && \
-ant -f nbbuild/build.xml all-xtest -Dverify.checkout=false && \
-ant -f lexer/test/build.xml buildtests  -Dverify.checkout=false && \
+# Build Ruby + xtest (I can't use the testtools cluster because it pulls in j2eeserver etc.)
+# Requires nbbuild, xtest and junit to be checked out in advance
+#rm -rf nbbuild/user.build.properties
+#echo nb.clusters.list=nb.cluster.nb,nb.cluster.platform,nb.cluster.ide,nb.cluster.ruby>> nbbuild/user.build.properties
+#echo "verify.checkout=false" >> nbbuild/user.build.properties
+ant -f nbbuild/build.xml checkout && \
+ant -f nbbuild/build.xml build-nozip all-xtest && \
+ant -f lexer/test/build.xml buildtests && \
+ant -f scripting/ruby/build.xml && \
 ant -f scripting/ruby/build.xml runtests && \
 ant -f scripting/ruby/build.xml tests-junit-format
 
