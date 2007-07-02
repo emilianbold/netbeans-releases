@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -262,17 +262,6 @@ public final class XMLUtil extends Object {
     }
 
     /**
-     * Cache of DocumentBuilder instances per thread.
-     * They are relatively expensive to create, so don't do it more than necessary.
-     */
-    @SuppressWarnings("unchecked")
-    private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
-    static {
-        for (int i = 0; i < 4; i++) {
-            builderTL[i] = new ThreadLocal<DocumentBuilder>();
-        }
-    }
-    /**
      * Create from factory a DocumentBuilder and let it create a org.w3c.dom.Document.
      * This method takes InputSource. After successful finish the document tree is returned.
      *
@@ -293,19 +282,15 @@ public final class XMLUtil extends Object {
         EntityResolver entityResolver
     ) throws IOException, SAXException {
         
-        int index = (validate ? 0 : 1) + (namespaceAware ? 0 : 2);
-        DocumentBuilder builder = builderTL[index].get();
-        if (builder == null) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setValidating(validate);
-            factory.setNamespaceAware(namespaceAware);
+        DocumentBuilder builder = null;
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(validate);
+        factory.setNamespaceAware(namespaceAware);
 
-            try {
-                builder = factory.newDocumentBuilder();
-            } catch (ParserConfigurationException ex) {
-                throw new SAXException("Cannot create parser satisfying configuration parameters", ex); //NOI18N
-            }
-            builderTL[index].set(builder);
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            throw new SAXException("Cannot create parser satisfying configuration parameters", ex); //NOI18N
         }
         
         if (errorHandler != null) {
@@ -657,18 +642,16 @@ public final class XMLUtil extends Object {
      * @see "#62006"
      */
     private static Document normalize(Document orig) throws IOException {
-        DocumentBuilder builder = builderTL[0].get();
-        if (builder == null) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setValidating(false);
-            factory.setNamespaceAware(false);
-            try {
-                builder = factory.newDocumentBuilder();
-            } catch (ParserConfigurationException e) {
-                throw (IOException) new IOException("Cannot create parser satisfying configuration parameters: " + e).initCause(e); //NOI18N
-            }
-            builderTL[0].set(builder);
+        DocumentBuilder builder = null;
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setNamespaceAware(false);
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw (IOException) new IOException("Cannot create parser satisfying configuration parameters: " + e).initCause(e); //NOI18N
         }
+
         DocumentType doctype = null;
         NodeList nl = orig.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {

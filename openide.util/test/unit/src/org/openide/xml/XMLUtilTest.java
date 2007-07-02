@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -346,5 +347,15 @@ public class XMLUtilTest extends NbTestCase {
         XMLUtil.write(doc, baos, "UTF-8");
         String data2 = baos.toString().replaceAll("\r\n", "\n");
         assertEquals("identity replacement should not mess up significant whitespace", data, data2);
+    }
+    
+    public void testDocumentLeak() throws Exception {
+        String data = "<foo xmlns='bar'><baz/></foo>";
+        Document doc = XMLUtil.parse(new InputSource(new StringReader(data)), false, true, null, null);
+
+        WeakReference<Document> wr = new WeakReference<Document>(doc);
+        doc = null;
+        
+        assertGC("Document should be freed", wr);
     }
 }
