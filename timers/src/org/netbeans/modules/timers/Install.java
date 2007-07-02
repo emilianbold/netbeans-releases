@@ -23,6 +23,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
+import org.netbeans.editor.Registry;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -32,7 +38,8 @@ import org.openide.modules.ModuleInstall;
 public class Install extends  ModuleInstall {
     static Logger logger;
     private static Handler timers = new TimerHandler();
-    
+    private static ChangeListener docTracker = new ActivatedDocumentListener();
+
     private static String INSTANCES = "Important instances";
     
     public void restored() {
@@ -40,6 +47,8 @@ public class Install extends  ModuleInstall {
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINE);
         log.addHandler(timers);
+        
+        Registry.addChangeListener(docTracker);
     }
     
     private static class TimerHandler extends Handler {
@@ -74,6 +83,25 @@ public class Install extends  ModuleInstall {
     
         public void flush() {}
         public void close() throws SecurityException {}
+    }
+
+    /**
+     *
+     * @author Jan Lahoda
+     */
+    private static class ActivatedDocumentListener implements ChangeListener {
+        ActivatedDocumentListener() {}
+
+        public synchronized void stateChanged(ChangeEvent e) {
+            Document active = Registry.getMostActiveDocument();
+            if (active == null) return;
+
+            Object sourceProperty = active.getProperty(Document.StreamDescriptionProperty);
+            if (!(sourceProperty instanceof DataObject)) return;
+
+            FileObject activeFile = ((DataObject)sourceProperty).getPrimaryFile();
+            TimesCollectorPeer.getDefault().select(activeFile);
+        }
     }
    
 }

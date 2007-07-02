@@ -24,7 +24,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -102,7 +101,6 @@ public class ActivatedDocumentListener implements ChangeListener {
         
         lastValidFile = activeFile;
         
-        TimesCollector.getDefault().select(activeFile);
         JavaSourceAccessor.INSTANCE.revalidate(activeJS);
     }
 
