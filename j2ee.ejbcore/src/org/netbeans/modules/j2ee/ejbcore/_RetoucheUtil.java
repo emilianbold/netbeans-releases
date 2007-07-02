@@ -166,7 +166,7 @@ public final class _RetoucheUtil {
                         );
                 // adding field to class
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                ClassTree newClassTree = treeMaker.addClassMember(classTree, variableTree);
+                ClassTree newClassTree = treeMaker.insertClassMember(classTree, 0, variableTree);
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();
