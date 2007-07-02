@@ -76,10 +76,8 @@ public abstract class NativeUtils {
             instance = new WindowsNativeUtils();
         } else if (platform.isCompatibleWith(Platform.LINUX)) {
             instance = new LinuxNativeUtils();
-        } else if (platform.isCompatibleWith(Platform.SOLARIS_X86)) {
-            instance = new SolarisX86NativeUtils();
-        } else if (platform.isCompatibleWith(Platform.SOLARIS_SPARC)) {
-            instance = new SolarisSparcNativeUtils();
+        } else if (platform.isCompatibleWith(Platform.SOLARIS)) {
+            instance = new SolarisNativeUtils();
         } else if (platform.isCompatibleWith(Platform.MACOSX)) {
             instance = new MacOsNativeUtils();
         }

@@ -293,7 +293,7 @@ public final class SystemUtils {
     }
     
     public static boolean isCurrentJava64Bit() {
-        return System.getProperty("os.arch").equals("amd64") || 
+        return System.getProperty("os.arch").equals("amd64") ||
                 System.getProperty("os.arch").equals("sparcv9");
     }
     
@@ -496,18 +496,18 @@ public final class SystemUtils {
     private static LocationType toLocationType(ShortcutLocationType type) {
         LocationType tp = null;
         switch(type) {
-        case CURRENT_USER_DESKTOP :
-            tp = LocationType.CURRENT_USER_DESKTOP;
-            break;
-        case CURRENT_USER_START_MENU :
-            tp = LocationType.CURRENT_USER_START_MENU;
-            break;
-        case ALL_USERS_DESKTOP :
-            tp = LocationType.ALL_USERS_DESKTOP;
-            break;
-        case ALL_USERS_START_MENU :
-            tp = LocationType.ALL_USERS_START_MENU;
-            break;
+            case CURRENT_USER_DESKTOP :
+                tp = LocationType.CURRENT_USER_DESKTOP;
+                break;
+            case CURRENT_USER_START_MENU :
+                tp = LocationType.CURRENT_USER_START_MENU;
+                break;
+            case ALL_USERS_DESKTOP :
+                tp = LocationType.ALL_USERS_DESKTOP;
+                break;
+            case ALL_USERS_START_MENU :
+                tp = LocationType.ALL_USERS_START_MENU;
+                break;
         }
         return tp;
     }
@@ -554,7 +554,7 @@ public final class SystemUtils {
      *
      */
     public static File createShortcut(
-            final Shortcut shortcut, 
+            final Shortcut shortcut,
             final LocationType locationType) throws NativeException {
         return getNativeUtils().createShortcut(shortcut, locationType);
     }
@@ -688,11 +688,11 @@ public final class SystemUtils {
                     System.getProperty("os.arch").equals("sparcv9");
             
             if (System.getProperty("os.name").contains("Windows")) {
-                currentPlatform = 
+                currentPlatform =
                         is64bit ? Platform.WINDOWS_X64 : Platform.WINDOWS_X86;
             }
             if (System.getProperty("os.name").contains("Linux")) {
-                currentPlatform = 
+                currentPlatform =
                         is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
             }
             if (System.getProperty("os.name").contains("Mac OS X") &&
@@ -703,13 +703,12 @@ public final class SystemUtils {
                     System.getProperty("os.arch").contains("i386")) {
                 currentPlatform = Platform.MACOSX_X86;
             }
-            if (System.getProperty("os.name").contains("SunOS") &&
-                    System.getProperty("os.arch").contains("sparc")) {
-                currentPlatform = Platform.SOLARIS_SPARC;
-            }
-            if (System.getProperty("os.name").contains("SunOS") &&
-                    System.getProperty("os.arch").contains("x86")) {
-                currentPlatform = Platform.SOLARIS_X86;
+            if (System.getProperty("os.name").contains("SunOS")) {
+                if(System.getProperty("os.arch").contains("sparc")) {
+                    currentPlatform = Platform.SOLARIS_SPARC;
+                } else {
+                    currentPlatform = Platform.SOLARIS_X86;
+                }
             }
         }
         
@@ -791,8 +790,8 @@ public final class SystemUtils {
                             (X509Certificate) certificates[i+1]);
                     
                     if ((certificates[i] instanceof X509Certificate)
-                            && (certificates[i+1] instanceof X509Certificate)
-                            && isIssuer) {
+                    && (certificates[i+1] instanceof X509Certificate)
+                    && isIssuer) {
                         i++;
                     } else {
                         break;

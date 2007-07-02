@@ -38,7 +38,6 @@ public enum Platform {
     
     SOLARIS(OS_FAMILY_SOLARIS, null, null, null, "Solaris"),
     SOLARIS_X86(OS_FAMILY_SOLARIS, HARDWARE_X86, null, null, "Solaris X86"),
-    SOLARIS_X64(OS_FAMILY_SOLARIS, HARDWARE_X64, null, null, "Solaris X64"),
     SOLARIS_SPARC(OS_FAMILY_SOLARIS, HARDWARE_SPARC, null, null, "Solaris SPARC"),
     
     MACOSX(OS_FAMILY_MACOSX, null, null, null, "MacOS X"),
