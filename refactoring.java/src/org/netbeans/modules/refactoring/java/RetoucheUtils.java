@@ -238,6 +238,10 @@ public class RetoucheUtils {
     }
 
     public static boolean isValidPackageName(String name) {
+        if (name.endsWith(".")) //NOI18N
+            return false;
+        if (name.startsWith("."))  //NOI18N
+            return  false;
         StringTokenizer tokenizer = new StringTokenizer(name, "."); // NOI18N
         while (tokenizer.hasMoreTokens()) {
             if (!Utilities.isJavaIdentifier(tokenizer.nextToken())) {
