@@ -161,13 +161,9 @@
 	<mapID target="projrave_connect_data_howtodata_bind_components" url="connect_data/howtodata/bind_data_to_comp.html"/>
 	<mapID target="projrave_connect_data_howtodata_binding_data_2_list_component" url="connect_data/howtodata/binding_data_2_list_component.html"/>
 	<mapID target="projrave_connect_data_howtodata_binding_data_2_table_component" url="connect_data/howtodata/binding_data_2_table_component.html"/>
-	<mapID target="projrave_connect_data_howtodata_configure_jdbc_driver" url="connect_data/howtodata/edit_database_svr_type.html"/>
 	<mapID target="projrave_connect_data_howtodata_create_sql_query" url="connect_data/howtodata/create_sql_query.html"/>
-	<mapID target="projrave_connect_data_howtodata_delete_server_type" url="connect_data/howtodata/delete_database_svr_type.html"/>
 	<mapID target="projrave_connect_data_howtodata_delete_table" url="connect_data/howtodata/delete_table.html"/>
 	<mapID target="projrave_connect_data_howtodata_howtoconnectdata" url="connect_data/howtodata/data_quickref.html"/>
-	<mapID target="projrave_connect_data_howtodata_modify_ds_properties" url="connect_data/howtodata/modify_db_conn_properties.html"/>
-	<mapID target="projrave_connect_data_howtodata_remove_data_source" url="connect_data/howtodata/remove_database_conn.html"/>
 	<mapID target="projrave_connect_data_jdbc_type_conversions" url="connect_data/jdbc_type_conversions.html"/>
 	<mapID target="projrave_connect_data_sql_query_supported" url="connect_data/sql_query_supported.html"/>
 	<mapID target="projrave_connect_data_working_with_databases" url="connect_data/working_with_databases.html"/>

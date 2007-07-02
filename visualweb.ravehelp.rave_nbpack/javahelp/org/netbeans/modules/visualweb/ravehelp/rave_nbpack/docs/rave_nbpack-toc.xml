@@ -107,12 +107,6 @@
 							<tocitem text="JDBC Type Conversions for RowSets" target="projrave_connect_data_jdbc_type_conversions" />
 							<tocitem text="Setting Up Database Connections">
 								<tocitem text="Adding a Data Source" target="projrave_ui_elements_dialogs_add_data_source_db" />
-								<tocitem text="Deleting a Database Server Type" target="projrave_connect_data_howtodata_delete_server_type" />
-								<tocitem text="Deleting a JDBC Driver" target="projrave_connect_data_howtodata_delete_server_type" />
-								<tocitem text="Editing a Database Server Type" target="projrave_connect_data_howtodata_configure_jdbc_driver" />
-								<tocitem text="Modifying a Database Connection" target="projrave_connect_data_howtodata_modify_ds_properties" />
-								<tocitem text="Modifying Database Connection Properties" target="projrave_connect_data_howtodata_modify_ds_properties" />
-								<tocitem text="Removing a Database Connection from the Services Window" target="projrave_connect_data_howtodata_remove_data_source" />
 								<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
 							</tocitem>
 							<tocitem text="Supported SQL Queries" target="projrave_connect_data_sql_query_supported" />
