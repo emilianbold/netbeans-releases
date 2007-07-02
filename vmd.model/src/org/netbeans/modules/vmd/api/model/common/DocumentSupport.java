@@ -172,7 +172,7 @@ public class DocumentSupport {
     }
     /**
      * Returns a design component producer for given type 
-     * @param type of searching producers
+     * @param typeID typeof searched producers
      * @return the producers
      */
     public static Collection<ComponentProducer> getComponentProducers(DesignDocument document, TypeID typeID) {
