@@ -34,7 +34,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.source.transform.Transformer;
 
 /**
  * Tests if statement creation.
@@ -48,9 +47,10 @@ public class IfTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new IfTest("testEmptyThenBlock"));
+        suite.addTest(new IfTest("testEmptyElseBlock"));
         return suite;
     }
-    
+
     /**
      * Test replacing then statement with empty block.
      */
@@ -100,15 +100,52 @@ public class IfTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
-    class IfVisitor<Void, Object> extends Transformer<Void, Object> {
-        @Override
-        public Void visitIf(IfTree node, Object p) {
-            super.visitIf(node, p);
-            BlockTree emptyBlock = make.Block(Collections.<StatementTree>emptyList(), false);
-            IfTree copy = make.If(node.getCondition(), emptyBlock, null);
-            changes.rewrite(node, copy);
-            return null;
-        }
+    public void testEmptyElseBlock() throws Exception {
+        testFile = new File(getWorkDir(), "IfTest.java");        
+        TestUtilities.copyStringToFile(testFile, 
+            "package foo.bar;\n" +
+            "\n" +
+            "public class IfTest {\n" +
+            "    public void test(boolean b) {\n" +
+            "        if( b ) {\n" +
+            "        } else\n" +
+            "            System.err.println(\"Hrebejk je hrebec.\");\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package foo.bar;\n" +
+            "\n" +
+            "public class IfTest {\n" +
+            "    public void test(boolean b) {\n" +
+            "        if( b ) {\n" +
+            "        } else {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                IfTree oldIf = (IfTree)method.getBody().getStatements().get(0);
+                BlockTree block = make.Block(Collections.<StatementTree>emptyList(), false);
+                StatementTree oldElse = oldIf.getElseStatement();
+                workingCopy.rewrite(oldElse, block);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     String getGoldenPckg() {
