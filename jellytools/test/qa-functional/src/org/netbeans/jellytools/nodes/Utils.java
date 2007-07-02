@@ -52,7 +52,15 @@ public class Utils {
             throw new JemmyException("Waiting interrupted.", e);
         }
     }
-    
+
+    /** Close "Confirm Object Deletion" dialog. **/
+    public static void closeConfirmDialog() {
+        // "Confirm Object Deletion"
+        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
+                                               "MSG_ConfirmDeleteObjectTitle"); // NOI18N
+        new JDialogOperator(confirmTitle).close();
+    }
+
     /** Close "Safe Delete" dialog. **/
     public static void closeSafeDeleteDialog() {
         // "Safe Delete"
