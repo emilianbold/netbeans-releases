@@ -24,17 +24,17 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.categories.DisplayablesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.displayables.*;
+import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.components.sources.ListSelectCommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.sources.ListSelectCommandEventSourceCD;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Collection;
 
 /**
  * @author David Kaspar
@@ -116,7 +116,7 @@ public class ConverterDisplayables {
         Converter.convertObject (selectCommandActionItem, selectCommandEventSource);
         ConverterActions.convertCommandActionHandler (id2item, selectCommandActionItem, selectCommandEventSource);
         
-        if (item.isPropertyValueSet ("selectCommand")) {
+        if (item.isPropertyValueSet ("selectCommand")) { // NOI18N
             DesignComponent selectCommand = Converter.convertConverterItemComponent (id2item, item.getPropertyValue ("selectCommand"), document); // NOI18N
             if (selectCommand != null) {
                 List<DesignComponent> commandEventSources = DocumentSupport.gatherSubComponentsOfType (list, CommandEventSourceCD.TYPEID);
@@ -127,7 +127,7 @@ public class ConverterDisplayables {
                         break;
                     }
                 }
-                Debug.warning ("selectCommand not found for", item);
+                Debug.warning ("selectCommand not found for", item); // NOI18N
             } else
                 list.writeProperty (ListCD.PROP_SELECT_COMMAND, PropertyValue.createNull ());
         }
@@ -192,6 +192,13 @@ public class ConverterDisplayables {
             alert.addComponent (indicator);
             alert.writeProperty (AlertCD.PROP_INDICATOR, PropertyValue.createComponentReference (indicator));
         }
+    }
+
+
+    public static void convertCanvas (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent canvas) {
+        convertDisplayable (id2item, item, canvas);
+
+        ConverterUtil.convertBoolean (canvas, CanvasCD.PROP_IS_FULL_SCREEN, item.getPropertyValue ("fullScreen"));
     }
 
 }

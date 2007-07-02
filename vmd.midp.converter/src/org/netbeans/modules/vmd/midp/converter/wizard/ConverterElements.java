@@ -31,12 +31,13 @@ import java.util.HashMap;
  */
 public class ConverterElements {
 
+    // Created: YES, Adds: NO
     public static void convertListElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         DesignComponent listElement = document.createComponent (ListElementEventSourceCD.TYPEID);
         Converter.convertObject (item, listElement);
 
         ConverterUtil.convertStringWithUserCode (listElement, ListElementEventSourceCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N
-        ConverterUtil.convertConverterItemComponent (listElement, ListElementEventSourceCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"), document); // NOI18N
+        ConverterUtil.convertConverterItemComponent (listElement, ListElementEventSourceCD.PROP_IMAGE, id2item, item.getPropertyValue ("image")); // NOI18N
         ConverterUtil.convertBoolean (listElement, ListElementEventSourceCD.PROP_SELECTED, item.getPropertyValue ("selected")); // NOI18N
 
         ConverterItem commandActionItem = id2item.get (item.getPropertyValue ("commandAction")); // NOI18N
@@ -46,12 +47,13 @@ public class ConverterElements {
         }
     }
 
+    // Created: YES, Adds: NO
     public static void convertChoiceElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         DesignComponent choiceElement = document.createComponent (ChoiceElementCD.TYPEID);
         Converter.convertObject (item, choiceElement);
 
         ConverterUtil.convertStringWithUserCode (choiceElement, ListElementEventSourceCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N
-        ConverterUtil.convertConverterItemComponent (choiceElement, ListElementEventSourceCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"), document); // NOI18N
+        ConverterUtil.convertConverterItemComponent (choiceElement, ListElementEventSourceCD.PROP_IMAGE, id2item, item.getPropertyValue ("image")); // NOI18N
         ConverterUtil.convertBoolean (choiceElement, ListElementEventSourceCD.PROP_SELECTED, item.getPropertyValue ("selected")); // NOI18N
     }
 

@@ -114,7 +114,7 @@ public class ConverterItems {
 
         ConverterUtil.convertStringWithUserCode (stringComponent, StringItemCD.PROP_TEXT, item.getPropertyValue ("text")); // NOI18N
 
-        ConverterUtil.convertConverterItemComponent (stringComponent, StringItemCD.PROP_FONT, id2item, item.getPropertyValue ("font"), document);// NOI18N
+        ConverterUtil.convertConverterItemComponent (stringComponent, StringItemCD.PROP_FONT, id2item, item.getPropertyValue ("font"));// NOI18N
 
         String apperanceMode = item.getPropertyValue ("appearanceMode");// NOI18N
         if ("PLAIN".equals (apperanceMode))
@@ -132,7 +132,7 @@ public class ConverterItems {
 
         ConverterUtil.convertStringWithUserCode (imageComponent, ImageItemCD.PROP_ALT_TEXT, item.getPropertyValue ("altText")); // NOI18N
 
-        ConverterUtil.convertConverterItemComponent (imageComponent, ImageItemCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"), document);// NOI18N
+        ConverterUtil.convertConverterItemComponent (imageComponent, ImageItemCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"));// NOI18N
 
         String apperanceMode = item.getPropertyValue ("appearanceMode");// NOI18N
         if ("PLAIN".equals (apperanceMode))
@@ -202,6 +202,11 @@ public class ConverterItems {
                 choiceGroup.addComponent (choiceElement);
                 ArraySupport.append (choiceGroup, ChoiceGroupCD.PROP_ELEMENTS, choiceElement);
             }
+    }
+
+    // Created: NO, Adds: NO
+    static void convertCustomItem (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent custom) {
+        convertItem (id2item, item, custom);
     }
 
 }

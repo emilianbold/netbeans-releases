@@ -154,49 +154,70 @@ public class Converter {
 
         // TODO - custom component is: both id and typeID is a valid Java identifier
 
-
-        if ("javax.microedition.lcdui.Command".equals (typeID))
+        if ("javax.microedition.lcdui.Command".equals (typeID)) // NOI18N
             ConverterResources.convertCommand (item, document);
 
-        else if ("javax.microedition.lcdui.Alert".equals (typeID))
+        else if ("javax.microedition.lcdui.Alert".equals (typeID)) // NOI18N
             ConverterDisplayables.convertAlert (id2item, item, document);
-        else if ("javax.microedition.lcdui.Form".equals (typeID))
+        else if ("javax.microedition.lcdui.Form".equals (typeID)) // NOI18N
             ConverterDisplayables.convertForm (id2item, item, document);
-        else if ("javax.microedition.lcdui.List".equals (typeID))
+        else if ("javax.microedition.lcdui.List".equals (typeID)) // NOI18N
             ConverterDisplayables.convertList (id2item, item, document);
-        else if ("javax.microedition.lcdui.TextBox".equals (typeID))
+        else if ("javax.microedition.lcdui.TextBox".equals (typeID)) // NOI18N
             ConverterDisplayables.convertTextBox (id2item, item, document);
 
-        else if ("javax.microedition.lcdui.ChoiceGroup".equals (typeID))
+        else if ("javax.microedition.lcdui.ChoiceGroup".equals (typeID)) // NOI18N
             ConverterItems.convertChoiceGroup (id2item, item, document);
-        else if ("javax.microedition.lcdui.DateField".equals (typeID))
+        else if ("javax.microedition.lcdui.DateField".equals (typeID)) // NOI18N
             ConverterItems.convertDateField (id2item, item, document);
-        else if ("javax.microedition.lcdui.Gauge".equals (typeID))
+        else if ("javax.microedition.lcdui.Gauge".equals (typeID)) // NOI18N
             ConverterItems.convertGauge (id2item, item, document);
-        else if ("javax.microedition.lcdui.Gauge-AlertIndicator_Helper".equals (typeID))
+        else if ("javax.microedition.lcdui.Gauge-AlertIndicator_Helper".equals (typeID)) // NOI18N
             ConverterItems.convertAlertIndicator (id2item, item, document);
-        else if ("javax.microedition.lcdui.ImageItem".equals (typeID))
+        else if ("javax.microedition.lcdui.ImageItem".equals (typeID)) // NOI18N
             ConverterItems.convertImageItem (id2item, item, document);
-        else if ("javax.microedition.lcdui.Spacer".equals (typeID))
+        else if ("javax.microedition.lcdui.Spacer".equals (typeID)) // NOI18N
             ConverterItems.convertSpacer (id2item, item, document);
-        else if ("javax.microedition.lcdui.StringItem".equals (typeID))
+        else if ("javax.microedition.lcdui.StringItem".equals (typeID)) // NOI18N
             ConverterItems.convertStringItem (id2item, item, document);
-        else if ("javax.microedition.lcdui.TextField".equals (typeID))
+        else if ("javax.microedition.lcdui.TextField".equals (typeID)) // NOI18N
             ConverterItems.convertTextField (id2item, item, document);
 
-        else if ("javax.microedition.lcdui.Font".equals (typeID))
+        else if ("javax.microedition.lcdui.Font".equals (typeID)) // NOI18N
             ConverterResources.convertFont (item, document);
-        else if ("javax.microedition.lcdui.Ticker".equals (typeID))
+        else if ("javax.microedition.lcdui.Ticker".equals (typeID)) // NOI18N
             ConverterResources.convertTicker (item, document);
-        else if ("javax.microedition.lcdui.Image".equals (typeID))
+        else if ("javax.microedition.lcdui.Image".equals (typeID)) // NOI18N
             ConverterResources.convertImage (item, document);
 
-        else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ChoiceElementDC".equals (typeID))
+        else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ChoiceElementDC".equals (typeID)) // NOI18N
             ConverterElements.convertChoiceElement (id2item, item, document);
-        else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ListElementDC".equals (typeID))
+        else if ("GROUP-org.netbeans.modules.mvd.model.midp2.Midp2ListElementDC".equals (typeID)) // NOI18N
             ConverterElements.convertListElement (id2item, item, document);
 
-        // TODO - all components
+        else if ("org.netbeans.microedition.util.SimpleCancellableTask".equals (typeID)) // NOI18N
+            ConverterBuilt.convertSimpleCancellableTask (id2item, item, document);
+        else if ("org.netbeans.microedition.lcdui.SimpleTableModel".equals (typeID)) // NOI18N
+            ConverterBuilt.convertSimpleTableModel (id2item, item, document);
+        else if ("org.netbeans.microedition.lcdui.SplashScreen".equals (typeID)) // NOI18N
+            ConverterBuilt.convertSplashScreen (id2item, item, document);
+        else if ("org.netbeans.microedition.lcdui.TableItem".equals (typeID)) // NOI18N
+            ConverterBuilt.convertTableItem (id2item, item, document);
+        else if ("org.netbeans.microedition.lcdui.WaitScreen".equals (typeID)) // NOI18N
+            ConverterBuilt.convertWaitScreen (id2item, item, document);
+
+        else if ("javax.microedition.m2g.SVGImage".equals (typeID)) // NOI18N
+            ConverterSVG.convertImage (id2item, item, document);
+        else if ("org.netbeans.microedition.svg.SVGAnimatorWrapper".equals (typeID)) // NOI18N
+            ConverterSVG.convertPlayer (id2item, item, document);
+        else if ("org.netbeans.microedition.svg.SVGMenu".equals (typeID)) // NOI18N
+            ConverterSVG.convertMenu (id2item, item, document);
+        else if ("GROUP-org.netbeans.modules.vmd.components.svg.SvgMenuElementDC".equals (typeID)) // NOI18N
+            ConverterSVG.convertMenuElement (id2item, item, document);
+        else if ("org.netbeans.microedition.svg.SVGSplashScreen".equals (typeID)) // NOI18N
+            ConverterSVG.convertSplashScreen (id2item, item, document);
+        else if ("org.netbeans.microedition.svg.SVGWaitScreen".equals (typeID)) // NOI18N
+            ConverterSVG.convertWaitScreen (id2item, item, document);
 
         if ("$MobileDevice".equals (id)) { // NOI18N
             DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
@@ -211,8 +232,6 @@ public class Converter {
             convertObject (item, startEventSource);
             ConverterActions.convertCommandActionHandler (id2item, item, startEventSource);
         }
-
-        // TODO - all components
     }
 
     static ConverterItem convertConverterItem (HashMap<String, ConverterItem> id2item, String value, DesignDocument document) {

@@ -159,7 +159,24 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.vmd.midpnb.codegen</package>
+                <package>org.netbeans.modules.vmd.midpnb.components</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.commands</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.displayables</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.handlers</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.items</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.resources</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.sources</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.svg</package>
+                <package>org.netbeans.modules.vmd.midpnb.components.svg.util</package>
+                <package>org.netbeans.modules.vmd.midpnb.flow</package>
+                <package>org.netbeans.modules.vmd.midpnb.general</package>
+                <package>org.netbeans.modules.vmd.midpnb.palette</package>
+                <package>org.netbeans.modules.vmd.midpnb.producers</package>
+                <package>org.netbeans.modules.vmd.midpnb.propertyeditors</package>
+                <package>org.netbeans.modules.vmd.midpnb.screen.display</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.components.sources.ListSelectCommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
 
 import java.util.HashMap;
@@ -40,24 +39,23 @@ public class ConverterActions {
             DesignComponent eventSource = document.createComponent (CommandEventSourceCD.TYPEID);
             Converter.convertObject (commandActionItem, eventSource);
 
-            ConverterUtil.convertConverterItemComponent (eventSource, CommandEventSourceCD.PROP_COMMAND, id2item, commandActionItem.getPropertyValue ("actionSource"), document); // NOI18N
+            ConverterUtil.convertConverterItemComponent (eventSource, CommandEventSourceCD.PROP_COMMAND, id2item, commandActionItem.getPropertyValue ("actionSource")); // NOI18N
 
             convertCommandActionHandler (id2item, commandActionItem, eventSource);
         } else if ("ItemCommandAction".equals (commandActionItem.getTypeID ())) { // NOI18N
             DesignComponent eventSource = document.createComponent (ItemCommandEventSourceCD.TYPEID);
             Converter.convertObject (commandActionItem, eventSource);
 
-            ConverterUtil.convertConverterItemComponent (eventSource, ItemCommandEventSourceCD.PROP_COMMAND, id2item, commandActionItem.getPropertyValue ("actionSource"), document); // NOI18N
+            ConverterUtil.convertConverterItemComponent (eventSource, ItemCommandEventSourceCD.PROP_COMMAND, id2item, commandActionItem.getPropertyValue ("actionSource")); // NOI18N
 
-            convertCommandActionHandler (id2item, commandActionItem, eventSource);
-        } else if ("SelectCommandAction".equals (commandActionItem.getTypeID ())) { // NOI18N
-            DesignComponent eventSource = document.createComponent (ListSelectCommandEventSourceCD.TYPEID);
-            Converter.convertObject (commandActionItem, null);
-            
             convertCommandActionHandler (id2item, commandActionItem, eventSource);
         }
         // TODO - other command actions
+        // HINT - SelectCommandAction is recognized by ConverterDisplayables.convertList
         // HINT - SelectCaseCommandAction is recognized by ConverterElements.convertListElement
+        // HINT - InternalCommandAction is recognized by ConverterBuilt.convertSplashScreen, ConverterBuilt.convertWaitScreen, ConvertSVG.convertSplashScreen, ConvertSVG.convertWaitScreen
+        // HINT - SvgSelectCommandAction is recognized by ConverterSVG.convertMenu
+        // HINT - SvgSelectCaseCommandAction is recognized by ConverterSVG.convertMenuElement
     }
 
     // Created: YES, Adds: YES

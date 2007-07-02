@@ -383,6 +383,7 @@
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.usercode</package>
                 <package>org.netbeans.modules.vmd.midp.screen</package>
                 <package>org.netbeans.modules.vmd.midp.screen.display</package>
+                <package>org.netbeans.modules.vmd.midp.screen.display.injector</package>
                 <package>org.netbeans.modules.vmd.midp.screen.display.property</package>
                 <package>org.netbeans.modules.vmd.midp.serialization</package>
             </public-packages>
