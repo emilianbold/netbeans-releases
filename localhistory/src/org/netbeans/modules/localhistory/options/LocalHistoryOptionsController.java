@@ -37,13 +37,11 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
         panel = new LocalHistoryOptionsPanel();
     }   
         
-    public void update() {
-        panel.keepStoredTextField.setText(Long.toString(LocalHistorySettings.getInstance().getKeepStored()));
+    public void update() {        
         panel.daysTextField.setText(Long.toString(LocalHistorySettings.getInstance().getTTL()));
     }
 
-    public void applyChanges() {
-        LocalHistorySettings.getInstance().setKeepStored(Integer.parseInt(panel.keepStoredTextField.getText()));
+    public void applyChanges() {        
         LocalHistorySettings.getInstance().setTTL(Integer.parseInt(panel.daysTextField.getText()));
     }
 
@@ -52,8 +50,7 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     }
 
     public boolean isValid() {
-        try {
-            Integer.parseInt(panel.keepStoredTextField.getText());
+        try {            
             Long.parseLong(panel.daysTextField.getText());
         } catch (NumberFormatException e) {
             return false;
@@ -61,10 +58,9 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
         return true;
     }
 
-    public boolean isChanged() {
-        String keep = Long.toString(LocalHistorySettings.getInstance().getKeepStored());
+    public boolean isChanged() {       
         String ttl = Long.toString(LocalHistorySettings.getInstance().getTTL());        
-        return keep.equals(panel.keepStoredTextField.getText()) && ttl.equals(panel.daysTextField.getText());
+        return ttl.equals(panel.daysTextField.getText());
     }
 
     public JComponent getComponent(Lookup masterLookup) {

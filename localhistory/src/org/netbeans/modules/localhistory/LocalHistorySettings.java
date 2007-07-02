@@ -49,14 +49,6 @@ public class LocalHistorySettings {
         return NbPreferences.forModule(LocalHistorySettings.class);
     }
 
-    public void setKeepStored(int keep) {       
-        getPreferences().putInt(PROP_KEEP_STORED, keep);
-    }    
-    
-    public int getKeepStored() {       
-        return getPreferences().getInt(PROP_KEEP_STORED, 5);
-    }    
-    
     public void setTTL(int ttl) {       
         getPreferences().putInt(PROP_TTL, ttl);
     }
