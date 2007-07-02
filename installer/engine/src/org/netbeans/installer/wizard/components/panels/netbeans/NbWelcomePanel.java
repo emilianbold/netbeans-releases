@@ -296,6 +296,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 node.getDisplayName()));
                         
                         everythingIsInstalled = false;
+                    } else if ((product.getStatus() == Status.NOT_INSTALLED)) {
+                        everythingIsInstalled = false;
                     } else {
                         continue;
                     }
