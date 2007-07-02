@@ -83,7 +83,7 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
         newUMLradio.push();
         new EventTool().waitNoEvent(1000);
         suffix = System.currentTimeMillis(); 
-        JTextFieldOperator textProject = new JTextFieldOperator(reng,1);
+        JTextFieldOperator textProject = new JTextFieldOperator(reng,2);
         textProject.clearText();
         textProject.typeText("jEdit-Model_"+ suffix); 
         reng.ok();
