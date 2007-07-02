@@ -25,9 +25,11 @@
 
 package org.netbeans.modules.uml.propertysupport.customizers;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -50,13 +52,17 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import java.util.Vector;
 import javax.swing.DefaultCellEditor;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -64,15 +70,11 @@ import org.openide.util.NbBundle;
  */
 public class ReturnTypeCustomizer extends javax.swing.JPanel implements EnhancedCustomPropertyEditor
 {
-    
+    private ResourceBundle bundle = NbBundle.getBundle(ReturnTypeCustomizer.class);
     private IPropertyElement mElement = null;
     private IPropertyDefinition mDefinition = null;
     private CustomPropertyEditor mEditor = null;
-    
-    MultiplicityTableModel model = null;
-    
-    //    boolean isMultiple = false;
-    
+   
     /** Creates new form ReturnTypeCustomizer */
     public ReturnTypeCustomizer()
     {
@@ -83,11 +85,8 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
     {
         mElement = element;
         mDefinition = def;
-        
-//        resetTables();
+        initializeMulti();   // initializedMulti() must be called before initializeType()
         initializeType();
-        initializeMulti();
-        
         setPreferredSize(new Dimension(680, 330));
     }
     
@@ -143,8 +142,13 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
         IParameter param = (IParameter)mElement.getElement();
         IMultiplicity mult = param.getMultiplicity();
         
-        model = new MultiplicityTableModel(mult);
-        multiplicityTable.setModel(model);
+        MultiplicityTableModel tableModel = new MultiplicityTableModel(mult);
+        multiplicityTable.setModel(tableModel);
+        multiplicityTable.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                tableChangeHandler(e);
+            }
+        });
         
         // The collection type column needs a custom column render and
         // editor.
@@ -162,23 +166,31 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents()
     {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         returnTypeLabel = new javax.swing.JLabel();
         returnTypeCombo = new javax.swing.JComboBox();
         multiplicityPanel = new javax.swing.JPanel();
-        removeMulButton = new javax.swing.JButton();
         addMulButton = new javax.swing.JButton();
+        removeMulButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         multiplicityTable = new javax.swing.JTable();
+        messagePanel = new javax.swing.JPanel();
+        messageIcon = new javax.swing.JLabel();
+        messageArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(350, 200));
+        setPreferredSize(new java.awt.Dimension(0, 0));
+        setLayout(new java.awt.GridBagLayout());
 
-        returnTypeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/uml/propertysupport/customizers/Bundle").getString("RETURN_TYPE_Mnemonic").charAt(0));
         returnTypeLabel.setLabelFor(returnTypeCombo);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/uml/propertysupport/customizers/Bundle"); // NOI18N
-        returnTypeLabel.setText(bundle.getString("RETURN_TYPE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(returnTypeLabel, bundle.getString("RETURN_TYPE")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 5);
+        add(returnTypeLabel, gridBagConstraints);
 
-        returnTypeCombo.setEditable(true);
         returnTypeCombo.addItemListener(new java.awt.event.ItemListener()
         {
             public void itemStateChanged(java.awt.event.ItemEvent evt)
@@ -186,21 +198,23 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
                 returnTypeChangedHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
+        add(returnTypeCombo, gridBagConstraints);
+        returnTypeCombo.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TYPE")); // NOI18N
+        returnTypeCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_TYPE")); // NOI18N
 
         multiplicityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("MULTIPLICITY"))); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(removeMulButton, bundle.getString("BTN_REMOVERANGE")); // NOI18N
-        removeMulButton.setActionCommand("REMOVE_MULTI");
-        removeMulButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                removeMulButtonactionHandler(evt);
-            }
-        });
+        multiplicityPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(addMulButton, bundle.getString("BTN_ADDRANGE")); // NOI18N
-        addMulButton.setActionCommand("ADD_MULTI");
         addMulButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -208,97 +222,126 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
                 addMulButtonactionHandler(evt);
             }
         });
-
-        multiplicityTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][]
-            {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String []
-            {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(multiplicityTable);
-
-        org.jdesktop.layout.GroupLayout multiplicityPanelLayout = new org.jdesktop.layout.GroupLayout(multiplicityPanel);
-        multiplicityPanel.setLayout(multiplicityPanelLayout);
-        multiplicityPanelLayout.setHorizontalGroup(
-            multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, multiplicityPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(addMulButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(removeMulButton))
-                .addContainerGap())
-        );
-
-        multiplicityPanelLayout.linkSize(new java.awt.Component[] {addMulButton, removeMulButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        multiplicityPanelLayout.setVerticalGroup(
-            multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(multiplicityPanelLayout.createSequentialGroup()
-                .add(multiplicityPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(multiplicityPanelLayout.createSequentialGroup()
-                        .add(addMulButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeMulButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-
-        removeMulButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_REMOVERANGE")); // NOI18N
-        removeMulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_REMOVERANGE")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        multiplicityPanel.add(addMulButton, gridBagConstraints);
         addMulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_ADDRANGE")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(returnTypeLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(returnTypeCombo, 0, 242, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(multiplicityPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(returnTypeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createSequentialGroup()
-                        .add(1, 1, 1)
-                        .add(returnTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(multiplicityPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(removeMulButton, bundle.getString("BTN_REMOVERANGE")); // NOI18N
+        removeMulButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                removeMulButtonactionHandler(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 5);
+        multiplicityPanel.add(removeMulButton, gridBagConstraints);
+        removeMulButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_REMOVERANGE")); // NOI18N
 
-        returnTypeCombo.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TYPE")); // NOI18N
-        returnTypeCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSN_TYPE")); // NOI18N
+        multiplicityTable.setModel(new MultiplicityTableModel());
+        jScrollPane1.setViewportView(multiplicityTable);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        multiplicityPanel.add(jScrollPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        add(multiplicityPanel, gridBagConstraints);
+
+        messagePanel.setLayout(new java.awt.GridBagLayout());
+
+        messageIcon.setLabelFor(messageArea);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        messagePanel.add(messageIcon, gridBagConstraints);
+
+        messageArea.setBackground(messagePanel.getBackground());
+        messageArea.setEditable(false);
+        messageArea.setLineWrap(true);
+        messageArea.setRows(2);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setAutoscrolls(false);
+
+        // set foreground color & font for messageArea
+        Color c = javax.swing.UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null)
+        {
+            c = new Color(89,79,191);
+        }
+        messageArea.setForeground(c);
+        messageArea.setFont(this.getFont());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.9;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        messagePanel.add(messageArea, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
+        add(messagePanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_returnTypeChangedHandler
-        String selectedType = (String)returnTypeCombo.getSelectedItem();
+private void removeMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeMulButtonactionHandler
+    MultiplicityTableModel tableModel = (MultiplicityTableModel) multiplicityTable.getModel();
+    if (tableModel != null)
+    {
+        tableModel.removeRange(multiplicityTable.getSelectedRow());
+    }
+}//GEN-LAST:event_removeMulButtonactionHandler
+
+private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMulButtonactionHandler
+    MultiplicityTableModel tableModel = (MultiplicityTableModel) multiplicityTable.getModel();
+    if (tableModel != null)
+    {
+        tableModel.addRange();
+    }
+}//GEN-LAST:event_addMulButtonactionHandler
+
+private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_returnTypeChangedHandler
+    String selectedType = (String)returnTypeCombo.getSelectedItem();
+        MultiplicityTableModel tableModel = (MultiplicityTableModel) multiplicityTable.getModel();
         // if selected return type is 'void', remove all multiplicity ranges and
         // disable the multiplicity buttons
         if ("void".equals(selectedType)) 
         {
-            if (model != null ) 
+            if (tableModel != null ) 
             {
-                model.removeAllRanges();
+                tableModel.removeAllRanges();
             }
             enableButtons(false);
         } 
@@ -306,20 +349,38 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
         {   
             enableButtons(true);
         }
+        this.setMessage("");
 }//GEN-LAST:event_returnTypeChangedHandler
     
-private void removeMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeMulButtonactionHandler
-    model.removeRange(multiplicityTable.getSelectedRow());
-}//GEN-LAST:event_removeMulButtonactionHandler
-
-private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMulButtonactionHandler
-    model.addRange();
-}//GEN-LAST:event_addMulButtonactionHandler
-
     private void enableButtons(boolean enabled) 
     {
         this.removeMulButton.setEnabled(enabled);
         this.addMulButton.setEnabled(enabled);
+    }
+    
+    public void tableChangeHandler(TableModelEvent e)
+    {
+        MultiplictyRangeHandler mrHandler = new MultiplictyRangeHandler();
+        ETPairT<Boolean, String> retVal = mrHandler.tableValueChanged(e);
+        if (retVal != null)
+        {
+            boolean valid = retVal.getParamOne().booleanValue();
+            String message = retVal.getParamTwo();
+            setMessage(message);
+            addMulButton.setEnabled(valid); 
+        }
+    }
+    
+    private void setMessage (String text) {
+        Icon icon = null;
+        if (text != null) {
+            this.messageArea.setText(text);
+            if (text.trim().length() > 0) {
+                icon = new ImageIcon(
+                  Utilities.loadImage("org/netbeans/modules/uml/resources/error.gif")); // NOI18N
+            }
+            this.messageIcon.setIcon(icon); 
+        }
     }
     ////////////////////////////////////////////////////////////////////////////
     // EnhancedCustomPropertyEditor Implementation
@@ -340,7 +401,8 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
         if (selectedType != null && selectedType.trim().length() > 0) 
         {
             param.setType2(selectedType);
-            model.saveRanges();
+            MultiplicityTableModel tableModel = (MultiplicityTableModel) multiplicityTable.getModel();
+            tableModel.saveRanges();
             notifyChanged();
         }
         return null;
@@ -367,6 +429,9 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addMulButton;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea messageArea;
+    private javax.swing.JLabel messageIcon;
+    private javax.swing.JPanel messagePanel;
     private javax.swing.JPanel multiplicityPanel;
     private javax.swing.JTable multiplicityTable;
     private javax.swing.JButton removeMulButton;
@@ -410,6 +475,9 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
         private ArrayList < TableModelListener > listeners = 
                 new ArrayList < TableModelListener >();
         
+        public MultiplicityTableModel() {
+        }
+        
         public MultiplicityTableModel(IMultiplicity mult)
         {
             for(IMultiplicityRange range : mult.getRanges())
@@ -427,7 +495,6 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
         {
             RangeData data = new RangeData("0", "*", "");
             ranges.add(data);
-            
             fireRowAdded();
         }
         
@@ -547,6 +614,12 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
                     data.setCollection((String)value);
                     break;
             }
+            
+            TableModelEvent event = new TableModelEvent(this, row, row, col);
+            for(TableModelListener listener : listeners)
+            {
+                listener.tableChanged(event);
+            }
         }
         
         public void addTableModelListener(TableModelListener listener)
@@ -627,10 +700,7 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
             {
                 this.collection = collection;
             }
-            
-            
         }
-        
     }
     
     /**
@@ -678,8 +748,6 @@ private void addMulButtonactionHandler(java.awt.event.ActionEvent evt) {//GEN-FI
         protected void setValue(Object value)
         {
             Object realValue = PropertyDataFormatter.translateFullyQualifiedName((String)value);;
-            
-            
             super.setValue(realValue);
         }
     }
