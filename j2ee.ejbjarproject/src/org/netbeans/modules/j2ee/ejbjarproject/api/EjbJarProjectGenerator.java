@@ -373,7 +373,7 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(EjbJarProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+        ep.setProperty(EjbJarProjectProperties.JAVADOC_ENCODING, "${" + EjbJarProjectProperties.SOURCE_ENCODING + "}"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         

@@ -423,7 +423,7 @@ public class AppClientProjectGenerator {
         ep.setProperty(AppClientProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(AppClientProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+        ep.setProperty(AppClientProjectProperties.JAVADOC_ENCODING, "${" + AppClientProjectProperties.SOURCE_ENCODING + "}"); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         
         Deployment deployment = Deployment.getDefault();
