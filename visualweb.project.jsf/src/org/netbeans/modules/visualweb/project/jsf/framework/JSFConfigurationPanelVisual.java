@@ -269,6 +269,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
         buttonGroup1.add(rbNewLibrary);
         rbNewLibrary.setText(bundle.getString("LBL_CREATE_NEW_LIBRARY")); // NOI18N
+        rbNewLibrary.setToolTipText(bundle.getString("MSG_CreatingLibraries")); // NOI18N
         rbNewLibrary.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbNewLibrary.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rbNewLibrary.addItemListener(new java.awt.event.ItemListener() {
@@ -278,7 +279,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         lDirectory.setText(bundle.getString("LBL_INSTALL_DIR")); // NOI18N
+        lDirectory.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
 
+        jtFolder.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
         jtFolder.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 jtFolderKeyPressed(evt);
@@ -293,7 +296,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         lVersion.setText(bundle.getString("LBL_VERSION")); // NOI18N
+        lVersion.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
 
+        jtVersion.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
         jtVersion.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jtVersionKeyReleased(evt);
