@@ -86,6 +86,18 @@ public class ValidatorPresenter extends DynamicPresenter {
     }
 
     public final void checkValidity () {
+        assert checkValidatyAssert ();
+
+        try {
+            checkCustomValidity ();
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable th) {
+            Debug.error (th);
+        }
+    }
+    
+    private boolean checkValidatyAssert () {
         DesignComponent component = getComponent ();
         assert component != null;
 
@@ -144,13 +156,7 @@ public class ValidatorPresenter extends DynamicPresenter {
                 assert children.contains (reference);
         }
 
-        try {
-            checkCustomValidity ();
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable th) {
-            Debug.error (th);
-        }
+        return true;
     }
 
     public final void notifyAttached (DesignComponent component) {

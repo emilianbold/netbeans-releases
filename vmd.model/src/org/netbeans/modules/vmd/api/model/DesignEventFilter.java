@@ -72,9 +72,14 @@ public final class DesignEventFilter {
      * Creates a new instance of an event filter.
      */
     public DesignEventFilter (DesignEventFilter... childFilters) {
+        assert constructorAssert (childFilters);
+        this.childFilters = childFilters;
+    }
+
+    private boolean constructorAssert (DesignEventFilter... childFilters) {
         for (DesignEventFilter filter : childFilters)
             assert filter != null;
-        this.childFilters = childFilters;
+        return true;
     }
 
     /**

@@ -198,16 +198,20 @@ public final class PropertyValue {
     public static PropertyValue createArray (TypeID componentType, List<PropertyValue> array) {
         assert componentType != null;
         assert array != null;
-
-        for (PropertyValue propertyValue : array) {
-            assert propertyValue != null;
-            propertyValue.isCompatible (componentType);
-        }
+        assert createArrayAssert (array, componentType);
 
         PropertyValue val = new PropertyValue (Kind.ARRAY);
         val.type = componentType.getArrayType ();
         val.array = Collections.unmodifiableList (new ArrayList<PropertyValue> (array));
         return val;
+    }
+
+    private static boolean createArrayAssert (List<PropertyValue> array, TypeID componentType) {
+        for (PropertyValue propertyValue : array) {
+            assert propertyValue != null;
+            assert propertyValue.isCompatible (componentType);
+        }
+        return true;
     }
 
     /**

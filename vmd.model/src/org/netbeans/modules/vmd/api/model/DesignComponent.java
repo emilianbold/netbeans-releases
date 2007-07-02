@@ -166,16 +166,21 @@ public final class DesignComponent {
         assert document.getTransactionManager().isWriteAccess();
         assert document == component.document;
         assert component.parentComponent == null;
+        assert addComponentAssert (component);
+        children.add(component);
+        component.parentComponent = this;
+        document.getTransactionManager().parentChangeHappened(null, this, component);
+    }
+
+    private boolean addComponentAssert (DesignComponent component) {
         DesignComponent parent = this;
         while (parent != null) {
             assert parent != component;
             parent = parent.getParentComponent();
         }
-        children.add(component);
-        component.parentComponent = this;
-        document.getTransactionManager().parentChangeHappened(null, this, component);
+        return true;
     }
-    
+
     /**
      * Removes a child component from this component.
      * @param component the child component

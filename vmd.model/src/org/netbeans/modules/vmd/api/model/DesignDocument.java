@@ -247,10 +247,7 @@ public final class DesignDocument {
      */
     public void deleteComponents (Collection<DesignComponent> components) {
         assert transactionManager.isWriteAccess ();
-        for (DesignComponent component : components) {
-            assert component != null  &&  component != rootComponent;
-            assert component.getDocument () == this;
-        }
+        assert deleteComponentsPreAssert (components);
 
         for (DesignComponent component : components)
             component.removeFromParentComponent ();
@@ -277,8 +274,21 @@ public final class DesignDocument {
         if (selected != null)
             setSelectedComponents ("deleteComponent", selected); // NOI18N
 
+        assert deleteComponentsPostAssert (components);
+    }
+
+    private boolean deleteComponentsPreAssert (Collection<DesignComponent> components) {
+        for (DesignComponent component : components) {
+            assert component != null  &&  component != rootComponent;
+            assert component.getDocument () == this;
+        }
+        return true;
+    }
+
+    private boolean deleteComponentsPostAssert (Collection<DesignComponent> components) {
         for (DesignComponent component : components)
             assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion";
+        return true;
     }
 
     /**
@@ -320,10 +330,7 @@ public final class DesignDocument {
     public void setSelectedComponents (String selectionSourceID, Collection<DesignComponent> components) {
         assert transactionManager.isWriteAccess ();
         assert components != null;
-        for (DesignComponent component : components) {
-            assert component != null;
-            assert component.getDocument () == this;
-        }
+        assert setSelectedComponentsAssert (components);
 
         if (this.selectedComponents.containsAll (components)  &&  components.containsAll (this.selectedComponents))
             return;
@@ -333,6 +340,14 @@ public final class DesignDocument {
         this.selectedComponents = Collections.unmodifiableCollection (new ArrayList<DesignComponent> (components));
 
         transactionManager.selectComponentsHappened (old, this.selectedComponents);
+    }
+
+    private boolean setSelectedComponentsAssert (Collection<DesignComponent> components) {
+        for (DesignComponent component : components) {
+            assert component != null;
+            assert component.getDocument () == this;
+        }
+        return true;
     }
 
     private void updateDescriptorReferences () {
