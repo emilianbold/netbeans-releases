@@ -88,7 +88,7 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
     }
 
     public FeatureDescriptor getFeatureDescriptor(int index) {
-        if (index == -1) {
+        if (index == -1 || index >= fds.size()) {
             return null;
         }
 
