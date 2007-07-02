@@ -527,6 +527,9 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
             return;
         }
 
+        if( ex instanceof PropertyVetoException )
+            Exceptions.attachLocalizedMessage(ex, ex.getLocalizedMessage());
+        
         Exceptions.printStackTrace(ex);
     }
 
