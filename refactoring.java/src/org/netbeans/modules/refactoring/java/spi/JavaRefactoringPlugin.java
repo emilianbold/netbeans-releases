@@ -133,7 +133,6 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         if (cpInfo==null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
             cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
             refactoring.getContext().add(cpInfo);
         }
