@@ -65,7 +65,6 @@ public class HTML {
     private static int da = 0;
     
     public static boolean isDeprecatedAttribute (Context context) {
-        System.out.println("DA " + da++);
         if(!(context instanceof SyntaxContext)) {
             return false; //no AST
         }
@@ -76,7 +75,6 @@ public class HTML {
         Token t = ts.token ();
         if (t == null) return false;
         if (t.id() != HTMLTokenId.ARGUMENT) {
-            System.out.println("isDeprecatedAttribute() for " + t.id().name());
             return false;
         }
         String attribName = t.text ().toString ().toLowerCase ();
@@ -86,7 +84,6 @@ public class HTML {
     }
 
     public static boolean isDeprecatedTag (Context context) {
-        System.out.println("DT " + dt++);
         if(!(context instanceof SyntaxContext)) {
             return false; //no AST
         }
@@ -97,7 +94,6 @@ public class HTML {
         Token t = ts.token ();
         if (t == null) return false;
         if (t.id() != HTMLTokenId.TAG_OPEN && t.id() != HTMLTokenId.TAG_CLOSE) {
-            System.out.println("isDeprecatedTag() for " + t.id().name());
             return false;
         }
         String tagName = t.text ().toString ().toLowerCase ();
