@@ -15,11 +15,13 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xtest" default="all" basedir=".">
+    <!-- Ignore jdk-5-check for tests because we need to run them both on 1.5 and 1.6. -->
+    <property name="permit.jdk6.builds" value="true"/>
 
     <import file="../default.xml"/>
     <import file="emma.xml"/>
