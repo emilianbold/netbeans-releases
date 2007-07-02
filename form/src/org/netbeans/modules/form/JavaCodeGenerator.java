@@ -1335,9 +1335,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
 		    constructorProperties.put(comp, usedProperties);
                 }
-                else props = RADComponent.NO_PROPERTIES;
+                else {
+                    props = RADComponent.NO_PROPERTIES;
+                }
+                String typeParams = (String)comp.getAuxValue(AUX_TYPE_PARAMETERS);
 
-                String defaultCreationCode = creator.getJavaCreationCode(props, null);
+                String defaultCreationCode = creator.getJavaCreationCode(props, null, typeParams);
                 buf.append(" = ").append(defaultCreationCode).append(";\n"); // NOI18N
                 initCodeWriter.write(buf.toString());
 
@@ -2185,7 +2188,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
 	String propertyInitializationString = 
 		creator.getJavaCreationCode(
-		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType());
+		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType(), null);
         if (codeData != null)
             propertyInitializationString = CUSTOM_CODE_MARK + propertyInitializationString + CUSTOM_CODE_MARK;
 

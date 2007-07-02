@@ -100,7 +100,7 @@ class QueryCreator implements CreationDescriptor.Creator {
      * @param expressionType type of the expression to create.
      * @return creation code that reflects values of the given properties.
      */
-    public String getJavaCreationCode(FormProperty[] props, Class expressionType) {
+    public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
         assert (props.length == 4);
         
         String entityManager = null;

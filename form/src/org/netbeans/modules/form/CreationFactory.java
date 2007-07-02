@@ -178,8 +178,9 @@ public class CreationFactory {
         CreationDescriptor cd = getDescriptor(cls);
         if (cd != null) {
             CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
-            if (creator != null)
-                   creator.getJavaCreationCode(props, null);
+            if (creator != null) {
+               creator.getJavaCreationCode(props, null, null);
+            }
         }
         return null;
     }
