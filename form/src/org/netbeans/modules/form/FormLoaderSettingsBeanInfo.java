@@ -104,12 +104,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getEditorSearchPath", // NOI18N
                                        "setEditorSearchPath"), // NOI18N
-                new IndexedPropertyDescriptor(FormLoaderSettings.PROP_REGISTERED_EDITORS,
-                                              FormLoaderSettings.class,
-                                              "getRegisteredEditors", // NOI18N
-                                              "setRegisteredEditors", // NOI18N
-                                              "getRegisteredEditor", // NOI18N
-                                              "setRegisteredEditor"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR,
                                        FormLoaderSettings.class,
                                        "isPaletteInToolBar", // NOI18N
@@ -210,10 +204,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
             desc[++i].setDisplayName(bundle.getString("PROP_EDITOR_SEARCH_PATH")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_EDITOR_SEARCH_PATH")); // NOI18N
-            desc[i].setExpert(true);
-
-            desc[++i].setDisplayName(bundle.getString("PROP_REGISTERED_EDITORS")); // NOI18N
-            desc[i].setShortDescription(bundle.getString("HINT_REGISTERED_EDITORS")); // NOI18N
             desc[i].setExpert(true);
 
             desc[++i].setDisplayName(bundle.getString("PROP_PALETTE_IN_TOOLBAR")); // NOI18N

@@ -85,8 +85,6 @@ public class FormLoaderSettings  {
 
     /** Property name of the editorSearchPath property */
     public static final String PROP_EDITOR_SEARCH_PATH = "editorSearchPath"; // NOI18N
-    /** Property name of the registeredEditors property */
-    public static final String PROP_REGISTERED_EDITORS = "registeredEditors"; // NOI18N
 
     /** Property name of the toolBarPalette property */
     public static final String PROP_PALETTE_IN_TOOLBAR = "toolBarPalette"; // NOI18N
@@ -355,31 +353,6 @@ public class FormLoaderSettings  {
     public void setEditorSearchPath(String[] value) {
         editorSearchPath = value;
         getPreferences().put(PROP_EDITOR_SEARCH_PATH, fromArray(editorSearchPath));//NOI18N
-    }
-
-    /** Getter for the registeredEditors option */
-    public String[][] getRegisteredEditors() {
-        if (registeredEditors == null) {
-            registeredEditors = toArray2(getPreferences().get(PROP_REGISTERED_EDITORS, ""));
-        }
-        
-        return registeredEditors;
-    }
-
-    /** Setter for the registeredEditors option */
-    public void setRegisteredEditors(String[][] value) {
-        registeredEditors = value;
-        getPreferences().put(PROP_REGISTERED_EDITORS, fromArray2(registeredEditors));//NOI18N
-    }
-
-    public String[] getRegisteredEditor(int index) {
-        return getRegisteredEditors()[index];
-    }
-
-    public void setRegisteredEditor(int index, String[] value) {
-        registeredEditors[index] = value;
-        FormPropertyEditorManager.clearEditorsCache(); // clear the editors cache so that the new editors can be used
-        setRegisteredEditors(registeredEditors);
     }
 
     public boolean isPaletteInToolBar() {
