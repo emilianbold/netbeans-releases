@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.debugger.actions;
@@ -25,7 +25,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.EventTool;
 
-/** Used to call "Run|Continue" main menu item or CTRL+F5 shortcut.
+/** Used to call "Run|Continue" main menu item or F5 shortcut.
  * @see org.netbeans.jellytools.actions.Action
  * @author Jiri.Skrivanek@sun.com
  */
@@ -36,9 +36,7 @@ public class ContinueAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
             Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name");
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK) :
-            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
         
     /** Creates new ContinueAction instance. */
     public ContinueAction() {

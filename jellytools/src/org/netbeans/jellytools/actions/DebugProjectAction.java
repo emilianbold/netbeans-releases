@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -23,7 +23,7 @@ import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Debug Project" popup menu item on project's root node,
- * "Run|Debug Main Project" main menu item or F5 shortcut.
+ * "Run|Debug Main Project" main menu item or Ctrl+F5 shortcut.
  * @see Action
  * @see org.netbeans.jellytools.nodes.ProjectRootNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -38,10 +38,12 @@ public class DebugProjectAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
             Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
-    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
-
+    private static final KeyStroke KEYSTROKE = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
+    
     /** creates new DebugProjectAction instance */    
     public DebugProjectAction() {
-        super(debugProjectMenu, debugProjectPopup, keystroke);
+        super(debugProjectMenu, debugProjectPopup, KEYSTROKE);
     }
 }

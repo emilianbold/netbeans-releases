@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.debugger.actions;
@@ -24,7 +24,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
 /**
- * Used to call "Window | Debugging | Breakpoints" main menu item or Alt-Shift-F5
+ * Used to call "Window | Debugging | Breakpoints" main menu item or Alt-Shift-5
  * shortcut.
  * @see org.netbeans.jellytools.actions.Action
  * @see org.netbeans.jellytools.actions.ActionNoBlock

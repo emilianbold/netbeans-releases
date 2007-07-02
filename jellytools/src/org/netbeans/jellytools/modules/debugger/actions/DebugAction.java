@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.debugger.actions;
@@ -39,8 +39,8 @@ public class DebugAction extends Action {
     private static final String popupPath = 
             Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action");
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
-            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
+            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     
     /** Creates new DebugAction instance. */
     public DebugAction() {
