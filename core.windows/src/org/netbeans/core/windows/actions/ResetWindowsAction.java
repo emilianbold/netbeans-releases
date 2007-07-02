@@ -28,6 +28,7 @@ import org.netbeans.core.NbTopManager;
 import org.netbeans.core.windows.PersistenceHandler;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.PersistenceManager;
+import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -57,6 +58,11 @@ public class ResetWindowsAction extends AbstractAction {
         }
         
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        
+        if( wm.getMainWindow() instanceof MainWindow ) {
+            //cancel full-screen mode
+            ((MainWindow) wm.getMainWindow()).setFullScreenMode( false );;
+        }
         
         wm.getMainWindow().setExtendedState( JFrame.NORMAL );
         
