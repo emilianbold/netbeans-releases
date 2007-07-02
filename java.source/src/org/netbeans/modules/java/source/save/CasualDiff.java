@@ -766,9 +766,8 @@ public class CasualDiff {
             int[] condBounds = getBounds(oldT.cond);
             copyTo(localPointer, condBounds[0]);
             localPointer = diffTree(oldT.cond, newT.cond, condBounds);
-            int[] thenpartBounds = getBounds(oldT.thenpart);
-            copyTo(localPointer, thenpartBounds[0]);
-            localPointer = diffTree(oldT.thenpart, newT.thenpart, thenpartBounds);
+            int[] thenpartBounds = new int[] { localPointer, endPos(oldT.thenpart) };
+            localPointer = diffTree(oldT.thenpart, newT.thenpart, thenpartBounds, oldT.getKind());
             if (oldT.elsepart != null) {
                 thenpartBounds = new int[] { getOldPos(oldT.elsepart), endPos(oldT.elsepart) };
                 copyTo(localPointer, thenpartBounds[0]);
