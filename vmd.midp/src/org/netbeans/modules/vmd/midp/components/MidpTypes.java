@@ -45,13 +45,16 @@ public final class MidpTypes {
 
     public static enum AlertType  { ALARM, CONFIRMATION, ERROR, INFO, WARNING }
 
-    private static final String PREFIX_LCDUI = "javax.microedition.lcdui.";
-    private static final String PREFIX_MIDLET = "javax.microedition.midlet.";
+    private static final PropertyValue VALUE_TRUE = PropertyValue.createValue (MidpPrimitiveDescriptor.booleanPD, TYPEID_BOOLEAN, true);
+    private static final PropertyValue VALUE_FALSE = PropertyValue.createValue (MidpPrimitiveDescriptor.booleanPD, TYPEID_BOOLEAN, false);
+
+    private static final String PREFIX_LCDUI = "javax.microedition.lcdui."; // NOI18N
+    private static final String PREFIX_MIDLET = "javax.microedition.midlet."; // NOI18N
 
     private static final HashMap<TypeID, Image> iconsRegister = new HashMap<TypeID, Image> ();
 
     public static PropertyValue createBooleanValue (boolean value) {
-        return PropertyValue.createValue (MidpPrimitiveDescriptor.booleanPD, TYPEID_BOOLEAN, value);
+        return value ? VALUE_TRUE : VALUE_FALSE;
     }
 
     public static PropertyValue createStringValue (String stringValue) {
