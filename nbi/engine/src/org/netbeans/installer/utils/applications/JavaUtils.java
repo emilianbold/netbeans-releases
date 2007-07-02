@@ -344,6 +344,12 @@ public class JavaUtils {
                             javaVersion;
                 }
                 
+                // remove build type marker                
+                final String buildTypePattern = 
+                        "-(ea|rc[0-9]*|beta[0-9]*|preview[0-9]*|dp[0-9]*|alpha[0-9]*|fcs)-";
+                versionString = versionString.replaceAll(
+                            buildTypePattern, "-");
+                
                 // convert 1.6.0-b105 to 1.6.0.0.105
                 if (versionString.matches(
                         "[0-9]+\\.[0-9]+\\.[0-9]+-b[0-9]+")) {
