@@ -105,7 +105,6 @@ import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieI
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.EditAction;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -153,12 +152,19 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
     private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
             Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
     
-    public void replaceMultiViewCookie(){
+    public void refreshMultiViewCookie(boolean remove){
         MultiViewCookie mvCookie = getCookie(MultiViewCookie.class);
         if(mvCookie != null){
             content.remove(mvCookie);
+        }
+        OpenCookie open = getCookie(OpenCookie.class);
+        if(open != null){
+            content.remove(open);
+        }
+        if(remove) {
             content.add(getCookieFromImplBean(OpenCookie.class));
-            content.add(getCookieFromImplBean(EditCookie.class));
+        } else {
+            content.add(getMultiViewCookie(service, getDataObject()));
         }
     }
     
@@ -178,24 +184,6 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
             }
         }
     }
-    
-    public void addMultiViewCookie(){
-        MultiViewCookie mvCookie = getCookie(MultiViewCookie.class);
-        if(mvCookie == null){
-            OpenCookie open = getCookie(OpenCookie.class);
-            if(open != null){
-                content.remove(open);
-            }
-            EditCookie edit = getCookie(EditCookie.class);
-            if(edit != null){
-                content.remove(edit);
-            }
-            mvCookie = getMultiViewCookie(service, getDataObject());
-            content.add(mvCookie);
-        }
-    }
-    
-    
     
     /**
      * Find MultiViewCookie for given this node

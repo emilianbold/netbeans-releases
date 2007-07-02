@@ -511,21 +511,17 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                         FileUtil.copyFile(oldImplClass, folder, name+".java", "old"); //NOI18N
                                         oldImplClass.delete();
                                     }
+                                    // close the editor representing old impl bean
+                                    JaxWsNode parent = (JaxWsNode)getNode();
+                                    parent.closeMultiView();
                                     JaxWsUtils.generateJaxWsImplementationClass(FileOwnerQuery.getOwner(srcRoot),
                                         folder, name, model, service);
-                                    JaxWsNode parent = (JaxWsNode)getNode();
                                     FileObject newImplClass = srcRoot.getFileObject(implClass.replace('.','/')+".java"); //NOI18N
                                     if (newImplClass!=null) {
                                         JaxWsChildren.this.implClass=newImplClass;
                                     }
                                     parent.refreshImplClass();
-                                    if(wsdlPort.isProvider()){
-                                        parent.closeMultiView();
-                                        parent.replaceMultiViewCookie();
-                                    }else{
-                                        parent.addMultiViewCookie();
-                                    }
-                                    
+                                    parent.refreshMultiViewCookie(wsdlPort.isProvider());
                                 }
                             }
                         } catch (Exception ex) {
