@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
 <bindings>
     <bind actionName="abbrev-expand" key="S-SPACE"/>
     <bind actionName="adjust-caret-bottom" key="OS-PAGE_DOWN"/>
-    <bind actionName="adjust-caret-center" key="DS-INSERT"/>
+    <bind actionName="adjust-caret-center" key="OS-INSERT"/>
     <bind actionName="adjust-caret-top" key="OS-PAGE_UP"/>
 <!--    <bind actionName="adjust-window-bottom" key="O-U$B"/> -->
 <!--    <bind actionName="adjust-window-center" key="O-U$M"/> -->
