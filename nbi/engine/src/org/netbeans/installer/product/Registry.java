@@ -190,10 +190,10 @@ public class Registry {
             if (!UiUtils.showYesNoDialog(
                     "Failed to load the local registry", 
                     "The bundled registry (" + localRegistryFile + ") " +
-                    "could not be loaded, or was loaded partially. The " +
-                    "installer can continue to work normally, but doing " +
-                    "so may result in a corrupted global registry. Choose " +
-                    "Yes to continue, No to exit the installer.")) {
+                    "could not be loaded, or was loaded partially.\n" +
+                    "The installer can continue to work normally, but doing " +
+                    "so may result in a corrupted global registry.\n\n" +
+                    "Choose Yes to continue, No to exit the installer.")) {
                 finishHandler.criticalExit();
             } else {
                 LogManager.log(ErrorLevel.ERROR, e);
@@ -214,10 +214,10 @@ public class Registry {
             if (!UiUtils.showYesNoDialog(
                     "Failed to load the bundled registry", 
                     "The bundled registry (" + bundledRegistryUri + ") " +
-                    "could not be loaded, or was loaded partially. The " +
-                    "installer can continue to work normally, but doing " +
-                    "so may result in a corrupted global registry. Choose " +
-                    "Yes to continue, No to exit the installer.")) {
+                    "could not be loaded, or was loaded partially.\n" +
+                    "The installer can continue to work normally, but doing " +
+                    "so may result in a corrupted global registry.\n\n" +
+                    "Choose Yes to continue, No to exit the installer.")) {
                 finishHandler.criticalExit();
             } else {
                 LogManager.log(ErrorLevel.ERROR, e);
@@ -239,10 +239,10 @@ public class Registry {
                 if (!UiUtils.showYesNoDialog(
                         "Failed to load the remote registry", 
                         "The bundled registry (" + remoteRegistryURI + ") " +
-                        "could not be loaded, or was loaded partially. The " +
-                        "installer can continue to work normally, but doing " +
-                        "so may result in a corrupted global registry. Choose " +
-                        "Yes to continue, No to exit the installer.")) {
+                        "could not be loaded, or was loaded partially.\n" +
+                        "The installer can continue to work normally, but doing " +
+                        "so may result in a corrupted global registry.\n\n" +
+                        "Choose Yes to continue, No to exit the installer.")) {
                     finishHandler.criticalExit();
                 } else {
                     LogManager.log(ErrorLevel.ERROR, e);
