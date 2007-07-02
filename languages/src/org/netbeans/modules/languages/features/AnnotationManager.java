@@ -40,6 +40,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.EditorParser;
 
 
@@ -111,9 +112,15 @@ public class AnnotationManager extends ASTEvaluator {
                     while (it2.hasNext ()) {
                         ASTItem item = it2.next ();
                         Feature mark = it3.next ();
+                        String message = (String) mark.getValue ("message");
+                        try {
+                            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
+                            message = language.localize(message);
+                        } catch (LanguageDefinitionNotFoundException e) {
+                        }
                         LanguagesAnnotation la = new LanguagesAnnotation (
                             (String) mark.getValue ("type"),
-                            (String) mark.getValue ("message")
+                            message
                         );
                         doc.addAnnotation (
                             doc.createPosition (item.getOffset ()),
