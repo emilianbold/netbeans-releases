@@ -550,7 +550,6 @@ public class CasualDiff {
         localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
         int[] condBounds = getBounds(oldT.cond);
         if (oldT.body.getKind() != Kind.BLOCK && newT.body.getKind() == Kind.BLOCK) {
-            tokenSequence.move(condBounds[0]);
             TokenUtilities.moveBackToToken(tokenSequence, condBounds[0], JavaTokenId.WHILE);
             localPointer = tokenSequence.offset();
         } else {
@@ -762,16 +761,17 @@ public class CasualDiff {
 
     protected int diffIf(JCIf oldT, JCIf newT, int[] bounds) {
         int localPointer = bounds[0];
+        
+        int[] condBounds = getBounds(oldT.cond);
+        copyTo(localPointer, condBounds[0]);
+        localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
+        localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
         if (oldT.elsepart == null && newT.elsepart != null ||
             oldT.elsepart != null && newT.elsepart == null) {
             // mark the whole if statement to be reformatted, which Commit will refine.
             // append(Diff.modify(oldT, getOldPos(oldT), newT));
         } else {
-            int[] condBounds = getBounds(oldT.cond);
-            copyTo(localPointer, condBounds[0]);
-            localPointer = diffTree(oldT.cond, newT.cond, condBounds);
-            int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
-            localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
             if (oldT.elsepart != null) {
                 partBounds = new int[] { localPointer, endPos(oldT.elsepart) };
                 localPointer = diffTree(oldT.elsepart, newT.elsepart, partBounds, oldT.getKind());
