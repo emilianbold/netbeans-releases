@@ -2210,9 +2210,8 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "    public boolean method(int i) {\n" +
             "        int y = 0;\n" +
-            "        if (method(null)) {\n" + 
-            "            return true;\n" +
-            "        }\n" +
+            "        if (method(null)) {return true;\n" + 
+            "}" +
             "        return y == 8;\n" +
             "    }\n" +
             "}\n";
@@ -2234,7 +2233,8 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                             Arrays.asList(make.Literal(null))
                         )
                     ), 
-                    make.Return(make.Literal(true)), null
+                    make.Block(Collections.<StatementTree>singletonList(make.Return(make.Literal(true))), false),
+                    null
                 );
                 workingCopy.rewrite(mit, nue);
             }

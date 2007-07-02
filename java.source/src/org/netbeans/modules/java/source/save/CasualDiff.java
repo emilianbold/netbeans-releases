@@ -767,10 +767,11 @@ public class CasualDiff {
         localPointer = diffTree(oldT.cond, newT.cond, condBounds);
         int[] partBounds = new int[] { localPointer, endPos(oldT.thenpart) };
         localPointer = diffTree(oldT.thenpart, newT.thenpart, partBounds, oldT.getKind());
-        if (oldT.elsepart == null && newT.elsepart != null ||
-            oldT.elsepart != null && newT.elsepart == null) {
-            // mark the whole if statement to be reformatted, which Commit will refine.
-            // append(Diff.modify(oldT, getOldPos(oldT), newT));
+        if (oldT.elsepart == null && newT.elsepart != null) {
+        } else if (oldT.elsepart != null && newT.elsepart == null) {
+            // remove else part
+            copyTo(localPointer, partBounds[1]);
+            return bounds[1];
         } else {
             if (oldT.elsepart != null) {
                 partBounds = new int[] { localPointer, endPos(oldT.elsepart) };
