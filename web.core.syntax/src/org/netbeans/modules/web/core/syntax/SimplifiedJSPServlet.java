@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.web.core.syntax;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
@@ -55,77 +56,67 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  * @author Tomasz.Slota@Sun.COM
  */
 public class SimplifiedJSPServlet {
-    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n" + //NOI18N
-            "\tHttpServletRequest request;\n" + //NOI18N
-            "\tHttpServletResponse response;\n" + //NOI18N
-            "\tHttpSession session;\n" + //NOI18N
-            "\tServletContext application;\n" + //NOI18N
-            "\tJspWriter out;\n" + //NOI18N
-            "\tServletConfig config;\n" + //NOI18N
-            "\tJspContext jspContext;\n" + //NOI18N
-            "\tObject page;\n" + //NOI18N
-            "\tPageContext pageContext;\n"; //NOI18N
-    
+
+    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n" + "\tHttpServletRequest request;\n" + "\tHttpServletResponse response;\n" + "\tHttpSession session;\n" + "\tServletContext application;\n" + "\tJspWriter out;\n" + "\tServletConfig config;\n" + "\tJspContext jspContext;\n" + "\tObject page;\n" + "\tPageContext pageContext;\n"; //NOI18N
     private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(){\n\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
-    
     @Deprecated
     private final JspSyntaxSupport sup;
-    
+
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
-    
+
     private String mergedScriptlets = null;
     private String mergedDeclarations = null;
     private boolean processCalled = false;
     private String importStatements = null;
     private int expressionIndex = 1;
     private static final Logger logger = Logger.getLogger(SimplifiedJSPServlet.class.getName());
-    
+
     /** Creates a new instance of ScripletsBodyExtractor */
     public SimplifiedJSPServlet(Document doc) {
-        this.doc = doc;        
+        this.doc = doc;
         sup = (JspSyntaxSupport) new JSPKit().createSyntaxSupport((BaseDocument) doc);
     }
-    
-    public void process() throws BadLocationException{
+
+    public void process() throws BadLocationException {
         processCalled = true;
         final StringBuilder buffScriplets = new StringBuilder();
         final StringBuilder buffDeclarations = new StringBuilder();
         final BadLocationException[] ex = new BadLocationException[1];
-        
+
         doc.render(new Runnable() {
+
             public void run() {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
-
-                if(!tokenSequence.moveNext()) {
-                    return ; //no tokens in token sequence
+                if (!tokenSequence.moveNext()) {
+                    return; //no tokens in token sequence
                 }
 
                 /**
                  * process java code blocks one by one
                  * note: We count on the fact the scripting language in JSP is Java
                  */
-                do{
+                do {
                     Token token = tokenSequence.token();
 
-                    if (token.id() == JspTokenId.SCRIPTLET){
+                    if (token.id() == JspTokenId.SCRIPTLET) {
                         int blockStart = token.offset(tokenHierarchy);
                         int blockEnd = blockStart + token.length();
 
-                        JavaCodeType blockType = (JavaCodeType)token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
+                        JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
 
                         try {
                             String blockBody = doc.getText(blockStart, blockEnd - blockStart);
                             StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
                             int newBlockStart = buff.length();
 
-                            if (blockType == JavaCodeType.EXPRESSION){
-                                String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex ++); //NOI18N
+                            if (blockType == JavaCodeType.EXPRESSION) {
+                                String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
                                 newBlockStart += exprPrefix.length();
                                 buff.append(exprPrefix + blockBody + ";\n");
-                            } else{
+                            } else {
                                 buff.append(blockBody + "\n");
                             }
 
@@ -133,172 +124,175 @@ public class SimplifiedJSPServlet {
                             codeBlocks.add(blockData);
                         } catch (BadLocationException e) {
                             ex[0] = e;
-                            return ;
+                            return;
                         }
                     }
                 } while (tokenSequence.moveNext());
             }
         });
-        
+
         if (ex[0] != null) {
             throw ex[0];
         }
-        
+
         importStatements = createImportStatements();
         mergedDeclarations = buffDeclarations + "\n" + createBeanVarDeclarations();
         mergedScriptlets = buffScriplets.toString();
     }
-    
-    private String createBeanVarDeclarations(){
+
+    private String createBeanVarDeclarations() {
         StringBuilder beanDeclarationsBuff = new StringBuilder();
-        
+
         PageInfo.BeanData[] beanData = sup.getBeanData();
-        
-        for (PageInfo.BeanData bean: beanData){
+
+        for (PageInfo.BeanData bean : beanData) {
             beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
         }
-        
+
         return beanDeclarationsBuff.toString();
     }
-    
-    private String createImportStatements(){
+
+    private String createImportStatements() {
         StringBuilder importsBuff = new StringBuilder();
-        String imports[] = sup.getImports();
-        
-        for (String pckg : imports){
-            importsBuff.append("import " + pckg + ";\n"); //NOI18N
-        }
-        
-        return importsBuff.toString();
-    }
-    
-    private void assureProcessCalled(){
-        if (!processCalled){
-            throw new IllegalStateException("process() method must be called first!");//NOI18N
-        }
-    }
-    
-    public int getShiftedOffset(int originalOffset){
-        assureProcessCalled();
-        
-        CodeBlockData codeBlock = getCodeBlockAtOffset(originalOffset);
-        
-        if (codeBlock == null){
-            return -1; // no embedded java code at the offset
-        }
-        
-        int offsetWithinBlock = originalOffset - codeBlock.getStartOffset();
-        int shiftedOffset = codeBlock.getNewBlockStart() + offsetWithinBlock;
-        
-        return shiftedOffset;
-    }
-    
-    public int getRealOffset(int offset){
-        assureProcessCalled();
-        
-        for (CodeBlockData codeBlock : codeBlocks) {
-            int len = codeBlock.getEndOffset() - codeBlock.getStartOffset();
-            
-            if (codeBlock.getNewBlockStart() <= offset && codeBlock.getNewBlockStart() + len >= offset) {
-                return codeBlock.getStartOffset() +  offset - codeBlock.getNewBlockStart();
+        String[] imports = sup.getImports();
+
+        if (imports != null) {
+            // TODO: better support for situation when imports is null
+            // (JSP doesn't belong to a project)
+            for (String pckg : imports) {
+                importsBuff.append("import " + pckg + ";\n"); //NOI18N
             }
         }
-        
+
+        return importsBuff.toString();
+    }
+
+    private void assureProcessCalled() {
+        if (!processCalled) {
+            throw new IllegalStateException("process() method must be called first!"); //NOI18N
+        }
+    }
+
+    public int getShiftedOffset(int originalOffset) {
+        assureProcessCalled();
+
+        CodeBlockData codeBlock = getCodeBlockAtOffset(originalOffset);
+
+        if (codeBlock == null) {
+            return -1; // no embedded java code at the offset
+        }
+
+        int offsetWithinBlock = originalOffset - codeBlock.getStartOffset();
+        int shiftedOffset = codeBlock.getNewBlockStart() + offsetWithinBlock;
+
+        return shiftedOffset;
+    }
+
+    public int getRealOffset(int offset) {
+        assureProcessCalled();
+
+        for (CodeBlockData codeBlock : codeBlocks) {
+            int len = codeBlock.getEndOffset() - codeBlock.getStartOffset();
+
+            if (codeBlock.getNewBlockStart() <= offset && codeBlock.getNewBlockStart() + len >= offset) {
+                return codeBlock.getStartOffset() + offset - codeBlock.getNewBlockStart();
+            }
+        }
+
         return -1;
     }
-    
-    public String getVirtualClassBody(){
+
+    public String getVirtualClassBody() {
         assureProcessCalled();
-        return importStatements + CLASS_HEADER + mergedDeclarations + METHOD_HEADER
-                +  mergedScriptlets + CLASS_FOOTER;
+        return importStatements + CLASS_HEADER + mergedDeclarations + METHOD_HEADER + mergedScriptlets + CLASS_FOOTER;
     }
-    
-    private CodeBlockData getCodeBlockAtOffset(int offset){
-        
-        for (CodeBlockData codeBlock : codeBlocks){
-            if (codeBlock.getStartOffset() <= offset && codeBlock.getEndOffset() >= offset){
+
+    private CodeBlockData getCodeBlockAtOffset(int offset) {
+
+        for (CodeBlockData codeBlock : codeBlocks) {
+            if (codeBlock.getStartOffset() <= offset && codeBlock.getEndOffset() >= offset) {
                 return codeBlock;
             }
         }
-        
+
         return null;
     }
-    
-    public abstract static class VirtualJavaClass{
-        
-        public final void create(Document doc, String virtualClassBody){
+
+    public static abstract class VirtualJavaClass {
+
+        public final void create(Document doc, String virtualClassBody) {
             FileObject fileDummyJava = null;
             List<? extends CompletionItem> javaCompletionItems = null;
-            
+
             try {
                 FileSystem memFS = FileUtil.createMemoryFileSystem();
                 fileDummyJava = memFS.getRoot().createData("SimplifiedJSPServlet", "java"); //NOI18N
                 PrintWriter writer = new PrintWriter(fileDummyJava.getOutputStream());
                 writer.print(virtualClassBody);
                 writer.close();
-                
+
                 FileObject jspFile = NbEditorUtilities.getFileObject(doc);
                 ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
-                    
+
                 final JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
-                
+
                 doc.putProperty(JavaSource.class, new WeakReference<JavaSource>(null) {
+
                     public JavaSource get() {
                         return source;
                     }
                 });
-                
+
                 process(fileDummyJava, source);
-                
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
-            }/* finally{
+            } /* finally{
             if (fileDummyJava != null){
-                try{
-                    fileDummyJava.delete();
-              
-                } catch (IOException e){
-                    logger.log(Level.SEVERE, e.getMessage(), e);
-                }
+            try{
+            fileDummyJava.delete();
+            } catch (IOException e){
+            logger.log(Level.SEVERE, e.getMessage(), e);
             }
-        }*/
+            }
+            }*/
         }
-        
+
         protected abstract void process(FileObject fileObject, JavaSource javaSource);
     }
-    
+
     private class CodeBlockData {
+
         private int startOffset;
         private int endOffset;
         private int newRelativeBlockStart; // offset in created java class
         private JavaCodeType type;
-        
-        public CodeBlockData(int startOffset, int newRelativeBlockStart, int endOffset, JavaCodeType type){
+
+        public CodeBlockData(int startOffset, int newRelativeBlockStart, int endOffset, JavaCodeType type) {
             this.startOffset = startOffset;
             this.newRelativeBlockStart = newRelativeBlockStart;
             this.endOffset = endOffset;
             this.type = type;
         }
-        
-        public int getStartOffset(){
+
+        public int getStartOffset() {
             return startOffset;
         }
-        
-        public int getEndOffset(){
+
+        public int getEndOffset() {
             return endOffset;
         }
-        
-        public JavaCodeType getType(){
+
+        public JavaCodeType getType() {
             return type;
         }
-        
-        public int getNewBlockStart(){
+
+        public int getNewBlockStart() {
             int newBlockStart = newRelativeBlockStart + CLASS_HEADER.length() + importStatements.length();
-            
-            if (getType() != JavaCodeType.DECLARATION){
+
+            if (getType() != JavaCodeType.DECLARATION) {
                 newBlockStart += mergedDeclarations.length() + METHOD_HEADER.length();
             }
-            
+
             return newBlockStart;
         }
     }
