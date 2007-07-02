@@ -190,7 +190,15 @@ public class ClassData extends ElementDataObject
             {
                 buff.append("<TD ALIGN=\"right\" VALIGN=\"top\" WIDTH=\"1%\"><FONT SIZE=\"-1\">\r\n");
                 if (returnType.getType()!=null)
-                    buff.append("<CODE>" + "<A HREF=\"" + getLinkTo(returnType.getType()) + "\">" + returnType.getType().getName() + "</A></CODE></FONT></TD>\r\n");
+                {
+                    buff.append("<CODE>" + "<A HREF=\"" + getLinkTo(returnType.getType()) + "\">" + 
+                            returnType.getType().getName() + "</A>");
+                    IMultiplicity mul = returnType.getMultiplicity();
+                    if (mul != null)
+                        buff.append(mul.getRangeAsString(true));
+                    
+                    buff.append("</CODE></FONT></TD>\r\n");
+                }
                 else
                     buff.append("<CODE>&nbsp;</CODE></FONT></TD>\r\n");
                 buff.append("<TD><CODE><B><A HREF=\"#" + op.getName() + "\">" + op.getName() + "</A></B>(");
@@ -351,9 +359,19 @@ public class ClassData extends ElementDataObject
         String staticString = op.getIsStatic()==true?" static":"";
         String finalString = op.getIsFinal()?" final":"";
         String abstractString = op.getIsAbstract()?" abstract":"";
-        String returnType = op.getReturnType()==null || op.getReturnType().getType()==null?"": " " + "<A HREF=\"" +
-                getLinkTo(op.getReturnType().getType()) + "\">" +
-                op.getReturnType().getType().getName() + "</A>";
+        String returnType = "";
+        if (op.getReturnType() != null && op.getReturnType().getType() != null)
+        {
+            returnType = " <A HREF=\"" +
+                    getLinkTo(op.getReturnType().getType()) + "\">" +
+                    op.getReturnType().getType().getName() + "</A>";
+            
+            IMultiplicity mul = op.getReturnType().getMultiplicity();
+            if (mul != null)
+                returnType += mul.getRangeAsString(true);
+            
+        }
+   
         return visibility + staticString + finalString + abstractString + returnType;
     }
     
@@ -665,7 +683,12 @@ public class ClassData extends ElementDataObject
                         out.write("<CODE>" + "<A HREF=\"" + getLinkTo(type) + "\">" + type.getName() + "</A></CODE></FONT></TD>\r\n");
                     else
                         out.write("<CODE>&nbsp;</CODE></FONT></TD>\r\n");
-                    out.write("<TD><CODE><B><A HREF=\"#" + attr.getName() + "\">" + attr.getName() + "</A></B></CODE>\r\n");
+                    out.write("<TD><CODE><B><A HREF=\"#" + attr.getName() + "\">" + attr.getName() + "</A></B>");
+                    
+                    IMultiplicity mul = attr.getMultiplicity();
+                    if (mul != null)
+                        out.write(mul.getRangeAsString(true));
+                    out.write("</CODE>\r\n");
                     out.write("<BR>\r\n");
                     out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<PRE>" +
                         getBriefDocumentation(StringUtilities.unescapeHTML(
