@@ -31,7 +31,6 @@ import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.ProjectEar;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
@@ -41,6 +40,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  * Test case for {@link ApplicationImpl}.
@@ -67,6 +67,12 @@ public class ApplicationImplTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        
+        // set our own lookup
+        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
+        assertNotNull("correct repository should be found in lookup",
+                Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ));
+        
         TestUtil.makeScratchDir(this);
         serverID = TestUtil.registerSunAppServer(this);
         
@@ -75,13 +81,13 @@ public class ApplicationImplTest extends NbTestCase {
         String name = "Test EnterpriseApplication";
         String j2eeLevel = J2eeModule.JAVA_EE_5;
         NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
-                serverID, /* WEB_NAME // XXX because of pavel buzek's change in web project*/ null, EJB_NAME, CAR_NAME, null, null, null);
+                serverID, WEB_NAME, EJB_NAME, CAR_NAME, null, null, null);
         FileObject prjDirFO = FileUtil.toFileObject(earDirF);
         
         // verify war reference
         EditableProperties ep = TestUtil.loadProjectProperties(prjDirFO);
-        /*String webReferenceValue = ep.getProperty(WEB_REFERENCE_EXPECTED_KEY);
-        assertEquals("war reference should be set properly", WEB_REFERENCE_EXPECTED_VALUE, webReferenceValue);*/
+        String webReferenceValue = ep.getProperty(WEB_REFERENCE_EXPECTED_KEY);
+        assertEquals("war reference should be set properly", WEB_REFERENCE_EXPECTED_VALUE, webReferenceValue);
         
         // verify ejb reference
         String ejbReferenceValue = ep.getProperty(EJB_REFERENCE_EXPECTED_KEY);
@@ -265,9 +271,5 @@ public class ApplicationImplTest extends NbTestCase {
             }
         }
         return null;
-    }
-    
-    private ProjectEar getProjectEar() {
-        return earProject.getLookup().lookup(ProjectEar.class);
     }
 }

@@ -108,6 +108,10 @@ public final class TestUtil extends ProxyLookup {
         TestUtil.setLookup(new Object[] {new Repo(test), new IFL()});
     }
     
+    public static void initLookup(NbTestCase test, String... additionalLayers) throws Exception {
+        TestUtil.setLookup(new Object[] {new Repo(test, additionalLayers), new IFL()});
+    }
+    
     private static boolean warned = false;
     /**
      * Create a scratch directory for tests.
@@ -527,7 +531,15 @@ public final class TestUtil extends ProxyLookup {
             super(mksystem(t));
         }
         
+        public Repo(NbTestCase t, String... additionalLayers) throws Exception {
+            super(mksystem(t, additionalLayers));
+        }
+        
         private static FileSystem mksystem(NbTestCase t) throws Exception {
+            return mksystem(t, null);
+        }
+        
+        private static FileSystem mksystem(NbTestCase t, String... additionalLayers) throws Exception {
             LocalFileSystem lfs = new LocalFileSystem();
             File systemDir = new File(t.getWorkDir(), "ud/system");
             systemDir.mkdirs();
@@ -550,6 +562,11 @@ public final class TestUtil extends ProxyLookup {
             addLayer(layers, "org/netbeans/modules/j2ee/clientproject/ui/resources/layer.xml");
             // needed for webmodule-related tests
             addLayer(layers, "org/netbeans/modules/web/project/ui/resources/layer.xml");
+            if (additionalLayers != null) {
+                for (String layer : additionalLayers) {
+                    addLayer(layers, layer);
+                }
+            }
             MultiFileSystem mfs = new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
             return mfs;
         }
