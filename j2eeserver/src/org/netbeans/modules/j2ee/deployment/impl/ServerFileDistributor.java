@@ -216,7 +216,7 @@ public class ServerFileDistributor extends ServerProgress {
                 // refactor to make the finally easier to write and read in the 
                 // future.
                 createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap);
-                    }
+            }
                     
             ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
             String[] rPaths = instance.getServer().getDeploymentPlanFiles(moduleType);
@@ -248,6 +248,11 @@ public class ServerFileDistributor extends ServerProgress {
         OutputStream destStream = null;
         InputStream sourceStream = null;
         try {
+            // double check that the target does not exist... 107526
+            //   the destMap seems to be incomplete....
+            if (null == targetFO) {
+                targetFO = destRoot.getFileObject(relativePath);
+            }
             if (targetFO == null) {
                 destFolder = findOrCreateParentFolder(destRoot, relativePath);
             } else {
