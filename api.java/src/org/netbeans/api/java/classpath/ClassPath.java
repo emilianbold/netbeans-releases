@@ -550,7 +550,7 @@ public final class ClassPath {
      */
     public final class Entry {
 
-        private URL url;
+        private final URL url;
         private FileObject root;
         private IOException lastError;
         private FilteringPathResourceImplementation filter;
@@ -571,19 +571,27 @@ public final class ClassPath {
          * the method may return null.
          * @return classpath entry root folder
          */
-        public synchronized FileObject  getRoot() {
-            if (root == null || !root.isValid()) {
-                root = URLMapper.findFileObject(this.url);
-                if (root == null) {
-                    this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
-                        new Object[] {this.url}));
-                    return null;
-                }
-                else if (root.isData()) {
-                    throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder.");
+        public  FileObject  getRoot() {
+            synchronized (this) {
+                if (root != null && root.isValid()) {
+                    return root;
                 }
             }
-            return root;
+            FileObject _root = URLMapper.findFileObject(this.url);            
+            synchronized (this) {
+                if (root == null || !root.isValid()) {
+                    if (_root == null) {
+                        this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
+                            new Object[] {this.url}));
+                        return null;
+                    }
+                    else if (_root.isData()) {
+                        throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder.");
+                    }
+                    root = _root;
+                }
+                return root;
+            }
         }
 
         /**
