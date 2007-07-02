@@ -487,48 +487,26 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             if (provider != null && provider.hasVerifierSupport()) {
                 actions.add(ProjectSensitiveActions.projectCommandAction( "verify", bundle.getString( "LBL_VerifyAction_Name" ), null )); // NOI18N
             }
-            actions.addAll(Arrays.asList(new Action[] {
-                null,
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-                null,
-                CommonProjectActions.setAsMainProjectAction(),
-                CommonProjectActions.openSubprojectsAction(),
-                CommonProjectActions.closeProjectAction(),
-                null,
-                CommonProjectActions.renameProjectAction(),
-                CommonProjectActions.moveProjectAction(),
-                CommonProjectActions.copyProjectAction(),
-                CommonProjectActions.deleteProjectAction(),
-                null,
-                SystemAction.get( FindAction.class ),
-            }));
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
+            addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
+                
+            actions.add(null);
+            actions.add(CommonProjectActions.setAsMainProjectAction());
+            actions.add(CommonProjectActions.openSubprojectsAction());
+            actions.add(CommonProjectActions.closeProjectAction());
+            actions.add(null);
+            actions.add(CommonProjectActions.renameProjectAction());
+            actions.add(CommonProjectActions.moveProjectAction());
+            actions.add(CommonProjectActions.copyProjectAction());
+            actions.add(CommonProjectActions.deleteProjectAction());
+            actions.add(null);
+            actions.add(SystemAction.get( FindAction.class ));
             
-           try {
-                Repository repository  = Repository.getDefault();
-                FileSystem sfs = repository.getDefaultFileSystem();
-                FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator<? extends Object> it = lookup.lookup(query).allInstances().iterator();
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add((Action) next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
-                    }
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                Exceptions.printStackTrace(ex);
-            }
-            
+            addFromLayers(actions, "Projects/Actions"); //NOI18N
+
             actions.add(null);
             
             if (broken) {
@@ -540,6 +518,17 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);
         }
+        
+        private void addFromLayers(List<Action> actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
+                }
+            }
+        }                   
         
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.

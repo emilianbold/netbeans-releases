@@ -463,7 +463,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             
             J2eeModuleProvider provider = 
                            project.getLookup().lookup(J2eeModuleProvider.class);
-            List actions = new ArrayList(30);
+            List<Action> actions = new ArrayList<Action>(30);
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
@@ -477,6 +477,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
+            addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());
@@ -491,29 +492,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             
             // honor 57874 contract
             
-            try {
-                Repository repository  = Repository.getDefault();
-                FileSystem sfs = repository.getDefaultFileSystem();
-                FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add(next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
-                    }
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                Exceptions.printStackTrace(ex);
-            }
+            addFromLayers(actions, "Projects/Actions"); //NOI18N
             
             actions.add(null);
             
@@ -525,8 +504,19 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
             actions.add(CommonProjectActions.customizeProjectAction());
 
-            return (Action[])actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new javax.swing.Action[actions.size()]);
         }
+        
+        private void addFromLayers(List<Action> actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
+                }
+            }
+        }                
 
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
