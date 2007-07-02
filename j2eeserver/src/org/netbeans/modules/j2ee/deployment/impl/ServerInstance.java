@@ -453,7 +453,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         synchronized (this) {
             tmpTargets = targets;
         }
-        if (tmpTargets == null) {
+        if (tmpTargets == null || tmpTargets.size() < 1) {
             Target[] targs = null;
             StartServer startServer = getStartServer();
             try {

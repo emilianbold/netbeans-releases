@@ -240,6 +240,14 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 }
             }
         });
+        // fail, if the server is waiting for a profiler...
+        if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
+                pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
+                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorProfiledServer"), StateType.FAILED));  //NOI18N
+                cmd = CMD_NONE;
+                pes.clearProgressListener();
+                return this; //we failed to start the server.
+        }
         resetProfiler();
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                 ct, "",
@@ -823,14 +831,22 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         }else{
             debugInfoMap.remove(sunDm.getHost()+sunDm.getPort());            
         }
-        
+
+        // fail, if the server is waiting for a profiler...
+        if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
+                pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
+                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorProfiledServer"), StateType.FAILED));  //NOI18N
+                cmd = CMD_NONE;
+                pes.clearProgressListener();
+                return this; //we failed to start the server.
+        }
         if (settings!=null){
             if (!applySettingsToDomain(settings)) {
                 // we need to fail here, now.
                 Asenv asenvContent = new Asenv(sunDm.getPlatformRoot());
                 String currentJdkRoot = asenvContent.get(Asenv.AS_JAVA);
                 pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
-                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingProfiledServer",new Object[] {currentJdkRoot, "--"} ), StateType.FAILED));  //NOI18N
+                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingProfiledServer",currentJdkRoot ), StateType.FAILED));  //NOI18N
                 cmd = CMD_NONE;
                 pes.clearProgressListener();
                 Logger.getLogger(StartSunServer.class.getName()).log(Level.SEVERE,"Applying profiler changes");

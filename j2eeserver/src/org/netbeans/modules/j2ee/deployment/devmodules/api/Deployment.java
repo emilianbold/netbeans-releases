@@ -99,12 +99,15 @@ public final class Deployment {
             
             // Currently it is not possible to select target to which modules will 
             // be deployed. Lets use the first one.
-            Target target = serverInstance.getTargets()[0].getTarget();
-            Set<Datasource> moduleDatasources = jmp.getModuleDatasources();
-            if (moduleDatasources.size() > 0 && jdbcDriverDeployer != null
-                    && jdbcDriverDeployer.supportsDeployJDBCDrivers(target)) {
-                ProgressObject po = jdbcDriverDeployer.deployJDBCDrivers(target, moduleDatasources);
-                ProgressObjectUtil.trackProgressObject(progress, po, Long.MAX_VALUE);
+            ServerTarget targets[] = serverInstance.getTargets();
+            if (targets.length > 0) {
+                Target target = targets[0].getTarget();
+                Set<Datasource> moduleDatasources = jmp.getModuleDatasources();
+                if (moduleDatasources.size() > 0 && jdbcDriverDeployer != null
+                        && jdbcDriverDeployer.supportsDeployJDBCDrivers(target)) {
+                    ProgressObject po = jdbcDriverDeployer.deployJDBCDrivers(target, moduleDatasources);
+                    ProgressObjectUtil.trackProgressObject(progress, po, Long.MAX_VALUE);
+                }
             }
             
             boolean serverReady = false;
