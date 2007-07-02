@@ -5,7 +5,7 @@
 <toc version="2.0">
 	<tocitem text="Web Application Development">
 		<tocitem text="About Web Applications">
-			<tocitem text="Visual Web Development" />
+			<tocitem text="Visual Web Development" target="projrave_intro_creator" />
 			<tocitem text="About Web Applications" target="about_webapps" />
 			<tocitem text="About Visual Web Applications" target="projrave_design_web_app_concepts" />
 			<tocitem text="Introducing Visual Web Development" target="projrave_intro_creator" />
@@ -17,7 +17,7 @@
 		</tocitem>
 		<tocitem text="Creating and Editing Web Applications">
 			<tocitem text="About Visual Web Projects" target="projrave_projects_aboutprojects" />
-			<tocitem text="Starting With Visual Web Projects" />
+			<tocitem text="Starting With Visual Web Projects" target="projrave_general_process" />
 			<tocitem text="Working With Visual Web Projects" target="projrave_projects_project_process" />
 			<tocitem text="Creating Web Applications">
 				<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
