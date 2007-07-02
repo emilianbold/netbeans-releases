@@ -70,6 +70,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -208,9 +209,10 @@ public class SourceAnalyser {
         private final boolean signatureFiles;
         private final List<? super String> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
+        private final Set<String> imports;
         private State state;        
         private Element enclosingElement = null;
-        private Set<String> rsList;
+        private Set<String> rsList;        
         
         
         
@@ -220,6 +222,7 @@ public class SourceAnalyser {
             assert manager != null;
             assert sibling != null;
             this.activeClass = new Stack<String> ();
+            this.imports = new HashSet<String> ();
             this.jt = jt;
             this.errorName = Name.Table.instance(jt.getContext()).error;
             this.state = State.OTHER;
@@ -230,7 +233,7 @@ public class SourceAnalyser {
             this.sibling = sibling;
             this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);            
             this.topLevels = null;
-            this.newTypes = newTypes;
+            this.newTypes = newTypes;            
         }
                 
         protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, List<? super String> topLevels) {
@@ -238,6 +241,7 @@ public class SourceAnalyser {
             assert cu != null;           
             
             this.activeClass = new Stack<String> ();
+            this.imports = new HashSet<String> ();
             this.jt = jt;
             this.errorName = Name.Table.instance(jt.getContext()).error;
             this.state = State.OTHER;
@@ -261,7 +265,24 @@ public class SourceAnalyser {
             }
             super.scan (node,p);
             return null;
-        }        
+        }
+
+        @Override
+        public Void visitCompilationUnit(CompilationUnitTree node, Map<String, Map<String, Set<UsageType>>> p) {
+            super.visitCompilationUnit(node, p);
+            if (!imports.isEmpty()) {
+                //Empty file
+                String className = getResourceName(node);
+                if (className != null) {
+                    final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);                            
+                    for (String s : imports) {
+                        addUsage(classNameType, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    }
+                    imports.clear();
+                }
+            }
+            return null;
+        }
         
         public @Override Void visitMemberSelect(final MemberSelectTree node,  final Map<String,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             handleVisitIdentSelect (((JCTree.JCFieldAccess)node).sym, p);
@@ -312,6 +333,10 @@ public class SourceAnalyser {
                         }                        
                     }
                 }
+            }
+            else if (sym != null && (sym.getKind().isClass() || sym.getKind().isInterface())) {
+                    final String className = encodeClassName(sym);
+                    this.imports.add(className);
             }
         }
         
@@ -377,29 +402,18 @@ public class SourceAnalyser {
                         errorIgnorSubtree = false;
                     }
                     else {
-                        if (this.cu instanceof JCTree.JCCompilationUnit) {
-                            JavaFileObject jfo = ((JCTree.JCCompilationUnit)this.cu).sourcefile;
-                            if (jfo != null) {
-                                URI uri = jfo.toUri();
-                                if (uri != null && uri.isAbsolute()) {
-                                    try {
-                                        FileObject fo = URLMapper.findFileObject(uri.toURL());
-                                        if (fo != null) {
-                                            ClassPath cp = ClassPath.getClassPath(fo,ClassPath.SOURCE);
-                                            if (cp != null) {
-                                                className = cp.getResourceName(fo,'.',false);
-                                            }
-                                        }
-                                    } catch (MalformedURLException e) {
-                                        Exceptions.printStackTrace(e);
-                                    }
-                                }
-                            }
-                        }                   
+                        className = getResourceName (this.cu);                   
                         if (className != null) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
-                            if (topLevels != null && activeClass.isEmpty()) {
-                                topLevels.add (className);
+                            
+                            if (activeClass.isEmpty()) {
+                                if (topLevels != null) {
+                                    topLevels.add (className);
+                                }
+                                for (String s : imports) {
+                                    addUsage(classNameType, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                                }
+                                imports.clear();
                             }
                             activeClass.push (classNameType);
                             errorIgnorSubtree = false;
@@ -424,8 +438,14 @@ public class SourceAnalyser {
                     if (signatureFiles && activeClass.isEmpty() && !className.equals(sourceName)) {
                         rsList = new HashSet<String>();
                     }
-                    if (topLevels != null && activeClass.isEmpty()) {
-                        topLevels.add (className);
+                    if (activeClass.isEmpty()) {
+                        if (topLevels != null) {
+                            topLevels.add (className);
+                        }
+                        for (String s : imports) {
+                            addUsage(classNameType, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
+                        imports.clear();
                     }
                     activeClass.push (classNameType);                    
                     errorIgnorSubtree = false;
@@ -533,6 +553,29 @@ public class SourceAnalyser {
                 toEncode = (TypeElement) sym;
             }
             return toEncode == null ? null : ClassFileUtil.encodeClassName(toEncode);
+        }
+        
+        private static String getResourceName (final CompilationUnitTree cu) {
+            if (cu instanceof JCTree.JCCompilationUnit) {
+                JavaFileObject jfo = ((JCTree.JCCompilationUnit)cu).sourcefile;
+                if (jfo != null) {
+                    URI uri = jfo.toUri();
+                    if (uri != null && uri.isAbsolute()) {
+                        try {
+                            FileObject fo = URLMapper.findFileObject(uri.toURL());
+                            if (fo != null) {
+                                ClassPath cp = ClassPath.getClassPath(fo,ClassPath.SOURCE);
+                                if (cp != null) {
+                                    return cp.getResourceName(fo,'.',false);
+                                }
+                            }
+                        } catch (MalformedURLException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }        
     
