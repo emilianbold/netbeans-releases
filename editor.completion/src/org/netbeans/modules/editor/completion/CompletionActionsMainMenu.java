@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.text.JTextComponent;
@@ -82,6 +83,12 @@ public abstract class CompletionActionsMainMenu extends MainMenuAction implement
     /** Sets the state of JMenuItem*/
     protected void setMenu(){
         
+        ActionMap am = getContextActionMap();
+        Action action = null;
+        if (am != null) {
+            action = am.get(getActionName());
+        }
+        
         JMenuItem presenter = getMenuPresenter();
         Action presenterAction = presenter.getAction();
         if (presenterAction == null){
@@ -102,8 +109,7 @@ public abstract class CompletionActionsMainMenu extends MainMenuAction implement
             menuInitialized = true;
         }
 
-        presenter.setEnabled(true);
-        // addAccelerators(this, presenter, comp);
+        presenter.setEnabled(action != null);
         JTextComponent comp = Utilities.getFocusedComponent();
         if (comp != null && comp instanceof JEditorPane){
             addAccelerators(this, presenter, comp);
@@ -137,7 +143,6 @@ public abstract class CompletionActionsMainMenu extends MainMenuAction implement
     
     public static final class DocumentationShow extends CompletionActionsMainMenu {
 
-
         protected String getMenuItemText() {
             return NbBundle.getBundle(CompletionActionsMainMenu.class).getString(ExtKit.documentationShowAction + "-main_menu_item"); //NOI18N
         }
@@ -149,10 +154,23 @@ public abstract class CompletionActionsMainMenu extends MainMenuAction implement
         public void actionPerformed(ActionEvent e) {
             Completion.get().showDocumentation();
         }
-        
-        
+                
     }
-
     
+    public static final class ToolTipShow extends CompletionActionsMainMenu {
+
+        protected String getMenuItemText() {
+            return NbBundle.getBundle(CompletionActionsMainMenu.class).getString(ExtKit.completionTooltipShowAction + "-main_menu_item"); //NOI18N
+        }
+        
+        protected String getActionName() {
+            return ExtKit.completionTooltipShowAction;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Completion.get().showToolTip();
+        }
+                
+    }
     
 }

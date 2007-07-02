@@ -26,6 +26,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="2100"/>
             </file>
 
+            <file name="org-netbeans-modules-editor-completion-CompletionActionsMainMenu$ToolTipShow.instance">
+                <attr name="position" intvalue="2500"/>
+            </file>
+            
             <file name="org-netbeans-modules-editor-completion-CompletionActionsMainMenu$DocumentationShow.instance">
                 <attr name="position" intvalue="2700"/>
             </file>
