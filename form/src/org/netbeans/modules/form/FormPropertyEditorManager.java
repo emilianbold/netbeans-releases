@@ -121,14 +121,11 @@ final public class FormPropertyEditorManager {
                     String name = path + "." + typeName + "Editor"; // NOI18N
                     try {
                         editorClass = FormUtils.loadClass(name, targetForm);
-                        editorList.add((PropertyEditor)editorClass.newInstance());
-                        break;
-                    }
-                    catch (InstantiationException ex) {
-                        log(ex, "Error instantiating property editor: "+editorClass.getName()); // NOI18N
-                    }
-                    catch (InstantiationError ex) {
-                        log(ex, "Error instantiating property editor: "+editorClass.getName()); // NOI18N
+                        if (createEditorInstance(editorClass, editorList)) {
+                            break;
+                        } else { // failed instantiating
+                            editorClass = null;
+                        }
                     }
                     catch (Exception e) {} // silently ignore
                     catch (LinkageError e) {} // silently ignore
@@ -229,14 +226,16 @@ final public class FormPropertyEditorManager {
                 && !Number.class.isAssignableFrom(type);
     }
 
-    private static void createEditorInstance(Class cls, List<PropertyEditor> list) {
+    private static boolean createEditorInstance(Class cls, List<PropertyEditor> list) {
         try {
             list.add((PropertyEditor)cls.newInstance());
+            return true;
         } catch (Exception ex) {
             log(ex, "Error instantiating property editor: "+cls.getName()); // NOI18N
         } catch (LinkageError ex) {
             log(ex, "Error instantiating property editor: "+cls.getName()); // NOI18N
         }
+        return false;
     }
 
     private static Logger logger;
