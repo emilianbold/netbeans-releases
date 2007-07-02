@@ -11,6 +11,7 @@ package org.netbeans.modules.xml.refactoring;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +34,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.xml.refactoring.impl.UndoRedoProgress;
@@ -56,6 +58,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -329,6 +332,104 @@ public class XMLRefactoringTransaction implements Transaction {
                  this.movedTargetModelSource = Utilities.getModelSource(referencedFO, true); 
                  refreshCatalogModel(referencedFO);
                }
+           } else if (request instanceof SingleCopyRefactoring ){
+               FileObject targetFolder = SharedUtils.getOrCreateFolder(((SingleCopyRefactoring)request).getTarget().lookup(URL.class));
+               
+               String newName = ((SingleCopyRefactoring)request).getNewName();
+               FileObject newFobj = SharedUtils.copyFile(referencedFO, targetFolder, newName);
+               if(newFobj != null){
+                   this.movedTargetModelSource = Utilities.getModelSource(newFobj, true);
+                   //get the model from the plugin since the domain specific factory will create the model
+                   Model newModel =null;
+                   for(XMLRefactoringPlugin plugin:plugins){
+                        newModel = plugin.getModel(movedTargetModelSource);
+                        if(newModel != null){
+                            break;
+                        }
+                   }  
+                   if(newModel == null)
+                       return;
+                   
+                   //get the file objects from old model
+                   Collection<Component> refs = new ArrayList<Component>();
+                   for(XMLRefactoringPlugin plugin:plugins){
+                       refs.addAll(plugin.getExternalReferences(targetModel));
+                   }
+               
+                   if(refs.size() > 0 ){
+                       boolean startTransaction = ! newModel.isIntransaction();
+                       
+                       //map schemaLocation to components in the new copied model
+                       Collection<Component> newRefs = new ArrayList<Component>();
+                       for(XMLRefactoringPlugin plugin:plugins){
+                               newRefs.addAll(plugin.getExternalReferences(newModel));
+                       }
+                       
+                       Map<String, Component> map = new HashMap<String, Component>();
+                       for(Component r: newRefs){
+                            for(XMLRefactoringPlugin plugin:plugins){
+                                  String location = plugin.getModelReference(r);
+                                  if(location != null){
+                                      map.put(location, r);
+                                      break;
+                                  }
+                           }
+                       }
+                  
+                       CatalogModel cat = (CatalogModel) (targetModel).getModelSource().getLookup().lookup(CatalogModel.class);
+                       if (startTransaction) {
+                           // ((Model)target).startTransaction();
+                            newModel.startTransaction();
+                       }
+                       for(Component ref: refs){
+                          try {
+                              boolean flag = true;
+                                  for(XMLRefactoringPlugin plugin:plugins){
+                                  String location = plugin.getModelReference(ref);
+                                  if(location != null){
+                                     URI uri = new URI(location);
+                                     ModelSource source = null;
+                                     FileObject fobj = null;
+                                     try {
+                                         source = cat.getModelSource(uri);
+                                         fobj = source.getLookup().lookup(FileObject.class);
+                                     } catch (CatalogModelException e){
+                                         //this means the model source could be in the same project 
+                                         fobj = SharedUtils.getFileObject(targetModel, uri);
+                                         //if we have a fobj, we can now have two cases
+                                         //the refactoring target model is being moved within the same project
+                                         //or the target model is being moved to a different project
+                                        flag = SharedUtils.inSameProject(targetFolder, fobj);
+                                     
+                                    }
+                                   if(fobj == null)
+                                      break;
+                                   Component comp = map.get(location);   
+                                   if(flag){
+                                       String newLocation = SharedUtils.getReferenceURI(targetFolder, fobj).toString();
+                                       if(comp != null)
+                                           plugin.setModelReference(comp, newLocation);
+                                       
+                                   }else {
+                                       String newLocation = fobj.getURL().toString();
+                                       if(comp != null)
+                                           plugin.setModelReference(comp, newLocation);
+                                   }
+                                   break;
+                           }
+                        }
+                      }catch (URISyntaxException e) {
+                          //do nothing. dont update this model reference
+                      }
+                   }
+                                
+                  if (startTransaction && (newModel).isIntransaction()) {
+                       newModel.endTransaction();
+                 }
+                 
+               }
+               RefactoringUtil.saveTargetFile(newModel, all);
+              }
            }
    
        }
@@ -387,7 +488,10 @@ public class XMLRefactoringTransaction implements Transaction {
             fo = SharedUtils.renameFile(fo, oldName);
             refreshCatalogModel(fo);
         } else if(request instanceof MoveRefactoring) {
-            FileObject origFolder = SharedUtils.getOrCreateFolder(((MoveRefactoring)request).getContext().lookup(URL.class));
+            URL url = ((MoveRefactoring)request).getContext().lookup(URL.class);
+            if(url == null)
+                throw new IOException("Unable to undo refactoring. Cannot retrieve original package location");
+            FileObject origFolder = SharedUtils.getOrCreateFolder(url);
             //to undo the move, do the following
             // first get the model for the new file
             // update the external references, if any, in the new model
@@ -433,6 +537,9 @@ public class XMLRefactoringTransaction implements Transaction {
                }
             } else
                 throw new IOException("Unable to undo Move Refactoring");
+        } else if(request instanceof SingleCopyRefactoring){
+            FileObject fobj = this.movedTargetModelSource.getLookup().lookup(FileObject.class);
+            fobj.delete();
         }
         
     }
@@ -581,44 +688,57 @@ public class XMLRefactoringTransaction implements Transaction {
                }
                
                if(refs.size() > 0 ){
-                 boolean startTransaction = ! (model).isIntransaction();
-                 try {
+                   boolean startTransaction = ! (model).isIntransaction();
                    CatalogModel cat = (CatalogModel) (model).getModelSource().getLookup().lookup(CatalogModel.class);
                    if (startTransaction) {
-                      // ((Model)target).startTransaction();
+                       // ((Model)target).startTransaction();
                        model.startTransaction();
                    }
                    for(Component ref: refs){
-                       for(XMLRefactoringPlugin plugin:plugins){
-                           String location = plugin.getModelReference(ref);
-                           if(location != null){
-                               URI uri = new URI(location);
-                               ModelSource source = null;
-                               FileObject fobj = null;
-                               try {
-                                   source = cat.getModelSource(uri);
-                                   fobj = source.getLookup().lookup(FileObject.class);
-                               } catch (CatalogModelException e){
-                                   //this means the model source could be in the same project 
-                                   fobj = SharedUtils.getFileObject(model, uri);
-                               }
+                      try {
+                          boolean flag = true;
+                          for(XMLRefactoringPlugin plugin:plugins){
+                             String location = plugin.getModelReference(ref);
+                             if(location != null){
+                                 URI uri = new URI(location);
+                                 ModelSource source = null;
+                                 FileObject fobj = null;
+                                 try {
+                                     source = cat.getModelSource(uri);
+                                     fobj = source.getLookup().lookup(FileObject.class);
+                                 } catch (CatalogModelException e){
+                                     //this means the model source could be in the same project 
+                                     fobj = SharedUtils.getFileObject(model, uri);
+                                     //if we have a fobj, we can now have two cases
+                                     //the refactoring target model is being moved within the same project
+                                     //or the target model is being moved to a different project
+                                     flag = SharedUtils.inSameProject(targetFolder, fobj);
+                                     
+                                 }
                                
                                if(fobj == null)
                                   break;
-                               String newLocation = SharedUtils.getReferenceURI(targetFolder, fobj).toString();
-                               plugin.setModelReference(ref, newLocation);
+                               if(flag){
+                                   String newLocation = SharedUtils.getReferenceURI(targetFolder, fobj).toString();
+                                   plugin.setModelReference(ref, newLocation);
+                                   
+                               }else {
+                                   String newLocation = fobj.getURL().toString();
+                                   plugin.setModelReference(ref, newLocation);
+                               }
                                break;
                            }
-                       }
+                        }
+                      }catch (URISyntaxException e) {
+                          //do nothing. dont update this model reference
+                      }
                    }
-                 } catch(Exception e){
-                     e.printStackTrace();
                  
-                 }finally {
+                
                      if (startTransaction && (model).isIntransaction()) {
                          model.endTransaction();
                      }
-                 }
+                 
                }
 }
     
@@ -631,7 +751,7 @@ public class XMLRefactoringTransaction implements Transaction {
     }
     
     public <T extends AbstractRefactoring> boolean canChange(Class<T> changeType, Referenceable target) {
-        if ( (changeType == RenameRefactoring.class || changeType == MoveRefactoring.class) && target instanceof Model) {
+        if ( (changeType == RenameRefactoring.class || changeType == MoveRefactoring.class || changeType == SingleCopyRefactoring.class) && target instanceof Model) {
             return true;
         }
         return false;
@@ -643,7 +763,7 @@ public class XMLRefactoringTransaction implements Transaction {
      * Implementation should quietly ignore unsupported refactoring type.
      */
     public void doChange(AbstractRefactoring request) throws IOException {
-        if ((request instanceof RenameRefactoring) || (request instanceof MoveRefactoring) ) {
+        if ((request instanceof RenameRefactoring) || (request instanceof MoveRefactoring) || (request instanceof SingleCopyRefactoring) ) {
             refactorFile();
             FileRenameUndoable ue = new FileRenameUndoable(request);
             fireUndoEvent(ue);

@@ -23,6 +23,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -43,6 +44,8 @@ public class WSDLRefactoringsFactory implements RefactoringPluginFactory {
             return new WSDLSafeDeleteRefactoringPlugin( (SafeDeleteRefactoring)refactoring);
         } else if(refactoring instanceof MoveRefactoring) {
             return new WSDLMoveRefactoringPlugin( (MoveRefactoring)refactoring);
+        } else if(refactoring instanceof SingleCopyRefactoring) {
+            return new WSDLCopyRefactoringPlugin( (SingleCopyRefactoring)refactoring);
         }
         return null;
     }

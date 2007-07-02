@@ -71,6 +71,7 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -203,6 +204,14 @@ public class SharedUtils {
         return null;
         
         
+    }
+    
+    public static FileObject copyFile(FileObject source, FileObject targetFolder, String newName )throws IOException {
+        if(source != null)
+            return FileUtil.copyFile(source, targetFolder, newName);
+        
+        return null;
+       
     }
     
     
@@ -675,6 +684,11 @@ public class SharedUtils {
         String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
             relPathToSrcGroup.concat("/");
         if(project!=targetProject) {
+            
+            if(!getProjectReferences(project).contains(targetProject)) {
+                return target.getURL().toURI();
+            }
+                
             FileObject folder = getSourceFolder(targetProject,target);
             if (folder == null) {
                 throw new IllegalArgumentException(target.getPath()+" is not in target project source"); //NOI18N
@@ -789,5 +803,17 @@ public class SharedUtils {
         }
         return null;
      }
+    
+    public static boolean inSameProject(FileObject source, FileObject target)  {
+        Project targetProject = FileOwnerQuery.getOwner(target);
+        Project project = FileOwnerQuery.getOwner(source);
+        return (targetProject == project);
+    }
+    
+    public static Set getProjectReferences(Project project) {
+        SubprojectProvider provider = (SubprojectProvider)project.getLookup().
+                lookup(SubprojectProvider.class);
+        return provider.getSubprojects();
+    }
 
    }

@@ -48,17 +48,14 @@ import org.netbeans.modules.xml.refactoring.ui.views.WhereUsedView;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import prefuse.data.Graph;
 import org.openide.util.Utilities;
 
-public class MoveRefactoringUI implements org.netbeans.modules.refactoring.spi.ui.RefactoringUI, RefactoringCustomUI {
+public class MoveRefactoringUI implements org.netbeans.modules.refactoring.spi.ui.RefactoringUI, RefactoringCustomUI{
     
     private MoveFilePanel panel;
     private MoveRefactoring refactoring;
@@ -115,7 +112,7 @@ public class MoveRefactoringUI implements org.netbeans.modules.refactoring.spi.u
         if (panel == null) {
             String pkgName = targetFile.getParent().getName();
             panel = new MoveFilePanel (parent, pkgName, 
-                    NbBundle.getMessage(MoveFilePanel.class, "LBL_FileMove"),
+                    new MessageFormat(NbBundle.getMessage(MoveFilePanel.class, "LBL_FileMove")).format(new Object[] {oldFileName}),
                     targetFile);
                 
             panel.setCombosEnabled(!disable);
