@@ -199,8 +199,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                     
                     if(cachedPanel != null || model != null) {
                         
-                        try {
-                            SwingUtilities.invokeAndWait(new Runnable() {
+                            SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
                                     showWaitPanel();
                                     JPanel panel = null;
@@ -241,11 +240,6 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                                     repaint();
                                 }
                             });
-                        }catch(InterruptedException ie) {
-                            ErrorManager.getDefault().notify(ErrorManager.WARNING, ie);
-                        }catch(InvocationTargetException ite) {
-                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ite);
-                        }
                     } else {
                         //model is null => show message
                         showCannotNavigate();
