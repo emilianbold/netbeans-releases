@@ -400,11 +400,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     private Shortcut getStartMenuShortcut(final File directory) {
-        return getShortcut(
-                getString("CL.start.menu.shortcut.name"), // NOI18N
-                getString("CL.start.menu.shortcut.description"), // NOI18N
-                getString("CL.start.menu.shortcut.path"), // NOI18N
-                directory);
+        if (SystemUtils.isMacOS()) {
+            return getShortcut(
+                    getString("CL.start.menu.shortcut.name.macosx"), // NOI18N
+                    getString("CL.start.menu.shortcut.description"), // NOI18N
+                    getString("CL.start.menu.shortcut.path"), // NOI18N
+                    directory);
+        } else {
+            return getShortcut(
+                    getString("CL.start.menu.shortcut.name"), // NOI18N
+                    getString("CL.start.menu.shortcut.description"), // NOI18N
+                    getString("CL.start.menu.shortcut.path"), // NOI18N
+                    directory);
+        }
     }
     
     private Shortcut getShortcut(
@@ -441,6 +449,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         return shortcut;
     }
+    
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
