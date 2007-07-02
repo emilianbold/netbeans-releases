@@ -43,7 +43,6 @@ public final class ClassCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#Class"); // NOI18N
 
     public static final String PROP_INSTANCE_NAME = "instanceName"; // NOI18N
-
     public static final String PROP_LAZY_INIT = "lazyInit";  // NOI18N
 
     static {
