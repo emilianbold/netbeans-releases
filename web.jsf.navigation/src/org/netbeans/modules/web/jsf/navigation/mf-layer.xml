@@ -45,8 +45,9 @@
                 <file name="NewProjectFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
                     <attr name="position" intvalue="3"/>
-                   -->
+
                 </file>
+                -->
             </folder>
             <!--<file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>-->
         </folder>
