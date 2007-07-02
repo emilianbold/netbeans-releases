@@ -72,6 +72,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         
         docType = type;
         dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD( docType, null );
+        
+        if(dtd == null) {
+            //use default for unknown doctypes
+            dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD( FALLBACK_DOCTYPE, null );
+        }
         return dtd;
     }
     
