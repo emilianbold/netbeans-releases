@@ -49,6 +49,7 @@ import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
@@ -93,8 +94,8 @@ public final class LoginScreenCD extends ComponentDescriptor {
             new PropertyDescriptor(PROP_PASSWORD, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_USE_LOGIN_BUTTON, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_LOGIN_TITLE, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0xCCCCCC), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0x00), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
         );
     }
     
@@ -104,7 +105,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
                    .addProperty("Username", PropertyEditorString.createInstance(), PROP_USERNAME)
                    .addProperty("Password", PropertyEditorString.createInstance(), PROP_PASSWORD)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Use Login Button", Boolean.class, PROP_USE_LOGIN_BUTTON)
+                   .addProperty("Use Login Button", PropertyEditorBooleanUC.createInstance(false), PROP_USE_LOGIN_BUTTON) //NOI18N
                    .addProperty("Login Title", PropertyEditorString.createInstance(), PROP_LOGIN_TITLE)
                    .addProperty("Background Color", PropertyEditorNumber.createIntegerInstance(), PROP_BGK_COLOR)
                    .addProperty("Foreground Color", PropertyEditorNumber.createIntegerInstance(), PROP_FRG_COLOR);

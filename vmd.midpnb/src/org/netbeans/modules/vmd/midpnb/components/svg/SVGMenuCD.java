@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementPinOrderPresenter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 /**
  *
@@ -78,7 +79,8 @@ public class SVGMenuCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty("Index Based Switch", Boolean.class, PROP_INDEX_BASED_SWITCH); //NOI18N
+                .addProperty("Index Based Switch", PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); //NOI18N   
+        
     }
 
     private static Presenter createSetterPresenter () {

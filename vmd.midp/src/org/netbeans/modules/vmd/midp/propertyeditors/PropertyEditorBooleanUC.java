@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.awt.event.ItemEvent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
@@ -26,12 +27,12 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUser
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.util.NbBundle;
-
 import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.*;
@@ -39,50 +40,63 @@ import javax.swing.*;
 /**
  *
  * @author Anton Chechel
- * @author Karol Harezlak
  */
 public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements PropertyEditorElement {
-    
+
     private static final PropertyValue TRUE_VALUE = MidpTypes.createBooleanValue(true);
     private static final PropertyValue FALSE_VALUE = MidpTypes.createBooleanValue(false);
     private static final String TRUE_TEXT = String.valueOf(MidpTypes.getBoolean(TRUE_VALUE));
     private static final String FALSE_TEXT = String.valueOf(MidpTypes.getBoolean(FALSE_VALUE));
-    
+
     private final String[] tags = {TRUE_TEXT, FALSE_TEXT};
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    
     private BooleanInplaceEditor inplaceEditor;
-    
-    private PropertyEditorBooleanUC() {
-        super();
+    private boolean supportsCustomEditor;
+
+    private PropertyEditorBooleanUC(boolean supportsCustomEditor) {
+        this.supportsCustomEditor = supportsCustomEditor;
         initComponents();
-        
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
-        inplaceEditor = new BooleanInplaceEditor(this);
+    }
+
+    public static PropertyEditorBooleanUC createInstance(boolean supportsCustomEditor) {
+        return new PropertyEditorBooleanUC(supportsCustomEditor);
     }
 
     public static PropertyEditorBooleanUC createInstance() {
-        return new PropertyEditorBooleanUC();
+        return new PropertyEditorBooleanUC(true);
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN")); // NOI18N
         customEditor = new CustomEditor();
     }
-    
+
     @Override
     public InplaceEditor getInplaceEditor() {
+        if (inplaceEditor == null) {
+            inplaceEditor = new BooleanInplaceEditor(this, new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    if (!(inplaceEditor.getComponent() instanceof JCheckBox))
+                        return;
+                    JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
+                    PropertyValue value = MidpTypes.createBooleanValue(checkBox.isSelected());
+                    PropertyEditorBooleanUC.this.setValue(value);
+                    PropertyEditorBooleanUC.this.invokeSaveToModel();
+                }
+            });
+        }
         return inplaceEditor;
     }
-    
+
     @Override
     public void paintValue(Graphics gfx, Rectangle box) {
         JComponent component = inplaceEditor.getComponent();
-        component.setSize(box.width,box.height);
+        component.setSize(box.width, box.height);
         component.doLayout();
         component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Graphics g = gfx.create(box.x, box.y, box.width, box.height);
@@ -91,10 +105,18 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         g.dispose();
     }
 
+
+    public boolean supportsCustomEditor() {
+        if (!supportsCustomEditor) {
+            return false;
+        }
+        return super.supportsCustomEditor();
+    }
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
@@ -104,19 +126,19 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         PropertyValue propertyValue = (PropertyValue) getValue();
         return propertyValue.getKind() == PropertyValue.Kind.VALUE;
     }
-    
+
     public boolean isVerticallyResizable() {
         return true;
     }
-    
+
     public boolean isInitiallySelected() {
         return false;
     }
-    
+
     public Boolean canEditAsText() {
-       return super.canEditAsText();
+        return super.canEditAsText();
     }
-    
+
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
@@ -125,48 +147,49 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
         return MidpTypes.getBoolean((PropertyValue) super.getValue()) ? TRUE_TEXT : FALSE_TEXT;
     }
-    
+
     public void setText(String text) {
         saveValue(text);
     }
-    
+
     public String getText() {
         return null;
     }
-    
+
     public void setPropertyValue(PropertyValue value) {
         customEditor.setValue(value);
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         super.setValue(FALSE_TEXT.equals(text) ? FALSE_VALUE : TRUE_VALUE);
     }
-    
+
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
-    
+
     public boolean canWrite() {
         return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener {
+
         private JComboBox combobox;
-        
+
         public CustomEditor() {
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox(tags);
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
         }
-        
+
         public void setValue(PropertyValue value) {
             if (value == null || value.getPrimitiveValue() == null || !MidpTypes.getBoolean(value)) {
                 combobox.setSelectedItem(FALSE_TEXT);
@@ -174,15 +197,13 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
                 combobox.setSelectedItem(TRUE_TEXT);
             }
         }
-        
+
         public String getText() {
             return (String) combobox.getSelectedItem();
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             radioButton.setSelected(true);
         }
     }
-    
-    
 }

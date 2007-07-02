@@ -31,15 +31,12 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
  */
 public final class PrimitivePropertySupport extends DefaultPropertySupport {
     
-    private DesignPropertyDescriptor designerPropertyDescriptor;
+    //private DesignPropertyDescriptor designerPropertyDescriptor;
     private String displayName;
     private Object value;
     
     public PrimitivePropertySupport(DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor, type);
-        
-        this.designerPropertyDescriptor = designerPropertyDescriptor;
-        update();
     }
     
     public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -50,57 +47,50 @@ public final class PrimitivePropertySupport extends DefaultPropertySupport {
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
             DesignPropertyEditor propertyEditor = (DesignPropertyEditor) getPropertyEditor();
             if (propertyEditor.canEditAsText() != null)
-                setValue("canEditAsText", propertyEditor.canEditAsText());
+                setValue("canEditAsText", propertyEditor.canEditAsText()); //NOI18N
         }
-        String propertyName = designerPropertyDescriptor.getPropertyNames().iterator().next();
+        String propertyName = getDesignPropertyDescriptor().getPropertyNames().iterator().next();
         final GroupValue tempValue = new GroupValue(Collections.singletonList(propertyName));
         tempValue.putValue(propertyName, value);
         this.value = value;
-        if (designerPropertyDescriptor.getComponent() == null)
-            throw new IllegalStateException("No DesignComponent for designerPropertyDescriptor : " + designerPropertyDescriptor.getPropertyDisplayName()); //NOI18N
+        if (getDesignPropertyDescriptor().getComponent() == null)
+            throw new IllegalStateException("No DesignComponent for getDesignerPropertyDescriptor() : " + getDesignPropertyDescriptor().getPropertyDisplayName()); //NOI18N
         if (getPropertyEditor() instanceof DesignPropertyEditor)
-            SaveToModelSupport.saveToModel(designerPropertyDescriptor.getComponent(), tempValue, (DesignPropertyEditor) getPropertyEditor());
+            SaveToModelSupport.saveToModel(getDesignPropertyDescriptor().getComponent(), tempValue, (DesignPropertyEditor) getPropertyEditor());
         else
-            SaveToModelSupport.saveToModel(designerPropertyDescriptor.getComponent(), tempValue, null);
+            SaveToModelSupport.saveToModel(getDesignPropertyDescriptor().getComponent(), tempValue, null);
         
     }
     
     public String getHtmlDisplayName() {
-        if (designerPropertyDescriptor.getPropertyNames().isEmpty())
-            return designerPropertyDescriptor.getPropertyDisplayName();
-        designerPropertyDescriptor.getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+        if (getDesignPropertyDescriptor().getPropertyNames().isEmpty())
+            return getDesignPropertyDescriptor().getPropertyDisplayName();
+        getDesignPropertyDescriptor().getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (designerPropertyDescriptor.getComponent().isDefaultValue(designerPropertyDescriptor.getPropertyNames().iterator().next()))
-                    displayName = designerPropertyDescriptor.getPropertyDisplayName();
+                if (getDesignPropertyDescriptor().getComponent().isDefaultValue(getDesignPropertyDescriptor().getPropertyNames().iterator().next()))
+                    displayName = getDesignPropertyDescriptor().getPropertyDisplayName();
                 else
-                    displayName = "<b>" + designerPropertyDescriptor.getPropertyDisplayName()+"</b>";  // NOI18N
+                    displayName = "<b>" + getDesignPropertyDescriptor().getPropertyDisplayName()+"</b>";  // NOI18N
             }
         });
         
         return displayName;
     }
 
-    public void update() {
-        if (designerPropertyDescriptor.getPropertyNames() != null &&! designerPropertyDescriptor.getPropertyNames().isEmpty()) {
-            if (designerPropertyDescriptor.getPropertyEditorType().equals(Boolean.class) ||
-                    designerPropertyDescriptor.getPropertyEditorType().equals(Integer.class)) {
-                this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next()).getPrimitiveValue();
-            } else
-                this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next());
-        }
-        
+    protected void update() {
+        if (getDesignPropertyDescriptor().getPropertyNames() != null &&! getDesignPropertyDescriptor().getPropertyNames().isEmpty())
+                this.value = readPropertyValue(getDesignPropertyDescriptor().getComponent(), getDesignPropertyDescriptor().getPropertyNames().iterator().next());
         if (getPropertyEditor() instanceof DesignPropertyEditor) {
-            ((DesignPropertyEditor)getPropertyEditor()).resolve(
-                    designerPropertyDescriptor.getComponent(),
-                    designerPropertyDescriptor.getPropertyNames(),
+            DesignPropertyEditor propertyEditor = (DesignPropertyEditor)getPropertyEditor();
+            propertyEditor.resolve(
+                    getDesignPropertyDescriptor().getComponent(),
+                    getDesignPropertyDescriptor().getPropertyNames(),
                     this.value,
                     this,
-                    ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
-                    designerPropertyDescriptor.getPropertyDisplayName()
-                    );
-        }
-        if (getPropertyEditor() instanceof DesignPropertyEditor) {
-            String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
+                    getDesignPropertyDescriptor().getPropertyDisplayName()
+            );
+            propertyEditor.resolveInplaceEditor(propertyEditor.getInplaceEditor());
+            String title = propertyEditor.getCustomEditorTitle();
             if ( title != null)
                 setValue(PROPERTY_CUSTOM_EDITOR_TITLE, title);
         }

@@ -38,6 +38,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.nodes.Node;
@@ -59,9 +60,11 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
     private WeakSet<DesignComponent> componentsToUndo;
     private WeakSet<InspectorFolderWrapper> foldersToUpdate;
     private WeakSet<DesignComponent> deletedComponentsCash;
+    private WeakSet<InspectorFolderWrapper> foldersToExtend;
     private boolean lock = true;
     
     InspectorWrapperTree(DesignDocument document) {
+        foldersToExtend = new WeakSet<InspectorFolderWrapper>();
         foldersToUpdate = new WeakSet<InspectorFolderWrapper>();
         componentsToAdd = new WeakSet<DesignComponent>();
         componentsToDelete = new WeakSet<DesignComponent>();
@@ -71,17 +74,17 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         rootFolderWrapper.resolveFolder(document);
     }
     
-    synchronized void buildTree(final Collection<DesignComponent> fullyAffected, final Collection<DesignComponent> createdComponents,final Collection<DesignComponent> affectedComponents) {
+    synchronized void buildTree(final DesignEvent event) {
         lock = true;
         document.get().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 if (rootFolderWrapper.getChildren() != null) {
-                    if (fullyAffected != null && !fullyAffected.isEmpty())
-                        updateFolderToUpdate(fullyAffected, rootFolderWrapper);
-                    updateChangedDescriptors(createdComponents, affectedComponents);
+                    if (event.getFullyAffectedComponents() != null && !event.getFullyAffectedComponents().isEmpty())
+                        updateFolderToUpdate(event.getFullyAffectedComponents(), rootFolderWrapper);
+                    updateChangedDescriptors(event.getCreatedComponents(), event.getFullyAffectedComponents());
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
                     updateTreeStructureView();
-                    InspectorPanel.getInstance().getUI(document.get()).expandNodes(foldersToUpdate);
+                    InspectorPanel.getInstance().getUI(document.get()).expandNodes(foldersToExtend);
                 } else {
                     updateChangedDescriptors(markAllComponentsAsToAdd(), null);
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
@@ -94,6 +97,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         });
         // cleaning up
         foldersToUpdate.clear();
+        foldersToExtend.clear();
         componentsToAdd.clear();
         componentsToDelete.clear();
         componentsToUndo.clear();
@@ -215,6 +219,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                         InspectorFolderWrapper wrapper = new InspectorFolderWrapper(document.get(), presenter.getFolder());
                         wrapperChildren.add(wrapper);
                         foldersToUpdate.add(parentWrapper);
+                        foldersToExtend.add(parentWrapper);
                     }
                 }
             }
@@ -231,6 +236,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                         InspectorFolderWrapper wrapper = new InspectorFolderWrapper(document.get(), presenter.getFolder());
                         wrapperChildren.add(wrapper);
                         foldersToUpdate.add(parentWrapper);
+                        foldersToExtend.add(parentWrapper);
                         deletedComponentsCash.remove(componentToUndo);
                     }
                 }
@@ -347,6 +353,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                     InspectorFolderWrapper wrapper = new InspectorFolderWrapper(document.get(), presenter.getFolder());
                     childrenWrapper.add(wrapper);
                     foldersToUpdate.add(parentWrapper);
+                    foldersToExtend.add(parentWrapper);
                 }
             }
         }

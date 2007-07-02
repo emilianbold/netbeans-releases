@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.midp.components.resources;
 
 import java.awt.datatransfer.Transferable;
+import java.util.Collections;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -39,6 +40,7 @@ public class ImageFileAcceptPresenter extends FileAcceptPresenter {
         super(propertyName, typeID, fileExtensions);
     }
     
+    @Override
     public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent image = result.getComponents().iterator().next();
@@ -48,6 +50,7 @@ public class ImageFileAcceptPresenter extends FileAcceptPresenter {
         String path = getFileClasspath(fileObject);
         image.writeProperty(ImageCD.PROP_RESOURCE_PATH , MidpTypes.createStringValue(path));
         MidpDocumentSupport.getCategoryComponent(getComponent().getDocument(), ResourcesCategoryCD.TYPEID).addComponent(image);
+        getComponent().getDocument().setSelectedComponents(this.toString(), Collections.singleton(image));
         return result;
     }
     

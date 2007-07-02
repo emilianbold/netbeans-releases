@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.api.properties;
 
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.DynamicPresenter;
-import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 
 /**
  *

@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 
@@ -111,7 +112,7 @@ public class TableItemCD extends ComponentDescriptor {
                     .addProperty("Title", PropertyEditorString.createInstance(), PROP_TITLE) //NOI18N
                     .addProperty("Table Model", org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox.create(SimpleTableModelCD.TYPEID, //NOI18N
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL) //NOI18N
-                    .addProperty("Show Borders", Boolean.class, PROP_BORDERS) //NOI18N
+                    .addProperty("Show Borders", PropertyEditorBooleanUC.createInstance(false), PROP_BORDERS) //NOI18N   
                     .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
                     .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
                     .addProperty("Values Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N

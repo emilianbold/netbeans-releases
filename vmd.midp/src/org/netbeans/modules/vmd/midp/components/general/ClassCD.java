@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 /**
  * @author David Kaspar
@@ -73,7 +74,8 @@ public final class ClassCD extends ComponentDescriptor {
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
                 .addProperty("Instance Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_INSTANCE_NAME)
-                .addProperty("Is Lazy Initialized", Boolean.class, PROP_LAZY_INIT);
+                .addProperty("Is Lazy Initialized", PropertyEditorBooleanUC.createInstance(false), PROP_LAZY_INIT); //NOI18N
+                
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {

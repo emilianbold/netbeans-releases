@@ -35,7 +35,6 @@ import java.util.List;
 public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     private static final String NULL_DEFAULT =  "Null DefaultPropertyEditorSupport not allowed"; //NOI18N
-    private static final String NULL_EDITOR = "Null PropertyEditorType not allowed"; //NOI18N
     
     private List<DesignPropertyDescriptor> descriptors;
     private List<String> categories;
@@ -73,14 +72,6 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         return this;
     }
     
-    @Deprecated
-    public DefaultPropertiesPresenter addProperty(String displayName, Class propertyEditorType, String... propertyNames) {
-        if (propertyEditorType == null)
-            throw new IllegalArgumentException(NULL_EDITOR); 
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, null, propertyEditorType, propertyNames));
-        return this;
-    }
-    
     public DefaultPropertiesPresenter addProperty(DesignPropertyDescriptor designerPropertyDescriptor) {
         descriptors.add(designerPropertyDescriptor);
         return this;
@@ -112,6 +103,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     }
     
     protected void notifyDetached(DesignComponent component) {
+        descriptors = null;
     }
     
     protected DesignEventFilter getEventFilter() {

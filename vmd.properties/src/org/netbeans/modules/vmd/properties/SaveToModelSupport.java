@@ -49,6 +49,7 @@ final class SaveToModelSupport {
                 }
                 for (String propertyName : values.getPropertyNames()) {
                     if (values.getValue(propertyName) instanceof PropertyValue) {
+                        //component.readProperty(propertyName).getKind()
                         component.writeProperty(propertyName, (PropertyValue) values.getValue(propertyName));
                         continue;
                     }

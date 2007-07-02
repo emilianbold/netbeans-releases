@@ -43,29 +43,30 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     private PropertyValue propertyValue;
     private PropertyEditor propertyEditor;
     private List<String> propertyNames;
+    private DesignPropertyDescriptor designPropertyDescriptor;
     
-    DefaultPropertySupport(final DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
+    DefaultPropertySupport(DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor.getPropertyNames().iterator().next(),
-            type,
-            designerPropertyDescriptor.getPropertyDisplayName(),
-            designerPropertyDescriptor.getPropertyToolTip(),
-            true,
-            true
-            );
-        
+              type,
+              designerPropertyDescriptor.getPropertyDisplayName(),
+              designerPropertyDescriptor.getPropertyToolTip(),
+              true,
+              true
+             );
+        this.designPropertyDescriptor = designerPropertyDescriptor;
         propertyEditor = designerPropertyDescriptor.getPropertyEditor();
         propertyNames = designerPropertyDescriptor.getPropertyNames();
-        
+        update();
         if (getPropertyEditor() instanceof DesignPropertyEditor
             && ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor() != null ) {
             setValue(PROPERYT_INPLACE_EDITOR, ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor());
         }
     }
     
+    @Override
     public PropertyEditor getPropertyEditor() {
         if (propertyEditor != null)
             return propertyEditor;
-        
         return super.getPropertyEditor();
     }
     
@@ -75,14 +76,12 @@ public abstract class DefaultPropertySupport extends PropertySupport {
                 propertyValue = component.readProperty(propertyName);
             }
         });
-        
         return propertyValue;
     }
     
     public boolean canWrite() {
         if (propertyEditor instanceof DesignPropertyEditor)
             return ((DesignPropertyEditor) propertyEditor).canWrite();
-        
         return super.canWrite();
     }
     
@@ -96,17 +95,19 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     public boolean isDefaultValue() {
         if (propertyEditor instanceof DesignPropertyEditor)
             return ((DesignPropertyEditor) propertyEditor).isDefaultValue();
-        
         return super.isDefaultValue();
     }
     
     public boolean supportsDefaultValue() {
         if (propertyEditor instanceof DesignPropertyEditor)
             return ((DesignPropertyEditor) propertyEditor).supportsDefaultValue();
-        
         return super.supportsDefaultValue();
     }
     
-    public abstract void update();
+    protected DesignPropertyDescriptor getDesignPropertyDescriptor() {
+        return designPropertyDescriptor;
+    }
+    
+    protected abstract void update();
     
 }

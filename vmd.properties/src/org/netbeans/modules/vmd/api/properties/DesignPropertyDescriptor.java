@@ -27,23 +27,24 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  * @author Karol Harezlak
  */
 
-public interface DesignPropertyDescriptor {
+public abstract class DesignPropertyDescriptor {
+    
     //First name of the list is always name which will be return when Property.getName 
-    List<String> getPropertyNames();
+    public abstract List<String> getPropertyNames();
 
-    String getPropertyDisplayName();
+    public abstract String getPropertyDisplayName();
 
-    String getPropertyToolTip();
+    public abstract String getPropertyToolTip();
 
-    String getPropertyCategory();
+    public abstract String getPropertyCategory();
 
-    DesignPropertyEditor getPropertyEditor();
+    public abstract DesignPropertyEditor getPropertyEditor();
 
-    DesignComponent getComponent();
+    public abstract DesignComponent getComponent();
     
     @Deprecated
-    Class getPropertyEditorType();
+    public abstract Class getPropertyEditorType();
     
-    void init(DesignComponent component);
+    public abstract void init(DesignComponent component);
     
 }

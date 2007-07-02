@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
 
 /**
@@ -102,7 +103,7 @@ public final class ListCD extends ComponentDescriptor {
                     .addProperty("Fit Policy", PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) //NOI18N
                     .addProperty("Select Command", PropertyEditorListSelectCommand.create(), PROP_SELECT_COMMAND) //NOI18N
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty("Index Based Switch", Boolean.class, PROP_INDEX_BASED_SWITCH); //NOI18N
+                    .addProperty("Index Based Switch", PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); //NOI18N
     }
 
     private static Presenter createSetterPresenter() {

@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.Component;
 
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyEditor;
 import javax.swing.BorderFactory;
@@ -31,7 +30,6 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertyModel;
@@ -46,28 +44,26 @@ public class BooleanInplaceEditor  implements InplaceEditor {
     private DesignPropertyEditor propertyEditor;
     private PropertyModel model;
     
-    public BooleanInplaceEditor(final DesignPropertyEditor propertyEditor) {
+    // Do not create this InplaceEditor in PropertyEditor constructor!!!!!! 
+    public BooleanInplaceEditor(DesignPropertyEditor propertyEditor, ItemListener itemListener) {    
         this.propertyEditor = propertyEditor;
         checkBox = new JCheckBox();
-        checkBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                PropertyValue value = MidpTypes.createBooleanValue(checkBox.isSelected());
-                propertyEditor.setValue(value);
-                propertyEditor.invokeSaveToModel();
+        PropertyValue value = (PropertyValue) propertyEditor.getValue();
+        if (value != null && value.getKind() == PropertyValue.Kind.VALUE) {
+            if (!(value.getPrimitiveValue() instanceof Boolean)) {
+                Boolean selected = (Boolean) value.getPrimitiveValue();
+                checkBox.setSelected(selected);
             }
-        });
+        } else if (value == PropertyValue.createNull())
+            checkBox.setSelected(false);
+        
+         checkBox.addItemListener(itemListener);
     }
     
     public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
     }
     
     public JComponent getComponent() {
-        PropertyValue value = (PropertyValue) propertyEditor.getValue();
-        if (value != null) {
-            Boolean isSelected = (Boolean) value.getPrimitiveValue();
-            checkBox.setSelected(isSelected);
-        }
-        value.getPrimitiveValue();
         checkBox.setBorder(BorderFactory.createEmptyBorder(0,3,0,0));
         return checkBox;
     }

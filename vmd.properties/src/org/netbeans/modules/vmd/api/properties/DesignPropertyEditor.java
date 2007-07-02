@@ -180,7 +180,6 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
                               List<String> propertyNames,
                               Object value,
                               PropertySupport propertySupport,
-                              InplaceEditor inplaceEditor,
                               String propertyDisplayName) {
         
         this.component = new WeakReference<DesignComponent>(component);
@@ -188,8 +187,11 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         this.tempValue = value;
         super.setValue(value);
         this.propertySupport = propertySupport;
-        this.inplaceEditor = inplaceEditor;
         this.propertyDisplayName = propertyDisplayName;
+    }
+    
+    public final void resolveInplaceEditor(InplaceEditor inplaceEditor) {
+        this.inplaceEditor = inplaceEditor;
     }
     
     public InplaceEditor getInplaceEditor() {

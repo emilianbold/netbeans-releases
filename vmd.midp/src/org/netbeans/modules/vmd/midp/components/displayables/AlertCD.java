@@ -96,11 +96,11 @@ public final class AlertCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
-                .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING)
-                .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE)
-                .addProperty("Use Indicator", PropertyEditorIndicator.createInstance(), PROP_INDICATOR)
-                .addProperty("Timeout", PropertyEditorTimeout.createInstance(), PROP_TIMEOUT);
+                    .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
+                    .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING)
+                    .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE)
+                    .addProperty("Use Indicator", PropertyEditorIndicator.createInstance(), PROP_INDICATOR)
+                    .addProperty("Timeout", PropertyEditorTimeout.createInstance(), PROP_TIMEOUT);
     }
 
     // TODO override Displayable.addCommand, see DesignerMIDP document
@@ -140,9 +140,8 @@ public final class AlertCD extends ComponentDescriptor {
             // screen
             new AlertDisplayPresenter(),
             //accept
-            //new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
             new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
-            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),//NOI18N
+            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), //NOI18N
             MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter()
         );
     }
