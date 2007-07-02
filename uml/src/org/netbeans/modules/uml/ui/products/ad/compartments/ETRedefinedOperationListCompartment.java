@@ -46,6 +46,7 @@ import org.openide.util.NbBundle;
 public class ETRedefinedOperationListCompartment extends ETOperationListCompartment implements IADRedefinedOperationListCompartment{
 
     public static ElementLocator locator = new ElementLocator();
+    private IElement element;
     
 	public ETRedefinedOperationListCompartment() {
 		super();
@@ -203,10 +204,11 @@ public class ETRedefinedOperationListCompartment extends ETOperationListCompartm
                 return super.getName();
             
             String name = "";
-            IElement element = locator.findElementByID(getModelElementXMIID());
+            if (element == null)
+                element = locator.findElementByID(getModelElementXMIID());
             if (element != null && element instanceof INamedElement)
                 name = ((INamedElement)element).getNameWithAlias();
-        
+            
             return NbBundle.getMessage(ETRedefinedOperationListCompartment.class,
                     "IDS_REDEFINED_OPERATIONS", name);
         }      
