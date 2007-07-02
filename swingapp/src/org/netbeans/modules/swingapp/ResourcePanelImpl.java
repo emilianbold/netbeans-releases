@@ -118,8 +118,11 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         DesignResourceMap resMap = resources.getLevel(getStorageLevel());
         if (cpResourceName != null) {
             String pkgResName = resMap.getResourcesDir();
-            stringValue = cpResourceName.startsWith(pkgResName) ?
-                cpResourceName.substring(pkgResName.length()) : cpResourceName;
+            if (cpResourceName.startsWith(pkgResName)) { // relative resource name
+                stringValue = cpResourceName.substring(pkgResName.length());
+            } else { // full resource name, for app framework need starting /
+                stringValue = (cpResourceName.startsWith("/") ? "" : "/") + cpResourceName; // NOI18N
+            }
         }
         if (stringValue != null) {
             Object valueFromString;
