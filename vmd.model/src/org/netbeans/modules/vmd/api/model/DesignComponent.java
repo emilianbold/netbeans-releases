@@ -184,7 +184,7 @@ public final class DesignComponent {
         assert document.getTransactionManager().isWriteAccess();
         assert document == component.document;
         assert component.parentComponent == this;
-        if (children.remove(component))
+        if (! children.remove(component))
             throw Debug.error ("Component is not a child of its parent", "parent", this, "Child", component, "Children", children); // NOI18N
         component.parentComponent = null;
         document.getTransactionManager().parentChangeHappened(this, null, component);
