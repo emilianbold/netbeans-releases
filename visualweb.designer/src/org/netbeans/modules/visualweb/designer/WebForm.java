@@ -1377,9 +1377,9 @@ public class WebForm implements Designer {
 //    }
 
 //    public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
-    public void changeNode(Node rendered, Node parent, boolean wasMove) {
+    public void changeNode(Node rendered, Node parent, Element[] changedElements) {
         PageBox pageBox = getPane().getPaneUI().getPageBox();
-        pageBox.changed(rendered, parent, false);
+        pageBox.changed(rendered, parent, changedElements);
     }
 
 //    public void nodeRemoved(Node previouslyRendered, Node parent) {

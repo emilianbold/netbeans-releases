@@ -525,8 +525,8 @@ public abstract class DocumentBox extends ContainerBox {
                 }
 
                 if (node != element) {
-                    changed(node, node.getParentNode(), false);
-
+//                    changed(node, node.getParentNode(), false);
+                    changed(node, node.getParentNode(), null);
                     return;
                 }
 
@@ -762,7 +762,7 @@ public abstract class DocumentBox extends ContainerBox {
     /**
      * @todo Remove the parent pointer, we don't need it for change events
      */
-    public void changed(Node node, Node parent, boolean wasMove) {
+    public void changed(Node node, Node parent, Element[] changedElements) {
         assert parent != null;
 
         //assert node.getNodeType() == Node.ELEMENT_NODE;
@@ -885,7 +885,15 @@ public abstract class DocumentBox extends ContainerBox {
         // clear the styles first
 //        CssLookup.clearComputedStyles(target.getElement());
         // XXX This needs to be cleared before the new box is added into the hierarchy (see below).
-        CssProvider.getEngineService().clearComputedStylesForElement(element);
+//        CssProvider.getEngineService().clearComputedStylesForElement(element);
+        if (changedElements == null || changedElements.length == 0) {
+            CssProvider.getEngineService().clearComputedStylesForElement(element);
+        } else {
+            // XXX #105179 Update style only for the changed elements (and their children).
+            for (Element changedElement : changedElements) {
+                CssProvider.getEngineService().clearComputedStylesForElement(changedElement);
+            }
+        }
         
         CreateContext cc = new CreateContext();
         cc.pushPage(webform);

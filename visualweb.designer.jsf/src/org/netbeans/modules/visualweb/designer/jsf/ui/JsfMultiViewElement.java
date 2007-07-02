@@ -151,8 +151,8 @@ public class JsfMultiViewElement implements MultiViewElement {
         jsfTopComponent.modelRefreshed();
     }
     
-    public void nodeChanged(Node node, Node parent, boolean wasMove) {
-        jsfTopComponent.nodeChanged(node, parent, wasMove);
+    public void nodeChanged(Node node, Node parent, Element[] changedElements) {
+        jsfTopComponent.nodeChanged(node, parent, changedElements);
     }
     
     public void nodeRemoved(Node node, Node parent) {

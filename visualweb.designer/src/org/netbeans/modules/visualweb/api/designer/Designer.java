@@ -233,7 +233,7 @@ public interface Designer {
 //    public void performEscape();
 
     public void resetAll();
-    public void changeNode(Node node, Node parent, boolean wasMove);
+    public void changeNode(Node node, Node parent, Element[] changedElements);
     public void removeNode(Node node, Node parent);
     public void insertNode(Node node, Node parent);
     

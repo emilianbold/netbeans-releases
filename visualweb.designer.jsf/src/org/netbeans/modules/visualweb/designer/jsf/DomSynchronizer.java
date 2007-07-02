@@ -711,7 +711,8 @@ FacesDndSupport.UpdateSuspender {
 //
 //                return;
 //            }
-            if (!processUpdate(bean)) {
+            List<Element> changedElements = new ArrayList<Element>();
+            if (!processUpdate(bean, changedElements)) {
                 processRefresh();
                 jsfForm.modelChanged();
                 return;
@@ -741,7 +742,7 @@ FacesDndSupport.UpdateSuspender {
 //                }
                 // Now the original node could be reused (see the tryUpdateOriginalNode).
                 Node parent = rendered.getParentNode();
-                jsfForm.nodeChanged(rendered, parent, false);
+                jsfForm.nodeChanged(rendered, parent, changedElements.toArray(new Element[changedElements.size()]));
             } else if (previouslyRendered != null) {
                 // It was just deleted - for example when you change a component by
                 // switching off its "rendered" property
@@ -810,7 +811,7 @@ FacesDndSupport.UpdateSuspender {
         }
     }
     
-    private boolean processUpdate(MarkupDesignBean bean) {
+    private boolean processUpdate(MarkupDesignBean bean, List<Element> changedElements) {
         // Deleting
 //        if (!processDelete(bean)) {
 //            return false;
@@ -948,10 +949,13 @@ FacesDndSupport.UpdateSuspender {
         if (originalNodes.size() == 1 && newNodes.size() == 1) {
             Node originalNode = originalNodes.get(0);
             Node newNode = newNodes.get(0);
-            if (tryUpdateOriginalNode(originalNode, newNode)) {
+            if (tryUpdateOriginalNode(originalNode, newNode, changedElements)) {
                 // XXX The original nodes are updated, do not mark the new as rendered, they are not used.
                 return true;
             } else {
+                // XXX Clear possibly added elements.
+                changedElements.clear();
+                
                 // XXX Mark the newly used nodes as rendered.
                 MarkupService.markRenderedNodes(df);
                 parent.replaceChild(newNode, originalNode);
@@ -970,7 +974,8 @@ FacesDndSupport.UpdateSuspender {
         return true;
     }
     
-    private static boolean tryUpdateOriginalNode(Node originalNode, Node newNode) {
+    
+    private static boolean tryUpdateOriginalNode(Node originalNode, Node newNode, List<Element> changedElements) {
         if (originalNode.getNodeType() != newNode.getNodeType()) {
             return false;
         }
@@ -997,7 +1002,7 @@ FacesDndSupport.UpdateSuspender {
             }
             
             for (int i = 0; i < originalNodeChildrenSize; i++) {
-                boolean childOK = tryUpdateOriginalNode(originalNodeChildren.item(i), newNodeChildren.item(i));
+                boolean childOK = tryUpdateOriginalNode(originalNodeChildren.item(i), newNodeChildren.item(i), changedElements);
                 if (!childOK) {
                     return false;
                 }
@@ -1026,6 +1031,9 @@ FacesDndSupport.UpdateSuspender {
                     continue;
                 }
                 originalElement.removeAttribute(name);
+                if (!changedElements.contains(originalElement)) {
+                    changedElements.add(originalElement);
+                }
             }
             // Add/update the remaining attributes.
             for (String name : newMap.keySet()) {
@@ -1034,16 +1042,25 @@ FacesDndSupport.UpdateSuspender {
                 
                 if (originalAttribute == null) {
                     originalElement.setAttributeNode((Attr)newAttribute.cloneNode(false));
+                    if (!changedElements.contains(originalElement)) {
+                        changedElements.add(originalElement);
+                    }
                 } else {
                     String oldAttributeValue = originalAttribute.getValue();
                     String newAttributeValue = newAttribute.getValue();
                     if (newAttributeValue == null) {
                         if (oldAttributeValue != null) {
                             originalElement.removeAttribute(name);
+                            if (!changedElements.contains(originalElement)) {
+                                changedElements.add(originalElement);
+                            }
                         }
                     } else {
                         if (!newAttributeValue.equals(oldAttributeValue)) {
                             originalElement.setAttributeNode((Attr)newAttribute.cloneNode(false));
+                            if (!changedElements.contains(originalElement)) {
+                                changedElements.add(originalElement);
+                            }
                         }
                     }
                 }
