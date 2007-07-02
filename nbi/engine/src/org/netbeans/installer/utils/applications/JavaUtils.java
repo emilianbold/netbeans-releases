@@ -134,7 +134,8 @@ public class JavaUtils {
     }
     
     public static Version getVersion(File javaHome) {
-        return getInfo(javaHome).getVersion();
+	JavaInfo info = getInfo(javaHome);
+        return (info == null) ? null : info.getVersion();
     }
     
     public static JavaInfo getInfo(final File javaHome) {
