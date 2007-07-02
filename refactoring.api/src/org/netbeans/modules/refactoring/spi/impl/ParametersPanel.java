@@ -706,7 +706,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         public void run() {
             if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 problem = rui.setParameters();
-                if (problem != null) {
+                if (problem != null && currentState!=PROBLEM) {
                     currentState = CHECK_PARAMETERS;
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
