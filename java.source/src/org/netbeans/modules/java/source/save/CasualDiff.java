@@ -546,13 +546,17 @@ public class CasualDiff {
     protected int diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT, int[] bounds) {
         int localPointer = bounds[0];
         
-        int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0]);
-        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
-        
+        int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
         int[] condBounds = getBounds(oldT.cond);
-        copyTo(localPointer, condBounds[0]);
-        localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        if (oldT.body.getKind() != Kind.BLOCK && newT.body.getKind() == Kind.BLOCK) {
+            tokenSequence.move(condBounds[0]);
+            TokenUtilities.moveBackToToken(tokenSequence, condBounds[0], JavaTokenId.WHILE);
+            localPointer = tokenSequence.offset();
+        } else {
+            copyTo(localPointer, condBounds[0]);
+            localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        }
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];

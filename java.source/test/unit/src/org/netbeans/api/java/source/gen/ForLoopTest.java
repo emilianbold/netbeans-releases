@@ -204,6 +204,65 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testDoWhileBlockReplacement() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public int a = 10;\n" +
+            "    \n" +
+            "    public void main(String[] args) {\n" +
+            "        do\n" +
+            "            a = 12;\n" +
+            "        while (a == 10);\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public int asdf = 10;\n" +
+            "    \n" +
+            "    public void main(String[] args) {\n" +
+            "        do {\n" +
+            "            a = 12;\n" +
+            "        } while (a == 10);\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(var, make.setLabel(var, "asdf"));
+                
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                DoWhileLoopTree flt = (DoWhileLoopTree) method.getBody().getStatements().get(0);
+                StatementTree statement = flt.getStatement();
+                BlockTree block = make.Block(Collections.<StatementTree>singletonList(statement), false);
+                workingCopy.rewrite(statement, block);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

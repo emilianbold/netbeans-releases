@@ -1406,6 +1406,14 @@ public final class VeryPretty extends JCTree.Visitor {
             case IF:
                 printIndentedStat(newT, cs.redundantIfBraces(), cs.spaceBeforeIfLeftBrace(), cs.wrapIfStatement());
                 break;
+            case DO_WHILE_LOOP:
+                printIndentedStat(newT, cs.redundantDoWhileBraces(), cs.spaceBeforeDoLeftBrace(), cs.wrapDoWhileStatement());
+                if (cs.placeWhileOnNewLine()) {
+                    newline();
+                    toLeftMargin();
+                } else if (cs.spaceBeforeWhile()) {
+                    needSpace();
+                }
         }
     }
     
