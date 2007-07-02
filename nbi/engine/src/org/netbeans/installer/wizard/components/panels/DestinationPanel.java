@@ -228,17 +228,22 @@ public class DestinationPanel extends ErrorMessagePanel {
                 
                 File file = FileUtils.eliminateRelativity(string);
                 
+                String filePath = file.getAbsolutePath();
+                if (filePath.length() > 45) {
+                    filePath = filePath.substring(0, 45) + "...";
+                }
+                
                 if (!SystemUtils.isPathValid(file.getAbsolutePath())) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_VALID_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 if (product.getLogic().prohibitExclamation() &&
                         file.getAbsolutePath().contains("!")) {
                     return StringUtils.format(
                             component.getProperty(ERROR_CONTAINS_EXCLAMATION_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 if (!file.equals(file.getAbsoluteFile())) {
@@ -252,31 +257,36 @@ public class DestinationPanel extends ErrorMessagePanel {
                 } catch (IOException e) {
                     return StringUtils.format(
                             component.getProperty(ERROR_CANNOT_CANONIZE_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
+                }
+                
+                filePath = file.getAbsolutePath();
+                if (filePath.length() > 45) {
+                    filePath = filePath.substring(0, 45) + "...";
                 }
                 
                 if (file.exists() && !file.isDirectory()) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 if (!FileUtils.canRead(file)) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_READABLE_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 if (!FileUtils.canWrite(file)) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_WRITABLE_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 if (!FileUtils.isEmpty(file)) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 if (SystemUtils.isMacOS() && (
@@ -285,7 +295,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                         !file.getAbsolutePath().endsWith(APP_SUFFIX)) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_ENDS_WITH_APP_PROPERTY),
-                            file.getAbsolutePath());
+                            filePath);
                 }
                 
                 final long requiredSize =
@@ -295,7 +305,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                 if (availableSize < requiredSize) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
-                            file,
+                            filePath,
                             StringUtils.formatSize(requiredSize - availableSize));
                 }
             } catch (InitializationException e) {
