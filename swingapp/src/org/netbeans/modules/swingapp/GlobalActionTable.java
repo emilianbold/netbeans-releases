@@ -80,7 +80,16 @@ public class GlobalActionTable extends TopComponent {
     protected String preferredID() {
         return getClass().getName();
     }
-    
-    
-    
+
+    /** Replaces this in object stream. */
+    public Object writeReplace() {
+        return new ResolvableHelper();
+    }
+
+    public static final class ResolvableHelper implements java.io.Serializable {
+        static final long serialVersionUID = 3558109100863533811L;
+        public Object readResolve() {
+            return GlobalActionTable.getDefault();
+        }
+    }
 }

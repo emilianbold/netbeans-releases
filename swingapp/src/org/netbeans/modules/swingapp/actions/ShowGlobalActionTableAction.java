@@ -34,21 +34,13 @@ public class ShowGlobalActionTableAction extends AbstractAction {
     
     /** Creates a new instance of ShowGlobalActionTableAction */
     public ShowGlobalActionTableAction() {
-        //putValue(NAME, "Application Actions");
         putValue(NAME, NbBundle.getMessage(ShowGlobalActionTableAction.class, "CTL_GlobalActionTableAction"));
     }
     
     public void actionPerformed(ActionEvent e) {
         GlobalActionTable gat = GlobalActionTable.getInstance();
-
-        
-        /*Mode outputMode = WindowManager.getDefault().findMode("output");
-        if(outputMode != null) {
-            outputMode.dockInto(gat);
-        }*/
         gat.open();
         gat.requestActive();
-        
     }
 
 }
