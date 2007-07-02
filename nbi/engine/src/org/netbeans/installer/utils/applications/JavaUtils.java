@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -316,7 +317,7 @@ public class JavaUtils {
         /////////////////////////////////////////////////////////////////////////////
         // Static
         public static JavaInfo getInfo(String string) {
-            final String[] lines = string.split(SystemUtils.getLineSeparator());
+            final String[] lines = string.split(StringUtils.NEW_LINE_PATTERN);
             
             Version version = null;
             String  vendor  = null;
