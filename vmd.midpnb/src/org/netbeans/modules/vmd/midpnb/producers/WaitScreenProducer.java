@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
+import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
@@ -35,6 +36,7 @@ import org.netbeans.modules.vmd.midpnb.components.commands.WaitScreenSuccessComm
 import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenFailureCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessCommandEventSourceCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 
 /**
  *
@@ -62,7 +64,11 @@ public class WaitScreenProducer extends MidpComponentProducer {
        
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, successEventSource);
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, failureEventSource);
-        
+
+        DesignComponent task = document.createComponent (SimpleCancellableTaskCD.TYPEID);
+        MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (task);
+        waitScreen.writeProperty (WaitScreenCD.PROP_TASK, PropertyValue.createComponentReference (task));
+
         return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
     }
     

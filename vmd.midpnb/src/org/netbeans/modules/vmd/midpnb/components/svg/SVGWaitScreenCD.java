@@ -47,7 +47,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_wait_screen_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_wait_screen_64.png"; // NOI18N
     
-    private static final String PROP_TASK = "task"; //NOI18N
+    public static final String PROP_TASK = "task"; //NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
