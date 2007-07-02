@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
+            <file name="swing-layout.xml" url="swing-layout.xml"/>
             <file name="absolutelayout.xml" url="absolutelayout.xml"/>
             <file name="beans_binding.xml" url="beans_binding.xml"/>
         </folder>
