@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -68,9 +70,8 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         localRadio.setEnabled(hasLocal);
         remoteRadio.setEnabled(hasRemote);
         bothRadio.setEnabled(hasLocal && hasRemote);
-        localRadio.setSelected(selectLocal && !selectRemote);
+        localRadio.setSelected(selectLocal);
         remoteRadio.setSelected(selectRemote && !selectLocal);
-        bothRadio.setSelected(selectLocal && selectRemote);
         
         if (!hasReturnType) {
             disableReturnType();
@@ -156,7 +157,6 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
         errorTextField.setBackground(java.awt.SystemColor.control);
         errorTextField.setEditable(false);
-        errorTextField.setText(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.errorTextField.text")); // NOI18N
         errorTextField.setBorder(null);
 
         returnTypeLabel.setLabelFor(returnTypeTextField);
@@ -339,6 +339,12 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public void setError(String message) {
+        setErrorFieldColor(true);
+        errorTextField.setText(message);
+    }
+    
+    public void setWarning(String message) {
+        setErrorFieldColor(false);
         errorTextField.setText(message);
     }
     
@@ -400,6 +406,16 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         returnTypeTextField.setVisible(false);
     }
     
+    private void setErrorFieldColor(boolean error){
+        if (error){
+            Color color = UIManager.getColor("nb.errorForeground"); //NOI18N
+            errorTextField.setForeground(color == null ? new Color(89, 79, 191) : color);
+        } else {
+            Color color = UIManager.getColor("nb.warningForeground"); //NOI18N
+            errorTextField.setForeground(color == null ? Color.DARK_GRAY : color);
+        }
+    }
+
     /**
      * Listener on text fields. 
      * Fires change event for specified property of this JPanel, 

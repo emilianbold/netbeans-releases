@@ -67,6 +67,10 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
                 setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_selectSomeInterface"));
                 return false;
             }
+            if (local && remote) {
+                setWarning(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "LBL_commonImplForBothInterfaces"));
+                return true;
+            }
         }
         unsetError();
         return true;
@@ -75,6 +79,11 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
     private void setError(String message) {
         notifyDescriptor.setValid(false);
         panel.setError(message);
+    }
+    
+    private void setWarning(String message) {
+        notifyDescriptor.setValid(true);
+        panel.setWarning(message);
     }
     
     private void unsetError() {
