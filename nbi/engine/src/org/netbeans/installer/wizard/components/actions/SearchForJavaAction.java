@@ -63,10 +63,17 @@ public class SearchForJavaAction extends WizardAction {
     
     // private //////////////////////////////////////////////////////////////////////
     private static String getLabel(File javaHome, JavaInfo javaInfo) {
-        return StringUtils.format(JAVA_ENTRY_LABEL,
-                javaHome,
-                javaInfo.getVersion().toJdkStyle(),
-                javaInfo.getVendor());
+        if (javaInfo.isNonFinal()) {
+            return StringUtils.format(JAVA_ENTRY_LABEL_NON_FINAL,
+                    javaHome,
+                    javaInfo.getVersion().toJdkStyle(),
+                    javaInfo.getVendor());
+        } else {
+            return StringUtils.format(JAVA_ENTRY_LABEL,
+                    javaHome,
+                    javaInfo.getVersion().toJdkStyle(),
+                    javaInfo.getVendor());
+        }
     }
     
     private static String getLabel(File javaHome, Version version, String vendor) {
@@ -216,44 +223,42 @@ public class SearchForJavaAction extends WizardAction {
     }
     
     private void fetchLocationsFromFilesystem(final List<File> locations) {
-        List <String> candidateLocations = new ArrayList <String> ();
+        final List<String> candidateLocations = new ArrayList<String>();
         
         for(String location : JAVA_FILESYSTEM_LOCATIONS_COMMON) {
             candidateLocations.add(location);
         }
-        String [] platformLocations;
         
         if (SystemUtils.isWindows()) {
-            platformLocations = JAVA_FILESYSTEM_LOCATIONS_WINDOWS;
-        } else if(SystemUtils.isMacOS()) {
-            platformLocations = JAVA_FILESYSTEM_LOCATIONS_MACOSX;
+            candidateLocations.addAll(
+                    Arrays.asList(JAVA_FILESYSTEM_LOCATIONS_WINDOWS));
+        } else if (SystemUtils.isMacOS()) {
+            candidateLocations.addAll(
+                    Arrays.asList(JAVA_FILESYSTEM_LOCATIONS_MACOSX));
         } else {
-            platformLocations = JAVA_FILESYSTEM_LOCATIONS_UNIX;
+            candidateLocations.addAll(
+                    Arrays.asList(JAVA_FILESYSTEM_LOCATIONS_UNIX));
         }
-        
-        for(String location : platformLocations) {
-            candidateLocations.add(location);
-        }
-        
         
         for (String location: candidateLocations) {
             final File parent = SystemUtils.resolvePath(location);
             
             if (parent.exists() && parent.isDirectory()) {
                 locations.add(parent);
-                File [] children = parent.listFiles(new FileFilter() {
-                    public boolean accept(File pathname) {
+                final File[] children = parent.listFiles(new FileFilter() {
+                    public boolean accept(final File pathname) {
                         return pathname.isDirectory();
-                    }});
-                    
-                    if(children != null) {
-                        for (File child: children) {
-                            locations.add(child);
-                        }
-                    } else {
-                        LogManager.log(ErrorLevel.DEBUG,
-                                "Can`t get children of existing directory : " + parent.getPath());
                     }
+                });
+                    
+                if (children != null) {
+                    for (File child: children) {
+                        locations.add(child);
+                    }
+                } else {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "Can`t get children of existing directory : " + parent.getPath());
+                }
             }
         }
     }
@@ -369,7 +374,10 @@ public class SearchForJavaAction extends WizardAction {
             "SFJA.search.java");//NOI18N
     public static final String JAVA_ENTRY_LABEL =
             ResourceUtils.getString(SearchForJavaAction.class,
-            "SFJA.entrylabel");//NOI18N
+            "SFJA.entry.label");//NOI18N
+    public static final String JAVA_ENTRY_LABEL_NON_FINAL =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.entry.label.non.final");//NOI18N
     
     private static final String SUN_MICROSYSTEMS_VENDOR =
             "Sun Microsystems Inc." ; //NOI18N

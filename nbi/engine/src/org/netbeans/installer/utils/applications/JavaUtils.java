@@ -46,24 +46,6 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
  */
 public class JavaUtils {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String JDK_KEY = "SOFTWARE\\JavaSoft\\Java Development Kit";
-    
-    public static final String JAVAHOME_VALUE        = "JavaHome";
-    public static final String MICROVERSION_VALUE    = "MicroVersion";
-    public static final String CURRENT_VERSION_VALUE = "CurrentVersion";
-    
-    public static final String TEST_JDK_RESOURCE =
-            "org/netbeans/installer/utils/applications/TestJDK.class";
-    
-    public static final String TEST_JDK_URI =
-            FileProxy.RESOURCE_SCHEME_PREFIX + TEST_JDK_RESOURCE;
-    
-    public static final String TEST_JDK_CLASSNAME = "TestJDK";
-    
-    public static final int TEST_JDK_OUTPUT_PARAMETERS = 5; // java.version, java.vm.version, java.vendor, os.name, os.arch
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Map<File, JavaInfo> knownJdks = new HashMap<File, JavaInfo>();
     
@@ -135,7 +117,8 @@ public class JavaUtils {
     }
     
     public static Version getVersion(File javaHome) {
-	JavaInfo info = getInfo(javaHome);
+	final JavaInfo info = getInfo(javaHome);
+        
         return (info == null) ? null : info.getVersion();
     }
     
@@ -320,9 +303,11 @@ public class JavaUtils {
             final String[] lines = string.split(StringUtils.NEW_LINE_PATTERN);
             
             Version version = null;
-            String  vendor  = null;
-            String  osName  = null;
-            String  osArch  = null;
+            String vendor = null;
+            String osName = null;
+            String osArch = null;
+            
+            boolean nonFinal = false;
             
             if (lines.length == TEST_JDK_OUTPUT_PARAMETERS) {
                 final String javaVersion = lines[0]; // java.version
@@ -344,11 +329,16 @@ public class JavaUtils {
                             javaVersion;
                 }
                 
-                // remove build type marker                
-                final String buildTypePattern = 
-                        "-(ea|rc[0-9]*|beta[0-9]*|preview[0-9]*|dp[0-9]*|alpha[0-9]*|fcs)-";
-                versionString = versionString.replaceAll(
-                            buildTypePattern, "-");
+                // check whether this particular jvm is non final
+                final Matcher nonFinalMatcher = Pattern.compile(
+                        NON_FINAL_JVM_PATTERN).matcher(versionString);
+                if (nonFinalMatcher.find()) {
+                    versionString = versionString.replaceAll(
+                            NON_FINAL_JVM_PATTERN, 
+                            "-");
+                    
+                    nonFinal = true;
+                }
                 
                 // convert 1.6.0-b105 to 1.6.0.0.105
                 if (versionString.matches(
@@ -374,7 +364,7 @@ public class JavaUtils {
                 // if the version was created successfully, then we can provide a
                 // JavaInfo object
                 if (version != null) {
-                    return new JavaInfo(version, vendor);
+                    return new JavaInfo(version, vendor, nonFinal);
                 }
             }
             
@@ -384,11 +374,21 @@ public class JavaUtils {
         /////////////////////////////////////////////////////////////////////////////
         // Instance
         private Version version;
-        private String  vendor;
+        private String vendor;
+        
+        private boolean nonFinal;
         
         public JavaInfo(Version version, String vendor) {
             this.version = version;
             this.vendor = vendor;
+            
+            this.nonFinal = false;
+        }
+        
+        public JavaInfo(Version version, String vendor, boolean nonFinal) {
+            this (version, vendor);
+            
+            this.nonFinal = nonFinal;
         }
         
         public Version getVersion() {
@@ -398,5 +398,39 @@ public class JavaUtils {
         public String getVendor() {
             return vendor;
         }
+        
+        public boolean isNonFinal() {
+            return nonFinal;
+        }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String JDK_KEY = 
+            "SOFTWARE\\JavaSoft\\Java Development Kit"; // NOI18N
+    
+    public static final String JAVAHOME_VALUE 
+            = "JavaHome"; // NOI18N
+    
+    public static final String MICROVERSION_VALUE 
+            = "MicroVersion"; // NOI18N
+    
+    public static final String CURRENT_VERSION_VALUE = 
+            "CurrentVersion"; // NOI18N
+    
+    public static final String TEST_JDK_RESOURCE =
+            "org/netbeans/installer/utils/applications/TestJDK.class"; // NOI18N
+    
+    public static final String TEST_JDK_URI =
+            FileProxy.RESOURCE_SCHEME_PREFIX + TEST_JDK_RESOURCE;
+    
+    public static final String TEST_JDK_CLASSNAME = 
+            "TestJDK"; // NOI18N
+    
+    public static final int TEST_JDK_OUTPUT_PARAMETERS = 
+            5; // java.version, java.vm.version, java.vendor, os.name, os.arch
+    
+    public static final String NON_FINAL_JVM_PATTERN = 
+            "-(ea|rc[0-9]*|beta[0-9]*|preview[0-9]*|" + // NOI18N
+            "dp[0-9]*|alpha[0-9]*|fcs)-"; // NOI18N
 }
