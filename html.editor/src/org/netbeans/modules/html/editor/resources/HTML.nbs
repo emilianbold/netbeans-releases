@@ -157,36 +157,38 @@ COMPLETE org.netbeans.modules.html.editor.HTML.complete
 
 MARK:unsupportedTag: {
     type:"Warning";
-    message:"Unsupported tag.";
+    message:"LBL_Unsupported_tag";
 }
 
 MARK:unpairedStartTag: {
     type:"Warning";
-    message:"Unfinished tag.";
+    message:"LBL_Unfinished_tag";
 }
 MARK:unpairedEndTag: {
     type:"Error";
-    message:"Unpaired end tag.";
+    message:"LBL_Unpaired_end_tag";
 }
 MARK:html_ERROR: {
     type:"Error";
-    message:"Unpaired end tag.";
+    message:"LBL_Unpaired_end_tag";
 }
 MARK:error: {
     type:"Error";
-    message:"Unexpected character.";
+    message:"LBL_Unexpected_character";
 }
 
 MARK:html_element_name: {
     type:"Deprecation2";
-    message:"Deprecated tag.";
+    message:"LBL_Deprecated_tag";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
 }
 MARK:html_attribute_name: {
     type:"Deprecation2";
-    message:"Deprecated attribute.";
+    message:"LBL_Deprecated_attribute";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
 }
+
+BUNDLE "org.netbeans.modules.html.editor.resources.Bundle"
 
 #PROPERTIES {
 #    printFirst: "true";
