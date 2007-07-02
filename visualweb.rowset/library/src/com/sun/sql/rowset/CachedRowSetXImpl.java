@@ -1014,6 +1014,10 @@ public class CachedRowSetXImpl extends BaseRowSetX implements CachedRowSetX, Row
                 // It seems, some databases throw an exception here (e.g., Pointbase)
                 // assume false (so updateClob/Blob will not work)
                 dbmslocatorsUpdateCopy = false;
+            } catch (AbstractMethodError e) {
+                // Some drivers (e.g., Oracle 9) don't implement the locatorsUpdateCopy() method.
+                // Assume false (so updateClob/Blob will not work)
+                dbmslocatorsUpdateCopy = false;
             } finally {
                 if (tempConn != null) {
                     try {
@@ -2390,20 +2394,19 @@ public class CachedRowSetXImpl extends BaseRowSetX implements CachedRowSetX, Row
                 try {
 		    rsmd = tempPS.getMetaData();
                     Log.getLogger().finest("After calling tempPS.getMetaData(), rsmd: " + rsmd);
+
+		    if (rsmd==null && "Oracle".equals(tempConn.getMetaData().getDatabaseProductName()))
+		    {
+			// Oracle 9 driver problem -- silently returns null rsmd
+			rsmd = oracleFixup(tempConn, getCommand());
+		    }
 		} catch (SQLException e) {
 
                     Log.getLogger().finest("Exception caught: " + e.getErrorCode() + " : " + e.getMessage());
 		    if (e.getErrorCode()==17144) {
+			// Oracle 10 driver problem -- throws SQLException, "statement handle not executed"
+			rsmd = oracleFixup(tempConn, getCommand());
 
-			// Oracle driver problem.  Execute a modified cmd, to populate metadata
-                        // Strip off unnecessary stuff, and where clause that can't be satisfied
-                        String[] s = getCommand().split("(?i:where|group by|order by)");
-                        String command = s[0] + " WHERE 1=0";
-                        Log.getLogger().finest("Executing modified statement: " + command);
-			tempPS = tempConn.prepareStatement(command);
-                        tempPS.execute();
-                        Log.getLogger().finest("Getting metaData from modified statement");
-                        rsmd = tempPS.getMetaData();
                     } else {
                         // Some other problem.  Re-throw.
                         throw (e);
@@ -2440,7 +2443,21 @@ public class CachedRowSetXImpl extends BaseRowSetX implements CachedRowSetX, Row
         return rowSetMD;
     }
     
+
+    // Work around Oracle driver problem by executing modified command, to populate metadata
+    // Strip off unnecessary stuff, and add where clause that is always false
+    private ResultSetMetaData oracleFixup(Connection tempConn, String command)
+	throws SQLException
+    {
+	String[] s = command.split("(?i:where|group by|order by)");
+	String cmd = s[0] + " WHERE 1=0";
+	Log.getLogger().finest("Executing modified statement: " + cmd);
+	PreparedStatement tempPS = tempConn.prepareStatement(cmd);
+	tempPS.execute();
+	return tempPS.getMetaData();
+    }
     
+	
     /**
      * {@inheritDoc}
      */
@@ -4203,6 +4220,7 @@ public class CachedRowSetXImpl extends BaseRowSetX implements CachedRowSetX, Row
                 
                 Log.getLogger().finest("About to get connection, DataSource: " + ds);
 
+System.out.println("username: " + username);		
                 if(username == null || username.equals("")) { //NOI18N
                     conn = ds.getConnection();
                 } else {
