@@ -58,37 +58,49 @@ import org.netbeans.installer.utils.system.unix.shell.TCShell;
  * @author Dmitry Lipin
  */
 public abstract class UnixNativeUtils extends NativeUtils {
-    
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
-    private static final String [] FORBIDDEN_DELETING_FILES_UNIX = {
-        System.getProperty("user.home"),
-        System.getProperty("java.home"),
-        "/",
-        "/bin",
-        "/boot",
-        "/dev",
-        "/etc",
-        "/home",
-        "/lib",
-        "/mnt",
-        "/opt",
-        "/sbin",
-        "/share",
-        "/usr",
-        "/usr/bin",
-        "/usr/include",
-        "/usr/lib",
-        "/usr/man",
-        "/usr/sbin",
-        "/var" };
-    
+
+    private static final String[] FORBIDDEN_DELETING_FILES_UNIX = {
+            System.getProperty("user.home"),
+            System.getProperty("java.home"),
+            "/",
+            "/bin",
+            "/boot",
+            "/dev",
+            "/etc",
+            "/home",
+            "/lib",
+            "/mnt",
+            "/opt",
+            "/sbin",
+            "/share",
+            "/usr",
+            "/usr/bin",
+            "/usr/include",
+            "/usr/lib",
+            "/usr/man",
+            "/usr/sbin",
+            "/var",
+            };
     
     private static final String CLEANER_RESOURCE =
-            NATIVE_CLEANER_RESOURCE_SUFFIX +
-            "unix/" + "cleaner.sh";
+            NATIVE_CLEANER_RESOURCE_SUFFIX + "unix/cleaner.sh"; // NOI18N
+    
     private static final String CLEANER_FILENAME =
-            "nbi-cleaner.sh";
+            "nbi-cleaner.sh"; // NOI18N
+    
+    public static final String XDG_DATA_HOME_ENV_VARIABLE = 
+            "XDG_DATA_HOME"; // NOI18N
+
+    public static final String XDG_DATA_DIRS_ENV_VARIABLE = 
+            "XDG_DATA_DIRS"; // NOI18N
+            
+    public static final String DEFAULT_XDG_DATA_HOME = 
+            ".local/share"; // NOI18N
+    
+    public static final String DEFAULT_XDG_DATA_DIRS = 
+            "/usr/share"; // NOI18N
     
     public boolean isCurrentUserAdmin() {
         if(isUserAdminSet) {
@@ -129,49 +141,82 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
     }
     
-    public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {
-        final String XDG_DATA_HOME = SystemUtils.getEnvironmentVariable("XDG_DATA_HOME");
-        final String XDG_DATA_DIRS = SystemUtils.getEnvironmentVariable("XDG_DATA_DIRS");
+    public File getShortcutLocation(
+            final Shortcut shortcut, 
+            final LocationType locationType) throws NativeException {
+        LogManager.logIndent(
+                "devising the shortcut location by type: " + locationType); // NOI18N
         
-        File currentUserLocation;
+        final String XDG_DATA_HOME = 
+                SystemUtils.getEnvironmentVariable(XDG_DATA_HOME_ENV_VARIABLE);
+        final String XDG_DATA_DIRS = 
+                SystemUtils.getEnvironmentVariable(XDG_DATA_DIRS_ENV_VARIABLE);
+        
+        final File currentUserLocation;
         if (XDG_DATA_HOME == null) {
-            currentUserLocation = new File(SystemUtils.getUserHomeDirectory(), ".local/share");
+            currentUserLocation = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    DEFAULT_XDG_DATA_HOME);
         } else {
-            currentUserLocation = new File(XDG_DATA_HOME);
+            currentUserLocation = new File(
+                    XDG_DATA_HOME);
         }
         
-        File allUsersLocation;
+        final File allUsersLocation;
         if (XDG_DATA_DIRS == null) {
-            allUsersLocation = new File("/usr/share");
+            allUsersLocation = new File(DEFAULT_XDG_DATA_DIRS);
         } else {
             allUsersLocation = new File(XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0]);
         }
         
+        LogManager.log(
+                "XDG_DATA_HOME = " + currentUserLocation); // NOI18N
+        LogManager.log(
+                "XDG_DATA_DIRS = " + allUsersLocation); // NOI18N
+        
         String fileName = shortcut.getFileName();
         if (fileName == null) {
-            if(shortcut instanceof FileShortcut) {
-                File target = ((FileShortcut)shortcut).getTarget();
+            if (shortcut instanceof FileShortcut) {
+                final File target = ((FileShortcut) shortcut).getTarget();
+                
                 fileName = target.getName();
                 if(!target.isDirectory()) {
                     fileName += ".desktop";
                 }
             } else if(shortcut instanceof InternetShortcut) {
-                fileName = ((InternetShortcut)shortcut).getURL().getFile() + ".desktop";
+                fileName = ((InternetShortcut) shortcut).getURL().getFile() + 
+                        ".desktop";
             }
         }
         
+        LogManager.log(""); // NOI18N
+        
+        final File shortcutFile;
         switch (locationType) {
             case CURRENT_USER_DESKTOP:
-                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
             case ALL_USERS_DESKTOP:
-                return new File(SystemUtils.getUserHomeDirectory(), "Desktop/" + fileName);
+                shortcutFile = new File(
+                        SystemUtils.getUserHomeDirectory(), 
+                        "Desktop/" + fileName);
+                break;
             case CURRENT_USER_START_MENU:
-                return new File(currentUserLocation, "applications/" + fileName);
+                shortcutFile = new File(
+                        currentUserLocation, 
+                        "applications/" + fileName);
+                break;
             case ALL_USERS_START_MENU:
-                return new File(allUsersLocation, "applications/" + fileName);
+                shortcutFile = new File(
+                        allUsersLocation, 
+                        "applications/" + fileName);
+                break;
             default:
-                return null;
+                shortcutFile = null;
         }
+        
+        LogManager.logUnindent(
+                "shortcut file: " + shortcutFile); // NOI18N
+        
+        return shortcutFile;
     }
     
     private List <String> getDesktopEntry(FileShortcut shortcut) {

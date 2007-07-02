@@ -27,6 +27,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -152,60 +153,91 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         
         /////////////////////////////////////////////////////////////////////////////
+        LogManager.logIndent(
+                "creating the desktop shortcut for NetBeans IDE"); // NOI18N
         if (!SystemUtils.isMacOS()) {
             try {
                 progress.setDetail(getString("CL.install.desktop")); // NOI18N
                 
                 if (SystemUtils.isCurrentUserAdmin()) {
+                    LogManager.log(
+                            "... current user is an administrator " + // NOI18N
+                            "-- creating the shortcut for all users"); // NOI18N
+                            
                     SystemUtils.createShortcut(
                             getDesktopShortcut(installLocation),
                             LocationType.ALL_USERS_DESKTOP);
                     
                     getProduct().setProperty(
-                            "desktop.shortcut.location", 
-                            "all.users");
+                            DESKTOP_SHORTCUT_LOCATION_PROPERTY, 
+                            ALL_USERS_PROPERTY_VALUE);
                 } else {
+                    LogManager.log(
+                            "... current user is an ordinary user " + // NOI18N
+                            "-- creating the shortcut for the current " + // NOI18N
+                            "user only"); // NOI18N
+                            
                     SystemUtils.createShortcut(
                             getDesktopShortcut(installLocation),
                             LocationType.CURRENT_USER_DESKTOP);
                     
                     getProduct().setProperty(
-                            "desktop.shortcut.location", 
-                            "current.user");
+                            DESKTOP_SHORTCUT_LOCATION_PROPERTY, 
+                            CURRENT_USER_PROPERTY_VALUE);
                 }
             } catch (NativeException e) {
+                LogManager.unindent();
+                
                 throw new InstallationException(
                         getString("CL.install.error.desktop"), // NOI18N
                         e);
             }
+        } else {
+            LogManager.log(
+                    "... skipping this step as we're on Mac OS"); // NOI18N
         }
+        LogManager.logUnindent(
+                "... done"); // NOI18N
         
         /////////////////////////////////////////////////////////////////////////////
+        LogManager.logIndent(
+                "creating the start menu shortcut for NetBeans IDE"); // NOI18N
         try {
             progress.setDetail(getString("CL.install.start.menu")); // NOI18N
             
             if (SystemUtils.isCurrentUserAdmin()) {
+                LogManager.log(
+                        "... current user is an administrator " + // NOI18N
+                        "-- creating the shortcut for all users"); // NOI18N
+                
                 SystemUtils.createShortcut(
                         getStartMenuShortcut(installLocation),
                         LocationType.ALL_USERS_START_MENU);
                 
                 getProduct().setProperty(
-                        "start.menu.shortcut.location", 
-                        "all.users");
+                        START_MENU_SHORTCUT_LOCATION_PROPERTY, 
+                        ALL_USERS_PROPERTY_VALUE);
             } else {
+                LogManager.log(
+                        "... current user is an ordinary user " + // NOI18N
+                        "-- creating the shortcut for the current " + // NOI18N
+                        "user only"); // NOI18N
+                      
                 SystemUtils.createShortcut(
                         getStartMenuShortcut(installLocation),
                         LocationType.CURRENT_USER_START_MENU);
                 
                 getProduct().setProperty(
-                        "start.menu.shortcut.location", 
-                        "current.user");
+                        START_MENU_SHORTCUT_LOCATION_PROPERTY, 
+                        CURRENT_USER_PROPERTY_VALUE);
             }
         } catch (NativeException e) {
             throw new InstallationException(
                     getString("CL.install.error.start.menu"), // NOI18N
                     e);
         }
+        LogManager.logUnindent(
+                "... done"); // NOI18N
         
         /////////////////////////////////////////////////////////////////////////////
         try {
@@ -268,10 +300,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(getString("CL.uninstall.start.menu")); // NOI18N
             
             final String shortcutLocation = 
-                    getProduct().getProperty("start.menu.shortcut.location");
+                    getProduct().getProperty(START_MENU_SHORTCUT_LOCATION_PROPERTY);
             
             if ((shortcutLocation == null) || 
-                    shortcutLocation.equals("current.user")) {
+                    shortcutLocation.equals(CURRENT_USER_PROPERTY_VALUE)) {
                 SystemUtils.removeShortcut(
                         getStartMenuShortcut(installLocation),
                         LocationType.CURRENT_USER_START_MENU,
@@ -293,11 +325,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 progress.setDetail(getString("CL.uninstall.desktop")); // NOI18N
                 
-                final String shortcutLocation = 
-                        getProduct().getProperty("desktop.shortcut.location");
+                final String shortcutLocation = getProduct().getProperty(
+                        DESKTOP_SHORTCUT_LOCATION_PROPERTY);
             
                 if ((shortcutLocation == null) || 
-                        shortcutLocation.equals("current.user")) {
+                        shortcutLocation.equals(CURRENT_USER_PROPERTY_VALUE)) {
                     SystemUtils.removeShortcut(
                             getDesktopShortcut(installLocation),
                             LocationType.CURRENT_USER_DESKTOP,
@@ -458,4 +490,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final long REQUIRED_XMX_VALUE =
             192 * NetBeansUtils.M;
+    
+    private static final String DESKTOP_SHORTCUT_LOCATION_PROPERTY = 
+            "desktop.shortcut.location"; // NOI18N
+    
+    private static final String START_MENU_SHORTCUT_LOCATION_PROPERTY = 
+            "start.menu.shortcut.location"; // NOI18N
+            
+    private static final String ALL_USERS_PROPERTY_VALUE = 
+            "all.users"; // NOI18N
+    
+    private static final String CURRENT_USER_PROPERTY_VALUE =
+            "current.user"; // NOI18N
 }

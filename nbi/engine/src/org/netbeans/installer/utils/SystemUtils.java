@@ -553,7 +553,9 @@ public final class SystemUtils {
      *
      *
      */
-    public static File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
+    public static File createShortcut(
+            final Shortcut shortcut, 
+            final LocationType locationType) throws NativeException {
         return getNativeUtils().createShortcut(shortcut, locationType);
     }
     
