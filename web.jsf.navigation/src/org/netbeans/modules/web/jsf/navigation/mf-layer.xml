@@ -41,6 +41,12 @@
                 <file name="org-netbeans-modules-project-ui-NewFile.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
                 </file>
+                <!-- Ultimately it would be nice to have a submenu with the actual wizards. 
+                <file name="NewProjectFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
+                    <attr name="position" intvalue="3"/>
+                   -->
+                </file>
             </folder>
             <!--<file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>-->
         </folder>
