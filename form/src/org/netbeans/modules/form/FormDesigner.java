@@ -702,7 +702,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             clearSelection();
 
         handleLayer.endDragging(null);
-        updateResizabilityActions();
         AssistantModel aModel = FormEditor.getAssistantModel(formModel);
         switch (mode) {
             case MODE_CONNECT: aModel.setContext("connectSource"); break; // NOI18N
