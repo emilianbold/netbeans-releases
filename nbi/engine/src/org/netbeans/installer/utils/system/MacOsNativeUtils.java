@@ -54,30 +54,6 @@ import org.xml.sax.SAXException;
  */
 public class MacOsNativeUtils extends UnixNativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String    LIBRARY_PATH_MACOSX     =
-            NATIVE_JNILIB_RESOURCE_SUFFIX +
-            "macosx/" + //NOI18N
-            "macosx.dylib"; // NO18N
-    
-    public static final String    APP_SUFFIX              = ".app";
-    
-    private static final String   DOCK_PROPERIES         = "com.apple.dock.plist";
-    
-    private static final String   PLUTILS                = "plutil";
-    private static final String   PLUTILS_CONVERT        = "-convert";
-    private static final String   PLUTILS_CONVERT_XML    = "xml1";
-    private static final String   PLUTILS_CONVERT_BINARY = "binary1";
-    
-    private static final String[] UPDATE_DOCK_COMMAND  = new String[] {"killall", "-HUP", "Dock"};
-    public static final String[] FORBIDDEN_DELETING_FILES_MACOSX = {
-        "/Applications",
-        "/Developer",
-        "/Library",
-        "/Network",
-        "/System",
-        "/Users"};
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     
     // constructor //////////////////////////////////////////////////////////////////
@@ -227,20 +203,25 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private String getOSVersion() {
+    private String getOSVersion(
+            ) {
         return System.getProperty("os.version");
     }
     
-    private File upToApp(File exec) {
-        File executable = exec;
-        while ((executable != null) && !executable.getPath().endsWith(APP_SUFFIX)) {
+    private File upToApp(
+            final File file) {
+        File executable = file;
+        
+        while ((executable != null) && 
+                !executable.getPath().endsWith(APP_SUFFIX)) {
             executable = executable.getParentFile();
         }
         
         return executable;
     }
     
-    private void modifyShortcutPath(FileShortcut shortcut) {
+    private void modifyShortcutPath(
+            final FileShortcut shortcut) {
         if (shortcut.canModifyPath()) {
             File target = upToApp(shortcut.getTarget());
             
@@ -250,7 +231,10 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
     }
     
-    private boolean modifyDockLink(FileShortcut shortcut, File dockFile, boolean adding) {
+    private boolean modifyDockLink(
+            final FileShortcut shortcut, 
+            final File dockFile, 
+            final boolean adding) {
         OutputStream outputStream = null;
         boolean modified  = false;
         
@@ -258,22 +242,23 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             if(shortcut instanceof FileShortcut) {
                 modifyShortcutPath(shortcut);
                 
-                DocumentBuilderFactory documentBuilderFactory =
+                final DocumentBuilderFactory documentBuilderFactory =
                         DocumentBuilderFactory.newInstance();
                 documentBuilderFactory.setNamespaceAware(true);
                 
-                DocumentBuilder documentBuilder =
+                final DocumentBuilder documentBuilder =
                         documentBuilderFactory.newDocumentBuilder();
                 documentBuilder.setEntityResolver(new PropertyListEntityResolver());
-                LogManager.log(ErrorLevel.DEBUG,
+                LogManager.log(ErrorLevel.DEBUG, 
                         "    parsing xml file...");
-                Document document = documentBuilder.parse(dockFile);
+                
+                final Document document = documentBuilder.parse(dockFile);
                 LogManager.log(ErrorLevel.DEBUG,
                         "    ...complete");
                 
                 LogManager.log(ErrorLevel.DEBUG,
                         "    getting root element");
-                Element root = document.getDocumentElement();
+                final Element root = document.getDocumentElement();
                 
                 LogManager.log(ErrorLevel.DEBUG,
                         "    getting root/dict element");
@@ -496,6 +481,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         return returnResult;
     }
     
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
     private class PropertyListEntityResolver implements  EntityResolver {
         public static final String PROPERTTY_LIST_DTD_LOCAL =
                 "/System/Library/DTDs/PropertyList.dtd"; //NOI18N
@@ -516,4 +503,42 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         }
         
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String LIBRARY_PATH_MACOSX =
+            NATIVE_JNILIB_RESOURCE_SUFFIX + "macosx/macosx.dylib"; // NO18N
+    
+    public static final String APP_SUFFIX = 
+            ".app"; // NOI18N
+    
+    private static final String   DOCK_PROPERIES = 
+            "com.apple.dock.plist"; // NOI18N
+    
+    private static final String PLUTILS = 
+            "plutil"; // NOI18N
+    
+    private static final String PLUTILS_CONVERT = 
+            "-convert"; // NOI18N
+    
+    private static final String PLUTILS_CONVERT_XML = 
+            "xml1"; // NOI18N
+    
+    private static final String PLUTILS_CONVERT_BINARY = 
+            "binary1"; // NOI18N
+    
+    private static final String[] UPDATE_DOCK_COMMAND  = new String[] {
+        "killall", // NOI18N
+        "-HUP", // NOI18N
+        "Dock", // NOI18N
+    };
+    
+    public static final String[] FORBIDDEN_DELETING_FILES_MACOSX = {
+        "/Applications", // NOI18N
+        "/Developer", // NOI18N
+        "/Library", // NOI18N
+        "/Network", // NOI18N
+        "/System", // NOI18N
+        "/Users", // NOI18N
+    };
 }
