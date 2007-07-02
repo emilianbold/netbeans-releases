@@ -1479,10 +1479,7 @@ public class CasualDiff {
         assert oldList != null && newList != null;
         int lastOldPos = initialPos;
         
-        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
-                (List<JCTree>) oldList, 
-                (List<JCTree>) newList
-        );
+        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(oldList, newList);
         if (!matcher.match()) {
             return initialPos;
         }
@@ -1614,11 +1611,7 @@ public class CasualDiff {
             }
             return endPos;
         }
-        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
-                (List<JCTree>) oldList, 
-                (List<JCTree>) newList,
-                measure
-        );
+        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(oldList, newList, measure);
         if (!matcher.match()) {
             // nothing in the list, no need to print and nothing was printed
             return pos; 
@@ -1723,7 +1716,7 @@ public class CasualDiff {
             }
             if (!fieldGroup.isEmpty()) {
                 result.add(new FieldGroupTree(fieldGroup, this));
-                fieldGroup = new ArrayList();
+                fieldGroup = new ArrayList<JCVariableDecl>();
             }
             result.add(tree);
         }
@@ -2540,7 +2533,7 @@ public class CasualDiff {
             super(0);
             this.vars = vars;
             this.diff = diff;
-            pos = diff.getOldPos(vars.get(0));
+            pos = CasualDiff.getOldPos(vars.get(0));
         }
         
         public Kind getKind() {
@@ -2707,6 +2700,7 @@ public class CasualDiff {
             return trailing;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Diff))
                 return false;
@@ -2720,6 +2714,7 @@ public class CasualDiff {
                    trailing != d2.trailing;
         }
 
+        @Override
         public int hashCode() {
             return type.hashCode() + pos + 
                    (oldTree != null ? oldTree.hashCode() : 0) +
@@ -2729,6 +2724,7 @@ public class CasualDiff {
                    Boolean.valueOf(trailing).hashCode();
         }
 
+        @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
             sb.append("tree (");
