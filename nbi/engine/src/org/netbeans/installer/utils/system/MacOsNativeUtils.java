@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -163,12 +163,12 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                 }
             } else if(shortcut instanceof FileShortcut &&
                     convertDockProperties(true)==0) { //create link in the Dock
-                    if (modifyDockLink((FileShortcut)shortcut, shortcutFile, true)) {
-                        LogManager.log(ErrorLevel.DEBUG,
-                                "    Updating Dock");
-                        convertDockProperties(false);
-                        SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
-                    }
+                if (modifyDockLink((FileShortcut)shortcut, shortcutFile, true)) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Updating Dock");
+                    convertDockProperties(false);
+                    SystemUtils.executeCommand(null,UPDATE_DOCK_COMMAND);
+                }
             }
             return shortcutFile;
         } catch (IOException e) {
@@ -255,103 +255,102 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         boolean modified  = false;
         
         try {
-            
-            modifyShortcutPath(shortcut);
-            
-            DocumentBuilderFactory documentBuilderFactory =
-                    DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            
-            DocumentBuilder documentBuilder =
-                    documentBuilderFactory.newDocumentBuilder();
-            documentBuilder.setEntityResolver(new PropertyListEntityResolver());
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    parsing xml file...");
-            Document document = documentBuilder.parse(dockFile);
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    ...complete");
-            
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    getting root element");
-            Element root = document.getDocumentElement();
-            
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    getting root/dict element");
-            Element dict = XMLUtils.getChild(root, "dict");
-            
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    getting root/dict/[key=persistent-apps] element. dict = " +
-                    dict.getNodeName());
-            LogManager.log(ErrorLevel.DEBUG,"Get Keys");
-            
-            
-            List<Element> keys = XMLUtils.getChildren(dict, "key");
-            LogManager.log(ErrorLevel.DEBUG,"Length = " + keys.size());
-            Element persistentAppsKeyNode = null;
-            int index = 0;
-            while(keys.get(index)!=null) {
-                if(keys.get(index).getTextContent().equals("persistent-apps")) {
-                    persistentAppsKeyNode = keys.get(index);
-                    break;
-                }
-                index++;
-            }
-            
-            if(persistentAppsKeyNode == null) {
+            if(shortcut instanceof FileShortcut) {
+                modifyShortcutPath(shortcut);
+                
+                DocumentBuilderFactory documentBuilderFactory =
+                        DocumentBuilderFactory.newInstance();
+                documentBuilderFactory.setNamespaceAware(true);
+                
+                DocumentBuilder documentBuilder =
+                        documentBuilderFactory.newDocumentBuilder();
+                documentBuilder.setEntityResolver(new PropertyListEntityResolver());
                 LogManager.log(ErrorLevel.DEBUG,
-                        "    Not found.. strange.. Create new one");
-                persistentAppsKeyNode = XMLUtils.appendChild(dict,"key","persistent-apps");
-            } else {
+                        "    parsing xml file...");
+                Document document = documentBuilder.parse(dockFile);
                 LogManager.log(ErrorLevel.DEBUG,
-                        "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());
-            }
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    Getting next element.. expecting it to be array element");
-            Element array = keys.get(index);
-            Node arrayIt = array;
-            
-            index = 0 ;
-            int MAX_SEARCH_ELEMENTS = 20 ;
-            String nodeName;
-            while(index < MAX_SEARCH_ELEMENTS && arrayIt!=null) {
-                nodeName = arrayIt.getNodeName();
-                if(nodeName!=null && nodeName.equals("array") &&
-                        arrayIt instanceof Element) {
-                    break;
+                        "    ...complete");
+                
+                LogManager.log(ErrorLevel.DEBUG,
+                        "    getting root element");
+                Element root = document.getDocumentElement();
+                
+                LogManager.log(ErrorLevel.DEBUG,
+                        "    getting root/dict element");
+                Element dict = XMLUtils.getChild(root, "dict");
+                
+                LogManager.log(ErrorLevel.DEBUG,
+                        "    getting root/dict/[key=persistent-apps] element. dict = " +
+                        dict.getNodeName());
+                LogManager.log(ErrorLevel.DEBUG,"Get Keys");
+                
+                
+                List<Element> keys = XMLUtils.getChildren(dict, "key");
+                LogManager.log(ErrorLevel.DEBUG,"Length = " + keys.size());
+                Element persistentAppsKeyNode = null;
+                int index = 0;
+                while(keys.get(index)!=null) {
+                    if(keys.get(index).getTextContent().equals("persistent-apps")) {
+                        persistentAppsKeyNode = keys.get(index);
+                        break;
+                    }
+                    index++;
                 }
                 
-                arrayIt = arrayIt.getNextSibling();
-                index++;
-            }
-            
-            if(index==MAX_SEARCH_ELEMENTS || arrayIt==null) {
+                if(persistentAppsKeyNode == null) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Not found.. strange.. Create new one");
+                    persistentAppsKeyNode = XMLUtils.appendChild(dict,"key","persistent-apps");
+                } else {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    done. KeyNode = " + persistentAppsKeyNode.getTextContent());
+                }
                 LogManager.log(ErrorLevel.DEBUG,
-                        "    is not an array element... very strange");
-                return false;
-            }
-            array = (Element) arrayIt;
-            
-            if(array==null) {
+                        "    Getting next element.. expecting it to be array element");
+                Element array = keys.get(index);
+                Node arrayIt = array;
+                
+                index = 0 ;
+                int MAX_SEARCH_ELEMENTS = 20 ;
+                String nodeName;
+                while(index < MAX_SEARCH_ELEMENTS && arrayIt!=null) {
+                    nodeName = arrayIt.getNodeName();
+                    if(nodeName!=null && nodeName.equals("array") &&
+                            arrayIt instanceof Element) {
+                        break;
+                    }
+                    
+                    arrayIt = arrayIt.getNextSibling();
+                    index++;
+                }
+                
+                if(index==MAX_SEARCH_ELEMENTS || arrayIt==null) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    is not an array element... very strange");
+                    return false;
+                }
+                array = (Element) arrayIt;
+                
+                if(array==null) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    null... very strange");
+                    return false;
+                }
                 LogManager.log(ErrorLevel.DEBUG,
-                        "    null... very strange");
-                return false;
-            }
-            LogManager.log(ErrorLevel.DEBUG,
-                    "    OK. Content = " + array.getNodeName());
-            if(!array.getNodeName().equals("array")) {
-                LogManager.log(ErrorLevel.DEBUG,
-                        "    Not an array element");
-                return false;
-            }
-            
-            
-            if(adding) {
-                LogManager.log(ErrorLevel.DEBUG,
-                        "Adding shortcut with the following properties: ");
-                if(shortcut instanceof FileShortcut) {
+                        "    OK. Content = " + array.getNodeName());
+                if(!array.getNodeName().equals("array")) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Not an array element");
+                    return false;
+                }
+                
+                
+                if(adding) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "Adding shortcut with the following properties: ");
+                    
                     LogManager.log(ErrorLevel.DEBUG, "    target = " + shortcut.getTargetPath());
                     LogManager.log(ErrorLevel.DEBUG, "    name = " + shortcut.getName());
-                    
                     
                     dict = XMLUtils.appendChild(array,"dict",null);
                     XMLUtils.appendChild(dict,"key","tile-data");
@@ -428,13 +427,16 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     LogManager.log(ErrorLevel.DEBUG,
                             "... removing shortcut from Dock XML finished");
                 }
-            }
-            if(modified) {
+                if(modified) {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Saving XML... ");
+                    XMLUtils.saveXMLDocument(document,dockFile);
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Done (saving xml)");
+                }
+            } else {
                 LogManager.log(ErrorLevel.DEBUG,
-                        "    Saving XML... ");
-                XMLUtils.saveXMLDocument(document,dockFile);
-                LogManager.log(ErrorLevel.DEBUG,
-                        "    Done (saving xml)");
+                        "Adding non-file shortcuts to the Dock is not supported");
             }
         } catch (ParserConfigurationException e) {
             LogManager.log(ErrorLevel.WARNING,e);
