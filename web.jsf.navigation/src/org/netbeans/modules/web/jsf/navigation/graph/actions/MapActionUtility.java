@@ -337,7 +337,7 @@ public class MapActionUtility {
             Object sourceObj = e.getSource();
             if( sourceObj instanceof PageFlowScene ){
                 PageFlowScene scene = (PageFlowScene)sourceObj;
-                Set<? extends Object> selectedObjs = new HashSet(scene.getSelectedObjects());
+                HashSet<? extends Object> selectedObjs = new HashSet(scene.getSelectedObjects());
                 
                 for( Object obj : selectedObjs ){
                     if( obj instanceof PageFlowSceneElement ){

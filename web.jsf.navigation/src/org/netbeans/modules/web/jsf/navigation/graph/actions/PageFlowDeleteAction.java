@@ -52,10 +52,10 @@ public class PageFlowDeleteAction extends AbstractAction{
     }
     
     /* These are edges that do not exist in the local facesConfig. */
-    private final Collection<NavigationCaseEdge> thoseEdges = new ArrayList();
+    private final Collection<NavigationCaseEdge> thoseEdges = new ArrayList<NavigationCaseEdge>();
     
     /* These are edges that exist in the local facesConfig. */
-    private final Collection<NavigationCaseEdge> theseEdges = new ArrayList();
+    private final Collection<NavigationCaseEdge> theseEdges = new ArrayList<NavigationCaseEdge>();
     
     @Override
     public boolean isEnabled() {
@@ -82,7 +82,7 @@ public class PageFlowDeleteAction extends AbstractAction{
                 thoseEdges.clear();
                 theseEdges.clear();
                 
-                Collection<NavigationCaseEdge> allEdges = new ArrayList();
+                Collection<NavigationCaseEdge> allEdges = new ArrayList<NavigationCaseEdge>();
                 Collection<Pin> pins = scene.getNodePins((Page)element);
                 for( Pin pin : pins ){
                     allEdges.addAll(scene.findPinEdges(pin, true, true));
