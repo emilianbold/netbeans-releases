@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
@@ -320,11 +319,8 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                 ErrorManager.getDefault().notify (blE);
                 errorTooltip = null;
             }
-            Dimension maxSize = Toolkit.getDefaultToolkit().getScreenSize();
-            maxSize.width -= p.x;
-            maxSize.height -= p.y;
             hintListComponent =
-                    new ScrollCompletionPane(comp, fixes, null, null, maxSize);
+                    new ScrollCompletionPane(comp, fixes, null, null, getMaxSizeAt( p ));
             
             hintListComponent.getView().addMouseListener (this);
             hintListComponent.setName(POPUP_NAME);
@@ -344,6 +340,19 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
             pf = PopupFactory.getSharedInstance();
         }
         return pf;
+    }
+    
+    private Dimension getMaxSizeAt( Point p ) {
+        Rectangle screenBounds = null;
+        if( null != comp && null != comp.getGraphicsConfiguration() ) {
+            screenBounds = comp.getGraphicsConfiguration().getBounds();
+        } else {
+            screenBounds = new Rectangle( Toolkit.getDefaultToolkit().getScreenSize() );
+        }
+        Dimension maxSize = screenBounds.getSize();
+        maxSize.width -= p.x - screenBounds.x;
+        maxSize.height -= p.y - screenBounds.y;
+        return maxSize;
     }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
