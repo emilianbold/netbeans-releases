@@ -31,6 +31,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -160,9 +162,9 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 refDriver = new WeakReference(inst);
                 return inst;
             } catch (MalformedURLException e) {
-                IOException newEx = new IOException(e.getMessage());
-                newEx.initCause(e);
-                throw newEx;
+                String message = "Ignoring " + holder.getPrimaryFile(); // NOI18N
+                Logger.getLogger(JDBCDriverConvertor.class.getName()).log(Level.INFO, message, e);
+                return null;
             }
         }
     }
