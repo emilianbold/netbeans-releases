@@ -57,8 +57,8 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         setNode(original);
         /* Update the page only at request 
         updateContentModel();
-         */
         initListeners();
+         */
     }
     
     
@@ -319,6 +319,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     public Collection<Pin> getPinNodes() {
         if( !hasPageContentModelBeenChecked ){
             updateContentModel();
+            initListeners();
             hasPageContentModelBeenChecked = true;
         }
         if( pageContentModel == null ){
