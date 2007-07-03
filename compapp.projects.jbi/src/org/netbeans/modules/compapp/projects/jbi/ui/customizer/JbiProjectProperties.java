@@ -315,47 +315,50 @@ public class JbiProjectProperties {
     //================== Start of JBI  =====================================//
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Should no longer be used.
      */
     public static final String ASSEMBLY_UNIT_ALIAS = "org.netbeans.modules.compapp.jbiserver.alias.assembly-unit"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Use SERVICE_ASSEMBLY_ID instead.
      */
     public static final String ASSEMBLY_UNIT_UUID = "org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit"; // NOI18N
+    public static final String SERVICE_ASSEMBLY_ID = "jbi.service-assembly.id"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Use SERVICE_ASSEMBLY_DESCRIPTION instead.
      */
     public static final String ASSEMBLY_UNIT_DESCRIPTION = "org.netbeans.modules.compapp.jbiserver.description.assembly-unit"; // NOI18N
+    public static final String SERVICE_ASSEMBLY_DESCRIPTION = "jbi.service-assembly.description"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Should no longer be used.
      */
     public static final String APPLICATION_SUB_ASSEMBLY_ALIAS = "org.netbeans.modules.compapp.jbiserver.alias.application-sub-assembly"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated use SERVICE_ASSEMBLY_DESCRIPTION instead.
      */
     public static final String APPLICATION_SUB_ASSEMBLY_DESCRIPTION = "org.netbeans.modules.compapp.jbiserver.description.application-sub-assembly"; // NOI18N
+    public static final String SERVICE_UNIT_DESCRIPTION = "jbi.service-unit.description"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Should no longer be used.
      */
     public static final String JBI_COMPONENT_CONF_FILE = "org.netbeans.modules.compapp.jbiserver.component.conf.file"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Should no longer be used.
      */
     public static final String JBI_COMPONENT_CONF_ROOT = "org.netbeans.modules.compapp.jbiserver.component.conf.root"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Should no longer be used.
      */
     public static final String JBI_DEPLOYMENT_CONF_FILE = "org.netbeans.modules.compapp.jbiserver.deployment.conf.file"; // NOI18N
     
     /**
-     * DOCUMENT ME!
+     * @deprecated Should no longer be used.
      */
     public static final String JBI_DEPLOYMENT_CONF_ROOT = "org.netbeans.modules.compapp.jbiserver.deployment.conf.root"; // NOI18N
     
@@ -524,17 +527,15 @@ public class JbiProjectProperties {
         
         //================== Start of JBI  =====================================//
         new PropertyDescriptor(JBI_ROUTING, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(ASSEMBLY_UNIT_ALIAS, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(ASSEMBLY_UNIT_UUID, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(ASSEMBLY_UNIT_DESCRIPTION, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(APPLICATION_SUB_ASSEMBLY_ALIAS, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(APPLICATION_SUB_ASSEMBLY_DESCRIPTION, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JBI_COMPONENT_CONF_ROOT, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JBI_DEPLOYMENT_CONF_ROOT, PROJECT, STRING_PARSER),
-        new PropertyDescriptor(JBI_COMPONENT_CONF_FILE, PROJECT, STRING_PARSER),
+        new PropertyDescriptor(SERVICE_ASSEMBLY_ID, PROJECT, STRING_PARSER),
+        new PropertyDescriptor(SERVICE_ASSEMBLY_DESCRIPTION, PROJECT, STRING_PARSER),
+        new PropertyDescriptor(SERVICE_UNIT_DESCRIPTION, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JBI_COMPONENT_CONF_ROOT, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JBI_DEPLOYMENT_CONF_ROOT, PROJECT, STRING_PARSER),
+//        new PropertyDescriptor(JBI_COMPONENT_CONF_FILE, PROJECT, STRING_PARSER),
 //            new PropertyDescriptor(JBI_TARGET_COMPONENT_LIST_KEY, PROJECT, STRING_PARSER),
         
-        new PropertyDescriptor(JBI_DEPLOYMENT_CONF_FILE, PRIVATE, STRING_PARSER),
+//        new PropertyDescriptor(JBI_DEPLOYMENT_CONF_FILE, PRIVATE, STRING_PARSER),
         new PropertyDescriptor(DISPLAY_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER),
         new PropertyDescriptor(HOST_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER),
         new PropertyDescriptor(ADMINISTRATION_PORT_PROPERTY_KEY, PRIVATE, STRING_PARSER),
@@ -887,6 +888,8 @@ public class JbiProjectProperties {
     
     private void updateAssemblyInfoAndCasa() throws Exception {
         
+        saveAssemblyInfo();
+        
         FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
         if (casaFO == null) {
             return;
@@ -914,8 +917,6 @@ public class JbiProjectProperties {
         if (addedList.size() == 0 && removedList.size() == 0) {
             return; // no casa/asi change needed
         }
-        
-        saveAssemblyInfo();
         
         File file = FileUtil.toFile(casaFO);
         String fileLoc = file.getPath();
@@ -1085,7 +1086,7 @@ public class JbiProjectProperties {
         AntArtifact aa = (AntArtifact) vi.getObject();
         
         if (desc == null) { // if needed, use default one...
-            desc = (String) this.get(JbiProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION);
+            desc = (String) this.get(JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
             vi.setAsaDescription(desc);
         }
         
@@ -1203,7 +1204,7 @@ public class JbiProjectProperties {
             serviceAssemblyElement.appendChild(
                     generateIdentification(
                     document, ((JbiProject)project).getName(), //auid,
-                    (String) this.get(JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION)
+                    (String) this.get(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION)
                     )
                     );
             

@@ -80,6 +80,7 @@ public class BuildServiceAssembly extends Task {
     private File mergedCatalogFile;
     
     // private boolean jbiRouting = true;
+    private String projDirLoc;
     private String serviceUnitsDirLoc;
     private String jbiasaDirLoc;
     
@@ -135,9 +136,7 @@ public class BuildServiceAssembly extends Task {
     public void execute() throws BuildException {
         showLog = showLogOption.equalsIgnoreCase("true");
         JarFile genericBCJar = null;
-        try {
-            MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
-                        
+        try {                        
             Project p = this.getProject();
             String confDir = p.getProperty((JbiProjectProperties.META_INF));
             if ((confDir == null) || (confDir.length() < 1)) {
@@ -147,12 +146,19 @@ public class BuildServiceAssembly extends Task {
             String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
             String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
             
-            String projPath = p.getProperty("basedir") + File.separator;            
-            String srcDirLoc = projPath + "src" + File.separator;
+            projDirLoc = p.getProperty("basedir") + File.separator;            
+            String srcDirLoc = projDirLoc + "src" + File.separator;
             String confDirLoc = srcDirLoc + "conf" + File.separator;
             
             serviceUnitsDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBISERVICEUNITS;            
-            jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;
+            jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;               
+            
+            // Command-line support
+            MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
+            
+            // Command-line support
+//            MigrationHelper.migrateCompAppProperties(projDirLoc, null);
+            
             
             String catalogDirLoc = serviceUnitsDirLoc
                     + File.separator + "META-INF";
@@ -160,7 +166,7 @@ public class BuildServiceAssembly extends Task {
             
             // String mapFileLoc = projPath + confDir + File.separator + "portmap.xml";
             String connectionsFileLoc = confDirLoc + "connections.xml";
-            String buildDir = projPath + p.getProperty(JbiProjectProperties.BUILD_DIR);
+            String buildDir = projDirLoc + p.getProperty(JbiProjectProperties.BUILD_DIR);
             
             // create confDir if needed..
             File buildMetaInfDir = new File(buildDir + "/META-INF");
@@ -205,7 +211,7 @@ public class BuildServiceAssembly extends Task {
                 }
                 
                 if ((srcJarPath.indexOf(':') < 0) && (!srcJarPath.startsWith("/"))) { // i.e., relative path
-                    srcJarPath = projPath + srcJarPath;
+                    srcJarPath = projDirLoc + srcJarPath;
                 }                
                 File srcJarFile = new File(srcJarPath);
                 
@@ -302,7 +308,7 @@ public class BuildServiceAssembly extends Task {
             StringTokenizer st = new StringTokenizer(commaSeparatedList, ";");
             String tkn = null;
             while (st.hasMoreTokens()){
-                tkn = (String) st.nextToken();
+                tkn = st.nextToken();
                 ret.add(tkn);
             }
         }
@@ -790,7 +796,12 @@ public class BuildServiceAssembly extends Task {
     }
     
     private String getProjectName() {
-        return getProject().getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
+        Project proj = getProject();
+        String projName = proj.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+        if (projName == null) { // for backward compatibility until project is updated  
+            projName = proj.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
+        }
+        return projName;
     }
     
     private String getCasaWSDLFileName() {

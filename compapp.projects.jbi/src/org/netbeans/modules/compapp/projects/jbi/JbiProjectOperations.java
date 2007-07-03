@@ -211,11 +211,11 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                 JbiProjectProperties jbiProjectProperties = project.getProjectProperties();
                 
                 // Fix SA description (TEMP)
-                String saDescription = (String) props.get(JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION);
+                String saDescription = (String) props.get(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
                 if (saDescription.contains(oldName)) {
                     String newSaDescription = saDescription.replaceAll(oldName, newName);
-                    props.put(JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, newSaDescription);
-                    jbiProjectProperties.put(JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, newSaDescription);
+                    props.put(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION, newSaDescription);
+                    jbiProjectProperties.put(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION, newSaDescription);
                 }
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);

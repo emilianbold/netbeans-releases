@@ -337,21 +337,13 @@ public class JbiProjectGenerator {
         ep.setProperty(JbiProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
 
         //============= Start of JBI ========================================//
-        ep.setProperty(JbiProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Service Assembly"); // NOI18N
-        ep.setProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID, name); 
+        ep.setProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID, name); 
         ep.setProperty(
-            JbiProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents the Service Assembly of " + name // NOI18N
-        ); // NOI18N
+            JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION, 
+            "Represents the Service Assembly of " + name); // NOI18N
         ep.setProperty(
-            JbiProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Service Unit" // NOI18N
-        ); // NOI18N
-        ep.setProperty(
-            JbiProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION,
-            "Represents this Service Unit" // NOI18N
-        ); // NOI18N
-        ep.setProperty(JbiProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
-
+            JbiProjectProperties.SERVICE_UNIT_DESCRIPTION,
+            "Represents this Service Unit"); // NOI18N
         //============= End of JBI ========================================//
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
@@ -364,7 +356,7 @@ public class JbiProjectGenerator {
 
         //============= Start of JBI ========================================//
         ep.setProperty(JbiProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
-        ep.setProperty(JbiProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N
+
 
         //============= End of JBI ========================================//
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

@@ -414,8 +414,8 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         Element identification = (Element) jbiSU.getElementsByTagName(JBI_IDENTIFICATION_ELEM_NAME).item(0);
         String name = ((Element) identification.getElementsByTagName(JBI_NAME_ELEM_NAME).item(0)).
                 getFirstChild().getNodeValue();
-        String description = ((Element) identification.getElementsByTagName(JBI_DESCRIPTION_ELEM_NAME).item(0)).
-                getFirstChild().getNodeValue();
+        Node descriptionChildNode = ((Element) identification.getElementsByTagName(JBI_DESCRIPTION_ELEM_NAME).item(0)).getFirstChild();
+        String description = descriptionChildNode == null ? "" : descriptionChildNode.getNodeValue();
 
         Element target = (Element) jbiSU.getElementsByTagName(JBI_TARGET_ELEM_NAME).item(0);
         String componentName = ((Element) target.getElementsByTagName(JBI_COMPONENT_NAME_ELEM_NAME).item(0)).

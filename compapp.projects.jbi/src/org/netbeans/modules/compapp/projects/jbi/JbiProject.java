@@ -569,8 +569,9 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     updateComponentDocuments(confDir);
                     
                     // 2. Make sure the component target list is not corrupted.
+                    JbiProjectProperties projectProperties = getProjectProperties(); 
                     try {
-                        getProjectProperties().fixComponentTargetList();
+                        projectProperties.fixComponentTargetList();
                     } catch (Exception e) {
                         // The failure is probably due to unresolved references.
                         // Once the reference problem is fixed, we will try
@@ -578,29 +579,35 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                         return null;
                     }
                     
-                    // 3. Migrate old casa.wsdl to <Proj>.wsdl, if applicable
+                    // 3.1 Migrate old casa.wsdl to <Proj>.wsdl, if applicable
+                    String projDirLoc = JbiProject.this.getProjectDirectory().getPath();
                     String srcDirLoc =
-                            JbiProject.this.getProjectDirectory().getPath() + File.separator +
-                            (String) helper.getStandardPropertyEvaluator().getProperty(
+                            projDirLoc + File.separator +
+                            helper.getStandardPropertyEvaluator().getProperty(
                             JbiProjectProperties.SOURCE_ROOT);
                     String projName = JbiProjectHelper.getJbiProjectName(JbiProject.this);
                     MigrationHelper.migrateCasaWSDL(srcDirLoc, projName);
                     
-                    // 4. Set some properties (?)
-                    EditableProperties ep = helper.getProperties(
-                            AntProjectHelper.PRIVATE_PROPERTIES_PATH
-                            );
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user")); // NOI18N
+                    // 3.2 Migrate old compapp properties
+                    EditableProperties projectEP = helper.getProperties(
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    MigrationHelper.migrateCompAppProperties(projDirLoc, projectEP);
+                    helper.putProperties(
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+                    
+                    // 4. Set private properties
+                    EditableProperties privateEP = helper.getProperties(
+                            AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    privateEP.setProperty(
+                            "netbeans.user", System.getProperty("netbeans.user")); // NOI18N
                     
                     File f = InstalledFileLocator.getDefault().locate(
-                            MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false
-                            );
-                    
+                            MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);                    
                     if (f != null) {
-                        ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                        privateEP.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
                     }
                     
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateEP);
                     
                     try {
                         ProjectManager.getDefault().saveProject(JbiProject.this);
