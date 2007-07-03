@@ -140,8 +140,8 @@ public class ComponentSerializationSupport {
 
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
         DataFolder registryFolder = registry.getRegistryFolder ();
-        if (! writeDocument (registryFolder.getPrimaryFile (), typeDescriptor.getThisType ().toString (), "xml", document))
-            Debug.warning ("Error while serializing a component descriptor", typeDescriptor.getThisType ().toString ());
+        if (! writeDocument (registryFolder.getPrimaryFile (), typeDescriptor.getThisType ().toString (), "xml", document)) // NOI18N
+            Debug.warning ("Error while serializing a component descriptor", typeDescriptor.getThisType ().toString ()); // NOI18N
     }
 
     private static void serializeComponentProducer (String projectType, TypeID typeID, PaletteDescriptor paletteDescriptor) {
@@ -159,9 +159,9 @@ public class ComponentSerializationSupport {
             setAttribute (document, rootNode, XMLComponentProducer.PREFERRED_CATEGORYID_ATTR, paletteDescriptor.getCategoryID ());
 
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
-        DataFolder registryFolder = registry.getRegistryFolder ();
-        if (! writeDocument (registryFolder.getPrimaryFile (), typeID.toString (), "xml", document))
-            Debug.warning ("Error while serializing a component descriptor", typeID.toString ());
+        DataFolder producersFolder = registry.getProducersFolder ();
+        if (! writeDocument (producersFolder.getPrimaryFile (), typeID.toString (), "xml", document)) // NOI18N
+            Debug.warning ("Error while serializing a component producer", typeID.toString ()); // NOI18N
     }
 
     private static void setAttribute (Document xml, Node node, String name, String value) {
