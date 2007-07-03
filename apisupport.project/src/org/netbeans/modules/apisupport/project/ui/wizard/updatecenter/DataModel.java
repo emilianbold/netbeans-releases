@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.Map;
 import java.util.jar.Manifest;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -40,7 +41,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     static private String AUTOUPDATE_TYPES = "Services/AutoupdateType"; //NOI18N
     private String AUTOUPDATE_SERVICE_TYPE = "_update_center"; //NOI18N
-    static private String AUTOUPDATE_SERVICE_TYPE_EXT = "settings"; //NOI18N
+    static private String AUTOUPDATE_SETTINGS_TYPE_EXT = "settings"; //NOI18N
+    static private String AUTOUPDATE_INSTANCE_TYPE_EXT = "instance"; //NOI18N
     static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
     static private String AUTOUPDATE_MODULE = "org.netbeans.modules.autoupdate"; // NOI18N
     static private String AUTOUPDATE_MODULE_NEW = "org.netbeans.modules.autoupdate.services"; // NOI18N
@@ -59,20 +61,21 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         if (cmf == null) {
             cmf = new CreatedModifiedFiles (getProject ());
         }
-        boolean newAPI = ((NbModuleProject) getProject()).getPlatform(true).getModule("org.netbeans.modules.autoupdate.services") != null;
-        URL url = DataModel.class.getResource(newAPI ? "update_center_new.xml" : "update_center.xml"); // NOI18N
-        assert url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
+        boolean newAPI = ((NbModuleProject) getProject()).getPlatform(true).getModule(AUTOUPDATE_MODULE_NEW) != null;
+        String extension = (newAPI) ? AUTOUPDATE_INSTANCE_TYPE_EXT : AUTOUPDATE_SETTINGS_TYPE_EXT;
+        URL url = newAPI ? null : DataModel.class.getResource("update_center.xml"); // NOI18N
+        assert newAPI || url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
         FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
         
-        String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
+        String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '.' + extension;
         int sequence = 0;
         if (layer != null) {
             FileObject f;
             do {
                 f = layer.findResource (pathToAutoUpdateType);
                 if (f != null) {
-                    pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '_' + ++sequence + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
+                    pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '_' + ++sequence + '.' + extension;
                 }
             } while (f != null);
         }
@@ -84,8 +87,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         if (codename == null) {
             codename = getModuleInfo().getCodeNameBase();
         }
-        cmf.add(cmf.createLayerEntry(pathToAutoUpdateType, url, Collections.singletonMap("MODULECODENAME", codename), null, null)); // NOI18N
+        final Map<String, String> substitutionTokens = newAPI ? null : Collections.singletonMap("MODULECODENAME", codename);        
+        cmf.add(cmf.createLayerEntry(pathToAutoUpdateType, url,substitutionTokens, null, null)); // NOI18N
         
+        if (newAPI) {
+            cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceCreate", "methodvalue:org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider")); //NOI18N
+            cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceClass", "org.netbeans.spi.autoupdate.UpdateProvider")); //NOI18N
+            cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceOf", "org.netbeans.spi.autoupdate.UpdateProvider")); //NOI18N            
+        }        
         String url_key_base = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
         String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "url_key", url_key)); //NOI18N

@@ -27,19 +27,24 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
-
-      <file name="standard-update-provider.settings" url="standard-update-provider.settings">
+      <file name="standard-update-provider.instance">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
         <attr name="url_key" stringvalue="URL_Default_Standard"/>
         <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceClass" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
       </file>
       
-      <file name="dev-update-provider.settings" url="dev-update-provider.settings">
+      <file name="dev-update-provider.instance">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
         <attr name="url_key" stringvalue="URL_Default_N"/>
         <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceClass" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                
       </file>
       
     </folder>
