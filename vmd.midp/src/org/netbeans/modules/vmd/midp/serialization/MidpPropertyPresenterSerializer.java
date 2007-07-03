@@ -59,22 +59,22 @@ public class MidpPropertyPresenterSerializer implements PresenterSerializer {
         if (MidpTypes.TYPEID_BOOLEAN.equals (type))
             return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
         if (MidpTypes.TYPEID_CHAR.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_CHAR;
         if (MidpTypes.TYPEID_BYTE.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_BYTE;
         if (MidpTypes.TYPEID_SHORT.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_SHORT;
         if (MidpTypes.TYPEID_INT.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_INT;
         if (MidpTypes.TYPEID_LONG.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_LONG;
         if (MidpTypes.TYPEID_FLOAT.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_FLOAT;
         if (MidpTypes.TYPEID_DOUBLE.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_DOUBLE;
         // TODO
         if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (type))
-            return MidpPropertyPresenterDeserializer.EDITOR_BOOLEAN;
+            return MidpPropertyPresenterDeserializer.EDITOR_STRING;
         return MidpPropertyPresenterDeserializer.EDITOR_JAVA_CODE;
     }
 
