@@ -98,21 +98,21 @@ public final class XMLComponentProducer extends ComponentProducer {
         return super.postInitialize (document, mainComponent);
     }
 
-    public boolean checkValidity (DesignDocument document) {
+    public boolean checkValidity (final DesignDocument document) {
         if (! checkValidityByDeserializers (document))
             return false;
 
-        ComponentDescriptor descriptor = document.getDescriptorRegistry ().getComponentDescriptor (getMainComponentTypeID ());
-        TypeID superTypeID = descriptor.getTypeDescriptor ().getSuperType ();
+        final ComponentProducer[] producers = new ComponentProducer[1];
+        document.getTransactionManager ().readAccess (new Runnable() {
+            public void run () {
+                ComponentDescriptor descriptor = document.getDescriptorRegistry ().getComponentDescriptor (getMainComponentTypeID ());
+                TypeID superTypeID = descriptor.getTypeDescriptor ().getSuperType ();
+                if (superTypeID != null)
+                    producers[0] = DocumentSupport.getComponentProducer (document, superTypeID.toString ());
+            }
+        });
 
-        if (superTypeID != null) {
-            ComponentProducer producer = DocumentSupport.getComponentProducer (document, superTypeID.toString ());
-            if (producer != null)
-                if (! producer.checkValidity (document))
-                    return false;
-        }
-
-        return true;
+        return producers[0] == null || producers[0].checkValidity (document);
     }
 
     private boolean checkValidityByDeserializers (DesignDocument document) {

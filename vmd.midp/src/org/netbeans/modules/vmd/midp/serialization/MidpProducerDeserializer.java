@@ -30,7 +30,7 @@ import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
  */
 public class MidpProducerDeserializer extends ProducerDeserializer {
 
-    protected MidpProducerDeserializer () {
+    public MidpProducerDeserializer () {
         super (MidpDocumentSupport.PROJECT_TYPE_MIDP);
     }
 
