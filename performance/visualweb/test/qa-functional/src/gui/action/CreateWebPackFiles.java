@@ -28,6 +28,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -66,8 +67,8 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP Page"));
-        suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment"));
+        suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSF Page"));
+        suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSF fragment"));
         suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS Table"));
         return suite;
     }  
@@ -168,7 +169,11 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     private void cleanupTest() {
         log(":: do cleanup.....");
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        long dialogTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("DialogWaiter.WaitDialogTimeout");
+        
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        JemmyProperties.getCurrentTimeouts().setTimeout("DialogWaiter.WaitDialogTimeout", 60000);
+        
         waitNoEvent(2000);
         
         try {
@@ -188,9 +193,11 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
             
             log("Cleanup failed because of: "+timeoutExpiredException.getMessage());
             pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
+            JemmyProperties.getCurrentTimeouts().setTimeout("DialogWaiter.WaitDialogTimeout",dialogTimeout);
             return;
         }
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout); 
+        JemmyProperties.getCurrentTimeouts().setTimeout("DialogWaiter.WaitDialogTimeout",dialogTimeout);
         log(":: cleanup passed");
     }
     
