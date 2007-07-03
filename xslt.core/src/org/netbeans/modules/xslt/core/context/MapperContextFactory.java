@@ -44,9 +44,13 @@ import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
+import org.netbeans.modules.xslt.model.Variable;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
+import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
+import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -212,13 +216,13 @@ public class MapperContextFactory {
         
         ReferenceableSchemaComponent schemaComponent = null;
 
-        String usedVariable = isInput ? transform.getSource() : transform.getResult();
+        VariableReference usedVariable = isInput ? transform.getSource() : transform.getResult();
         
-        Message message = 
-                getVariableMessage(usedVariable, transform);
+//        Message message = 
+//                getVariableMessage(usedVariable, transform);
 
-        if (message != null) {
-            schemaComponent = getMessageSchemaType(usedVariable, message);
+        if (usedVariable != null) {
+            schemaComponent = getMessageSchemaType(usedVariable);
         }
         
         return schemaComponent;
@@ -323,39 +327,45 @@ public class MapperContextFactory {
     /**
      * returns first message part type with partName
      */
-    private ReferenceableSchemaComponent getMessageSchemaType(String usedVariable, Message message) {
-        if (message == null || usedVariable == null) {
-            return null;
-        }
-        
-        String partName = getVarPartName(usedVariable);
-        if (partName == null) {
+    private ReferenceableSchemaComponent getMessageSchemaType(VariableReference usedVariable) {
+        if (usedVariable == null) {
             return null;
         }
         
         ReferenceableSchemaComponent schemaComponent = null;
+
+        //        String partName = getVarPartName(usedVariable);
+//        if (partName == null) {
+//            return null;
+//        }
+//        
+//        
+//        // look at parts
+//        String elNamespace = null;
+//        Class<? extends ReferenceableSchemaComponent> elType = null; 
+//        Collection<Part> parts = message.getParts();
+//        Part part = null;
+//        if (parts != null && parts.size() > 0) {
+//            for (Part partElem : parts) {
+//                if (partElem != null && partName.equals(partElem.getName())) {
+//                    part = partElem;
+//                    break;
+//                }
+//            }
+//        }
+//        
+        WSDLReference<Part> partRef = usedVariable.getPart();
+        Part part = partRef == null ? null : partRef.get();
         
-        // look at parts
-        String elNamespace = null;
-        Class<? extends ReferenceableSchemaComponent> elType = null; 
-        Collection<Part> parts = message.getParts();
-        Part part = null;
-        if (parts != null && parts.size() > 0) {
-            for (Part partElem : parts) {
-                if (partElem != null && partName.equals(partElem.getName())) {
-                    part = partElem;
-                    break;
-                }
+        NamedComponentReference<? extends ReferenceableSchemaComponent> element = null;
+        if (part != null) {
+            element = part.getElement();
+            if (element == null) {
+                element = part.getType();
             }
+
+            schemaComponent = element.get();
         }
-        
-        NamedComponentReference<? extends ReferenceableSchemaComponent> element = part.getElement();
-        if (element == null) {
-            element = part.getType();
-        }
-        
-        schemaComponent = element.get();
-        
         return schemaComponent;
     }
     

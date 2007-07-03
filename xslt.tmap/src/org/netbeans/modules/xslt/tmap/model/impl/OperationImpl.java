@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
@@ -27,6 +28,8 @@ import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.w3c.dom.Element;
 
@@ -118,19 +121,58 @@ public class OperationImpl extends TMapComponentAbstract
         return transforms == null ? 0 : transforms.size();
     }
 
-    public String getInputVariable() {
-        return getAttribute(TMapAttributes.INPUT_VARIABLE);
+    public Variable getInputVariable() {
+        String varName = getAttribute(TMapAttributes.INPUT_VARIABLE);
+
+        Variable var = varName == null ?
+            null : new InputVariableImpl(getModel(), varName, this);
+        return var;
     }
 
-    public void setInputVariable(String inputVariable) {
+    public void setInputVariableName(String inputVariable) {
         setAttribute(INPUT_VARIABLE, TMapAttributes.INPUT_VARIABLE, inputVariable);
     }
 
-    public String getOutputVariable() {
-        return getAttribute(TMapAttributes.OUTPUT_VARIABLE);
+    public Variable getOutputVariable() {
+        String varName = getAttribute(TMapAttributes.OUTPUT_VARIABLE);
+
+        Variable var = varName == null ?
+            null : new OutputVariableImpl(getModel(), varName, this);
+        return var;
     }
 
-    public void setOutputVariable(String outputVariable) {
+    public void setOutputVariableName(String outputVariable) {
         setAttribute(OUTPUT_VARIABLE, TMapAttributes.OUTPUT_VARIABLE, outputVariable);
     }
+
+    public List<Variable> getVariables() {
+        List<Variable> opVars = new ArrayList<Variable>();
+        collectVariables(opVars, this);
+        
+        List<Invokes> invokess = getInvokess();
+        if (invokess != null && invokess.size() > 0) {
+            for (Invokes invokes : invokess) {
+                collectVariables(opVars, invokes);
+            }
+        }
+
+        return opVars;
+    }
+    
+    private void collectVariables(List<Variable> vars, VariableDeclarator varContainer) {
+        if (varContainer == null || vars == null) {
+            return;
+        }
+
+        Variable tmpVar = varContainer.getInputVariable();
+        if (tmpVar != null) {
+            vars.add(tmpVar);
+        }
+        
+        tmpVar = varContainer.getOutputVariable();
+        if (tmpVar != null) {
+            vars.add(tmpVar);
+        }
+    }
+
 }

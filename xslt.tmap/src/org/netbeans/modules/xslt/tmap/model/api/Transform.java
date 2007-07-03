@@ -19,6 +19,7 @@
 package org.netbeans.modules.xslt.tmap.model.api;
 
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 
 /**
@@ -26,7 +27,7 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Transform extends TMapComponent {
+public interface Transform extends TMapComponent, ReferenceCollection {
     TMapComponents TYPE = TMapComponents.TRANSFORM;
    
     String FILE = "file"; // NOI18N
@@ -37,12 +38,12 @@ public interface Transform extends TMapComponent {
     
     void setFile(String file);
     
-    String getSource();
+    VariableReference getSource();
     
     void setSource(String source);
     
-    String getResult();
-    
+    VariableReference getResult();
+
     void setResult(String result);
     
     List<Param> getParams();

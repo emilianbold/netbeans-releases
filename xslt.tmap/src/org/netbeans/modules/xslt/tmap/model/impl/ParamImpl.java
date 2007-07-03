@@ -18,19 +18,18 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.netbeans.modules.xml.xam.Reference;
-import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.ParamType;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
-import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
-import org.netbeans.modules.xslt.tmap.model.api.Transform;
-import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
-import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
+import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 
 /**
@@ -79,7 +78,7 @@ public class ParamImpl extends TMapComponentAbstract
         return getAttribute(TMapAttributes.VALUE);
     }
 
-    public void setValue(String value) {
+    protected void setValue(String value) {
         setAttribute(Param.VALUE, TMapAttributes.VALUE, value);
     }
 
@@ -91,6 +90,50 @@ public class ParamImpl extends TMapComponentAbstract
     // TODO m
     public String getContent() {
         return getText();
+    }
+
+    public VariableReference getVariableReference() {
+        return ParamType.PART.equals(getType()) ? 
+            getTMapVarReference(TMapAttributes.VALUE) : null;
+    }
+
+    public void setVariableReference(VariableReference varRef) {
+        setTMapVarReference(TMapAttributes.VALUE, varRef);
+        setType(ParamType.PART);
+    }
+
+    public URI getUri() throws URISyntaxException {
+        URI uri = null;
+        if (ParamType.URI.equals(getType())) {
+            uri = new URI(getValue());
+        }
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        setValue(uri.toString());
+        setType(ParamType.URI);
+    }
+
+    public Reference[] getReferences() {
+        VariableReference varRef = getVariableReference();
+        Reference[] refs = null;
+        if (varRef != null) {
+            refs = new Reference[] {varRef, varRef.getPart()};
+        } else {
+            refs = new Reference[0];
+        }
+        
+        return refs;
+    }
+
+    public void setLiteralValue(String value) {
+        setValue(value);
+        setType(ParamType.LITERAL);
+    }
+
+    public String getLiteralValue() {
+        return ParamType.LITERAL.equals(getType()) ? getValue(): null;
     }
 
 }

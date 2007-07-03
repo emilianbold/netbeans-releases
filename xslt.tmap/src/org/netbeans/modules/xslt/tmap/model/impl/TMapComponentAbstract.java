@@ -25,7 +25,11 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReferenceable;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,6 +57,7 @@ public abstract class TMapComponentAbstract
         myAttributeAcces = new AttributeAccess(this);
     }
 
+    @Override
     public TMapModelImpl getModel() {
         return (TMapModelImpl)super.getModel();
     }
@@ -99,6 +104,18 @@ public abstract class TMapComponentAbstract
 //////        finally {
 //////            readUnlock();
 //////        }   
+    }
+
+    protected  VariableReference 
+        getTMapVarReference(Attribute attr)
+    {
+        return getAttributeAccess().getTMapVarReference(attr);
+    }
+
+    protected void setTMapVarReference(
+            Attribute attr, VariableReference ref )
+    {
+        getAttributeAccess().setTMapVarReference( attr , ref );
     }
 
     protected <T extends ReferenceableWSDLComponent> void setWSDLReference( 

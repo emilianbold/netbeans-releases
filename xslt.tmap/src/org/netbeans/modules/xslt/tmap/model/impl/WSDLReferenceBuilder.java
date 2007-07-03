@@ -21,7 +21,9 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -29,15 +31,19 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Nameable;
+import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
-import org.netbeans.modules.xslt.tmap.model.impl.GlobalWSDLReferenceImpl;
 
 /**
  *
@@ -52,6 +58,7 @@ public class WSDLReferenceBuilder {
         myCollection.add( new PartnerLinkTypeResolver() );
         myCollection.add( new RoleResolver() );
         myCollection.add( new OperationResolver() );
+        myCollection.add( new PartResolver() );
     }
     
     public static WSDLReferenceBuilder getInstance(){
@@ -264,7 +271,7 @@ abstract class AbstractNamedReferenceFactory implements WSDLReferenceFactory {
 class PartnerLinkTypeResolver extends AbstractGlobalReferenceFactory {
     
         /* (non-Javadoc)
-         * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#isApplicable(java.lang.Class)
+         * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
          */
     public <T extends ReferenceableWSDLComponent> boolean isApplicable(
             Class<T> clazz ) {
@@ -272,7 +279,7 @@ class PartnerLinkTypeResolver extends AbstractGlobalReferenceFactory {
     }
     
         /* (non-Javadoc)
-         * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+         * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
          */
     public <T extends ReferenceableWSDLComponent> T resolve(
             AbstractNamedComponentReference<T> reference ) 
@@ -305,7 +312,7 @@ class PartnerLinkTypeResolver extends AbstractGlobalReferenceFactory {
 class RoleResolver extends AbstractNamedReferenceFactory {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#isApplicable(java.lang.Class)
+     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
      */
     public <T extends ReferenceableWSDLComponent> boolean isApplicable( 
             Class<T> clazz ) 
@@ -344,7 +351,7 @@ class RoleResolver extends AbstractNamedReferenceFactory {
     
 // TODO m | r    
 //////    /* (non-Javadoc)
-//////     * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+//////     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
 //////     */
 //////    public <T extends ReferenceableWSDLComponent> T resolve( 
 //////            AbstractNamedComponentReference<T> reference )
@@ -379,7 +386,7 @@ class RoleResolver extends AbstractNamedReferenceFactory {
 class OperationResolver extends AbstractNamedReferenceFactory {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#isApplicable(java.lang.Class)
+     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
      */
     public <T extends ReferenceableWSDLComponent> boolean isApplicable( 
             Class<T> clazz ) 
@@ -388,7 +395,7 @@ class OperationResolver extends AbstractNamedReferenceFactory {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
      */
     public <T extends ReferenceableWSDLComponent> T resolve( 
             AbstractNamedComponentReference<T> reference )
@@ -491,11 +498,105 @@ class OperationResolver extends AbstractNamedReferenceFactory {
 ////    }
 }
 
+class PartResolver extends AbstractGlobalReferenceFactory {
+    
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
+         */
+    public <T extends ReferenceableWSDLComponent> boolean isApplicable(
+            Class<T> clazz ) {
+        return Part.class.isAssignableFrom(clazz);
+    }
+    
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+         */
+    public <T extends ReferenceableWSDLComponent> T resolve(
+            AbstractNamedComponentReference<T> reference ) 
+    {
+        String refString = reference.getRefString();
+        Class<T> clazz = reference.getType();
+        AbstractDocumentComponent parentComponent = reference.getParent(); 
+        
+        Part part = null;
+        if (parentComponent instanceof Transform) {
+            part = resolveByTransform(parentComponent, refString);
+        }
+        
+        if (parentComponent instanceof Param) {
+            part = resolveByParam(parentComponent, refString);
+        }
+        return part != null ? clazz.cast(part) : null;
+    }
+    
+    private Part resolveByParam( 
+            AbstractDocumentComponent component, String refStr ) 
+    {
+        if ( ! (component instanceof Param) || refStr == null){
+            return null;
+        }
+
+        return resolveByVarRef((( Param)component ).getVariableReference(), refStr);
+    }
+
+    private Part resolveByTransform( 
+            AbstractDocumentComponent component, String refStr ) 
+    {
+        if ( ! (component instanceof Transform) || refStr == null){
+            return null;
+        }
+
+        VariableReference varRef = ((Transform)component).getResult();
+        if (varRef == null || !refStr.equals(varRef.getRefString())) {
+            varRef = ((Transform)component).getSource();
+        }
+        if (!refStr.equals(varRef.getRefString())) {
+            return null;
+        }
+        
+        return resolveByVarRef(varRef, refStr);
+    }
+
+    private Part resolveByVarRef( 
+            VariableReference varRef, String refStr ) 
+    {
+        if (varRef == null) {
+            return null;
+        }
+        
+        Part part = null;
+        
+        Variable var = varRef == null ? null : varRef.getReferencedVariable();
+        Message message = null;
+        if (var != null) {
+            Reference<Message> messageRef = var.getMessage();
+            message = messageRef == null ? null : messageRef.get();
+        }
+        
+        Collection<Part> parts = null;
+        if (message != null) {
+            parts  = message.getParts();
+        }
+        
+        String partRefStr = VariableReferenceImpl.getPartName(refStr);
+        if (parts != null && partRefStr != null) {
+            for (Part partElem : parts) {
+                if (partElem != null && partRefStr.equals(partElem.getName())) {
+                    part = partElem;
+                    break;
+                }
+            }
+        }
+        
+        return part;
+    }
+}
+
 //////
 //////class OperationResolver extends AbstractNamedReferenceFactory {
 //////
 //////    /* (non-Javadoc)
-//////     * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#isApplicable(java.lang.Class)
+//////     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
 //////     */
 //////    public <T extends ReferenceableWSDLComponent> boolean isApplicable( 
 //////            Class<T> clazz ) 
@@ -504,7 +605,7 @@ class OperationResolver extends AbstractNamedReferenceFactory {
 //////    }
 //////
 //////    /* (non-Javadoc)
-//////     * @see org.netbeans.modules.bpel.model.impl.WSDLReferenceResplver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+//////     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
 //////     */
 //////    public <T extends ReferenceableWSDLComponent> T resolve( 
 //////            AbstractNamedComponentReference<T> reference )

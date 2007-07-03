@@ -18,7 +18,9 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
@@ -26,9 +28,12 @@ import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.w3c.dom.Element;
 
@@ -65,16 +70,16 @@ public class TransformImpl extends TMapComponentAbstract
         setAttribute(Transform.FILE, TMapAttributes.FILE, locationURI);
     }
 
-    public String getSource() {
-        return getAttribute(TMapAttributes.SOURCE);
+    public VariableReference getSource() {
+        return getTMapVarReference(TMapAttributes.SOURCE);
     }
 
     public void setSource(String source) {
         setAttribute(Transform.SOURCE, TMapAttributes.SOURCE, source);
     }
 
-    public String getResult() {
-        return getAttribute(TMapAttributes.RESULT);
+    public VariableReference getResult() {
+        return getTMapVarReference(TMapAttributes.RESULT);
     }
 
     public void setResult(String result) {
@@ -92,4 +97,22 @@ public class TransformImpl extends TMapComponentAbstract
     public void removeParam(Param param) {
         removeChild(TYPE.getTagName(), param);
     }
+
+    public Reference[] getReferences() {
+        List<Reference> refs = new ArrayList<Reference>();
+        VariableReference sourceRef = getSource();
+        if (sourceRef != null) {
+            refs.add(sourceRef);
+            refs.add(sourceRef.getPart());
+        }
+        
+        VariableReference resultRef = getResult();
+        if (resultRef != null) {
+            refs.add(resultRef);
+            refs.add(resultRef.getPart());
+        }
+        
+        return refs.toArray(new Reference[refs.size()]);
+    }
+
 }

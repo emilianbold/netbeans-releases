@@ -19,13 +19,14 @@
 package org.netbeans.modules.xslt.tmap.model.api;
 
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.Referenceable;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface TMapReference extends Reference {
+public interface TMapReference<T extends Referenceable> extends Reference<T> {
     
     
 }

@@ -23,16 +23,16 @@ package org.netbeans.modules.xslt.tmap.model.api;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface VariableDeclarator {
+public interface VariableDeclarator extends TMapReferenceable, TMapComponent {
 
     String INPUT_VARIABLE = "inputVariable"; // NOI18N
     String OUTPUT_VARIABLE = "outputVariable"; // NOI18N
     
-    public String getInputVariable();
+    public Variable getInputVariable();
     
-    public void setInputVariable(String inputVariable);
+    public void setInputVariableName(String inputVariable);
     
-    public String getOutputVariable();
+    public Variable getOutputVariable();
     
-    public void setOutputVariable(String outputVariable);
+    public void setOutputVariableName(String outputVariable);
 }

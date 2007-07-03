@@ -24,6 +24,11 @@ import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
 import org.netbeans.modules.xslt.tmap.model.api.ParamType;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapReferenceable;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 
@@ -56,6 +61,81 @@ public class AttributeAccess {
         return null;
     }
     
+    VariableReference getTMapVarReference( Attribute attr)
+    {
+
+//        readLock();
+//        try {
+            return resolveTMapVarReference(attr);
+//        }
+//        finally {
+//            readUnlock();
+//        }
+    }
+
+//    <T extends BpelReferenceable> List<BpelReference<T>> getBpelReferenceList(
+//            Attribute attr, Class<T> type )
+//    {
+//        readLock();
+//        try {
+//            String str = getEntity().getAttribute(attr);
+//            return getBpelReferenceList(type, str, attr);
+//        }
+//        finally {
+//            readUnlock();
+//        }
+//    }
+//
+//    private <T extends BpelReferenceable> List<BpelReference<T>> 
+//            getBpelReferenceList( Class<T> type, String str, Attribute attr )
+//    {
+//        if (str == null) {
+//            return null;
+//        }
+//        StringTokenizer tokenizer = new StringTokenizer(str, " ");
+//        List<BpelReference<T>> list = new LinkedList<BpelReference<T>>();
+//        while (tokenizer.hasMoreTokens()) {
+//            String next = tokenizer.nextToken();
+//            BpelReference<T> ref = BpelReferenceBuilder.getInstance().build(
+//                    type, getEntity(), next);
+//            BpelReferenceBuilder.getInstance().setAttribute(ref, attr);
+//            list.add(ref);
+//        }
+//        return Collections.unmodifiableList(list);
+//    }
+    void setTMapVarReference( Attribute attr, 
+            VariableReference ref )
+    {
+//        writeLock();
+//        try {
+            VariableReference old = getTMapVarReference(attr);
+
+            String str = ref.getRefString();
+//            PropertyUpdateEvent event = preUpdateAttribute(attr.getName(), old, 
+//                    ref );
+            setAttribute(attr, str);
+//            getEntity().postGlobalEvent(event);
+//        }
+//        catch (VetoException e) {
+//            assert false;
+//        }
+//        finally {
+//            writeUnlock();
+//        }
+    }
+
+    private VariableReference resolveTMapVarReference( 
+            Attribute attr ) 
+    {
+        if ( getComponent().getAttribute( attr ) == null ){
+            return null;
+        }
+        VariableReference ref = (VariableReference) TMapReferenceBuilder.
+                getInstance().build( VariableDeclarator.class , 
+                getComponent() , attr ); 
+        return ref;
+    }
+
     public <T extends ReferenceableWSDLComponent> void setWSDLReference( Attribute attr , 
             WSDLReference<T> ref )
     {
@@ -123,6 +203,9 @@ public class AttributeAccess {
         return ref;
     }
 
+    
+    
+    
     /**
      * Prepare XML for setting qName as value. 1) Corresponded namespace
      * possibly should be added. 2) attribute value will be returned as String (
