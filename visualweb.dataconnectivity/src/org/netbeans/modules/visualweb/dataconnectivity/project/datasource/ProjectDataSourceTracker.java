@@ -37,7 +37,6 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManag
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
@@ -47,17 +46,12 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;
@@ -212,11 +206,48 @@ public class ProjectDataSourceTracker{
         getDSTracker(project).fireProjectDSReferencesChangeEvent();
     }
     
+    /**
+     * Used for migrating Creator 2 projects, since a source file must be modeled, not the project
+     */
+    public static boolean isProjectModeled(final Project project) {
+        if (FacesModelSet.getFacesModelIfAvailable(retrieveFileToModel(project)) == null)
+            return false;
+        else
+            return true;
+    }
+    
     private DSTracker addDSTracker(Project project) {
         DSTracker newTracker = new DSTracker(project) ;
         trackers.put(project, newTracker) ;
         
         return newTracker ;
+    }
+    
+    /**
+     *  Used to retrieve a source file from a Creator 2 project for modeling
+     */ 
+    private static FileObject retrieveFileToModel(Project project) {        
+        FileObject[] projContents = project.getProjectDirectory().getChildren();
+        FileObject fileToModel = null;
+        for (FileObject projItem : projContents) {
+            if (projItem.isFolder()) {
+                if (projItem.getName().equals("src")) {
+                    Enumeration folders = projItem.getFolders(true);
+                    // Locate the source file to model
+                    while (folders.hasMoreElements()) {
+                        FileObject projSrc = (FileObject) folders.nextElement();
+                        for (FileObject srcFile : projSrc.getChildren()) {
+                            if (srcFile.existsExt("java")) {
+                                fileToModel = srcFile;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return fileToModel;
     }
     
     /***
@@ -326,7 +357,7 @@ public class ProjectDataSourceTracker{
         return names.toString();
     }
     
-    
+             
     /*********
      * this class tracks the data sources for a single project
      */
