@@ -135,7 +135,7 @@ public class WorkingCopy extends CompilationController {
         t.attach(ce);
         t.apply();
         t.release();
-        t.destroy();;
+        t.destroy();
     }
     
     void run(Transformer t, Tree tree) {
@@ -145,7 +145,7 @@ public class WorkingCopy extends CompilationController {
         t.attach(ce);
         t.apply(tree);
         t.release();
-        t.destroy();;
+        t.destroy();
     }
     
     ChangeSet getChangeSet() {
@@ -195,7 +195,7 @@ public class WorkingCopy extends CompilationController {
         }
         
         try {
-            RootTree newRoot = changes.commit((RootTree)ce.getRootNode());
+            RootTree newRoot = changes.commit(ce.getRootNode());
             
             if (changes.hasChanges()) {
                 getCommandEnvironment().getModel().setRoot(newRoot);
@@ -246,6 +246,7 @@ public class WorkingCopy extends CompilationController {
         
         private ArrayList<Difference> diffs = new ArrayList<Difference>();
 
+        @Override
         public PrintWriter getOutputWriter(String title) {
             // Sink any log output so it isn't displayed.
             return new PrintWriter(new Writer() {
@@ -258,12 +259,14 @@ public class WorkingCopy extends CompilationController {
         private Map<Integer, String> userInfo = Collections.<Integer, String>emptyMap();
         
         @Override
+        @SuppressWarnings("unchecked")
         public void setResult(Object result, String title) {
             if ("user-info".equals(title)) {
                 userInfo = Map.class.cast(result);
             }
         }
 
+        @Override
         public SourceRewriter getSourceRewriter(JavaFileObject sourcefile) throws IOException {
             return new Rewriter();
         }
