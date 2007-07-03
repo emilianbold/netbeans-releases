@@ -1,0 +1,9 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><body>
+<h1 class="styleClass">Embedded Ruby Example</h1>
+<ul>
+<%(1..10).each do|i|%>
+  <li>number <%=i%></li>
+<%end%>
+</ul>
+</body></html>

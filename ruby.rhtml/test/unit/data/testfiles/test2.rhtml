@@ -1,0 +1,61 @@
+<!-- begin action nav -->
+<% content_for :action_nav do %>
+<!-- begin action nav -->
+<div id="page-nav">
+  <ul id="act-nav" class="clear">
+    <li><%= link_to "Create new article", :controller => 'articles', :action => "new" %></li>
+  <% if admin? -%>
+    <li><%= link_to "Create new section", :controller => 'sections' %></li>
+  <% end -%>
+    <li><%= link_to "Upload asset", new_asset_path %></li>
+    
+  <% if @articles.any? -%>
+    <li><%= link_to "Moderate Comments",  :controller => 'comments' %></li>
+  <% end -%>
+  </ul>
+</div>
+<!-- /end action nav -->
+<% end %>
+
+
+<!-- Let's call render_events: begin overview -->
+<div id="overview">
+  <%= link_to 'Subscribe', overview_url, :class => 'feed right' %>
+  <%  
+    # Here's some code which calls render_events again
+  %>
+  <h4>Today <%= todays_short_date %></h4>
+  <%= feed %>
+  <%= render_events @todays_events %>
+  
+  <h4>Yesterday <%= yesterdays_short_date %></h4>
+  <%= render_events @yesterdays_events %>
+  
+  <h4>Before <%= yesterdays_short_date %></h4>
+  <%= render_events @events, true %>
+  
+</div>
+<!-- /end overview -->
+
+<% content_for :sidebar do %>
+  <% if @articles.any? -%>
+  <div class="sgroup">
+    <h3>Comments awaiting your approval</h3>
+    <ul class="slist">
+    <% @articles.each do |article, count| -%>
+      <li><%= link_to "<strong>(#{count})</strong> #{h(article.title)}", :controller => 'articles', :action => 'comments', :id => article.id, :filter => :unapproved %></li>
+    <% end -%>
+    </ul>
+  </div>
+  <% end -%>
+
+  <div class="sgroup">
+    <h3>Recent activity</h3>
+    <ul class="slist" id="activity">
+      <% @users.each do |user| -%>
+        <li><%= avatar_for user %><%= link_to who(user.login), :controller => 'users', :action => 'show', :id => user %><br /> showed up <%= distance_of_time_in_words_to_now(user.updated_at) %> ago</li>
+      <% end -%>
+    </ul>
+  </div>
+<% end %>
+

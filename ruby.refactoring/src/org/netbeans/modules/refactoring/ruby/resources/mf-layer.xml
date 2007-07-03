@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<filesystem>
+    <folder name="Menu">
+        <folder name="Refactoring">
+<!--
+            <attr name="CopyAction.instance/FirstSeparator.instance" boolvalue="true"/>
+            <file name="FirstSeparator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="FirstSeparator.instance/org-netbeans-modules-refactoring-ruby-api-ui-PullUpAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-refactoring-ruby-api-ui-PullUpAction.instance/org-netbeans-modules-refactoring-ruby-api-ui-PushDownAction.instance" boolvalue="true"/>
+          <file name="org-netbeans-modules-refactoring-ruby-api-ui-PullUpAction.instance">
+             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.ruby.api.ui.RubyRefactoringActionsFactory.pullUpAction"/>
+          </file>
+-->
+
+        </folder>    
+    </folder>   
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-ruby">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    
+                            
+                    </folder>
+            </folder>
+        </folder>
+        <folder name="application">
+            <folder name="x-httpd-eruby">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    
+                            
+                    </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-ruby">
+                <folder name="Actions">
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="RefactoringSeparator-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <!-- File renaming is still legitimate in Ruby
+              <attr boolvalue="true" name="RefactoringSeparator-1.instance/ToolsAction.instance"/>
+              <file name="RenameAction.instance_hidden"/>
+              -->
+                </folder>
+            </folder>
+        </folder>
+        
+        <!-- Refactoring on RHTML files too? Not clear what object this will apply to... The associated controller method?
+        <folder name="application">
+            <folder name="x-httpd-eruby">
+                <folder name="Actions">
+                    <attr boolvalue="true" name="DeleteAction.instance/SaveAsTemplateAction.instance"/>
+                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/RefactoringWhereUsed.instance"/>
+                    <attr boolvalue="true" name="Separator4.instance/RefactoringWhereUsed.instance"/>
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                    </file>
+                    <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                    </file>
+                    <attr boolvalue="true" name="RefactoringAll.instance/RefactoringSeparator-1.instance"/>
+                    <file name="RefactoringSeparator-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        -->
+        
+        <!-- folder name="folder">
+            <folder name="any">
+                <folder name="Actions">
+                    <attr boolvalue="true" name="DeleteAction.instance/RefactoringAll.instance"/>
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                    </file>
+                    <attr boolvalue="true" name="RefactoringAll.instance/Separator3.instance"/>
+                    <file name="RenameAction.instance_hidden"/>
+                </folder>
+            </folder>
+        </folder -->
+    </folder> 
+    <folder name="Services">
+        <folder name="org-netbeans-modules-refactoring-ruby">
+            <file name="options"/>
+        </folder>
+    </folder>
+<!--
+    <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-refactoring-ruby-api-ui-ExtractSuperclassAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.ruby.api.ui.RubyRefactoringActionsFactory.extractSuperclassAction"/>
+            </file>
+        </folder>
+    </folder>  
+-->
+</filesystem>

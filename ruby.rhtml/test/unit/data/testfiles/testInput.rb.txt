@@ -1,0 +1,21 @@
+.t.e.s.t Html tags
+<div>
+<span>text</span>
+.e.o.f.
+
+.t.e.s.t RHTML delimiters
+<% foo %>
+<%= foo %>
+<% foo -%>
+<%= foo -%>
+<%# foo %>
+.e.o.f.
+
+.t.e.s.t Ruby delimiters
+<% :foo %>
+<%= end %>
+<% for -%>
+<%= @field -%>
+<% #comment %>
+.e.o.f.
+

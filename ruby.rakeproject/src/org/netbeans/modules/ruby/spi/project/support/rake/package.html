@@ -1,0 +1,140 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<html>
+<body>
+
+Principal package for implementing typical Ant-based projects.
+
+<p>A typical project based on Ant follows a standard pattern of having a project
+folder containing:</p>
+
+<dl>
+
+<dt><code>build.xml</code></dt>
+
+<dd><p>A top-level editable build script.</p></dd>
+
+<dt>various folders such as <code>src</code></dt>
+
+<dd><p>Development files.</p></dd>
+
+<dt>various folders such as <code>build</code></dt>
+
+<dd><p>Build products. Not sharable in a VCS.</p></dd>
+
+<dt><code>nbproject/build-impl.xml</code></dt>
+
+<dd><p>Main logic for the build; regenerated from <code>nbproject/project.xml</code>
+but sharable.</p></dd>
+
+<dt><code>nbproject/project.xml</code></dt>
+
+<dd><p>General project metadata, including a declaration of the type of project,
+its name, some structural parameters relating to the build, a list of
+subprojects, etc.</p></dd>
+
+<dt><code>nbproject/project.properties</code></dt>
+
+<dd><p>Sharable build configuration for the project.</p></dd>
+
+<dt><code>nbproject/private/private.xml</code></dt>
+
+<dd><p>Per-user (or per-checkout) project metadata, if any.</p></dd>
+
+<dt><code>nbproject/private/private.properties</code></dt>
+
+<dd><p>Per-user build configuration for the project.</p></dd>
+
+<dt><code>nbproject/private/cache</code></dt>
+
+<dd><p>Cache directory containing disposable files that might speed up various
+operations.</p></dd>
+
+</dl>
+
+<p>Note that since Ant is not aware of the NetBeans Filesystems API, all these
+files must be physically present on disk, not e.g. in an archive or remote
+filesystem.</p>
+
+<p>There may also be a file named <code>build.properties</code> located in the
+NetBeans user directory which can supply additional definitions needed for a
+build: e.g. the locations of Java platforms and libraries. A typical
+<code>build-impl.xml</code> loads property definitions from this global
+properties file as well as the project's
+<code>nbproject/project.properties</code> and
+<code>nbproject/private/private.properties</code>.</p>
+
+<p>The basic operations commonly performed on an Ant-based project are:</p>
+
+<ul>
+
+<li><p>Creation from wizard, including <code>build.xml</code>.</p></li>
+
+<li><p>Loading metadata from disk.</p></li>
+
+<li><p>Modifying metadata and build properties in memory, and subsequently saving
+to disk.</p></li>
+
+<li><p>Regenerating <code>nbproject/build-impl.xml</code>, typically based on
+transforming <code>nbproject/project.xml</code> with an XSLT stylesheet.</p></li>
+
+<li><p>Running a build target of a well-known name in <code>build.xml</code>
+using Ant.</p></li>
+
+<li><p>Enumerating important build outputs ("artifacts").</p></li>
+
+<li><p>Adding dependencies on "subprojects" by getting information about their artifacts
+and storing references to them.</p></li>
+
+<li><p>Interpreting values of Ant properties found on disk, to be used in
+providing information to the IDE about various development files (e.g. when
+implementing queries).</p></li>
+
+</ul>
+
+<p>A new category of Ant-based project can be registered in the system by
+adding an implementation of
+{@link org.netbeans.modules.ruby.spi.project.support.rake.RakeBasedProjectType} to the default
+lookup. This will get an instance of
+{@link org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper} for every project
+it creates; the helper does a lot of the work required to interact with the file
+structure outlined above.</p>
+
+<p>{@link org.netbeans.modules.ruby.spi.project.support.rake.ActionHelper} provides a number
+of utilities which make it easy to run Ant targets.</p>
+
+<p>{@link org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper}s can also be
+created by an Ant-based project and used to manage references to subprojects and
+their artifacts in a high-level manner.</p>
+
+<p>{@link org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator} provides the
+easiest way to create a new Ant-based project on disk. Use
+{@link org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper} to make
+build scripts and
+{@link org.netbeans.modules.ruby.spi.project.support.rake.ProjectXmlSavedHook} to be told when
+to recreate them.</p>
+
+<p>{@link org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties} is a
+VCS-friendly alternative to {@link java.util.Properties}.
+{@link org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils} also provides various
+methods for working with Ant concepts such as relative file paths, property
+substitution, etc.</p>
+  
+</body>
+</html>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+<codetemplates>
+    <codetemplate abbreviation="td" descriptionId="ct_td"><code><![CDATA[<td>${cursor}</td>]]></code></codetemplate>
+    <codetemplate abbreviation="table"><code><![CDATA[<table border="1">
+<tr>
+<td>   
+</td>    
+</tr>    
+</table>]]></code></codetemplate>
+    <codetemplate abbreviation="r" descriptionId="ct_r"><code><![CDATA[<% ${cursor} %>]]></code></codetemplate>
+    <codetemplate abbreviation="re" descriptionId="ct_re"><code><![CDATA[<%= ${cursor} %>]]></code></codetemplate>
+    <codetemplate abbreviation="for" descriptionId="ct_for"><code><![CDATA[<% for ${0 default="f"} in ${1 default="@field"} %>
+    ${selection line}${cursor}
+<% end %>
+]]></code></codetemplate>
+
+  <!-- The following snippets were imported from TextMate -->
+
+  <codetemplate abbreviation="lic" descriptionId="ct_lic">
+    <code>
+<![CDATA[<%= link_to "${1 default="link text..."}", :controller => "${2 default="items"}" %>]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="lica" descriptionId="ct_lica">
+    <code>
+<![CDATA[<%= link_to "${1 default="link text..."}", :controller => "${2 default="items"}", :action => "${3 default="index"}" %>]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="lia" descriptionId="ct_lia">
+    <code>
+<![CDATA[<%= link_to "${1 default="link text..."}", :action => "${2 default="index"}" %>]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="licai" descriptionId="ct_licai">
+    <code>
+<![CDATA[<%= link_to "${1 default="link text..."}", :controller => "${2 default="items"}", :action => "${3 default="edit"}", :id => ${4 default="@item"} %>]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ft" descriptionId="ct_ft">
+    <code>
+<![CDATA[<%= form_tag :action => "${1 default="update"}" %>]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="liai" descriptionId="ct_liai">
+    <code>
+<![CDATA[<%= link_to "${1 default="link text..."}", :action => "${2 default="edit"}", :id => ${3 default="@item"} %>]]>
+    </code>
+  </codetemplate>
+
+
+</codetemplates>

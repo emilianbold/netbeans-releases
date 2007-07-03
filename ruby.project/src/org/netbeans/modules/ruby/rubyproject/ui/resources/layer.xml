@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-ruby-rubyproject-GotoTest.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rubyproject.GotoTest"/>
+            </file>
+        </folder>
+        <folder name="Ruby">
+            <file name="org-netbeans-modules-ruby-rubyproject-gems-GemAction.instance"/>
+        </folder>
+        <folder name="Window">
+            <file name="org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <!-- Conflicts with JUnit's Go To Test registration
+        <attr name="View/Navigation" boolvalue="true" />
+        <folder name="GoTo">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.Bundle"/>
+
+            <attr name="core-windows-SeparatorAfterRecentList.instance/org-netbeans-modules-ruby-rubyproject-GotoTest.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-ruby-rubyproject-GotoTest.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-ruby-rubyproject-GotoTest.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-ruby-rubyproject-GotoTest.shadow/SeparatorAfterCallGoToType.instance" boolvalue="true"/>
+        </folder>
+        -->
+        <folder name="Tools">
+            <file name="org-netbeans-modules-ruby-rubyproject-gems-GemAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-rubyproject-gems-GemAction.instance"/>
+                <attr name="position" intvalue="600"/>
+            </file>
+            </folder>
+        <folder name="Window">
+            <folder name="Other">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.Bundle"/>
+                <file name="IrbAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
+                </file>
+            </folder>
+            </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Ruby">
+            <attr name="position" intvalue="1400"/>
+            <file name="main.rb" url="main.rb">
+                <attr name="position" intvalue="300"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <!-- This is a hack to allow Ruby files to show up in Java projects as well in case you want to mix in Ruby for scripting. -->
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubyfile.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+            </file>
+            <file name="rakefile.rb" url="rakefile.rb">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rakefile.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+            </file>
+            <file name="class.rb" url="class.rb">
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubyclass.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+            </file>
+            <file name="module.rb" url="module.rb">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubymodule.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+            </file>
+            <file name="test.rb" url="test.rb">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubytest.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+                <!-- Pending attribute, not yet supported - see #91580 -->
+                <attr name="templateNamePrefix" stringvalue="tc_"/>
+            </file>
+            <file name="suite.rb" url="suite.rb">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubytestsuite.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+                <!-- Pending attribute, not yet supported - see #91580 -->
+                <attr name="templateNamePrefix" stringvalue="ts_"/>
+            </file>
+        </folder>
+        
+        <folder name="Other">
+            <file name="main.rb" url="main.rb">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
+                <!-- This is a hack to allow Ruby files to show up in Java projects as well in case you want to mix in Ruby for scripting. -->
+                <attr name="templateCategory" stringvalue="ruby,java-classes"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubyfile.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+            </file>
+        </folder>
+
+        <folder name="Project">
+
+            <folder name="Ruby">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/desktop.html"/>
+
+                <attr name="position" intvalue="800"/>
+                <file name="emptyRuby.xml">
+                    <attr name="position" intvalue="100"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.ruby.rubyproject.ui.wizards.NewRubyProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png"/>
+
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/application.html"/>
+                </file>
+        
+                
+
+                <file name="existingRuby.xml">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.wizards.NewRubyProjectWizardIterator.existing"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/existingProject.html"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-ruby-rubyproject">
+            <folder name="Customizer">
+                <file name="Sources.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createSources"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <!--
+                <folder name="BuildCategory">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.Bundle"/>
+                    <file name="Build.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createBuild"/>
+                    </file>
+                </folder>
+                -->
+                <file name="Run.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createRun"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-ruby-rubyproject-ui-SourceNodeFactory.instance"/>
+            </folder>
+            
+            <folder name="Lookup"/>
+            
+        </folder>
+    </folder>
+
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-ruby-rubyproject-RubyOptionsAdvancedPanel.instance"/>
+        </folder>
+    </folder>
+    <folder name="RubyOptionsDialog">
+        <file name="org-netbeans-modules-ruby-rubyproject-RubyHomeOptionsAdvancedPanel.instance">
+            <attr name="position" intvalue="100"/>
+        </file>
+    </folder>
+
+    
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="IrbTopComponent.settings" url="IrbTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="IrbTopComponent.wstcref" url="IrbTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-ruby"> 
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <folder name="goto">
+                        <attr name="position" intvalue="900"/>
+                        <file name="ruby-goto-test">
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        </folder>
+                    <!--
+                    <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
+                    -->
+                </folder>
+            </folder>
+        </folder>
+        <!--
+        <folder name="application">
+            <folder name="x-httpd-eruby">
+                <folder name="Popup">
+                    <attr name="format/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
+                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                    </file>
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.Bundle"/>
+                        <file name="org-netbeans-modules-ruby-rubyproject-GotoTest.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-ruby-rubyproject-GotoTest.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-ruby-rubyproject-GotoTest.shadow/goto" boolvalue="true"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+        -->
+    </folder>
+                
+    <!-- I have to implement #actionsContext in GsfDataLoader first
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-ruby">
+                <folder name="Actions">
+                  <attr boolvalue="true" name="OpenAction.instance/ruby-project-separator-1.instance"/>
+                  <file name="ruby-project-separator-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                  </file>
+                  <attr boolvalue="true" name="ruby-project-separator-1.instance/RunFile.instance"/>
+                  <file name="RunFile.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.api.RubyProjectActions.run"/>
+                  </file>
+                  <attr boolvalue="true" name="RunFile.instance/ruby-project-separator-3.instance"/>
+                  <file name="ruby-project-separator-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                  </file>
+                  <attr boolvalue="true" name="ruby-project-separator-3.instance/FileSystemAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    -->
+    
+</filesystem>

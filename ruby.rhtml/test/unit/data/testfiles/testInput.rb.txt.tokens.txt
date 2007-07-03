@@ -1,0 +1,53 @@
+<Unnamed test>
+HTML            ".t.e.s.t Html tags\n<div>\n<span>text</span>", la=1, st=0
+----- EOF -----
+
+<Unnamed test>
+HTML            ".t.e.s.t RHTML delimiters\n", la=3, st=0
+DELIMITER       "<%", la=1, st=3
+RUBY            " foo ", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " foo ", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%", la=1, st=3
+RUBY            " foo -", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " foo -", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%#", st=5
+RUBYCOMMENT     " foo ", la=2, st=5
+DELIMITER       "%>", st=0
+----- EOF -----
+
+<Unnamed test>
+HTML            ".t.e.s.t Ruby delimiters\n", la=3, st=0
+DELIMITER       "<%", la=1, st=3
+RUBY            " :foo ", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " end ", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%", la=1, st=3
+RUBY            " for -", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%=", st=7
+RUBY_EXPR       " @field -", la=2, st=7
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%", la=1, st=3
+RUBY            " #comment ", la=2, st=3
+DELIMITER       "%>", st=0
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+
