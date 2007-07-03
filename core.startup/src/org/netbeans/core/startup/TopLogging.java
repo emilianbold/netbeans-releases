@@ -74,10 +74,7 @@ public final class TopLogging {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(os);
 
-        Iterator it = System.getProperties().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry e = (Map.Entry)it.next();
-
+        for (Map.Entry<?, ?> e: System.getProperties().entrySet()) {
             String key = (String)e.getKey();
 
             if ("sun.os.patch.level".equals(key)) { // NOI18N
@@ -89,7 +86,7 @@ public final class TopLogging {
 
             if (key.endsWith(".level")) {
                 ps.print(key);
-                ps.print("=");
+                ps.print('=');
                 ps.println(v);
             }
         }
