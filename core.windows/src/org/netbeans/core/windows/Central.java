@@ -1281,7 +1281,7 @@ final class Central implements ControllerHandler {
     }
     
     /** Gets <code>Set</code> of all <code>Mode</code>'s. */
-    public Set<? extends Mode> getModes () {
+    public Set<? extends ModeImpl> getModes () {
         return model.getModes();
     }
 

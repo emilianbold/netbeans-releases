@@ -285,7 +285,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Gets <code>Set</code> of all <code>Mode</code>'s.
      * Implements <code>Workspace</code> interface method. */
-    public Set<? extends Mode> getModes () {
+    public Set<? extends ModeImpl> getModes () {
         return central.getModes();
     }
     
@@ -771,9 +771,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return null;
         }
         
-        for(Iterator it = getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            
+        for(ModeImpl mode: getModes()) {
             if(mode.getOpenedTopComponentsIDs().contains(tcID)) {
                 return mode;
             }
@@ -788,9 +786,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return null;
         }
         
-        for(Iterator it = getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            
+        for(ModeImpl mode: getModes()) {
             if(mode.getClosedTopComponentsIDs().contains(tcID)) {
                 return mode;
             }
@@ -1198,9 +1194,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if( null == tc )
             return false;
         //check opened TopComponents first to avoid AWT assertion if possible
-        for( Iterator it = getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            
+        for(ModeImpl mode: getModes()) {
             if( mode.containsTopComponent( tc ) ) {
                 return mode.getKind() == Constants.MODE_KIND_EDITOR;
             }
@@ -1214,9 +1208,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public boolean isOpenedEditorTopComponent( TopComponent tc ) {
         if( null == tc )
             return false;
-        for( Iterator it = getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            
+        for(ModeImpl mode: getModes()) {
             if( mode.getOpenedTopComponents().contains( tc ) ) {
                 return mode.getKind() == Constants.MODE_KIND_EDITOR;
             }
@@ -1295,9 +1287,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return null;
         }
         
-        for(Iterator it = getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            
+        for(ModeImpl mode: getModes()) {
             if(mode.getOpenedTopComponents().contains(tc)) {
                 return mode;
             }
@@ -1470,10 +1460,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * Send componentHidden() event to all selected TopComponents in editor modes.
      */
     public void deselectEditorTopComponents() {
-        Set modes = getModes();
-        for( Iterator i=modes.iterator(); i.hasNext(); ) {
-            Mode mode = (Mode)i.next();
-            ModeImpl modeImpl = findModeImpl( mode.getName() );
+        for(ModeImpl modeImpl: getModes()) {
             if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
                 //not a pretty hack - add an empty TopComponent into the mode
                 //and make it the selected one so that componentHidden() gets called
@@ -1490,10 +1477,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      *
      */
     public void closeNonEditorViews() {
-        Set modes = getModes();
-        for( Iterator i=modes.iterator(); i.hasNext(); ) {
-            Mode mode = (Mode)i.next();
-            ModeImpl modeImpl = findModeImpl( mode.getName() );
+        for(ModeImpl modeImpl: getModes()) {
             if( null != modeImpl && modeImpl.getKind() != Constants.MODE_KIND_EDITOR ) {
                 java.util.List tcs = modeImpl.getOpenedTopComponents();
                 for( Iterator j=tcs.iterator(); j.hasNext(); ) {
