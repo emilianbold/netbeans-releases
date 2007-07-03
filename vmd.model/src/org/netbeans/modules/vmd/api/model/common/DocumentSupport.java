@@ -170,9 +170,11 @@ public class DocumentSupport {
                 list.add((T) presenter);
         return list;
     }
+
     /**
-     * Returns a design component producer for given type 
-     * @param typeID typeof searched producers
+     * Returns component producers for given type.
+     * @param document the document
+     * @param typeID type of searched producers
      * @return the producers
      */
     public static Collection<ComponentProducer> getComponentProducers(DesignDocument document, TypeID typeID) {
@@ -184,4 +186,19 @@ public class DocumentSupport {
         return producers;
     }
     
+    /**
+     * Returns a design component producer for given producer id.
+     * @param document the document
+     * @param producerID producer id of searched producer
+     * @return the producer
+     */
+    public static ComponentProducer getComponentProducer(DesignDocument document, String producerID) {
+        Collection<ComponentProducer> producers = new HashSet<ComponentProducer>();
+        for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
+            if (producer.getProducerID ().equals(producerID))
+                return producer;
+        }
+        return null;
+    }
+
 }
