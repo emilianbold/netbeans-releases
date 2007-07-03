@@ -498,8 +498,10 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                 a.actionPerformed(null);
                 e.consume();
                 return ;
+            } else {
+                removePopup();
             }
-        }
+        } 
     }    
 
     public void keyReleased(KeyEvent e) {
