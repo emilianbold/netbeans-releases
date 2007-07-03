@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.jruby" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.jruby</description>
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <target name="init" depends="projectized.init">
+        <!-- Avoid confusing NetBeans when it has the project open. Having
+             source files come and go underneath it makes the package view
+             and friends very unhappy. Just rely on file overwrites instead;
+             it handles that better (presumably because the directories stay
+             intact.)
+        <delete dir="${patched_source}"/>
+        <mkdir dir="${patched_source}"/>
+        -->
+        <unzip dest="${patched_source}" src="external/jruby-src.zip"/>
+
+        <!-- I don't need the bsf stuff -->
+        <delete dir="${src.dir}/org/jruby/javasupport/bsf"/>
+
+        <!-- Insert module description bundle etc. -->
+        <copy todir="${src.dir}" overwrite="true">
+            <fileset dir="src" />
+        </copy>
+
+        <echo>Patching ${src.dir}</echo>
+        <!--
+        <patch dir="${src.dir}" patchfile="jruby.diff" strip="2" ignorewhitespace="true" reverse="false"/>
+        -->
+        <copy todir="${src.dir}" overwrite="true">
+            <fileset dir="patched_files" />
+        </copy>
+    </target>    
+
+    <target name="release" depends="init">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext">
+            <fileset dir="${libs.dir}">
+                <include name="asm*.jar"/>
+                <include name="backport*.jar"/>
+                <include name="jline*.jar"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean">
+        <delete dir="${patched_source}"/>
+        <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
+        <delete dir="patched_source"/>
+    </target>
+
+</project>

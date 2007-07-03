@@ -1,0 +1,820 @@
+diff -r -u jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java
+--- jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-06-02 18:33:04.000000000 -0700
++++ jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-06-03 10:19:01.000000000 -0700
+@@ -90,10 +90,20 @@
+                 switch (c = src.read()) {
+                 case '$':
+                 case '@':
++                    // BEGIN NETBEANS MODIFICATIONS
++                    if (processingEmbedded == LOOKING_FOR_EMBEDDED) {
++                        processingEmbedded = EMBEDDED_DVAR;
++                    }
++                    // END NETBEANS MODIFICATIONS
+                     src.unread(c);
+                     lexer.setValue(new Token("#" + c, lexer.getPosition()));
+                     return Tokens.tSTRING_DVAR;
+                 case '{':
++                    // BEGIN NETBEANS MODIFICATIONS
++                    if (processingEmbedded == LOOKING_FOR_EMBEDDED) {
++                        processingEmbedded = EMBEDDED_DEXPR;
++                    }
++                    // END NETBEANS MODIFICATIONS
+                     lexer.setValue(new Token("#" + c, lexer.getPosition()));
+                     return Tokens.tSTRING_DBEG;
+                 }
+@@ -103,9 +113,20 @@
+             src.unread(c);
+ 
+             do {
+-                if ((c = new StringTerm(func, '\n', '\0').parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {
++                // BEGIN NETBEANS MODIFICATIONS
++                //if ((c = new StringTerm(func, '\n', '\0').parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {                
++                StringTerm stringTerm = new StringTerm(func, '\n', '\0');
++                stringTerm.processingEmbedded = processingEmbedded;
++                if ((c = stringTerm.parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {
++                // END NETBEANS MODIFICATIONS    
+                     throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
+                 }
++                // BEGIN NETBEANS MODIFICATIONS
++                // Completed expansion token
++                if (processingEmbedded == EMBEDDED_DVAR || processingEmbedded == EMBEDDED_DEXPR) {
++                    processingEmbedded = LOOKING_FOR_EMBEDDED;
++                }
++                // END NETBEANS MODIFICATIONS    
+                 if (c != '\n') {
+                     lexer.yaccValue = new StrNode(lexer.getPosition(), buffer);
+                     return Tokens.tSTRING_CONTENT;
+@@ -121,9 +142,125 @@
+             str = buffer;
+         }
+ 
++        // BEGIN NETBEANS MODIFICATIONS
++        // DVARs last only for a single string token so shut if off here.
++        if (processingEmbedded == EMBEDDED_DVAR) {
++            processingEmbedded = LOOKING_FOR_EMBEDDED;
++//        } else if ((processingEmbedded == EMBEDDED_DEXPR) && (str.length() == 0)) {
++//            // Unbalanced expression - see #96485
++//            processingEmbedded = LOOKING_FOR_EMBEDDED;
++        }
++        // END NETBEANS MODIFICATIONS
++
+         src.unreadMany(lastLine);
+         lexer.setStrTerm(new StringTerm(-1, '\0', '\0'));
+         lexer.yaccValue = new StrNode(lexer.getPosition(), str);
+         return Tokens.tSTRING_CONTENT;
+     }
++
++    // BEGIN NETBEANS MODIFICATIONS
++    /** 
++     * Report whether this string should be substituting things like \n into newlines.
++     * E.g. are we dealing with a "" string or a '' string (or their alternate representations)
++     */
++    public boolean isSubstituting() {
++        return (func & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
++    }
++
++    /**
++     * Record any mutable state from this StrTerm such that it can
++     * be set back to this exact state through a call to {@link setMutableState}
++     * later on. Necessary for incremental lexing where we may restart
++     * lexing parts of a string (since they can be split up due to
++     * Ruby embedding like "Evaluated by Ruby: #{foo}".
++     */
++    public Object getMutableState() {
++        return new MutableTermState(processingEmbedded);
++    }
++
++    /**
++     * Apply the given state object (earlier returned by {@link getMutableState})
++     * to this StringTerm to revert state to the earlier snapshot.
++     */
++    public void setMutableState(Object o) {
++        MutableTermState state = (MutableTermState)o;
++        if (state != null) {
++            this.processingEmbedded = state.processingEmbedded;
++        }
++    }
++    
++    public void splitEmbeddedTokens() {
++        if (processingEmbedded == IGNORE_EMBEDDED) {
++            processingEmbedded = LOOKING_FOR_EMBEDDED;
++        }
++    }
++
++    private class MutableTermState {
++        private MutableTermState(int embeddedCode) {
++            this.processingEmbedded = embeddedCode;
++        }
++        
++        public boolean equals(Object obj) {
++            if (obj == null)
++                return false;
++            if (getClass() != obj.getClass())
++                return false;
++            final MutableTermState other = (MutableTermState) obj;
++
++            if (this.processingEmbedded != other.processingEmbedded)
++                return false;
++            return true;
++        }
++
++        public int hashCode() {
++            int hash = 7;
++
++            hash = 83 * hash + this.processingEmbedded;
++            return hash;
++        }
++        
++        public String toString() {
++            return "HeredocTermState[" + processingEmbedded + "]";
++        }
++        
++        private int processingEmbedded;
++    }
++    
++    // Equals - primarily for unit testing (incremental lexing tests
++    // where we do full-file-lexing and compare state to incremental lexing)
++    public boolean equals(Object obj) {
++        if (obj == null)
++            return false;
++        if (getClass() != obj.getClass())
++            return false;
++        final HeredocTerm other = (HeredocTerm) obj;
++
++        if (this.eos != other.eos &&
++            (this.eos == null || !this.eos.equals(other.eos)))
++            return false;
++        if (this.func != other.func)
++            return false;
++        if (this.lastLine != other.lastLine &&
++            (this.lastLine == null || !this.lastLine.equals(other.lastLine)))
++            return false;
++        return true;
++    }
++
++    public int hashCode() {
++        int hash = 7;
++
++        hash = 83 * hash + (this.eos != null ? this.eos.hashCode()
++                                             : 0);
++        hash = 83 * hash + this.func;
++        hash = 83 * hash + (this.lastLine != null ? this.lastLine.hashCode()
++                                                  : 0);
++        return hash;
++    }
++
++    
++    public String toString() {
++        return "HeredocTerm[" + func + "," + eos + "," + lastLine + "," + processingEmbedded + "]";
++    }
++
++    // END NETBEANS MODIFICATIONS
+ }
+diff -r -u jruby-1.0/src/org/jruby/lexer/yacc/LexState.java jruby-1.0/src/org/jruby/lexer/yacc/LexState.java
+--- jruby-1.0/src/org/jruby/lexer/yacc/LexState.java	2007-06-02 18:33:04.000000000 -0700
++++ jruby-1.0/src/org/jruby/lexer/yacc/LexState.java	2007-06-03 10:19:01.000000000 -0700
+@@ -47,6 +47,40 @@
+ 
+     private final String debug;
+ 
++    // BEGIN NETBEANS MODIFICATIONS
++    private int ordinal;
++    static {
++        EXPR_BEG.ordinal = 0;
++        EXPR_END.ordinal = 1;
++        EXPR_ARG.ordinal = 2;
++        EXPR_CMDARG.ordinal = 3;
++        EXPR_ENDARG.ordinal = 4;
++        EXPR_MID.ordinal = 5;
++        EXPR_FNAME.ordinal = 6;
++        EXPR_DOT.ordinal = 7;
++        EXPR_CLASS.ordinal = 8;
++    }
++    
++    public int getOrdinal() {
++        return ordinal;
++    }
++    
++    public static LexState fromOrdinal(int ordinal) {
++        switch (ordinal) {
++            case 0: return EXPR_BEG;
++            case 1: return EXPR_END;
++            case 2: return EXPR_ARG;
++            case 3: return EXPR_CMDARG;
++            case 4: return EXPR_ENDARG;
++            case 5: return EXPR_MID;
++            case 6: return EXPR_FNAME;
++            case 7: return EXPR_DOT;
++            case 8: return EXPR_CLASS;
++        }
++        return null;
++    }
++    // END NETBEANS MODIFICATIONS
++    
+     private LexState(String debug) {
+         this.debug = debug;
+     }
+diff -r -u jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java
+--- jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java	2007-06-02 18:33:04.000000000 -0700
++++ jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java	2007-06-03 10:19:01.000000000 -0700
+@@ -486,4 +486,16 @@
+             return null;
+         }
+     }
++    
++    // BEGIN NETBEANS MODIFICATIONS
++    public int chompReadAhead() {
++        int result = bufLength+1;
++        bufLength = -1;
++        return result;
++    }
++    
++    public void setOffset(int offset) {
++        this.offset = offset;
++    }
++    // END NETBEANS MODIFICATIONS
+ }
+diff -r -u jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java
+--- jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-06-02 18:33:04.000000000 -0700
++++ jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-06-03 10:19:01.000000000 -0700
+@@ -73,6 +73,15 @@
+     // grammar use.
+     private LexState lex_state;
+     
++// BEGIN NETBEANS MODIFICATIONS 
++    // Whether or not the lexer should be "space preserving" - see setPreserveSpaces/getPreserveSpaces
++    // the parser should consider whitespace sequences and code comments to be separate
++    // tokens to return to the client. Parsers typically do not want to see any
++    // whitespace or comment tokens - but an IDE trying to tokenize a chunk of source code
++    // does want to identify these separately. The default, false, means the parser mode.
++    private boolean preserveSpaces;
++// END NETBEANS MODIFICATIONS
++
+     // Tempory buffer to build up a potential token.  Consumer takes responsibility to reset 
+     // this before use.
+     private StringBuffer tokenBuffer = new StringBuffer(60);
+@@ -109,6 +118,11 @@
+     	yaccValue = null;
+     	src = null;
+         lex_state = null;
++        // BEGIN NETBEANS MODIFICATIONS
++        // The null state causes problems in some scenarios for me. Besides using null to
++        // represent an initial state doesn't seem like a good idea.
++        lex_state = LexState.EXPR_BEG;
++        // END NETBEANS MODIFICATIONS
+         resetStacks();
+         lex_strterm = null;
+         commandStart = true;
+@@ -450,9 +464,15 @@
+         }
+         src.unread(c);
+         
++// BEGIN NETBEANS MODIFICATIONS
++      if (parserSupport != null) {
++// END NETBEANS MODIFICATIONS
+         // Store away each comment to parser result so IDEs can do whatever they want with them.
+         ISourcePosition position = startPosition.union(getPosition());
+         parserSupport.getResult().addComment(new CommentNode(position, tokenBuffer.toString()));
++// BEGIN NETBEANS MODIFICATIONS
++      }
++// END NETBEANS MODIFICATIONS
+         
+         return c;
+     }
+@@ -587,13 +607,32 @@
+         boolean spaceSeen = false;
+         boolean commandState;
+         
++        // BEGIN NETBEANS MODIFICATIONS
++        if (setSpaceSeen) {
++            spaceSeen = true;
++            setSpaceSeen = false;
++        }
++        // END NETBEANS MODIFICATIONS
++
+         if (lex_strterm != null) {
++            // BEGIN NETBEANS MODIFICATIONS
++            try {
++            // END NETBEANS MODIFICATIONS
+ 			int tok = lex_strterm.parseString(this, src);
+ 			if (tok == Tokens.tSTRING_END || tok == Tokens.tREGEXP_END) {
+ 			    lex_strterm = null;
+ 			    lex_state = LexState.EXPR_END;
+ 			}
+ 			return tok;
++            // BEGIN NETBEANS MODIFICATIONS
++            } catch (SyntaxException se) {
++                // If we abort in string parsing, throw away the str term
++                // such that we don't try again on restart
++                lex_strterm = null;
++                lex_state = LexState.EXPR_END;
++                throw se;
++            }
++            // END NETBEANS MODIFICATIONS
+         }
+ 
+         commandState = commandStart;
+@@ -612,13 +651,57 @@
+                 /* white spaces */
+             case ' ': case '\t': case '\f': case '\r':
+             case '\13': /* '\v' */
++              // BEGIN NETBEANS MODIFICATIONS
++              if (preserveSpaces) {
++                  // Collapse all whitespace into one token
++                  while (true) {
++                      c = src.read();
++                      if (c != ' ' && c != '\t' && c != '\f' && c != '\r' && c != '\13') {
++                          break;
++                      }
++                  }
++                  src.unread(c);
++                  yaccValue = new Token("whitespace", getPosition());
++                  setSpaceSeen = true;
++                  return Tokens.tWHITESPACE;
++              } else {
++              // END NETBEANS MODIFICATIONS
+                 getPosition();
+                 spaceSeen = true;
+                 continue retry;
++              // BEGIN NETBEANS MODIFICATIONS
++              }
++              // END NETBEANS MODIFICATIONS
+             case '#':		/* it's a comment */
++              // BEGIN NETBEANS MODIFICATIONS
++              if (preserveSpaces) {
++                  // Skip to end of the comment
++                  while ((c = src.read()) != '\n') {
++                      if (c == EOF) {
++                          break;
++                      }
++                  }
++
++                  yaccValue = new Token("line-comment", getPosition());
++                  setSpaceSeen = spaceSeen;
++                  // Ensure that commandStart and lex_state is updated
++                  // as it otherwise would have if preserveSpaces was false
++                  if (!(lex_state == LexState.EXPR_BEG ||
++                      lex_state == LexState.EXPR_FNAME ||
++                      lex_state == LexState.EXPR_DOT ||
++                      lex_state == LexState.EXPR_CLASS)) {
++                      commandStart = true;
++                      lex_state = LexState.EXPR_BEG;
++                  }
++                  return Tokens.tCOMMENT;
++              } else {
++              // END NETBEANS MODIFICATIONS
+                 if (readComment(c) == 0) return 0;
+                     
+                 /* fall through */
++              // BEGIN NETBEANS MODIFICATIONS
++              }
++              // END NETBEANS MODIFICATIONS
+             case '\n':
+             	// Replace a string of newlines with a single one
+                 while((c = src.read()) == '\n') {
+@@ -626,6 +709,21 @@
+                 }
+                 src.unread( c );
+                 getPosition();
++                // BEGIN NETBEANS MODIFICATIONS
++                if (preserveSpaces) {
++                    yaccValue = new Token("whitespace", getPosition());
++                    // Ensure that commandStart and lex_state is updated
++                    // as it otherwise would have if preserveSpaces was false
++                    if (!(lex_state == LexState.EXPR_BEG ||
++                        lex_state == LexState.EXPR_FNAME ||
++                        lex_state == LexState.EXPR_DOT ||
++                        lex_state == LexState.EXPR_CLASS)) {
++                        commandStart = true;
++                        lex_state = LexState.EXPR_BEG;
++                    }
++                    return Tokens.tWHITESPACE;
++                }
++                // END NETBEANS MODIFICATIONS
+ 
+                 if (lex_state == LexState.EXPR_BEG ||
+                     lex_state == LexState.EXPR_FNAME ||
+@@ -722,7 +820,16 @@
+                                 }
+                             }
+                             
++// BEGIN NETBEANS MODIFICATIONS
++                          if (parserSupport != null)
++// END NETBEANS MODIFICATIONS
+                             parserSupport.getResult().addComment(new CommentNode(getPosition(), tokenBuffer.toString()));
++                            // BEGIN NETBEANS MODIFICATIONS
++                            if (preserveSpaces) {
++                                yaccValue = new Token("here-doc", getPosition());
++                                return Tokens.tDOCUMENTATION;
++                            }
++                            // END NETBEANS MODIFICATIONS
+                             continue retry;
+                         }
+ 						src.unread(c);
+@@ -1400,6 +1507,9 @@
+ 
+             case '_':
+                 if (src.wasBeginOfLine() && src.matchString("_END__\n", false)) {
++// BEGIN NETBEANS MODIFICATIONS
++                      if (parserSupport != null)
++// END NETBEANS MODIFICATIONS
+                 	parserSupport.getResult().setEndSeen(true);
+                     return 0;
+                 }
+@@ -1408,7 +1518,11 @@
+ 
+             default:
+                 if (!isIdentifierChar(c)) {
+-                    throw new SyntaxException(getPosition(), "Invalid char `\\" + Integer.parseInt(""+c, 8) + "' in expression");
++                    // BEGIN NETBEANS MODIFICATIONS
++                    // This can throw NumberFormatException on erroneous files
++                    //throw new SyntaxException(getPosition(), "Invalid char `\\" + Integer.parseInt(""+c, 8) + "' in expression");
++                    throw new SyntaxException(getPosition(), "Invalid char " + c + "' in expression");
++                    // END NETBEANS MODIFICATIONS
+                 }
+             
+                 tokenBuffer.setLength(0);
+@@ -1540,13 +1654,18 @@
+             // Lame: parsing logic made it into lexer in ruby...So we
+             // are emulating
+             // FIXME:  I believe this is much simpler now...
++// BEGIN NETBEANS MODIFICATIONS
++          if (parserSupport != null) {
++// END NETBEANS MODIFICATIONS
+             StaticScope scope = parserSupport.getCurrentScope();
+             if (IdUtil.getVarType(tempVal) == IdUtil.LOCAL_VAR &&
+                     (scope instanceof BlockStaticScope && (scope.isDefined(tempVal) >= 0)) ||
+                     (scope.getLocalScope().isDefined(tempVal) >= 0)) {
+                 lex_state = LexState.EXPR_END;
+             }
+-
++// BEGIN NETBEANS MODIFICATIONS
++          }
++// END NETBEANS MODIFICATIONS
+             yaccValue = new Token(tempVal, getPosition());
+ 
+             return result;
+@@ -1796,4 +1915,71 @@
+ 		yaccValue = getInteger(number, 10);
+ 		return Tokens.tINTEGER;
+     }
++
++// BEGIN NETBEANS MODIFICATIONS
++    /**
++     * Set whether or not the lexer should be "space preserving" - in other words, whether
++     * the parser should consider whitespace sequences and code comments to be separate
++     * tokens to return to the client. Parsers typically do not want to see any
++     * whitespace or comment tokens - but an IDE trying to tokenize a chunk of source code
++     * does want to identify these separately. The default, false, means the parser mode.
++     *
++     * @param preserveSpaces If true, return space and comment sequences as tokens, if false, skip these
++     * @see #getPreserveSpaces
++     */
++    public void setPreserveSpaces(final boolean preserveSpaces) {
++        this.preserveSpaces = preserveSpaces;
++    }
++
++    /**
++     * Return whether or not the lexer should be "space preserving". For a description
++     * of what this means, see {@link #setPreserveSpaces}.
++     *
++     * @return preserveSpaces True iff space and comment sequences will be returned as
++     * tokens, and false otherwise.
++     *
++     * @see #setPreserveSpaces
++     */
++    public boolean getPreserveSpaces() {
++        return preserveSpaces;
++    }
++    
++    public LexState getLexState() {
++        return lex_state;
++    }
++    
++    public void setLexState(final LexState lex_state) {
++        this.lex_state = lex_state;
++    }
++    
++    public boolean isSetSpaceSeen() {
++        return setSpaceSeen;
++    }
++    
++    public void setSpaceSeen(boolean setSpaceSeen) {
++        this.setSpaceSeen = setSpaceSeen;
++    }
++    
++    public boolean isCommandStart() {
++        return commandStart;
++    }
++    
++    public void setCommandStart(boolean commandStart) {
++        this.commandStart = commandStart;
++    }
++
++    /* In normal JRuby, there is a "spaceSeen" flag which is local to yylex. It is
++     * used to interpret input based on whether a space was recently seen.
++     * Since I now bail -out- of yylex() when I see space, I need to be able
++     * to preserve this flag across yylex() calls. In most cases, "spaceSeen"
++     * should be set to false (as it previous was at the beginning of yylex().
++     * However, when I've seen a space and have bailed out, I need to set spaceSeen=true
++     * on the next call to yylex(). This is what the following flag is all about.
++     * It is set to true when we bail out on space (or other states that didn't
++     * previous bail out and spaceSeen is true).
++     */
++    private boolean setSpaceSeen;
++
++    
++// END NETBEANS MODIFICATIONS
+ }
+diff -r -u jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java
+--- jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java	2007-06-02 18:33:04.000000000 -0700
++++ jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java	2007-06-03 10:19:01.000000000 -0700
+@@ -29,4 +29,46 @@
+ 
+ public abstract class StrTerm {
+     public abstract int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException;
++
++    // BEGIN NETBEANS MODIFICATIONS
++    /** Tell this string term to return separate tokens for embedded ruby code (#$foo, #@foo, #{foo}) */
++    public abstract void splitEmbeddedTokens();
++
++    /** 
++     * Report whether this string should be substituting things like \n into newlines (double
++     * quoting rules).
++     * E.g. are we dealing with a "" string or a '' string (or their alternate representations)
++     */
++    public abstract boolean isSubstituting();
++    
++    // When StringTerm processes a string with an embedded code fragment (or variable),
++    // such as #{thiscode()}, it splits the string up at the beginning of the boundary
++    // and returns Tokens.tSTRING_DBEG or Tokens.tSTRING_DVAR. However, it doesn't
++    // split the string up where the embedded code ends, it just processes to the end.
++    // For my lexing purposes that's not good enough; I want to know where the embedded
++    // fragment ends (so I can lex that String as real Ruby code rather than just
++    // a String literal).
++    // However, 
++    /** Default; ignore embedded fragments */
++    final static int IGNORE_EMBEDDED = 0;
++    /** Flag set in embeddedCode when we are processing an embedded code expression: #{foo} */
++    final static int LOOKING_FOR_EMBEDDED = 1;
++    /** Flag set in embeddedCode when we are processing an embedded code expression: #{foo} */
++    final static int EMBEDDED_DEXPR = 2;
++    /** Flag set in embeddedCode when we are processing an embedded variable: #@foo */
++    final static int EMBEDDED_DVAR = 3;
++    /** Flag set while we're processing embedded Ruby expressions. It will be 0 when we are not,
++     * or otherwise set to the the relevant embedded type (EMBEDDED_DVAR or EMBEDDED_DEXPR) */
++    protected int processingEmbedded;
++    /**
++     * Record any mutable state from this StrTerm such that it can
++     * be set back to this exact state through a call to {@link #setMutableState}
++     * later on. Necessary for incremental lexing where we may restart
++     * lexing parts of a string (since they can be split up due to
++     * Ruby embedding like "Evaluated by Ruby: #{foo}".
++     */
++    public abstract Object getMutableState();
++    /** Support for incremental lexing: set current state of the term. See {@link #getMutableState} */
++    public abstract void setMutableState(Object o);
++    // END NETBEANS MODIFICATIONS
+ }
+diff -r -u jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java
+--- jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java	2007-06-02 18:33:04.000000000 -0700
++++ jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java	2007-06-03 10:19:01.000000000 -0700
+@@ -69,7 +69,10 @@
+             space = 1;
+         }
+ 
+-        if (c == term && nest == 0) {
++        // BEGIN NETBEANS MODIFICATIONS
++        //if (c == term && nest == 0) {
++        if ((processingEmbedded == IGNORE_EMBEDDED || processingEmbedded == LOOKING_FOR_EMBEDDED) && (c == term) && (nest == 0)) {
++        // END NETBEANS MODIFICATIONS
+             if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
+                 func = -1;
+                 lexer.getPosition();
+@@ -89,15 +92,36 @@
+         }
+         ByteList buffer = new ByteList();
+ 
++        // BEGIN NETBEANS MODIFICATIONS
++        if ((processingEmbedded == EMBEDDED_DEXPR) && (c == '}')) {
++            processingEmbedded = LOOKING_FOR_EMBEDDED;
++            // I have to process this character outside of the parseStringIntoBuffer call
++            // since I don't want that code to see it as a possible String terminator.
++            buffer.append(c);
++            // Anticipate unread since we're done with }
++            c = src.read();
++        }
++        // END NETBEANS MODIFICATIONS
++        
+         if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0 && c == '#') {
+             c = src.read();
+             switch (c) {
+             case '$':
+             case '@':
++                // BEGIN NETBEANS MODIFICATIONS
++                if (processingEmbedded == LOOKING_FOR_EMBEDDED) {
++                    processingEmbedded = EMBEDDED_DVAR;
++                }
++                // END NETBEANS MODIFICATIONS
+                 src.unread(c);
+                 lexer.setValue(new Token("#" + c, lexer.getPosition()));
+                 return Tokens.tSTRING_DVAR;
+             case '{':
++                // BEGIN NETBEANS MODIFICATIONS
++                if (processingEmbedded == LOOKING_FOR_EMBEDDED) {
++                    processingEmbedded = EMBEDDED_DEXPR;
++                }
++                // END NETBEANS MODIFICATIONS
+                 lexer.setValue(new Token("#" + c, lexer.getPosition())); 
+                 return Tokens.tSTRING_DBEG;
+             }
+@@ -105,10 +129,45 @@
+         }
+         src.unread(c);
+         if (parseStringIntoBuffer(src, buffer) == 0) {
+-            throw new SyntaxException(src.getPosition(), "unterminated string meets end of file");
++            // BEGIN NETBEANS MODIFICATIONS
++            // We've read to the end of input and haven't found a corresponding String
++            // terminator. However, we don't always want to return the rest of the input as
++            // erroneous; in lexing mode, we want to stop at the first newline
++            // (at least or normal quoted strings, possibly not for heredocs etc.)
++            // and resume parsing from there, since it's likely that we're in the middle
++            // of typing a string.
++            // We've gotta push the "unused portion" of the string back into the input;
++            // the unused portion is the portion after the first newline.
++//            int n = buffer.length();
++//            for (int j = 0; j < n; j++) {
++//                if (buffer.charAt(j) == '\n') {
++//                    // Found it.
++//                    j++; // Include at least one
++//                    for (int k = n-1; k >= j; k--) {
++//                        // push input back in reverse order
++//                        src.unread(buffer.charAt(k));
++//                    }
++//                    // Fall through outer loop and throw SyntaxException
++//                    break;
++//                }
++//            }
++            //throw new SyntaxException(src.getPosition(), "unterminated string meets end of file");
++            throw new UnterminatedStringException(src.getPosition(), "unterminated string meets end of file");
++            // END NETBEANS MODIFICATIONS
+         }
+ 
+         lexer.setValue(new StrNode(lexer.getPosition(), buffer)); 
++
++        // BEGIN NETBEANS MODIFICATIONS
++        // DVARs last only for a single string token so shut if off here.
++        if (processingEmbedded == EMBEDDED_DVAR) {
++            processingEmbedded = LOOKING_FOR_EMBEDDED;
++        } else if ((processingEmbedded == EMBEDDED_DEXPR) && (buffer.length() == 0)) {
++            // Unbalanced expression - see #96485
++            processingEmbedded = LOOKING_FOR_EMBEDDED;
++        }
++        // END NETBEANS MODIFICATIONS
++
+         return Tokens.tSTRING_CONTENT;
+     }
+ 
+@@ -165,6 +224,14 @@
+         while ((c = src.read()) != RubyYaccLexer.EOF) {
+             if (paren != '\0' && c == paren) {
+                 nest++;
++            // BEGIN NETBEANS MODIFICATIONS
++            } else if (processingEmbedded == EMBEDDED_DEXPR && c == '}') {
++                src.unread(c);
++                break;
++            } else if (processingEmbedded == EMBEDDED_DVAR && !((c == '_') || c == '$' || c == '@' || Character.isLetter(c))) {
++                 src.unread(c);
++                 break;
++            // END NETBEANS MODIFICATIONS
+             } else if (c == term) {
+                 if (nest == 0) {
+                     src.unread(c);
+@@ -315,4 +382,107 @@
+             buffer.append(c);
+         }
+     }
++
++    // BEGIN NETBEANS MODIFICATIONS
++    public boolean isSubstituting() {
++        return (func & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
++    }
++
++    public Object getMutableState() {
++        return new MutableTermState(processingEmbedded, nest);
++    }
++
++    public void setMutableState(Object o) {
++        MutableTermState state = (MutableTermState)o;
++        if (state != null) {
++            this.processingEmbedded = state.processingEmbedded;
++            this.nest = state.nest;
++        }
++    }
++    
++    public void splitEmbeddedTokens() {
++        if (processingEmbedded == IGNORE_EMBEDDED) {
++            processingEmbedded = LOOKING_FOR_EMBEDDED;
++        }
++    }
++
++    private class MutableTermState {
++        private MutableTermState(int embeddedCode, int nest) {
++            this.processingEmbedded = embeddedCode;
++            this.nest = nest;
++        }
++        
++        public boolean equals(Object obj) {
++            if (obj == null)
++                return false;
++            if (getClass() != obj.getClass())
++                return false;
++            final MutableTermState other = (MutableTermState) obj;
++
++            if (this.nest != other.nest)
++                return false;
++            if (this.processingEmbedded != other.processingEmbedded)
++                return false;
++            return true;
++        }
++
++        public int hashCode() {
++            int hash = 7;
++
++            hash = 83 * hash + this.nest;
++            hash = 83 * hash + this.processingEmbedded;
++            return hash;
++        }
++        
++        public String toString() {
++            return "StringTermState[" + nest + "," + processingEmbedded + "]";
++        }
++        
++        private int nest;
++        private int processingEmbedded;
++    }
++    
++    // Equals - primarily for unit testing (incremental lexing tests
++    // where we do full-file-lexing and compare state to incremental lexing)
++    public boolean equals(Object obj) {
++        if (obj == null)
++            return false;
++        if (getClass() != obj.getClass())
++            return false;
++        final StringTerm other = (StringTerm) obj;
++
++        if (this.func != other.func)
++            return false;
++        if (this.term != other.term)
++            return false;
++        if (this.processingEmbedded != other.processingEmbedded)
++            return false;
++        if (this.paren != other.paren)
++            return false;
++        if (this.nest != other.nest)
++            return false;
++        return true;
++    }
++    
++    public String toString() {
++        return "StringTerm[" + func + "," + term + "," + (int)paren + "," + nest + "," + processingEmbedded + "]";
++    }
++
++    public int hashCode() {
++        int hash = 7;
++
++        hash = 13 * hash + this.func;
++        hash = 13 * hash + this.term;
++        hash = 13 * hash + this.paren;
++        hash = 13 * hash + this.nest;
++        hash = 13 * hash + this.processingEmbedded;
++        return hash;
++    }
++    
++    public static class UnterminatedStringException extends SyntaxException {
++        public UnterminatedStringException(ISourcePosition pos, String message) {
++            super(pos, message);
++        }
++    }
++    // END NETBEANS MODIFICATIONS
+ }
+diff -r -u jruby-1.0/src/org/jruby/parser/Tokens.java jruby-1.0/src/org/jruby/parser/Tokens.java
+--- jruby-1.0/src/org/jruby/parser/Tokens.java	2007-06-02 18:33:10.000000000 -0700
++++ jruby-1.0/src/org/jruby/parser/Tokens.java	2007-06-03 10:19:01.000000000 -0700
+@@ -152,6 +152,16 @@
+     int tRCURLY     = DefaultRubyParser.tRCURLY;
+     int tPIPE       = DefaultRubyParser.tPIPE;
+ 
++    // BEGIN NETBEANS MODIFICATIONS
++    // I'd like to pull these out of the grammar, but I don't dare to regenerate the yacc file etc.
++    // so for now just use unused constants
++    //int tCOMMENT    = DefaultRubyParser.tCOMMENT;
++    //int tWHITESPACE    = DefaultRubyParser.tWHITESPACE;
++    int tCOMMENT    = 50000;
++    int tWHITESPACE    = 50001;
++    int tDOCUMENTATION = 50002;
++    // END NETBEANS MODIFICATIONS
++
+     String[] operators = {"+@", "-@", "**", "<=>", "==", "===", "!=", ">=", "<=", "&&",
+                           "||", "=~", "!~", "..", "...", "[]", "[]=", "<<", ">>", "::"};
+ }

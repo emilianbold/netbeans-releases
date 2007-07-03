@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.jruby</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <subpackages>jline</subpackages>
+                <subpackages>org.jruby</subpackages>
+                <subpackages>org.ablaf</subpackages>
+                <subpackages>org.jvyaml</subpackages>
+                <subpackages>org.objectweb.asm</subpackages>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/asm-2.2.3.jar</runtime-relative-path>
+                <binary-origin>patched_source/jruby-1.0/lib/asm-2.2.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/asm-commons-2.2.3.jar</runtime-relative-path>
+                <binary-origin>patched_source/jruby-1.0/lib/asm-commons-2.2.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jline-0.9.91.jar</runtime-relative-path>
+                <binary-origin>patched_source/jruby-1.0/lib/jline-0.9.91.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/backport-util-concurrent.jar</runtime-relative-path>
+                <binary-origin>patched_source/jruby-1.0/lib/backport-util-concurrent.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
