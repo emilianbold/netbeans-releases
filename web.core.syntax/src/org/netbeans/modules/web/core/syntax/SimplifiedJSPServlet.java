@@ -36,7 +36,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
@@ -145,8 +144,11 @@ public class SimplifiedJSPServlet {
 
         PageInfo.BeanData[] beanData = sup.getBeanData();
 
-        for (PageInfo.BeanData bean : beanData) {
-            beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+        if (beanData != null) {
+            for (PageInfo.BeanData bean : beanData) {
+                beanDeclarationsBuff.append(bean.getClassName()
+                        + " " + bean.getId() + ";\n"); //NOI18N
+            }
         }
 
         return beanDeclarationsBuff.toString();
