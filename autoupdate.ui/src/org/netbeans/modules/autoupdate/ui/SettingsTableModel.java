@@ -24,11 +24,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
@@ -170,7 +168,7 @@ public class SettingsTableModel extends AbstractTableModel {
                 } catch(MalformedURLException mux) {
                     logger.warning(mux.getLocalizedMessage());
                 }*/
-        };
+        }
     }
     
     public Object getValueAt (int rowIndex, int columnIndex) {
@@ -182,7 +180,7 @@ public class SettingsTableModel extends AbstractTableModel {
             /*case 2: URL url = unitProvider.getProviderURL();
             retval = (url != null) ? url.toExternalForm() : "";//NOI18N
             break;*/
-        };
+        }
         return retval;
     }
     

@@ -280,12 +280,8 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     
 private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged
     Component component = ((JTabbedPane) evt.getSource ()).getSelectedComponent ();
-    if (component instanceof JSplitPane) {
-        JSplitPane jsp = (JSplitPane)component;
-        component =  jsp.getLeftComponent ();
-        if (component instanceof SettingsTab) {
-            ((SettingsTab)component).getSettingsTableModel ().refreshModel ();
-        }
+    if (component instanceof SettingsTab) {
+        ((SettingsTab)component).getSettingsTableModel ().refreshModel ();
     }
 }//GEN-LAST:event_tpTabsStateChanged
 

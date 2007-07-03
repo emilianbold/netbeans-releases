@@ -47,6 +47,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Cancellable;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /** XXX <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
@@ -60,6 +62,9 @@ public final class UpdateUnitProviderImpl {
     private UpdateProvider provider;
     private static Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl");
     private static final String REMOVED_MASK ="_removed";
+    private static final String URL = "url";
+    private static final String DISPLAY_NAME = "displayName";
+    private static final String ENABLED = "enabled";
             
     public UpdateUnitProviderImpl (UpdateProvider provider) {
         this.provider = provider;
@@ -197,40 +202,40 @@ public final class UpdateUnitProviderImpl {
             for (int i = 0; i < auTypes.length; i++) {
                 // check first if already exist
                 try {
-                if (! getPreferences ().nodeExists (auTypes [i].getName ())) {
-                    try {
-                        String bundle = (String) auTypes [i].getAttribute ("SystemFileSystem.localizingBundle");
-                        if (bundle != null) {
-                            UpdateProvider p = AutoupdateCatalogFactory.createUpdateProvider (auTypes [i]);
-                            assert p != null : "UpdateProvider found for " + auTypes [i];
-                            getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.TRUE);
-                            err.log (Level.FINEST,
-                                    auTypes [i] + " loaded.");
-                        } else {
-                            err.log (Level.INFO,
-                                    auTypes [i] + " cannot be loaded because doesn't contain SystemFileSystem.localizingBundle.");
-                            getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.FALSE);
+                    if (! getPreferences ().nodeExists (auTypes [i].getName ())) {
+                        try {
+                            String bundle = (String) auTypes [i].getAttribute ("SystemFileSystem.localizingBundle");
+                            if (bundle != null) {
+                                UpdateProvider p = AutoupdateCatalogFactory.createUpdateProvider (auTypes [i]);
+                                assert p != null : "UpdateProvider found for " + auTypes [i];
+                                getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.TRUE);
+                                err.log (Level.FINEST,
+                                        auTypes [i] + " loaded.");
+                            } else {
+                                err.log (Level.INFO,
+                                        auTypes [i] + " cannot be loaded because doesn't contain SystemFileSystem.localizingBundle.");
+                                getPreferences ().node (auTypes [i].getName ()).putBoolean ("loaded", Boolean.FALSE);
+                            }
+                        } catch (Exception x) {
+                            Exceptions.printStackTrace (x);
                         }
-                    } catch (Exception x) {
-                        Exceptions.printStackTrace (x);
                     }
-                }
                 } catch (BackingStoreException bse) {
                     err.log (Level.INFO, bse.getMessage() + " while loading " + auTypes [i], bse);
                 }
             }
         }
         Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookup (new Lookup.Template<UpdateProvider> (UpdateProvider.class));
-//        result.addLookupListener (new LookupListener () {
-//            public void resultChanged(LookupEvent ev) {
-//                try {
-//                    refresh ();
-//                    err.log (Level.FINE, "Lookup.Result changed " + ev);
-//                } catch (IOException ioe) {
-//                    err.log (Level.INFO, ioe.getMessage (), ioe);
-//                }
-//            }
-//        });
+        result.addLookupListener (new LookupListener () {
+            public void resultChanged(LookupEvent ev) {
+                try {
+                    refreshProviders (null, false);
+                    err.log (Level.FINE, "Lookup.Result changed " + ev);
+                } catch (IOException ioe) {
+                    err.log (Level.INFO, ioe.getMessage (), ioe);
+                }
+            }
+        });
         
         Collection<? extends UpdateProvider> col = result.allInstances ();
         Map<String, UpdateProvider> providerMap = new HashMap<String, UpdateProvider> ();
@@ -242,7 +247,6 @@ public final class UpdateUnitProviderImpl {
             } catch(BackingStoreException bsx) {
                 Exceptions.printStackTrace(bsx);
             }
-            
             providerMap.put (provider.getName (), provider);
         }
         
@@ -295,8 +299,8 @@ public final class UpdateUnitProviderImpl {
         Preferences providerPreferences = getPreferences ().node (codeName);
         assert providerPreferences != null : "Preferences node " + codeName + " found.";
         
-        providerPreferences.put ("url", url.toString ());
-        providerPreferences.put ("displayName", displayName);
+        providerPreferences.put (URL, url.toString ());
+        providerPreferences.put (DISPLAY_NAME, displayName);
     }
     
     private static Preferences getPreferences() {
@@ -307,8 +311,8 @@ public final class UpdateUnitProviderImpl {
         Preferences providerPreferences = getPreferences ().node (codeName);
         assert providerPreferences != null : "Preferences node " + codeName + " found.";
         
-        String toUrl = providerPreferences.get ("url", null);
-        String displayName = providerPreferences.get ("displayName", codeName);
+        String toUrl = providerPreferences.get (URL, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_URL, null));
+        String displayName = providerPreferences.get (DISPLAY_NAME, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_DISPLAY_NAME, codeName));
         
         // filter Providers which store only its state
         if (toUrl == null) {
@@ -329,7 +333,7 @@ public final class UpdateUnitProviderImpl {
         Preferences providerPreferences = getPreferences ().node (codename);
         assert providerPreferences != null : "Preferences node " + codename + " found.";
         
-        String enabled = providerPreferences.get ("enabled", null);
+        String enabled = providerPreferences.get (ENABLED, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_ENABLED, null));
         
         return ! Boolean.FALSE.toString ().equals (enabled);
     }
@@ -338,14 +342,14 @@ public final class UpdateUnitProviderImpl {
         Preferences providerPreferences = getPreferences ().node (p.getName ());
         assert providerPreferences != null : "Preferences node " + p.getName () + " found.";
         
-        providerPreferences.put ("enabled", Boolean.valueOf (isEnabled).toString ());
+        providerPreferences.put (ENABLED, Boolean.valueOf (isEnabled).toString ());
     }
     
     private static String loadDisplayName (UpdateProvider p) {
         Preferences providerPreferences = getPreferences ().node (p.getName ());
         assert providerPreferences != null : "Preferences node " + p.getName () + " found.";
         
-        return providerPreferences.get ("displayName", p.getDisplayName ());
+        return providerPreferences.get (DISPLAY_NAME, p.getDisplayName ());
     }
     
     private static void storeDisplayName (UpdateProvider p, String displayName) {
@@ -354,9 +358,9 @@ public final class UpdateUnitProviderImpl {
         
         // store only if differs
         if (displayName == null) {
-            providerPreferences.remove ("displayName");
+            providerPreferences.remove (DISPLAY_NAME);
         } else if (! displayName.equals (p.getDisplayName ())) {
-            providerPreferences.put ("displayName", displayName);
+            providerPreferences.put (DISPLAY_NAME, displayName);
         }
     }
     
@@ -368,7 +372,7 @@ public final class UpdateUnitProviderImpl {
         if (p instanceof AutoupdateCatalogProvider) {
             urlSpec = ((AutoupdateCatalogProvider) p).getUpdateCenterURL ().toExternalForm ();
         }
-        urlSpec = providerPreferences.get ("url", urlSpec);
+        urlSpec = providerPreferences.get (URL, urlSpec);
         if (urlSpec == null || urlSpec.length () == 0) {
             return null;
         } else {
@@ -393,14 +397,14 @@ public final class UpdateUnitProviderImpl {
         
         // store only if differs
         if (url == null) {
-            providerPreferences.remove ("url"); // NOI18N
+            providerPreferences.remove (URL);
         } else {
             URL orig = null;
             if (p instanceof AutoupdateCatalogProvider) {
                 orig = ((AutoupdateCatalogProvider) p).getUpdateCenterURL ();
             }
             if (! url.equals (orig)) {
-                providerPreferences.put ("url", url.toExternalForm ()); // NOI18N
+                providerPreferences.put (URL, url.toExternalForm ());
                 if (p instanceof AutoupdateCatalogProvider) {
                     ((AutoupdateCatalogProvider) p).setUpdateCenterURL (url);
                 }

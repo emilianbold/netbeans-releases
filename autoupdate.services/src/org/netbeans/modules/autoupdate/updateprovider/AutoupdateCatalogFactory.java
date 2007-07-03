@@ -57,6 +57,10 @@ public class AutoupdateCatalogFactory {
     private static final String SYSPROP_LANGUAGE = "netbeans.autoupdate.language"; // NOI18N
     private static final String SYSPROP_VARIANT = "netbeans.autoupdate.variant"; // NOI18N
     
+    public static final String ORIGINAL_URL = "originalUrl"; // NOI18N
+    public static final String ORIGINAL_DISPLAY_NAME = "originalDisplayName"; // NOI18N
+    public static final String ORIGINAL_ENABLED = "originalEnabled"; // NOI18N
+    
     public static UpdateProvider createUpdateProvider (FileObject fo) {
         String sKey = (String) fo.getAttribute ("url_key"); // NOI18N
         String remoteBundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
@@ -92,17 +96,11 @@ public class AutoupdateCatalogFactory {
         AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
         
         Preferences providerPreferences = getPreferences ().node (sKey);
-        String displayName = providerPreferences.get("displayName", null);
-        if (displayName == null) {
-            providerPreferences.put ("displayName", au_catalog.getDisplayName ());
-        }
-        
+        providerPreferences.put (ORIGINAL_URL, url.toExternalForm ());
+        providerPreferences.put (ORIGINAL_DISPLAY_NAME, au_catalog.getDisplayName ());
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N        
         if (en != null) {
-            String enabled = providerPreferences.get("enabled", null);            
-            if (enabled == null) {
-                providerPreferences.putBoolean("enabled", en);
-            }
+            providerPreferences.putBoolean (ORIGINAL_ENABLED, en);
         }
 
         return au_catalog;
