@@ -21,7 +21,7 @@ package org.netbeans.modules.xml.jaxb.actions;
 
 import java.io.File;
 import java.net.URL;
-import org.netbeans.modules.xml.jaxb.ui.JAXBWizardXSDNode;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -56,9 +56,12 @@ public class JAXBRefreshAction extends CookieAction {
     protected void performAction(Node[] nodes) {
         Node node = nodes[ 0 ];
         FileObject fo = node.getLookup().lookup( FileObject.class );
-        String origLoc = (String) node.getValue(JAXBWizardXSDNode.ORIG_LOCATION);
-        Boolean origLocIsURL = (Boolean) node.getValue(JAXBWizardXSDNode.ORIG_LOCATION_TYPE);
-        FileObject locSchemaRoot = (FileObject) node.getValue(JAXBWizardXSDNode.LOC_SCHEMA_ROOT);
+        String origLoc = (String) node.getValue(
+                JAXBWizModuleConstants.ORIG_LOCATION);
+        Boolean origLocIsURL = (Boolean) node.getValue(
+                JAXBWizModuleConstants.ORIG_LOCATION_TYPE);
+        FileObject locSchemaRoot = (FileObject) node.getValue(
+                JAXBWizModuleConstants.LOC_SCHEMA_ROOT);
         
         if ( ( fo != null ) && ( origLoc != null ) ) {
             // XXX TODO run in separate non-awt thread.
@@ -74,12 +77,12 @@ public class JAXBRefreshAction extends CookieAction {
                                  srcFile.toURI());
                      }
                  } else {
-                     String msg = NbBundle.getMessage(this.getClass(), 
-                                    "MSG_CanNotRefreshFile"); // No I18N
+                     String msg = NbBundle.getMessage(this.getClass(),
+                             "MSG_CanNotRefreshFile"); //NOI18N
                      NotifyDescriptor d = new NotifyDescriptor.Message(
-                                    msg, NotifyDescriptor.INFORMATION_MESSAGE);
+                             msg, NotifyDescriptor.INFORMATION_MESSAGE);
                      d.setTitle(NbBundle.getMessage(this.getClass(), 
-                                                 "LBL_RefreshFile")); //No I18N
+                             "LBL_RefreshFile")); //NOI18N
                      DialogDisplayer.getDefault().notify(d);
                  }
              } catch (Exception ex){
@@ -94,7 +97,7 @@ public class JAXBRefreshAction extends CookieAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(this.getClass(), "LBL_NodeRefresh");// No I18N
+        return NbBundle.getMessage(this.getClass(), "LBL_NodeRefresh");//NOI18N
     }
 
     public HelpCtx getHelpCtx() {

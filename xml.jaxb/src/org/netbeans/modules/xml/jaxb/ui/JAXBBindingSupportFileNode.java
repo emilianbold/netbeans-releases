@@ -23,6 +23,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.actions.JAXBRefreshAction;
 import org.netbeans.modules.xml.jaxb.actions.JAXBWizardOpenXSDIntoEditorAction;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardSchemaNode.JAXBWizardSchemaNodeChildren;
+import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -30,6 +31,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -40,15 +42,12 @@ import org.openide.util.lookup.Lookups;
  * @author gpatil
  */
 public class JAXBBindingSupportFileNode extends AbstractNode {
-    public static final String ORIG_LOCATION = "origLocation" ; // No I18N
-    public static final String ORIG_LOCATION_TYPE = "orginLocationType"; //NOI18N
-    public static final String LOC_SCHEMA_ROOT = "localSchemaRoot"; //NOI18N
-    
     private static Action[] actions = null;    
     private FileObject xsdFileObject;
     private String origLocation ;
     private Boolean origLocationType ;
     private FileObject localSchemaRoot;
+    private Node nodeDelegate;
         
     public JAXBBindingSupportFileNode(Project prj, FileObject xsdFile, FileObject locSchemaRoot, Boolean origLocType, String origLocation) throws IntrospectionException {
         super( Children.LEAF, createLookup( xsdFile, prj ) );
@@ -57,25 +56,21 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
         this.origLocationType = origLocType;
         this.localSchemaRoot = locSchemaRoot;
         
-        this.setValue(ORIG_LOCATION, this.origLocation);
-        this.setValue(ORIG_LOCATION_TYPE, this.origLocationType);
-        this.setValue(LOC_SCHEMA_ROOT, this.localSchemaRoot);
+        this.setValue(JAXBWizModuleConstants.ORIG_LOCATION, this.origLocation);
+        this.setValue(JAXBWizModuleConstants.ORIG_LOCATION_TYPE, this.origLocationType);
+        this.setValue(JAXBWizModuleConstants.LOC_SCHEMA_ROOT, this.localSchemaRoot);
         
         xsdFileObject.addFileChangeListener( new FileChangeListener() {
-            public void fileAttributeChanged(
-                    FileAttributeEvent fileAttributeEvent) {
+            public void fileAttributeChanged(FileAttributeEvent fae) {
             }
             
-            public void fileChanged(
-                    FileEvent fileAttributeEvent) {
+            public void fileChanged(FileEvent fileAttributeEvent) {
             }
             
-            public void fileDataCreated(
-                    FileEvent fileAttributeEvent) {
+            public void fileDataCreated(FileEvent fileAttributeEvent) {
             }
             
-            public void fileDeleted(
-                    FileEvent fileAttributeEvent) {
+            public void fileDeleted(FileEvent fileAttributeEvent) {
                 JAXBWizardSchemaNodeChildren xsdChildren =
                         (JAXBWizardSchemaNodeChildren)JAXBBindingSupportFileNode.
                         this.getParentNode().getChildren();
@@ -91,6 +86,10 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
         } );
         initActions();
         this.setShortDescription(xsdFile.getPath());
+    }
+    
+    public void setNodeDelegate(Node delegate){
+        this.nodeDelegate = delegate;
     }
     
     private static Lookup createLookup(FileObject xsdFileObject, 
@@ -128,12 +127,19 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
     }
     
     public Image getIcon(int type) {
+        if (this.nodeDelegate != null){
+            return this.nodeDelegate.getIcon(type);
+        }
         return Utilities.loadImage( 
-                "org/netbeans/modules/xml/jaxb/resources/xmlObject.gif" ); // No I18N
+                "org/netbeans/modules/xml/jaxb/resources/xmlObject.gif" );//NOI18N
     }
     
     public Image getOpenedIcon(int type) {
+        if (this.nodeDelegate != null){
+            return this.nodeDelegate.getOpenedIcon(type);
+        }
+        
         return Utilities.loadImage( 
-                "org/netbeans/modules/xml/jaxb/resources/xmlObject.gif" ); // No I18N  
+                "org/netbeans/modules/xml/jaxb/resources/xmlObject.gif" );//NOI18N  
     }
  }

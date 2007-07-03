@@ -212,7 +212,7 @@ public class ProjectHelper {
         ClassPath compileClassPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
         ClassPath bootClassPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.BOOT);
         ClassPath classPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{compileClassPath, bootClassPath});
-        FileObject jaxbClass = classPath.findResource("javax/xml/bind/JAXBContent.class"); // NOI18N
+        FileObject jaxbClass = classPath.findResource("javax/xml/bind/JAXBContext.class"); // NOI18N
         if (jaxbClass == null) {
             // Add JAXB jars if not in the classpath
             Library jaxbLib = LibraryManager.getDefault().getLibrary(JAXB_LIB_NAME); //NOI18N

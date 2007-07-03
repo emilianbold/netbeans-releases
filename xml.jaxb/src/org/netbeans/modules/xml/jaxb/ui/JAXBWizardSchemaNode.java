@@ -203,22 +203,32 @@ public class JAXBWizardSchemaNode extends AbstractNode {
                     
                     originLocType = ss.getOrigLocationType();
                     if ((originLocType != null) && 
-                            ("url".equals(originLocType))){ // NOI18N
+                            ("url".equals(originLocType))){ //NOI18N
                         isURL = Boolean.TRUE;
                     }
 
                     fo = FileUtil.toFileObject(new File(projDir, 
                             ss.getLocation()));
                     if (fo != null){
-                        xsdNode = new JAXBWizardXSDNode(project, fo, 
+                        xsdNode = new JAXBBindingSupportFileNode(project, fo, 
                                 locSchemaRoot, isURL, ss.getOrigLocation());
+                        try {
+                            DataObject dataObj = DataObject.find(fo);
+                            Node delegate = dataObj.getNodeDelegate();
+                            ((JAXBBindingSupportFileNode)xsdNode).
+                                    setNodeDelegate(delegate);
+                        } catch (DataObjectNotFoundException ex){
+                            // Use JAXBBindingSupportFileNode
+                        }
+                        
                     } else {
                         // Log
                         tmpFile = new File(ss.getLocation());
                         fo = xsdFolder.getFileObject(tmpFile.getName());
                         if (fo != null){
-                            xsdNode = new JAXBWizardXSDNode(project, fo, 
-                                    locSchemaRoot, isURL, ss.getOrigLocation());
+                            xsdNode = new JAXBBindingSupportFileNode(project, 
+                                    fo, locSchemaRoot, isURL, 
+                                    ss.getOrigLocation());
                         }
                     }    
                 }
@@ -228,15 +238,16 @@ public class JAXBWizardSchemaNode extends AbstractNode {
                     fo = FileUtil.toFileObject(new File(projDir, 
                             bndg.getLocation()));
                     if (fo != null){
+                        xsdNode = new JAXBBindingSupportFileNode(project, 
+                                fo, locSchemaRoot, false, 
+                                bndg.getOrigLocation());                        
                         try {
                             DataObject dataObj = DataObject.find(fo);
-                            xsdNode = dataObj.getNodeDelegate();
-                            System.out.println("Got Node:" + xsdNode);                            
+                            Node delegate = dataObj.getNodeDelegate();
+                            ((JAXBBindingSupportFileNode)xsdNode).
+                                    setNodeDelegate(delegate);
                         } catch (DataObjectNotFoundException ex){
                             // Use JAXBBindingSupportFileNode
-                            xsdNode = new JAXBBindingSupportFileNode(project, 
-                                    fo, locSchemaRoot, false, 
-                                    bndg.getOrigLocation());
                         }
                     }                    
                 }
@@ -246,15 +257,16 @@ public class JAXBWizardSchemaNode extends AbstractNode {
                     fo = FileUtil.toFileObject(new File(projDir, 
                             cat.getLocation()));
                     if (fo != null){
+                        xsdNode = new JAXBBindingSupportFileNode(project, 
+                                fo, locSchemaRoot, false, 
+                                cat.getOrigLocation());
                         try {
                             DataObject dataObj = DataObject.find(fo);
-                            xsdNode = dataObj.getNodeDelegate();
-                            System.out.println("Got Node:" + xsdNode);                            
+                            Node delegate  = dataObj.getNodeDelegate();
+                            ((JAXBBindingSupportFileNode)xsdNode).
+                                    setNodeDelegate(delegate);                            
                         } catch (DataObjectNotFoundException ex){
                             // Use JAXBBindingSupportFileNode
-                            xsdNode = new JAXBBindingSupportFileNode(project, 
-                                    fo, locSchemaRoot, false, 
-                                    cat.getOrigLocation());
                         }
                     }
                 }

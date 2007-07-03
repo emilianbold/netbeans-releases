@@ -53,6 +53,10 @@ public class JAXBWizModuleConstants {
     public static final String JAXB_BINDING_FILES = "jaxb.binding.files" ; //NOI18N
     public static final String CATALOG_FILE = "jaxb.catalog.file" ; //NOI18N
     public static final String EXISTING_SCHEMA_NAMES = "jaxb.cfg.existingSchemaNames" ; //NOI18N
+    
+    public static final String ORIG_LOCATION = "origLocation" ; // No I18N
+    public static final String ORIG_LOCATION_TYPE = "orginLocationType"; //NOI18N
+    public static final String LOC_SCHEMA_ROOT = "localSchemaRoot"; //NOI18N
        
     private JAXBWizModuleConstants() {
     }
