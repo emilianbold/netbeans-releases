@@ -295,7 +295,10 @@ public class JavaMethodChangeHandler extends JavaChangeHandler implements IJavaM
         {
             String clsName = pClass.getName();
             String opName = pOperation.getName();
-            if (clsName != null && clsName.equals(opName) && pOperation.getReturnType() == null)
+            // 107427
+            if (clsName != null && clsName.equals(opName) &&
+                    (pOperation.getReturnType() == null ||
+                    pOperation.getReturnType().getTypeName().equals("")))
             {
                 pOperation.setIsConstructor(true);
             }
