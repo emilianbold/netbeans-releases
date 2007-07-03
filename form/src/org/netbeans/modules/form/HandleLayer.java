@@ -1161,13 +1161,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         Iterator selected = formDesigner.getSelectedLayoutComponents().iterator();
         while (selected.hasNext()) {
             RADComponent metacomp = (RADComponent) selected.next();
-            Component comp = (Component)formDesigner.getComponent(metacomp);
-            if (comp == null || comp.getParent() == null)
-                continue;  // might be not added yet after move operation
-            Rectangle rect = new Rectangle(-borderSize, -borderSize, comp.getWidth()+2*borderSize, comp.getHeight()+2*borderSize);
-            convertRectangleFromComponent(rect, comp);
-            if (rect.contains(p)) {
-                compAtPoint = metacomp;
+            if (metacomp instanceof RADVisualComponent && formDesigner.isInDesigner((RADVisualComponent)metacomp)) {
+                Component comp = (Component)formDesigner.getComponent(metacomp);
+                Rectangle rect = new Rectangle(-borderSize, -borderSize, comp.getWidth()+2*borderSize, comp.getHeight()+2*borderSize);
+                convertRectangleFromComponent(rect, comp);
+                if (rect.contains(p)) {
+                    compAtPoint = metacomp;
+                }
             }
         }
         return compAtPoint;
