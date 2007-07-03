@@ -459,8 +459,6 @@ final class VisualArchiveIncludesSupport {
                     jar.endsWith("@SEDeployment.jar") &&    // NOI18N
                     shortName.substring(0, shortName.length() - 4).equals(
                     jar.substring(0, jar.length() - 17))) {
-                //vi.setAsaAlias(alias);
-                vi.setAsaUUID(uuid);
                 vi.setAsaDescription(desc);
                 vi.setAsaTarget(cid);
                 
@@ -483,22 +481,15 @@ final class VisualArchiveIncludesSupport {
         }
         
         // OK this is not a SE jar..
-        for (int i = 0, size = bindingList.size(); i < size; i++) {
-            VisualClassPathItem vi = bindingList.get(i);
-            
+        for (VisualClassPathItem vi : bindingList) {
             if (vi.getAsaTarget().compareTo(cid) == 0) {
-                //vi.setAsaAlias(alias);
-                vi.setAsaUUID(uuid);
-                vi.setAsaDescription(desc);
-                
+                vi.setAsaDescription(desc);                
                 return;
             }
         }
     }
     
     private void updateTargetList(String cid) {
-        //int idx = cid.indexOf('-');
-        //String tid = (idx < 1) ? cid : cid.substring(idx+1);
         if (mTableModel != null) {
             for (int i = 0, size = mTableModel.getRowCount(); i < size; i++) {
                 // String cmp = (String) mTableModel.getValueAt(i, 2) + "-" + (String) mTableModel.getValueAt(i, 3);
@@ -520,7 +511,7 @@ final class VisualArchiveIncludesSupport {
             Document doc = factory.newDocumentBuilder().parse(new File(jbiFileLoc));
             
             NodeList serviceUnitNodeList = doc.getElementsByTagName("service-unit"); // NOI18N
-            String uuid = null;
+            String name = null;
             String desc = null;
             String cid = null;
             String jar = null;
@@ -538,7 +529,7 @@ final class VisualArchiveIncludesSupport {
                             Node m = ids.item(j);
                             
                             if (m.getNodeName().compareTo("name") == 0) { // NOI18N
-                                uuid = m.getFirstChild().getNodeValue();
+                                name = m.getFirstChild().getNodeValue();
                             } else if (m.getNodeName().compareTo("description") == 0) { // NOI18N
                                 desc = m.getFirstChild().getNodeValue();
                             }
@@ -554,8 +545,8 @@ final class VisualArchiveIncludesSupport {
                             } else if (m.getNodeName().compareTo("artifacts-zip") == 0) { // NOI18N
                                 jar = m.getFirstChild().getNodeValue();
                                 
-                                if (jar.startsWith(uuid)) {
-                                    jar = jar.substring(uuid.length());
+                                if (jar.startsWith(name)) {
+                                    jar = jar.substring(name.length());
                                 }
                             }
                         }
@@ -563,7 +554,7 @@ final class VisualArchiveIncludesSupport {
                 }
                 
                 if (jar != null) {
-                    updateModels(jar, uuid, desc, cid);
+                    updateModels(jar, name, desc, cid);
                     updateTargetList(cid);
                 }
             }
@@ -995,7 +986,7 @@ final class VisualArchiveIncludesSupport {
                         
                         if ((sid != null) && (sid.compareToIgnoreCase(tid) == 0)) {
                             boolean b = ((Boolean) mTableModel.getValueAt(rn, 0)).booleanValue();
-                            vi.setInDeployment(new Boolean(b));
+                            vi.setInDeployment(b);
                         }
                     }
                 }

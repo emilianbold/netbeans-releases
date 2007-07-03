@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Properties;
 
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -27,11 +31,13 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
+import org.openide.util.Exceptions;
 
 import org.openide.util.Utilities;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -70,9 +76,7 @@ public class VisualClassPathItem {
     private static Icon ICON_JAR = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_JAR));
     private static Icon ICON_LIBRARY = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_LIBRARY));
     private static Icon ICON_ARTIFACT = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_ARTIFACT));
-    private static Icon ICON_CLASSPATH = new ImageIcon(
-            Utilities.loadImage(RESOURCE_ICON_CLASSPATH)
-            );
+    private static Icon ICON_CLASSPATH = new ImageIcon(Utilities.loadImage(RESOURCE_ICON_CLASSPATH));
     
     private int type;
     private Object cpElement;
@@ -84,8 +88,6 @@ public class VisualClassPathItem {
     
     // ASA inforamtion
     private String asaType;
-    private String asaAlias;
-    private String asaUUID;
     private String asaDescription;
     private String asaTarget;
     private Icon projIcon;
@@ -112,24 +114,15 @@ public class VisualClassPathItem {
         this.asaType = ""; // NOI18N
         
         if (cpElement instanceof AntArtifact) {
-            AntArtifact aa = (AntArtifact) cpElement;
+            AntArtifact aa = (AntArtifact) cpElement; 
             
-            ProjectInformation info = (ProjectInformation) aa.getProject().getLookup().lookup(
-                    ProjectInformation.class
-                    );
+            ProjectInformation info = 
+                    aa.getProject().getLookup().lookup(ProjectInformation.class);
             
             if (info != null) {
                 projectName = info.getName();   // e.x., SynchronousSample
-                
-//                if (eval != null) {
-//                    int i = eval.lastIndexOf('/');
-//
-//                    if (i > 0) {
-//                        shortName = projectName + "@" + eval.substring(i + 1);
-//                    }
-//                }
                 shortName = projectName + ".jar"; // NOI18N
-                this.projIcon = info.getIcon();
+                projIcon = info.getIcon();
             }
             
             // extract the JBI component type info
@@ -141,6 +134,33 @@ public class VisualClassPathItem {
                 if (isJavaEEProjectAntArtifact(aa)){
                     asaType = JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME;
                 }
+            }
+                        
+            // Get service unit description from base project
+            // todo: add lookup in base project
+            FileObject projDir = aa.getProject().getProjectDirectory();
+            FileObject projPropFile = projDir.getFileObject("nbproject/project.properties"); // NOI18N
+            if (projPropFile != null) {
+                InputStream is = null;
+                try {
+                    java.util.Properties p = new java.util.Properties();
+                    is = projPropFile.getInputStream();
+                    p.load(is);
+                    asaDescription = p.getProperty("jbi.service-unit.description"); // NOI18N
+                    if (asaDescription == null) {
+                        asaDescription = p.getProperty("com.sun.jbi.ui.devtool.jbi.description.application-sub-assembly"); // NOI18N
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (Exception e) {
+                            ;
+                        }
+                    }
+                }               
             }
         }
     }
@@ -156,8 +176,6 @@ public class VisualClassPathItem {
     public static VisualClassPathItem create(AntArtifact artifact, String pathInWar) {
         return new VisualClassPathItem(
                 artifact, VisualClassPathItem.TYPE_ARTIFACT,
-                
-                //null,
                 artifact.getArtifactLocations()[0].toString(), pathInWar, false
                 );
     }
@@ -165,7 +183,7 @@ public class VisualClassPathItem {
     public static boolean isJavaEEProjectAntArtifact(AntArtifact aa){
         Project project = aa.getProject();
          if ( project != null ) {
-            AntArtifactProvider prov = (AntArtifactProvider)project.getLookup().lookup(AntArtifactProvider.class);
+            AntArtifactProvider prov = project.getLookup().lookup(AntArtifactProvider.class);
             if (prov != null) {
                 AntArtifact[] artifacts = prov.getBuildArtifacts();
                 Iterator<String> artifactTypeItr = null;
@@ -193,6 +211,10 @@ public class VisualClassPathItem {
      */
     public Object getObject() {
         return cpElement;
+    }
+    
+    public AntArtifact getAntArtifact() {
+        return (AntArtifact) getObject();
     }
     
     /**
@@ -245,8 +267,8 @@ public class VisualClassPathItem {
      *
      * @return DOCUMENT ME!
      */
-    public Boolean isInDeployment() {
-        return Boolean.valueOf(inDeployment);
+    public boolean isInDeployment() {
+        return inDeployment;
     }
     
     /**
@@ -254,8 +276,8 @@ public class VisualClassPathItem {
      *
      * @param inDeployment DOCUMENT ME!
      */
-    public void setInDeployment(Boolean inDeployment) {
-        this.inDeployment = inDeployment.booleanValue();
+    public void setInDeployment(boolean inDeployment) {
+        this.inDeployment = inDeployment;
     }
     
     /**
@@ -418,43 +440,7 @@ public class VisualClassPathItem {
                 return getEvaluated();
         }
     }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String getAsaAlias() {
-        return asaAlias;
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param asaAlias DOCUMENT ME!
-     */
-    public void setAsaAlias(String asaAlias) {
-        this.asaAlias = asaAlias;
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String getAsaUUID() {
-        return asaUUID;
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param asaUUID DOCUMENT ME!
-     */
-    public void setAsaUUID(String asaUUID) {
-        this.asaUUID = asaUUID;
-    }
-    
+         
     /**
      * DOCUMENT ME!
      *

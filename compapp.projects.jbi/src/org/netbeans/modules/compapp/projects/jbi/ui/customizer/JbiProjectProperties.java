@@ -26,7 +26,6 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.UUIDGenerator;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -72,6 +71,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 
 
 /**
@@ -415,11 +415,6 @@ public class JbiProjectProperties {
     /**
      * DOCUMENT ME!
      */
-    //public static final String ASSEMBLY_UNIT_GUID_KEY = "org.netbeans.modules.compapp.jbiserver.guid.assembly-unit"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
     public static final String JBI_REGISTRY_COMPONENT_FILE_KEY = "com.sun.jbi.registry.component.file"; // NOI18N
     
     /**
@@ -732,17 +727,14 @@ public class JbiProjectProperties {
      * @param result DOCUMENT ME!
      */
     private void addSubprojects(Project project, List result) {
-        SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(
-                SubprojectProvider.class
-                );
+        SubprojectProvider spp = 
+                project.getLookup().lookup(SubprojectProvider.class);
         
         if (spp == null) {
             return;
         }
         
-        for (Iterator /*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext();) {
-            Project sp = (Project) it.next();
-            
+        for (Project sp : spp.getSubprojects()) {
             if (!result.contains(sp)) {
                 result.add(sp);
                 addSubprojects(sp, result);
@@ -756,14 +748,12 @@ public class JbiProjectProperties {
      */
     private void read() {
         // Read the properties from the project
-        HashMap eProps = new HashMap(2);
+        Map<String, EditableProperties> eProps = new HashMap<String, EditableProperties>(2);
         eProps.put(PROJECT, antProjectHelper.getProperties(PROJECT));
         eProps.put(PRIVATE, antProjectHelper.getProperties(PRIVATE));
         
         // Initialize the property map with objects
-        for (int i = 0; i < PROPERTY_DESCRIPTORS.length; i++) {
-            PropertyDescriptor pd = PROPERTY_DESCRIPTORS[i];
-            
+        for (PropertyDescriptor pd : PROPERTY_DESCRIPTORS) {            
             if (pd.dest == null) {
                 // Specialy handled properties
                 if (EJB_PROJECT_NAME.equals(pd.name)) {
@@ -805,8 +795,7 @@ public class JbiProjectProperties {
                     
                     // Some properties need special handling e.g. if the
                     // property changes the project.xml files
-                    for (Iterator it = properties.values().iterator(); it.hasNext();) {
-                        PropertyInfo pi = (PropertyInfo) it.next();
+                    for (PropertyInfo pi : properties.values()) {
                         PropertyDescriptor pd = pi.getPropertyDescriptor();
                         pi.encode();
                         
@@ -839,33 +828,27 @@ public class JbiProjectProperties {
                     
                     // Reread the properties. It may have changed when
                     // e.g. when setting references to another projects
-                    HashMap eProps = new HashMap(2);
+                    Map<String, EditableProperties> eProps = 
+                            new HashMap<String, EditableProperties>(2);
                     eProps.put(PROJECT, antProjectHelper.getProperties(PROJECT));
                     eProps.put(PRIVATE, antProjectHelper.getProperties(PRIVATE));
                     
                     // Set the changed properties
-                    for (Iterator it = properties.values().iterator(); it.hasNext();) {
-                        PropertyInfo pi = (PropertyInfo) it.next();
+                    for (PropertyInfo pi : properties.values()) {
                         PropertyDescriptor pd = pi.getPropertyDescriptor();
                         String newValueEncoded = pi.getNewValueEncoded();
                         
                         if (newValueEncoded != null) {
                             if (pd.dest != null) {
                                 // Standard properties
-                                ((EditableProperties) eProps.get(pd.dest)).setProperty(
-                                        pd.name, newValueEncoded
-                                        );
+                                eProps.get(pd.dest).setProperty(pd.name, newValueEncoded);
                             }
                         }
                     }
                     
                     // Store the property changes into the project
-                    antProjectHelper.putProperties(
-                            PROJECT, (EditableProperties) eProps.get(PROJECT)
-                            );
-                    antProjectHelper.putProperties(
-                            PRIVATE, (EditableProperties) eProps.get(PRIVATE)
-                            );
+                    antProjectHelper.putProperties(PROJECT, eProps.get(PROJECT));
+                    antProjectHelper.putProperties(PRIVATE, eProps.get(PRIVATE));
                     ProjectManager.getDefault().saveProject(project);
                     
                     return null;
@@ -1051,74 +1034,78 @@ public class JbiProjectProperties {
     }
     
     // AssemblyInfo methods ------------------------------------
-    private Element generateIdentification(Document document, String name, String description) {
-        Element IdElement = document.createElement("identification"); // NOI18N
+    private static Element generateIdentificationElement(Document document, 
+            String name, String description) {
+        Element idElement = document.createElement("identification"); // NOI18N
         
         // Name
-        Element NameElement = document.createElement("name"); // NOI18N
-        NameElement.appendChild(document.createTextNode(name));
-        IdElement.appendChild(NameElement);
+        Element nameElement = document.createElement("name"); // NOI18N
+        nameElement.appendChild(document.createTextNode(name));
+        idElement.appendChild(nameElement);
         
         // Description
-        Element DescElement = document.createElement("description"); // NOI18N
-        DescElement.appendChild(document.createTextNode(description));
-        IdElement.appendChild(DescElement);
+        Element descElement = document.createElement("description"); // NOI18N
+        descElement.appendChild(document.createTextNode(description));
+        idElement.appendChild(descElement);
         
-        return IdElement;
+        return idElement;
     }
     
-    private Element generateArtifactsInfo(Document document, String label, String info) {
-        Element ArtifactsElement = document.createElement(label);
-        ArtifactsElement.appendChild(document.createTextNode(info));
+    private static Element generateTargetElement(Document document, 
+            String artifactsZip, String componentName) {
+        Element targetElement = document.createElement("target"); // NOI18N
         
-        return ArtifactsElement;
+        // artifacts-zip
+        Element artifactElement = document.createElement("artifacts-zip"); // NOI18N
+        artifactElement.appendChild(document.createTextNode(artifactsZip));
+        targetElement.appendChild(artifactElement);
+        
+        // component-name
+        Element compNameElement = document.createElement("component-name"); // NOI18N
+        compNameElement.appendChild(document.createTextNode(componentName));
+        targetElement.appendChild(compNameElement);
+        
+        return targetElement;
     }
-    
-    private Element generateServiceUnit(
-            Document document, VisualClassPathItem vi, String target, boolean isEngine
-            ) {
-        Element ASAElement = document.createElement("service-unit"); // NOI18N
         
-        // String alias = vi.getAsaAlias();
-        String uuid = vi.getAsaUUID();
+    private static Element generateServiceUnitElement(JbiProject jbiProject,
+            Document document, VisualClassPathItem vi, String target, 
+            boolean isEngine) {
+        Element suElement = document.createElement("service-unit"); // NOI18N
+        
         String desc = vi.getAsaDescription();
         String shortName = vi.getShortName();
-        AntArtifact aa = (AntArtifact) vi.getObject();
+        AntArtifact aa = vi.getAntArtifact();
         
         if (desc == null) { // if needed, use default one...
-            desc = (String) this.get(JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
+            JbiProjectHelper.getServiceUnitDescription(jbiProject);
             vi.setAsaDescription(desc);
         }
-        
-        if (uuid == null) { // if needed, create a new one
-            uuid = UUIDGenerator.getNUID();
-            vi.setAsaUUID(uuid);
-        }
-        
+                
         vi.setAsaTarget(target);
         
-        String projectName = ((JbiProject) project).getName();
-        String name;
-        String jarName;
+        String jbiProjName = jbiProject.getName();
+        String suName;
+        String suJarName;
+        
         if (isEngine) {
-            name = projectName + "-" + vi.getProjectName(); // NOI18N
-            jarName = vi.getProjectName() + ".jar"; // e.x., SynchronousSample.jar // NOI18N
+            String suProjName = vi.getProjectName();
+            suName = jbiProjName + "-" + suProjName; // NOI18N
+            suJarName = suProjName + ".jar"; // e.x., SynchronousSample.jar // NOI18N
         } else {
-            name = projectName + "-" + target; // NOI18N
-            jarName = target + ".jar"; // e.x., sun-http-binding.jar // NOI18N
+            suName = jbiProjName + "-" + target; // NOI18N
+            suJarName = target + ".jar"; // e.x., sun-http-binding.jar // NOI18N
         }
-        ASAElement.appendChild(generateIdentification(document, name, desc));
         
-        // Target
-        Element TargetElement = document.createElement("target"); // NOI18N
-        TargetElement.appendChild(generateArtifactsInfo(document, "artifacts-zip", jarName)); // NOI18N
+        Element identificationElement = 
+                generateIdentificationElement(document, suName, desc);
+        suElement.appendChild(identificationElement);
         
-        Element ComponentIdElement = document.createElement("component-name"); // NOI18N
-        ComponentIdElement.appendChild(document.createTextNode(target));
-        TargetElement.appendChild(ComponentIdElement);
-        ASAElement.appendChild(TargetElement);
+        Element targetElement = 
+                generateTargetElement(document, suJarName, target);
+        suElement.appendChild(targetElement);
         
-        return ASAElement;
+        return suElement;
     }
     
     private List<VisualClassPathItem> loadBindingComponentInfo(String compFileDst) {
@@ -1189,6 +1176,8 @@ public class JbiProjectProperties {
             jbiFileLoc = path + "/" + "AssemblyInformation.xml"; // NOI18N
         }
         
+        JbiProject jbiProject = (JbiProject) project;
+        
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = builder.newDocument();
@@ -1200,13 +1189,13 @@ public class JbiProjectProperties {
             document.appendChild(root);
             
             // Service Assembly ...
-            Element serviceAssemblyElement = document.createElement("service-assembly"); // NOI18N
-            serviceAssemblyElement.appendChild(
-                    generateIdentification(
-                    document, ((JbiProject)project).getName(), //auid,
-                    (String) this.get(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION)
-                    )
-                    );
+            Element saElement = document.createElement("service-assembly"); // NOI18N
+            
+            Element identificationElement = generateIdentificationElement(
+                    document, 
+                    JbiProjectHelper.getJbiProjectName(jbiProject),
+                    JbiProjectHelper.getServiceAssemblyDescription(jbiProject));
+            saElement.appendChild(identificationElement);
             
             // for each SE jar..
             List<VisualClassPathItem> items =
@@ -1220,27 +1209,24 @@ public class JbiProjectProperties {
             for (int i = 0, size = items.size(); i < size; i++) {
                 VisualClassPathItem vi = items.get(i);
                 String targetID = targetIDs.get(i);
-                assert (vi != null) && (targetID != null);
-                
-                serviceAssemblyElement.appendChild(
-                        generateServiceUnit(document, vi, targetID, true));
+                assert (vi != null) && (targetID != null);                
+                Element sesuElement = generateServiceUnitElement(
+                        jbiProject, document, vi, targetID, true);
+                saElement.appendChild(sesuElement);
             }
             
             // for each BC jar...
-            bindingList = loadBindingComponentInfo(compFileDst);
-            
-            for (int i = 0, size = bindingList.size(); i < size; i++) {
-                VisualClassPathItem vi = (VisualClassPathItem) bindingList.get(i);
-                String targetID = vi.getAsaTarget();
-                
-                if ((vi != null) && (targetID != null) &&
-                        vi.isInDeployment().booleanValue()) {
-                    serviceAssemblyElement.appendChild(
-                            generateServiceUnit(document, vi, targetID, false));
+            bindingList = loadBindingComponentInfo(compFileDst);            
+            for (VisualClassPathItem vi : bindingList) {
+                String targetID = vi.getAsaTarget();                
+                if (vi != null && targetID != null && vi.isInDeployment()) {
+                    Element bcsuElement = generateServiceUnitElement(
+                            jbiProject, document, vi, targetID, false);
+                    saElement.appendChild(bcsuElement);
                 }
             }
             
-            root.appendChild(serviceAssemblyElement);
+            root.appendChild(saElement);
             document.getDocumentElement().normalize();
             
             TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -1794,36 +1780,26 @@ public class JbiProjectProperties {
                 n.getParentNode().removeChild(n);
             }
             
-            
-            boolean bDeleteProperty = false;
-            List removedItemsList = new ArrayList();
-            Object tempObject;
-            if(value != null) {
-                for (Iterator it = ((List) oldValue).iterator(); it.hasNext();) {
-                    tempObject = it.next();
-//                    try {
-                    if(((List) value).indexOf(tempObject) == -1) {  // If the newValue doesn't contain any oldValue element, then
-                        removedItemsList.add(tempObject);           // that element got removed
+            if (value != null) {
+                List<VisualClassPathItem> removedItemsList = new ArrayList<VisualClassPathItem>();
+                for (VisualClassPathItem vcpi : (List<VisualClassPathItem>) oldValue) {
+                    if(((List) value).indexOf(vcpi) == -1) {  // If the newValue doesn't contain any oldValue element, then
+                        removedItemsList.add(vcpi);           // that element got removed
                     }
-//                    } catch (Exception e) {
-//                        removedItemsList.add(tempObject);
-//                    }
                 }
-            }
-            for (Iterator it = ((List) removedItemsList).iterator(); it.hasNext();) {   //Remove the references
-                VisualClassPathItem vcpi = (VisualClassPathItem) it.next();
-                switch (vcpi.getType()) {
+                
+                for (VisualClassPathItem vcpi : removedItemsList) {   //Remove the references
+                    switch (vcpi.getType()) {
                     case VisualClassPathItem.TYPE_ARTIFACT:
                         refHelper.destroyReference(vcpi.getRaw());
                         break;
+                    }
                 }
-                
             }
             
             String pathSeparator = getPathSeparator();
             
-            for (Iterator it = ((List) value).iterator(); it.hasNext();) {
-                VisualClassPathItem vcpi = (VisualClassPathItem) it.next();
+            for (VisualClassPathItem vcpi : (List<VisualClassPathItem>) value) {
                 
                 String library_tag_value = ""; // NOI18N
                 
@@ -1870,7 +1846,7 @@ public class JbiProjectProperties {
                 sb.append(library_tag_value);
                 sb.append(pathSeparator);
                 
-                if (vcpi.isInDeployment().booleanValue()) {
+                if (vcpi.isInDeployment()) {
                     Element library = doc.createElementNS(
                             JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library" // NOI18N
                             );

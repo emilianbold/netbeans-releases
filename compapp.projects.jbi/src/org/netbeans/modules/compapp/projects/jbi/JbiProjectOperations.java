@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.netbeans.spi.project.ActionProvider;
@@ -180,13 +181,15 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
         fixOtherNameReferences(originalPath, oldName, newName);
     }
     
-    private void fixOtherNameReferences(final File originalPath, final String oldName, final String newName) {
+    private void fixOtherNameReferences(final File originalPath, 
+            final String oldName, final String newName) {
         final File projectDir = FileUtil.toFile(project.getProjectDirectory());
         
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
                 AntProjectHelper helper = project.getAntProjectHelper();
-                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                EditableProperties props = 
+                        helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 
                 String path = props.getProperty(JbiProjectProperties.META_INF);
                 if (path != null && path.startsWith(originalPath.getAbsolutePath())) {
@@ -205,18 +208,10 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                 }
                 
                 // Fix uuid
-                props.setProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID, newName);
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                
-                JbiProjectProperties jbiProjectProperties = project.getProjectProperties();
+                JbiProjectHelper.setJbiProjectName(props, newName);
                 
                 // Fix SA description (TEMP)
-                String saDescription = (String) props.get(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
-                if (saDescription.contains(oldName)) {
-                    String newSaDescription = saDescription.replaceAll(oldName, newName);
-                    props.put(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION, newSaDescription);
-                    jbiProjectProperties.put(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION, newSaDescription);
-                }
+                JbiProjectHelper.updateServiceAssemblyDescription(props, oldName, newName);
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                 
@@ -249,7 +244,7 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                         e.printStackTrace();
                     }
                     
-                    // Rename casa wsdl (<Proj>.wsdl)
+                    // Rename compapp wsdl (<Proj>.wsdl)
                     try {
                         FileUtil.moveFile(oldCasaWsdlFO, casaWsdlDir, newName);
                     } catch (IOException e) {
@@ -266,6 +261,7 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                     }
                 }
                 
+                JbiProjectProperties jbiProjectProperties = project.getProjectProperties();
                 jbiProjectProperties.saveAssemblyInfo();    // update AssemblyInformation.xml
             }
         });

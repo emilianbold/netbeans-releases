@@ -304,19 +304,13 @@ public class JbiActionProvider implements ActionProvider {
             List<Project> subProjects = new ArrayList<Project>();
             Map<Class, Project> subProjectTypeMap = new HashMap<Class, Project>();
             for (VisualClassPathItem item : itemList) {
-                String evalPath = item.getEvaluated();
-                // Get the component project root directory from its build artifact
-                evalPath = evalPath.replaceAll("\\\\", "/");
-                evalPath = evalPath.substring(0, evalPath.lastIndexOf("/"));
-                evalPath = evalPath.substring(0, evalPath.lastIndexOf("/"));
-                File subProjectDir = new File(evalPath); 
-                FileObject subProjectDirFO = FileUtil.toFileObject(subProjectDir);
-                Project subProject = ProjectManager.getDefault().findProject(subProjectDirFO);
-                
+                Project subProject = item.getAntArtifact().getProject();
                 subProjects.add(subProject);                
                 subProjectTypeMap.put(subProject.getClass(), subProject);
             }
-            Collection<? extends ProjectValidator> validators = Lookup.getDefault().lookupAll(ProjectValidator.class);
+            
+            Collection<? extends ProjectValidator> validators = 
+                    Lookup.getDefault().lookupAll(ProjectValidator.class);
 
             for (ProjectValidator validator : validators) {
                 String result = validator.validateProjects(subProjects);
@@ -343,7 +337,7 @@ public class JbiActionProvider implements ActionProvider {
             try {
                 FileObject fileObject = FileUtil.toFileObject(casaFile);
                 DataObject dataObject = DataObject.find(fileObject);
-                SaveCookie saveCookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
+                SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
                 if (saveCookie != null) {
                     saveCookie.save();
                 }
@@ -357,7 +351,7 @@ public class JbiActionProvider implements ActionProvider {
         if (casaWsdlFO != null) {
             try {
                 DataObject dataObject = DataObject.find(casaWsdlFO);
-                SaveCookie saveCookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
+                SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
                 if (saveCookie != null) {
                     saveCookie.save();
                 }

@@ -22,7 +22,6 @@ package org.netbeans.modules.compapp.projects.jbi;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.CreateComponentInformation;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.UUIDGenerator;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
 import org.netbeans.api.project.Project;
