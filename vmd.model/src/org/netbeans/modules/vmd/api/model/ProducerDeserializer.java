@@ -17,20 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  */
-
 package org.netbeans.modules.vmd.api.model;
 
-import org.w3c.dom.Node;
-
-import java.util.List;
-
 /**
- * Used for deserialization of 3rd-party defined nodes in a component descriptor serialized as an xml file in component registry.
+ * Used for processing custom producers defined as an xml file in component registry.
  * An implementation of this class should be registered in global lookup.
  *
  * @author David Kaspar
  */
-public abstract class PresenterDeserializer {
+public abstract class ProducerDeserializer {
 
     private String projectType;
 
@@ -38,7 +33,7 @@ public abstract class PresenterDeserializer {
      * Creates a PresenterDeserializer releated to specified project type.
      * @param projectType the project type
      */
-    protected PresenterDeserializer (String projectType) {
+    protected ProducerDeserializer (String projectType) {
         this.projectType = projectType;
     }
 
@@ -52,23 +47,10 @@ public abstract class PresenterDeserializer {
 
     /**
      * Called to deserialize a node in a xml file into a presenter descriptor.
-     * @param node the node in the xml file
+     * @param document the document where the producer could be used
+     * @param producer the componen producer to be checked.
      * @return the presenter descriptor
      */
-    public abstract PresenterFactory deserialize (Node node);
-
-    /**
-     * Describes presenters and should create a list of presenters when asked.
-     */
-    public static abstract class PresenterFactory {
-
-        /**
-         * Called to create presenters from descriptor when an instance of a component descriptor is going to be created.
-         * @param descriptor the component descriptor
-         * @return the list of presenters
-         */
-        public abstract List<Presenter> createPresenters (ComponentDescriptor descriptor);
-
-    }
+    public abstract boolean checkValidity (DesignDocument document, ComponentProducer producer);
 
 }

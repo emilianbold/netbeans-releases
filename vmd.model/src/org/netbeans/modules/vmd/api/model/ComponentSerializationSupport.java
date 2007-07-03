@@ -21,6 +21,7 @@
 package org.netbeans.modules.vmd.api.model;
 
 import org.netbeans.modules.vmd.model.XMLComponentDescriptor;
+import org.netbeans.modules.vmd.model.XMLComponentProducer;
 import org.openide.loaders.DataFolder;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileObject;
@@ -47,6 +48,8 @@ public class ComponentSerializationSupport {
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
         DataFolder registryFolder = registry.getRegistryFolder ();
         registryFolder.getPrimaryFile ().refresh (true);
+        DataFolder producersFolder = registry.getProducersFolder ();
+        producersFolder.getPrimaryFile ().refresh (true);
         registry.reload ();
     }
 
@@ -82,6 +85,11 @@ public class ComponentSerializationSupport {
     public static void serialize (String projectType, TypeDescriptor typeDescriptor, PaletteDescriptor paletteDescriptor, List<PropertyDescriptor> properties, List<PresenterSerializer> presenters) {
         assert projectType != null  &&  typeDescriptor != null  &&  properties != null  &&  presenters != null;
 
+        serializeComponentDescriptor (projectType, typeDescriptor, null, properties, presenters);
+        serializeComponentProducer (projectType, typeDescriptor.getThisType (), paletteDescriptor);
+    }
+
+    private static void serializeComponentDescriptor (String projectType, TypeDescriptor typeDescriptor, PaletteDescriptor paletteDescriptor, List<PropertyDescriptor> properties, List<PresenterSerializer> presenters) {
         Document document = XMLUtil.createDocument (XMLComponentDescriptor.COMPONENT_DESCRIPTOR_NODE, null, null, null);
         Node rootNode = document.getFirstChild ();
         setAttribute (document, rootNode, XMLComponentDescriptor.VERSION_ATTR, XMLComponentDescriptor.VERSION_VALUE_1);
@@ -94,14 +102,16 @@ public class ComponentSerializationSupport {
         setAttribute (document, typeNode, XMLComponentDescriptor.CAN_INSTANTIATE_ATTR, Boolean.toString (typeDescriptor.isCanInstantiate ()));
         rootNode.appendChild (typeNode);
 
-        Element paletteNode = document.createElement (XMLComponentDescriptor.PALETTE_NODE);
-        setAttribute (document, paletteNode, XMLComponentDescriptor.DISPLAY_NAME_ATTR, paletteDescriptor.getDisplayName ());
-        if (paletteDescriptor.getToolTip () != null)
-            setAttribute (document, paletteNode, XMLComponentDescriptor.TOOLTIP_ATTR, paletteDescriptor.getToolTip ());
-        if (paletteDescriptor.getCategoryID () != null)
-            setAttribute (document, paletteNode, XMLComponentDescriptor.PREFERRED_CATEGORYID_ATTR, paletteDescriptor.getCategoryID ());
-        rootNode.appendChild (paletteNode);
-
+        if (paletteDescriptor != null) {
+            Element paletteNode = document.createElement (XMLComponentDescriptor.PALETTE_NODE);
+            setAttribute (document, paletteNode, XMLComponentDescriptor.DISPLAY_NAME_ATTR, paletteDescriptor.getDisplayName ());
+            if (paletteDescriptor.getToolTip () != null)
+                setAttribute (document, paletteNode, XMLComponentDescriptor.TOOLTIP_ATTR, paletteDescriptor.getToolTip ());
+            if (paletteDescriptor.getCategoryID () != null)
+                setAttribute (document, paletteNode, XMLComponentDescriptor.PREFERRED_CATEGORYID_ATTR, paletteDescriptor.getCategoryID ());
+            rootNode.appendChild (paletteNode);
+        }
+            
         for (PropertyDescriptor propertyDescriptor : properties) {
             assert propertyDescriptor != null;
             Element propertyNode = document.createElement (XMLComponentDescriptor.PROPERTY_DESCRIPTOR_NODE);
@@ -132,6 +142,26 @@ public class ComponentSerializationSupport {
         DataFolder registryFolder = registry.getRegistryFolder ();
         if (! writeDocument (registryFolder.getPrimaryFile (), typeDescriptor.getThisType ().toString (), "xml", document))
             Debug.warning ("Error while serializing a component descriptor", typeDescriptor.getThisType ().toString ());
+    }
+
+    private static void serializeComponentProducer (String projectType, TypeID typeID, PaletteDescriptor paletteDescriptor) {
+        Document document = XMLUtil.createDocument (XMLComponentProducer.COMPONENT_PRODUCER_NODE, null, null, null);
+        Node rootNode = document.getFirstChild ();
+        setAttribute (document, rootNode, XMLComponentProducer.VERSION_ATTR, XMLComponentProducer.VERSION_VALUE_1);
+
+        setAttribute (document, rootNode, XMLComponentProducer.PRODUCERID_ATTR, typeID.toString ());
+        setAttribute (document, rootNode, XMLComponentProducer.MAIN_COMPONENT_TYPEID_ATTR, typeID.toString ());
+
+        setAttribute (document, rootNode, XMLComponentProducer.DISPLAY_NAME_ATTR, paletteDescriptor.getDisplayName ());
+        if (paletteDescriptor.getToolTip () != null)
+            setAttribute (document, rootNode, XMLComponentProducer.TOOLTIP_ATTR, paletteDescriptor.getToolTip ());
+        if (paletteDescriptor.getCategoryID () != null)
+            setAttribute (document, rootNode, XMLComponentProducer.PREFERRED_CATEGORYID_ATTR, paletteDescriptor.getCategoryID ());
+
+        GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
+        DataFolder registryFolder = registry.getRegistryFolder ();
+        if (! writeDocument (registryFolder.getPrimaryFile (), typeID.toString (), "xml", document))
+            Debug.warning ("Error while serializing a component descriptor", typeID.toString ());
     }
 
     private static void setAttribute (Document xml, Node node, String name, String value) {

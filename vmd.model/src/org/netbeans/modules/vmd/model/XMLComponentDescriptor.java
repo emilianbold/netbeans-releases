@@ -185,7 +185,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
 //        return imageResource != null ? Utilities.loadImage (imageResource) : null;
 //    }
 
-    private static String getAttributeValue (Node node, String attr) {
+    static String getAttributeValue (Node node, String attr) {
         try {
             if (node != null) {
                 NamedNodeMap map = node.getAttributes ();
@@ -201,7 +201,7 @@ public class XMLComponentDescriptor extends ComponentDescriptor {
         return null;
     }
 
-    private static Node[] getChildNode (Node node) {
+    static Node[] getChildNode (Node node) {
         NodeList childNodes = node.getChildNodes ();
         Node[] nodes = new Node[childNodes != null ? childNodes.getLength () : 0];
         for (int i = 0; i < nodes.length; i++)

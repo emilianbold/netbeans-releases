@@ -20,7 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 This dtd describes the component descriptor file format without presenter serializer.
-This smallIcon and largeIcon are image paths that are going to be loaded using "Utilities.loadImage" method.
 // TODO - RequiredLibrary, Properties, Setters, Presenters
 -->
 
@@ -38,6 +37,7 @@ This smallIcon and largeIcon are image paths that are going to be loaded using "
 >
 
 <!-- not used now: helpTopic, smallIcon, largeIcon -->
+<!-- deprecated - use xml based on cp.dtd instead -->
 <!ELEMENT PaletteDescriptor EMPTY>
 <!ATTLIST PaletteDescriptor
     displayName CDATA #REQUIRED

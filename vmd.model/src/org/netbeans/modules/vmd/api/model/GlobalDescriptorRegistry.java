@@ -29,6 +29,7 @@ import org.openide.ErrorManager;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
 import org.netbeans.modules.vmd.model.XMLComponentDescriptor;
+import org.netbeans.modules.vmd.model.XMLComponentProducer;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -103,8 +104,13 @@ final class GlobalDescriptorRegistry {
     }
 
     DataFolder getRegistryFolder () {
-        assert Debug.isFriend (ComponentSerializationSupport.class, "serialize")  || Debug.isFriend (ComponentSerializationSupport.class, "refreshDescriptorRegistry"); // NOI18N
+        assert Debug.isFriend (ComponentSerializationSupport.class, "serializeComponentDescriptor")  || Debug.isFriend (ComponentSerializationSupport.class, "refreshDescriptorRegistry"); // NOI18N
         return registryFolder;
+    }
+
+    DataFolder getProducersFolder () {
+        assert Debug.isFriend (ComponentSerializationSupport.class, "serializeComponentProducer")  || Debug.isFriend (ComponentSerializationSupport.class, "refreshDescriptorRegistry"); // NOI18N
+        return producersFolder;
     }
 
     DescriptorRegistry getProjectRegistry (String projectID) {
@@ -327,7 +333,7 @@ final class GlobalDescriptorRegistry {
         return null;
     }
 
-    private static ComponentProducer dao2producer (DataObject dataObject) {
+    private ComponentProducer dao2producer (DataObject dataObject) {
         InstanceCookie.Of instanceCookie = dataObject.getCookie (InstanceCookie.Of.class);
         if (instanceCookie != null) {
             try {
@@ -368,8 +374,24 @@ final class GlobalDescriptorRegistry {
         return null;
     }
 
-    private static ComponentProducer deserializeComponentCreatorFromXML (XMLDataObject xmlDataObject) {
-        return null; // TODO - custom producers
+    private ComponentProducer deserializeComponentCreatorFromXML (XMLDataObject xmlDataObject) {
+        Document document;
+        try {
+            document = xmlDataObject.getDocument ();
+            if (document == null)
+                return null;
+        } catch (IOException e) {
+            ErrorManager.getDefault ().notify (e);
+            return null;
+        } catch (SAXException e) {
+            ErrorManager.getDefault ().notify (e);
+            return null;
+        }
+        XMLComponentProducer producer = XMLComponentProducer.deserialize (projectType, document);
+        if (producer != null)
+            return producer;
+        Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ());
+        return null;
     }
 
     Collection<ComponentDescriptor> getComponentDescriptors () {
