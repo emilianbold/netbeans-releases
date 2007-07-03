@@ -29,7 +29,9 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.actions.JAXBDeleteSchemaAction;
 import org.netbeans.modules.xml.jaxb.actions.OpenJAXBCustomizerAction;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Binding;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Bindings;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Catalog;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSource;
@@ -39,6 +41,8 @@ import org.openide.actions.DeleteAction;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -146,10 +150,24 @@ public class JAXBWizardSchemaNode extends AbstractNode {
             List childrenNodes = new ArrayList();
             SchemaSources sss = this.schema.getSchemaSources();
             SchemaSource[] ss = sss.getSchemaSource();
-//            Bindings bs  = this.schema.getBindings();
+            Bindings bs  = this.schema.getBindings();
+            Catalog cat = this.schema.getCatalog();
             
-            for (int i = 0; i < ss.length; i++){
-                 childrenNodes.add(ss[i]);
+            if (ss != null){
+                for (int i = 0; i < ss.length; i++){
+                     childrenNodes.add(ss[i]);
+                }
+            }
+            
+            if ((bs != null) && (bs.sizeBinding() > 0)){
+                Binding[] binding = bs.getBinding();
+                for (int i = 0; i < binding.length; i++){
+                     childrenNodes.add(binding[i]);
+                }
+            }
+            
+            if ((cat != null) && (cat.getLocation() != null)){
+                   childrenNodes.add(cat);
             }
             
             super.setKeys(childrenNodes );
@@ -167,16 +185,18 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         protected Node[] createNodes(Object key) {
             Node[] xsdNodes = null;
             try {
+                FileObject prjRoot = project.getProjectDirectory();                    
+                FileObject xsdFolder = 
+                        ProjectHelper.getFOProjectSchemaDir(project);
+                File projDir = FileUtil.toFile(prjRoot);
+                FileObject locSchemaRoot = 
+                        xsdFolder.getFileObject(schema.getName());
+                
+                Node xsdNode = null;
+                FileObject fo = null;
+
                 if ( key instanceof SchemaSource ) {
-                    FileObject prjRoot = project.getProjectDirectory();                    
                     SchemaSource ss = (SchemaSource) key;
-                    Node xsdNode = null;
-                    FileObject fo = null;
-                    FileObject xsdFolder = 
-                                   ProjectHelper.getFOProjectSchemaDir(project);
-                    FileObject locSchemaRoot = 
-                            xsdFolder.getFileObject(schema.getName());
-                    File projDir = FileUtil.toFile(prjRoot);
                     File tmpFile = null;
                     String originLocType = null;
                     Boolean isURL = Boolean.FALSE;
@@ -201,11 +221,47 @@ public class JAXBWizardSchemaNode extends AbstractNode {
                                     locSchemaRoot, isURL, ss.getOrigLocation());
                         }
                     }    
-                    if (xsdNode != null){
-                        xsdNodes = new Node[]{xsdNode};
+                }
+                
+                if (key instanceof Binding ) {
+                    Binding bndg = (Binding)key;
+                    fo = FileUtil.toFileObject(new File(projDir, 
+                            bndg.getLocation()));
+                    if (fo != null){
+                        try {
+                            DataObject dataObj = DataObject.find(fo);
+                            xsdNode = dataObj.getNodeDelegate();
+                            System.out.println("Got Node:" + xsdNode);                            
+                        } catch (DataObjectNotFoundException ex){
+                            // Use JAXBBindingSupportFileNode
+                            xsdNode = new JAXBBindingSupportFileNode(project, 
+                                    fo, locSchemaRoot, false, 
+                                    bndg.getOrigLocation());
+                        }
+                    }                    
+                }
+                
+                if (key instanceof Catalog ) {
+                    Catalog cat = (Catalog) key;
+                    fo = FileUtil.toFileObject(new File(projDir, 
+                            cat.getLocation()));
+                    if (fo != null){
+                        try {
+                            DataObject dataObj = DataObject.find(fo);
+                            xsdNode = dataObj.getNodeDelegate();
+                            System.out.println("Got Node:" + xsdNode);                            
+                        } catch (DataObjectNotFoundException ex){
+                            // Use JAXBBindingSupportFileNode
+                            xsdNode = new JAXBBindingSupportFileNode(project, 
+                                    fo, locSchemaRoot, false, 
+                                    cat.getOrigLocation());
+                        }
                     }
                 }
                 
+                if (xsdNode != null){
+                    xsdNodes = new Node[]{xsdNode};
+                }                
             } catch ( IntrospectionException inse ) {
                 ErrorManager.getDefault().notify( inse );
             }
