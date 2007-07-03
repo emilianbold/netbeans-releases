@@ -142,10 +142,16 @@ public final class DomainCreator {
                     
                     // try to find a good spot for the ports that won't clash 
                     // with another user... this can never be completely correct.
-                    int bucket = 0;
+                    int bucket = 1;
                     String home = System.getProperty("user.home");              // NOI18N
                     if (null != home && home.trim().length() > 0) {
                         bucket = home.hashCode() % 10000;
+                    }
+                    
+                    if (bucket < 0) {
+                        bucket = -bucket;
+                    } else if (0 == bucket) {
+                        bucket = 1;
                     }
                     
                     // Checks ports availability
