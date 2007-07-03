@@ -21,52 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="ServerNavigator"/>
 
-    <!-- Remove Data Menu from Shortfin
-    <folder name="Menu">
-      
-        <attr name="CVS/Data" boolvalue="true"/>
-        <folder name="Data">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
-            <attr name="Separator1.instance/org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
-            </file>
-	       
-            <attr name="org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance/org-netbeans-modules-visualweb-ejb-actions-ImportEjbDataSourceAction.instance" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-visualweb-ejb-actions-ImportEjbDataSourceAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
-            </file>
-            <attr name="org-netbeans-modules-visualweb-ejb-actions-ImportEjbDataSourceAction.instance/org-netbeans-modules-visualweb-ejb-actions-ExportAllEjbDataSourcesAction.instance" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-visualweb-ejb-actions-ExportAllEjbDataSourcesAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
-            </file>
-            <attr name="org-netbeans-modules-visualweb-ejb-actions-ExportAllEjbDataSourcesAction.instance/Separator2.instance" boolvalue="true"/>
-         
-            <file name="Separator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="Separator2.instance/com-sun-rave-websvc-actions-AddWebServiceAction.instance" boolvalue="true"/>          
-        </folder>
-        <attr name="Data/Tools" boolvalue="true"/>
-    </folder>
-    -->
-
-    <!-- Remove Data Toolbar from Shortfin
-    <folder name="Toolbars">
-        <folder name="Data">
-            <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-AddDataSourceAction.instance/org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance"/>
-        </folder>
-    </folder>
-    -->
-    
     <folder name="UI">
         <folder name="Runtime">
-            <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" url="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance">
+            <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance">
                 <attr name="position" intvalue="300"/>
             </file>
             </folder>
@@ -82,12 +39,8 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="EnterpriseJavaBeans">   
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
-            
-            <!-- Ordering -->  
-              
-            <!-- End Ordering -->
-
             <attr name="position" intvalue="500"/>
+            
             <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml">
                 <attr name="position" intvalue="300"/>
             </file>
@@ -105,12 +58,8 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="EnterpriseJavaBeans">   
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
-            
-            <!-- Ordering -->  
-              
-            <!-- End Ordering -->
-
             <attr name="position" intvalue="500"/>
+            
             <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml">
                 <attr name="position" intvalue="300"/>
             </file>
