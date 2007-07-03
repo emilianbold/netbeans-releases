@@ -31,8 +31,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;

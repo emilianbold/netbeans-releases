@@ -39,11 +39,14 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
+import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -82,6 +85,9 @@ import org.netbeans.modules.visualweb.palette.api.CodeClipDragAndDropHandler;
 public final class JsfJspEditorSupport extends DataEditorSupport
         implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
+    private String encoding;
+    private static final String defaultEncoding = "UTF-8"; // NOI18N
+    
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -96,7 +102,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
     /** Constructor. */
     JsfJspEditorSupport(JsfJspDataObject obj) {
         super(obj, new Environment(obj));
-
+        encoding = null;
         setMIMEType("text/x-jsp"); // NOI18N
     }
 
@@ -173,43 +179,79 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         }
     }
     
-    // #6271434 I don't know if this is the 100% fix, it kind of doesn't appeal to me,
-    // but it is the way NB does it, and it works over there too (for this case),
-    // so for now I leave it like this.
-    /** Cash of encoding of the file */
-    private String encoding;
-    /** When unsupported encoding is set for a jsp file, then defaulEncoding is used for loading and saving. */
-    private static final String defaulEncoding = "UTF-8"; // NOI18N
+    @Override
+    public void saveDocument() throws IOException {
+        saveDocument(true);
+    }
     
-    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        // Use encoding from fileobject.
-        encoding = ((JsfJspDataObject)getDataObject()).getFileEncoding(false).trim();
-        if(!isSupportedEncoding(encoding)){
-            encoding = defaulEncoding;
-        }
-        
-        java.io.Reader reader = null;
-        try {
-            reader = new InputStreamReader(stream, encoding);
-            kit.read(reader, doc, 0);
-        } finally {
-            if(reader != null)
-                reader.close();
+    /** Save the document in this thread.
+     * @param parse true if the parser should be started, otherwise false
+     * @param forceSave if true save always, otherwise only when is modified
+     * @exception IOException on I/O error
+     */
+    private void saveDocument(boolean forceSave) throws IOException {
+        if (forceSave || isModified()) {
+            ((JsfJspDataObject)getDataObject()).updateFileEncoding(true);
+            
+            encoding = ((JsfJspDataObject)getDataObject()).getFileEncoding();
+
+            if (!isSupportedEncoding(encoding)){
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage (JsfJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding, 
+                                    defaultEncoding} ), 
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);       
+                DialogDisplayer.getDefault().notify(nd);
+                if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+            }
+            else {
+                try {
+                    java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
+                    if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))){
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage (JsfJspEditorSupport.class, "MSG_BadCharConversion", //NOI18N
+                        new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                        encoding}),
+                            NotifyDescriptor.YES_NO_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                            nd.setValue(NotifyDescriptor.NO_OPTION);
+                            DialogDisplayer.getDefault().notify(nd);
+                            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;                
+                    }
+                }
+                catch (javax.swing.text.BadLocationException e){
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            super.saveDocument();
         }
     }
     
-    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        java.io.Writer wr = null;
-        try {
-            if(!isSupportedEncoding(encoding)){
-                encoding = defaulEncoding;
-            }
-            wr = new OutputStreamWriter(stream, encoding);
-            kit.write(wr, doc, 0, doc.getLength());
-        } finally {
-            if(wr != null)
-                wr.close();
+    @Override
+    public void open(){
+        ((JsfJspDataObject)getDataObject()).updateFileEncoding(false);
+        encoding = ((JsfJspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
+        
+        if (!isSupportedEncoding(encoding)) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage (JsfJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding, 
+                                    defaultEncoding} ), 
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
         }
+        super.open();
+    }
+    
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        ((JsfJspDataObject)getDataObject()).updateFileEncoding(false);
+        super.loadFromStreamToKit(doc, stream, kit);
     }
     
     private static boolean isSupportedEncoding(String encoding){

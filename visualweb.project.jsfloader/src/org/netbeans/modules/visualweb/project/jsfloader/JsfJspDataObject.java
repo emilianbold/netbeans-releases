@@ -64,7 +64,9 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     static final long serialVersionUID =8354927561693097159L;
 
     private static final String JSP_ICON_BASE = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject"; // NOI18N
-
+    private static final String PROP_ENCODING = "encoding"; // NOI18N
+    private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
+    
     private transient OpenEdit openEdit;
 
     /** New instance.
@@ -195,13 +197,32 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
          }
     }
 
-    // >> Encoding  copied from the original web/core JspDataObject
-    public String getFileEncoding(boolean useEditor) {
-        TagLibParseCookie tagLibParseCookie = (TagLibParseCookie)getCookie(TagLibParseCookie.class);
-        return tagLibParseCookie.getCachedOpenInfo(true, useEditor).getEncoding();
+    // this is just a flag for obtaining encoding at first time.
+    private boolean isEncodingRetrieved = false;
+    
+    public String getFileEncoding() {
+        if (!isEncodingRetrieved){
+            updateFileEncoding(false);
+            isEncodingRetrieved = true;
+        }
+        String retrievedEncoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
+        retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
+        
+        return retrievedEncoding ;
     }
-    // << Encoding
-
+    
+    void updateFileEncoding(boolean fromEditor) {
+        TagLibParseCookie tlps = getCookie(TagLibParseCookie.class);
+        if (tlps != null) {
+            String encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
+            try {
+                getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+    }
+    
     
     private static final ThreadLocal pureCopy = new ThreadLocal();
     

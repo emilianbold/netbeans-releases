@@ -213,7 +213,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
                 NbBundle.getMessage(JsfJspDataNode.class, "HINT_fileEncoding") //NOI18N
                 ) {
             public Object getValue() {
-                return ((JsfJspDataObject)getDataObject()).getFileEncoding(true);
+                return ((JsfJspDataObject)getDataObject()).getFileEncoding();
             }
         });
         
