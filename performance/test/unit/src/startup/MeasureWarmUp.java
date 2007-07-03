@@ -175,8 +175,8 @@ public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.Meas
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(measuredFile));
-            String readLine, name="", n_name="";
-            long value, s_time=0, n_time=0;
+            String readLine, name="";
+            long value, time=0;
             int begin;
             
             //read log file until "Warmup started"
@@ -186,21 +186,11 @@ public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.Meas
             while((readLine = br.readLine())!=null){
                 try {
                     if((begin=readLine.indexOf(warmup))!=-1){ // @10741 - Warmup running org.netbeans.core.ui.DnDWarmUpTask dT=53
-                        n_time = getTime(readLine);
-                        n_name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
+                        time = getTime(readLine);
+                        name = readLine.substring(begin+warmup.length(), readLine.indexOf(" ",begin+warmup.length()));
+                        measuredValues.put(name, Long.valueOf(time));
                         
-                        if (s_time != 0) { // only if this isn't the very first line 
-                            value = n_time - s_time;
-                            measuredValues.put(name, new Long(value));
-                        }
-                        
-                        s_time = n_time;
-                        name = n_name;
                     }else if((begin=readLine.indexOf(warmup_finished))!=-1){ // @12059 - Warmup finished, took 1459ms
-                        n_time = getTime(readLine);
-                        value = n_time - s_time;
-                        measuredValues.put(name, new Long(value));
-                        
                         name = "Warmup finished";
                         value = Long.parseLong(readLine.substring(readLine.indexOf("took ")+"took ".length(),readLine.indexOf("ms")));
                         measuredValues.put(name, new Long(value));
@@ -231,7 +221,7 @@ public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.Meas
      */
     protected static long getTime(String line){
         if(line.indexOf("@")!=-1 && line.indexOf("-")!=-1)
-            return Long.parseLong(line.substring(line.indexOf("@")+1,line.indexOf("-")).trim()); 
+            return Long.parseLong(line.substring(line.indexOf(" dT=")+4)); 
         return 0;
     }
  
