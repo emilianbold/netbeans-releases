@@ -60,7 +60,7 @@ public class ComponentSerializationSupport {
      */
     public static void runUnderDescriptorRegistryReadAccess (String projectType, Runnable runnable) {
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
-        registry.writeAccess (runnable);
+        registry.readAccess (runnable);
     }
 
     /**
