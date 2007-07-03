@@ -423,8 +423,8 @@ public class SourceUtils {
             assert signature.length >= 1;
             ClassPath cp = ClassPathSupport.createProxyClassPath(
                 new ClassPath[] {
-                    createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),
-                    createClassPath(cpInfo,ClasspathInfo.PathKind.OUTPUT),
+                    cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),
+                    createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),                    
                     createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
                 });
             String pkgName, className = null;
