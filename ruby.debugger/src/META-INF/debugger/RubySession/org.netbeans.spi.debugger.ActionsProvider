@@ -1,0 +1,2 @@
+org.netbeans.modules.ruby.debugger.RubyDebuggerActionProvider
+org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointActionProvider

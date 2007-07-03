@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <!-- Put this main helpset at the top -->
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-ruby-help-helpset.xml" boolvalue="true"/>
+            <file name="org-netbeans-modules-ruby-help-helpset.xml" url="helpsetref.xml"/>
+        </folder>
+    </folder>
+</filesystem>
+
