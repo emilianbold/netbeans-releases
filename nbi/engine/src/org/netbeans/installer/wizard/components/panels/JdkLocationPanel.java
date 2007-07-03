@@ -132,13 +132,13 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             }
             
             // run through the installed and to-be-installed products and check
-            // whether this lcoation is already used somewhere
+            // whether this location is already used somewhere
             final RegistryFilter filter = new OrFilter(
                     new ProductFilter(Status.INSTALLED),
                     new ProductFilter(Status.TO_BE_INSTALLED));
             final List<Product> products = new LinkedList<Product>();
             for (Product product: registry.queryProducts(filter)) {
-                String jdk = product.getProperty(JDK_LOCATION_PROPERTY);
+                final String jdk = product.getProperty(JDK_LOCATION_PROPERTY);
                 
                 if ((jdk != null) && jdk.equals(location.getAbsolutePath())) {
                     products.add(product);
@@ -181,20 +181,40 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     public File getSelectedLocation() {
-        final String path =
-                getWizard().getProperty(JDK_LOCATION_PROPERTY);
-        
         // the first obvious choice is the jdk that has already been selected for
         // this product; if it has not yet been set, there are still lots of
         // choices:
-        // - choose the closest one to the preferred version if it is defined and
-        //   a valid closest version exists
         // - reuse the location which was selected on another jdk location panel if
         //   it fits the requirements
+        // - reuse the location which has been used for an installed product if
+        //   it fits the requirements
+        // - choose the closest one to the preferred version if it is defined and
+        //   a valid closest version exists
         // - use the first item in the list
         // - use an empty path
-        if (path != null) {
-            return new File(path);
+        final String jdkLocation =
+                getWizard().getProperty(JDK_LOCATION_PROPERTY);
+        if (jdkLocation != null) {
+            return new File(jdkLocation);
+        }
+        
+        if ((SearchForJavaAction.lastSelectedJava != null) &&
+                jdkLocations.contains(SearchForJavaAction.lastSelectedJava)) {
+            return SearchForJavaAction.lastSelectedJava;
+        }
+        
+        for (Product product: Registry.getInstance().queryProducts(new OrFilter(
+                new ProductFilter(Status.INSTALLED),
+                new ProductFilter(Status.TO_BE_INSTALLED)))) {
+            final String jdk = product.getProperty(JDK_LOCATION_PROPERTY);
+            
+            if (jdk != null) {
+                final File jdkFile = new File(jdk);
+                
+                if (jdkLocations.contains(jdkFile)) {
+                    return jdkFile;
+                }
+            }
         }
         
         if (preferredVersion != null) {
@@ -217,11 +237,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             if (closestLocation != null) {
                 return closestLocation;
             }
-        }
-        
-        if ((SearchForJavaAction.lastSelectedJava != null) &&
-                jdkLocations.contains(SearchForJavaAction.lastSelectedJava)) {
-            return SearchForJavaAction.lastSelectedJava;
         }
         
         if (jdkLocations.size() != 0) {
