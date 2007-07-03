@@ -111,7 +111,3 @@ ALLCONFS=Debug Release
 	@echo "The active configuration (${ACTIVECONF}) is being used if the configuration is not specified."
 	@echo ""
 
-
-# Enable dependency checking
-.KEEP_STATE:
-.KEEP_STATE_FILE:.make.state.${CONF}

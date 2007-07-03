@@ -1,25 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  The contents of this file are subject to the terms of the Common Development and
-  Distribution License (the License). You may not use this file except in compliance
-  with the License.
-  
-  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
-  http://www.netbeans.org/cddl.txt.
-  
-  When distributing Covered Code, include this CDDL Header Notice in each file and
-  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
-  the following below the CDDL Header, with the fields enclosed by brackets []
-  replaced by your own identifying information:
-  
-      "Portions Copyrighted [year] [name of copyright owner]"
-  
-  The Original Software is NetBeans. The Initial Developer of the Original Software
-  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
-  Rights Reserved.
--->
-
-<configurationDescriptor version="31">
+<configurationDescriptor version="35">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -65,18 +45,20 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <compilerSet>1</compilerSet>
+        <compilerSet>Cygwin</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
         <platform>3</platform>
       </toolsSet>
       <compileType>
         <cCompilerTool>
           <stripSymbols>true</stripSymbols>
+          <warningLevel>3</warningLevel>
         </cCompilerTool>
         <ccCompilerTool>
           <stripSymbols>true</stripSymbols>
         </ccCompilerTool>
-        <fortranCompilerTool>
-        </fortranCompilerTool>
         <linkerTool>
           <output>dist/nlw</output>
           <stripSymbols>true</stripSymbols>
@@ -86,77 +68,62 @@
           <commandLine>-mwindows -mno-cygwin build/icon.o</commandLine>
         </linkerTool>
       </compileType>
-      <item path="src/FileUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/JavaUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/Launcher.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/ProcessUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/RegistryUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/StringUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/FileUtils.h">
+      <item path="resources/res.rc">
         <itemTool>3</itemTool>
       </item>
-      <item path="src/JavaUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/Launcher.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/ProcessUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/RegistryUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/StringUtils.h">
+      <item path="src/Errors.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/ExtractUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="src/ExtractUtils.h">
         <itemTool>3</itemTool>
       </item>
-      <item path="resources/res.rc">
+      <item path="src/FileUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/FileUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/JavaUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/JavaUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/Launcher.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/Launcher.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/Main.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="src/Main.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/ProcessUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/ProcessUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/RegistryUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/RegistryUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/StringUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/StringUtils.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/SystemUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="src/SystemUtils.h">
         <itemTool>3</itemTool>
@@ -164,13 +131,13 @@
       <item path="src/Types.h">
         <itemTool>3</itemTool>
       </item>
-      <item path="src/Errors.h">
-        <itemTool>3</itemTool>
-      </item>
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>1</compilerSet>
+        <compilerSet>Cygwin</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -188,85 +155,67 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
-      <item path="src/FileUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/JavaUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/Launcher.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/ProcessUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/RegistryUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/StringUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="src/FileUtils.h">
+      <item path="resources/res.rc">
         <itemTool>3</itemTool>
       </item>
-      <item path="src/JavaUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/Launcher.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/ProcessUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/RegistryUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/StringUtils.h">
+      <item path="src/Errors.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/ExtractUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="src/ExtractUtils.h">
         <itemTool>3</itemTool>
       </item>
-      <item path="resources/res.rc">
+      <item path="src/FileUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/FileUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/JavaUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/JavaUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/Launcher.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/Launcher.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/Main.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="src/Main.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/ProcessUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/ProcessUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/RegistryUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/RegistryUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/StringUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="src/StringUtils.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/SystemUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="src/SystemUtils.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/Types.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="src/Errors.h">
         <itemTool>3</itemTool>
       </item>
     </conf>

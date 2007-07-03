@@ -12,25 +12,28 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=g77
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Release/Cygwin-Windows
+
 # Object Files
 OBJECTFILES= \
-	build/Release/GNU-Windows/src/FileUtils.o \
-	build/Release/GNU-Windows/src/ProcessUtils.o \
-	build/Release/GNU-Windows/src/Main.o \
-	build/Release/GNU-Windows/src/Launcher.o \
-	build/Release/GNU-Windows/src/StringUtils.o \
-	build/Release/GNU-Windows/src/RegistryUtils.o \
-	build/Release/GNU-Windows/src/ExtractUtils.o \
-	build/Release/GNU-Windows/src/SystemUtils.o \
-	build/Release/GNU-Windows/src/JavaUtils.o
+	${OBJECTDIR}/src/FileUtils.o \
+	${OBJECTDIR}/src/ProcessUtils.o \
+	${OBJECTDIR}/src/Main.o \
+	${OBJECTDIR}/src/Launcher.o \
+	${OBJECTDIR}/src/StringUtils.o \
+	${OBJECTDIR}/src/RegistryUtils.o \
+	${OBJECTDIR}/src/ExtractUtils.o \
+	${OBJECTDIR}/src/SystemUtils.o \
+	${OBJECTDIR}/src/JavaUtils.o
 
 # C Compiler Flags
 CFLAGS=
@@ -46,47 +49,47 @@ FFLAGS=
 LDLIBSOPTIONS=
 
 # Build Targets
-.build-conf: ${BUILD_SUBPROJECTS} dist/Release/GNU-Windows/windows.exe
+.build-conf: ${BUILD_SUBPROJECTS} dist/Release/Cygwin-Windows/windows.exe
 
-dist/Release/GNU-Windows/windows.exe: ${OBJECTFILES}
-	${MKDIR} -p dist/Release/GNU-Windows
-	${LINK.c} -o dist/Release/GNU-Windows/windows ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/Release/Cygwin-Windows/windows.exe: ${OBJECTFILES}
+	${MKDIR} -p dist/Release/Cygwin-Windows
+	${LINK.c} -o dist/Release/Cygwin-Windows/windows ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Release/GNU-Windows/src/FileUtils.o: src/FileUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/FileUtils.o src/FileUtils.c
+${OBJECTDIR}/src/FileUtils.o: src/FileUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/FileUtils.o src/FileUtils.c
 
-build/Release/GNU-Windows/src/ProcessUtils.o: src/ProcessUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/ProcessUtils.o src/ProcessUtils.c
+${OBJECTDIR}/src/ProcessUtils.o: src/ProcessUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/ProcessUtils.o src/ProcessUtils.c
 
-build/Release/GNU-Windows/src/Main.o: src/Main.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/Main.o src/Main.c
+${OBJECTDIR}/src/Main.o: src/Main.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/Main.o src/Main.c
 
-build/Release/GNU-Windows/src/Launcher.o: src/Launcher.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/Launcher.o src/Launcher.c
+${OBJECTDIR}/src/Launcher.o: src/Launcher.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/Launcher.o src/Launcher.c
 
-build/Release/GNU-Windows/src/StringUtils.o: src/StringUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/StringUtils.o src/StringUtils.c
+${OBJECTDIR}/src/StringUtils.o: src/StringUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/StringUtils.o src/StringUtils.c
 
-build/Release/GNU-Windows/src/RegistryUtils.o: src/RegistryUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/RegistryUtils.o src/RegistryUtils.c
+${OBJECTDIR}/src/RegistryUtils.o: src/RegistryUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/RegistryUtils.o src/RegistryUtils.c
 
-build/Release/GNU-Windows/src/ExtractUtils.o: src/ExtractUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/ExtractUtils.o src/ExtractUtils.c
+${OBJECTDIR}/src/ExtractUtils.o: src/ExtractUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/ExtractUtils.o src/ExtractUtils.c
 
-build/Release/GNU-Windows/src/SystemUtils.o: src/SystemUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/SystemUtils.o src/SystemUtils.c
+${OBJECTDIR}/src/SystemUtils.o: src/SystemUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/SystemUtils.o src/SystemUtils.c
 
-build/Release/GNU-Windows/src/JavaUtils.o: src/JavaUtils.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/JavaUtils.o src/JavaUtils.c
+${OBJECTDIR}/src/JavaUtils.o: src/JavaUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/JavaUtils.o src/JavaUtils.c
 
 # Subprojects
 .build-subprojects:
@@ -94,7 +97,7 @@ build/Release/GNU-Windows/src/JavaUtils.o: src/JavaUtils.c
 # Clean Targets
 .clean-conf:
 	${RM} -r build/Release
-	${RM} dist/Release/GNU-Windows/windows.exe
+	${RM} dist/Release/Cygwin-Windows/windows.exe
 
 # Subprojects
 .clean-subprojects:
