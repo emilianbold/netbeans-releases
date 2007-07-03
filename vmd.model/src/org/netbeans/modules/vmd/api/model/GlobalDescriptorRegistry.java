@@ -122,8 +122,13 @@ final class GlobalDescriptorRegistry {
     }
 
     void readAccess (Runnable runnable) {
-        assert Debug.isFriend (DescriptorRegistry.class);
+        assert Debug.isFriend (DescriptorRegistry.class)  ||  Debug.isFriend (ComponentSerializationSupport.class, "runUnderDescriptorRegistryReadAccess"); // NOI18N
         mutex.readAccess (runnable);
+    }
+
+    void writeAccess (final Runnable runnable) {
+        assert Debug.isFriend (DescriptorRegistry.class, "writeAccess")  ||  Debug.isFriend (ComponentSerializationSupport.class, "runUnderDescriptorRegistryWriteAccess"); // NOI18N
+        mutex.writeAccess (runnable);
     }
 
     void reload () {

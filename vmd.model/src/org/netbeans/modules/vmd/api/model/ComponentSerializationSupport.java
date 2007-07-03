@@ -51,6 +51,26 @@ public class ComponentSerializationSupport {
     }
 
     /**
+     * Runs a task under read access on description registry.
+     * @param projectType the project type
+     * @param runnable the task
+     */
+    public static void runUnderDescriptorRegistryReadAccess (String projectType, Runnable runnable) {
+        GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
+        registry.writeAccess (runnable);
+    }
+
+    /**
+     * Runs a task under write access on description registry.
+     * @param projectType the project type
+     * @param runnable the task
+     */
+    public static void runUnderDescriptorRegistryWriteAccess (String projectType, Runnable runnable) {
+        GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
+        registry.writeAccess (runnable);
+    }
+
+    /**
      * Creates a new component descriptor and stores it into xml file and add it into global descriptor registry.
      * After you add all custom component descriptors, then call <code>ComponentSerializationSupport.refresh</code> to refresh the registry.
      * @param projectType the project type
