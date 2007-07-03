@@ -86,6 +86,10 @@ public class ResourcesTest extends NbTestCase {
             if (f.getName().endsWith("_nb.jar"))
                 continue;
             
+            // a lot of alarms for 3rd party JARs
+            if (f.getName().contains("modules/ext/"))
+                continue;
+            
             SortedMap<String, Integer> resourcesPerPackage = new TreeMap<String, Integer>();
             JarFile jar = new JarFile(f);
             Enumeration<JarEntry> entries = jar.entries();
@@ -197,7 +201,7 @@ public class ResourcesTest extends NbTestCase {
                         img = PNG_READER.read(0, param);
                     }
                     catch (IOException ioe1) {
-                        violations.add(new Violation(name, jar.getName(), " is not PNG image"));
+                        violations.add(new Violation(name, jar.getName(), "Not a PNG image"));
                         continue;
                     }
                     stream.close();
@@ -210,7 +214,7 @@ public class ResourcesTest extends NbTestCase {
                         img = GIF_READER.read(0, param);
                     }
                     catch (IOException ioe1) {
-                        violations.add(new Violation(name, jar.getName(), " is not GIF image"));
+                        violations.add(new Violation(name, jar.getName(), "Not a GIF image"));
                         continue;
                     }
                     stream.close();
@@ -245,7 +249,7 @@ public class ResourcesTest extends NbTestCase {
         
         @Override
         public String toString() {
-            return entry+" in "+jarFile+": "+comment;
+            return comment + ": " + entry+" in "+jarFile;
         }
     }
 
@@ -272,7 +276,7 @@ public class ResourcesTest extends NbTestCase {
                 if (len >= 0 && len < 10) {
                     violations.add(new Violation(entry.getName(), jar.getName(), " is too small ("+len+" bytes)"));
                 }
-                if (len >= 100 * 1024) {
+                if (len >= 200 * 1024) {
                     violations.add(new Violation(entry.getName(), jar.getName(), " is too large ("+len+" bytes)"));
                 }
             }
@@ -296,6 +300,9 @@ public class ResourcesTest extends NbTestCase {
             if (!f.getName().endsWith(".jar"))
                 continue;
             
+            if (!f.getName().endsWith("cssparser-0-9-4-fs.jar")) // #108644
+                continue;
+            
             JarFile jar = new JarFile(f);
             Enumeration<JarEntry> entries = jar.entries();
             JarEntry entry;
@@ -315,7 +322,7 @@ public class ResourcesTest extends NbTestCase {
         }
         if (!violations.isEmpty()) {
             StringBuilder msg = new StringBuilder();
-            msg.append("Some files have extreme size ("+violations.size()+"):\n");
+            msg.append("Some files does not belong to module JARs ("+violations.size()+"):\n");
             for (Violation viol: violations) {
                 msg.append(viol).append('\n');
             }

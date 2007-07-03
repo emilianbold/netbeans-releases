@@ -255,26 +255,38 @@ public class BytecodeTest extends NbTestCase {
         private static Type image2Type = Type.getType("Ljavax/swing/Icon;");
         private static Type bType = Type.getType("Ljava/util/ResourceBundle;");
         private static Type b2Type = Type.getType("Lorg/openide/util/NbBundle;");
-        private boolean hasStaticFields;
         
-        public void visitField(Field obj) {
+        private boolean hasImageFields;
+        private boolean hasPropFields;
+        
+        @Override public void visitField(Field obj) {
             if (obj.isStatic()) {
 //                System.out.println("signature "+obj.getSignature());
                 Type name = Type.getReturnType(obj.getSignature());
                 if (imageType.equals(name) ||
                         image1Type.equals(name) ||
-                        image2Type.equals(name) ||
-                        bType.equals(name) ||
+                        image2Type.equals(name)) {
+                    hasImageFields = true;
+                }
+                if (bType.equals(name) ||
                         b2Type.equals(name)) {
-                    hasStaticFields = true;
+                    hasPropFields = true;
                 }
             }
         }
 
         public boolean foundStaticFields() {
-            return hasStaticFields;
+            return hasImageFields | hasPropFields;
         }
 
+        public String fieldTypes() {
+            if (hasImageFields) {
+                return hasPropFields? "images and bundle resources": "images";
+            }
+            else {
+                return hasPropFields? "bundle resources": "none";
+            }
+        }
     }
 
     /** Scan of BeanInfo classes to check if they held descriptors statically
@@ -294,6 +306,10 @@ public class BytecodeTest extends NbTestCase {
                 entry = entries.nextElement();
                 if (entry.getName().endsWith("BeanInfo.class")) {
                     LOG.log(Level.FINE, "testing entry {0}", entry);
+                    if (entry.getName().endsWith("JXPathBasicBeanInfo.class")) {
+                        continue;
+                    }
+                    
                     clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
                     assertNotNull("classfile of "+entry.toString()+" parsed");
                     
@@ -394,7 +410,7 @@ public class BytecodeTest extends NbTestCase {
                     StaticsVisitor v = new StaticsVisitor();
                     new DescendingVisitor(clz,v).visit();
                     if (v.foundStaticFields()) {
-                        violations.add(new Violation(entry.toString(), jar.getName(), " found static fields that should be avoided"));
+                        violations.add(new Violation(entry.toString(), jar.getName(), " has static fields of type "+v.fieldTypes()));
                     }
                 }
             }
@@ -403,7 +419,7 @@ public class BytecodeTest extends NbTestCase {
             StringBuilder msg = new StringBuilder();
             msg.append("Some classes retain memory permanently (").append(violations.size()).append("):\n");
             for (Violation v: violations) {
-                msg.append(v.entry).append(" in ").append(v.jarFile).append(v.comment).append('\n');
+                msg.append(v.entry).append(v.comment).append(" (").append(v.jarFile).append(")\n");
             }
             fail(msg.toString());
         }
@@ -416,6 +432,10 @@ public class BytecodeTest extends NbTestCase {
         Enumeration<DataLoader> loaders = DataLoaderPool.getDefault().allLoaders();
         while (loaders.hasMoreElements()) {
             DataLoader ldr = loaders.nextElement();
+            if ("org.netbeans.modules.cnd.loaders.CCDataLoader".equals(ldr.getClass().getName())) { // #97612
+                continue;
+            }
+            
             try { 
                 // XXX not enough better is to test that all ctors only call super(String)
                 Constructor ctor = ldr.getClass().getDeclaredConstructor(Class.class);
