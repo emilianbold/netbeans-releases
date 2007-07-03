@@ -32,7 +32,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -350,6 +349,8 @@ public class PaletteKit implements Runnable {
         public Action getRefreshAction() {
             return new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
+                    // TODO
+                    //ComponentSerializationSupport.refreshDescriptorRegistry()
                     update();
 //                    refreshPalette();
                 }
@@ -360,6 +361,7 @@ public class PaletteKit implements Runnable {
         public Action getResetAction() {
             return new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
+                    // TODO --||-- + remove customComponents
                     update();
                 }
             };
