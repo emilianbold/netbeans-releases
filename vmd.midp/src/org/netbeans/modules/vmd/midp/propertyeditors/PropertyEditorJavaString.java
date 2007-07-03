@@ -79,7 +79,11 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     @Override
     public void setAsText(String text) {
         PropertyValue value = (PropertyValue) super.getValue();
-        if (value != null && value.getPrimitiveValue().equals(text)) {
+        if (value != null) {
+            return;
+        }
+        Object pv = value.getPrimitiveValue();
+        if (pv != null && pv.equals(text)) {
             return;
         }
         saveValue(text);
