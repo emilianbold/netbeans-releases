@@ -2205,7 +2205,12 @@ public class TableBox extends ContainerBox {
                         if (constraints[k] < 0) {
                             // Percentage
                             int percentage = -constraints[k];
-                            portion = (percentage * tableWidth) / 100;
+                            // #108602 When table is auto, count the pref width (here as max).
+                            if (tableWidth == AUTO) {
+                                portion = (percentage * columnMaxes[k]) / 100;
+                            } else {
+                                portion = (percentage * tableWidth) / 100;
+                            }
                         } else {
                             portion = constraints[k];
                         }
@@ -2228,7 +2233,12 @@ public class TableBox extends ContainerBox {
                             if (constraints[k] < 0) {
                                 // Percentage
                                 int percentage = -constraints[k];
-                                portion = (percentage * tableWidth) / 100;
+                                // #108602 When table is auto, count the pref width (here as max).
+                                if (tableWidth == AUTO) {
+                                    portion = (percentage * columnMaxes[k]) / 100;
+                                } else {
+                                    portion = (percentage * tableWidth) / 100;
+                                }
                             } else {
                                 portion = constraints[k];
                             }
@@ -2346,7 +2356,12 @@ public class TableBox extends ContainerBox {
                     if (constraints[k] < 0) {
                         // Percentage
                         int percentage = -constraints[k];
-                        portion = (percentage * tableWidth) / 100;
+                        // #108602 When table is auto, count the pref width (here as max).
+                        if (tableWidth == AUTO) {
+                            portion = (percentage * columnMaxes[k]) / 100;
+                        } else {
+                            portion = (percentage * tableWidth) / 100;
+                        }
                     } else {
                         portion = constraints[k];
                     }
@@ -2372,7 +2387,12 @@ public class TableBox extends ContainerBox {
                         if (constraints[k] < 0) {
                             // Percentage
                             int percentage = -constraints[k];
-                            portion = (percentage * tableWidth) / 100;
+                            // #108602 When table is auto, count the pref width (here as max).
+                            if (tableWidth == AUTO) {
+                                portion = (percentage * columnMaxes[k]) / 100;
+                            } else {
+                                portion = (percentage * tableWidth) / 100;
+                            }
                         } else {
                             portion = constraints[k];
                         }
