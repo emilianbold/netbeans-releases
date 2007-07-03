@@ -57,8 +57,10 @@ public class EnumTest extends GeneratorTest {
     public void testConstantRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.util.*;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
             "public enum Test {\n" +
             "    A, B, C;\n" +
             "    \n" +
@@ -67,8 +69,10 @@ public class EnumTest extends GeneratorTest {
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.util.*;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
             "public enum Test {\n" +
             "    A2, B, C;\n" +
             "    \n" +
@@ -77,7 +81,7 @@ public class EnumTest extends GeneratorTest {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
