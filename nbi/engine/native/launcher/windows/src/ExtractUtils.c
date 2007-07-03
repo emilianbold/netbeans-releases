@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -58,12 +58,12 @@ void skipLauncherStub(LauncherProperties * props,  DWORD stubSize) {
 void skipStub(LauncherProperties * props) {
     if(props->isOnlyStub) {
         props->status = EXIT_CODE_STUB;
-        showMessageW(props,L"It`s only stub", 0);
+        showMessageW(props, L"It`s only stub", 0);
     } else {
         skipLauncherStub(props, STUB_FILL_SIZE);
         if(!isOK(props)) {
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1,
-            "Error! Can`t process launcher stub", 1);
+                    "Error! Can`t process launcher stub", 1);
             showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exeName);
         }
     }
@@ -73,9 +73,10 @@ void modifyRestBytes(SizedString* rest, DWORD start) {
     
     DWORD len = rest->length - start;
     char * restBytesNew = NULL;
+    
     if(len>0) {
-        restBytesNew = newpChar(len);
         DWORD i;
+        restBytesNew = newpChar(len);
         for(i=start;i<rest->length;i++) {
             restBytesNew[i-start] = (rest->bytes) [i];
         }
@@ -115,6 +116,9 @@ void readString(LauncherProperties * props, SizedString * result, DWORD isUnicod
     HANDLE hFileRead = props->handler;
     SizedString * rest = props->restOfBytes;
     DWORD bufferSize = props->bufsize;
+    DWORD read=0;
+    char * buf = NULL;
+    
     if(*status != ERROR_OK ) return;
     
     if(readStringFromBuf(rest, result, isUnicode)==ERROR_OK) {
@@ -122,8 +126,8 @@ void readString(LauncherProperties * props, SizedString * result, DWORD isUnicod
     }
     
     //we need to read file for more data to find \0 character...
-    DWORD read=0;
-    char * buf = newpChar(bufferSize);
+    
+    buf = newpChar(bufferSize);
     
     while (ReadFile(hFileRead, buf, bufferSize, &read, 0) && read) {
         addProgressPosition(props, read);
@@ -147,63 +151,66 @@ void readString(LauncherProperties * props, SizedString * result, DWORD isUnicod
 
 
 void readNumber(LauncherProperties * props, DWORD * result) {
-    if(!isOK(props)) return;
-    
-    SizedString * numberString = createSizedString();
-    readString(props, numberString, 0);
-    if(!isOK(props)) {
-        freeSizedString(&numberString);
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
-        "Error!! Can`t read number string. Most probably integrity error.", 1);
-        return;
-    }
-    if(numberString->bytes==NULL) {
-        freeSizedString(&numberString);
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
-        "Error!! Can`t read number string (it can`t be NULL). Most probably integrity error.", 1);
-        props->status = ERROR_INTEGRITY;
-        return;
-    }
-    DWORD i =0;
-    DWORD number = 0;
-    
-    for(;i<numberString->length;i++) {
-        char c = numberString->bytes[i];
-        if(c>='0' && c<='9') {
-            number = number * 10 + (c - '0');
-        } else if(c==0) {
-            // we have reached the end of number section
+    if(isOK(props)) {
+        
+        SizedString * numberString = createSizedString();
+        DWORD i =0;
+        DWORD number = 0;
+        
+        readString(props, numberString, 0);
+        if(!isOK(props)) {
+            freeSizedString(&numberString);
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
-            "Can`t read number from string (it contains zero character):", 1);
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, numberString->bytes, 1);
-            props->status = ERROR_INTEGRITY;
-            break;
-        } else {
-            // unexpected...
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
-            "Can`t read number from string (unexpected error):", 1);
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, numberString->bytes, 1);
-            props->status = ERROR_INTEGRITY;
-            break;
+                    "Error!! Can`t read number string. Most probably integrity error.", 1);
+            return;
         }
+        
+        if(numberString->bytes==NULL) {
+            freeSizedString(&numberString);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
+                    "Error!! Can`t read number string (it can`t be NULL). Most probably integrity error.", 1);
+            props->status = ERROR_INTEGRITY;
+            return;
+        }
+        
+        
+        for(;i<numberString->length;i++) {
+            char c = numberString->bytes[i];
+            if(c>='0' && c<='9') {
+                number = number * 10 + (c - '0');
+            } else if(c==0) {
+                // we have reached the end of number section
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
+                        "Can`t read number from string (it contains zero character):", 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, numberString->bytes, 1);
+                props->status = ERROR_INTEGRITY;
+                break;
+            } else {
+                // unexpected...
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
+                        "Can`t read number from string (unexpected error):", 1);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, numberString->bytes, 1);
+                props->status = ERROR_INTEGRITY;
+                break;
+            }
+        }
+        freeSizedString(&numberString);
+        *result = number;
     }
-    freeSizedString(&numberString);
-    *result = number;
-    return;
 }
 
 void readStringWithDebugW(LauncherProperties * props, WCHAR ** dest, char * paramName) {
+    SizedString *sizedStr = createSizedString();
     if(paramName!=NULL) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Reading ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, paramName, 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, " : ", 0);
     }
-    SizedString *sizedStr = createSizedString();
     readString(props, sizedStr, 1);
     if(!isOK(props)) {
         freeSizedString(&sizedStr);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
-        "[ERROR] Can`t read string !! Seems to be integrity error", 1);
+                "[ERROR] Can`t read string !! Seems to be integrity error", 1);
         return;
     }
     *dest = createWCHAR(sizedStr);
@@ -219,18 +226,18 @@ void readStringWithDebugW(LauncherProperties * props, WCHAR ** dest, char * para
 }
 
 void readStringWithDebugA(LauncherProperties * props, char ** dest, char * paramName) {
+    SizedString *sizedStr = createSizedString();
+    
     if(paramName!=NULL) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Reading ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, paramName, 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, " : ", 0);
     }
-    
-    SizedString *sizedStr = createSizedString();
     readString( props, sizedStr, 0);
     if(!isOK(props)) {
         freeSizedString(&sizedStr);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
-        "[ERROR] Can`t read string!!! Seems to be integritiy error", 1);
+                "[ERROR] Can`t read string!!! Seems to be integritiy error", 1);
         return;
     }
     *dest = appendString(NULL, sizedStr->bytes);
@@ -254,7 +261,7 @@ void readNumberWithDebug(LauncherProperties * props, DWORD * dest, char * paramN
     
     if(!isOK(props)) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
-        "[ERROR] Can`t read number !!! Seems to be integrity error", 1);
+                "[ERROR] Can`t read number !!! Seems to be integrity error", 1);
         return;
     }
     writeDWORD(props, OUTPUT_LEVEL_DEBUG, 0, NULL, *dest, 1);
@@ -273,7 +280,7 @@ void readBigNumberWithDebug(LauncherProperties * props, int64t * dest, char * pa
     }
     if(!isOK(props)) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
-        "[ERROR] Can`t read number !!! Seems to be integrity error", 1);
+                "[ERROR] Can`t read number !!! Seems to be integrity error", 1);
         return;
     }
     dest->High = high;
@@ -283,92 +290,95 @@ void readBigNumberWithDebug(LauncherProperties * props, int64t * dest, char * pa
 
 // returns: ERROR_OK, ERROR_INPUTOUPUT, ERROR_INTEGRITY
 void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileSize ) {
-    if(!isOK(props)) return;
-    DWORD * status = & props->status;
-    HANDLE hFileRead = props->handler;
-    int64t * size = fileSize;
-    HANDLE hFileWrite = CreateFileW(output, GENERIC_READ | GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, hFileRead);
-    
-    if (hFileWrite == INVALID_HANDLE_VALUE) {
-        WCHAR * err = getErrorDescription(GetLastError());
-        showErrorW(props, OUTPUT_ERROR_PROP, 2, output, err);
-        FREE(err);
-        *status = ERROR_INPUTOUPUT;
-        return;
-    }
-    if(props->restOfBytes->length!=0 && props->restOfBytes->bytes!=NULL) {
-        //check if the data stored in restBytes is more than we neen
-        // rest bytes contains much less than int64t so we operate here only bith low bits of size
-        DWORD restBytesToWrite = (compare(size, props->restOfBytes->length)> 0 ) ? props->restOfBytes->length : size->Low;
-        DWORD usedBytes = restBytesToWrite;
+    if(isOK(props)) {
+        DWORD * status = & props->status;
+        HANDLE hFileRead = props->handler;
+        int64t * size = fileSize;
+        DWORD counter = 0;
+        HANDLE hFileWrite = CreateFileW(output, GENERIC_READ | GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, hFileRead);
         
-        char *ptr = props->restOfBytes->bytes;
-        
-        DWORD write = 0;
-        while (restBytesToWrite >0) {
-            WriteFile(hFileWrite, ptr, restBytesToWrite, &write, 0);
-            restBytesToWrite -= write;
-            ptr +=write;
+        if (hFileWrite == INVALID_HANDLE_VALUE) {
+            WCHAR * err = getErrorDescription(GetLastError());
+            showErrorW(props, OUTPUT_ERROR_PROP, 2, output, err);
+            FREE(err);
+            *status = ERROR_INPUTOUPUT;
+            return;
         }
-        modifyRestBytes(props->restOfBytes, usedBytes);
-        minus(size, usedBytes);
-        
-    }
-    
-    DWORD counter = 0;
-    if(compare(size, 0) > 0 ) {
-        DWORD bufferSize = props->bufsize;
-        char * buf = newpChar(bufferSize);
-        DWORD bufsize = (compare(size, bufferSize) > 0) ? bufferSize : size->Low;
-        DWORD read = 0 ;
-        //  printf("Using buffer size: %u/%u\n", bufsize, bufferSize);
-        while (ReadFile(hFileRead, buf, bufsize, &read, 0) && read && compare(size, 0) > 0) {
-            addProgressPosition(props, read);
-            WriteFile(hFileWrite, buf, read, &read, 0);
-            minus(size, read);
+        if(props->restOfBytes->length!=0 && props->restOfBytes->bytes!=NULL) {
+            //check if the data stored in restBytes is more than we neen
+            // rest bytes contains much less than int64t so we operate here only bith low bits of size
+            DWORD restBytesToWrite = (compare(size, props->restOfBytes->length)> 0 ) ? props->restOfBytes->length : size->Low;
+            DWORD usedBytes = restBytesToWrite;
             
-            if((compare(size, bufsize)<0) && (compare(size, 0)>0) ) {
-                bufsize = size->Low;
+            char *ptr = props->restOfBytes->bytes;
+            
+            DWORD write = 0;
+            while (restBytesToWrite >0) {
+                WriteFile(hFileWrite, ptr, restBytesToWrite, &write, 0);
+                restBytesToWrite -= write;
+                ptr +=write;
             }
-            memset(buf, 0, sizeof(char) * bufferSize);
-            if(compare(size, 0)==0) {
-                break;
-            }
-            if((counter ++) % 20 == 0)  {
-                if(isTerminated(props)) break;
-            }
+            modifyRestBytes(props->restOfBytes, usedBytes);
+            minus(size, usedBytes);
             
         }
-        if((compare(size, 0)>0 || read==0) && !isTerminated(props)) {
-            // we could not read requested size
-            * status = ERROR_INTEGRITY;
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
-            "Can`t read data from file : not enought data", 1);
+        
+        
+        if(compare(size, 0) > 0 ) {
+            DWORD bufferSize = props->bufsize;
+            char * buf = newpChar(bufferSize);
+            DWORD bufsize = (compare(size, bufferSize) > 0) ? bufferSize : size->Low;
+            DWORD read = 0 ;
+            //  printf("Using buffer size: %u/%u\n", bufsize, bufferSize);
+            while (ReadFile(hFileRead, buf, bufsize, &read, 0) && read && compare(size, 0) > 0) {
+                addProgressPosition(props, read);
+                WriteFile(hFileWrite, buf, read, &read, 0);
+                minus(size, read);
+                
+                if((compare(size, bufsize)<0) && (compare(size, 0)>0) ) {
+                    bufsize = size->Low;
+                }
+                memset(buf, 0, sizeof(char) * bufferSize);
+                if(compare(size, 0)==0) {
+                    break;
+                }
+                if((counter ++) % 20 == 0)  {
+                    if(isTerminated(props)) break;
+                }
+                
+            }
+            if((compare(size, 0)>0 || read==0) && !isTerminated(props)) {
+                // we could not read requested size
+                * status = ERROR_INTEGRITY;
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,
+                        "Can`t read data from file : not enought data", 1);
+            }
+            FREE(buf);
         }
-        FREE(buf);
+        CloseHandle(hFileWrite);
     }
-    CloseHandle(hFileWrite);
-    return;
 }
 
 //returns : ERROR_OK, ERROR_INTEGRITY, ERROR_FREE_SPACE
 void extractFileToDir(LauncherProperties * props, WCHAR *dir, WCHAR ** resultFile) {
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Extracting file ...", 1);
-    
     WCHAR * fileName = NULL;
+    int64t * fileLength = NULL;
+    
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Extracting file ...", 1);
     readStringWithDebugW( props, & fileName, "file name");
     
-    int64t * fileLength = newint64_t(0, 0);
+    fileLength = newint64_t(0, 0);
     readBigNumberWithDebug( props, fileLength, "file length ");
     
     if(!isOK(props)) return;
     
     if(fileName!=NULL) {
+        WCHAR * output = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), fileName);
+        free(fileName);
+        
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... extract to directory = ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  dir, 1);
         
-        WCHAR * output = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), fileName);
-        free(fileName);
         checkFreeSpace(props, dir, fileLength);
         if(isOK(props)) {
             extractDataToFile(props, output, fileLength);
@@ -391,6 +401,7 @@ void loadI18NStrings(LauncherProperties * props) {
     //read number of locales
     
     DWORD numberOfLocales = 0;
+    DWORD numberOfProperties = 0;
     
     readNumberWithDebug(props, &numberOfLocales, "number of locales");
     if(!isOK(props)) return;
@@ -399,7 +410,7 @@ void loadI18NStrings(LauncherProperties * props) {
         return ;
     }
     
-    DWORD numberOfProperties;
+    
     readNumberWithDebug( props, &numberOfProperties, "i18n properties");
     if(!isOK(props)) return;
     if(numberOfProperties==0) {
@@ -415,60 +426,62 @@ void loadI18NStrings(LauncherProperties * props) {
     
     for(i=0; isOK(props) && i<numberOfProperties;i++) {
         // read property name as ASCII
+        char * propName = newpChar(20);
+        
         props->i18nMessages->properties[i] = NULL;
         props->i18nMessages->strings[i] = NULL;
-        char * propName = newpChar(20);
+        
         sprintf(propName, "property name %2ld", i);
         readStringWithDebugA(props, & (props->i18nMessages->properties[i]), propName);
         free(propName);
     }
-    if(!isOK(props)) return;
-    
-    DWORD isLocaleMatches;
-    WCHAR * localeName;
-    WCHAR * currentLocale = getLocaleName();
-    
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Current System Locale : ", 0);
-    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  currentLocale, 1);
-    
-    for(j=0;j<numberOfLocales;j++) { //  for all locales in file...
-        // read locale name as UNICODE ..
-        // it should be like en_US or smth like that
-        localeName = NULL;
-        readStringWithDebugW(props, &localeName, "locale name");
-        if(!isOK(props)) break;
+    if(isOK(props)) {
         
-        isLocaleMatches = (localeName==NULL) ?  1 :
-            wcsstr(currentLocale, localeName) != NULL;
+        DWORD isLocaleMatches;
+        WCHAR * localeName;
+        WCHAR * currentLocale = getLocaleName();
         
-        //read properties names and value
-        for(i=0;i<numberOfProperties;i++) {
-            // read property value as UNICODE
-            
-            WCHAR * value = NULL;
-            char * s1 =  DWORDtoCHAR(i + 1);
-            char * s2 =  DWORDtoCHAR(numberOfProperties);
-            char * s3 = appendString(NULL , "value ");
-            s3 = appendString(s3 , s1);
-            s3 = appendString(s3, "/");
-            s3 = appendString(s3, s2);
-            FREE(s1);
-            FREE(s2);
-            readStringWithDebugW(props, &value, s3);
-            
-            FREE(s3);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Current System Locale : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  currentLocale, 1);
+        
+        for(j=0;j<numberOfLocales;j++) { //  for all locales in file...
+            // read locale name as UNICODE ..
+            // it should be like en_US or smth like that
+            localeName = NULL;
+            readStringWithDebugW(props, &localeName, "locale name");
             if(!isOK(props)) break;
-            if(isLocaleMatches) {
-                //it is a know property
-                FREE(props->i18nMessages->strings[i]);
-                props->i18nMessages->strings[i] = appendStringW(NULL, value);
-            }
-            FREE(value);
+            
+            isLocaleMatches = (localeName==NULL) ?  1 :
+                wcsstr(currentLocale, localeName) != NULL;
+                
+                //read properties names and value
+                for(i=0;i<numberOfProperties;i++) {
+                    // read property value as UNICODE
+                    
+                    WCHAR * value = NULL;
+                    char * s1 =  DWORDtoCHAR(i + 1);
+                    char * s2 =  DWORDtoCHAR(numberOfProperties);
+                    char * s3 = appendString(NULL , "value ");
+                    s3 = appendString(s3 , s1);
+                    s3 = appendString(s3, "/");
+                    s3 = appendString(s3, s2);
+                    FREE(s1);
+                    FREE(s2);
+                    readStringWithDebugW(props, &value, s3);
+                    
+                    FREE(s3);
+                    if(!isOK(props)) break;
+                    if(isLocaleMatches) {
+                        //it is a know property
+                        FREE(props->i18nMessages->strings[i]);
+                        props->i18nMessages->strings[i] = appendStringW(NULL, value);
+                    }
+                    FREE(value);
+                }
+                FREE(localeName);
         }
-        FREE(localeName);
+        FREE(currentLocale);
     }
-    FREE(currentLocale);
-    return;
 }
 
 LauncherResource * newLauncherResource() {
@@ -482,8 +495,8 @@ WCHARList * newWCHARList(DWORD number) {
     WCHARList * list = (WCHARList*) malloc(sizeof(WCHARList));
     list->size  = number;
     if(number>0) {
-        list->items = newppWCHAR(number);
         DWORD i=0;
+        list->items = newppWCHAR(number);
         for(i=0;i<number;i++) {
             list->items[i] = NULL;
         }
@@ -512,8 +525,9 @@ LauncherResourceList * newLauncherResourceList(DWORD number) {
     LauncherResourceList * list = (LauncherResourceList*) malloc(sizeof(LauncherResourceList));
     list->size  = number;
     if(number > 0) {
-        list->items = (LauncherResource**) malloc(sizeof(LauncherResource*) * number);
         DWORD i=0;
+        
+        list->items = (LauncherResource**) malloc(sizeof(LauncherResource*) * number);
         for(i=0;i<number;i++) {
             list->items[i] = NULL;
         }
@@ -533,8 +547,9 @@ void freeLauncherResource(LauncherResource ** file) {
 
 
 void extractLauncherResource(LauncherProperties * props, WCHAR *outputdir, LauncherResource ** file, char * name) {
-    * file = newLauncherResource();
     char * typeStr = appendString(appendString(NULL, name), " type");
+    * file = newLauncherResource();
+    
     readNumberWithDebug( props, & ((*file)->type) , typeStr);
     if(isOK(props)) {
         free(typeStr);
@@ -563,9 +578,10 @@ void extractLauncherResource(LauncherProperties * props, WCHAR *outputdir, Launc
 
 void readWCHARList(LauncherProperties * props, WCHARList ** list, char * name) {
     DWORD number = 0;
-    * list = NULL;
     DWORD i =0;
     char * numberStr = appendString(appendString(NULL, "number of "), name);
+    
+    * list = NULL;
     readNumberWithDebug(props, &number, numberStr);
     FREE(numberStr);
     
@@ -601,6 +617,8 @@ void readLauncherResourceList(LauncherProperties * props, WCHAR * outputdir, Lau
 
 void readLauncherProperties(LauncherProperties * props) {
     DWORD i=0;
+    char * str = NULL;
+    
     readWCHARList(props, &(props->jvmArguments), "jvm arguments");
     if(!isOK(props)) return;
     
@@ -614,10 +632,10 @@ void readLauncherProperties(LauncherProperties * props) {
     if(!isOK(props)) return;
     
     readNumberWithDebug( props, &(props->compatibleJavaNumber),
-    "compatible java");
+            "compatible java");
     if(!isOK(props)) return;
     
-    char * str = NULL;
+    
     
     if ( props->compatibleJavaNumber > 0 ) {
         props->compatibleJava = (JavaCompatible **) malloc(sizeof(JavaCompatible *) * props->compatibleJavaNumber);
@@ -639,15 +657,15 @@ void readLauncherProperties(LauncherProperties * props) {
             if(!isOK(props)) return;
             
             readStringWithDebugA(props, &(props->compatibleJava[i]->vendor) ,
-            "vendor");
+                    "vendor");
             if(!isOK(props)) return;
             
             readStringWithDebugA(props, &(props->compatibleJava[i]->osName) ,
-            "os name");
+                    "os name");
             if(!isOK(props)) return;
             
             readStringWithDebugA(props, &(props->compatibleJava[i]->osArch) ,
-            "os arch");
+                    "os arch");
             if(!isOK(props)) return;
             
         }
@@ -657,28 +675,23 @@ void readLauncherProperties(LauncherProperties * props) {
 }
 
 void extractJVMData(LauncherProperties * props) {
-    if(!isOK(props)) return;
-    
-    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting JVM data... ", 1);    
-    WCHAR * outputdir = props->tmpDir;
-    
-    extractLauncherResource(props, outputdir, &(props->testJVMFile), "testJVM file");
-    if(!isOK(props)) {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error extracting testJVM file!", 1);
-        return ;
+    if(isOK(props)) {
+        WCHAR * outputdir = props->tmpDir;
+        
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting JVM data... ", 1);
+        extractLauncherResource(props, outputdir, &(props->testJVMFile), "testJVM file");
+        if(!isOK(props)) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error extracting testJVM file!", 1);
+            return ;
+        }
+        
+        readLauncherResourceList(props, outputdir, &(props->jvms), "JVMs");
     }
-    
-    readLauncherResourceList(props, outputdir, &(props->jvms), "JVMs");
-    if(!isOK(props)) return;
 }
 
 void extractData(LauncherProperties *props) {
-    if(!isOK(props)) return;
-    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting Bundled data... ", 1);
-    WCHAR * outputdir = props->tmpDir;
-    
-    readLauncherResourceList(props, outputdir, &(props->jars), "bundled and external files");
-    if(!isOK(props)) return;
-    
-    return;
+    if(isOK(props)) {        
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting Bundled data... ", 1);
+        readLauncherResourceList(props, props->tmpDir, &(props->jars), "bundled and external files");
+    }
 }

@@ -36,6 +36,7 @@ extern "C" {
 // os.name
 // os.arch
 #define TEST_JAVA_PARAMETERS 5    
+#define MAX_LEN_VALUE_NAME 16383
 
 WCHAR * getJavaResource(WCHAR * location, const WCHAR * suffix);
 

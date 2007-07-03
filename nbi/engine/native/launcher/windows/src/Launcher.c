@@ -111,9 +111,11 @@ void setOutputFile(LauncherProperties * props, WCHAR *path) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "[CMD Argument] Redirect output to file : ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, path, 1);
     } else  {
+        WCHAR * err = NULL;
+        DWORD code = GetLastError();
         props->status = ERROR_INPUTOUPUT;
-        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "[CMD Argument] Can`t create file: ", path, GetLastError());
-        WCHAR * err = getErrorDescription(GetLastError());
+        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "[CMD Argument] Can`t create file: ", path, code);
+        err = getErrorDescription(code);
         showMessageW(props, L"Can`t redirect output to file!\n\nRequested file : %s\n%s", 2, path, err);
         FREE(err);
     }
@@ -149,7 +151,7 @@ void loadLocalizationStrings(LauncherProperties *props) {
 }
 
 void createTMPDir(LauncherProperties * props) {
-    WCHAR * argTempDir = NULL;;
+    WCHAR * argTempDir = NULL;
     DWORD createRndSubDir = 1;
     
     if((argTempDir = props->userDefinedExtractDir) !=NULL) {
@@ -169,10 +171,11 @@ void createTMPDir(LauncherProperties * props) {
 
 void checkExtractionStatus(LauncherProperties *props) {
     if(props->status == ERROR_FREESPACE) {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Not enought free space !", 1);
         double d = int64ttoDouble(props->bundledSize) / (1024.0 * 1024.0) + 1.0;
         DWORD dw = (DWORD) d;
         WCHAR * size = DWORDtoWCHAR(dw);
+        
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Not enought free space !", 1);
         showErrorW(props, NOT_ENOUGH_FREE_SPACE_PROP, 2, size, tempdirArg);
         FREE(size);
     }
@@ -186,6 +189,8 @@ void checkExtractionStatus(LauncherProperties *props) {
 void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
     if(isTerminated(props)) return;
     if(location!=NULL) {
+        JavaProperties * javaProps = NULL;
+        
         if(inList(props->alreadyCheckedJava, location)) {
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... already checked location ", 0);
             writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, location, 1);
@@ -194,7 +199,7 @@ void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
         } else {
             props->alreadyCheckedJava = addStringToList(props->alreadyCheckedJava, location);
         }
-        JavaProperties * javaProps = NULL;
+        
         getJavaProperties(location, props, &javaProps);
         
         if(isOK(props)) {
@@ -228,7 +233,7 @@ void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
             
             if(inList(props->alreadyCheckedJava, privateJre)) {
                 writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... already checked location ", 0);
-                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, privateJre, 1);                
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, privateJre, 1);
             } else {
                 props->alreadyCheckedJava = addStringToList(props->alreadyCheckedJava, privateJre);
                 
@@ -255,16 +260,19 @@ void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
 }
 
 void resolveTestJVM(LauncherProperties * props) {
+    WCHAR * testJVMFile = NULL;
+    WCHAR * testJVMClassPath = NULL;
+    
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Resolving testJVM classpath...", 1);
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... first step : ", 0);
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->testJVMFile->path, 1);
     resolvePath(props, props->testJVMFile);
-    WCHAR * testJVMFile = props->testJVMFile->resolved;
+    testJVMFile = props->testJVMFile->resolved;
     
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... second     : ", 0);
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->testJVMFile->resolved, 1);
     
-    WCHAR * testJVMClassPath = NULL;
+    
     if(isDirectory(testJVMFile)) { // the directory of the class file is set
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... testJVM is : directory ", 1);
         testJVMClassPath = appendStringW(NULL, testJVMFile);
@@ -345,10 +353,12 @@ void findSuitableJava(LauncherProperties * props) {
 }
 
 void resolvePath(LauncherProperties * props, LauncherResource * file) {
+    WCHAR * result = NULL;
+    DWORD i=0;
+    
     if(file==NULL) return;
     if(file->resolved!=NULL) return;
     
-    WCHAR * result = NULL;
     switch (file->type) {
         case 2:
             if(props->java!=NULL) {
@@ -374,7 +384,7 @@ void resolvePath(LauncherProperties * props, LauncherResource * file) {
         result = appendStringW(result, L"\\");
     }
     file->resolved = appendStringW(result, file->path);
-    DWORD i=0;
+    
     for(i=0;i<getLengthW(file->resolved);i++) {
         if(file->resolved[i]==L'/') {
             file->resolved[i]=L'\\';
@@ -383,120 +393,124 @@ void resolvePath(LauncherProperties * props, LauncherResource * file) {
 }
 
 void setClasspathElements(LauncherProperties * props) {
-    if(!isOK(props)) return;
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Modifying classpath ...", 1);
-    WCHAR * preCP = NULL;
-    WCHAR * appCP = NULL;
-    
-    // add some libraries to the beginning of the classpath
-    while((preCP = getArgumentValue(props, classPathPrepend, 1, 1))!=NULL) {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the beginning of classpath : ", 0);
-        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, preCP, 1);
-        if (props->classpath != NULL) {
-            preCP = appendStringW(preCP, CLASSPATH_SEPARATOR);
+    if(isOK(props)) {
+        WCHAR * preCP = NULL;
+        WCHAR * appCP = NULL;
+        WCHAR *tmp = NULL;
+        DWORD i = 0 ;
+        
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Modifying classpath ...", 1);
+        // add some libraries to the beginning of the classpath
+        while((preCP = getArgumentValue(props, classPathPrepend, 1, 1))!=NULL) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the beginning of classpath : ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, preCP, 1);
+            if (props->classpath != NULL) {
+                preCP = appendStringW(preCP, CLASSPATH_SEPARATOR);
+            }
+            //WCHAR *last = props->classpath;
+            tmp = appendStringW(preCP, props->classpath);
+            FREE(props->classpath);
+            props->classpath = tmp;
         }
-        //WCHAR *last = props->classpath;
-        WCHAR *tmp = appendStringW(preCP, props->classpath);
-        FREE(props->classpath);
-        props->classpath = tmp;
-    }
-    
-    DWORD i = 0 ;
-    for(i=0;i<props->jars->size;i++) {
         
         
-        resolvePath(props, props->jars->items[i]);
-        WCHAR * resolvedCpEntry = props->jars->items[i]->resolved;
-        if(!fileExists(resolvedCpEntry)) {
-            props->status = EXTERNAL_RESOURCE_MISSING;
-            showErrorW(props, EXTERNAL_RESOURE_LACK_PROP, 1, resolvedCpEntry);
-            return;
+        for(i=0;i<props->jars->size;i++) {
+            WCHAR * resolvedCpEntry = NULL;
+            resolvePath(props, props->jars->items[i]);
+            resolvedCpEntry = props->jars->items[i]->resolved;
+            if(!fileExists(resolvedCpEntry)) {
+                props->status = EXTERNAL_RESOURCE_MISSING;
+                showErrorW(props, EXTERNAL_RESOURE_LACK_PROP, 1, resolvedCpEntry);
+                return;
+            }
+            if (props->classpath != NULL) {
+                props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
+            }
+            props->classpath = appendStringW(props->classpath, resolvedCpEntry);
         }
-        if (props->classpath != NULL) {
-            props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
+        
+        // add some libraries to the end of the classpath
+        while((appCP = getArgumentValue(props, classPathAppend, 1, 1))!=NULL) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the end of classpath : ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appCP, 1);
+            if (props->classpath != NULL) {
+                props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
+            }
+            props->classpath = appendStringW(props->classpath, appCP);
+            FREE(appCP);
         }
-        props->classpath = appendStringW(props->classpath, resolvedCpEntry);
+        
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished", 1);
     }
-    
-    // add some libraries to the end of the classpath
-    while((appCP = getArgumentValue(props, classPathAppend, 1, 1))!=NULL) {
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding entry to the end of classpath : ", 0);
-        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appCP, 1);
-        if (props->classpath != NULL) {
-            props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
-        }
-        props->classpath = appendStringW(props->classpath, appCP);
-        FREE(appCP);
-    }
-    
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished", 1);
 }
 
 void setAdditionalArguments(LauncherProperties * props) {
-    WCHARList * cmd = props->commandLine;
-    if(!isOK(props)) return;
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
-            "Parsing rest of command line arguments to add them to java or application parameters... ", 1);
-    WCHAR ** javaArgs;
-    WCHAR ** appArgs;
-    DWORD i=0;
-    DWORD jArg = 0; // java arguments number
-    DWORD aArg = 0; // app arguments number
-    
-    // get number for array creation
-    for(i=0;i<cmd->size;i++) {
-        if(cmd->items[i]!=NULL) {
-            if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
-                jArg++;
-            } else {
-                aArg++;
+    if(isOK(props)) {
+        WCHARList * cmd = props->commandLine;
+        WCHAR ** javaArgs;
+        WCHAR ** appArgs;
+        DWORD i=0;
+        DWORD jArg = 0; // java arguments number
+        DWORD aArg = 0; // app arguments number
+        
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
+                "Parsing rest of command line arguments to add them to java or application parameters... ", 1);
+        
+        // get number for array creation
+        for(i=0;i<cmd->size;i++) {
+            if(cmd->items[i]!=NULL) {
+                if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
+                    jArg++;
+                } else {
+                    aArg++;
+                }
             }
         }
-    }
-    //fill the array
-    if(jArg>0) {
-        javaArgs = newppWCHAR(jArg + props->jvmArguments->size);
-        //DWORD j=0;
-        for (i=0;i<props->jvmArguments->size;i++) {
-            javaArgs[i] = props->jvmArguments->items[i];
-        }
-        FREE(props->jvmArguments->items);
-    } else {
-        javaArgs = NULL;
-    }
-    
-    if(aArg>0) {
-        appArgs = newppWCHAR(aArg + props->appArguments->size);
-        for (i=0; i < props->appArguments->size; i++) {
-            appArgs [i]= props->appArguments->items[i];
-        }
-        FREE(props->appArguments->items);
-    } else {
-        appArgs = NULL;
-    }
-    jArg = aArg = 0;
-    
-    for(i=0;i<cmd->size;i++) {
-        if(cmd->items[i]!=NULL) {
-            if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
-                javaArgs [ props->jvmArguments->size + jArg] = appendStringW(NULL, cmd->items[i] + getLengthW(javaParameterPrefix));
-                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding JVM argument : ", 0);
-                writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, javaArgs [ props->jvmArguments->size + jArg], 1);
-                jArg ++ ;
-            } else {
-                appArgs  [ props->appArguments->size + aArg] = appendStringW(NULL, cmd->items[i]);
-                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding APP argument : ", 0);
-                writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appArgs  [ props->appArguments->size + aArg], 1);
-                aArg++;
+        //fill the array
+        if(jArg>0) {
+            javaArgs = newppWCHAR(jArg + props->jvmArguments->size);
+            //DWORD j=0;
+            for (i=0;i<props->jvmArguments->size;i++) {
+                javaArgs[i] = props->jvmArguments->items[i];
             }
-            FREE(cmd->items[i]);
+            FREE(props->jvmArguments->items);
+        } else {
+            javaArgs = NULL;
         }
+        
+        if(aArg>0) {
+            appArgs = newppWCHAR(aArg + props->appArguments->size);
+            for (i=0; i < props->appArguments->size; i++) {
+                appArgs [i]= props->appArguments->items[i];
+            }
+            FREE(props->appArguments->items);
+        } else {
+            appArgs = NULL;
+        }
+        jArg = aArg = 0;
+        
+        for(i=0;i<cmd->size;i++) {
+            if(cmd->items[i]!=NULL) {
+                if(wcsstr(cmd->items[i], javaParameterPrefix)!=NULL) {
+                    javaArgs [ props->jvmArguments->size + jArg] = appendStringW(NULL, cmd->items[i] + getLengthW(javaParameterPrefix));
+                    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding JVM argument : ", 0);
+                    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, javaArgs [ props->jvmArguments->size + jArg], 1);
+                    jArg ++ ;
+                } else {
+                    appArgs  [ props->appArguments->size + aArg] = appendStringW(NULL, cmd->items[i]);
+                    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... adding APP argument : ", 0);
+                    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, appArgs  [ props->appArguments->size + aArg], 1);
+                    aArg++;
+                }
+                FREE(cmd->items[i]);
+            }
+        }
+        props->appArguments->size  = props->appArguments->size + aArg;
+        props->jvmArguments->size  = props->jvmArguments->size + jArg;
+        if(props->jvmArguments->items==NULL) props->jvmArguments->items = javaArgs;
+        if(props->appArguments->items==NULL) props->appArguments->items = appArgs;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished parsing parameters", 1);
     }
-    props->appArguments->size  = props->appArguments->size + aArg;
-    props->jvmArguments->size  = props->jvmArguments->size + jArg;
-    if(props->jvmArguments->items==NULL) props->jvmArguments->items = javaArgs;
-    if(props->appArguments->items==NULL) props->appArguments->items = appArgs;
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished parsing parameters", 1);
 }
 void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg) {
     if(wcsstr(arg, L" ")) {
@@ -515,91 +529,95 @@ void setLauncherCommand(LauncherProperties *props) {
     if(props->java==NULL) {
         props->status = ERROR_JVM_NOT_FOUND;
         return;
+    } else {
+        WCHAR * command = NULL;
+        WCHAR * javaIOTmpdir = NULL;
+        DWORD i = 0;
+        
+        appendCommandLineArgument(&command, props->java->javaExe);
+        command = appendStringW(command, L"-Djava.io.tmpdir=");
+        javaIOTmpdir = getParentDirectory(props->tmpDir);
+        appendCommandLineArgument(&command, javaIOTmpdir);
+        FREE(javaIOTmpdir);
+        
+        
+        for(i=0;i<props->jvmArguments->size;i++) {
+            appendCommandLineArgument(&command, props->jvmArguments->items[i]);
+        }
+        
+        appendCommandLineArgument(&command, L"-classpath");
+        appendCommandLineArgument(&command, props->classpath);
+        appendCommandLineArgument(&command, props->mainClass);
+        
+        for(i=0;i<props->appArguments->size; i++) {
+            appendCommandLineArgument(&command, props->appArguments->items[i]);
+        }
+        props->command = command;
     }
-    
-    WCHAR * command = NULL;
-    appendCommandLineArgument(&command, props->java->javaExe);
-    command = appendStringW(command, L"-Djava.io.tmpdir=");
-    WCHAR * javaIOTmpdir = getParentDirectory(props->tmpDir);
-    appendCommandLineArgument(&command, javaIOTmpdir);
-    FREE(javaIOTmpdir);
-    
-    DWORD i=0;
-    for(i=0;i<props->jvmArguments->size;i++) {
-        appendCommandLineArgument(&command, props->jvmArguments->items[i]);
-    }
-    
-    appendCommandLineArgument(&command, L"-classpath");
-    appendCommandLineArgument(&command, props->classpath);
-    appendCommandLineArgument(&command, props->mainClass);
-    
-    for(i=0;i<props->appArguments->size; i++) {
-        appendCommandLineArgument(&command, props->appArguments->items[i]);
-    }
-    props->command = command;
 }
 
 void executeMainClass(LauncherProperties * props) {
-    if(!isOK(props)) return;
-    
-    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Executing main class", 1);
-    
-    int64t * minSize = newint64_t(0, 0);
-    checkFreeSpace(props, props->tmpDir, minSize);
-    if(isOK(props)) {
-        HANDLE hErrorRead;
-        HANDLE hErrorWrite;
-        CreatePipe(&hErrorRead, &hErrorWrite, NULL, 0);
-        
-        hideLauncherWindows(props);
-        executeCommand(props, props->command, NULL, INFINITE, props->stdoutHandle, hErrorWrite, NORMAL_PRIORITY_CLASS);
-        if(!isOK(props)) {
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... an error occured during JVM running main class", 1);
-            props->exitCode = props->status;
-        } else {
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished his work. Exit code is ", 0);
-            char * s = DWORDtoCHAR(props->exitCode);
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
-            FREE(s);
-        }
-        
-        char * error = readHandle(hErrorRead);
-        if(getLengthA(error)>1) {
-            DWORD showMessage = 0;
-            char * ptr = error;
-            while(ptr!=NULL) {
-                if(strstr(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) {
-                    showMessage = 1;
-                    break;
-                }
-                ptr = strstr(ptr, "\n");
-                if(ptr!=NULL) ptr++;
+    if(isOK(props)) {        
+        int64t * minSize = newint64_t(0, 0);        
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Executing main class", 1);
+        checkFreeSpace(props, props->tmpDir, minSize);
+        if(isOK(props)) {
+            HANDLE hErrorRead;
+            HANDLE hErrorWrite;
+            char * error = NULL;
+            
+            CreatePipe(&hErrorRead, &hErrorWrite, NULL, 0);            
+            hideLauncherWindows(props);
+            executeCommand(props, props->command, NULL, INFINITE, props->stdoutHandle, hErrorWrite, NORMAL_PRIORITY_CLASS);
+            if(!isOK(props)) {
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... an error occured during JVM running main class", 1);
+                props->exitCode = props->status;
+            } else {
+                char * s = DWORDtoCHAR(props->exitCode);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished his work. Exit code is ", 0);                
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
+                FREE(s);
             }
             
-            if(showMessage) {
-                WCHAR * errorW = toWCHAR(error);
-                showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
-                FREE(errorW);
+            error = readHandle(hErrorRead);
+            if(getLengthA(error)>1) {
+                DWORD showMessage = 0;
+                char * ptr = error;
+                while(ptr!=NULL) {
+                    if(strstr(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) {
+                        showMessage = 1;
+                        break;
+                    }
+                    ptr = strstr(ptr, "\n");
+                    if(ptr!=NULL) ptr++;
+                }
+                
+                if(showMessage) {
+                    WCHAR * errorW = toWCHAR(error);
+                    showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
+                    FREE(errorW);
+                }
             }
+            CloseHandle(hErrorWrite);
+            CloseHandle(hErrorRead);
+            FREE(error);
+            Sleep(1);
+        } else {
+            props->status = ERROR_FREESPACE;
+            props->exitCode = props->status;
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... there is not enough space in tmp dir to execute main jar", 1);
         }
-        CloseHandle(hErrorWrite);
-        CloseHandle(hErrorRead);
-        FREE(error);
-        Sleep(1);
-    } else {
-        props->status = ERROR_FREESPACE;
-        props->exitCode = props->status;
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... there is not enough space in tmp dir to execute main jar", 1);
+        free(minSize);
     }
-    free(minSize);
 }
 
 DWORD isOnlyHelp(LauncherProperties * props) {
     if(argumentExists(props, helpArg, 1) || argumentExists(props, helpOtherArg, 1)) {
         
-        WCHARList * help = newWCHARList(NUMBER_OF_HELP_ARGUMENTS);
+        WCHARList * help = newWCHARList(NUMBER_OF_HELP_ARGUMENTS);        
+        DWORD counter = 0;
+        WCHAR * helpString = NULL;
         
-        int counter = 0;
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_JAVA_PROP), 1, javaArg);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_TMP_PROP), 1, tempdirArg);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_EXTRACT_PROP), 1, extractArg);
@@ -610,7 +628,7 @@ DWORD isOnlyHelp(LauncherProperties * props) {
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_DISABLE_SPACE_CHECK), 1, nospaceCheckArg);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_HELP_PROP), 1, helpArg);
         
-        WCHAR * helpString = NULL;
+        
         for(counter=0;counter<NUMBER_OF_HELP_ARGUMENTS;counter++) {
             helpString = appendStringW(appendStringW(helpString, help->items[counter]), NEW_LINE);
         }
@@ -642,7 +660,7 @@ WCHARList * getCommandlineArguments() {
 }
 
 
-LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
+LauncherProperties * createLauncherProperties() {
     LauncherProperties *props = (LauncherProperties*)malloc(sizeof(LauncherProperties));
     DWORD c = 0;
     props->launcherCommandArguments = newWCHARList(11);
@@ -725,9 +743,9 @@ void freeLauncherResourceList(LauncherResourceList ** list) {
 
 
 void freeLauncherProperties(LauncherProperties **props) {
-    if((*props)!=NULL) {
-        writeMessageA(*props, OUTPUT_LEVEL_DEBUG, 0, "Closing launcher properties", 1);
+    if((*props)!=NULL) {        
         DWORD i=0;
+        writeMessageA(*props, OUTPUT_LEVEL_DEBUG, 0, "Closing launcher properties", 1);
         freeWCHARList(& ( (*props)->appArguments));
         freeWCHARList(& ( (*props)->jvmArguments));
         

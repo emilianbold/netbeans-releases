@@ -37,10 +37,9 @@ DWORD readBuf(HANDLE hRead, WCHAR * buf, DWORD * bytesRead, HANDLE hWrite) {
 }
 
 DWORD readNextData(HANDLE hRead, WCHAR * buf, HANDLE hWrite) {
-    memset(buf, 0, sizeof(buf));
-    
     DWORD bytesRead;
     DWORD bytesAvailable;
+    memset(buf, 0, sizeof(buf));
     
     PeekNamedPipe(hRead, buf, STREAM_BUF_LENGTH - 1, &bytesRead, &bytesAvailable, NULL);
     if (bytesRead != 0) {
@@ -125,6 +124,8 @@ void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DW
     HANDLE currentProcessStdin;
     HANDLE currentProcessStderr;
     
+    WCHAR * directory;
+    
     InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
     SetSecurityDescriptorDacl(&sd, TRUE, NULL, FALSE);
     sa.lpSecurityDescriptor = &sd;
@@ -165,7 +166,7 @@ void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DW
     si.hStdError = newProcessError;
     si.hStdInput = newProcessInput;
     
-    WCHAR * directory = (dir!=NULL) ? dir : getCurrentDirectory();
+    directory = (dir!=NULL) ? dir : getCurrentDirectory();
     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Create new process: ", 1);
     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "          command : ", 0);
     writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, command, 1);
@@ -175,11 +176,10 @@ void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DW
     props->exitCode = ERROR_OK;
     if (CreateProcessW(NULL, command, NULL, NULL, TRUE,
     CREATE_NEW_CONSOLE | CREATE_NO_WINDOW | CREATE_DEFAULT_ERROR_MODE | priority,
-    NULL, directory, &si, &pi)) {
-        props->status = ERROR_OK;
-        
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... process created", 1);
+    NULL, directory, &si, &pi)) {        
         DWORD timeOut = ((timeLimitMillis<=0) ? DEFAULT_PROCESS_TIMEOUT: timeLimitMillis);
+        props->status = ERROR_OK;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... process created", 1);
         
         props->exitCode = readProcessStream(pi, currentProcessStdin, currentProcessStdout, currentProcessStderr, timeOut, newProcessInput, hWriteOutput, hWriteError);
         

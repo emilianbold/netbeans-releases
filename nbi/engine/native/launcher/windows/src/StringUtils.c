@@ -286,8 +286,8 @@ char * doubleToChar(double dl) {
 
 void freeStringList(StringListEntry **ss) {
     while ( (*ss) !=NULL) {
-        FREE((*ss)->string);
         StringListEntry * tmp = (*ss)->next;
+        FREE((*ss)->string);
         FREE((*ss));
         * ss = tmp;
     }
@@ -325,14 +325,17 @@ DWORD getLineSeparatorNumber(char *str) {
     return result;
 }
 
-char *toCharN(const WCHAR * string, DWORD n) {
+char *toCharN(const WCHAR * string, DWORD n) {    
+    DWORD len = 0;
+    DWORD length = 0;
+    char * str = NULL;
     if(string==NULL) return NULL;
     //static DWORD excludeCodepages [] = { 50220, 50221, 50222, 50225, 50227, 50229, 52936, 54936, 57002,  57003, 57004, 57005, 57006, 57007, 57008, 57009, 57010, 57011, 65000, 42};
     //int symbols = 0;
-    DWORD len = getLengthW(string);
+    len = getLengthW(string);    
     if(n<len) len = n;
-    DWORD length = WideCharToMultiByte(CP_ACP, 0, string, len, NULL, 0, 0, NULL);
-    char * str = newpChar(length+1);
+    length = WideCharToMultiByte(CP_ACP, 0, string, len, NULL, 0, 0, NULL);
+    str = newpChar(length+1);
     WideCharToMultiByte(CP_ACP, 0, string, len, str, length, 0, NULL);
     return str;
 }
@@ -343,17 +346,17 @@ char * toChar(const WCHAR * string) {
 
 WCHAR *createWCHAR(SizedString * sz) {
     char * str = sz->bytes;
+    DWORD len = sz->length;
+    int unicodeFlags;    
+    DWORD i;
+    char * string = NULL;
+    char * ptr = NULL;
+    WCHAR * wstr = NULL;
     if(str==NULL) return NULL;
     //static DWORD excludeCodepages [] = { 50220, 50221, 50222, 50225, 50227, 50229, 52936, 54936, 57002,  57003, 57004, 57005, 57006, 57007, 57008, 57009, 57010, 57011, 65000, 42};
     
-    DWORD len = sz->length;
-    
-    int unicodeFlags;
-    
-    DWORD i;
-    char * string = appendStringN(NULL, 0 , str, len);
-    
-    char * ptr = string;
+    string = appendStringN(NULL, 0 , str, len);    
+    ptr = string;
     unicodeFlags = -1 ;
     if(len>=2) {
         BOOL hasBOM        = (*ptr == '\xFF' && *(ptr+1) == '\xFE');
@@ -375,7 +378,7 @@ WCHAR *createWCHAR(SizedString * sz) {
         }
         
     }
-    WCHAR * wstr = newpWCHAR(len/2+1);
+    wstr = newpWCHAR(len/2+1);
     
     for(i=0;i<len/2;i++) {
         ptr[2*i] = (ptr[2*i]) & 0xFF;
@@ -387,12 +390,15 @@ WCHAR *createWCHAR(SizedString * sz) {
     return wstr;
 }
 WCHAR *toWCHARn(char * str, DWORD n) {
+    DWORD len = 0;
+    DWORD length = 0;
+    WCHAR * wstr = NULL;
     if(str==NULL) return NULL;
     //static DWORD excludeCodepages [] = { 50220, 50221, 50222, 50225, 50227, 50229, 52936, 54936, 57002,  57003, 57004, 57005, 57006, 57007, 57008, 57009, 57010, 57011, 65000, 42};
-    DWORD len = getLengthA(str);
+    len = getLengthA(str);
     if(n<len) len = n;
-    DWORD length = MultiByteToWideChar(CP_ACP, 0, str, len, NULL, 0);
-    WCHAR * wstr = newpWCHAR(length+1);
+    length = MultiByteToWideChar(CP_ACP, 0, str, len, NULL, 0);
+    wstr = newpWCHAR(length+1);
     MultiByteToWideChar(CP_ACP, 0, str, len, wstr, length);
     return wstr;
 }
@@ -418,19 +424,15 @@ void freeSizedString(SizedString ** s) {
 
 
 WCHAR * getLocaleName() {
-    LANGID langID;
-    LCID localeID;
-    langID = LANGIDFROMLCID(GetUserDefaultLCID());
-    localeID = MAKELCID(langID, SORT_DEFAULT);
-    const DWORD MAX_LENGTH = 512;
-    
-    WCHAR * lang= newpWCHAR(MAX_LENGTH);
-    GetLocaleInfoW(localeID, LOCALE_SISO639LANGNAME, lang, MAX_LENGTH);
-    
+    LANGID langID = LANGIDFROMLCID(GetUserDefaultLCID());
+    LCID localeID = MAKELCID(langID, SORT_DEFAULT);
+    const   DWORD MAX_LENGTH = 512;
+    WCHAR * lang = newpWCHAR(MAX_LENGTH);
     WCHAR * country = newpWCHAR(MAX_LENGTH);
-    GetLocaleInfoW(localeID, LOCALE_SISO3166CTRYNAME, country, MAX_LENGTH);
-    
-    WCHAR * locale = appendStringW(appendStringW(appendStringW(NULL, lang), L"_"), country);
+    WCHAR * locale = NULL;
+    GetLocaleInfoW(localeID, LOCALE_SISO639LANGNAME, lang, MAX_LENGTH);
+    GetLocaleInfoW(localeID, LOCALE_SISO3166CTRYNAME, country, MAX_LENGTH);    
+    locale = appendStringW(appendStringW(appendStringW(NULL, lang), L"_"), country);
     FREE(country);
     FREE(lang);
     return locale;
@@ -511,16 +513,19 @@ WCHAR * getErrorDescription(DWORD dw) {
 
 WCHAR * formatMessageW(const WCHAR* message, const DWORD varArgsNumber, ...) {
     DWORD totalLength=getLengthW(message);
+    DWORD counter=0;
+    WCHAR * result = NULL;
+    
     va_list ap;
     va_start(ap, varArgsNumber);
-    DWORD counter=0;
+    
     while((counter++)<varArgsNumber) {
         WCHAR * arg = va_arg( ap, WCHAR * );
         totalLength+=getLengthW(arg);
     }
     va_end(ap);
     
-    WCHAR * result = newpWCHAR(totalLength + 1);
+    result = newpWCHAR(totalLength + 1);
     va_start(ap, varArgsNumber);
     wvsprintfW(result, message, ap);
     va_end(ap);
