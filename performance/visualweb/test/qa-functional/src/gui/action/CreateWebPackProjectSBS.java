@@ -21,6 +21,7 @@ package gui.action;
 
 import footprint.VWPFootprintUtilities;
 import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -117,9 +118,14 @@ public class CreateWebPackProjectSBS extends org.netbeans.performance.test.utili
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);        
         wizard_location.waitClosed();
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
-        
         PerformanceCounters.endPerformanceCounter("Wait Wizard closed");
+        
+        PerformanceCounters.addPerformanceCounter("Wait Project Creation Box");
+        waitProjectCreatingDialogClosed();
+        PerformanceCounters.endPerformanceCounter("Wait Project Creation Box");
+        
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
+
         PerformanceCounters.addPerformanceCounter("Wait document");
         WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
         
@@ -137,7 +143,17 @@ public class CreateWebPackProjectSBS extends org.netbeans.performance.test.utili
         }
         VWPFootprintUtilities.deleteProject(project_name);
     }
-    
+    private void waitProjectCreatingDialogClosed()
+    {
+       String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
+       try {
+           NbDialogOperator dlg = new NbDialogOperator(dlgName);
+           dlg.waitClosed();
+       } catch(TimeoutExpiredException tex) {
+           //
+       }
+       
+    }
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateWebPackProject("testCreateWebPackProject"));
     }
