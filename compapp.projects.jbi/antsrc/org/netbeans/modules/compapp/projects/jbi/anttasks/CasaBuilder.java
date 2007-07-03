@@ -133,7 +133,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         this.wsdlRepository = wsdlRepository;
         this.task = task;
         
-        String projName = project.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
+        String projName = ProjectHelper.getServiceAssemblyID(project);
         String projPath = project.getProperty("basedir") + File.separator;
         String srcDirLoc = projPath + "src" + File.separator;
         confDirLoc = srcDirLoc + "conf" + File.separator;

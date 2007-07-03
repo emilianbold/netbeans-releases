@@ -797,11 +797,7 @@ public class BuildServiceAssembly extends Task {
     
     private String getProjectName() {
         Project proj = getProject();
-        String projName = proj.getProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
-        if (projName == null) { // for backward compatibility until project is updated  
-            projName = proj.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
-        }
-        return projName;
+        return ProjectHelper.getServiceAssemblyID(proj);
     }
     
     private String getCasaWSDLFileName() {
