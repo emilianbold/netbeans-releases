@@ -25,12 +25,10 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -118,30 +116,12 @@ public final class CustomizableSideBar {
     }
     
 
-    public static Map<SideBarPosition, JComponent> getSideBars(final JTextComponent target) {
-        final Object [] map = new Object [1];
-        
-        if (SwingUtilities.isEventDispatchThread()) {
-            getSideBarsInternal(target, map);
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        getSideBarsInternal(target, map);
-                    }
-                });
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, null, e);
-                map[0] = Collections.<SideBarPosition, JComponent>emptyMap();
-            }
-        }
-        
-        @SuppressWarnings("unchecked")
-        Map<SideBarPosition, JComponent> resultMap = (Map<SideBarPosition, JComponent>) map[0];
-        return resultMap;
+    public static Map<SideBarPosition, JComponent> getSideBars(JTextComponent target) {
+        assert SwingUtilities.isEventDispatchThread() : "Side bars can only be accessed from AWT"; //NOI18N
+        return getSideBarsInternal(target);
     }
 
-    private static void getSideBarsInternal(JTextComponent target, Object[] resultMap) {
+    private static Map<SideBarPosition, JComponent> getSideBarsInternal(JTextComponent target) {
         synchronized (CACHE) {
             Map<SideBarPosition, Reference<JPanel>> panelsMap = CACHE.get(target);
             
@@ -162,14 +142,16 @@ public final class CustomizableSideBar {
                 
                 if (map.size() == panelsMap.size()) {
                     // All components from the cache
-                    resultMap[0] = map;
-                    return;
+                    return map;
                 }
             }
-            
-            Map<SideBarPosition, List<JComponent>> sideBarsMap = createSideBarsMap(target);
+        }
+        
+        // Should not run under the lock, see #107056, #107656
+        Map<SideBarPosition, List<JComponent>> sideBarsMap = createSideBarsMap(target);
 
-            panelsMap = new HashMap<SideBarPosition, Reference<JPanel>>();
+        synchronized (CACHE) {
+            Map<SideBarPosition, Reference<JPanel>> panelsMap = new HashMap<SideBarPosition, Reference<JPanel>>();
             Map<SideBarPosition, JComponent> map = new HashMap<SideBarPosition, JComponent>();
             
             for(SideBarPosition pos : sideBarsMap.keySet()) {
@@ -187,7 +169,7 @@ public final class CustomizableSideBar {
             }
 
             CACHE.put(target, panelsMap);
-            resultMap[0] = map;
+            return map;
         }
     }
     

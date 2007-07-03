@@ -581,20 +581,20 @@ public class NbEditorUI extends ExtEditorUI {
         }
         
         public void stateChanged(ChangeEvent e) {
-            EditorUI eui = Utilities.getEditorUI(component);
-            if (eui != null) {
-                final JComponent ec = eui.getExtComponent();
-                if (ec != null) {
-                    final Map newMap = CustomizableSideBar.getSideBars(component);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    EditorUI eui = Utilities.getEditorUI(component);
+                    if (eui != null) {
+                        JComponent ec = eui.getExtComponent();
+                        if (ec != null) {
+                            Map newMap = CustomizableSideBar.getSideBars(component);
                             processSideBars(newMap, ec);
                             ec.revalidate();
                             ec.repaint();
                         }
-                    });
+                    }
                 }
-            }
+            });
         }
     } //End of SideBarPosition class
 }
