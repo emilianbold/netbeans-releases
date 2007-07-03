@@ -339,20 +339,22 @@ FOLD:tag: {
 
 MARK:unpairedStartTag: {
     type:"Warning";
-    message:"Unfinished tag.";
+    message:"LBL_UNFINISHED_TAG";
 }
 MARK:unpairedEndTag: {
     type:"Error";
-    message:"Unpaired end tag.";
+    message:"LBL_UNPAIRED_END_TAG";
 }
 MARK:html_ERROR: {
     type:"Error";
-    message:"Unpaired end tag.";
+    message:"LBL_UNPAIRED_END_TAG";
 }
 MARK:error: {
     type:"Error";
-    message:"Unexpected character.";
+    message:"LBL_UNEXPECTED_CHARACTER";
 }
+
+BUNDLE "org.netbeans.modules.languages.gsp.resources.Bundle"
 
 PROPERTIES {
     ignoreCase:"true";
