@@ -33,6 +33,12 @@ Microsystems, Inc. All Rights Reserved.
     </xsd:element>
     
     <xsd:element name="schema">
+        <xsd:annotation>
+            <xsd:documentation>
+                Earlier "Schema" current "Binding" is set/group of Schema files.
+                Compiled using XJC together as unit.
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
             <xsd:sequence>
                 <xsd:element ref="tns:xjc-options" minOccurs="0"/>

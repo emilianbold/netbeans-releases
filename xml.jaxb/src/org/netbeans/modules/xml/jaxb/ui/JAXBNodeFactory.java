@@ -48,7 +48,7 @@ public class JAXBNodeFactory implements NodeFactory {
     public JAXBNodeFactory() {
     }
     
-    public synchronized NodeList<?> createNodes(Project project) {
+    public synchronized NodeList<String> createNodes(Project project) {
         return new JAXBRootNodeList(project); 
     }
     

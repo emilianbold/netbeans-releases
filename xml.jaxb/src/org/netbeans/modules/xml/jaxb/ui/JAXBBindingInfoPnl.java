@@ -19,11 +19,18 @@
 
 package org.netbeans.modules.xml.jaxb.ui;
 
+import java.awt.Dialog;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
-import org.openide.util.NbBundle;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -78,13 +85,13 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
 
         lblSchemaName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaName")); // NOI18N
 
-        lblPrjName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Project")); // NOI18N
+        lblPrjName.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Project"));// NOI18N
 
-        lblSchemaFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchamaFile")); // NOI18N
+        lblSchemaFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchamaFile"));// NOI18N
 
         schemaSource.add(rdoSelectFromFileSys);
         rdoSelectFromFileSys.setSelected(true);
-        rdoSelectFromFileSys.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromLocalFileSystem")); // NOI18N
+        rdoSelectFromFileSys.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromLocalFileSystem"));// NOI18N
         rdoSelectFromFileSys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rdoSelectFromFileSys.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rdoSelectFromFileSys.addActionListener(new java.awt.event.ActionListener() {
@@ -117,7 +124,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        btnBrowseFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
+        btnBrowseFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse"));// NOI18N
         btnBrowseFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSelectionHandler(evt);
@@ -125,7 +132,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         });
 
         schemaSource.add(rdoSelectURL);
-        rdoSelectURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromURL")); // NOI18N
+        rdoSelectURL.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromURL"));// NOI18N
         rdoSelectURL.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rdoSelectURL.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rdoSelectURL.addActionListener(new java.awt.event.ActionListener() {
@@ -135,7 +142,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         });
 
         txtURL.setEditable(false);
-        txtURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_URL_Filler")); // NOI18N
+        txtURL.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_URL_Filler"));// NOI18N
         txtURL.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fireChangeEvent(evt);
@@ -147,23 +154,23 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        lblPackageName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_PackageName")); // NOI18N
+        lblPackageName.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_PackageName"));// NOI18N
 
-        lblOptions.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Options")); // NOI18N
+        lblOptions.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Options"));// NOI18N
 
-        chkbxNv.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N
+        chkbxNv.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV"));// NOI18N
         chkbxNv.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxNv.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        chkbxReadOnly.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N
+        chkbxReadOnly.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly"));// NOI18N
         chkbxReadOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxReadOnly.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        chkbxNpa.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N
+        chkbxNpa.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA"));// NOI18N
         chkbxNpa.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxNpa.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        chkbxVerbose.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N
+        chkbxVerbose.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose"));// NOI18N
         chkbxVerbose.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxVerbose.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxVerbose.addActionListener(new java.awt.event.ActionListener() {
@@ -172,7 +179,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        chkbxQuiet.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet")); // NOI18N
+        chkbxQuiet.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet"));// NOI18N
         chkbxQuiet.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxQuiet.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxQuiet.addActionListener(new java.awt.event.ActionListener() {
@@ -181,13 +188,12 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        lblSchemaType.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaType")); // NOI18N
+        lblSchemaType.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaType"));// NOI18N
 
         cmbSchemaType.setModel(getSchemaTypeComboBoxModel());
 
-        chkbxUseBindingFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseBindingFile")); // NOI18N
+        chkbxUseBindingFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseBindingFile"));// NOI18N
         chkbxUseBindingFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxUseBindingFile.setEnabled(false);
         chkbxUseBindingFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseBindingFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -195,9 +201,8 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        chkbxUseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseCatalogFile")); // NOI18N
+        chkbxUseCatalogFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseCatalogFile"));// NOI18N
         chkbxUseCatalogFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxUseCatalogFile.setEnabled(false);
         chkbxUseCatalogFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseCatalogFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -205,7 +210,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        chkbxUseExtension.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseExtension")); // NOI18N
+        chkbxUseExtension.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseExtension"));// NOI18N
         chkbxUseExtension.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseExtension.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseExtension.addActionListener(new java.awt.event.ActionListener() {
@@ -214,16 +219,27 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
-        btnSelectBindingFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Configure")); // NOI18N
+        btnSelectBindingFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Configure"));// NOI18N
         btnSelectBindingFile.setEnabled(false);
+        btnSelectBindingFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSelectionHandler(evt);
+            }
+        });
 
+        cmbBindingFiles.setModel(getBindingFilesComboBoxModel());
         cmbBindingFiles.setEnabled(false);
         cmbBindingFiles.setPreferredSize(new java.awt.Dimension(275, 20));
 
         txtCatalogFile.setEditable(false);
 
-        btnBrowseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
+        btnBrowseCatalogFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse"));// NOI18N
         btnBrowseCatalogFile.setEnabled(false);
+        btnBrowseCatalogFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSelectionHandler(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -362,7 +378,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         return org.openide.util.NbBundle.getMessage(
                 JAXBBindingInfoPnl.class, msgKey);
     }
-    
+
     private void initComponentsCustom(){
         this.chkbxNv.setToolTipText(getMsg("TT_NV")); //NOI18N
         this.chkbxReadOnly.setToolTipText(getMsg("TT_ReadOnly")); //NOI18N
@@ -371,14 +387,14 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         this.chkbxQuiet.setToolTipText(getMsg("TT_Quiet")); //NOI18N
         this.chkbxUseExtension.setToolTipText(getMsg("TT_Extension")); //NOI18N
         this.chkbxUseBindingFile.setToolTipText(getMsg("TT_chkbxBindingFile"));//NOI18N
-        this.chkbxUseCatalogFile.setToolTipText(getMsg("TT_chkbxCatalogFile"));//NOI18N 
+        this.chkbxUseCatalogFile.setToolTipText(getMsg("TT_chkbxCatalogFile"));//NOI18N
         this.cmbSchemaType.setToolTipText(getMsg("TT_SchemaType")); //NOI18N
         this.txtPackageName.setToolTipText(getMsg("TT_PackageName")); //NOI18N
         this.txtURL.setToolTipText(getMsg("TT_URL")); //NOI18N
         this.txtFilePath.setToolTipText(getMsg("TT_LocalSchemaFile")); //NOI18N
         this.txtSchemaName.setToolTipText(getMsg("TT_SchemaName" )); //NOI18N
     }
-    
+
     private void localFileSelected(boolean selected){
         this.txtFilePath.setEnabled(selected);
         this.txtFilePath.setEditable(selected);
@@ -393,6 +409,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     }
 
     private void useCatalogFileSelection(boolean selected){
+        this.txtCatalogFile.setEnabled(selected);
         this.txtCatalogFile.setEditable(selected);
         this.btnBrowseCatalogFile.setEnabled(selected);
     }
@@ -432,6 +449,35 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
                     JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
             if (filePath != null){
                 this.txtFilePath.setText(filePath);
+            }
+        }
+
+        if (evt.getSource() == this.btnSelectBindingFile){
+//            String filePath = selectFileFromFileSystem(this,
+//                    JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
+//            if (filePath != null){
+//                this.cmbBindingFiles.addItem(filePath);
+//            }
+            Vector<String> files = new Vector<String>();
+            files.addAll(getBindingFiles());
+            FileListPanel flp = new FileListPanel();
+            flp.setFiles(files);
+            DialogDescriptor dd = new DialogDescriptor(flp, "Binding Files");
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+            dlg.setVisible(true);
+            if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                files.removeAllElements();
+                files.addAll(flp.getFiles());
+                DefaultComboBoxModel model = new DefaultComboBoxModel(files);
+                this.cmbBindingFiles.setModel(model);                
+            }
+        }
+
+        if (evt.getSource() == this.btnBrowseCatalogFile){
+            String filePath = selectFileFromFileSystem(this,
+                    JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
+            if (filePath != null){
+                this.txtCatalogFile.setText(filePath);
             }
         }
 
@@ -477,30 +523,31 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private static java.util.Vector<ComboElement<String, String>> schemaTypes = null;
     private static java.util.Map<String, String> LAST_BROWSED_DIRS = new java.util.HashMap<String, String>();
     private JAXBWizBindingCfgPanel wizPanel = null;
+    private Vector<String> origBindingFiles = new Vector<String>();
 
     private static String getMessage(String key){
-        return NbBundle.getMessage(JAXBBindingInfoPnl.class, key);
+        return org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, key);
     }
-    
+
     private static synchronized java.util.Vector<ComboElement<String, String>>
             getSchemaTypes(){
         if (schemaTypes == null){
             schemaTypes = new java.util.Vector<ComboElement<String, String>>();
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
                 getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA)); 
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA));
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
                 getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG)); 
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG));
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
                 getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT)); 
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT));
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
                 getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD)); 
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD));
         schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
                 getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL)); 
+                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL));
         }
         return schemaTypes;
     }
@@ -513,7 +560,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         LAST_BROWSED_DIRS.put(type, dir);
     }
 
-    private static String selectFileFromFileSystem(JPanel panel, String type){
+    protected static String selectFileFromFileSystem(JPanel panel, String type){
         File file = null;
         String ret = null;
         String lastBrowsed = getLastBrowsedDir(type);
@@ -543,6 +590,12 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private javax.swing.DefaultComboBoxModel getSchemaTypeComboBoxModel(){
         javax.swing.DefaultComboBoxModel ret =
                 new javax.swing.DefaultComboBoxModel(getSchemaTypes());
+        return ret;
+    }
+
+    private javax.swing.DefaultComboBoxModel getBindingFilesComboBoxModel(){
+        javax.swing.DefaultComboBoxModel ret =
+                new javax.swing.DefaultComboBoxModel(this.origBindingFiles);
         return ret;
     }
 
@@ -593,7 +646,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
                 JAXBWizModuleConstants.JAXB_OPTION_QUIET))){
             this.chkbxQuiet.setSelected(true);
         }
-        
+
         if (Boolean.TRUE.equals(options.get(
                 JAXBWizModuleConstants.JAXB_OPTION_EXTENSION))){
             this.chkbxUseExtension.setSelected(true);
@@ -610,6 +663,24 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
     public void setSchemaFile(String schemaFile){
         this.txtFilePath.setText(schemaFile);
+    }
+
+    public void setBindingFiles(List<String> files){
+        if ((files != null) && (files.size() > 0)){
+            this.origBindingFiles.removeAllElements();
+            this.origBindingFiles.addAll(files);
+            this.cmbBindingFiles.setModel(this.getBindingFilesComboBoxModel());
+            this.chkbxUseBindingFile.setSelected(true);
+            useBindingFileSelection(true);
+        }
+    }
+
+    public void setCatalogFile(String file){
+        if (file != null){
+            this.txtCatalogFile.setText(file);
+            this.chkbxUseCatalogFile.setSelected(true);
+            useCatalogFileSelection(true);
+        }
     }
 
     public String getSchemaName(){
@@ -640,27 +711,27 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         java.util.Map<String, Boolean> ret =
                 new java.util.HashMap<String, Boolean>();
         if (this.chkbxNv.isSelected()){
-            ret.put(JAXBWizModuleConstants.JAXB_OPTION_NV, Boolean.TRUE); 
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_NV, Boolean.TRUE);
         }
 
         if (this.chkbxReadOnly.isSelected()){
-            ret.put(JAXBWizModuleConstants.JAXB_OPTION_READ_ONLY, Boolean.TRUE); 
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_READ_ONLY, Boolean.TRUE);
         }
 
         if (this.chkbxNpa.isSelected()){
-            ret.put(JAXBWizModuleConstants.JAXB_OPTION_NPA, Boolean.TRUE); 
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_NPA, Boolean.TRUE);
         }
 
         if (this.chkbxVerbose.isSelected()){
-            ret.put(JAXBWizModuleConstants.JAXB_OPTION_VERBOSE, Boolean.TRUE); 
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_VERBOSE, Boolean.TRUE);
         }
 
         if (this.chkbxQuiet.isSelected()){
-            ret.put(JAXBWizModuleConstants.JAXB_OPTION_QUIET, Boolean.TRUE); 
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_QUIET, Boolean.TRUE);
         }
-        
+
         if (this.chkbxUseExtension.isSelected()){
-            ret.put(JAXBWizModuleConstants.JAXB_OPTION_EXTENSION, Boolean.TRUE); 
+            ret.put(JAXBWizModuleConstants.JAXB_OPTION_EXTENSION, Boolean.TRUE);
         }
 
         return ret;
@@ -668,12 +739,36 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
     public String getSchemaType(){
         String ret = null;
-        ComboElement<String, String> elem = (ComboElement<String, String>) 
+        ComboElement<String, String> elem = (ComboElement<String, String>)
                 this.cmbSchemaType.getSelectedItem();
         if (elem != null){
             ret = elem.getValue();
         }
         return ret;
+    }
+
+    public List<String> getBindingFiles(){
+        if (this.chkbxUseBindingFile.isSelected()){
+            List<String> files = new ArrayList<String>();
+            ComboBoxModel model = this.cmbBindingFiles.getModel();
+            int i = model.getSize();
+
+            for (int j=0; j < i; j++ ){
+                files.add((String) model.getElementAt(j));
+            }
+            return files;
+        } else {
+            return null;
+        }
+    }
+
+
+    public String getCatalogFile(){
+        if (this.chkbxUseCatalogFile.isSelected()){
+            return this.txtCatalogFile.getText();
+        } else {
+            return null;
+        }
     }
 
     // Getter and Setter for UI clients - end
@@ -718,7 +813,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             if (this == obj){
                 return true;
             }
-            
+
             // Only consider value
             boolean ret = false;
             if (obj instanceof ComboElement){

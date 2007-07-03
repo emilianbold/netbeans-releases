@@ -228,6 +228,14 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
         }
         
         wd.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, xsdFileList);            
+        
+        // Binding files
+        List<String> bindings = this.bindingInfoPnl.getBindingFiles();
+        wd.putProperty(JAXBWizModuleConstants.JAXB_BINDING_FILES, bindings);
+        
+        // catalog file
+        String catalogFile = this.bindingInfoPnl.getCatalogFile();
+        wd.putProperty(JAXBWizModuleConstants.CATALOG_FILE, catalogFile);
     }
         
     public void readSettings(Object settings) {
@@ -278,6 +286,19 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                 String file = itr.next();
                 this.bindingInfoPnl.setSchemaFile(file);
             }                    
+        }
+
+        // Bindig files
+        List<String> bindingFileList = (List<String>) wd.getProperty(
+                JAXBWizModuleConstants.JAXB_BINDING_FILES);
+        if (bindingFileList != null){
+            this.bindingInfoPnl.setBindingFiles(bindingFileList);
+        }
+        
+        String catalog = (String) wd.getProperty(
+                JAXBWizModuleConstants.CATALOG_FILE);
+        if (catalog != null){
+            this.bindingInfoPnl.setCatalogFile(catalog);
         }
         
         this.existingSchemaNames = (List<String>) (List<String>) wd.getProperty(

@@ -49,11 +49,17 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
     <xsl:template match="s:schema">
         <xsl:element name="xjc">
-            <xsl:if test="string-length(@package) > 0">
+            <xsl:if test="string-length(@package) &gt; 0">
                 <xsl:attribute name="package"><xsl:value-of select="./@package"/></xsl:attribute>
             </xsl:if>
-            <xsl:attribute name="destdir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>
-            <xsl:apply-templates select="s:schema-sources/s:schema-source"/>
+            <xsl:attribute name="destdir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>            
+
+            <xsl:for-each select="s:catalog">
+                <xsl:if test="string-length(./@location) &gt; 0">
+                    <xsl:apply-templates select="."/>    
+                </xsl:if>
+            </xsl:for-each>            
+            
             <xsl:element name="arg">
                 <xsl:attribute name="value"><xsl:value-of select="./@type"/></xsl:attribute>
             </xsl:element>
@@ -62,6 +68,19 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:apply-templates select="."/>    
                 </xsl:if>
             </xsl:for-each>
+            
+            <xsl:apply-templates select="s:schema-sources/s:schema-source"/>
+            
+            <xsl:apply-templates select="s:bindings"/>             
+            
+            <xsl:element name="depends">
+                <xsl:attribute name="file"><xsl:value-of select="s:schema-sources/s:schema-source/@location"/></xsl:attribute>
+            </xsl:element>
+
+            <xsl:element name="produces">
+                <xsl:attribute name="dir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>
+            </xsl:element>
+            
         </xsl:element>
     </xsl:template>
     <xsl:template match="s:schema-source">
@@ -69,9 +88,23 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:attribute name="file"><xsl:value-of select="./@location"/></xsl:attribute>
         </xsl:element>
     </xsl:template>
+
+    <xsl:template match="s:bindings">
+        <xsl:if test="count(s:binding) &gt; 0">
+            <xsl:for-each select="s:binding">
+                <xsl:element name="binding">
+                    <xsl:attribute name="file"><xsl:value-of select="./@location"/></xsl:attribute>
+                </xsl:element>                
+            </xsl:for-each>
+        </xsl:if>            
+    </xsl:template>    
+    
     <xsl:template match="s:xjc-option">
         <xsl:element name="arg">
             <xsl:attribute name="value"><xsl:value-of select="./@name"/></xsl:attribute>
         </xsl:element>                        
     </xsl:template>
+    <xsl:template match="s:catalog">
+            <xsl:attribute name="catalog"><xsl:value-of select="./@location"/></xsl:attribute>          
+    </xsl:template>    
 </xsl:stylesheet>

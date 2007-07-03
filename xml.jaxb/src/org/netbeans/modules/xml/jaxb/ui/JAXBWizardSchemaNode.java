@@ -24,10 +24,12 @@ import java.beans.IntrospectionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.actions.JAXBDeleteSchemaAction;
 import org.netbeans.modules.xml.jaxb.actions.OpenJAXBCustomizerAction;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Bindings;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSource;
@@ -60,8 +62,7 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         this.schemaName = schema.getName();
         this.project = project;
         this.schema = schema;
-        this.
-        initActions();                    
+        this.initActions();                    
     }
 
     private JAXBWizardSchemaNode(Project project, Schema schema, InstanceContent content) {
@@ -81,88 +82,19 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         return this.schema;
     }
 
-    public Project getProject(){
-        return this.project;
-    }
-
-    public static class JAXBWizardSchemaNodeChildren extends Children.Keys {
-        private Project project;
-        private String packageName;
-        private Schema schema;
-        
-        public JAXBWizardSchemaNodeChildren(Project prj, Schema schema) {
-            super();
-            this.schema = schema;
-            this.packageName = schema.getPackage();
-            this.project = prj;
-            this.addNodify();
-        }
-        
-        protected Node[] createNodes(Object key) {
-            Node[] xsdNodes = null;
-            try {
-                if ( key instanceof Schema ) {
-                    Schema nSchema = (Schema) key;
-                    FileObject prjRoot = project.getProjectDirectory();
-                    
-                    SchemaSources sss = nSchema.getSchemaSources();
-                    SchemaSource[] ss = sss.getSchemaSource();
-                    ArrayList<Node> xsdNodesList = new ArrayList<Node>();
-                    FileObject fo = null;
-                    FileObject xsdFolder = 
-                                   ProjectHelper.getFOProjectSchemaDir(project);
-                    FileObject locSchemaRoot = xsdFolder.getFileObject(schema.getName());
-                    File projDir = FileUtil.toFile(prjRoot);
-                    File tmpFile = null;
-                    String originLocType = null;
-                    Boolean isURL = Boolean.FALSE;
-                    
-                    for (int i = 0; i < ss.length; i++){
-                        originLocType = ss[i].getOrigLocationType();
-                        if ((originLocType != null) && 
-                                ("url".equals(originLocType))){ // NOI18N
-                            isURL = Boolean.TRUE;
-                        }
-                        
-                        fo = FileUtil.toFileObject(new File(projDir, 
-                                ss[i].getLocation()));
-                        if (fo != null){
-                            xsdNodesList.add(new JAXBWizardXSDNode(project,
-                                    fo, locSchemaRoot, isURL, 
-                                    ss[i].getOrigLocation()));
-                        } else {
-                            // Log
-                            tmpFile = new File(ss[i].getLocation());
-                            fo = xsdFolder.getFileObject(tmpFile.getName());
-                            if (fo != null){
-                                xsdNodesList.add(new JAXBWizardXSDNode(
-                                        project, fo, locSchemaRoot, isURL, 
-                                        ss[i].getOrigLocation()));
-                            }
-                        }                            
-                    }
-                    xsdNodes = xsdNodesList.toArray(new Node[1]);
-                }
-                
-            } catch ( IntrospectionException inse ) {
-                ErrorManager.getDefault().notify( inse );
-            }
-            
-            return xsdNodes;
-        }
-        
-        public void addNodify() {
-            initNodes();
-            super.addNotify();
-        }
-        
-        public void initNodes() {
-            ArrayList<Schema> childrenNodes = new ArrayList<Schema>();
-            childrenNodes.add(schema);
-            this.setKeys( childrenNodes );
+    public void setSchema(Schema schm){
+        this.schema = schm;
+        Children c = this.getChildren();
+        if (c instanceof JAXBWizardSchemaNodeChildren){
+            JAXBWizardSchemaNodeChildren jaxbC = (JAXBWizardSchemaNodeChildren)
+                    c;
+            jaxbC.setSchema(this.schema);
         }
     }
     
+    public Project getProject(){
+        return this.project;
+    }    
     private void initActions() {
         if ( actions == null ) {
             actions = new Action[] {
@@ -196,4 +128,94 @@ public class JAXBWizardSchemaNode extends AbstractNode {
     public Image getOpenedIcon(int type) {
         return Utilities.loadImage( "org/netbeans/modules/xml/jaxb/resources/packageOpen.gif" ); // No I18N
     }
+    
+    public static class JAXBWizardSchemaNodeChildren extends Children.Keys{
+        private Project project;
+        private String packageName;
+        private Schema schema;
+        
+        public JAXBWizardSchemaNodeChildren(Project prj, Schema schema) {
+            super();
+            this.schema = schema;
+            this.packageName = schema.getPackage();
+            this.project = prj;
+            this.addNodify();
+        }
+        
+        private void setKeys(){
+            List childrenNodes = new ArrayList();
+            SchemaSources sss = this.schema.getSchemaSources();
+            SchemaSource[] ss = sss.getSchemaSource();
+//            Bindings bs  = this.schema.getBindings();
+            
+            for (int i = 0; i < ss.length; i++){
+                 childrenNodes.add(ss[i]);
+            }
+            
+            super.setKeys(childrenNodes );
+        }
+        
+        public void setSchema(Schema schm){
+            this.schema = schm;
+            setKeys();
+        }
+       
+        public void refreshChildren(){
+            setKeys();
+        }
+        
+        protected Node[] createNodes(Object key) {
+            Node[] xsdNodes = null;
+            try {
+                if ( key instanceof SchemaSource ) {
+                    FileObject prjRoot = project.getProjectDirectory();                    
+                    SchemaSource ss = (SchemaSource) key;
+                    Node xsdNode = null;
+                    FileObject fo = null;
+                    FileObject xsdFolder = 
+                                   ProjectHelper.getFOProjectSchemaDir(project);
+                    FileObject locSchemaRoot = 
+                            xsdFolder.getFileObject(schema.getName());
+                    File projDir = FileUtil.toFile(prjRoot);
+                    File tmpFile = null;
+                    String originLocType = null;
+                    Boolean isURL = Boolean.FALSE;
+                    
+                    originLocType = ss.getOrigLocationType();
+                    if ((originLocType != null) && 
+                            ("url".equals(originLocType))){ // NOI18N
+                        isURL = Boolean.TRUE;
+                    }
+
+                    fo = FileUtil.toFileObject(new File(projDir, 
+                            ss.getLocation()));
+                    if (fo != null){
+                        xsdNode = new JAXBWizardXSDNode(project, fo, 
+                                locSchemaRoot, isURL, ss.getOrigLocation());
+                    } else {
+                        // Log
+                        tmpFile = new File(ss.getLocation());
+                        fo = xsdFolder.getFileObject(tmpFile.getName());
+                        if (fo != null){
+                            xsdNode = new JAXBWizardXSDNode(project, fo, 
+                                    locSchemaRoot, isURL, ss.getOrigLocation());
+                        }
+                    }    
+                    if (xsdNode != null){
+                        xsdNodes = new Node[]{xsdNode};
+                    }
+                }
+                
+            } catch ( IntrospectionException inse ) {
+                ErrorManager.getDefault().notify( inse );
+            }
+            
+            return xsdNodes;
+        }
+        
+        public void addNodify() {
+            setKeys();
+            super.addNotify();            
+        }        
+    }    
 }

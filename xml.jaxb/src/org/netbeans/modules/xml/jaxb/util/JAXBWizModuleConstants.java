@@ -53,8 +53,7 @@ public class JAXBWizModuleConstants {
     public static final String JAXB_BINDING_FILES = "jaxb.binding.files" ; //NOI18N
     public static final String CATALOG_FILE = "jaxb.catalog.file" ; //NOI18N
     public static final String EXISTING_SCHEMA_NAMES = "jaxb.cfg.existingSchemaNames" ; //NOI18N
-    
-    
+       
     private JAXBWizModuleConstants() {
     }
 

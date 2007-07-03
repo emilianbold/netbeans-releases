@@ -3,6 +3,8 @@
 <schemas  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
    xmlns:ns0='http://xml.netbeans.org/schema/JAXBWizConfig'
    xmlns='http://xml.netbeans.org/schema/JAXBWizConfig'
+   destdir='build/generated/addons/jaxb' 
+   projectName='testPrj1'
    xsi:schemaLocation='http://xml.netbeans.org/schema/JAXBWizConfig ..\..\..\..\..\..\src\org\netbeans\modules\jaxb\util\ConfigSchema.xsd'>
     <schema type="-xmlschema" name="schema1" package="ABC">
         <xjc-options>        

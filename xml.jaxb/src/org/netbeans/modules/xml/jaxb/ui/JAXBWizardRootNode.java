@@ -89,6 +89,16 @@ public class JAXBWizardRootNode extends AbstractNode {
         return actions;
     }
         
+    public Image getIcon(int type) {
+        return Utilities.loadImage(
+                "org/netbeans/modules/xml/jaxb/resources/packageRoot.gif" ); // No I18N
+    }
+    
+    public Image getOpenedIcon(int type) {
+        return Utilities.loadImage(
+                "org/netbeans/modules/xml/jaxb/resources/packageRootOpen.gif" );// No I18N
+    }
+    
     public static class JAXBWizardRootNodeChildren extends Children.Keys {
         private Project project;
         
@@ -131,15 +141,5 @@ public class JAXBWizardRootNode extends AbstractNode {
             }
             this.setKeys( childrenNodes );
         }
-    }
-    
-    public Image getIcon(int type) {
-        return Utilities.loadImage(
-                "org/netbeans/modules/xml/jaxb/resources/packageRoot.gif" ); // No I18N
-    }
-    
-    public Image getOpenedIcon(int type) {
-        return Utilities.loadImage(
-                "org/netbeans/modules/xml/jaxb/resources/packageRootOpen.gif" );// No I18N
-    }
+    }    
 }

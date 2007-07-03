@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="_jaxb" default="default" basedir=".">
+<!--            *** GENERATED FROM xml_binding_cfg.xml - DO NOT EDIT  ***            *** EDIT xml_binding_cfg.xml or better configure thru JAXB Wizard.  ***        -->
+<project name="testPrj1_jaxb" default="default" basedir=".">
     <target name="xjc-typedef-target" depends="-init-project">
         <typedef classname="com.sun.tools.xjc.XJC2Task" name="xjc" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
             <classpath path="${libs.jaxb20.classpath}"/>
@@ -7,17 +8,23 @@
     </target>
     <target name="jaxb-code-generation" depends="xjc-typedef-target">
         <mkdir dir="build/generated/addons/jaxb" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
-        <mkdir dir="build/classes" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
-        <xjc destdir="">
-            <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
+        <mkdir dir="${build.classes.dir}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
+        <xjc destdir="build/generated/addons/jaxb" catalog="src\META-INF\jaxb\XmlQosPmUtilSchema.bnd">
             <arg value="-xmlschema"/>
+            <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
+            <binding file="src\META-INF\jaxb\XmlQosPmUtilSchema.bnd"/>
+            <binding file="src\META-INF\jaxb\XmlQosPmUtilSchema1.bnd"/>
+            <depends file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
+            <produces dir="build/generated/addons/jaxb"/>
         </xjc>
-        <xjc destdir="">
+        <xjc destdir="build/generated/addons/jaxb">
+            <arg value="-xmlschema"/>
             <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
             <schema file="src\META-INF\jaxb\XmlVodafoneTroubleTicketSchema.xsd"/>
-            <arg value="-xmlschema"/>
+            <depends file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
+            <produces dir="build/generated/addons/jaxb"/>
         </xjc>
-        <javac destdir="build/classes" srcdir="build/generated/addons/jaxb" source="${javac.source}" target="${javac.target}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
+        <javac destdir="${build.classes.dir}" srcdir="build/generated/addons/jaxb" source="${javac.source}" target="${javac.target}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
             <classpath path="${libs.jaxb20.classpath}"/>
         </javac>
     </target>

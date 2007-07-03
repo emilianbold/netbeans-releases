@@ -58,6 +58,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Binding;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Bindings;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Catalog;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
@@ -381,9 +382,12 @@ public class ProjectHelper {
 
     private static Schema populateSchema(WizardDescriptor wiz, FileObject projFO, File projSchemasDir) throws IOException {
         Schema schema = new Schema();
-        Catalog catalog = new Catalog();
-        Bindings bindings = new Bindings();
         SchemaSources sss = new SchemaSources();
+        SchemaSource ss = null;        
+        Bindings bindings = new Bindings(); 
+        Binding binding = null;
+        Catalog catalog = new Catalog();
+
         XjcOptions xo = new XjcOptions();
 
         schema.setName((String) wiz.getProperty(
@@ -396,11 +400,16 @@ public class ProjectHelper {
         schema.setType((String) wiz.getProperty(
                 JAXBWizModuleConstants.SCHEMA_TYPE));
         schema.setXjcOptions(populateXjcOptions(wiz));
-
+        
         List<String> xsdFileList = (List<String>) wiz.getProperty(
                 JAXBWizModuleConstants.XSD_FILE_LIST );
-        SchemaSource ss = null;
 
+        List<String> bindingFileList = (List<String>) wiz.getProperty(
+                JAXBWizModuleConstants.JAXB_BINDING_FILES);
+
+        String catlogFile = (String) wiz.getProperty(
+                JAXBWizModuleConstants.CATALOG_FILE);
+        
         File schemaDir = new File(projSchemasDir, schema.getName());
         if (!schemaDir.exists()) {
             schemaDir.mkdirs();
@@ -416,24 +425,51 @@ public class ProjectHelper {
                 (String) wiz.getProperty(
                 JAXBWizModuleConstants.SOURCE_LOCATION_TYPE));
 
-        for (int i = 0; i < xsdFileList.size(); i++) {
-            if (srcLocTypeUrl) {
-                // URL
-                url = (String) xsdFileList.get(i);
-                remoteSchema = new URL(url);
-                try {
-                    newFileFO = retrieveResource(schemaDirFO, remoteSchema.toURI());
-                } catch (URISyntaxException ex) {
-                    throw new IOException(ex.getMessage());
+        if (xsdFileList != null){
+            // Schema files 
+            for (int i = 0; i < xsdFileList.size(); i++) {
+                if (srcLocTypeUrl) {
+                    // URL
+                    url = xsdFileList.get(i);
+                    remoteSchema = new URL(url);
+                    try {
+                        newFileFO = retrieveResource(schemaDirFO, 
+                                remoteSchema.toURI());
+                    } catch (URISyntaxException ex) {
+                        throw new IOException(ex.getMessage());
+                    }
+                    ss = new SchemaSource();
+                    ss.setOrigLocation(url);
+                    ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
+                    ss.setOrigLocationType(
+                            JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
+                    sss.addSchemaSource(ss);
+                } else {
+                    // Local file
+                    srcFile = new File(xsdFileList.get(i));
+                    targetFile = new File(schemaDir, srcFile.getName());
+                    if (targetFile.exists()) {
+                        targetFile.delete();
+                    }
+
+                    newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());
+
+                    ss = new SchemaSource();
+                    ss.setOrigLocation(xsdFileList.get(i));
+                    ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
+                    sss.addSchemaSource(ss);
                 }
-                ss = new SchemaSource();
-                ss.setOrigLocation(url);
-                ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
-                ss.setOrigLocationType(JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
-                sss.addSchemaSource(ss);
-            } else {
-                // Local file
-                srcFile = new File((String) xsdFileList.get(i));
+            }            
+        }
+
+
+        if (bindingFileList != null){        
+            // Binding files
+            for (int i = 0; i < bindingFileList.size(); i++) {
+                // All binding files are from local sources
+                // Assumes there is not name conflict between other binding and 
+                // Schema files.
+                srcFile = new File(bindingFileList.get(i));
                 targetFile = new File(schemaDir, srcFile.getName());
                 if (targetFile.exists()) {
                     targetFile.delete();
@@ -441,13 +477,26 @@ public class ProjectHelper {
 
                 newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());
 
-                ss = new SchemaSource();
-                ss.setOrigLocation(xsdFileList.get(i));
-                ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
-                sss.addSchemaSource(ss);
+                binding = new Binding();
+                binding.setOrigLocation(bindingFileList.get(i));
+                binding.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
+                bindings.addBinding(binding);
             }
         }
+        
+        //Catlog file
+        if (catlogFile != null){
+            srcFile = new File(catlogFile);
+            targetFile = new File(schemaDir, srcFile.getName());
+            if (targetFile.exists()) {
+                targetFile.delete();
+            }
 
+            newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());            
+            catalog.setOrigLocation(catlogFile);
+            catalog.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
+        }
+        
         return schema;
     }
 
@@ -589,11 +638,11 @@ public class ProjectHelper {
         }
     }
 
-    public static void addSchema(Project project, WizardDescriptor wiz) {
+    public static Schema addSchema(Project project, WizardDescriptor wiz) {
         FileObject projectSchemaDir = getFOProjectSchemaDir(project);
-
+        Schema schema = null;
         try {
-            Schema schema = populateSchema(wiz, project.getProjectDirectory(), FileUtil.toFile(projectSchemaDir));
+            schema = populateSchema(wiz, project.getProjectDirectory(), FileUtil.toFile(projectSchemaDir));
             Schemas scs = getXMLBindingSchemas(project);
             scs.addSchema(schema);
             saveXMLBindingSchemas(project, scs);
@@ -616,6 +665,7 @@ public class ProjectHelper {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
+        return schema;
     }
 
     /**

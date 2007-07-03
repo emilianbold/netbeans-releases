@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Binding;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Bindings;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Catalog;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSource;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSources;
@@ -76,7 +79,7 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                     value = xo.getValue();
                     boolVal = Boolean.FALSE;
                     if ((value != null) 
-                            && ("true".equals(value.toLowerCase()))){ // No I18N
+                            && ("true".equals(value.toLowerCase()))){ //NOI18N
                         boolVal = Boolean.TRUE;
                     }
                     options.put(key, boolVal);
@@ -91,20 +94,41 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
             int sssSize = sss.sizeSchemaSource();
             String origSrcLocType = null;
             if (sssSize > 0){
-                List xsdFileList = new ArrayList<String>();                            
+                List<String> xsdFileList = new ArrayList<String>();                            
                 for (int i=0; i < sssSize; i++){
                     ss = sss.getSchemaSource(i);
                     xsdFileList.add(ss.getOrigLocation());
                     origSrcLocType = ss.getOrigLocationType();
                 }
                 
-                wiz.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, 
-                                                                xsdFileList);                
+                wiz.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST,
+                        xsdFileList);                
                 wiz.putProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE, 
-                                                                origSrcLocType); 
+                        origSrcLocType); 
             }
         }
-
+        
+        Bindings bindings = schema.getBindings();
+        if (bindings != null){
+            int numBindings = bindings.sizeBinding();
+            if (numBindings > 0){
+                List<String> bs = new ArrayList<String>();
+                Binding binding = null;
+                for (int i=0; i < numBindings;i++){
+                    binding = bindings.getBinding(i);
+                    bs.add(binding.getOrigLocation());
+                }
+                wiz.putProperty(JAXBWizModuleConstants.JAXB_BINDING_FILES, bs);
+            }
+        }
+        
+        Catalog cat = schema.getCatalog();
+        if (cat != null){
+            if (cat.getOrigLocation() != null){
+                wiz.putProperty(JAXBWizModuleConstants.CATALOG_FILE, 
+                        cat.getOrigLocation());
+            }
+        }
     }
     
     protected void performAction(Node[] activatedNodes) {
@@ -147,11 +171,12 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                 dlg.setTitle(getDialogTitle()); 
                 dlg.setVisible( true );
                 
-                if ( descriptor.getValue() == descriptor.FINISH_OPTION ) {
+                if ( descriptor.getValue() == WizardDescriptor.FINISH_OPTION ) {
                     String pkgName = (String) descriptor.getProperty(
                                           JAXBWizModuleConstants.PACKAGE_NAME);
                     ProjectHelper.removeSchema(project, schema);
-                    ProjectHelper.addSchema(project, descriptor);
+                    schema = ProjectHelper.addSchema(project, descriptor);
+                    schemaNode.setSchema(schema);
                     ProjectHelper.compileXSDs(project, pkgName, true);
                 }
             }
