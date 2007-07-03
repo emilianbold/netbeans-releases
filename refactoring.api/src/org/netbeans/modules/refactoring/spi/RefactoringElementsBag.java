@@ -73,13 +73,15 @@ public final class RefactoringElementsBag {
      */
     public Problem add(AbstractRefactoring refactoring, RefactoringElementImplementation el) {
         Problem p = null;
-        if (isReadOnly(el)) {
+        //isQuery should be used
+        if (isReadOnly(el) && !(refactoring instanceof WhereUsedQuery)) {
             FileObject file = el.getParentFile();
             readOnlyFiles.add(file);
             el.setEnabled(false);
             el.setStatus(el.READ_ONLY);
             delegate.add(el);
-        } else if (isGuarded(el)) {
+        //isQuery should be used
+        } else if (isGuarded(el) && !(refactoring instanceof WhereUsedQuery)) {
             ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList();
             ArrayList<Transaction> transactions = new ArrayList();
             for (GuardedBlockHandler gbHandler: APIAccessor.DEFAULT.getGBHandlers(refactoring)) {
