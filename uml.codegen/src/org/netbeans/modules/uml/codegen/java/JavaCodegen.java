@@ -45,6 +45,7 @@ import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
 import org.netbeans.modules.uml.codegen.java.merging.FileBuilder;
 import org.netbeans.modules.uml.codegen.java.merging.Merger;
 import org.netbeans.modules.uml.codegen.java.merging.Merger.ParsedInfo;
+import org.netbeans.modules.uml.util.StringTokenizer2;
 
 public class JavaCodegen implements ICodeGenerator 
 {
@@ -54,6 +55,7 @@ public class JavaCodegen implements ICodeGenerator
     public final static String DOT = "."; // NOI18N
     public final static String LOG_INDENT = "  ";
     public final static String SEP = "/"; //System.getProperty("file.separator"); // NOI18N
+    public final static String TILDE = "~";
 
     public JavaCodegen()
     {
@@ -608,8 +610,9 @@ public class JavaCodegen implements ICodeGenerator
         
         for (String curName: files)
         {
-            String numStr = curName.substring(
-                curName.indexOf(JAVA_EXT)+5); // NOI18N
+            String numStr = StringTokenizer2.replace(
+                curName.substring(curName.indexOf(JAVA_EXT)+5),
+                TILDE, ""); // NOI18N
             
             try
             {
@@ -633,7 +636,7 @@ public class JavaCodegen implements ICodeGenerator
                 FileUtil.toFileObject(file),
                 FileUtil.toFileObject(file.getParentFile()),
                 className,
-                JAVA + nextSeqNum);
+                JAVA + nextSeqNum + TILDE);
             
             return buFileObj;
         }
@@ -684,8 +687,6 @@ public class JavaCodegen implements ICodeGenerator
 	public boolean merge = false;
 	public DataObject templateDataObject = null;
 	public DomainTemplate domainTemplate = null;
-
     }
-
 
 }
