@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
@@ -99,7 +101,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             }
                         };
                         return new RenameRefactoringUI(folder);
-                    } else if (selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+                    } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
                         if (selected.getSimpleName().toString().equals(f.getName())) {
                             return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
@@ -600,13 +602,23 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             CompilationUnitTree unit = info.getCompilationUnit();
+            Collection<TreePathHandle> publicHandles = new ArrayList<TreePathHandle>();
+            Collection<TreePathHandle> sameNameHandles = new ArrayList<TreePathHandle>();
             for (Tree t: unit.getTypeDecls()) {
                 Element e = info.getTrees().getElement(TreePath.getPath(unit, t));
                 if (e.getSimpleName().toString().equals(info.getFileObject().getName())) {
                     TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
-                    handles.add(representedObject);
-                    break;
+                    sameNameHandles.add(representedObject);
                 }
+                if (e.getModifiers().contains(Modifier.PUBLIC)) {
+                    TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
+                    publicHandles.add(representedObject);
+                }
+            }
+            if (!publicHandles.isEmpty()) {
+                handles = publicHandles;
+            } else {
+                handles = sameNameHandles;
             }
             cinfo=new WeakReference<CompilationInfo>(info);
         }
