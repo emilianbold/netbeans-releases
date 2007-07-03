@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -47,6 +48,10 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         enableDriverDeployment.setEnabled(((SunDeploymentManagerInterface) deployManager).isLocal());
     }
     
+    private void updateDynamicHelp(String s) {
+        dynamicHelpLabel.setText(s);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -61,12 +66,21 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         deploymentTimeoutValue = new javax.swing.JTextField();
         enableDirectoryDeployment = new javax.swing.JCheckBox();
         enableDriverDeployment = new javax.swing.JCheckBox();
+        dynamicHelpLabel = new javax.swing.JLabel();
 
         startupTimeoutLabel.setLabelFor(startupTimeoutValue);
         org.openide.awt.Mnemonics.setLocalizedText(startupTimeoutLabel, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "LBL_STARTUP_TIMEOUT")); // NOI18N
 
         startupTimeoutValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         startupTimeoutValue.setText(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "OptionTabVisualPanel.startupTimeoutValue.text")); // NOI18N
+        startupTimeoutValue.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                startupTimeoutHelp(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                clearDynamicHelp(evt);
+            }
+        });
         startupTimeoutValue.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 startupTimeoutValueKeyReleased(evt);
@@ -78,6 +92,11 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
 
         deploymentTimeoutValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         deploymentTimeoutValue.setText(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "OptionTabVisualPanel.deploymentTimeoutValue.text")); // NOI18N
+        deploymentTimeoutValue.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                deploymentTimeoutHelp(evt);
+            }
+        });
         deploymentTimeoutValue.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 deploymentTimeoutValueKeyReleased(evt);
@@ -92,6 +111,11 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                 enableDirectoryDeploymentActionPerformed(evt);
             }
         });
+        enableDirectoryDeployment.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                directoryDeploymentHelp(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(enableDriverDeployment, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "CB_DRIVER_DEPLOY")); // NOI18N
         enableDriverDeployment.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -101,6 +125,17 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                 enableDriverDeploymentActionPerformed(evt);
             }
         });
+        enableDriverDeployment.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                jdbcDriverDeploymentHelp(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                clearDynamicHelp(evt);
+            }
+        });
+
+        dynamicHelpLabel.setText(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "OptionTabVisualPanel.dynamicHelpLabel.text")); // NOI18N
+        dynamicHelpLabel.setFocusable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -109,6 +144,9 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(dynamicHelpLabel))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(deploymentTimeoutLabel)
@@ -136,9 +174,31 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                 .add(enableDirectoryDeployment)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(enableDriverDeployment)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dynamicHelpLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void clearDynamicHelp(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_clearDynamicHelp
+    updateDynamicHelp(""); // NOI18N
+}//GEN-LAST:event_clearDynamicHelp
+
+private void jdbcDriverDeploymentHelp(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jdbcDriverDeploymentHelp
+    updateDynamicHelp(NbBundle.getMessage(OptionTabVisualPanel.class,"HLP_DRIVER_DEPLOYMENT")); // NOI18N
+}//GEN-LAST:event_jdbcDriverDeploymentHelp
+
+private void directoryDeploymentHelp(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_directoryDeploymentHelp
+    updateDynamicHelp(NbBundle.getMessage(OptionTabVisualPanel.class,"HLP_DIRECTORY_DEPLOYMENT")); // NOI18N
+}//GEN-LAST:event_directoryDeploymentHelp
+
+private void deploymentTimeoutHelp(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_deploymentTimeoutHelp
+    updateDynamicHelp(NbBundle.getMessage(OptionTabVisualPanel.class,"HLP_DEPLOYMENT_TIMEOUT")); // NOI18N
+}//GEN-LAST:event_deploymentTimeoutHelp
+
+private void startupTimeoutHelp(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_startupTimeoutHelp
+    updateDynamicHelp(NbBundle.getMessage(OptionTabVisualPanel.class,"HLP_STARTUP_TIMEOUT")); // NOI18N
+}//GEN-LAST:event_startupTimeoutHelp
 
 private void enableDriverDeploymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableDriverDeploymentActionPerformed
       dmp.setDriverDeploymentEnabled(enableDriverDeployment.isSelected());
@@ -197,6 +257,7 @@ private void enableDriverDeploymentActionPerformed(java.awt.event.ActionEvent ev
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel deploymentTimeoutLabel;
     private javax.swing.JTextField deploymentTimeoutValue;
+    private javax.swing.JLabel dynamicHelpLabel;
     private javax.swing.JCheckBox enableDirectoryDeployment;
     private javax.swing.JCheckBox enableDriverDeployment;
     private javax.swing.JLabel startupTimeoutLabel;
