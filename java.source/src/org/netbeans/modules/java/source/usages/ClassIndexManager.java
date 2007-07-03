@@ -70,7 +70,7 @@ public final class ClassIndexManager {
         try {
             depth++;
             try {
-                if (!this.listeners.isEmpty() && depth == 1) {
+                if (depth == 1) {
                     this.added = new HashSet<URL>();
                     this.removed = new HashSet<URL>();
                 }
@@ -78,11 +78,13 @@ public final class ClassIndexManager {
                     return r.run();
                 } finally {
                     if (depth == 1) {
-                        if (removed != null && !removed.isEmpty()) {
+                        if (!removed.isEmpty()) {
                             fire (removed, OP_REMOVE);
+                            removed.clear();
                         }
-                        if (added != null && !added.isEmpty()) {
+                        if (!added.isEmpty()) {
                             fire (added, OP_ADD);
+                            added.clear();
                         }                
                     }
                 }
@@ -153,16 +155,18 @@ public final class ClassIndexManager {
     }
     
     private void fire (final Set<? extends URL> roots, final byte op) {
-        final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
-        for (ClassIndexManagerListener listener : this.listeners) {
-            if (op == OP_ADD) {
-                listener.classIndexAdded(event);
-            }
-            else if (op == OP_REMOVE) {
-                listener.classIndexRemoved(event);
-            }
-            else {
-                assert false : "Unknown op: " + op;     //NOI18N
+        if (!this.listeners.isEmpty()) {
+            final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
+            for (ClassIndexManagerListener listener : this.listeners) {
+                if (op == OP_ADD) {
+                    listener.classIndexAdded(event);
+                }
+                else if (op == OP_REMOVE) {
+                    listener.classIndexRemoved(event);
+                }
+                else {
+                    assert false : "Unknown op: " + op;     //NOI18N
+                }
             }
         }
     }
