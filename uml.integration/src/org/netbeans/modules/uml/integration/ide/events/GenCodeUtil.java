@@ -114,6 +114,19 @@ public final class GenCodeUtil
         if (dimCount == 0)	    
 	    return coreTypeName;
 
+	if (isPrimitive 
+	    && collectionTypes[(int)dimCount - 1] != null
+	    && ! collectionTypes[(int)dimCount - 1].equals(""))
+	{
+	    String type = JavaClassUtils.getPrimitiveWrapperType(coreType[1]);
+	    if (fullyQualified) 
+		coreTypeName = "java.lang." + type;
+	    else
+		coreTypeName = type;
+
+	    isPrimitive = false;
+	}	    
+
 	String leftPart = "";
 	String rightPart = "";
 
@@ -256,6 +269,12 @@ public final class GenCodeUtil
         if (mult != null && isMultiDim(mult))
         {
 	    int dimCount = (int)mult.getRangeCount();
+	    if (isPrimitive 
+		&& collectionTypes[(int)dimCount - 1] != null
+		&& ! collectionTypes[(int)dimCount - 1].equals(""))
+	    {		
+		isPrimitive = false;
+	    }	    
 	    for (int i = 0; i < dimCount; i++)
 	    {
 		String colType = collectionTypes[i];
