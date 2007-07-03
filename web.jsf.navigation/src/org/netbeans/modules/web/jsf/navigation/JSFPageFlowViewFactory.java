@@ -27,7 +27,6 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 //import org.netbeans.modules.jsfmultiviewtest.*;
-import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorViewFactory;

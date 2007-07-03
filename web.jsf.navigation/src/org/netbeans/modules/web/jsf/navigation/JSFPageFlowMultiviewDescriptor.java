@@ -28,24 +28,18 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.awt.Dialog;
 import java.awt.Image;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.LifecycleManager;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

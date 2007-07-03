@@ -178,41 +178,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         
         
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
-        
-        //        actions.addAction(dragNdropAction);
-        //        actions.addAction(selectAction);
-        
-        //        GridGraphLayout<PageFlowNode, NavigationCaseNode> gridGraphLayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
-        //        gridGraphLayout.addGraphLayoutListener(new GridGraphListener());
-        //        sceneGraphLayout = LayoutFactory.createSceneGraphLayout(this, gridGraphLayout);
     }
-    
-    //    /**
-    //     *
-    //     */
-    //    public static class GridGraphListener implements GraphLayoutListener<PageFlowNode, NavigationCaseNode> {
-    //
-    //        public void graphLayoutStarted(UniversalGraph<PageFlowNode, NavigationCaseNode> graph) {
-    //            System.out.println("Layout started");
-    //        }
-    //
-    //        public void graphLayoutFinished(UniversalGraph<PageFlowNode, NavigationCaseNode> graph) {
-    //            PageFlowScene scene = (PageFlowScene)graph.getScene();
-    //            //           scene.saveLocations();
-    //            System.out.println("Layout finished");
-    //
-    //        }
-    //
-    //        public void nodeLocationChanged(UniversalGraph<PageFlowNode, NavigationCaseNode> graph,
-    //                PageFlowNode node,
-    //                Point previousPreferredLocation,
-    //                Point newPreferredLocation) {
-    //
-    //            PageFlowScene scene = (PageFlowScene)graph.getScene();
-    //            scene.saveLocation(node, newPreferredLocation);
-    //            System.out.println("Node location changed: " + node + " -> " + newPreferredLocation);
-    //        }
-    //    }
     
     
     
@@ -229,11 +195,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         
     }
     
-    
-    
     /**
-     *
-     * @return
+     * Get the PageFlowView TopComponent
+     * @return PageFlowView
      */
     public PageFlowView getPageFlowView(){
         return tc;
@@ -296,10 +260,12 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
-        
+        nodeWidget.setMinimized(true);
+        /*
         if ( node.getPinNodes().size() == 0 ){
             nodeWidget.setMinimized(true);
         }
+        */
         
         return nodeWidget;
     }

@@ -54,23 +54,15 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
      */
     public Page( PageFlowController pc, Node original ){
         this.pc = pc;
-        //            super(original, Children.LEAF);
         setNode(original);
-        //        pc.pageName2Node.put(getDisplayName(), this);
-        //        pc.putPageName2Node(getDisplayName(), this);
+        /* Update the page only at request 
         updateContentModel();
+         */
         initListeners();
     }
     
     
     public void updateContentModel() {
-        //        if ( pageContentModel != null ){
-        //            try         {
-        //                pageContentModel.destroy();
-        //            } catch (IOException ex) {
-        //                Exceptions.printStackTrace(ex);
-        //            }
-        //        }
         if( !isDataNode() ){
             return;
         }
@@ -86,16 +78,6 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
                 return;
             }
         }
-        // use Java Collections API to get iterator, ...
-        
-        //I think it is okay to ask users to restart the ide if the install a new module with the PageContentModel.
-        // Pay attention to subsequent changes in the result.
-        //        result.addLookupListener(new LookupListener() {
-        //            public void resultChanged(LookupEvent ev) {
-        //                Collection impls2 = result.allInstances();
-        //                // use the new list of instances...
-        //            }
-        //});
         
     }
     
@@ -332,7 +314,13 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         return pageContentModel.getPageContentItems();
     }
     
+    
+    private boolean hasPageContentModelBeenChecked = false;
     public Collection<Pin> getPinNodes() {
+        if( !hasPageContentModelBeenChecked ){
+            updateContentModel();
+            hasPageContentModelBeenChecked = true;
+        }
         if( pageContentModel == null ){
             return Collections.emptyList();
         }
