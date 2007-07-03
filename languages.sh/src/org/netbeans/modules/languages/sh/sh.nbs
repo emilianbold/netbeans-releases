@@ -101,9 +101,9 @@ NAVIGATOR:label: {
     display_name: "$label$";
 }
 
+BUNDLE "org.netbeans.modules.languages.sh.Bundle"
 
 MARK:error: {
     type:"Error";
-    message:"Unexpected character.";
+    message:"LBL_UNEXPECTED_CHARACTER";
 }
-

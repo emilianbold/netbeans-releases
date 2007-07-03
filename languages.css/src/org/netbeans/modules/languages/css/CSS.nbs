@@ -291,7 +291,7 @@ COMPLETION:css_identifier: {
 
 MARK:ERROR: {
     type:"Error";
-    message:"Syntax error.";
+    message:"LBL_SYNTAX_ERROR";
 }
 
 PROPERTIES {

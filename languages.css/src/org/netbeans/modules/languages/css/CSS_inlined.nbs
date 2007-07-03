@@ -244,8 +244,10 @@ COMPLETION:key: {
 
 MARK:ERROR: {
     type:"Error";
-    message:"Syntax error.";
+    message:"LBL_SYNTAX_ERROR";
 }
+
+BUNDLE "org.netbeans.modules.languages.css.Bundle"
 
 PROPERTIES {
     #navigator_sort:"true"; 

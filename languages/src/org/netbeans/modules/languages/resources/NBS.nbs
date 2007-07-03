@@ -203,10 +203,12 @@ COMPLETION:regularExpression: {
 
 MARK:ERROR: {
     type:"Error";
-    message:"Syntax error.";
+    message:"LBL_SYNTAX_ERROR";
 }
 
 MARK:error: {
     type:"Error";
-    message:"Unexpected character.";
+    message:"LBL_UNEXPECTED_CHARACTER";
 }
+
+BUNDLE "org.netbeans.modules.languages.resources.Bundle"

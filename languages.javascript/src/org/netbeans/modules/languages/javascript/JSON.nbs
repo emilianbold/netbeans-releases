@@ -118,6 +118,7 @@ NAVIGATOR:Pair: {
     display_name: "$js_string$";
     icon: "/org/netbeans/modules/languages/resources/variable.gif";
 }
+
 NAVIGATOR:Value: {
     display_name: "$$";
     icon: "/org/netbeans/modules/languages/resources/variable.gif";
@@ -125,13 +126,14 @@ NAVIGATOR:Value: {
 
 MARK:ERROR: {
     type:"Error";
-    message:"Syntax error.";
+    message:"LBL_SYNTAX_ERROR";
 }
 
 MARK:error: {
     type:"Error";
-    message:"Unexpected character.";
+    message:"LBL_UNEXPECTED_CHARACTER";
 }
+
 COMPLETE "{:}"
 COMPLETE "\":\""
 COMPLETE "':'"

@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="text">
             <folder name="x-nbs">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.resources.Bundle"/>
                 <file name="language.nbs" url="NBS.nbs"/>
             </folder>
         </folder>

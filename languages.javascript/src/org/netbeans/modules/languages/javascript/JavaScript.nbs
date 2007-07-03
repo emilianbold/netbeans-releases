@@ -369,12 +369,12 @@ NAVIGATOR:PropertyNameAndValue: {
 
 MARK:ERROR: {
     type:"Error";
-    message:"Syntax error.";
+    message:"LBL_SYNTAX_ERROR";
 }
 
 MARK:error: {
     type:"Error";
-    message:"Unexpected character.";
+    message:"LBL_UNEXPECTED_CHARACTER";
 }
 
 COMPLETION:js_identifier, js_keyword, js_whitespace, js_operator, js_separator, js_comment: {
