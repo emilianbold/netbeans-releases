@@ -20,49 +20,93 @@
 ########### tokens ##################################################################
 
 TOKEN:operator: ( [
-    "+" "|" "&" "<" ">" "!" "@" "=" ":" "/" "\\" "(" ")" "," "%" "^" "#" "{" "}" "?" "!" "." "$" "*" "_" "-"
+    "+" "|" "&" "<" ">" "!" ":" "@" "=" "/" "\\" "(" ")" "," "%" "^" "#" "{" "}" "?" "!" "." "$" "*" "_" "-" "`"
 ] )
 
-TOKEN:line_comment: ( "rem " [^ "\n" "\r"]* )
+TOKEN:line_comment: ( "rem "i [^ "\n" "\r"]* )
 
 TOKEN:keyword:(
-    "AUX" |
-    "call" |
-    "cd" |
-    "chdir" |
-    "cls" |
-    "copy" |
-    "defined" |
-    "del" |
-    "do" |
-    "echo" |
-    "echo." |
-    "else" |
-    "errorlevel" |
-    "exist" |
-    "endlocal" |
-    "exit" |
-    "for" |
-    "goto" |
-    "if" |
-    "in" |
-    "md" |
-    "mkdir" |
-    "move" |
-    "move" |
-    "not" |
-    "NUL" |
-    "pause" |
-    "ren" |
-    "set" |
-    "setlocal" |
-    "shift" |
-    "PRN"
+    "AUX"i |
+    "call"i |
+    "choice"i |
+    "defined"i |
+    "do"i |
+    "else"i |
+    "errorlevel"i |
+    "exist"i |
+    "endlocal"i |
+    "for"i |
+    "goto"i |
+    "if"i |
+    "in"i |
+    "not"i |
+    "NUL"i |
+    "set"i |
+    "setlocal"i |
+    "shift"i |
+    "PRN"i
+)
+
+TOKEN:command:(
+    "ASSIGN"i |
+    "ATTRIB"i |
+    "CD"i |
+    "CHDIR"i |
+    "CHKDSK"i |
+    "CLS"i |
+    "COMP"i |
+    "COPY"i |
+    "DATE"i |
+    "DEFRAG"i |
+    "DEL"i |
+    "DELTREE"i |
+    "DIR"i |
+    "ECHO"i |
+    "ECHO."i |
+    "ERASE"i |
+    "EXIT"i |
+    "FC"i |
+    "FDISK"i |
+    "FIND"i |
+    "FORMAT"i |
+    "HELP"i |
+    "LABEL"i |
+    "MD"i |
+    "MEM"i |
+    "MEMMAKER"i |
+    "MKDIR"i |
+    "MORE"i |
+    "MOVE"i |
+    "PATH"i |
+    "PAUSE"i |
+    "REN"i |
+    "RENAME"i |
+    "RD"i |
+    "RMDIR"i |
+    "SORT"i |
+    "TIME"i |
+    "TREE"i |
+    "TYPE"i |
+    "UNDELETE"i |
+    "VER"i |
+    "XCOPY"i
 )
 
 TOKEN:number: (["0"-"9"] ["0"-"9" "."]*)
 
 TOKEN:whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:identifier:( ["a"-"z" "A"-"Z"]+ )
+TOKEN:identifier:( ["a"-"z" "A"-"Z"] ["-" "_" "0"-"9" "a"-"z" "A"-"Z"]* )
 
+TOKEN:string: (
+    "\""
+        ( [^ "\"" "\n" "\r"] |
+          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+        )*
+    "\""
+)
+
+COLOR:command: {
+    color_name: "command";
+    default_coloring: "keyword";
+}
