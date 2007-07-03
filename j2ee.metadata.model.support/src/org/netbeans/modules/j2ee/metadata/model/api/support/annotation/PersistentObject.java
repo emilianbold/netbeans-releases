@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 
@@ -45,6 +47,10 @@ public abstract class PersistentObject {
     }
 
     public final TypeElement getTypeElement() {
-        return typeElementHandle.resolve(helper.getCompilationController());
+        TypeElement result = typeElementHandle.resolve(helper.getCompilationController());
+        if (result == null) {
+            Logger.getLogger(PersistentObject.class.getName()).log(Level.WARNING, "Type {0} has dissapeared", typeElementHandle); // NOI18N
+        }
+        return result;
     }
 }
