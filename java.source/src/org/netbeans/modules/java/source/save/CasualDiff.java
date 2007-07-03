@@ -1716,13 +1716,13 @@ public class CasualDiff {
                     continue;
             }
             if (!fieldGroup.isEmpty()) {
-                result.add(new FieldGroupTree(fieldGroup, this));
+                result.add(new FieldGroupTree(fieldGroup));
                 fieldGroup = new ArrayList<JCVariableDecl>();
             }
             result.add(tree);
         }
         if (!fieldGroup.isEmpty())
-            result.add(new FieldGroupTree(fieldGroup, this));
+            result.add(new FieldGroupTree(fieldGroup));
         return result;
     }
     

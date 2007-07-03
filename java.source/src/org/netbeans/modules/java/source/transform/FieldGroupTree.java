@@ -23,24 +23,22 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.Visitor;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.util.List;
-import org.netbeans.modules.java.source.save.CasualDiff;
 
 /**
  * Fake tree. Represents fields separated by comma.
+ * 
  * @author pflaska
  */
 public class FieldGroupTree extends JCTree implements Tree {
     
     List<JCVariableDecl> vars;
-    CasualDiff diff;
-    
-    public FieldGroupTree(List<JCVariableDecl> vars, CasualDiff diff) {
+
+    public FieldGroupTree(List<JCVariableDecl> vars) {
         super(0);
         this.vars = vars;
-        this.diff = diff;
         pos = TreeInfo.getStartPos(vars.get(0));
     }
-    
+
     public Kind getKind() {
         return Kind.OTHER;
     }
@@ -50,7 +48,7 @@ public class FieldGroupTree extends JCTree implements Tree {
     }
     
     public int endPos() {
-        return diff.endPos((JCTree)vars.get(vars.size()-1));
+        return TreeInfo.endPos(vars.get(vars.size()-1));
     }
     
     public <R, D> R accept(TreeVisitor<R, D> arg0, D arg1) {
