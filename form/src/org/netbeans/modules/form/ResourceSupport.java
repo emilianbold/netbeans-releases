@@ -120,6 +120,18 @@ public class ResourceSupport {
     // -----
 
     /**
+     * Prepares a newly created form.
+     */
+    void prepareNewForm() {
+        if (isResourceAutoMode()) {
+            resourceService.prepareNew(getSourceFile());
+        } else if (!isI18nAutoMode()) {
+            return;
+        }
+        switchFormToResources(); // templates don't contain internationalized texts or resources
+    }
+
+    /**
      * Converts given value to a resource. Called always when a component
      * property is being set.
      * This method is not called during undo/redo.

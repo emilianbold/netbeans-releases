@@ -560,10 +560,7 @@ public class FormEditor {
         if (formLoaded && formModel != null && !formModel.isReadOnly()
             && needPostCreationUpdate()) // just created via New wizard
         {   // detect settings, update the form, regenerate code, save
-            if (formModel.getSettings().getResourceAutoMode() != ResourceSupport.AUTO_OFF) {
-                // templates don't contain internationalized texts or resources
-                getResourceSupport().switchFormToResources();
-            }
+            getResourceSupport().prepareNewForm();
             // make sure layout code generation type is detected
             formModel.getSettings().getLayoutCodeTarget();
             // hack: regenerate code immediately

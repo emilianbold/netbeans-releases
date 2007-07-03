@@ -38,6 +38,12 @@ import org.openide.filesystems.FileObject;
 public interface ResourceService {
 
     /**
+     * Called when a new form is created and opened to do some preparation work.
+     * @param srcFile the source java file just created
+     */
+    void prepareNew(FileObject srcFile);
+
+    /**
      * Finds ResourceValue for given key, locale and source file. If no data is
      * available for given specific locale then a less specific or default
      * locale data is returned.

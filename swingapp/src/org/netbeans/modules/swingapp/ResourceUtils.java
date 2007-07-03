@@ -33,6 +33,7 @@ import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.PropertiesDataObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -240,6 +241,10 @@ class ResourceUtils {
     static BundleStructure getBundleStructure(FileObject srcFile, String bundleName) {
         PropertiesDataObject pdo = getPropertiesDataObject(srcFile, bundleName, false);
         return pdo != null ? pdo.getBundleStructure() : null;
+    }
+
+    static FileObject createResourcesFolder(FileObject srcFile) throws IOException {
+        return FileUtil.createFolder(srcFile.getParent(), "resources"); // NOI18N
     }
 
     /**

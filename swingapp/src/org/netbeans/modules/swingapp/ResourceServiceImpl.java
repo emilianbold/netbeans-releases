@@ -43,6 +43,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,6 +54,15 @@ import org.openide.util.NbBundle;
  * @author Tomas Pavek
  */
 public class ResourceServiceImpl implements ResourceService {
+
+    public void prepareNew(FileObject srcFile) {
+        // just make sure the resources folder exist
+        try {
+            ResourceUtils.createResourcesFolder(srcFile);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public ResourceValue get(String key, Class type, String localeSuffix, FileObject srcFile) {
         DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile, true);
