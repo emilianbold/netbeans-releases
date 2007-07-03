@@ -1146,9 +1146,9 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     /** Bumps for floatable toolbar GTK L&F */
     private final class ToolbarGtk extends JPanel {
         /** Top gap. */
-        static final int TOPGAP = 2;
+        int TOPGAP;
         /** Bottom gap. */
-        static final int BOTGAP = 2;
+        int BOTGAP;
         /** Width of bump element. */
         static final int WIDTH = 6;
         
@@ -1163,19 +1163,26 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         public ToolbarGtk () {
             super();
             int width = WIDTH;
+            if (useSynthIcon()) {
+                TOPGAP = 0;
+                BOTGAP = 0;
+            } else {
+                TOPGAP = 2;
+                BOTGAP = 2;
+            }
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
             this.setToolTipText (Toolbar.this.getDisplayName());
         }
         
         /** Paint bumps to specific Graphics. */
+        @Override
         public void paint (Graphics g) {
             if (useSynthIcon()) {
                 int height = Toolbar.this.getHeight() - BOTGAP;
                 Icon icon = UIManager.getIcon("ToolBar.handleIcon");
                 Region region = Region.TOOL_BAR;
-                SynthLookAndFeel laf = (SynthLookAndFeel)UIManager.getLookAndFeel();
-                SynthStyleFactory sf = laf.getStyleFactory();
+                SynthStyleFactory sf = SynthLookAndFeel.getStyleFactory();
                 SynthStyle style = sf.getStyle(Toolbar.this, region);
                 SynthContext context = new SynthContext(Toolbar.this, region, style, SynthConstants.DEFAULT);
 
@@ -1203,7 +1210,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 }
                 //SynthIcon.paintIcon(icon, context, g, 0, 0, width, height);
                 try {
-                    m.invoke(null, new Object [] {icon,context,g,new Integer(0),new Integer(0),
+                    m.invoke(null, new Object [] {icon,context,g,new Integer(0),new Integer(-1),
                     new Integer(width),new Integer(height)});
                 } catch (IllegalAccessException exc) {
                     Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
