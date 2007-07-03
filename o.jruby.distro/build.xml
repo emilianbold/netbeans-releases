@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.jruby.distro" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.jruby.distro</description>
+    <import file="../../nbbuild/templates/projectized.xml"/>
+    <!--
+    <propertyfile file="../jruby/nbproject/project.properties"/>
+-->
+
+    <target name="files-init" depends="projectized-common.files-init">
+        <!-- Override module.files definition performed by parent, used for NBMs etc. -->
+        <patternset id="module.files" includes="${release.files},${extra.module.files}">
+            <!-- Standard includes (from common definition) -->
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="config/Modules/${code.name.base.dashes}.xml"/>
+            <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
+            <include name="ant/nblib/${code.name.base.dashes}.jar"/>
+            <!-- JRuby+Rails stuff -->
+            <include name="jruby-1.0/**"/>
+        </patternset>
+    </target>    
+
+    <target name="build-jruby-bin">
+        <echo>Build JRuby binary distribution from source</echo>
+        <delete dir="${unpatched_source}"/>
+        <mkdir dir="${unpatched_source}"/>
+        <unzip dest="${unpatched_source}" src="../jruby/external/jruby-src.zip"/>
+        <!-- Patch build.xml to modify gem behavior: install locally -->
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
+            <fileset dir="unpatched_files" />
+        </copy>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/jruby-gems.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/extra-gems.zip"/>
+        <!-- Run dist-bin target in JRuby's own build.xml file -->
+        <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
+        <!-- Extract the resulting .tar.gz file into our cluster -->
+        <untar compression="gzip" dest="${cluster}" src="${unpatched_source}/jruby-${jruby_src_version}/jruby-bin-${jruby_src_version}.tar.gz" />
+    </target>
+
+    <target name="release" depends="init">
+        <property name="jruby_dir" location="${cluster}/jruby-${jruby_src_version}"/>
+    
+        <!-- Build JRuby from source (using its own build files -->
+        <antcall target="build-jruby-bin"/>
+
+        <!-- Temporary, until JRuby ships with a rdoc wrapper scripts -->
+        <unzip dest="${jruby_dir}" src="external/rdoc.zip"/>
+        <chmod perm="ugo+x">
+          <fileset dir="${jruby_dir}/">
+            <include name="bin/*"/>
+          </fileset>
+        </chmod>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean">
+        <delete dir="${unpatched_source}"/>
+        <!-- HACK: For some reason the clean target doesn't get expansions for the logical dirs... -->
+        <delete dir="unpatched_source"/>
+    </target>
+
+</project>

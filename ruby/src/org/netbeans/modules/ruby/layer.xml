@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-ruby">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.lexer.RubyTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                
+                <!-- TODO - this should not be necessary; I'm doing this now to work around
+                    bugs in color initialization -->
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-ruby-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-ruby-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
+            <!-- Embedded double-quoted strings -->
+            <folder name="x-ruby-string-double">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.lexer.RubyStringTokenId.languageDouble"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="stringColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        
+            <!-- Embedded single-quoted strings -->
+            <folder name="x-ruby-string-single">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.lexer.RubyStringTokenId.languageSingle"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="stringColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
+            <!-- Embedded rdoc comments -->
+            <folder name="x-ruby-comment">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.lexer.RubyCommentTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="commentColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-ruby" url="RubyExample"/>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="x-ruby">
+                <!-- Is this attribute unused? -->
+                <attr name="displayName" stringvalue="Ruby"/>
+
+                <!-- Used by index scanner to identify relevant files -->
+                <folder name="extensions">
+                    <file name="rb"/>
+                </folder>
+                
+                <file name="language.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>
+                </file>
+
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyParser"/>
+                </file>
+
+                <file name="renamer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.InstantRenamer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
+                </file>
+
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.DeclarationFinder"/>
+                </file>
+
+                <file name="formatter.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Formatter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.Formatter"/>
+                </file>
+
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
+                </file>
+
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.CodeCompleter"/>
+                </file>
+
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
+                </file>
+
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-ruby">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/jrubydoc.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/ruby/jrubydoc.png"/>
+                <folder name="Actions">
+                  <file name="OpenAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                      <attr name="position" intvalue="100"/>
+                    </file>
+                  <file name="Separator1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="200"/>
+                    </file>
+                  <file name="CutAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                      <attr name="position" intvalue="300"/>
+                    </file>     
+                  <file name="CopyAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
+                  <file name="PasteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
+                  <file name="Separator2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="600"/>
+                    </file>
+                  <file name="NewAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
+                  <file name="DeleteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                      <attr name="position" intvalue="800"/>
+                    </file>
+                  <file name="RenameAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                      <attr name="position" intvalue="900"/>
+                    </file>
+                  <file name="Separator3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1000"/>
+                    </file>
+                  <file name="SaveAsTemplateAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                      <attr name="position" intvalue="1100"/>
+                    </file>
+                  <file name="Separator4.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1200"/>
+                    </file>
+                  <file name="FileSystemAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                      <attr name="position" intvalue="1300"/>
+                    </file>
+                  <file name="Separator5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1400"/>
+                    </file> 
+                  <file name="ToolsAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                      <attr name="position" intvalue="1500"/>
+                    </file> 
+                  <file name="PropertiesAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                      <attr name="position" intvalue="1600"/>
+                    </file> 
+                </folder>            
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

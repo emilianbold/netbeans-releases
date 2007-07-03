@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+<codetemplates>
+    <!-- TODO Add unusedlocal and other logical parameters to some of the TM snippets -->
+    <codetemplate abbreviation="jc" descriptionId="ct_jc" contexts="ruby">
+<code><![CDATA[require 'java'
+include_class '${0 default="package.class"}']]></code>
+    </codetemplate>
+    <codetemplate abbreviation="doc" descriptionId="ct_doc" contexts="ruby">
+<code><![CDATA[do |${unusedlocal defaults="i,j,k"}|
+  ${selection line}${cursor}
+end
+]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="if" descriptionId="ct_if" contexts="ruby">
+<code><![CDATA[if ${condition}
+  ${selection line}${cursor}
+end
+]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="ife" descriptionId="ct_ife" contexts="ruby">
+<code><![CDATA[if ${condition}
+  ${selection line}${tabStop1 default=""}
+else
+  ${tabStop2 default=""}
+end
+]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="module" descriptionId="ct_module" contexts="ruby">
+<code><![CDATA[module ${name}
+  ${cursor}
+end
+]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="begin" descriptionId="ct_begin" contexts="ruby">
+<code><![CDATA[begin
+  ${selection line}${cursor}
+rescue ${Exception} => ${unusedlocal defaults="ex,boom,bang,var"}
+  ${code}
+end
+]]></code>
+  </codetemplate>
+
+
+<!-- The following templates were imported from TextMate -->
+
+  <!-- Only alphanum chars seem to be allowed as tabtriggers
+  <codetemplate abbreviation=":" descriptionId="ct_:">
+    <code>
+<![CDATA[:${1 default="key"} => ${4 default=", "}]]>
+    </code>
+  </codetemplate>
+  -->
+
+
+  <codetemplate abbreviation="defs" descriptionId="ct_defs">
+    <code>
+<![CDATA[def self.${1 default="class_method_name"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rpc" descriptionId="ct_rpc">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :collection => ${2 default="items"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vc" descriptionId="ct_vc">
+    <code>
+<![CDATA[validates_confirmation_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="inject" descriptionId="ct_inject">
+    <code>
+<![CDATA[inject(${1 default="object"}) { |${2 default="injection"}, ${3 default="element"}| ${tabStop4 default=""} }${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ea" descriptionId="ct_ea">
+    <code>
+<![CDATA[each { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sorb" descriptionId="ct_sorb">
+    <code>
+<![CDATA[sort_by { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="clafn" descriptionId="ct_clafn">
+    <code>
+<![CDATA[split("::").inject(Object) { |par, const| par.const_get(const) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ve" descriptionId="ct_ve">
+    <code>
+<![CDATA[validates_exclusion_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="col" descriptionId="ct_col">
+    <code>
+<![CDATA[collect { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rceca" descriptionId="ct_rceca">
+    <code>
+<![CDATA[render_component :controller => "${1 default="items"}", :action => "${2 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ra" descriptionId="ct_ra">
+    <code>
+<![CDATA[render :action => "${1 default="action"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rf" descriptionId="ct_rf">
+    <code>
+<![CDATA[render :file => "${1 default="filepath"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asko" descriptionId="ct_asko">
+    <code>
+<![CDATA[assert_kind_of(${1 default="ExpectedKind"}, ${0 default="actual_instance"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eas-" descriptionId="ct_eas-">
+    <code>
+<![CDATA[each_slice(${1 default="2"}) { |${2 default="group"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rtl" descriptionId="ct_rtl">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}", :layout => "${2 default="layoutname"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asrt" descriptionId="ct_asrt">
+    <code>
+<![CDATA[assert_respond_to(${1 default="object"}, :${0 default="method"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="as" descriptionId="ct_as">
+    <code>
+<![CDATA[assert(${1 default="test"}, "${0 default="Failure message."}")]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="forin" descriptionId="ct_forin">
+    <code>
+<![CDATA[for ${1 default="element"} in ${2 default="collection"}
+	${1 default="element"}.${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rb" descriptionId="ct_rb">
+    <code>
+<![CDATA[#!/usr/bin/env ruby -wKU
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ts" descriptionId="ct_ts">
+    <code>
+<![CDATA[require "test/unit"
+
+require "tc_${1 default="test_case_file"}"
+require "tc_${2 default="test_case_file"}"
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="habtm" descriptionId="ct_habtm">
+    <code>
+<![CDATA[has_and_belongs_to_many :${1 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Yd-" descriptionId="ct_Yd-">
+    <code>
+<![CDATA[File.open(, "w") { |${3 default="file"}| YAML.dump(${4 default="obj"}, ${3 default="file"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sel" descriptionId="ct_sel">
+    <code>
+<![CDATA[select { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eap" descriptionId="ct_eap">
+    <code>
+<![CDATA[each_pair { |${1 default="name"}, ${2 default="val"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="zip" descriptionId="ct_zip">
+    <code>
+<![CDATA[zip(${1 default="enums"}) { |${2 default="row"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="usai" descriptionId="ct_usai">
+    <code>
+<![CDATA[if ARGV.${tabStop1 default=""}
+  puts "Usage:  #{$PROGRAM_NAME} ${2 default="ARGS_GO_HERE"}"
+  exit
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mod" descriptionId="ct_mod">
+    <code>
+<![CDATA[module ${1 default="ModuleName"}
+	module ClassMethods
+		${cursor}
+	end
+	
+	extend ClassMethods
+	
+	def self.included(receiver)
+		receiver.extend(ClassMethods)
+	end
+	
+	
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vl" descriptionId="ct_vl">
+    <code>
+<![CDATA[validates_length_of :${1 default="attribute"}, :within => ${2 default="3..20"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mccc" descriptionId="ct_mccc">
+    <code>
+<![CDATA[t.column :${1 default="title"}, :${2 default="string"}
+mccc${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vaif" descriptionId="ct_vaif">
+    <code>
+<![CDATA[validates_associated :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="w" descriptionId="ct_w">
+    <code>
+<![CDATA[attr_writer :${0 default="attr_names"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mtab" descriptionId="ct_mtab">
+    <code>
+<![CDATA[create_table :${1 default="table"} do |t|
+    ${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rcea" descriptionId="ct_rcea">
+    <code>
+<![CDATA[render_component :action => "${1 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ril" descriptionId="ct_ril">
+    <code>
+<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}", :locals => { ${2 default=":name"} => "${3 default="value"}"${tabStop4 default=""} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="flash" descriptionId="ct_flash">
+    <code>
+<![CDATA[flash[:${1 default="notice"}] = "${2 default="Successfully created..."}"${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="unless" descriptionId="ct_unless">
+    <code>
+<![CDATA[unless ${1 default="condition"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rej" descriptionId="ct_rej">
+    <code>
+<![CDATA[reject { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ass" descriptionId="ct_ass">
+    <code>
+<![CDATA[assert_same(${1 default="expected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asid" descriptionId="ct_asid">
+    <code>
+<![CDATA[assert_in_delta(${1 default="expected_float"}, ${2 default="actual_float"}, ${0 default="2 ** -20"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="gre" descriptionId="ct_gre">
+    <code>
+<![CDATA[grep() { |${3 default="match"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="deli" descriptionId="ct_deli">
+    <code>
+<![CDATA[delete_if { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ran" descriptionId="ct_ran">
+    <code>
+<![CDATA[sort_by { rand }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnt" descriptionId="ct_asnt">
+    <code>
+<![CDATA[assert_nothing_thrown { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Enum" descriptionId="ct_Enum">
+    <code>
+<![CDATA[include Enumerable
+
+def each(&block)
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vuif" descriptionId="ct_vuif">
+    <code>
+<![CDATA[validates_uniqueness_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rn" descriptionId="ct_rn">
+    <code>
+<![CDATA[render :nothing => ${1 default="true"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asio" descriptionId="ct_asio">
+    <code>
+<![CDATA[assert_instance_of(${1 default="ExpectedClass"}, ${0 default="actual_instance"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asns" descriptionId="ct_asns">
+    <code>
+<![CDATA[assert_not_same(${1 default="unexpected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnn" descriptionId="ct_asnn">
+    <code>
+<![CDATA[assert_not_nil(${0 default="instance"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="case" descriptionId="ct_case">
+    <code>
+<![CDATA[case ${1 default="object"}
+when ${2 default="condition"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="collect" descriptionId="ct_collect">
+    <code>
+<![CDATA[collect { |${1 default="element"}| ${1 default="element"}.${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="app" descriptionId="ct_app">
+    <code>
+<![CDATA[if __FILE__ == $PROGRAM_NAME
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="recai" descriptionId="ct_recai">
+    <code>
+<![CDATA[redirect_to :controller => "${1 default="items"}", :action => "${2 default="show"}", :id => ${0 default="@item"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnm" descriptionId="ct_asnm">
+    <code>
+<![CDATA[assert_no_match(/${1 default="unexpected_pattern"}/, ${0 default="actual_string"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Forw-" descriptionId="ct_Forw-">
+    <code>
+<![CDATA[extend Forwardable]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="fina" descriptionId="ct_fina">
+    <code>
+<![CDATA[find_all { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="defds" descriptionId="ct_defds">
+    <code>
+<![CDATA[def_delegators :${1 default="@del_obj"}, :${0 default="del_methods"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ri" descriptionId="ct_ri">
+    <code>
+<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sca" descriptionId="ct_sca">
+    <code>
+<![CDATA[scan(/${1 default="pattern"}/) { |${2 default="match"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="min" descriptionId="ct_min">
+    <code>
+<![CDATA[min { |a, b| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="dee" descriptionId="ct_dee">
+    <code>
+<![CDATA[Marshal.load(Marshal.dump(${0 default="obj_to_copy"}))]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eac-" descriptionId="ct_eac-">
+    <code>
+<![CDATA[each_char { |${1 default="chr"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rdb" descriptionId="ct_rdb">
+    <code>
+<![CDATA[RAILS_DEFAULT_LOGGER.debug "${1 default="message"}"${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="r" descriptionId="ct_r">
+    <code>
+<![CDATA[attr_reader :${0 default="attr_names"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vpif" descriptionId="ct_vpif">
+    <code>
+<![CDATA[validates_presence_of :${1 default="attribute"}, :if => proc { |obj| ${5 default="obj.condition?"} }}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="sor" descriptionId="ct_sor">
+    <code>
+<![CDATA[sort { |a, b| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rl" descriptionId="ct_rl">
+    <code>
+<![CDATA[render :layout => "${1 default="layoutname"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="File" descriptionId="ct_File">
+    <code>
+<![CDATA[File.foreach() { |${3 default="line"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vp" descriptionId="ct_vp">
+    <code>
+<![CDATA[validates_presence_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rcec" descriptionId="ct_rcec">
+    <code>
+<![CDATA[render_component :controller => "${1 default="items"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="defd" descriptionId="ct_defd">
+    <code>
+<![CDATA[def_delegator :${1 default="@del_obj"}, :${2 default="del_meth"}, :${3 default="new_name"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Dir" descriptionId="ct_Dir">
+    <code>
+<![CDATA[Dir.glob() { |${3 default="file"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="req" descriptionId="ct_req">
+    <code>
+<![CDATA[require "${cursor}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rfu" descriptionId="ct_rfu">
+    <code>
+<![CDATA[render :file => "${1 default="filepath"}", :use_full_path => ${2 default="false"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="verify" descriptionId="ct_verify">
+    <code>
+<![CDATA[verify :only => [:${tabStop1 default=""}], :method => :post, :render => {:status => 500, :text => "use HTTP-POST"}
+]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="art" descriptionId="ct_art">
+    <code>
+<![CDATA[assert_redirected_to :action => "${1 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="aso" descriptionId="ct_aso">
+    <code>
+<![CDATA[assert_operator(${1 default="left"}, :${2 default="operator"}, ${0 default="right"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="cl" descriptionId="ct_cl">
+    <code>
+<![CDATA[classify { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eav" descriptionId="ct_eav">
+    <code>
+<![CDATA[each_value { |${1 default="val"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rps" descriptionId="ct_rps">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :status => ${2 default="500"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="tc" descriptionId="ct_tc">
+    <code>
+<![CDATA[require "test/unit"
+
+require "${1 default="library_file_name"}"
+
+class Test < Test::Unit::TestCase
+	def test_${3 default="case_name"}
+		${cursor}
+	end
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asn" descriptionId="ct_asn">
+    <code>
+<![CDATA[assert_nil(${0 default="instance"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="usau" descriptionId="ct_usau">
+    <code>
+<![CDATA[unless ARGV.${tabStop1 default=""}
+  puts "Usage:  #{$PROGRAM_NAME} ${2 default="ARGS_GO_HERE"}"
+  exit
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Comp" descriptionId="ct_Comp">
+    <code>
+<![CDATA[include Comparable
+
+def <=>(other)
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="each" descriptionId="ct_each">
+    <code>
+<![CDATA[each { |${1 default="element"}| ${1 default="element"}.${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vu" descriptionId="ct_vu">
+    <code>
+<![CDATA[validates_uniqueness_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="uni" descriptionId="ct_uni">
+    <code>
+<![CDATA[ARGF.each_line${tabStop1 default=""} do |${2 default="line"}|
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="all" descriptionId="ct_all">
+    <code>
+<![CDATA[all? { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rit" descriptionId="ct_rit">
+    <code>
+<![CDATA[render :inline => "${1 default="<%= 'hello' %>"}", :type => ${2 default=":rxml"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="doo" descriptionId="ct_doo">
+    <code>
+<![CDATA[do |${1 default="object"}|
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="par" descriptionId="ct_par">
+    <code>
+<![CDATA[partition { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eak" descriptionId="ct_eak">
+    <code>
+<![CDATA[each_key { |${1 default="key"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rw" descriptionId="ct_rw">
+    <code>
+<![CDATA[attr_accessor :${0 default="attr_names"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="flao" descriptionId="ct_flao">
+    <code>
+<![CDATA[inject(Array.new) { |${1 default="arr"}, ${2 default="a"}| ${1 default="arr"}.push(*${2 default="a"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Ml" descriptionId="ct_Ml">
+    <code>
+<![CDATA[File.open() { |${3 default="file"}| Marshal.load(${3 default="file"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eawi" descriptionId="ct_eawi">
+    <code>
+<![CDATA[each_with_index { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ast" descriptionId="ct_ast">
+    <code>
+<![CDATA[assert_throws(:${1 default="expected"}) { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="deft" descriptionId="ct_deft">
+    <code>
+<![CDATA[def test_${1 default="case_name"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mm" descriptionId="ct_mm">
+    <code>
+<![CDATA[def method_missing(meth, *args, &block)
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="class" descriptionId="ct_class">
+    <code>
+<![CDATA[class ${1 default="ClassName"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asm" descriptionId="ct_asm">
+    <code>
+<![CDATA[assert_match(/${1 default="expected_pattern"}/, ${0 default="actual_string"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eal" descriptionId="ct_eal">
+    <code>
+<![CDATA[each_line${tabStop1 default=""} { |${2 default="line"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asnr" descriptionId="ct_asnr">
+    <code>
+<![CDATA[assert_nothing_raised(${1 default="Exception"}) { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="select" descriptionId="ct_select">
+    <code>
+<![CDATA[select { |${1 default="element"}| ${1 default="element"}.${tabStop2 default=""} }${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="va" descriptionId="ct_va">
+    <code>
+<![CDATA[validates_associated :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reject" descriptionId="ct_reject">
+    <code>
+<![CDATA[reject { |${1 default="element"}| ${1 default="element"}.${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rt" descriptionId="ct_rt">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rtlt" descriptionId="ct_rtlt">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}", :layout => ${2 default="true"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reca" descriptionId="ct_reca">
+    <code>
+<![CDATA[redirect_to :controller => "${1 default="items"}", :action => "${2 default="list"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="do" descriptionId="ct_do">
+    <code>
+<![CDATA[do
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="veif" descriptionId="ct_veif">
+    <code>
+<![CDATA[validates_exclusion_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="map" descriptionId="ct_map">
+    <code>
+<![CDATA[map { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="am" descriptionId="ct_am">
+    <code>
+<![CDATA[alias_method :${1 default="new_name"}, :${0 default="old_name"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="any" descriptionId="ct_any">
+    <code>
+<![CDATA[any? { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reai" descriptionId="ct_reai">
+    <code>
+<![CDATA[redirect_to :action => "${1 default="show"}", :id => ${0 default="@item"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Hash" descriptionId="ct_Hash">
+    <code>
+<![CDATA[Hash.new { |${1 default="hash"}, ${2 default="key"}| ${1 default="hash"}[${2 default="key"}] = ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="cla" descriptionId="ct_cla">
+    <code>
+<![CDATA[class ${1 default="ClassName"} < Struct.new(:${2 default="attr_names"})
+	def initialize(*args)
+		super
+		
+		${cursor}
+	end
+	
+	
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Yl-" descriptionId="ct_Yl-">
+    <code>
+<![CDATA[File.open() { |${3 default="file"}| YAML.load(${3 default="file"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="when" descriptionId="ct_when">
+    <code>
+<![CDATA[when ${1 default="condition"}
+	${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ral" descriptionId="ct_ral">
+    <code>
+<![CDATA[render :action => "${1 default="action"}", :layout => "${2 default="layoutname"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="def" descriptionId="ct_def">
+    <code>
+<![CDATA[def ${1 default="method_name"}
+	${cursor}
+end]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eai" descriptionId="ct_eai">
+    <code>
+<![CDATA[each_index { |${1 default="i"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="vcif" descriptionId="ct_vcif">
+    <code>
+<![CDATA[validates_confirmation_of :${1 default="attribute"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asr" descriptionId="ct_asr">
+    <code>
+<![CDATA[assert_raise(${1 default="Exception"}) { ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="max" descriptionId="ct_max">
+    <code>
+<![CDATA[max { |a, b| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rpl" descriptionId="ct_rpl">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :locals => { :${2 default="name"} => "${3 default="value"}"${tabStop4 default=""} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rp" descriptionId="ct_rp">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="reve" descriptionId="ct_reve">
+    <code>
+<![CDATA[reverse_each { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="hm" descriptionId="ct_hm">
+    <code>
+<![CDATA[has_many :${1 default="objects"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="Md" descriptionId="ct_Md">
+    <code>
+<![CDATA[File.open(, "w") { |${3 default="file"}| Marshal.dump(${4 default="obj"}, ${3 default="file"}) }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rns" descriptionId="ct_rns">
+    <code>
+<![CDATA[render :nothing => ${1 default="true"}, :status => ${2 default="401"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rea" descriptionId="ct_rea">
+    <code>
+<![CDATA[redirect_to :action => "${1 default="index"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="fin" descriptionId="ct_fin">
+    <code>
+<![CDATA[find { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ho" descriptionId="ct_ho">
+    <code>
+<![CDATA[has_one :${1 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asre" descriptionId="ct_asre">
+    <code>
+<![CDATA[assert_response :${1 default="success"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mcol" descriptionId="ct_mcol">
+    <code>
+<![CDATA[add_column :${1 default="table"}, :${2 default="column"}, :${3 default="string"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="each_with_index" descriptionId="ct_each_with_index">
+    <code>
+<![CDATA[each_with_index { |${1 default="element"}, ${2 default="idx"}| ${1 default="element"}.${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rec" descriptionId="ct_rec">
+    <code>
+<![CDATA[redirect_to :controller => "${1 default="items"}"]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rpo" descriptionId="ct_rpo">
+    <code>
+<![CDATA[render :partial => "${1 default="item"}", :object => ${2 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="fl" descriptionId="ct_fl">
+    <code>
+<![CDATA[flunk("${0 default="Failure message."}")]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="mapwi-" descriptionId="ct_mapwi-">
+    <code>
+<![CDATA[enum_with_index.map { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="asne" descriptionId="ct_asne">
+    <code>
+<![CDATA[assert_not_equal(${1 default="unexpected"}, ${0 default="actual"})]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="eab" descriptionId="ct_eab">
+    <code>
+<![CDATA[each_byte { |${1 default="byte"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="bt" descriptionId="ct_bt">
+    <code>
+<![CDATA[belongs_to :${1 default="object"}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="det" descriptionId="ct_det">
+    <code>
+<![CDATA[detect { |${1 default="e"}| ${cursor} }]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="rts" descriptionId="ct_rts">
+    <code>
+<![CDATA[render :text => "${1 default="text to render..."}", :status => ${2 default="401"}]]>
+    </code>
+  </codetemplate>
+</codetemplates>

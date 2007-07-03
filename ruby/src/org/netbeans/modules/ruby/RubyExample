@@ -1,0 +1,15 @@
+# RDoc Comment in *bold*
+class Foo
+    def ruby_example(f) # :nodoc:
+       f * 2 
+    end
+}
+
+@instancevar = @@classvar = :Symbol
+CONSTANT = $globalvar
+printf "String %.1f.\n", ruby_example(1.2)
+
+=begin
+Here's some documentation
+=end
+

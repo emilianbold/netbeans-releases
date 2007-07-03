@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
+<mconfig name="ruby editing">
+
+    <testbag testattribs="all,stable" executor="code" name="Unit Tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/**Test.class"/>
+<exclude name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"/>
+<exclude name="org/netbeans/modules/ruby/RubyLexerRandomTest.class"/>
+<exclude name="org/netbeans/modules/ruby/RubyLexerTest.class/test93990"/>
+<exclude name="org/netbeans/modules/ruby/TypeAnalyzerTest.class/testTypeAssertions"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!--
+    <testbag testattribs="failing" executor="code" name="failing">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/TypeAnalyzerTest.class/testTypeAssertions"/>
+                <include name="**/**Test.class"/>
+<include name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"
+         expectedFail="due to failure in heredoc statements with extra line input"/>
+<include name="org/netbeans/modules/ruby/RubyLexerRandomTest.class/testRandom"
+         expectedFail="problems in incremental lexing"/>
+<include name="org/netbeans/modules/ruby/RubyLexerTest.class/test93990"
+         expectedFail="problems in incremental lexing"/>
+<include name="org/netbeans/modules/ruby/TypeAnalyzerTest.class/testTypeAssertions"
+         expectedFail="test requires parsetree; not yet available"/>
+            </patternset>
+        </testset>
+    </testbag>
+    -->
+    
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
+    
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    
+</mconfig>

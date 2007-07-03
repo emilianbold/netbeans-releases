@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="COMMENT_TODO" foreColor="ff99006b">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="COMMENT_TEXT" default="comment"/>
+    <fontcolor name="COMMENT_RDOC" foreColor="0000CC" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="COMMENT_HTMLTAG" foreColor="blue" default="default"/>
+    <fontcolor name="COMMENT_LINK" underline="blue" foreColor="blue" default="default"/>
+    <fontcolor name="COMMENT_ITALIC" foreColor="blue" default="default">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor name="COMMENT_BOLD" foreColor="blue" default="default">
+        <font style="bold"/>
+    </fontcolor>
+</fontscolors>
+
