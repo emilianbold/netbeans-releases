@@ -67,7 +67,8 @@ public class ApplicationImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        TestUtil.clearAndInitLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
+        clearWorkDir();
+        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
         serverID = TestUtil.registerSunAppServer(this);
         
         // create project

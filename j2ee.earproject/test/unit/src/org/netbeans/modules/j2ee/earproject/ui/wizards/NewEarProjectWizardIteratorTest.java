@@ -83,8 +83,12 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        super.setUp();
+        
         clearWorkDir();
-        FileObject scratch = TestUtil.makeScratchDir(this);
+        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
+        
+        FileObject scratch = FileUtil.toFileObject(getWorkDir());
         FileObject defaultPlatformBootRoot = scratch.createFolder(DEFAULT_PLATFORM_ROOT);
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { defaultPlatformBootRoot.getURL() });
         

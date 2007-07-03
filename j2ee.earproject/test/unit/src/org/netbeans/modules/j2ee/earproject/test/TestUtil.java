@@ -72,30 +72,20 @@ public final class TestUtil {
     private TestUtil() {
     }
     
-    /**
-     * Set the global default lookup.
-     * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
-     * e.g. {@link #makeScratchDir} will not work.
-     */
-    @Deprecated
-    public static void setLookup(Lookup l) {
-        MockLookup.setLookup(l);
-    }
-    
-    /**
-     * Set the global default lookup with some fixed instances including META-INF/services/*.
-     */
-    @Deprecated
-    public static void setLookup(Object[] instances) {
-        MockLookup.setInstances(instances);
-    }
-    
+    /** It is usually good idea to clear working directory before calling this method */
     public static void initLookup(NbTestCase test) throws Exception {
-        TestUtil.setLookup(new Object[] {new Repo(test), new IFL()});
+        initLookup(test, null);
     }
     
+    /** It is usually good idea to clear working directory before calling this method */
     public static void initLookup(NbTestCase test, String... additionalLayers) throws Exception {
-        TestUtil.setLookup(new Object[] {new Repo(test, additionalLayers), new IFL()});
+        MockLookup.setInstances(new Object[] { new Repo(test, additionalLayers), new IFL() });
+        
+        FileObject root = FileUtil.toFileObject(test.getWorkDir());
+        FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
+        FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
+        
+        Assert.assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("J2EE/InstalledServers").toString());;
     }
     
     private static boolean warned = false;
@@ -131,19 +121,6 @@ public final class TestUtil {
             Repository.getDefault().addFileSystem(lfs);
             return lfs.getRoot();
         }
-    }
-    
-    public static void clearAndInitLookup(NbTestCase testCase, String... additionalLayers) throws Exception {
-        testCase.clearWorkDir();
-        
-        // set our own lookup
-        TestUtil.initLookup(testCase, additionalLayers);
-        
-        FileObject root = FileUtil.toFileObject(testCase.getWorkDir());
-        FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
-        FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
-        
-        testCase.assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("J2EE/InstalledServers").toString());;
     }
     
     /**
@@ -264,7 +241,7 @@ public final class TestUtil {
         Object[] instances = new Object[additionalLookupItems.length + appServerNeed.length];
         System.arraycopy(additionalLookupItems, 0, instances, 0, additionalLookupItems.length);
         System.arraycopy(appServerNeed, 0, instances, additionalLookupItems.length, appServerNeed.length);
-        TestUtil.setLookup(instances);
+        MockLookup.setInstances(instances);
         
         File asRoot = null;
         if (System.getProperty("appserv.home") != null) { // NOI18N
