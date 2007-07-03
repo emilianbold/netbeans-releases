@@ -24,6 +24,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
 
@@ -36,15 +37,17 @@ public class CopyTransformer extends RefactoringVisitor {
     private String newName;
     private boolean insertImport;
     private String oldPackage;
-    private String oldFQN;
+    private String oldName;
+    private String newPackage;
 
     public CopyTransformer(WorkingCopy workingCopy, String oldName, String newName, boolean insertImport, String oldPackage) {
         try {
             setWorkingCopy(workingCopy);
             this.newName = newName;
             this.insertImport = insertImport;
-            this.oldPackage = oldPackage + ".*";
-            this.oldFQN = oldName;
+            this.oldPackage = oldPackage;
+            this.oldName = oldName;
+            this.newPackage = RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent());
         } catch (ToPhaseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -55,7 +58,7 @@ public class CopyTransformer extends RefactoringVisitor {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             if (insertImport) {
                 Element el = workingCopy.getTrees().getElement(getCurrentPath());
-                Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage), false));
+                Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage + ".*"), false));
                 rewrite(tree, tree2);
             }
         }
@@ -66,7 +69,7 @@ public class CopyTransformer extends RefactoringVisitor {
     public Tree visitClass(ClassTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             TypeElement currentClass = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-            if (!currentClass.getNestingKind().isNested() && tree.getSimpleName().toString().endsWith("_1")) {
+            if (!currentClass.getNestingKind().isNested() && (tree.getSimpleName().toString().endsWith("_1")|| tree.getSimpleName().toString().equals(oldName))) {
                 Tree nju = make.setLabel(tree, newName);
                 rewrite(tree, nju);
             }
@@ -93,7 +96,7 @@ public class CopyTransformer extends RefactoringVisitor {
         if (el==null)
             return;
         
-        if ((el instanceof TypeElement) && ((TypeElement) el).getQualifiedName().toString().equals(oldFQN)) {
+        if ((el instanceof TypeElement) && ((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)) {
             Tree nju = make.setLabel(tree, newName);
             rewrite(tree, nju);
         }
