@@ -52,6 +52,8 @@ public class CommitDataTest extends JellyTestCase {
     String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
+    long timeout_c;
+    long timeout_d;
     
     /** Creates a new instance of CommitDataTest */
     public CommitDataTest(String name) {
@@ -87,18 +89,18 @@ public class CommitDataTest extends JellyTestCase {
     }
     
     public void testCommitFile() throws Exception {
-        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        timeout_c = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
+        } catch (TimeoutExpiredException e) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout_c);
         }
         
-        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+        timeout_d = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
+        } catch (TimeoutExpiredException e) {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout_d);
         }
         
         try {
@@ -471,6 +473,8 @@ public class CommitDataTest extends JellyTestCase {
             throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout_c);
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout_d);
         }
     }
 }
