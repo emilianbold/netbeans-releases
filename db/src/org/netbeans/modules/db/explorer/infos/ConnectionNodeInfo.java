@@ -92,7 +92,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
      */
     public void connect(DBConnection conn) throws DatabaseException {
         try {
-            String dbsys = null;
             DatabaseConnection con = (DatabaseConnection) conn;
             
             Connection connection = con.getConnection();
@@ -101,12 +100,8 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             Specification spec;
             DriverSpecification drvSpec;
 
-            if (dbsys != null) {
-                spec = (Specification) factory.createSpecification(con, dbsys, connection);
-            } else {
-                setReadOnly(false);
-                spec = (Specification) factory.createSpecification(con, connection);
-            }
+            setReadOnly(false);
+            spec = (Specification) factory.createSpecification(con, connection);
             put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
 
             setSpecification(spec);
