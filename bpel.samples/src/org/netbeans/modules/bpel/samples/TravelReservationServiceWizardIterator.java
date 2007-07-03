@@ -55,15 +55,18 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         assert targetProjectDir != null : "targetProjectDir for ReservationPartnerServices project is null";
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        FileObject j2eeReservationProjectDir = targetProjectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
+        final FileObject j2eeReservationProjectDir = targetProjectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
 
         FileObject j2eeSamples = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
 
         SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeReservationProjectDir);
+        resultSet.add(j2eeReservationProjectDir);
 
-        resultSet.add(j2eeReservationProjectDir);               
-        
+        // # 108313
+        if ( !System.getProperty("java.version").startsWith("1.5")) {
+          SoaSampleUtils.renameInProperties(j2eeReservationProjectDir, "j2ee.server.type=J2EE", "j2ee.server.type=SJSAS");
+        }
         return resultSet;
     }
     
