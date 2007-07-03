@@ -56,6 +56,8 @@ cd nbbuild
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url=""
 ERROR_CODE=$?
 cd ..
+gzip -c ${DIST}/uc/catalog.xml > ${DIST}/uc/catalog.xml.gz
+
 
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build catalog for NBMs"
