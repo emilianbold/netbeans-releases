@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.hints.errors.ImportClass.ImportCandidatesHolder;
+import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
@@ -118,10 +119,10 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         String simpleName = ident.text().toString();
         Pair<List<String>, List<String>> candidates = getCandidateFQNs(info, file, simpleName, data);
         
-        if (isCancelled()) {
+        if (isCancelled() || candidates == null) {
             ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.cancelled."); //NOI18N
             
-            return Collections.<Fix>emptyList();
+            return CreatorBasedLazyFixList.CANCELLED;
         }
         
         List<String> filtered = candidates.getA();
@@ -217,7 +218,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             
             setComputeImports(null);
             
-            if (isCancelled()) {
+            if (isCancelled() || rawCandidates == null) {
                 ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.getCandidateFQNs cancelled, returning."); //NOI18N
                 
                 return null;

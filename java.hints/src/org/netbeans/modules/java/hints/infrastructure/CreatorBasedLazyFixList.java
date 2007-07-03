@@ -25,8 +25,10 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
@@ -43,7 +45,6 @@ public class CreatorBasedLazyFixList implements LazyFixList {
     private PropertyChangeSupport pcs;
     private boolean computed;
     private boolean computing;
-    private boolean cancelled;
     private List<Fix> fixes;
     
     private FileObject file;
@@ -93,11 +94,9 @@ public class CreatorBasedLazyFixList implements LazyFixList {
         this.currentRule = currentRule;
     }
     
-    public void compute(CompilationInfo info) {
+    public void compute(CompilationInfo info, AtomicBoolean cancelled) {
         synchronized (this) {
             //resume:
-            this.cancelled = false;
-            
             if (this.computed) {
                 return ; //already done.
             }
@@ -107,11 +106,9 @@ public class CreatorBasedLazyFixList implements LazyFixList {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         
         for (ErrorRule rule : c) {
-            synchronized (this) {
-                if (this.cancelled) {
-                    //has been canceled, the computation was not finished:
-                    return ;
-                }
+            if (cancelled.get()) {
+                //has been canceled, the computation was not finished:
+                return ;
             }
             
             setCurrentRule(rule);
@@ -125,6 +122,11 @@ public class CreatorBasedLazyFixList implements LazyFixList {
                 
                 List<Fix> currentRuleFixes = rule.run(info, diagnosticKey, offset, path, data);
                 
+                if (currentRuleFixes == CANCELLED) {
+                    cancelled.set(true);
+                    return ;
+                }
+                
                 if (currentRuleFixes != null) {
                     fixes.addAll(currentRuleFixes);
                 }
@@ -133,11 +135,12 @@ public class CreatorBasedLazyFixList implements LazyFixList {
             }
         }
         
+        if (cancelled.get()) {
+            //has been canceled, the computation was not finished:
+            return ;
+        }
+        
         synchronized (this) {
-            if (this.cancelled) {
-                //has been canceled, the computation was not finished:
-                return ;
-            }
             this.fixes    = fixes;
             this.computed = true;
         }
@@ -148,12 +151,12 @@ public class CreatorBasedLazyFixList implements LazyFixList {
     
     public void cancel() {
         synchronized (this) {
-            this.cancelled = true;
-            
             if (currentRule != null) {
                 currentRule.cancel();
             }
         }
     }
+    
+    public static final List<Fix> CANCELLED = Collections.unmodifiableList(new LinkedList<Fix>());
     
 }

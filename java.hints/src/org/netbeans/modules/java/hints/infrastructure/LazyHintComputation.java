@@ -23,6 +23,7 @@ import org.netbeans.modules.java.hints.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
@@ -41,7 +42,7 @@ public class LazyHintComputation implements CancellableTask<CompilationInfo> {
     }
 
     public synchronized void cancel() {
-        cancelled = true;
+        cancelled.set(true);
         if (delegate != null) {
             delegate.cancel();
         }
@@ -51,14 +52,14 @@ public class LazyHintComputation implements CancellableTask<CompilationInfo> {
         this.delegate = delegate;
     }
     
-    private boolean cancelled;
+    private AtomicBoolean cancelled = new AtomicBoolean();
     private CreatorBasedLazyFixList delegate;
-    private synchronized boolean isCancelled() {
-        return cancelled;
+    private boolean isCancelled() {
+        return cancelled.get();
     }
     
-    private synchronized void resume() {
-        cancelled = false;
+    private void resume() {
+        cancelled.set(false);
     }
     
     public void run(CompilationInfo info) {
@@ -85,7 +86,7 @@ public class LazyHintComputation implements CancellableTask<CompilationInfo> {
                 CreatorBasedLazyFixList l = toCompute.remove(0);
                 
                 setDelegate(l);
-                l.compute(info);
+                l.compute(info, this.cancelled);
                 setDelegate(null);
                 
                 if (isCancelled()) {

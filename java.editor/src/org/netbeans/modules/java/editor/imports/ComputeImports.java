@@ -102,13 +102,13 @@ public class ComputeImports {
         
         for (String unresolved : unresolvedNames) {
             if (isCancelled())
-                return new Pair(Collections.emptyMap(), Collections.emptyMap());
+                return null;
             
             List<TypeElement> classes = new ArrayList<TypeElement>();
             Set<ElementHandle<TypeElement>> typeNames = info.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
             if (typeNames == null) {
                 //Canceled
-                return new Pair(Collections.emptyMap(), Collections.emptyMap());
+                return null;
             }
             for (ElementHandle<TypeElement> typeName : typeNames) {
                 TypeElement te = info.getElements().getTypeElement(typeName.getQualifiedName());
