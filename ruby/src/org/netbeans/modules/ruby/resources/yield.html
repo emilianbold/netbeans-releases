@@ -1,0 +1,28 @@
+<!-- Extracted from http://www.headius.com/rubyspec/index.php/Flow_Control -->
+<h2> yield </h2>
+<p>Ruby methods can optionally be supplied a block on invocation. This block can optionally be made available as a Proc object using the &amp; prefix on the final parameter of a method, but remains invocable at all times through the yield keyword.
+</p><p>The yield keyword looks syntactically just like a method call on the current object. It takes a list of parameters just like method calls and returns a value.
+</p>
+
+<pre> yield(1, 2)
+ yield 3
+ x = yield(4)
+</pre>
+<p>Even if the block argument is named in a method, code in that method can still invoke the block using yield, instead of calling the Proc object.
+</p>
+<pre> def both_ways(&amp;block)
+   block.call(1)
+   yield(1)
+ end
+</pre>
+<p>However, these two forms are not identical. For example, redefinitions of Proc#call will affect the first invocation, but not the second.
+</p><p>Much like blocks can be named and captured as Proc objects inside a method, Procs can also be inserted into the block slot at method call time using the &amp; prefix on the last argument of the call.
+</p>
+<pre> def only_uses_yield
+   yield
+ end
+ 
+ a_proc = proc{ puts "called" }
+ only_uses_yield(&amp;a_proc)
+
+</pre>

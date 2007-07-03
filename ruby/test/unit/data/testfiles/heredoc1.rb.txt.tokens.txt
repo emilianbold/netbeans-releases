@@ -1,0 +1,175 @@
+.t.e.s.t. Comments
+GSF_LINE_COMMENT  "# Simple swing-based application\n", st=0
+GSF_WHITESPACE  "\n", la=1, st=0
+GSF_LINE_COMMENT  "# Import Java packages\n", st=0
+GSF_IDENTIFIER  "include", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_CONSTANT    "Java", la=2, st=2
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "import", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+GSF_IDENTIFIER  "javax", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "swing", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_CONSTANT    "JFrame", la=2, st=2
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "x", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+NONUNARY_OP     "=", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "x", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+NONUNARY_OP     "+", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "1", la=1, st=1
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+NONUNARY_OP     "=", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "JFrame", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "new", la=2, st=2
+GSF_LPAREN      "(", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "Hello Swing", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_RPAREN      ")", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "button", la=2, st=RubyLexerState[8,null,EXPR_CMDARG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_CMDARG,null,null]
+NONUNARY_OP     "=", la=1, st=RubyLexerState[8,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "javax", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "swing", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_CONSTANT    "JButton", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "new", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "Klick Me!", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_RPAREN      ")", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "x", la=2, st=RubyLexerState[8,null,EXPR_CMDARG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_CMDARG,null,null]
+NONUNARY_OP     "=", la=1, st=RubyLexerState[8,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "f", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_STRING_BEGIN  "<<EOT", la=1, st=RubyLexerState[0,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0]]
+NONUNARY_OP     ",", st=RubyLexerState[0,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0]]
+GSF_STRING_BEGIN  "<<EOY", la=1, st=RubyLexerState[0,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+NONUNARY_OP     ",", st=RubyLexerState[0,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+QUOTED_STRING_LITERAL  "another string", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+NONUNARY_OP     ",", st=RubyLexerState[8,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+GSF_INT_LITERAL  "50", la=1, st=RubyLexerState[8,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+GSF_RPAREN      ")", st=RubyLexerState[8,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[24,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+GSF_LINE_COMMENT  "# Comment _here_\n", st=RubyLexerState[56,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,EOT,null,0],end:true,term:HeredocTerm[2,EOT,null,0],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+QUOTED_STRING_LITERAL  "xFoo bar\n", la=4, st=RubyLexerState[40,HeredocTerm[2,EOT,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=3):end:true,term:HeredocTerm[2,EOT,null,1],end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+QUOTED_STRING_END  "EOT\n", st=RubyLexerState[40,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOY,null,0],end:true,term:HeredocTerm[2,EOY,null,0]]
+QUOTED_STRING_LITERAL  "hello\n", la=4, st=RubyLexerState[40,HeredocTerm[2,EOY,null,1],EXPR_END,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOY,null,1]]
+QUOTED_STRING_END  "EOY\n", st=RubyLexerState[40,null,EXPR_END,null,null]
+GSF_IDENTIFIER  "done", la=2, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+CLASS           "class", la=2, st=RubyLexerState[8,null,EXPR_CLASS,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_CLASS,null,null]
+GSF_CONSTANT    "ClickAction", la=2, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "include", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "java", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "awt", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "event", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_CONSTANT    "ActionListener", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+DEF             "def", la=2, st=RubyLexerState[8,null,EXPR_FNAME,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_FNAME,null,null]
+GSF_IDENTIFIER  "actionPerformed", la=2, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "evt", la=2, st=RubyLexerState[8,null,EXPR_CMDARG,null,null]
+GSF_RPAREN      ")", la=1, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "javax", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "swing", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_CONSTANT    "JOptionPane", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "showMessageDialog", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "nil", la=2, st=RubyLexerState[8,null,EXPR_END,null,null]
+NONUNARY_OP     ",", la=1, st=RubyLexerState[8,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+GSF_STRING_BEGIN  "<<EOS", la=1, st=RubyLexerState[0,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOS,null,0],end:true,term:HeredocTerm[2,EOS,null,0]]
+GSF_RPAREN      ")", st=RubyLexerState[0,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOS,null,0],end:true,term:HeredocTerm[2,EOS,null,0]]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOS,null,0],end:true,term:HeredocTerm[2,EOS,null,0]]
+GSF_STRING_LITERAL  "<html>Hello from <b><u>JRuby</u></b>.<br>\nButton '", la=2, st=RubyLexerState[32,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
+GSF_STRING_LITERAL  "#{", st=RubyLexerState[36,HeredocTerm[2,EOS,null,2],EXPR_BEG,HeredocTermState[2],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,2]]
+EMBEDDED_RUBY   "evt.getActionCommand()", la=1, st=RubyLexerState[32,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
+GSF_STRING_LITERAL  "}' clicked.\n", la=4, st=RubyLexerState[32,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
+GSF_STRING_END  "EOS\n", st=RubyLexerState[32,null,EXPR_END,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "button", la=2, st=3
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "add_action_listener", la=2, st=2
+GSF_LPAREN      "(", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "ClickAction", la=2, st=3
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "new", la=2, st=2
+GSF_RPAREN      ")", la=1, st=1
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_LINE_COMMENT  "# Add the button to the frame\n", st=0
+GSF_IDENTIFIER  "frame", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "get_content_pane", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "add", la=2, st=2
+GSF_LPAREN      "(", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "button", la=2, st=3
+GSF_RPAREN      ")", la=1, st=1
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_LINE_COMMENT  "# Show frame\n", st=0
+GSF_IDENTIFIER  "frame", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "set_default_close_operation", la=2, st=2
+GSF_LPAREN      "(", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "JFrame", la=2, st=3
+GSF_IDENTIFIER  "::", st=7
+GSF_CONSTANT    "EXIT_ON_CLOSE", la=2, st=2
+GSF_RPAREN      ")", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=3
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "pack", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=3
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "visible", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+NONUNARY_OP     "=", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "true", la=1, st=1
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

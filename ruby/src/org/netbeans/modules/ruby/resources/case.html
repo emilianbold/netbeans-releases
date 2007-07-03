@@ -1,0 +1,39 @@
+<!-- Extracted from http://www.headius.com/rubyspec/index.php/Flow_Control -->
+<h2>case...when...else...end</h2>
+<p>A case statement matches the result of the case expression against each of the results of the when expression using the === matching operator. There can be any number of when clauses, but only body of the first match is evaluated. If no when clauses match, and the programmer has provided an else clause, that body is evaluated. If there is no match and no else clause, the case expression returns nil.
+</p>
+<pre> <b>case</b> degrees_in_kelvin
+ <b>when</b> 0..273
+   puts "solid"
+ <b>when</b> 274..372
+   puts "liquid"
+ <b>else</b>
+
+   puts "gas"
+ <b>end</b>
+</pre>
+<p>The case...when..else..end construct determines matching with the === method. The default === method inherited from Object is an equality test using equal? which performs strict object equality. This method is implemented as an alias, however, so redefining the equals? method on a subclass will not change the behavior of the default inherited === method.
+</p><p>Many core classes like RegExp and Range provide === methods which match whole groups of objects.
+</p>
+<pre> <b>case</b> "hello"
+ <b>when</b> /^ye/
+   puts "yee-haw"    
+ <b>when</b> /^he/
+   puts "hee-haw"
+ <b>end</b>
+
+</pre>
+<p>When the match is performed, the object from the when expression is the invocant and the object from the case expression is the argument. From the example above, the successful match is found with the following expression: /^he/ === "hello".
+</p><p>Like most Ruby special forms, the case...when...else...end expression returns its result. This will be the result of the last expression evaluated inside the block
+</p>
+<pre> puts <b>case</b> x
+      <b>when</b> 0...10
+        puts "this is not the value"
+        0 # but this will be if x is in between 0 and 10
+      <b>when</b> 10...100
+        1
+      <b>when</b> 100...1000
+        2
+      <b>end</b>
+
+</pre>

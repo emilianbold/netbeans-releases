@@ -1,0 +1,107 @@
+.t.e.s.t. Tags
+COMMENT_HTMLTAG  "<b>"
+COMMENT_TEXT    "Bold", la=2
+COMMENT_HTMLTAG  "</b>"
+COMMENT_TEXT    "\n"
+COMMENT_HTMLTAG  "<i>"
+COMMENT_TEXT    "Italic", la=2
+COMMENT_HTMLTAG  "</i>"
+COMMENT_TEXT    "\n"
+COMMENT_HTMLTAG  "<i>"
+COMMENT_TEXT    "Generates", la=1
+COMMENT_TEXT    ":", la=2
+COMMENT_HTMLTAG  "</i>"
+COMMENT_TEXT    "\n"
+COMMENT_HTMLTAG  "<p>"
+COMMENT_TEXT    "\n"
+COMMENT_HTMLTAG  "</p>"
+----- EOF -----
+
+.t.e.s.t.  NOT tags
+COMMENT_TEXT    "\\<p>\n"
+COMMENT_TEXT    "x < y\n"
+COMMENT_TEXT    "1 < y < 5", la=1
+----- EOF -----
+
+.t.e.s.t.  RDoc directives
+COMMENT_RDOC    ":doc:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":nodoc:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":arg:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":args:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":yields:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":notnew:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":not-new:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":not_new:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":stopdoc:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":startdoc:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":enddoc:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":main:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":title:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":section:"
+COMMENT_TEXT    "\n"
+COMMENT_RDOC    ":include:"
+----- EOF -----
+
+.t.e.s.t.  NOT RDoc directives
+COMMENT_TEXT    "\\:nodoc", la=1
+COMMENT_TEXT    ":\n"
+COMMENT_TEXT    ":nodoc\n"
+COMMENT_TEXT    "nodoc", la=1
+COMMENT_TEXT    ":\n"
+COMMENT_TEXT    ":\n"
+COMMENT_TEXT    ": nodoc ", la=1
+COMMENT_TEXT    ":", la=1
+----- EOF -----
+
+.t.e.s.t. Special markers 
+COMMENT_BOLD    "*bold*"
+COMMENT_TEXT    "\n"
+COMMENT_HTMLTAG  "+terminal+"
+COMMENT_TEXT    "\n"
+COMMENT_ITALIC  "_italic_", la=1
+----- EOF -----
+
+.t.e.s.t. NOT special markers
+COMMENT_TEXT    "\\*bold*\n"
+COMMENT_TEXT    "*bold\\*\n"
+COMMENT_TEXT    "x*y\n"
+COMMENT_TEXT    "this_is\n"
+COMMENT_TEXT    "_myidentifier\n"
+COMMENT_TEXT    "hel*lo*you", la=1
+----- EOF -----
+
+.t.e.s.t. Links
+COMMENT_LINK    "www.netbeans.org", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "mailto:foo@bar.com", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "http://www.netbeans.org", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "ftp:foo@bar:80/pub/hello.txt", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "#mymethod", la=1
+----- EOF -----
+
+.t.e.s.t. Not Links
+COMMENT_TEXT    "http\\://netbeans.org\n"
+COMMENT_TEXT    "\\file", la=1
+COMMENT_TEXT    ":/tmp/foo.rb\n"
+COMMENT_TEXT    "\\#mymethod", la=1
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

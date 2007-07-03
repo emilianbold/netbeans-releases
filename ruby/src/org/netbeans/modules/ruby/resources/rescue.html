@@ -1,0 +1,48 @@
+<!-- Extracted from http://www.headius.com/rubyspec/index.php/Flow_Control -->
+<h1> Exception handling </h1>
+<h2>begin...rescue...ensure...end</h2>
+
+<p>A begin...end block can offset a section of code. It is typically used for exception handling.
+</p>
+<pre>begin
+  puts "a bare begin/end alone isn't terribly useful'
+end
+</pre>
+<pre>begin
+  puts "however when used with a rescue, exception handling results"
+  raise Exception.new("my exception")
+rescue Exception =&gt; e
+  puts e.backtrace
+end
+</pre>
+<p>A begin...end block can stand alone, with one or more rescue blocks, and/or with an ensure block.
+</p>
+<pre>begin
+  puts "ensure blocks are useful for cleaning up resources regardless of errors that may occur"
+  f = File.open("myfile")
+  raise Exception.new
+rescue NameError =&gt; n
+  # no NameError raised, so we'll not get here
+ensure
+  # but we'll always get here, unless the interpreter or thread terminates
+  f.close
+end
+</pre>
+<p>Note that Ruby's standard scoping for local variables holds for begin...end blocks as well: there is only one scope in a given method (not counting block-scoped variables).
+</p><p>The anonymous form of rescue only catches exceptions that descend from StandardError, as follows:
+</p>
+
+<pre>begin
+  eval "\"" # raises a SyntaxError
+rescue =&gt; e
+  # The SyntaxError will not be caught
+end
+</pre>
+<p>Compare to:
+</p>
+<pre>begin
+  raise NameError.new("Some name error")
+rescue =&gt; e
+  # The NameError will be caught
+end
+</pre>

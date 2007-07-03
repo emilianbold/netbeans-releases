@@ -1,0 +1,471 @@
+.t.e.s.t. Comments
+GSF_LINE_COMMENT  "# Many of these samples are from http://www.ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html\n", st=0
+GSF_LINE_COMMENT  "# This is a line comment\n", st=0
+GSF_IDENTIFIER  "code", la=2, st=2
+GSF_LPAREN      "(", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_RPAREN      ")", st=1
+GSF_LINE_COMMENT  "#More comments\n", st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_LINE_COMMENT  "# Rdoc *bold* and #method\n", st=0
+GSF_LINE_COMMENT  "# :nodoc:", la=1, st=0
+----- EOF -----
+
+.t.e.s.t. Identifiers
+GSF_IDENTIFIER  "a", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+GSF_IDENTIFIER  "ab", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "aB2", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_INT_LITERAL  "2", la=1, st=1
+GSF_IDENTIFIER  "a", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+GSF_IDENTIFIER  "x", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "yZ", la=2, st=3
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "z", la=1, st=3
+----- EOF -----
+
+.t.e.s.t. String Literals
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  " ", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_STRING_BEGIN  "'", st=RubyLexerState[0,StringTerm[0,',0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  " ", la=1, st=RubyLexerState[0,StringTerm[0,',0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_END  "'", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_STRING_BEGIN  "%q{", st=RubyLexerState[0,StringTerm[0,},123,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "a", la=1, st=RubyLexerState[0,StringTerm[0,},123,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_END  "}", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "%Q{", st=RubyLexerState[8,StringTerm[2,},123,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "a", la=1, st=RubyLexerState[8,StringTerm[2,},123,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  "}", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "%(", st=RubyLexerState[8,StringTerm[2,),40,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "a", la=1, st=RubyLexerState[8,StringTerm[2,),40,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  ")", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "% ", st=RubyLexerState[8,StringTerm[2, ,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "a", la=1, st=RubyLexerState[8,StringTerm[2, ,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  " ", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "%-", st=RubyLexerState[8,StringTerm[2,-,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "a", la=1, st=RubyLexerState[8,StringTerm[2,-,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  "-", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "\\" ", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "\\\\", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "\\\\\\\\\\\\\\"\\"", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "\\n\\" \\"a", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "this is a string expression\\n", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "concat", la=2, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "#{", st=RubyLexerState[12,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+EMBEDDED_RUBY   "foobar", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+QUOTED_STRING_LITERAL  "}", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+GSF_STRING_BEGIN  "'", st=RubyLexerState[0,StringTerm[0,',0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "concat#{foobar}", la=1, st=RubyLexerState[0,StringTerm[0,',0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_END  "'", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_STRING_BEGIN  "%q!", st=RubyLexerState[0,StringTerm[0,!,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "I said, "You said, 'She said it.'"", la=1, st=RubyLexerState[0,StringTerm[0,!,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_END  "!", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "%!", st=RubyLexerState[8,StringTerm[2,!,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "I said, "You said, 'She said it.'"", la=1, st=RubyLexerState[8,StringTerm[2,!,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  "!", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "%Q(", st=RubyLexerState[8,StringTerm[2,),40,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "'This is it.'\\n", la=1, st=RubyLexerState[8,StringTerm[2,),40,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  ")", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "my name is ", la=2, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "#{", st=RubyLexerState[12,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+EMBEDDED_RUBY   "$ruby", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+QUOTED_STRING_LITERAL  "}", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "`", st=RubyLexerState[8,StringTerm[2,`,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "executed", la=1, st=RubyLexerState[8,StringTerm[2,`,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  "`", st=RubyLexerState[8,null,EXPR_END,null,null]
+----- EOF -----
+
+.t.e.s.t. Commands
+QUOTED_STRING_BEGIN  "`", st=RubyLexerState[8,StringTerm[2,`,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "date", la=1, st=RubyLexerState[8,StringTerm[2,`,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  "`", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  "%x{", st=RubyLexerState[8,StringTerm[2,},123,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  " date ", la=1, st=RubyLexerState[8,StringTerm[2,},123,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  "}", st=RubyLexerState[8,null,EXPR_END,null,null]
+----- EOF -----
+
+.t.e.s.t. Regular expressions
+GSF_REGEXP_BEGIN  "/", st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "^Ruby the OOPL", la=1, st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_END  "/", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_REGEXP_BEGIN  "/", st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "Ruby", la=1, st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_END  "/i", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_REGEXP_BEGIN  "/", st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "my name is ", la=2, st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "#{", st=RubyLexerState[5,StringTerm[7,/,0,0,2],EXPR_BEG,StringTermState[0,2],null]
+EMBEDDED_RUBY   "myname", la=1, st=RubyLexerState[1,StringTerm[7,/,0,0,2],EXPR_BEG,StringTermState[0,2],null]
+GSF_REGEXP_LITERAL  "}", la=1, st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_END  "/o", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_REGEXP_BEGIN  "%r|", st=RubyLexerState[1,StringTerm[7,|,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "^/usr/local/.*", la=1, st=RubyLexerState[1,StringTerm[7,|,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_END  "|", la=1, st=1
+----- EOF -----
+
+.t.e.s.t. Heredocs
+GSF_LINE_COMMENT  "#print <<EOF\n", st=0
+GSF_LINE_COMMENT  "#The price is #{$Price}.\n", st=0
+GSF_LINE_COMMENT  "#EOF\n", st=0
+GSF_LINE_COMMENT  "#\n", st=0
+GSF_LINE_COMMENT  "#  print <<"EOF"\n", st=0
+GSF_LINE_COMMENT  "#The price is #{$Price}.\n", st=0
+GSF_LINE_COMMENT  "#EOF\n", st=0
+GSF_LINE_COMMENT  "#\n", st=0
+GSF_LINE_COMMENT  "# print <<`EOC`\n", st=0
+GSF_LINE_COMMENT  "#echo hi there\n", st=0
+GSF_LINE_COMMENT  "#echo lo there\n", st=0
+GSF_LINE_COMMENT  "#EOC\n", st=0
+GSF_LINE_COMMENT  "#\n", st=0
+GSF_LINE_COMMENT  "# This is broken; a bug is open on it (it occurs in assertions.rb)\n", st=0
+GSF_LINE_COMMENT  "#  print <<"foo", <<"bar"        # you can stack them\n", st=0
+GSF_LINE_COMMENT  "#I said foo.\n", st=0
+GSF_LINE_COMMENT  "#foo\n", st=0
+GSF_LINE_COMMENT  "#I said bar.\n", st=0
+GSF_LINE_COMMENT  "#bar\n", st=0
+GSF_LINE_COMMENT  "#\n", st=0
+GSF_LINE_COMMENT  "#  myfunc(<<"THIS", 23, <<'THAT')\n", st=0
+GSF_LINE_COMMENT  "#Here's a line\n", st=0
+GSF_LINE_COMMENT  "#or two.\n", st=0
+GSF_LINE_COMMENT  "#THIS\n", st=0
+GSF_LINE_COMMENT  "#and here's another.\n", st=0
+GSF_LINE_COMMENT  "#THAT\n", st=0
+GSF_LINE_COMMENT  "#\n", st=0
+GSF_LINE_COMMENT  "#  if need_define_foo\n", st=0
+GSF_LINE_COMMENT  "#    eval <<-EOS                 # delimiters can be indented\n", st=0
+GSF_LINE_COMMENT  "#      def foo\n", st=0
+GSF_LINE_COMMENT  "#        print "foo\\n"\n", st=0
+GSF_LINE_COMMENT  "#      end\n", st=0
+GSF_LINE_COMMENT  "#    EOS\n", st=0
+GSF_LINE_COMMENT  "#  end", la=1, st=0
+----- EOF -----
+
+.t.e.s.t. Number Literals
+GSF_INT_LITERAL  "123", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "-", la=1, st=0
+GSF_INT_LITERAL  "123", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "1_234", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_FLOAT_LITERAL  "123.45", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_FLOAT_LITERAL  "1.2e-3", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "0xffff", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "0b01011", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "0377", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "?a", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "?\\C-a", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "?\\M-a", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "?\\M-\\C-a", st=1
+----- EOF -----
+
+.t.e.s.t. Vars (global, fields, static fields etc)
+GSF_GLOBAL      "$foobar", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_GLOBAL      "$/", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INSTANCE    "@foobar", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_CLASS       "@@foobar", la=1, st=1
+----- EOF -----
+
+.t.e.s.t. Symbols
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[2,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "symbol", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[2,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "class", la=2, st=8
+GSF_WHITESPACE  "\n", la=1, st=8
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[2,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "nil", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[2,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "def", la=2, st=6
+GSF_WHITESPACE  "\n", la=1, st=6
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[2,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "Hello", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":'", st=RubyLexerState[2,StringTerm[16,',0,0,1],EXPR_FNAME,StringTermState[0,1],null]
+GSF_TYPESYMBOL  "foo", la=1, st=RubyLexerState[2,StringTerm[16,',0,0,1],EXPR_FNAME,StringTermState[0,1],null]
+GSF_TYPESYMBOL  "'", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":"", st=RubyLexerState[2,StringTerm[18,",0,0,1],EXPR_FNAME,StringTermState[0,1],null]
+GSF_TYPESYMBOL  "foo(", la=1, st=RubyLexerState[2,StringTerm[18,",0,0,1],EXPR_FNAME,StringTermState[0,1],null]
+GSF_TYPESYMBOL  """, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":"", st=RubyLexerState[2,StringTerm[18,",0,0,1],EXPR_FNAME,StringTermState[0,1],null]
+GSF_TYPESYMBOL  "foo bar", la=1, st=RubyLexerState[2,StringTerm[18,",0,0,1],EXPR_FNAME,StringTermState[0,1],null]
+GSF_TYPESYMBOL  """, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[2,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "foo?", la=1, st=1
+----- EOF -----
+
+.t.e.s.t. Arrays and hashes
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_LBRACKET    "[", st=0
+GSF_INT_LITERAL  "1", la=1, st=1
+NONUNARY_OP     ",", st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "2", la=1, st=1
+NONUNARY_OP     ",", st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "3", la=1, st=1
+GSF_RBRACKET    "]", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_LBRACE      "{", st=0
+GSF_INT_LITERAL  "1", la=1, st=1
+NONUNARY_OP     "=>", st=0
+GSF_INT_LITERAL  "2", la=1, st=1
+NONUNARY_OP     ",", st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "2", la=1, st=1
+NONUNARY_OP     "=>", st=0
+GSF_INT_LITERAL  "4", la=1, st=1
+NONUNARY_OP     ",", st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "3", la=1, st=1
+NONUNARY_OP     "=>", st=0
+GSF_INT_LITERAL  "6", la=1, st=1
+GSF_RBRACE      "}", st=1
+----- EOF -----
+
+.t.e.s.t. Ranges
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "1", la=1, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+RANGE           "..", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "20", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_REGEXP_BEGIN  "/", st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "first", la=1, st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_END  "/", la=1, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+RANGE           "...", st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_REGEXP_BEGIN  "/", st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_LITERAL  "second", la=1, st=RubyLexerState[1,StringTerm[7,/,0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_REGEXP_END  "/", la=1, st=1
+----- EOF -----
+
+.t.e.s.t. Constants
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "FOOBAR", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "Foo", la=2, st=3
+GSF_IDENTIFIER  "::", st=7
+GSF_CONSTANT    "Bar", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+COLON3          "::", st=0
+GSF_CONSTANT    "Bar", la=1, st=2
+----- EOF -----
+
+.t.e.s.t. Operators
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+NONUNARY_OP     "=", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "+", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "-", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "*", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_LBRACKET    "[", st=0
+GSF_RBRACKET    "]", st=1
+----- EOF -----
+
+.t.e.s.t. Keywords
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "\n", la=1, st=0
+GSF_ANY_KEYWORD  "alias", la=2, st=6
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_FNAME,null,null]
+GSF_ANY_KEYWORD  "and", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "BEGIN", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+BEGIN           "begin", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "break", la=2, st=5
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_MID,null,null]
+CASE            "case", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+CLASS           "class", la=2, st=8
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CLASS,null,null]
+DEF             "def", la=2, st=6
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_FNAME,null,null]
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+DO              "do", la=2, st=0
+GSF_WHITESPACE  "\n", la=1, st=0
+ELSE            "else", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+ELSIF           "elsif", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "END", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+ENSURE          "ensure", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "false", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+FOR             "for", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+IF              "if", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "in", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+MODULE          "module", la=2, st=0
+GSF_WHITESPACE  "\n", la=1, st=0
+GSF_ANY_KEYWORD  "next", la=2, st=5
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_MID,null,null]
+GSF_ANY_KEYWORD  "nil", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+GSF_ANY_KEYWORD  "not", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "or", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "redo", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+GSF_ANY_KEYWORD  "rescue", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "retry", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+GSF_ANY_KEYWORD  "return", la=2, st=5
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_MID,null,null]
+SELF            "self", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+SUPER           "super", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "then", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "true", la=2, st=1
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_END,null,null]
+GSF_ANY_KEYWORD  "undef", la=2, st=6
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_FNAME,null,null]
+GSF_ANY_KEYWORD  "unless", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+UNTIL           "until", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+WHEN            "when", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+WHILE           "while", la=2, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "yield", la=1, st=2
+----- EOF -----
+
+.t.e.s.t. Non-keywords
+GSF_IDENTIFIER  "require", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+GSF_IDENTIFIER  "attr_accessor", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "abstracta", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+GSF_IDENTIFIER  "assertx", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "b", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "br", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "car", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "dou", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "doubl", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "finall", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "im", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "i", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "ifa", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "inti", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "throwsx", la=1, st=2
+----- EOF -----
+
+.t.e.s.t. Misc
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_IDENTIFIER  "print", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_ARG,null,null]
+GSF_CONSTANT    "File", la=2, st=2
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "print", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_LPAREN      "(", st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "foobar", la=2, st=3
+GSF_RPAREN      ")", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_LPAREN      "(", st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_GLOBAL      "$foobar", la=2, st=1
+GSF_RPAREN      ")", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_LPAREN      "(", st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_INSTANCE    "@foobar", la=2, st=1
+GSF_RPAREN      ")", la=1, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "defined?", la=1, st=2
+GSF_LPAREN      "(", st=RubyLexerState[32,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "Foobar", la=1, st=3
+GSF_IDENTIFIER  ")", la=1, st=3
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

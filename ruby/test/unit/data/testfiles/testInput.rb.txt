@@ -1,0 +1,170 @@
+# Many of these samples are from http://www.ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html
+
+.t.e.s.t. Comments
+# This is a line comment
+code()#More comments
+# Rdoc *bold* and #method
+# :nodoc:
+.e.o.f.
+
+.t.e.s.t. Identifiers
+a ab aB2 2a x
+yZ
+z
+.e.o.f.
+
+
+.t.e.s.t. String Literals
+" "
+' '
+%q{a}
+%Q{a}
+%(a)
+% a 
+%-a-
+"\" "
+"\\"
+"\\\\\\\"\""
+"\n\" \"a"
+"this is a string expression\n"
+"concat#{foobar}"
+'concat#{foobar}'
+%q!I said, "You said, 'She said it.'"!
+%!I said, "You said, 'She said it.'"!
+%Q('This is it.'\n)
+"my name is #{$ruby}"
+`executed`
+.e.o.f.
+
+.t.e.s.t. Commands
+`date`
+%x{ date }
+.e.o.f.
+
+
+.t.e.s.t. Regular expressions
+/^Ruby the OOPL/
+/Ruby/i
+/my name is #{myname}/o
+%r|^/usr/local/.*|
+.e.o.f.
+
+
+.t.e.s.t. Heredocs
+#print <<EOF
+#The price is #{$Price}.
+#EOF
+#
+#  print <<"EOF"
+#The price is #{$Price}.
+#EOF
+#
+# print <<`EOC`
+#echo hi there
+#echo lo there
+#EOC
+#
+# This is broken; a bug is open on it (it occurs in assertions.rb)
+#  print <<"foo", <<"bar"        # you can stack them
+#I said foo.
+#foo
+#I said bar.
+#bar
+#
+#  myfunc(<<"THIS", 23, <<'THAT')
+#Here's a line
+#or two.
+#THIS
+#and here's another.
+#THAT
+#
+#  if need_define_foo
+#    eval <<-EOS                 # delimiters can be indented
+#      def foo
+#        print "foo\n"
+#      end
+#    EOS
+#  end
+.e.o.f.
+
+
+
+.t.e.s.t. Number Literals
+123
+-123
+1_234
+123.45
+1.2e-3
+0xffff
+0b01011
+0377
+?a
+?\C-a
+?\M-a
+?\M-\C-a
+.e.o.f.
+
+
+.t.e.s.t. Vars (global, fields, static fields etc)
+$foobar
+$/
+@foobar
+@@foobar
+.e.o.f.
+ 
+.t.e.s.t. Symbols
+:symbol
+:class
+:nil
+:def
+:Hello
+:'foo'
+:"foo("
+:"foo bar"
+:foo?
+.e.o.f.
+ 
+.t.e.s.t. Arrays and hashes
+[1, 2, 3]
+{1=>2, 2=>4, 3=>6}
+.e.o.f.
+ 
+.t.e.s.t. Ranges
+1 .. 20
+/first/ ... /second/
+.e.o.f.
+ 
+.t.e.s.t. Constants
+FOOBAR
+Foo::Bar
+::Bar
+.e.o.f.
+ 
+.t.e.s.t. Operators
+= + - * []
+.e.o.f.
+ 
+
+.t.e.s.t. Keywords
+alias and BEGIN begin break case class def defined? do
+else elsif END end ensure false for if in module
+next nil not or redo rescue retry return self super
+then true undef unless until when while yield
+.e.o.f.
+
+
+.t.e.s.t. Non-keywords
+require attr_accessor
+abstracta assertx b br car dou doubl finall im i ifa inti throwsx
+.e.o.f.
+
+
+.t.e.s.t. Misc
+defined? print
+defined? File.print
+defined?(foobar)
+defined?($foobar)
+defined?(@foobar)
+defined?(Foobar)
+.e.o.f.
+

@@ -1,0 +1,71 @@
+<!-- Extracted from http://www.headius.com/rubyspec/index.php/Flow_Control -->
+<h2> if..elsif..end / unless..end </h2>
+
+<p>Ruby features the standard if conditional in both expression and expression modifier form. <code>unless <i>condition</i></code> is exactly equivalent to <code>if not <i>condition</i></code> in all contexts. 
+</p><p>An <code>if/unless</code> expression returns the value of its last expression.
+</p>
+<h3> Block form </h3>
+
+<h4> Syntax </h4>
+<pre> <b>if</b> <i>condition</i> [then]
+   <i>code</i>
+ [<b>elsif</b> <i>condition</i> [then]
+   <i>code</i>]
+ [<b>else</b>
+
+   <i>code</i>]
+ <b>end</b>
+</pre>
+<pre> <b>unless</b> <i>condition</i>
+   <i>code</i>
+ [<b>else</b>
+
+   <i>code</i>]
+ <b>end</b>
+</pre>
+<h4> Explanation </h4>
+<p>The basic expression form of if looks like this, and must end with an <code>end</code>:
+</p>
+<pre> <b>if</b> <i>some_condition_expression</i>
+
+   # This section executed if some_condition_expression is true
+ <b>end</b>
+</pre>
+<p>The <code>else</code>-keyword can be used to provide a section that will be executed if the condition expression evaluates to false. Only one <code>else</code> may appear in an if-expression:
+</p>
+<pre> if <i>some_condition_expression</i>
+   # This section executed if some_condition_expression is true
+ <b>else</b>
+
+   # This section executed if some_condition_expression is false
+ end
+</pre>
+<p>The <code>elsif</code>-keyword can be used to create multiple mutually exclusive conditionals. If the conditional in the initial <code>if</code> is not true, then each <code>elsif</code> conditional is evaluated in descending order until one is true. If none is, the <code>else</code>-section is executed if there is one:
+</p>
+<pre> if <i>cond_one</i>
+
+   # cond_one is true
+ <b>elsif</b> <i>cond_two</i>
+   # cond_one is not true and cond_two is true
+ <b>elsif</b> <i>cond_three</i>
+   # cond_one is not true and cond_two is not true and cond_three is true
+ else
+   # cond_one, cond_two and cond_three are all not true
+ end
+</pre>
+<p>With <code>unless</code>, it is not possible to define <code>elsif</code>s, just <code>else</code>.
+    
+</p><p>There <code>if</code> expression may have an optional <code>then</code> added, but it is usually elided.
+</p>
+<pre> if <i>some_condition_expression</i> <b>then</b>
+   # ...
+ elsif <i>some_other_condition_expression</i> <b>then</b>
+
+   # ...
+ end
+</pre>
+<p>However, <code>then</code> is necessary if you want to keep the <code>if</code> expression in a single line.
+</p>
+<pre> if <i>some_condition_expression</i> <b>then</b> do_something end
+
+</pre>

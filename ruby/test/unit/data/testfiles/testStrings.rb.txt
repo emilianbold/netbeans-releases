@@ -1,0 +1,22 @@
+.t.e.s.t. Embedded
+Read #{code} here
+My #@field here
+.e.o.f.
+
+
+.t.e.s.t. Escapes 
+\xAF
+\123
+\cy
+\C-z
+\M-z
+\M-xy
+\a
+\b
+\"
+.e.o.f.
+
+.t.e.s.t.  Normal strings
+foo
+bar
+.e.o.f.

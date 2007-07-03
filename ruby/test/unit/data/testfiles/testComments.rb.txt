@@ -1,0 +1,72 @@
+.t.e.s.t. Tags
+<b>Bold</b>
+<i>Italic</i>
+<i>Generates:</i>
+<p>
+</p>
+.e.o.f.
+
+
+.t.e.s.t.  NOT tags
+\<p>
+x < y
+1 < y < 5
+.e.o.f.
+
+.t.e.s.t.  RDoc directives
+:doc:
+:nodoc:
+:arg:
+:args:
+:yields:
+:notnew:
+:not-new:
+:not_new:
+:stopdoc:
+:startdoc:
+:enddoc:
+:main:
+:title:
+:section:
+:include:
+.e.o.f.
+
+
+.t.e.s.t.  NOT RDoc directives
+\:nodoc:
+:nodoc
+nodoc:
+:
+: nodoc :
+.e.o.f.
+
+.t.e.s.t. Special markers 
+*bold*
++terminal+
+_italic_
+.e.o.f.
+
+.t.e.s.t. NOT special markers
+\*bold*
+*bold\*
+x*y
+this_is
+_myidentifier
+hel*lo*you
+.e.o.f.
+
+.t.e.s.t. Links
+www.netbeans.org
+mailto:foo@bar.com
+http://www.netbeans.org
+ftp:foo@bar:80/pub/hello.txt
+#mymethod
+.e.o.f.
+
+.t.e.s.t. Not Links
+http\://netbeans.org
+\file:/tmp/foo.rb
+\#mymethod
+.e.o.f.
+
+

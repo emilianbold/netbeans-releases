@@ -1,0 +1,29 @@
+.t.e.s.t. Embedded
+STRING_TEXT     "Read ", la=2
+EMBEDDED_RUBY   "#{code}"
+STRING_TEXT     " here\nMy #@field here", la=1
+----- EOF -----
+
+.t.e.s.t. Escapes 
+STRING_TEXT     "\\xAF\n", la=1
+STRING_ESCAPE   "\\123"
+STRING_TEXT     "\n", la=1
+STRING_TEXT     "\\cy\n", la=1
+STRING_TEXT     "\\C-z\n", la=1
+STRING_TEXT     "\\M-z\n", la=1
+STRING_ESCAPE   "\\M-x"
+STRING_TEXT     "y\n", la=1
+STRING_ESCAPE   "\\a"
+STRING_TEXT     "\n", la=1
+STRING_ESCAPE   "\\b"
+STRING_TEXT     "\n", la=1
+STRING_ESCAPE   "\\""
+----- EOF -----
+
+.t.e.s.t.  Normal strings
+STRING_TEXT     "foo\nbar", la=1
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+
