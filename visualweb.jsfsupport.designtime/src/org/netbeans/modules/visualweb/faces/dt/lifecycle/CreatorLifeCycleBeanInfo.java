@@ -28,12 +28,9 @@ import java.beans.IntrospectionException;
 import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.openide.util.Exceptions;
 
 public class CreatorLifeCycleBeanInfo extends SimpleBeanInfo {
-
-    private static EventSetDescriptor[] eventSetDescriptors;
-    private static MethodDescriptor[] methodDescriptors;
-    private static PropertyDescriptor[] propertyDescriptors;
 
     public CreatorLifeCycleBeanInfo() throws NoSuchMethodException {}
 
@@ -52,8 +49,7 @@ public class CreatorLifeCycleBeanInfo extends SimpleBeanInfo {
 
     public EventSetDescriptor[] getEventSetDescriptors() {
         try {
-            if (eventSetDescriptors == null) {
-                eventSetDescriptors = new EventSetDescriptor[] {
+            EventSetDescriptor[] eventSetDescriptors = new EventSetDescriptor[] {
                     new EventSetDescriptor(CreatorLifeCycle.class, "lifeCycle", //NOI18N
                     LifeCycleListener.class,
                     new String[] {"preRestoreView"       , "postRestoreView", //NOI18N
@@ -64,10 +60,9 @@ public class CreatorLifeCycleBeanInfo extends SimpleBeanInfo {
                                   "preRenderResponse"    , "postRenderResponse"}, //NOI18N
                     "addLifeCycleListener", "removeLifeCycleListener") //NOI18N
                 };
-            }
             return eventSetDescriptors;
         } catch (IntrospectionException e) {
-            System.err.println(">>>>>>" + e); //NOI18N
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
@@ -76,10 +71,12 @@ public class CreatorLifeCycleBeanInfo extends SimpleBeanInfo {
         return loadImage("CreatorLifeCycleIconColor16.gif"); //NOI18N
     }
 
+    @Override
     public synchronized MethodDescriptor[] getMethodDescriptors() {
         return new MethodDescriptor[0];
     }
 
+    @Override
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         return new PropertyDescriptor[0];
     }

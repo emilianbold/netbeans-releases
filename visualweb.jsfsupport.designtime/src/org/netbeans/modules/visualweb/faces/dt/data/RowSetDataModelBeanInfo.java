@@ -31,12 +31,9 @@ import javax.faces.model.DataModelListener;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.base.CategoryDescriptors;
 import com.sun.rave.faces.data.RowSetDataModel;
+import org.openide.util.Exceptions;
 
 public class RowSetDataModelBeanInfo extends SimpleBeanInfo {
-
-    private static EventSetDescriptor[] eventSetDescriptors;
-    private static MethodDescriptor[] methodDescriptors;
-    private static PropertyDescriptor[] propertyDescriptors;
 
     public RowSetDataModelBeanInfo() throws NoSuchMethodException {}
 
@@ -57,8 +54,7 @@ public class RowSetDataModelBeanInfo extends SimpleBeanInfo {
 
     public EventSetDescriptor[] getEventSetDescriptors() {
         try {
-            if (eventSetDescriptors == null) {
-                eventSetDescriptors = new EventSetDescriptor[] {
+            EventSetDescriptor[] eventSetDescriptors = new EventSetDescriptor[] {
                     new EventSetDescriptor(RowSetDataModel.class, "dataModel", //NOI18N
                     DataModelListener.class,
                     new String[] {
@@ -68,10 +64,10 @@ public class RowSetDataModelBeanInfo extends SimpleBeanInfo {
                 , //NOI18N
                     "addDataModelListener", "removeDataModelListener") //NOI18N
                 };
-            }
 
             return eventSetDescriptors;
         } catch (IntrospectionException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
@@ -92,24 +88,23 @@ public class RowSetDataModelBeanInfo extends SimpleBeanInfo {
 
     public synchronized MethodDescriptor[] getMethodDescriptors() {
         try {
-            if (methodDescriptors == null) {
-                methodDescriptors = new MethodDescriptor[] {
+            MethodDescriptor[] methodDescriptors = new MethodDescriptor[] {
                     new MethodDescriptor(RowSetDataModel.class.getMethod("clear", null)), //NOI18N
                     new MethodDescriptor(RowSetDataModel.class.getMethod("commit", null)), //NOI18N
                     new MethodDescriptor(RowSetDataModel.class.getMethod("reset", null)), //NOI18N
                     new MethodDescriptor(RowSetDataModel.class.getMethod("rollback", null)), //NOI18N
                 };
-            }
 
             return methodDescriptors;
         } catch (NoSuchMethodException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
 
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            if (propertyDescriptors == null) {
+            PropertyDescriptor[] propertyDescriptors;
 
                 PropertyDescriptor dataCacheKey =
                     new PropertyDescriptor("dataCacheKey", RowSetDataModel.class, "getDataCacheKey",
@@ -142,9 +137,9 @@ public class RowSetDataModelBeanInfo extends SimpleBeanInfo {
                     tableName,
                 };
 
-            }
             return propertyDescriptors;
         } catch (IntrospectionException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }

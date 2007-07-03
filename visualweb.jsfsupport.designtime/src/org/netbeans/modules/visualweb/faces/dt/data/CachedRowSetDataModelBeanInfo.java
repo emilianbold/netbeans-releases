@@ -24,58 +24,48 @@ import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
 import java.beans.IntrospectionException;
-import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import javax.faces.model.DataModelListener;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.base.CategoryDescriptors;
 import com.sun.rave.faces.data.CachedRowSetDataModel;
+import org.openide.util.Exceptions;
 
 public class CachedRowSetDataModelBeanInfo extends SimpleBeanInfo {
 
-    private static EventSetDescriptor[] eventSetDescriptors;
-    private static MethodDescriptor[] methodDescriptors;
-    private static PropertyDescriptor[] propertyDescriptors;
-
     public CachedRowSetDataModelBeanInfo() throws NoSuchMethodException {}
 
-    private BeanDescriptor beanDescriptor;
     public BeanDescriptor getBeanDescriptor() {
-        if (beanDescriptor == null) {
-            beanDescriptor = new BeanDescriptor(CachedRowSetDataModel.class, null);
+        return new BeanDescriptor(CachedRowSetDataModel.class, null);
             //beanDescriptor.setValue(Constants.BeanDescriptor.TRAY_COMPONENT, Boolean.FALSE);
-        }
-        return beanDescriptor;
     }
 
     //public int getDefaultEventIndex() {}
 
+    @Override
     public int getDefaultPropertyIndex() {
         return 0;
     }
 
+    @Override
     public EventSetDescriptor[] getEventSetDescriptors() {
         try {
-            if (eventSetDescriptors == null) {
-                eventSetDescriptors = new EventSetDescriptor[] {
+            EventSetDescriptor[] eventSetDescriptors = new EventSetDescriptor[] {
                     new EventSetDescriptor(CachedRowSetDataModel.class, "dataModel", //NOI18N
                     DataModelListener.class,
-                    new String[] {
-                    "rowSelected"
-                }
-
-                , //NOI18N
+                    new String[] { "rowSelected" }, //NOI18N
                     "addDataModelListener", "removeDataModelListener") //NOI18N
-                };
-            }
+            };
 
             return eventSetDescriptors;
         } catch (IntrospectionException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
 
+    @Override
     public Image getIcon(int iconKind) {
         switch (iconKind) {
             case BeanInfo.ICON_COLOR_16x16:
@@ -92,21 +82,20 @@ public class CachedRowSetDataModelBeanInfo extends SimpleBeanInfo {
 
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            if (propertyDescriptors == null) {
+            PropertyDescriptor[] propertyDescriptors;
 
-                PropertyDescriptor cachedRowSet =
-                    new PropertyDescriptor("cachedRowSet", CachedRowSetDataModel.class, "getCachedRowSet",
-                    "setCachedRowSet"); //NOI18N
-                cachedRowSet.setValue(Constants.PropertyDescriptor.CATEGORY,
-                    CategoryDescriptors.ADVANCED);
+            PropertyDescriptor cachedRowSet =
+                new PropertyDescriptor("cachedRowSet", CachedRowSetDataModel.class, "getCachedRowSet",
+                "setCachedRowSet"); //NOI18N
+            cachedRowSet.setValue(Constants.PropertyDescriptor.CATEGORY,
+                CategoryDescriptors.ADVANCED);
 
-                propertyDescriptors = new PropertyDescriptor[] {
-                    cachedRowSet
-                };
-
-            }
+            propertyDescriptors = new PropertyDescriptor[] {
+                cachedRowSet
+            };
             return propertyDescriptors;
         } catch (IntrospectionException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }

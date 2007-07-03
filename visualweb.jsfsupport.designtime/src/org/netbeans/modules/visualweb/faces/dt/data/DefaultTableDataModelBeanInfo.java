@@ -27,12 +27,9 @@ import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import javax.faces.model.DataModelListener;
+import org.openide.util.Exceptions;
 
 public class DefaultTableDataModelBeanInfo extends SimpleBeanInfo {
-
-    private static EventSetDescriptor[] eventSetDescriptors;
-    private static MethodDescriptor[] methodDescriptors;
-    private static PropertyDescriptor[] propertyDescriptors;
 
     public DefaultTableDataModelBeanInfo() throws NoSuchMethodException {}
 
@@ -48,43 +45,38 @@ public class DefaultTableDataModelBeanInfo extends SimpleBeanInfo {
 
     public EventSetDescriptor[] getEventSetDescriptors() {
         try {
-            if (eventSetDescriptors == null) {
-                eventSetDescriptors = new EventSetDescriptor[] {
-                    new EventSetDescriptor(DefaultTableDataModel.class, "dataModel", //NOI18N
-                    DataModelListener.class,
-                    new String[] {
-                    "rowSelected"
-                }
-
-                , //NOI18N
-                    "addDataModelListener", "removeDataModelListener") //NOI18N
-                };
-            }
+            EventSetDescriptor[] eventSetDescriptors;
+            eventSetDescriptors = new EventSetDescriptor[] {
+                new EventSetDescriptor(DefaultTableDataModel.class, "dataModel", //NOI18N
+                DataModelListener.class,
+                new String[] { "rowSelected" }, //NOI18N
+                "addDataModelListener", "removeDataModelListener") //NOI18N
+            };
 
             return eventSetDescriptors;
         } catch (IntrospectionException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
 
     public synchronized MethodDescriptor[] getMethodDescriptors() {
         try {
-            if (methodDescriptors == null) {
-                methodDescriptors = new MethodDescriptor[] {
+            MethodDescriptor[] methodDescriptors = new MethodDescriptor[] {
                     new MethodDescriptor(DefaultTableDataModel.class.getMethod("getRowData", null)), //NOI18N
                     new MethodDescriptor(DefaultTableDataModel.class.getMethod("getRowCount", null)) //NOI18N
                 };
-            }
 
             return methodDescriptors;
         } catch (NoSuchMethodException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
 
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            if (propertyDescriptors == null) {
+            PropertyDescriptor[] propertyDescriptors;
                 PropertyDescriptor rowData =
                     new PropertyDescriptor("rowData", DefaultTableDataModel.class, "getRowData", null); //NOI18N
                 rowData.setHidden(true);
@@ -106,9 +98,9 @@ public class DefaultTableDataModelBeanInfo extends SimpleBeanInfo {
                     rowCount,
                     wrappedData
                 };
-            }
             return propertyDescriptors;
         } catch (IntrospectionException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
