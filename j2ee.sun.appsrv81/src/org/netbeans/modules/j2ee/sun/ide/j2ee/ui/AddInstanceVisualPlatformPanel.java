@@ -79,6 +79,7 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             public void setSelectedItem(Object object) {
             }
         });
+        instanceSelector.setPrototypeDisplayValue("WWWWWWWWWWWWWWWW");
     }
     
     Object getSelectedType() {
@@ -258,11 +259,17 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         profileSelectorLabel = new javax.swing.JLabel();
         profileSelector = new javax.swing.JComboBox();
 
+        setMaximumSize(null);
+        setMinimumSize(null);
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
         description.setText(bundle.getString("TXT_platformPanelDescription")); // NOI18N
         description.setFocusable(false);
+        description.setMaximumSize(null);
+        description.setMinimumSize(null);
+        description.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.gridheight = 3;
@@ -272,6 +279,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         platformFieldLabel.setLabelFor(platformField);
         org.openide.awt.Mnemonics.setLocalizedText(platformFieldLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "platformFieldLabel")); // NOI18N
+        platformFieldLabel.setMaximumSize(null);
+        platformFieldLabel.setMinimumSize(null);
+        platformFieldLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -280,7 +290,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(platformFieldLabel, gridBagConstraints);
 
-        platformField.setColumns(21);
+        platformField.setMaximumSize(null);
+        platformField.setMinimumSize(null);
+        platformField.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -292,6 +304,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         platformField.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_platformField")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(openDirectoryCooser, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_openDirectoryChooser")); // NOI18N
+        openDirectoryCooser.setMaximumSize(null);
+        openDirectoryCooser.setMinimumSize(null);
+        openDirectoryCooser.setPreferredSize(null);
         openDirectoryCooser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openDirectoryCooserActionPerformed(evt);
@@ -308,6 +323,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         org.openide.awt.Mnemonics.setLocalizedText(registerDefault, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerDeafult")); // NOI18N
         registerDefault.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         registerDefault.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        registerDefault.setMaximumSize(null);
+        registerDefault.setMinimumSize(null);
+        registerDefault.setPreferredSize(null);
         registerDefault.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 registerDefaultItemStateChanged(evt);
@@ -323,6 +341,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         registerDefault.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_registerDefault")); // NOI18N
 
         instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        instanceSelector.setMaximumSize(null);
+        instanceSelector.setMinimumSize(null);
+        instanceSelector.setPreferredSize(null);
         instanceSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 instanceSelectorActionPerformed(evt);
@@ -341,6 +362,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         org.openide.awt.Mnemonics.setLocalizedText(registerLocal, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerLocal")); // NOI18N
         registerLocal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         registerLocal.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        registerLocal.setMaximumSize(null);
+        registerLocal.setMinimumSize(null);
+        registerLocal.setPreferredSize(null);
         registerLocal.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 registerLocalItemStateChanged(evt);
@@ -359,6 +383,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         org.openide.awt.Mnemonics.setLocalizedText(registerRemote, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerRemote")); // NOI18N
         registerRemote.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         registerRemote.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        registerRemote.setMaximumSize(null);
+        registerRemote.setMinimumSize(null);
+        registerRemote.setPreferredSize(null);
         registerRemote.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 registerRemoteItemStateChanged(evt);
@@ -377,6 +404,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         org.openide.awt.Mnemonics.setLocalizedText(createPersonal, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_createPersonal")); // NOI18N
         createPersonal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         createPersonal.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        createPersonal.setMaximumSize(null);
+        createPersonal.setMinimumSize(null);
+        createPersonal.setPreferredSize(null);
         createPersonal.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 createPersonalItemStateChanged(evt);
@@ -401,6 +431,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         instanceSelectorLabel.setLabelFor(instanceSelector);
         org.openide.awt.Mnemonics.setLocalizedText(instanceSelectorLabel, bundle.getString("LBL_instanceSelectorLabel2")); // NOI18N
+        instanceSelectorLabel.setMaximumSize(null);
+        instanceSelectorLabel.setMinimumSize(null);
+        instanceSelectorLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -411,6 +444,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         profileSelectorLabel.setLabelFor(profileSelector);
         org.openide.awt.Mnemonics.setLocalizedText(profileSelectorLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_PROFILE")); // NOI18N
+        profileSelectorLabel.setMaximumSize(null);
+        profileSelectorLabel.setMinimumSize(null);
+        profileSelectorLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -419,6 +455,9 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         add(profileSelectorLabel, gridBagConstraints);
 
         profileSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        profileSelector.setMaximumSize(null);
+        profileSelector.setMinimumSize(null);
+        profileSelector.setPreferredSize(null);
         profileSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 profileSelectorActionPerformed(evt);

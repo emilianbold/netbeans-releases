@@ -178,12 +178,17 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
 
         setFocusable(false);
+        setMinimumSize(new java.awt.Dimension(0, 0));
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         portConfPanel.setLayout(new java.awt.GridBagLayout());
 
         adminJmxLbl.setLabelFor(adminJmxPort);
         org.openide.awt.Mnemonics.setLocalizedText(adminJmxLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_AdminJmxPort")); // NOI18N
+        adminJmxLbl.setMaximumSize(null);
+        adminJmxLbl.setMinimumSize(null);
+        adminJmxLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -194,6 +199,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         instancePortLbl.setLabelFor(instanceHttpPort);
         org.openide.awt.Mnemonics.setLocalizedText(instancePortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_InstancePort")); // NOI18N
+        instancePortLbl.setMaximumSize(null);
+        instancePortLbl.setMinimumSize(null);
+        instancePortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -204,6 +212,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         jmsPortLbl.setLabelFor(jmsPort);
         org.openide.awt.Mnemonics.setLocalizedText(jmsPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort")); // NOI18N
+        jmsPortLbl.setMaximumSize(null);
+        jmsPortLbl.setMinimumSize(null);
+        jmsPortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -214,6 +225,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         orbListenerPortLbl.setLabelFor(orbListenerPort);
         org.openide.awt.Mnemonics.setLocalizedText(orbListenerPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbListener")); // NOI18N
+        orbListenerPortLbl.setMaximumSize(null);
+        orbListenerPortLbl.setMinimumSize(null);
+        orbListenerPortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -224,6 +238,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         httpslPortLbl.setLabelFor(httpsPort);
         org.openide.awt.Mnemonics.setLocalizedText(httpslPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_HttpSslPort")); // NOI18N
+        httpslPortLbl.setMaximumSize(null);
+        httpslPortLbl.setMinimumSize(null);
+        httpslPortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -234,6 +251,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         orbSslPortLbl.setLabelFor(orbSslPort);
         org.openide.awt.Mnemonics.setLocalizedText(orbSslPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbSslPort")); // NOI18N
+        orbSslPortLbl.setMaximumSize(null);
+        orbSslPortLbl.setMinimumSize(null);
+        orbSslPortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -244,6 +264,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         orbMutualauthPortLbl.setLabelFor(orbMutualauthPort);
         org.openide.awt.Mnemonics.setLocalizedText(orbMutualauthPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbMutualauthPort")); // NOI18N
+        orbMutualauthPortLbl.setMaximumSize(null);
+        orbMutualauthPortLbl.setMinimumSize(null);
+        orbMutualauthPortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -254,6 +277,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         portConfPanel.add(orbMutualauthPortLbl, gridBagConstraints);
 
         instanceHttpPort.setModel(instanceHttpPortValue);
+        instanceHttpPort.setMaximumSize(null);
+        instanceHttpPort.setMinimumSize(null);
+        instanceHttpPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -266,6 +292,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         instanceHttpPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_HTTP_PORT")); // NOI18N
 
         adminJmxPort.setModel(adminJmxPortValue);
+        adminJmxPort.setMaximumSize(null);
+        adminJmxPort.setMinimumSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -278,6 +306,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         adminJmxPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ADMIN_JMX_PORT")); // NOI18N
 
         jmsPort.setModel(jmsPortValue);
+        jmsPort.setMaximumSize(null);
+        jmsPort.setMinimumSize(null);
+        jmsPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -290,6 +321,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         jmsPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_JMS_PORT")); // NOI18N
 
         orbListenerPort.setModel(orbPortValue);
+        orbListenerPort.setMaximumSize(null);
+        orbListenerPort.setMinimumSize(null);
+        orbListenerPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -302,6 +336,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         orbListenerPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_PORT")); // NOI18N
 
         httpsPort.setModel(httpsPortValue);
+        httpsPort.setMaximumSize(null);
+        httpsPort.setMinimumSize(null);
+        httpsPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -314,6 +351,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         httpsPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_HTTPS_PORT")); // NOI18N
 
         orbSslPort.setModel(orbSslPortValue);
+        orbSslPort.setMaximumSize(null);
+        orbSslPort.setMinimumSize(null);
+        orbSslPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -326,6 +366,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         orbSslPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_SSL_PORT")); // NOI18N
 
         orbMutualauthPort.setModel(orbMutualauthPortValue);
+        orbMutualauthPort.setMaximumSize(null);
+        orbMutualauthPort.setMinimumSize(null);
+        orbMutualauthPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -338,6 +381,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         adminPortLbl.setLabelFor(adminPort);
         org.openide.awt.Mnemonics.setLocalizedText(adminPortLbl, org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "LBL_adminPortLabel")); // NOI18N
+        adminPortLbl.setMaximumSize(null);
+        adminPortLbl.setMinimumSize(null);
+        adminPortLbl.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -347,6 +393,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         portConfPanel.add(adminPortLbl, gridBagConstraints);
 
         adminPort.setModel(adminPortValue);
+        adminPort.setMaximumSize(null);
+        adminPort.setMinimumSize(null);
+        adminPort.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -376,6 +425,9 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
         jLabel1.setText(bundle.getString("CreateServerVisualPanel_Desc")); // NOI18N
         jLabel1.setFocusable(false);
+        jLabel1.setMaximumSize(null);
+        jLabel1.setMinimumSize(null);
+        jLabel1.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

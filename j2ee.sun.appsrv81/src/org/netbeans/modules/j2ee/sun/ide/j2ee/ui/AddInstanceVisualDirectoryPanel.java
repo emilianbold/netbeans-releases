@@ -165,12 +165,18 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
         detectedLabel = new javax.swing.JLabel();
         spaceHack = new javax.swing.JLabel();
 
+        setMaximumSize(null);
+        setMinimumSize(null);
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
         description.setText(bundle.getString("TXT_instanceDirectoryDescription1")); // NOI18N
         description.setEnabled(false);
         description.setFocusable(false);
+        description.setMaximumSize(null);
+        description.setMinimumSize(null);
+        description.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -183,12 +189,19 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
 
         instanceDirectoryLabel.setLabelFor(instanceDirectory);
         org.openide.awt.Mnemonics.setLocalizedText(instanceDirectoryLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class, "LBL_instanceDirectoryLabel")); // NOI18N
+        instanceDirectoryLabel.setMaximumSize(null);
+        instanceDirectoryLabel.setMinimumSize(null);
+        instanceDirectoryLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 6, 6);
         add(instanceDirectoryLabel, gridBagConstraints);
+
+        instanceDirectory.setMaximumSize(null);
+        instanceDirectory.setMinimumSize(null);
+        instanceDirectory.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -200,6 +213,9 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
         instanceDirectory.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_instanceDirectory")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(openInstanceDirectorySelector, org.openide.util.NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class, "LBL_openInstanceDirectorySelector")); // NOI18N
+        openInstanceDirectorySelector.setMaximumSize(null);
+        openInstanceDirectorySelector.setMinimumSize(null);
+        openInstanceDirectorySelector.setPreferredSize(null);
         openInstanceDirectorySelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openInstanceDirectorySelectorActionPerformed(evt);
@@ -215,6 +231,9 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
 
         adminPortLabel.setLabelFor(adminPortDisplay);
         org.openide.awt.Mnemonics.setLocalizedText(adminPortLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class, "LBL_adminlPortLabel")); // NOI18N
+        adminPortLabel.setMaximumSize(null);
+        adminPortLabel.setMinimumSize(null);
+        adminPortLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -223,6 +242,9 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
         add(adminPortLabel, gridBagConstraints);
 
         adminPortDisplay.setEditable(false);
+        adminPortDisplay.setMaximumSize(null);
+        adminPortDisplay.setMinimumSize(null);
+        adminPortDisplay.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -234,6 +256,9 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
 
         detectedLabel.setText(bundle.getString("LBL_detectedLabel")); // NOI18N
         detectedLabel.setFocusable(false);
+        detectedLabel.setMaximumSize(null);
+        detectedLabel.setMinimumSize(null);
+        detectedLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;

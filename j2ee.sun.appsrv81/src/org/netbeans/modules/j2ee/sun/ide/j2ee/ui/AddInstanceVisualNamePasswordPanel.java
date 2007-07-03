@@ -123,11 +123,16 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
 
         jLabel1.setText("jLabel1");
 
+        setMaximumSize(new java.awt.Dimension(400, 300));
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
         description.setText(bundle.getString("TXT_namePasswordDescription")); // NOI18N
         description.setFocusable(false);
+        description.setMaximumSize(null);
+        description.setMinimumSize(null);
+        description.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -137,6 +142,9 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
 
         adminNameLabel.setLabelFor(adminName);
         org.openide.awt.Mnemonics.setLocalizedText(adminNameLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminNameLabel")); // NOI18N
+        adminNameLabel.setMaximumSize(null);
+        adminNameLabel.setMinimumSize(null);
+        adminNameLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -145,6 +153,9 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
         add(adminNameLabel, gridBagConstraints);
 
         adminName.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "VAL_adminName_NOI18N")); // NOI18N
+        adminName.setMaximumSize(null);
+        adminName.setMinimumSize(null);
+        adminName.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -155,6 +166,9 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
 
         adminPasswordLabel.setLabelFor(adminPassword);
         org.openide.awt.Mnemonics.setLocalizedText(adminPasswordLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminPasswordLabel")); // NOI18N
+        adminPasswordLabel.setMaximumSize(null);
+        adminPasswordLabel.setMinimumSize(null);
+        adminPasswordLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -163,6 +177,9 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
         add(adminPasswordLabel, gridBagConstraints);
 
         adminPassword.setColumns(10);
+        adminPassword.setMaximumSize(null);
+        adminPassword.setMinimumSize(null);
+        adminPassword.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -173,6 +190,9 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
 
         warning.setText(bundle.getString("TXT_namePasswordWarning")); // NOI18N
         warning.setFocusable(false);
+        warning.setMaximumSize(null);
+        warning.setMinimumSize(null);
+        warning.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

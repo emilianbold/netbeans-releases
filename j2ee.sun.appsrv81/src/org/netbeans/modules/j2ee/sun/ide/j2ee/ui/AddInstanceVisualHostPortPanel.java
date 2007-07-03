@@ -137,11 +137,17 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         spacingHack = new javax.swing.JLabel();
 
         setFocusable(false);
+        setMaximumSize(null);
+        setMinimumSize(null);
+        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
         description.setText(bundle.getString("TXT_hostPortDescription")); // NOI18N
         description.setFocusable(false);
+        description.setMaximumSize(null);
+        description.setMinimumSize(null);
+        description.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -153,11 +159,18 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
 
         hostNameLabel.setLabelFor(hostName);
         org.openide.awt.Mnemonics.setLocalizedText(hostNameLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_hostNameLabel")); // NOI18N
+        hostNameLabel.setMaximumSize(null);
+        hostNameLabel.setMinimumSize(null);
+        hostNameLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(hostNameLabel, gridBagConstraints);
+
+        hostName.setMaximumSize(null);
+        hostName.setMinimumSize(null);
+        hostName.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -168,11 +181,18 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
 
         portValueLabel.setLabelFor(portValue);
         org.openide.awt.Mnemonics.setLocalizedText(portValueLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_portValueLabel")); // NOI18N
+        portValueLabel.setMaximumSize(null);
+        portValueLabel.setMinimumSize(null);
+        portValueLabel.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(portValueLabel, gridBagConstraints);
+
+        portValue.setMaximumSize(null);
+        portValue.setMinimumSize(null);
+        portValue.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
