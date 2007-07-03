@@ -23,8 +23,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -63,6 +65,10 @@ public class DatabaseNodeChildren extends Children.Array {
     private TreeSet children;
     private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
     private static Object sync = new Object(); // synchronizing object
+    // synchronized by additionalNodes
+    private boolean initialized = false; // true if the node is displaying its children (not the "Please wait..." node)
+    // synchronized by additionalNodes
+    private List additionalNodes = new ArrayList(); // nodes added by createSubnode() during the "Please wait..." phase
 
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent event) {
@@ -71,6 +77,11 @@ public class DatabaseNodeChildren extends Children.Array {
                     public void run() {
                         remove(getNodes()); //remove wait node
                         nodes = getCh(); // change children ...
+                        // add additional nodes created during the "Please wait..." phase
+                        synchronized (additionalNodes) {
+                            nodes.addAll(additionalNodes);
+                            initialized = true;
+                        }
                         refresh(); // ... and refresh them
                     }
                 });
@@ -90,6 +101,7 @@ public class DatabaseNodeChildren extends Children.Array {
                 TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
                 
                 try {
+                    
                     Vector chlist;
                     synchronized (sync) {
                         chlist = nodeinfo.getChildren();
@@ -233,8 +245,15 @@ public class DatabaseNodeChildren extends Children.Array {
             //workaround for issue #31617, children should be initialized if they are not
 //            getNodes();
 
-            if (isInitialized())
-                add(new Node[] {subnode});
+            if (isInitialized()) {
+                synchronized (additionalNodes) {
+                    if (initialized) {
+                        add(new Node[] {subnode});
+                    } else {
+                        additionalNodes.add(subnode);
+                    }
+                }
+            }
         }
 
         return subnode;
