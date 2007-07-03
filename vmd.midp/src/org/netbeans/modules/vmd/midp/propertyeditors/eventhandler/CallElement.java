@@ -53,7 +53,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         initComponents();
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
     }
     
     public JComponent getCustomEditorComponent() {
@@ -72,7 +72,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         return false;
     }
 
-    public String getText() {
+    public String getTextForPropertyValue () {
         return "";
     }
     

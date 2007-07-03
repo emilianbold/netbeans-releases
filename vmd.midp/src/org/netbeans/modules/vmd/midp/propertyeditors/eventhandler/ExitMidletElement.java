@@ -61,7 +61,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         MidpDocumentSupport.updateEventHandlerFromTarget(eventSource, mobileDevice);
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
     }
     
     public JComponent getCustomEditorComponent() {
@@ -83,7 +83,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     public void updateModel(List<DesignComponent> components, int modelType) {
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return "";
     }
     

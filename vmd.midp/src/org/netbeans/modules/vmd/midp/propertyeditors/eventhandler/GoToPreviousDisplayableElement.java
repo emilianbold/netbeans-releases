@@ -51,7 +51,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
         MidpDocumentSupport.updateEventHandlerWithNew(eventSource, prevScreenEventHandler);
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
     }
     
     public JComponent getCustomEditorComponent() {
@@ -73,7 +73,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
     public void updateModel(List<DesignComponent> components, int modelType) {
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return "";
     }
     

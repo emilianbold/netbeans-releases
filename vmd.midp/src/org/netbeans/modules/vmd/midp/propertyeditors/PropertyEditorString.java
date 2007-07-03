@@ -125,11 +125,11 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return (String) value.getPrimitiveValue();
     }
 
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
         saveValue(text);
     }
 
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
 

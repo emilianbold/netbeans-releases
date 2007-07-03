@@ -53,7 +53,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         initComponents();
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
     }
     
     public JComponent getCustomEditorComponent() {
@@ -103,7 +103,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         }
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     

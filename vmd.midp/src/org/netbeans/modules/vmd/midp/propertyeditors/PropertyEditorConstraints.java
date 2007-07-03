@@ -99,10 +99,10 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         return customEditor.getBitmaskAsText();
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     

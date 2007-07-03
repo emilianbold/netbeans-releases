@@ -85,7 +85,7 @@ public class PropertyEditorInputMode  extends PropertyEditorUserCode {
     public void customEditorOKButtonPressed() {
         for (PropertyEditorElement element : elements) {
             if (element.getRadioButton().isSelected()) {
-                saveValue(element.getText());
+                saveValue(element.getTextForPropertyValue ());
                 break;
             }
         }
@@ -126,11 +126,11 @@ public class PropertyEditorInputMode  extends PropertyEditorUserCode {
             }
         }
         
-        public void setText(String text) {
+        public void setTextForPropertyValue (String text) {
             saveValue(text);
         }
         
-        public String getText() {
+        public String getTextForPropertyValue () {
             return (String) combobox.getSelectedItem();
         }
         
@@ -177,11 +177,11 @@ public class PropertyEditorInputMode  extends PropertyEditorUserCode {
             }
         }
         
-        public void setText(String text) {
+        public void setTextForPropertyValue (String text) {
             saveValue(text);
         }
         
-        public String getText() {
+        public String getTextForPropertyValue () {
             return textField.getText();
         }
         

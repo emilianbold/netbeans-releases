@@ -385,7 +385,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @param text
      * @see java.beans.PropertyEditor#setAsText
      */
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
         saveValue(text);
     }
     
@@ -394,7 +394,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      *
      * @return null
      */
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     

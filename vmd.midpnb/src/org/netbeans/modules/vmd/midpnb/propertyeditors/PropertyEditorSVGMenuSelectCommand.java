@@ -123,11 +123,11 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         return getDecodeValue(value);
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
         saveValue(text);
     }
     

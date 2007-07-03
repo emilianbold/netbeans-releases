@@ -118,11 +118,11 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         return String.valueOf(intValue);
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
         saveValue(text);
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     

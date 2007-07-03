@@ -99,10 +99,10 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         return customEditor.getBitmaskAsText();
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     

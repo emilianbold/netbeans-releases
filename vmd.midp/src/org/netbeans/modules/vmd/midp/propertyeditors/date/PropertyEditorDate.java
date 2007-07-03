@@ -112,11 +112,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return getValueAsText((PropertyValue) super.getValue());
     }
     
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
         saveValue(text);
     }
     
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
     

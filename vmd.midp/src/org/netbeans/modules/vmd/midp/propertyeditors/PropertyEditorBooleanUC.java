@@ -146,11 +146,11 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return MidpTypes.getBoolean((PropertyValue) super.getValue()) ? TRUE_TEXT : FALSE_TEXT;
     }
 
-    public void setText(String text) {
+    public void setTextForPropertyValue (String text) {
         saveValue(text);
     }
 
-    public String getText() {
+    public String getTextForPropertyValue () {
         return null;
     }
 
