@@ -48,8 +48,12 @@ import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
+import org.openide.cookies.SaveCookie;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
@@ -242,7 +246,17 @@ public final class Iterator implements TemplateWizard.Iterator {
             org.netbeans.modules.xslt.tmap.util.Util.getTMapModel(tMapFo);
 
     configureTMapModel(tMapModel, wizard);
-    ProjectManager.getDefault().saveProject(project);
+    
+    // TODO m
+    // try to save tMapFo
+    DataObject dObj = DataObject.find(tMapFo);
+    if (dObj != null && dObj.isModified()) {
+        
+        SaveCookie saveCookie = dObj.getLookup().
+                lookup(SaveCookie.class);
+        assert saveCookie != null;
+        saveCookie.save();
+    }
     
     if (isRequestTransform(wizard)) {
         file = createXslFile(
@@ -331,10 +345,10 @@ public final class Iterator implements TemplateWizard.Iterator {
           tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
 
           tMapService.addOperation(tMapOp);  
-          tMapOp.setInputVariable(
+          tMapOp.setInputVariableName(
                   getVariableName(INPUT_OPERATION_VARIABLE_PREFIX,1));
           
-          tMapOp.setOutputVariable(
+          tMapOp.setOutputVariableName(
                   getVariableName(OUTPUT_OPERATION_VARIABLE_PREFIX,1)); 
       }
      
@@ -363,6 +377,8 @@ public final class Iterator implements TemplateWizard.Iterator {
       
       // TODO m
       String sourcePartName = getFirstPartName(wizardOperation.getInput());
+      
+      
       transform.setSource(
               getTMapVarRef(variableHolder.getInputVariable(), sourcePartName));
 
@@ -372,11 +388,14 @@ public final class Iterator implements TemplateWizard.Iterator {
       return transform;
   }
   
-  private String  getTMapVarRef(String varName, String partName) {
-      if (partName == null || varName == null) {
+  private String  getTMapVarRef(Variable var, String partName) {
+      if (partName == null || var == null) {
           return null;
       }
-      return varName+"."+partName;
+      String varName = var.getName();
+      
+      return varName == null ? null
+              : VariableReferenceImpl.getVarRefString(varName, partName);
   }
   
   private String getFirstPartName(OperationParameter opParam) {
@@ -439,10 +458,10 @@ public final class Iterator implements TemplateWizard.Iterator {
                     createWSDLReference(wizardOutputOperation, Operation.class));
 
             // TODO m
-            invokes.setInputVariable(
+            invokes.setInputVariableName(
                   getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
                   getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1)));
-            invokes.setOutputVariable(
+            invokes.setOutputVariableName(
                   getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
                   getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1)));
 
@@ -543,31 +562,19 @@ public final class Iterator implements TemplateWizard.Iterator {
           return startNumber;
       }
       
+      List<Variable> vars = operation.getVariables();
+      if (vars == null || vars.size()< 1) {
+      }
+      
       int count = startNumber;
       List<String> varNames = new ArrayList<String>();
       
-      String tmpCurVar = operation.getInputVariable();
-      if (tmpCurVar != null) {
-        varNames.add(tmpCurVar);
-      }
-      tmpCurVar = operation.getOutputVariable();
-      if (tmpCurVar != null) {
-        varNames.add(tmpCurVar);
-      }
-      List<Invokes> invokess = operation.getInvokess();
-      if (invokess != null && invokess.size() > 0) {
-          for (Invokes elem : invokess) {
-              tmpCurVar = elem.getInputVariable();
-              if (tmpCurVar != null) {
-                varNames.add(tmpCurVar);
-              }
-              tmpCurVar = elem.getOutputVariable();
-              if (tmpCurVar != null) {
-                varNames.add(tmpCurVar);
-              }
+      for (Variable var : vars) {
+          String tmpVarName = var == null ? null : var.getName();
+          if (tmpVarName != null) {
+              varNames.add(tmpVarName);
           }
       }
-          
       
       while (true) {
           if (!varNames.contains(varNamePrefix+count)) {
