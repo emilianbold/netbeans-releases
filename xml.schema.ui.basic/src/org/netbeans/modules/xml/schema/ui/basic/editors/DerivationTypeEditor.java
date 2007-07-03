@@ -212,9 +212,6 @@ public class DerivationTypeEditor  extends PropertyEditorSupport
             }
         });
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        // set size to 400x300
-        //dlg.setPreferredSize(panel.getSize());
-        dlg.setPreferredSize(new java.awt.Dimension(400,300));
         return dlg;
     }
     
