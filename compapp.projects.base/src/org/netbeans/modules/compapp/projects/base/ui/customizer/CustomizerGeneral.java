@@ -51,11 +51,8 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         File pf = FileUtil.toFile(projectFolder);
         jTextFieldProjectFolder.setText(pf == null ? "" : pf.getPath()); // NOI18N
 
-        vps.register(jTextFieldProjectType, IcanproProjectProperties.JBI_SETYPE_PREFIX);
-        vps.register(jTextFieldAssemblyUnitAlias, IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS);
-        vps.register(jTextFieldAssemblyUnitDescription, IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION);
-        vps.register(jTextFieldApplicationSubAssemblyAlias, IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS);
-        vps.register(jTextFieldApplicationSubAssemblyDescription, IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION);
+        vps.register(jTextFieldProjectType, IcanproProjectProperties.JBI_SE_TYPE);
+        vps.register(jTextFieldServiceUnitDescription, IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION);
 
     }
 
@@ -67,99 +64,48 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabelProjectName = new javax.swing.JLabel();
         jTextFieldProjectFolder = new javax.swing.JTextField();
         jLabelProjectType = new javax.swing.JLabel();
         jTextFieldProjectType = new javax.swing.JTextField();
-        jLabelAssemblyUnit = new javax.swing.JLabel();
-        jLabelAssemblyUnitAlias = new javax.swing.JLabel();
-        jTextFieldAssemblyUnitAlias = new javax.swing.JTextField();
-        jLabelAssemblyUnitDescription = new javax.swing.JLabel();
-        jTextFieldAssemblyUnitDescription = new javax.swing.JTextField();
-        jLabelApplicationSubAssembly = new javax.swing.JLabel();
-        jLabelApplicationSubAssemblyAlias = new javax.swing.JLabel();
-        jTextFieldApplicationSubAssemblyAlias = new javax.swing.JTextField();
-        jTextFieldApplicationSubAssemblyDescription = new javax.swing.JTextField();
-        jLabelApplicationSubAssemblyDescription = new javax.swing.JLabel();
+        jLabelServiceUnitDescription = new javax.swing.JLabel();
+        jTextFieldServiceUnitDescription = new javax.swing.JTextField();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         jLabelProjectName.setLabelFor(jTextFieldProjectFolder);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelProjectName, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectFolder_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelProjectName, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectFolder_JLabel")); // NOI18N
 
         jTextFieldProjectFolder.setEditable(false);
-        jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeGeneral_ProjectFolder_A11YDesc"));
 
         jLabelProjectType.setLabelFor(jTextFieldProjectType);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelProjectType, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectType_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelProjectType, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectType_JLabel")); // NOI18N
 
-        jLabelAssemblyUnit.setLabelFor(jLabelAssemblyUnit);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAssemblyUnit, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnit_JLabel"));
+        jTextFieldProjectType.setEditable(false);
 
-        jLabelAssemblyUnitAlias.setLabelFor(jTextFieldAssemblyUnitAlias);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAssemblyUnitAlias, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnitAlias_JLabel"));
-
-        jLabelAssemblyUnitDescription.setLabelFor(jTextFieldAssemblyUnitDescription);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAssemblyUnitDescription, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnitDescription_JLabel"));
-
-        jLabelApplicationSubAssembly.setLabelFor(jLabelAssemblyUnit);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelApplicationSubAssembly, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ApplicationSubAssembly_JLabel"));
-
-        jLabelApplicationSubAssemblyAlias.setLabelFor(jTextFieldApplicationSubAssemblyAlias);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelApplicationSubAssemblyAlias, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ApplicationSubAssemblyAlias_JLabel"));
-
-        jLabelApplicationSubAssemblyDescription.setLabelFor(jTextFieldApplicationSubAssemblyDescription);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelApplicationSubAssemblyDescription, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ApplicationSubAssemblyDescription_JLabel"));
+        jLabelServiceUnitDescription.setLabelFor(jLabelServiceUnitDescription);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelServiceUnitDescription, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnit_JLabel")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabelProjectName)
+                    .add(jLabelProjectType)
+                    .add(jLabelServiceUnitDescription))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jLabelProjectName))
-                            .add(layout.createSequentialGroup()
-                                .add(36, 36, 36)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabelAssemblyUnitAlias)
-                                    .add(jLabelAssemblyUnitDescription)))
-                            .add(layout.createSequentialGroup()
-                                .add(36, 36, 36)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabelApplicationSubAssemblyAlias)
-                                    .add(layout.createSequentialGroup()
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jLabelApplicationSubAssemblyDescription))))
-                            .add(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jLabelProjectType)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
-                            .add(jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldAssemblyUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
-                                    .add(jTextFieldAssemblyUnitAlias, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldApplicationSubAssemblyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
-                                    .add(jTextFieldApplicationSubAssemblyAlias, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabelApplicationSubAssembly))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabelAssemblyUnit)))
+                        .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                    .add(jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {jLabelApplicationSubAssemblyAlias, jLabelApplicationSubAssemblyDescription, jLabelAssemblyUnitAlias, jLabelAssemblyUnitDescription}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {jLabelProjectName, jLabelProjectType}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
@@ -170,50 +116,27 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelProjectName)
                     .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(17, 17, 17)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelProjectType)
                     .add(jTextFieldProjectType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(11, 11, 11)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabelAssemblyUnit)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabelAssemblyUnitAlias))
-                    .add(jTextFieldAssemblyUnitAlias, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelAssemblyUnitDescription)
-                    .add(jTextFieldAssemblyUnitDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(11, 11, 11)
-                .add(jLabelApplicationSubAssembly)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelApplicationSubAssemblyAlias)
-                    .add(jTextFieldApplicationSubAssemblyAlias, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelApplicationSubAssemblyDescription)
-                    .add(jTextFieldApplicationSubAssemblyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                    .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelServiceUnitDescription))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeGeneral_ProjectFolder_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabelApplicationSubAssembly;
-    private javax.swing.JLabel jLabelApplicationSubAssemblyAlias;
-    private javax.swing.JLabel jLabelApplicationSubAssemblyDescription;
-    private javax.swing.JLabel jLabelAssemblyUnit;
-    private javax.swing.JLabel jLabelAssemblyUnitAlias;
-    private javax.swing.JLabel jLabelAssemblyUnitDescription;
     private javax.swing.JLabel jLabelProjectName;
     private javax.swing.JLabel jLabelProjectType;
-    private javax.swing.JTextField jTextFieldApplicationSubAssemblyAlias;
-    private javax.swing.JTextField jTextFieldApplicationSubAssemblyDescription;
-    private javax.swing.JTextField jTextFieldAssemblyUnitAlias;
-    private javax.swing.JTextField jTextFieldAssemblyUnitDescription;
+    private javax.swing.JLabel jLabelServiceUnitDescription;
     private javax.swing.JTextField jTextFieldProjectFolder;
     private javax.swing.JTextField jTextFieldProjectType;
+    private javax.swing.JTextField jTextFieldServiceUnitDescription;
     // End of variables declaration//GEN-END:variables
 
 }

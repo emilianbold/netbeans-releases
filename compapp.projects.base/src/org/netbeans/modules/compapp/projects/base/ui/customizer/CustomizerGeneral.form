@@ -9,7 +9,9 @@
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -20,65 +22,22 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabelProjectName" linkSize="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabelAssemblyUnitAlias" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabelAssemblyUnitDescription" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabelApplicationSubAssemblyAlias" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jLabelApplicationSubAssemblyDescription" linkSize="1" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabelProjectType" linkSize="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jTextFieldProjectFolder" alignment="0" pref="36" max="32767" attributes="0"/>
-                          <Component id="jTextFieldProjectType" alignment="0" pref="36" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jTextFieldAssemblyUnitDescription" alignment="0" pref="36" max="32767" attributes="0"/>
-                                  <Component id="jTextFieldAssemblyUnitAlias" alignment="1" pref="36" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="jTextFieldApplicationSubAssemblyDescription" alignment="0" pref="36" max="32767" attributes="0"/>
-                                  <Component id="jTextFieldApplicationSubAssemblyAlias" alignment="1" pref="36" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabelApplicationSubAssembly" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabelAssemblyUnit" min="-2" max="-2" attributes="1"/>
-                  </Group>
+                  <Component id="jLabelProjectName" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabelProjectType" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabelServiceUnitDescription" alignment="0" min="-2" max="-2" attributes="1"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="jTextFieldProjectFolder" pref="121" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="jTextFieldServiceUnitDescription" alignment="0" pref="121" max="32767" attributes="0"/>
+                  <Component id="jTextFieldProjectType" alignment="1" pref="121" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -90,38 +49,17 @@
                   <Component id="jLabelProjectName" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTextFieldProjectFolder" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabelProjectType" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTextFieldProjectType" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="jLabelAssemblyUnit" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabelAssemblyUnitAlias" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="jTextFieldAssemblyUnitAlias" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabelAssemblyUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jTextFieldAssemblyUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jTextFieldServiceUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabelServiceUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-              <Component id="jLabelApplicationSubAssembly" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabelApplicationSubAssemblyAlias" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jTextFieldApplicationSubAssemblyAlias" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabelApplicationSubAssemblyDescription" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jTextFieldApplicationSubAssemblyDescription" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace pref="24" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -158,74 +96,21 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldProjectType">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabelAssemblyUnit">
+    <Component class="javax.swing.JLabel" name="jLabelServiceUnitDescription">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jLabelAssemblyUnit"/>
+          <ComponentRef name="jLabelServiceUnitDescription"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_AssemblyUnit_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabelAssemblyUnitAlias">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jTextFieldAssemblyUnitAlias"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_AssemblyUnitAlias_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="jTextFieldAssemblyUnitAlias">
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelAssemblyUnitDescription">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jTextFieldAssemblyUnitDescription"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_AssemblyUnitDescription_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="jTextFieldAssemblyUnitDescription">
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelApplicationSubAssembly">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jLabelAssemblyUnit"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ApplicationSubAssembly_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelApplicationSubAssemblyAlias">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jTextFieldApplicationSubAssemblyAlias"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ApplicationSubAssemblyAlias_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="jTextFieldApplicationSubAssemblyAlias">
-    </Component>
-    <Component class="javax.swing.JTextField" name="jTextFieldApplicationSubAssemblyDescription">
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelApplicationSubAssemblyDescription">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="jTextFieldApplicationSubAssemblyDescription"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ApplicationSubAssemblyDescription_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
+    <Component class="javax.swing.JTextField" name="jTextFieldServiceUnitDescription">
     </Component>
   </SubComponents>
 </Form>

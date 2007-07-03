@@ -99,11 +99,18 @@ public class IcanproProjectProperties {
 
     //================== Start of IcanPro =====================================//
     //FIXME? REPACKAGING
+    /** @deprecated Use JBI_SE_TYPE instead. */
     public static final String JBI_SETYPE_PREFIX = "com.sun.jbi.ui.devtool.jbi.setype.prefix";
+    public static final String JBI_SE_TYPE = "com.sun.jbi.ui.devtool.jbi.setype.prefix"; // todo: jbi.se.type
+    /** @deprecated This will be removed soon because there is no model data backing it up. */
     public static final String ASSEMBLY_UNIT_ALIAS = "com.sun.jbi.ui.devtool.jbi.alias.assembly-unit";
+    /** @deprecated This will be removed soon because there is no model data backing it up. */
     public static final String ASSEMBLY_UNIT_DESCRIPTION = "com.sun.jbi.ui.devtool.jbi.description.assembly-unit";
+    /** @deprecated This will be removed soon because there is no model data backing it up. */
     public static final String APPLICATION_SUB_ASSEMBLY_ALIAS = "com.sun.jbi.ui.devtool.jbi.alias.application-sub-assembly";
-    public static final String APPLICATION_SUB_ASSEMBLY_DESCRIPTION = "com.sun.jbi.ui.devtool.jbi.description.application-sub-assembly";
+    /** @deprecated Use SERVICE_UNIT_DESCRIPTION instead. */
+    public static final String APPLICATION_SUB_ASSEMBLY_DESCRIPTION = "com.sun.jbi.ui.devtool.jbi.description.application-sub-assembly";    
+    public static final String SERVICE_UNIT_DESCRIPTION = "com.sun.jbi.ui.devtool.jbi.description.application-sub-assembly"; // todo: jbi.service-unit.description
 
     public static final String JBI_COMPONENT_CONF_FILE = "com.sun.jbi.ui.devtool.jbi.component.conf.file";
     public static final String JBI_COMPONENT_CONF_ROOT = "com.sun.jbi.ui.devtool.jbi.component.conf.root";
@@ -174,10 +181,11 @@ public class IcanproProjectProperties {
 
         //================== Start of IcanPro =====================================//
         new PropertyDescriptor( JBI_SETYPE_PREFIX, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( ASSEMBLY_UNIT_ALIAS, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( ASSEMBLY_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_ALIAS, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_DESCRIPTION, PROJECT, STRING_PARSER ),
+//        new PropertyDescriptor( ASSEMBLY_UNIT_ALIAS, PROJECT, STRING_PARSER ),
+//        new PropertyDescriptor( ASSEMBLY_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
+//        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_ALIAS, PROJECT, STRING_PARSER ),
+//        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_DESCRIPTION, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( SERVICE_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JBI_COMPONENT_CONF_ROOT, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JBI_DEPLOYMENT_CONF_ROOT, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JBI_COMPONENT_CONF_FILE, PROJECT, STRING_PARSER ),
