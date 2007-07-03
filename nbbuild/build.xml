@@ -1043,8 +1043,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes rebuild.cluster.name as parameter">
+  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes '-Drebuild.cluster.name=nb.visualweb' as parameter">
     <delete file="netbeans/${rebuild.cluster.name}.built" failonerror="false"/>
+    <fail unless="${rebuild.cluster.name}" message="You need to specify 'rebuild.cluster.name' attribute"/>
     <antcall target="build-one-cluster">
       <param name="one.cluster.name" value="${rebuild.cluster.name}"/>
     </antcall>
@@ -1233,7 +1234,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <printcvsmodules modules="${modules.for.checkout.list}" cvsmodulesproperty="cvsmodules"/>
   </target>
 
-  <target name="checkout-cluster" depends="init-module-list" description="Checking out all CVS modules required for cluster.name cluster">
+  <target name="checkout-cluster" depends="init-module-list" description="Checking out all CVS modules required for '-Dcluster.name=nb.visual.web' cluster, it goes through the modules list and perform the checkout command module per module, the number of retries could be controlled by '-Dcvs.retry=2' property, defalt value is 2">
+      <fail unless="${cluster.name}" message="You need to specify 'cluster.name' attribute"/>
       <taskdef name="nbcvs" classname="org.netbeans.nbbuild.NBCvs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
       <resolve name="cluster.modules" value="${cluster.name}"/>
@@ -1265,7 +1267,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} core jemmy jellytools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
   </target>
   
-  <target name="checkout" depends="init-module-list,print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig.">
+  <target name="checkout" depends="init-module-list,print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig. It goes through the modules list and perform the checkout command module per module, the number of retries could be controlled by '-Dcvs.retry=2' property, defalt value is 2">
       <taskdef name="nbcvs" classname="org.netbeans.nbbuild.NBCvs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
       <loadfile srcfile="CVS/Root" property="cvsroot" failonerror="false">
