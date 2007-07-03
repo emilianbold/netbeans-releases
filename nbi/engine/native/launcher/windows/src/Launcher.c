@@ -557,7 +557,7 @@ void setLauncherCommand(LauncherProperties *props) {
 }
 
 void executeMainClass(LauncherProperties * props) {
-    if(isOK(props)) {        
+    if(isOK(props) && !isTerminated(props)) {        
         int64t * minSize = newint64_t(0, 0);        
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Executing main class", 1);
         checkFreeSpace(props, props->tmpDir, minSize);
