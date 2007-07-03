@@ -299,16 +299,6 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
      */
     @Override
     public void componentClosed() {
-        SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        if (pane != null) {
-                            pane.setEditorKit(null);
-                        }
-                        removeAll();
-                    }
-                }
-        );
         super.componentClosed();
         multiViewObserver = null;
     }
