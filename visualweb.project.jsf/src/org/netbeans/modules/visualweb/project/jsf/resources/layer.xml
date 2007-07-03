@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="JSF">
             <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.jsp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="PageFragment.jspf" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/PageFragment.jspf.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspfObject.png"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
@@ -88,6 +88,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="RequestBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/RequestBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
@@ -97,6 +98,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="SessionBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/SessionBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
@@ -106,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="ApplicationBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/ApplicationBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
@@ -132,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/webappsTemplateHelp.html"/>
             <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/Page.jsp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="rave-page_1.5"/>
@@ -147,7 +150,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="PageFragment.jspf" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/PageFragment.jspf.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspfObject.png"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="rave-page_1.5"/>
