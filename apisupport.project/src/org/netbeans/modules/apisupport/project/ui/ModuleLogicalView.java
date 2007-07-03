@@ -129,8 +129,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             });
         }
         
-        private Set getProjectFiles() {
-            Set roots = new HashSet();
+        private Set<FileObject> getProjectFiles() {
+            Set<FileObject> roots = new HashSet<FileObject>();
             Sources sources = ProjectUtils.getSources(project);
             
             // TODO add Sources.addChangeListener(this)
