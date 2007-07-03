@@ -199,6 +199,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.uml.integration</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
                 <friend>org.netbeans.modules.uml.reporting</friend>
+                <friend>org.netbeans.modules.uml.samples</friend>
                 <package>org.netbeans.modules.uml.project</package>
                 <package>org.netbeans.modules.uml.project.ui</package>
                 <package>org.netbeans.modules.uml.project.ui.codegen</package>

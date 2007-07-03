@@ -206,6 +206,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.uml.requirements</friend>
                 <friend>org.netbeans.modules.uml.requirements.doorsprovider</friend>
                 <friend>org.netbeans.modules.uml.requirements.xmlrequirements</friend>
+                <friend>org.netbeans.modules.uml.samples</friend>
                 <package>org.netbeans.modules.uml</package>
                 <package>org.netbeans.modules.uml.common</package>
                 <package>org.netbeans.modules.uml.common.generics</package>
