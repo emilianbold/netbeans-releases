@@ -25,7 +25,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- *
+ * This wrapper delegates to original ConnectionLayout, but allows lazy label formating.
  * @author joelle
  */
 public class ConnectionWrapperLayout implements Layout {
@@ -54,37 +54,14 @@ public class ConnectionWrapperLayout implements Layout {
     }
 
 
-    /*
-    public void setConstraint(Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, float placementInPercentage) {
-    connectionWidgetLayout.setConstraint(childWidget, alignment, placementInPercentage);
-    if( childWidget instanceof LabelWidget ){
-    label = (LabelWidget)childWidget;
-    }
-    }
-    public void setConstraint (Widget childWidget, LayoutFactory.ConnectionWidgetLayoutAlignment alignment, int placementAtDistance) {
-    connectionWidgetLayout.setConstraint(childWidget, alignment, placementAtDistance);
-    if( childWidget instanceof LabelWidget ){
-    label = (LabelWidget)childWidget;
-    }
-    }
-    public void removeConstraint (Widget childWidget) {
-    connectionWidgetLayout.removeConstraint(childWidget);
-    }
-     */
-
-
     private final static void resetLabelConstraint(ConnectionWidget connectionWidget, LabelWidget label) {
         if (label == null)
             return;
         
         connectionWidget.removeConstraint(label);
         connectionWidget.removeChild(label);
-        Widget widget = label.getParentWidget();
 
-        Anchor anchor = connectionWidget.getSourceAnchor();
-
-        Anchor.Result sourceResult = anchor.compute(connectionWidget.getSourceAnchorEntry());
-        EnumSet<Anchor.Direction> directions = sourceResult.getDirections();
+        EnumSet<Anchor.Direction> directions = connectionWidget.getSourceAnchor().compute(connectionWidget.getSourceAnchorEntry()).getDirections();
         if (directions.contains(Anchor.Direction.TOP)) {
             label.setOrientation(LabelWidget.Orientation.ROTATE_90);
             connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
