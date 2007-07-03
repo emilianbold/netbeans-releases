@@ -98,8 +98,6 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
             setError(sb.toString());
             return valid;
         } else {
-            // XXX TODO make sure schema name is unique and does not contain white spaces
-            // and OS file and path separaters.
             String schemaName = this.bindingInfoPnl.getSchemaName();
             if ((this.existingSchemaNames != null) && 
                     (this.existingSchemaNames.contains(schemaName))){
@@ -158,7 +156,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     }
     
     public boolean isValid() {
-        StringBuffer sb = new StringBuffer();  
+        StringBuffer sb = new StringBuffer(); 
         return isValid(sb);
     }
     
@@ -167,9 +165,9 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     } 
     
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(JAXBWizBindingCfgPanel.class);
     }
-    
+
     public Component getComponent() {
         return bindingInfoPnl;
     }
