@@ -21,6 +21,7 @@ package org.netbeans.modules.tasklist.todo.settings;
 
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -29,11 +30,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 public class ToDoOptions extends AdvancedOption {
     
     public String getDisplayName() {
-        return "ToDo Tasks";
+        return NbBundle.getMessage( ToDoOptions.class, "LBL_Options" ); //NOI18N
     }
 
     public String getTooltip() {
-        return "Options for ToDo tasks in Task List window.";
+        return NbBundle.getMessage( ToDoOptions.class, "HINT_Options" ); //NOI18N
     }
 
     public OptionsPanelController create() {
