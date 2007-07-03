@@ -88,14 +88,21 @@ public class AutoupdateCatalogFactory {
             }
         }
         url = modifyURL (url);
-        
-        Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N
+                
         AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
         
         Preferences providerPreferences = getPreferences ().node (sKey);
-        providerPreferences.put ("displayName", au_catalog.getDisplayName ());
+        String displayName = providerPreferences.get("displayName", null);
+        if (displayName == null) {
+            providerPreferences.put ("displayName", au_catalog.getDisplayName ());
+        }
+        
+        Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N        
         if (en != null) {
-            providerPreferences.put ("enabled", en.toString ());
+            String enabled = providerPreferences.get("enabled", null);            
+            if (enabled == null) {
+                providerPreferences.putBoolean("enabled", en);
+            }
         }
 
         return au_catalog;
