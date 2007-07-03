@@ -78,7 +78,7 @@ public final class InstanceNameResolver {
 
     private static String checkForJavaIdentifierCompliant (String instanceName) {
         if (instanceName == null  ||  instanceName.length () < 1)
-            return "a"; // NOI18N
+            return "object"; // NOI18N
         StringBuffer buffer = new StringBuffer ();
         int index = 0;
         if (Character.isJavaIdentifierStart (instanceName.charAt (0))) {

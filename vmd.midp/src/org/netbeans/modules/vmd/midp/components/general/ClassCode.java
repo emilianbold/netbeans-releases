@@ -20,13 +20,13 @@ package org.netbeans.modules.vmd.midp.components.general;
 
 import org.netbeans.modules.vmd.api.codegen.*;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 import javax.swing.text.StyledDocument;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 
 /**
  * @author David Kaspar
@@ -149,18 +149,26 @@ public class ClassCode {
             instanceName = instanceName.substring(index + 1);
         if (type.getDimension() > 0)
             instanceName += ARRAY_SUFFIX;
+        if (instanceName.length () <= 0)
+            instanceName = "object"; // NOI18N
         char[] chars = instanceName.toCharArray();
-        chars[0] = Character.toLowerCase(chars[0]);
-        for (int i = 0 ; i < chars.length ; i++ ) {
-            if (Character.isLetter(chars[i]) && !Character.isLowerCase(chars[i])) {
-                if (chars.length >= i + 1 && !Character.isLowerCase(chars[i+1]))
-                    chars[i] = Character.toLowerCase(chars[i]);
-                else
+        for (int i = 0; i < chars.length; i++) {
+            if (Character.isLetter(chars[i])) {
+                if (Character.isUpperCase(chars[i])) {
+                    if (i == 0)
+                        chars[i] = Character.toLowerCase(chars[i]);
+                    else if (i + 1 < chars.length) {
+                        if (Character.isUpperCase(chars[i+1]))
+                            chars[i] = Character.toLowerCase(chars[i]);
+                        else
+                            break;
+                    } else
+                        chars[i] = Character.toLowerCase(chars[i]);
+                } else
                     break;
             }
         }
-        instanceName = String.copyValueOf(chars);
-        return instanceName;
+        return new String (chars);
     }
     
 }
