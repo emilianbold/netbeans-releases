@@ -24,8 +24,10 @@ import gui.window.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
@@ -68,6 +70,13 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     public void initialize(){
         log("::initialize::");
         EditorOperator.closeDiscardAll();
+        
+        //Workaround for "Update data sources" dialog
+        try {
+            new JDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.dataconnectivity.utils.Bundle", "MSG_Update_Datasources_Title")).close();
+        } catch (TimeoutExpiredException tex) {
+            // Do nothing
+        }        
     }
     
     public void prepare(){
