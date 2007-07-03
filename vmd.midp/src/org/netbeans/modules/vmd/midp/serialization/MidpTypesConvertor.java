@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.model.Versionable;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -55,8 +56,8 @@ public final class MidpTypesConvertor {
             case LONG:
                 return createProperty (name, usedInConstructor, MidpTypes.TYPEID_LONG, PropertyValue.createUserCode ("0l"));
             case DECLARED:
-                String className = ((DeclaredType) type).asElement ().getSimpleName ().toString ();
-                if ("java.lang.String".equals (className))
+                String className = ((TypeElement) ((DeclaredType) type).asElement ()).getQualifiedName ().toString ();
+                if ("java.lang.String".equals (className)) // NOI18N
                     return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), true, true, Versionable.FOREVER);
                 // TODO - component references like Image...
             default:
