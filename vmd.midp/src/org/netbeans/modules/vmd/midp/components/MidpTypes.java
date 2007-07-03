@@ -141,6 +141,16 @@ public final class MidpTypes {
         return (AlertType) propertyValue.getPrimitiveValue ();
     }
 
+    public static boolean isValidFQNClassName (String string) {
+        if (string == null)
+            return false;
+        for (String part : string.split ("\\.", -2)) { // NOI18N
+            if (! Utilities.isJavaIdentifier (part))
+                return false;
+        }
+        return true;
+    }
+
     public static String getFQNClassName (TypeID type) {
         assert TypeID.Kind.COMPONENT.equals (type.getKind ());
         return type.getString ();

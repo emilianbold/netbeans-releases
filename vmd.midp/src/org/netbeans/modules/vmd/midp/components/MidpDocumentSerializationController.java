@@ -20,17 +20,23 @@
 package org.netbeans.modules.vmd.midp.components;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController;
 import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.midp.components.items.ItemCD;
-import org.netbeans.modules.vmd.midp.components.general.RootCD;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.categories.*;
+import org.netbeans.modules.vmd.midp.components.general.RootCD;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midp.palette.wizard.ComponentInstaller;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * @author David Kaspar
@@ -39,7 +45,29 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
 
     public static final String VERSION_1 = "1";
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
+    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, final Collection<ComponentElement> componentElements) {
+        final DescriptorRegistry registry = loadingDocument.getDescriptorRegistry ();
+        final Collection<String> unresolved = new HashSet<String> ();
+        registry.readAccess (new Runnable() {
+            public void run () {
+                for (ComponentElement element : componentElements) {
+                    String string = element.getTypeID ().getString ();
+                    if (MidpTypes.isValidFQNClassName (string))
+                        if (registry.getComponentDescriptor (new TypeID (TypeID.Kind.COMPONENT, string)) == null)
+                            unresolved.add (string);
+                }
+            }
+        });
+        if (! unresolved.isEmpty ()) {
+            Map<String,ComponentInstaller.Item> found = ComponentInstaller.search (ProjectUtils.getProject (context));
+            ArrayList<ComponentInstaller.Item> install = new ArrayList<ComponentInstaller.Item> ();
+            for (String s : unresolved) {
+                ComponentInstaller.Item item = found.get (s);
+                if (item != null)
+                    install.add (item);
+            }
+            ComponentInstaller.install (found, install);
+        }
     }
 
     public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {

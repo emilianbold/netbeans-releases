@@ -49,13 +49,21 @@ import java.util.*;
  */
 public final class ComponentInstaller {
 
-    public static void install (Map<String,Item> allFoundComponents, List<Item> componentsToInstall) {
+    public static void install (final Map<String,Item> allFoundComponents, final List<Item> componentsToInstall) {
+        ComponentSerializationSupport.runUnderDescriptorRegistryWriteAccess (MidpDocumentSupport.PROJECT_TYPE_MIDP, new Runnable () {
+            public void run () {
+                installCore (allFoundComponents, componentsToInstall);
+            }
+        });
+        ComponentSerializationSupport.refreshDescriptorRegistry (MidpDocumentSupport.PROJECT_TYPE_MIDP);
+    }
+
+    private static void installCore (Map<String,Item> allFoundComponents, List<Item> componentsToInstall) {
         HashMap<String,Item> toInstall = new HashMap<String,Item> ();
         for (Item item : componentsToInstall)
             recursiveAdd (toInstall, allFoundComponents, item);
         for (Item item : toInstall.values ())
             ComponentSerializationSupport.serialize (MidpDocumentSupport.PROJECT_TYPE_MIDP, item.getTypeDescriptor (), item.getPaletteDescriptor (), item.getProperties (), item.getPresenters ());
-        ComponentSerializationSupport.refreshDescriptorRegistry (MidpDocumentSupport.PROJECT_TYPE_MIDP);
     }
 
     private static void recursiveAdd (HashMap<String,Item> toInstall, Map<String,Item> allFoundComponents, Item item) {
@@ -67,7 +75,17 @@ public final class ComponentInstaller {
         recursiveAdd (toInstall, allFoundComponents, allFoundComponents.get (item.getSuperFQN ()));
     }
 
-    public static Map<String,Item> search (Project project) {
+    public static Map<String,Item> search (final Project project) {
+        final Object[] ret = new Object[1];
+        ComponentSerializationSupport.runUnderDescriptorRegistryReadAccess (MidpDocumentSupport.PROJECT_TYPE_MIDP, new Runnable () {
+            public void run () {
+                ret[0] = searchCore (project);
+            }
+        });
+        return (Map<String, Item>) ret[0];
+    }
+
+    public static Map<String,Item> searchCore (Project project) {
         final ClasspathInfo info = MidpProjectSupport.getClasspathInfo (project);
         if (info == null)
             return Collections.emptyMap ();
@@ -159,12 +177,13 @@ public final class ComponentInstaller {
 
         boolean isAbstract = element.getModifiers ().contains (Modifier.ABSTRACT);
         boolean isFinal = element.getModifiers ().contains (Modifier.FINAL);
-        FileObject file = SourceUtils.getFile (element, info);
+        FileObject file = SourceUtils.getFile (ElementHandle.create (element), info);
         boolean isInSource = file != null  &&  sourceGroup != null  &&  sourceGroup.contains (file);
         item = new Item (superFQN, fqn, isAbstract, isFinal, isInSource);
         item.addPresenter (new MidpAddImportPresenterSerializer ());
 
-        boolean hasConstructor = inspectElement (item, element);
+        inspectElement (item, element);
+//        boolean hasConstructor = inspectElement (item, element);
 //        if (! isAbstract  &&  ! hasConstructor)
 //            return false;
 

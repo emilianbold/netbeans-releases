@@ -105,7 +105,7 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     
     private String getLabelName() {
         if (typeID.equals(CallPointCD.TYPEID)) {
-            return "Java code:";
+            return "Java Code:";
         } else if (typeID.equals(MethodPointCD.TYPEID)) {
             return "Method Name:";
         } else if (typeID.equals(IfPointCD.TYPEID)) {
