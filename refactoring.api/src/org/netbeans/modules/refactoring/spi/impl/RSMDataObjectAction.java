@@ -21,11 +21,8 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.actions.RenameAction;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -37,7 +34,8 @@ import org.openide.util.actions.Presenter.Popup;
 /** Action that displays refactoring submenu action on JavaDataObject
  * and delegates to it.
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula
+ * @author Jan Becicka
  */
 public class RSMDataObjectAction extends SystemAction implements Menu, Popup, ContextAwareAction {
     // create delegate (RefactoringSubMenuAction)
@@ -68,17 +66,17 @@ public class RSMDataObjectAction extends SystemAction implements Menu, Popup, Co
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        DataObject dobj = actionContext.lookup(DataObject.class);
-        while (dobj instanceof DataShadow) {
-            dobj = ((DataShadow) dobj).getOriginal();
-        }
-        
-        //boolean isRecursive = !(actionContext.lookup(NonRecursiveFolder.class) != null);
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
         if (a.isEnabled()) {
             return this;
         } else {
-            return renameAction.createContextAwareInstance(actionContext);
+            Action rename = renameAction.createContextAwareInstance(actionContext);
+            Action b = RefactoringActionsFactory.safeDeleteAction().createContextAwareInstance(actionContext);
+            if (!rename.isEnabled() && b.isEnabled()) {
+                return this;
+            } else {
+                return rename;
+            }
         }
     }
 }
