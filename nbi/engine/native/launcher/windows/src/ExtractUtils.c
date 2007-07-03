@@ -29,12 +29,12 @@
 #include "RegistryUtils.h"
 #include "ExtractUtils.h"
 #include "Launcher.h"
+#include "Main.h"
 
 const DWORD   STUB_FILL_SIZE      = 90000;
 
 void skipLauncherStub(LauncherProperties * props,  DWORD stubSize) {
     HANDLE hFileRead = props->handler;
-    DWORD bufferSize = props->bufsize;
     
     if(hFileRead!=INVALID_HANDLE_VALUE) {
         // just read stub data.. no need to write it anywhere
@@ -64,7 +64,7 @@ void skipStub(LauncherProperties * props) {
         if(!isOK(props)) {
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1,
             "Error! Can`t process launcher stub", 1);
-            showErrorW(INTEGRITY_ERROR_PROP, 1, props->exeName);
+            showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exeName);
         }
     }
 }
@@ -125,10 +125,6 @@ void readString(LauncherProperties * props, SizedString * result, DWORD isUnicod
     DWORD read=0;
     char * buf = newpChar(bufferSize);
     
-    
-    char * resultString = NULL;
-    DWORD resultLength = 0;//*restBytesNumber;
-    
     while (ReadFile(hFileRead, buf, bufferSize, &read, 0) && read) {
         addProgressPosition(props, read);
         rest->bytes = appendStringN(rest->bytes, rest->length, buf, read);
@@ -152,8 +148,6 @@ void readString(LauncherProperties * props, SizedString * result, DWORD isUnicod
 
 void readNumber(LauncherProperties * props, DWORD * result) {
     if(!isOK(props)) return;
-    SizedString * rest = props->restOfBytes;
-    DWORD bufferSize = props->bufsize;
     
     SizedString * numberString = createSizedString();
     readString(props, numberString, 0);
@@ -297,7 +291,7 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
     
     if (hFileWrite == INVALID_HANDLE_VALUE) {
         WCHAR * err = getErrorDescription(GetLastError());
-        showErrorW(getI18nProperty(props, EXIT_BUTTON_PROP), 2, getI18nProperty(props, OUTPUT_ERROR_PROP), output, err);
+        showErrorW(props, OUTPUT_ERROR_PROP, 2, output, err);
         FREE(err);
         *status = ERROR_INPUTOUPUT;
         return;
@@ -424,7 +418,7 @@ void loadI18NStrings(LauncherProperties * props) {
         props->i18nMessages->properties[i] = NULL;
         props->i18nMessages->strings[i] = NULL;
         char * propName = newpChar(20);
-        sprintf(propName, "property name %2u", i);
+        sprintf(propName, "property name %2ld", i);
         readStringWithDebugA(props, & (props->i18nMessages->properties[i]), propName);
         free(propName);
     }
@@ -444,7 +438,8 @@ void loadI18NStrings(LauncherProperties * props) {
         readStringWithDebugW(props, &localeName, "locale name");
         if(!isOK(props)) break;
         
-        isLocaleMatches = (localeName==NULL) ?  1 :  (wcsstr(currentLocale, localeName)!=-1);
+        isLocaleMatches = (localeName==NULL) ?  1 :
+            wcsstr(currentLocale, localeName) != NULL;
         
         //read properties names and value
         for(i=0;i<numberOfProperties;i++) {
@@ -664,8 +659,7 @@ void readLauncherProperties(LauncherProperties * props) {
 void extractJVMData(LauncherProperties * props) {
     if(!isOK(props)) return;
     
-    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting JVM data... ", 1);
-    HANDLE hFileRead = props->handler;
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting JVM data... ", 1);    
     WCHAR * outputdir = props->tmpDir;
     
     extractLauncherResource(props, outputdir, &(props->testJVMFile), "testJVM file");

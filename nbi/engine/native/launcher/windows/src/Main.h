@@ -21,7 +21,9 @@
 #ifndef _Main_H
 #define	_Main_H
 
+#include <wchar.h>
 #include "Errors.h"
+
 
 #ifdef	__cplusplus
 extern "C" {
@@ -41,6 +43,8 @@ void hideLauncherWindows(LauncherProperties *props);
 
 void hide(LauncherProperties *props,HWND hwnd);
 void show(LauncherProperties *props,HWND hwnd);
+
+DWORD isTerminated(LauncherProperties * props);
 
 void showErrorW(LauncherProperties *props, const char * error, const DWORD varArgsNumber, ...);
 

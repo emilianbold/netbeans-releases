@@ -180,7 +180,7 @@ void initProgressWindow(LauncherProperties * props, HINSTANCE hInstance) {
 void initExitButton(LauncherProperties * props, HINSTANCE hInstance) {
     if(isSilent(props)) return;
     RECT rcClient;
-    int cyVScroll    = GetSystemMetrics(SM_CYVSCROLL);
+    //int cyVScroll    = GetSystemMetrics(SM_CYVSCROLL);
     int buttonWidth  = 90;
     int buttonHeight = 25;
     
@@ -237,7 +237,7 @@ void showErrorW(LauncherProperties * props, const char * error, const DWORD varA
         HANDLE * events = (HANDLE *) malloc(sizeof(HANDLE)*2);
         events[0] = buttonPressed;
         events[1] = closingWindowsRequired;
-        DWORD result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+        WaitForMultipleObjects(2, events, FALSE, INFINITE);
         FREE(events);
     }
     FREE(result);
@@ -502,6 +502,7 @@ DWORD WINAPI launcherThread(void * ptr) {
         SetEvent(closingWindowsConfirmed);
         closeLauncherWindows(props);
     }
+    return 0;
 }
 
 
@@ -522,6 +523,7 @@ DWORD createGui(LauncherProperties* props, HINSTANCE hInstance, HINSTANCE hi, in
     } else {
         SetEvent(initializationSuccess);
     }
+    return 1;
 }
 
 

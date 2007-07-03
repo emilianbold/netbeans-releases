@@ -26,6 +26,44 @@
 #include <string.h>
 #include "StringUtils.h"
 
+
+
+const char *  JVM_NOT_FOUND_PROP           = "nlw.jvm.notfoundmessage";
+const char *  JVM_USER_DEFINED_ERROR_PROP  = "nlw.jvm.usererror";
+    
+const char * JVM_UNSUPPORTED_VERSION_PROP = "nlw.jvm.unsupportedversion";
+const char * NOT_ENOUGH_FREE_SPACE_PROP   = "nlw.freespace";
+const char * CANT_CREATE_TEMP_DIR_PROP    = "nlw.tmpdir";
+const char * INTEGRITY_ERROR_PROP         = "nlw.integrity";
+const char * OUTPUT_ERROR_PROP            = "nlw.output.error";
+const char * JAVA_PROCESS_ERROR_PROP      = "nlw.java.process.error";
+const char * EXTERNAL_RESOURE_LACK_PROP   = "nlw.missing.external.resource";
+   
+const char * ARG_OUTPUT_PROPERTY          = "nlw.arg.output";
+const char * ARG_JAVA_PROP                = "nlw.arg.javahome";
+const char * ARG_DEBUG_PROP               = "nlw.arg.verbose";
+const char * ARG_TMP_PROP                 = "nlw.arg.tempdir";
+const char * ARG_CPA_PROP                 = "nlw.arg.classpatha";
+const char * ARG_CPP_PROP                 = "nlw.arg.classpathp";
+const char * ARG_EXTRACT_PROP             = "nlw.arg.extract";
+const char * ARG_DISABLE_SPACE_CHECK      = "nlw.arg.disable.space.check";
+const char * ARG_HELP_PROP                = "nlw.arg.help";
+
+const char * MSG_CREATE_TMPDIR     = "nlw.msg.create.tmpdir";
+const char * MSG_EXTRACT_DATA      = "nlw.msg.extract";
+const char * MSG_JVM_SEARCH        = "nlw.msg.jvmsearch";
+const char * MSG_SET_OPTIONS       = "nlw.msg.setoptions";
+const char * MSG_RUNNING           = "nlw.msg.running";
+const char * MSG_TITLE             = "nlw.msg.title";
+const char * MSG_MESSAGEBOX_TITLE  = "nlw.msg.messagebox.title";
+const char * MSG_PROGRESS_TITLE    = "nlw.msg.progress.title";
+
+const char * EXIT_BUTTON_PROP     = "nlw.msg.button.error" ;   
+const char * MAIN_WINDOW_TITLE     = "nlw.msg.main.title" ;
+
+
+
+
 //adds string the the initial string and modifies totalWCHARs and capacity
 // initial - the beginning of the string
 // size - pointer to the value that contains the length of the initial string
@@ -205,13 +243,13 @@ WCHAR * appendStringW(WCHAR *  initial, const WCHAR * addString) {
 
 char * DWORDtoCHAR(DWORD dw) {
     char * str = (char*) malloc(sizeof(char)*17);
-    sprintf(str, "%u", dw);
+    sprintf(str, "%ld", dw);
     return str;
 }
 
 WCHAR * DWORDtoWCHAR(DWORD dw) {
     WCHAR * str = (WCHAR*) malloc(sizeof(WCHAR)*17);
-    wsprintfW(str, L"%u", dw);
+    wsprintfW(str, L"%ld", dw);
     return str;
 }
 
@@ -420,9 +458,13 @@ char ** newppChar(DWORD length) {
 
 int compare(int64t * size, DWORD value) {
     if (size->High > 0) return 1;
-    if (size->Low > value)  return 1;
-    if (size->Low == value) return 0;
-    if (size->Low < value)  return -1;
+    
+    if (size->Low > value)  
+        return 1;
+    else if(size->Low == value) 
+        return 0;
+    else //if(size->Low < value)  
+        return -1;    
 }
 
 void plus(int64t * size, DWORD value) {
@@ -459,7 +501,7 @@ WCHAR * getErrorDescription(DWORD dw) {
     NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &lpMsgBuf, 0, NULL );
     
     lpDisplayBuf = newpWCHAR(getLengthW(lpMsgBuf) + 40);
-    wsprintfW(lpDisplayBuf, L"Error code (%u): %s", dw, lpMsgBuf);
+    wsprintfW(lpDisplayBuf, L"Error code (%ld): %s", dw, lpMsgBuf);
     
     LocalFree(lpMsgBuf);
     

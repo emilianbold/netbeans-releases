@@ -220,7 +220,7 @@ void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
         }
         
         if(props->status == ERROR_JVM_NOT_FOUND) { // check private JRE
-            DWORD privateJreStatus = props->status;
+            //DWORD privateJreStatus = props->status;
             WCHAR * privateJre = appendStringW(NULL, location);
             privateJre = appendStringW(privateJre, L"\\jre");
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... check private jre at ", 0);
@@ -313,7 +313,7 @@ void findSuitableJava(LauncherProperties * props) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "", 1);
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Finding JAVA...", 1);
         
-        WCHAR * java = NULL;
+        //WCHAR * java = NULL;
         
         if(props->userDefinedJavaHome!=NULL) { // using user-defined JVM via command-line parameter
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[CMD Argument] Try to use java from ", 0);
@@ -395,7 +395,7 @@ void setClasspathElements(LauncherProperties * props) {
         if (props->classpath != NULL) {
             preCP = appendStringW(preCP, CLASSPATH_SEPARATOR);
         }
-        WCHAR *last = props->classpath;
+        //WCHAR *last = props->classpath;
         WCHAR *tmp = appendStringW(preCP, props->classpath);
         FREE(props->classpath);
         props->classpath = tmp;
@@ -456,7 +456,7 @@ void setAdditionalArguments(LauncherProperties * props) {
     //fill the array
     if(jArg>0) {
         javaArgs = newppWCHAR(jArg + props->jvmArguments->size);
-        DWORD j=0;
+        //DWORD j=0;
         for (i=0;i<props->jvmArguments->size;i++) {
             javaArgs[i] = props->jvmArguments->items[i];
         }
@@ -710,7 +710,7 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     props->isOnlyStub = (compare(props->launcherSize, STUB_FILL_SIZE) < 0);
     return props;
 }
-freeLauncherResourceList(LauncherResourceList ** list) {
+void freeLauncherResourceList(LauncherResourceList ** list) {
     if(*list!=NULL) {
         if((*list)->items!=NULL) {
             DWORD i=0;

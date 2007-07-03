@@ -35,7 +35,9 @@ extern "C" {
     
     LauncherProperties * createLauncherProperties();
     void freeLauncherProperties(LauncherProperties ** props);
-
+    
+    void printStatus(LauncherProperties * props);
+    void trySetCompatibleJava(WCHAR * location, LauncherProperties * props);
     DWORD isSilent(LauncherProperties * props);
     DWORD isLauncherArgument(LauncherProperties * props, WCHAR * value);
     void processLauncher(LauncherProperties * props);

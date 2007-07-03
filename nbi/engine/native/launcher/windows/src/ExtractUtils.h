@@ -37,7 +37,12 @@ extern "C" {
     void loadI18NStrings(LauncherProperties * props);
     
     WCHARList * newWCHARList(DWORD number) ;
+    void readLauncherProperties(LauncherProperties * props);    
     void freeWCHARList(WCHARList ** plist);
+    void freeLauncherResource(LauncherResource ** file);
+    
+    void extractJVMData(LauncherProperties * props);
+    void extractData(LauncherProperties *props);
     
 #ifdef	__cplusplus
 }

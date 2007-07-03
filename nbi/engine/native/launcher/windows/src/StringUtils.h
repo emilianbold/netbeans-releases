@@ -28,41 +28,35 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    
-    
 
-#define  JVM_NOT_FOUND_PROP           "nlw.jvm.notfoundmessage"
-#define  JVM_USER_DEFINED_ERROR_PROP  "nlw.jvm.usererror"
-    
-#define  JVM_UNSUPPORTED_VERSION_PROP "nlw.jvm.unsupportedversion"
-#define  NOT_ENOUGH_FREE_SPACE_PROP   "nlw.freespace"
-#define  CANT_CREATE_TEMP_DIR_PROP    "nlw.tmpdir"
-#define  INTEGRITY_ERROR_PROP         "nlw.integrity"
-#define  OUTPUT_ERROR_PROP            "nlw.output.error"
-#define  JAVA_PROCESS_ERROR_PROP      "nlw.java.process.error"
-#define  EXTERNAL_RESOURE_LACK_PROP   "nlw.missing.external.resource"
-   
-#define  ARG_OUTPUT_PROPERTY          "nlw.arg.output"
-#define  ARG_JAVA_PROP                "nlw.arg.javahome"
-#define  ARG_DEBUG_PROP               "nlw.arg.verbose"
-#define  ARG_TMP_PROP                 "nlw.arg.tempdir"
-#define  ARG_CPA_PROP                 "nlw.arg.classpatha"
-#define  ARG_CPP_PROP                 "nlw.arg.classpathp"
-#define  ARG_EXTRACT_PROP             "nlw.arg.extract"
-#define  ARG_DISABLE_SPACE_CHECK      "nlw.arg.disable.space.check"
-#define  ARG_HELP_PROP                "nlw.arg.help"
-
-#define MSG_CREATE_TMPDIR     "nlw.msg.create.tmpdir"
-#define MSG_EXTRACT_DATA      "nlw.msg.extract"    
-#define MSG_JVM_SEARCH        "nlw.msg.jvmsearch"    
-#define MSG_SET_OPTIONS       "nlw.msg.setoptions"
-#define MSG_RUNNING           "nlw.msg.running"
-#define MSG_TITLE             "nlw.msg.title"    
-#define MSG_MESSAGEBOX_TITLE  "nlw.msg.messagebox.title"
-#define MSG_PROGRESS_TITLE    "nlw.msg.progress.title"
-
-#define EXIT_BUTTON_PROP     "nlw.msg.button.error"    
-#define MAIN_WINDOW_TITLE     "nlw.msg.main.title" 
+extern const char *  JVM_NOT_FOUND_PROP;
+extern const char *  JVM_USER_DEFINED_ERROR_PROP;
+extern const char *  JVM_UNSUPPORTED_VERSION_PROP;
+extern const char *  NOT_ENOUGH_FREE_SPACE_PROP;  
+extern const char *  CANT_CREATE_TEMP_DIR_PROP;   
+extern const char *  INTEGRITY_ERROR_PROP;   
+extern const char *  OUTPUT_ERROR_PROP;          
+extern const char *  JAVA_PROCESS_ERROR_PROP;    
+extern const char *  EXTERNAL_RESOURE_LACK_PROP;    
+extern const char *  ARG_OUTPUT_PROPERTY;        
+extern const char *  ARG_JAVA_PROP;              
+extern const char *  ARG_DEBUG_PROP;             
+extern const char *  ARG_TMP_PROP;               
+extern const char *  ARG_CPA_PROP;               
+extern const char *  ARG_CPP_PROP;               
+extern const char *  ARG_EXTRACT_PROP;
+extern const char *  ARG_DISABLE_SPACE_CHECK;
+extern const char *  ARG_HELP_PROP;
+extern const char * MSG_CREATE_TMPDIR;     
+extern const char * MSG_EXTRACT_DATA;     
+extern const char * MSG_JVM_SEARCH;       
+extern const char * MSG_SET_OPTIONS;      
+extern const char * MSG_RUNNING;          
+extern const char * MSG_TITLE;            
+extern const char * MSG_MESSAGEBOX_TITLE; 
+extern const char * MSG_PROGRESS_TITLE;   
+extern const char * EXIT_BUTTON_PROP;     
+extern const char * MAIN_WINDOW_TITLE;    
 
     
 #define FREE(x) { if((x)!=NULL) {free(x); (x)=NULL;}}

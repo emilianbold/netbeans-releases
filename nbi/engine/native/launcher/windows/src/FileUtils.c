@@ -66,7 +66,6 @@ void writeMessageA(LauncherProperties * props, DWORD level, DWORD isErr,  const 
 
 void writeMessageW(LauncherProperties * props, DWORD level, DWORD isErr,  const WCHAR * message, DWORD needEndOfLine) {
     if(level<props->outputLevel) return;
-    HANDLE hd = (isErr) ? props->stderrHandle : props->stdoutHandle;
     char * msg = toChar(message);
     writeMessageA(props, level, isErr, msg, needEndOfLine);
     FREE(msg);
@@ -419,7 +418,6 @@ WCHAR * getCurrentDirectory() {
 WCHAR * getCurrentUserHome() {
     HANDLE hUser;
     WCHAR * buf = NULL;
-    DWORD res = 0;
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hUser)) {
         DWORD size = MAX_PATH;
         buf = newpWCHAR(MAX_PATH);

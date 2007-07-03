@@ -26,6 +26,7 @@
 #include "FileUtils.h"
 #include "ProcessUtils.h"
 #include "Launcher.h"
+#include "Main.h"
 
 const DWORD JAVA_VERIFICATION_PROCESS_TIMEOUT = 10000; // 10sec
 const DWORD JAVA_VERIFICATION_PROCESS_PRIORITY = NORMAL_PRIORITY_CLASS;
@@ -456,7 +457,6 @@ void searchJavaFromEnvVariables(LauncherProperties * props) {
             writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, ENVS[i], 0);
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "> = ", 0);
             writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, buffer, 1);
-            DWORD status = ERROR_OK;
             trySetCompatibleJava(buffer, props);
             if(props->java!=NULL) {
                 break;

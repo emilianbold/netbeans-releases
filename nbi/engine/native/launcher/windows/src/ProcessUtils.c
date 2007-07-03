@@ -33,6 +33,7 @@ DWORD readBuf(HANDLE hRead, WCHAR * buf, DWORD * bytesRead, HANDLE hWrite) {
         WriteFile(hWrite, buf, (*bytesRead), &bytesWritten, 0);
     }
     memset(buf, 0, sizeof(buf));
+    return 0;
 }
 
 DWORD readNextData(HANDLE hRead, WCHAR * buf, HANDLE hWrite) {
@@ -61,8 +62,7 @@ DWORD readNextData(HANDLE hRead, WCHAR * buf, HANDLE hWrite) {
 DWORD readProcessStream(PROCESS_INFORMATION pi, HANDLE currentProcessStdin, HANDLE currentProcessStdout, HANDLE currentProcessStderr, DWORD timeOut, HANDLE hWriteInput, HANDLE hWriteOutput, HANDLE hWriteError) {
     DWORD started = GetTickCount();
     WCHAR buf[STREAM_BUF_LENGTH];
-    DWORD exitCode=0;
-    DWORD total = 0;
+    DWORD exitCode=0;    
     DWORD outRead =0;
     DWORD errRead =0;
     DWORD inRead =0;
