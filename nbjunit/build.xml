@@ -27,8 +27,6 @@ Microsystems, Inc. All Rights Reserved.
             <property name="netbeans.javadoc.dir" location="build/javadoc"/>
         </ant>
         <copy file="build/javadoc/org-netbeans-modules-nbjunit.zip" todir="${cluster}/docs"/>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
     </target>
  
     <target name="build-source">
@@ -61,7 +59,6 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="nbbuild/**/CheckHelpSet*java"/>
             <exclude name="nbbuild/www/**/*"/>
 
-            <include name="xtest/external/insanelib*jar"/>
             <include name="xtest/external/junit*jar"/>
             <include name="xtest/nbjunit/**/*"/>
             <exclude name="xtest/nbjunit/nbjunit-*-src.zip"/>

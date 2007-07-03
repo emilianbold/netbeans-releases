@@ -1267,7 +1267,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
-        Map m = LiveReferences.fromRoots(Collections.singleton(target), rootsHint, null);
+        Map m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null);
         Path p = (Path)m.get(target);
         if (p != null) return p.toString();
         return "Not found!!!";

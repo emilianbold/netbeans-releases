@@ -324,7 +324,6 @@ Microsystems, Inc. All Rights Reserved.
     Module jar for wrapper library.<br></br>
     modules/ext/nbjunit.jar - classes which extends JUnit.<br></br>
     modules/ext/nbjunit-ide.jar - ProjectSupport helper class.<br></br>
-    modules/ext/insanelib.jar - Insane library.<br></br>
   </p>
  </answer>
 

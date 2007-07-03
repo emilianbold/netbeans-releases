@@ -27,7 +27,7 @@ Author: Jiri.Skrivanek@sun.com
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.nbjunit/modules/org-netbeans-modules-nbjunit.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.nbjunit/modules/ext/insanelib.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.insane/modules/org-netbeans-insane.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>

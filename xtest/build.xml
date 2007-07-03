@@ -40,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                     </not>
                     <uptodate srcfile="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar" targetfile="lib/nbjunit-ide.jar"/>
                 </or>
-                <uptodate srcfile="external/insanelib.jar" targetfile="lib/insanelib.jar"/>
             </and>
         </condition>
     </target>
@@ -67,7 +66,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
         </jar>
-        <copy file="external/insanelib.jar" todir="lib"/>
+        <ant dir="../performance/insanelib" target="jar" inheritAll="false"/>
+        <copy file="../performance/insanelib/dist/insanelib.jar" todir="lib"/>
     </target>
 
     <target name="compile" depends="call-bootstrap,prepare-nbjunit">
@@ -101,7 +101,6 @@ Microsystems, Inc. All Rights Reserved.
         </jar>	        
   
         <copy file="../junit/external/junit-3.8.2.jar" tofile="lib/junit.jar"/>
-        <copy file="external/insanelib.jar" tofile="lib/insanelib.jar"/>
     </target>
   
     <target name="build-xtest" depends="jars"/>
