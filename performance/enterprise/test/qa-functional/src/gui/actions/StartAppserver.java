@@ -69,7 +69,7 @@ public class StartAppserver extends org.netbeans.performance.test.utilities.Perf
         TreePath path = null;
         
         try {
-            path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
+            path = rto.tree().findPath("Servers|GlassFish V2"); // NOI18N
         } catch (TimeoutExpiredException exc) {
             exc.printStackTrace(System.err);
             throw new Error("Cannot find Application Server Node");
