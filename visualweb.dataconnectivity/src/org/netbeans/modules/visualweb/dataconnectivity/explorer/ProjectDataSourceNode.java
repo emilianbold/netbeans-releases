@@ -29,16 +29,15 @@ import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.Projec
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesChangeEvent;
 import java.awt.Image;
 import java.io.CharConversionException;
-import java.util.Enumeration;
 import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -58,12 +57,15 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
     protected WaitForModelingListener modelingListener = new WaitForModelingListener() ;
     private volatile boolean firstTimeShowAlert = false;
+    private volatile boolean isModeled;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
         nbProject = project;
+        CurrentProject.getInstance().setProject(nbProject);
         // Create a weak listener so that the connection listener can be GC'd when listener for a project is no longer referenced
         ConnectionManager.getDefault().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault()));
+        isModeled = ProjectDataSourceTracker.isProjectModeled(project);
         initPuppy() ;
     }
 
@@ -123,36 +125,36 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             // ignore
         }
         
-         // Model project to retrieve data sources
-//        modelProjectForDataSources();
+        boolean isBroken = false;         
         
         if (ImportDataSource.isLegacyProject(nbProject)) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (!firstTimeShowAlert) {
                         ImportDataSource.showAlert();
-                        firstTimeShowAlert = true;
+                        firstTimeShowAlert = true;                        
                     }
                 }
             });
         }
     
-
         try {
             ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
         } catch (NamingException ne) {
             ;
         }
+                
+        // Mark node as broken if the legacy project hasn't been modeled
+        if (ImportDataSource.isLegacyProject(nbProject)) {            
+            isBroken = !isModeled;
+        }
         
-       
-         
-        boolean isBroken = false;
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         if (this.getChildren().getNodes().length > 0)
             if (BrokenDataSourceSupport.isBroken(nbProject))
                 isBroken = true;
-
-       if (isBroken){
+        
+        if (isBroken){
             Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
             return brokenBadge;
         } else{
@@ -174,11 +176,17 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
        
         boolean isBroken = false;
+        
+         // Mark display name as broken if the legacy project hasn't been modeled
+        if (ImportDataSource.isLegacyProject(nbProject)) {            
+            isBroken = !isModeled;
+        }
+        
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         if (this.getChildren().getNodes().length > 0)
             if (BrokenDataSourceSupport.isBroken(nbProject))
-                isBroken = true;
-        
+                isBroken = true;        
+       
         return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
     }
     
@@ -187,34 +195,12 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         fireDisplayNameChange(null, null);
     }     
     
-    private void modelProjectForDataSources() {
-        FileObject[] projContents = nbProject.getProjectDirectory().getChildren();
-        FileObject fileToModel=  null;
-        for (FileObject projItem : projContents) {
-            if (projItem.isFolder()) {
-                if (projItem.getName().equals("src")) {
-                    Enumeration folders = projItem.getFolders(true);
-                    // Locate the source file to model
-                    while (folders.hasMoreElements()) {
-                        FileObject projSrc = (FileObject)folders.nextElement();
-                        for (FileObject srcFile: projSrc.getChildren()) {
-                            if (srcFile.existsExt("java")) {
-                                fileToModel = srcFile;
-                                break;
-                            }
-                        }                        
-                    }
-                }
-            }
-            
-        }
-        
-        if (fileToModel != null) {                        
-            if (FacesModelSet.getFacesModelIfAvailable(fileToModel) == null) {
-                ModelSet.addModelSetsListener(modelingListener) ;
-                FacesModelSet.startModeling(nbProject);
-            }
-        }                
+    private void modelProjectForDataSources() {                           
+        if (!isModeled) {
+            ModelSet.addModelSetsListener(modelingListener);
+            FacesModelSet.startModeling(nbProject);
+            isModeled = true;
+        }                     
     }
 
     public void connectionsChanged() {
@@ -240,11 +226,13 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         
         /*---------- ModelSetListener------------*/
         public void modelAdded(Model model) {
+            isModeled = true;
             fireIconChange();
             fireDisplayNameChange(null, null);
         }
         
         public void modelChanged(Model model) {
+            isModeled = true;
             fireIconChange();
             fireDisplayNameChange(null, null);
         }
