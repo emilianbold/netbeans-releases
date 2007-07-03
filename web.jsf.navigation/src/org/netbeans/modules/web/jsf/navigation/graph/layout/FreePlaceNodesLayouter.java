@@ -142,6 +142,7 @@ public final class FreePlaceNodesLayouter {
                 Object changedObject,
                 ObjectState previousState,
                 ObjectState newState) {
+            System.out.println("State Changed");
             throw new UnsupportedOperationException("Not supported yet.");
         }
         
@@ -181,9 +182,11 @@ public final class FreePlaceNodesLayouter {
         }
         
         public void sceneRepaint() {
+            System.out.println("");
         }
         
         public void sceneValidating() {
+            System.out.println("Testing");
         }
         
         public void sceneValidated() {
@@ -191,6 +194,7 @@ public final class FreePlaceNodesLayouter {
                 layoutNodesLocations(scene, nodesAdded);
                 nodesAdded.clear();
             }
+            
         }
     };
     

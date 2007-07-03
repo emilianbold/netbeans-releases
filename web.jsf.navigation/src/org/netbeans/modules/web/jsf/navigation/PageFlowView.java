@@ -36,9 +36,7 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -328,13 +326,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      * @param fromPageNode
      * @param toPageNode
      */
-    protected void createEdge(NavigationCaseEdge navCaseNode, Page fromPageNode, Page toPageNode) {
+    protected void createEdge(NavigationCaseEdge navCaseEdge, Page fromPageNode, Page toPageNode) {
         assert fromPageNode.getDisplayName() != null;
         assert toPageNode.getDisplayName() != null;
 
-        ConnectionWidget widget = (ConnectionWidget) scene.addEdge(navCaseNode);
-        setEdgeSourcePin(navCaseNode, fromPageNode);
-        setEdgeTargePin(navCaseNode, toPageNode);
+        VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.addEdge(navCaseEdge);
+        setEdgeSourcePin(navCaseEdge, fromPageNode);
+        setEdgeTargePin(navCaseEdge, toPageNode);
     }
 
 

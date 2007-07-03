@@ -26,7 +26,6 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Arrays;
@@ -47,6 +46,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +60,7 @@ import javax.swing.border.Border;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
+import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
@@ -79,6 +80,7 @@ import org.netbeans.modules.web.jsf.navigation.graph.actions.MyActionMapAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
+import org.netbeans.modules.web.jsf.navigation.graph.layout.ConnectionWrapperLayout;
 import org.openide.actions.DeleteAction;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -98,9 +100,9 @@ import org.openide.util.actions.SystemAction;
  * @author Joelle Lam
  */
 // TODO - remove popup menu action
-public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
-    
-    private VMDColorScheme scheme = VMDFactory.getNetBeans60Scheme ();
+public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> {
+
+    private VMDColorScheme scheme = VMDFactory.getNetBeans60Scheme();
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
@@ -109,9 +111,9 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         return connectionLayer;
     }
     private LayerWidget upperLayer = new LayerWidget(this);
-    
+
     private Router router;
-    
+
     private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
     //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
     private WidgetAction popupGraphAction;
@@ -120,11 +122,10 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     //    private final static WidgetAction CYCLE_FOCUS_OBJECT_SCENE = new CycleFocusAction (new CycleObjectSceneFocusProvider2 ());
-    
     //    private SceneLayout sceneGraphLayout;
     private PageFlowView tc;
     private FreePlaceNodesLayouter fpnl;
-    
+
     private static Paint PAINT_BACKGROUND;
     static {
         Image sourceImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
@@ -136,29 +137,29 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         graphics.dispose();
         PAINT_BACKGROUND = new TexturePaint(image, new Rectangle(0, 0, width, height));
     }
-    
-    
+
+
     /**
      * Creates a VMD graph scene.
      * @param tc or TopComponent/container.
      */
     public PageFlowScene(PageFlowView tc) {
         this.tc = tc;
-        
+
         setOpaque(true);
         setBackground(PAINT_BACKGROUND);
-        
+
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
-        
+
         addChild(backgroundLayer);
         addChild(mainLayer);
         addChild(connectionLayer);
         addChild(upperLayer);
-        
+
         router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer);
-        
+
         popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this, tc));
-        
+
         Chain actions = getActions();
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
@@ -167,69 +168,72 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         actions.addAction(popupGraphAction);
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
-        
-        
+
+
         InputMap inputMap = MapActionUtility.initInputMap();
         ActionMap actionMap = MapActionUtility.initActionMap();
         //Temporary workaround  ISSUE# 107506
-        actions.addAction(new MyActionMapAction(inputMap, actionMap));    
-        MyActionMapAction action = new MyActionMapAction(null,null);
+        actions.addAction(new MyActionMapAction(inputMap, actionMap));
+        MyActionMapAction action = new MyActionMapAction(null, null);
 //        actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
-        
-        
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
     }
-    
-    
-    
+
+
+
     private WidgetAction createActionMap() {
-        
+
         ActionMap actionMap = tc.getActionMap();
-        CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(DeleteAction.class);
+        CallbackSystemAction a = (CallbackSystemAction) SystemAction.get(DeleteAction.class);
         //        Action action = new PageFlowDeleteAction(this);
-        actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));        
-        
+        actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));
+
         //Temporary workaround  ISSUE# 107506
 //        return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
         return new MyActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
-        
     }
-    
+
     /**
      * Get the PageFlowView TopComponent
      * @return PageFlowView
      */
-    public PageFlowView getPageFlowView(){
+    public PageFlowView getPageFlowView() {
         return tc;
     }
-    
-    
+
+
     private final LabelWidget malFormedLabel = new LabelWidget(this, "Your XML is Malformed.");
+
     /**
      * To show a mal formed page.
      */
     public void createMalFormedWidget() {
         List<Widget> widgets = getChildren();
-        if( !widgets.contains(malFormedLabel)); {
+        if (!widgets.contains(malFormedLabel)) {
+            ;
+        }
+        {
             addChild(malFormedLabel);
             validate();
         }
-        
     }
-    
+
     /**
      * Removed the mal formed notes on the screen.
      */
     public void removeMalFormedWidget() {
         List<Widget> widgets = getChildren();
-        if( widgets.contains(malFormedLabel)); {
+        if (widgets.contains(malFormedLabel)) {
+            ;
+        }
+        {
             removeChild(malFormedLabel);
             validate();
         }
     }
-    
-    
-    
+
+
+
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
      * @param node the node
@@ -240,109 +244,108 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this, scheme);
         String displayName = node.getDisplayName();
         nodeWidget.setNodeName(displayName);
-        
+
         Widget header = nodeWidget.getHeader();
         ImageWidget imageWidget = new DefaultAnchorWidget(this, Utilities.loadImage("org/netbeans/modules/visual/resources/vmd-pin.png"));
         imageWidget.getActions().addAction(connectAction);
         imageWidget.getActions().addAction(createWidgetHoverAction());
         header.addChild(imageWidget);
         header.getActions().addAction(createWidgetHoverAction());
-        
+
         LabelWidget lblWidget = nodeWidget.getNodeNameWidget();
-        
-        lblWidget.getActions().addAction(
-                ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
-        
+
+        lblWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageNodeTextFieldInplaceEditor(nodeWidget)));
+
         mainLayer.addChild(nodeWidget);
         WidgetAction actionMapAction = createActionMapAction(node);
-        if ( actionMapAction != null )
-            nodeWidget.getActions().addAction( actionMapAction );
+        if (actionMapAction != null) {
+            nodeWidget.getActions().addAction(actionMapAction);
+        }
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
         /*
         if ( node.getPinNodes().size() == 0 ){
-            nodeWidget.setMinimized(true);
+        nodeWidget.setMinimized(true);
         }
-        */
-        
+         */
+
         return nodeWidget;
     }
-    
-    private WidgetAction createActionMapAction( Page page ){
+
+    private WidgetAction createActionMapAction(Page page) {
         InputMap inputMap = new InputMap();
         ActionMap actionMap = new ActionMap();
         Action[] actions = page.getActions(true);
-        for( Action action : actions ){
+        for (Action action : actions) {
             KeyStroke keyStroke = (KeyStroke) action.getValue(javax.swing.Action.ACCELERATOR_KEY);
-            if ( keyStroke != null ) {
+            if (keyStroke != null) {
                 inputMap.put(keyStroke, action.toString());
                 actionMap.put(action.toString(), action);
             }
         }
-        if (actionMap.size() < 1 ) {
+        if (actionMap.size() < 1) {
             return null;
         }
         return new MyActionMapAction(inputMap, actionMap);
 //        return  ActionFactory.createActionMapAction(inputMap, actionMap);
-    
     }
-    
-    private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
-    
+
+    private Map<VMDNodeWidget, Point> nodeWidget2Point = new HashMap<VMDNodeWidget, Point>();
+
     /* This is needed by PageFlowLayoutUtilities*/
     public Rectangle getVisibleRect() {
         return tc.getVisibleRect();
     }
-    
-    
+
+
     //    private Queue emptyPositions = new LinkedList();
-    
     @Override
-    protected void detachNodeWidget(Page node,
-            Widget widget) {
+    protected void detachNodeWidget(Page node, Widget widget) {
         //        Point p = widget.getPreferredLocation();
         //        if ( (p.getX() - BORDER_OFFSET) %
         super.detachNodeWidget(node, widget);
-        
     }
-    
-    
-    
-    private static class DefaultAnchorWidget extends ImageWidget{
-        public DefaultAnchorWidget( PageFlowScene scene, Image image ){
+
+
+
+    private static class DefaultAnchorWidget extends ImageWidget {
+
+        public DefaultAnchorWidget(PageFlowScene scene, Image image) {
             super(scene, image);
         }
+
         protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
             Border BORDER_HOVERED = (Border) javax.swing.BorderFactory.createLineBorder(java.awt.Color.BLACK);
             Border BORDER = BorderFactory.createEmptyBorder();
-            if (previousState.isHovered()  == state.isHovered())
+            if (previousState.isHovered() == state.isHovered()) {
                 return;
-            setBorder(state.isHovered() ? BORDER_HOVERED : BORDER );
-            
+            }
+            setBorder(state.isHovered() ? BORDER_HOVERED : BORDER);
         }
     }
-    
-    
+
+
     /**
      *
      * @param pageNode
      * @return
      */
-    public Pin getDefaultPin( Page pageNode ){
+    public Pin getDefaultPin(Page pageNode) {
         Collection<Pin> pins = getNodePins(pageNode);
-        if( pins == null ){
+        if (pins == null) {
             System.err.println("Node is null?: " + pageNode);
         }
-        for ( Pin pin : pins ){
-            if( pin.isDefault())
+        for (Pin pin : pins) {
+            if (pin.isDefault()) {
                 return pin;
+            }
         }
         System.err.println("Some reason this node: " + pageNode + " does not have a pin.");
         return null;
     }
-    
+
     /**
      * Implements attaching a widget to a pin. The widget is VMDPinWidget and has object-hover and select action.
      * The the node id ends with "#default" then the pin is the default pin of a node and therefore it is non-visual.
@@ -350,20 +353,20 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      * @param pinNode
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(Page node,Pin pinNode) {
+    protected Widget attachPinWidget(Page node, Pin pinNode) {
         assert node != null;
-        
-        if( pinNode.isDefault() ){
+
+        if (pinNode.isDefault()) {
             return null;
         }
-        
+
         VMDPinWidget widget = new VMDPinWidget(this, scheme);
-        VMDNodeWidget nodeWidget = ((VMDNodeWidget) findWidget(node));
-        if( nodeWidget != null ) {
+        VMDNodeWidget nodeWidget = (VMDNodeWidget) findWidget(node);
+        if (nodeWidget != null) {
             nodeWidget.attachPinWidget(widget);
             widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon(0)));
-            
-            
+
+
             Chain actions = widget.getActions();
             actions.addAction(createObjectHoverAction());
             actions.addAction(createSelectAction());
@@ -371,10 +374,10 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         } else {
             System.err.println("Node widget should not be null.");
         }
-        
+
         return widget;
     }
-    
+
     //    public void replaceWidgetNode( PageFlowNode oldNode, PageFlowNode newNode ) {
     //        VMDNodeWidget widget = (VMDNodeWidget)findWidget(oldNode);
     //        oldNode = newNode;
@@ -384,7 +387,6 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     //        removeObject(oldNode);
     //        addObject(newNode, widget, widget.getChildren().get(0));
     //    }
-    
     /**
      * Implements attaching a widget to an edge. the widget is ConnectionWidget and has object-hover, select and move-control-point actions.
      * @param edge
@@ -392,12 +394,12 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      */
     protected Widget attachEdgeWidget(NavigationCaseEdge edge) {
         assert edge != null;
-        
+
 
         VMDConnectionWidget connectionWidget;
- 
-        if( edge.isModifiable() ) {
-           connectionWidget = new VMDConnectionWidget(this, scheme);
+
+        if (edge.isModifiable()) {
+            connectionWidget = new VMDConnectionWidget(this, scheme);
         } else {
             connectionWidget = new VMDConnectionWidget(this, new PFENotModifiableScheme());
         }
@@ -406,34 +408,34 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
 
         LabelWidget label = new LabelWidget(this, edge.getName());
         label.setOpaque(true);
-        label.getActions().addAction(
-                ActionFactory.createInplaceEditorAction(new CaseNodeTextFieldInplaceEditor()));
-        
-        connectionWidget.addChild(label);
-        connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-        
+        label.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageFlowScene.CaseNodeTextFieldInplaceEditor()));
+
         connectionLayer.addChild(connectionWidget);
-        
+
         connectionWidget.getActions().addAction(createObjectHoverAction());
         connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
         
-        //        connectionWidget.getActions().addAction(createActionMap());
+        connectionWidget.setLayout( new ConnectionWrapperLayout(connectionWidget, label));
+        connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+        connectionWidget.addChild(label);
         
+
+        //        connectionWidget.getActions().addAction(createActionMap());
         return connectionWidget;
     }
-    
-    public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName ){
+
+    public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName) {
         VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
         List<Widget> widgets = edgeWidget.getChildren();
-        for( Widget widget : widgets ){
-            if( widget instanceof LabelWidget && ((LabelWidget)widget).getLabel().equals(oldName)){
-                ((LabelWidget)widget).setLabel(newName);
+        for (Widget widget : widgets) {
+            if (widget instanceof LabelWidget && ((LabelWidget) widget).getLabel().equals(oldName)) {
+                ((LabelWidget) widget).setLabel(newName);
                 return;
             }
         }
     }
-    
+
     /**
      * Attaches an anchor of a source pin an edge.
      * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and
@@ -442,12 +444,12 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      * @param oldSourcePin the old source pin
      * @param sourcePin the new source pin
      */
-    protected void attachEdgeSourceAnchor(NavigationCaseEdge edge,Pin oldSourcePin,
-            Pin sourcePin
-            ) {
-        ((ConnectionWidget) findWidget(edge)).setSourceAnchor(getPinAnchor(sourcePin));
+    protected void attachEdgeSourceAnchor(NavigationCaseEdge edge, Pin oldSourcePin, Pin sourcePin) {
+        ConnectionWidget connectionWidget = (ConnectionWidget) findWidget(edge);
+        Anchor anchor = getPinAnchor(sourcePin);
+        connectionWidget.setSourceAnchor(anchor);
     }
-    
+
     /**
      * Attaches an anchor of a target pin an edge.
      * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and
@@ -456,19 +458,17 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      * @param oldTargetPin the old target pin
      * @param targetPin the new target pin
      */
-    protected void attachEdgeTargetAnchor(NavigationCaseEdge edge,Pin oldTargetPin,
-            Pin targetPin
-            ) {
+    protected void attachEdgeTargetAnchor(NavigationCaseEdge edge, Pin oldTargetPin, Pin targetPin) {
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
-    
+
     /*
      * Returns the Anchor for a given pin
      * @param pin The Pin
      * @return Anchor the anchor location
      */
     private Anchor getPinAnchor(Pin pin) {
-        if( pin == null ) {
+        if (pin == null) {
             return null;
         }
         VMDNodeWidget nodeWidget = (VMDNodeWidget) findWidget(getPinNode(pin));
@@ -477,118 +477,141 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         if (pinMainWidget != null) {
             anchor = AnchorFactory.createDirectionalAnchor(pinMainWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL, 8);
             anchor = nodeWidget.createAnchorPin(anchor);
-        } else
+        } else {
             anchor = nodeWidget.getNodeAnchor();
+        }
         return anchor;
     }
-    
+
     private final class PageFlowSelectProvider implements SelectProvider {
-        
+
         public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
             return false;
         }
-        
+
         public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
             Object object = findObject(widget);
-            return object != null  &&  (invertSelection  ||  ! getSelectedObjects().contains(object));
+            return object != null && (invertSelection || !getSelectedObjects().contains(object));
         }
-        
+
         public void select(Widget widget, Point localLocation, boolean invertSelection) {
             Object object = findObject(widget);
             if (object != null) {
                 setFocusedObject(object);
-                if (getSelectedObjects().contains(object))
+                if (getSelectedObjects().contains(object)) {
                     return;
+                }
                 userSelectionSuggested(Collections.singleton(object), invertSelection);
             } else {
                 userSelectionSuggested(Collections.emptySet(), invertSelection);
             }
         }
-        
-        
     }
-    
-    
-    private final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
-        
-        
+/*
+    public void createConnectionLabel(NavigationCaseEdge edge, VMDConnectionWidget connectionWidget) {
+
+        LabelWidget label = new LabelWidget(this, edge.getName());
+        label.setOpaque(true);
+        label.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageFlowScene.CaseNodeTextFieldInplaceEditor()));
+
+        Anchor anchor = connectionWidget.getSourceAnchor();
+
+        Anchor.Result sourceResult = anchor.compute(connectionWidget.getSourceAnchorEntry());
+        EnumSet<Anchor.Direction> directions = sourceResult.getDirections();
+
+        if (directions.contains(Anchor.Direction.TOP)) {
+            label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+        } else if (directions.contains(Anchor.Direction.BOTTOM)) {
+            label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
+        } else if (directions.contains(Anchor.Direction.RIGHT)) {
+            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+        } else {
+            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
+        }
+        connectionWidget.addChild(label);
+    }
+ **/
+
+
+    public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
+
         public boolean isEnabled(Widget arg0) {
             return true;
         }
-        
+
         public String getText(Widget widget) {
-            NavigationCaseEdge caseNode = (NavigationCaseEdge)findObject(widget.getParentWidget());
-            return ((LabelWidget)widget).getLabel();
+            NavigationCaseEdge caseNode = (NavigationCaseEdge) findObject(widget.getParentWidget());
+            return ((LabelWidget) widget).getLabel();
         }
-        
+
         public void setText(Widget widget, String newName) {
-            if (newName.equals("")){
+            if (newName.equals("")) {
                 return;
             }
-            
-            NavigationCaseEdge caseNode = (NavigationCaseEdge)findObject(widget.getParentWidget());
+
+            NavigationCaseEdge caseNode = (NavigationCaseEdge) findObject(widget.getParentWidget());
             String oldName = caseNode.getName();
-            
-            if ( caseNode.canRename() ) {
+
+            if (caseNode.canRename()) {
                 Pin pin = getEdgeSource(caseNode);
                 caseNode.setName(pin, newName);
             }
-            
-            ((LabelWidget)widget).setLabel(newName);
-            
+
+            ((LabelWidget) widget).setLabel(newName);
         }
     }
-    
-    
+
+
     private final class PageNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
+
         private VMDNodeWidget nodeWidget;
-        
-        public PageNodeTextFieldInplaceEditor(VMDNodeWidget nodeWidget ) {
+
+        public PageNodeTextFieldInplaceEditor(VMDNodeWidget nodeWidget) {
             this.nodeWidget = nodeWidget;
         }
-        
+
         public boolean isEnabled(Widget widget) {
             return true;
         }
+
         public String getText(Widget widget) {
-            Page pageNode = (Page)findObject(nodeWidget);
+            Page pageNode = (Page) findObject(nodeWidget);
             return pageNode.getName();
         }
+
         public void setText(Widget widget, String text) {
-            
-            Page pageNode = (Page)findObject(nodeWidget);
-            if ( pageNode.canRename() && !text.equals(pageNode.getName())) {
-                
+
+            Page pageNode = (Page) findObject(nodeWidget);
+            if (pageNode.canRename() && !text.equals(pageNode.getName())) {
+
                 //Explicitly declared oldName and newName for ease of reading.
                 String oldName = pageNode.getDisplayName();
                 String newName;
-                
+
                 pageNode.setName(text);
                 newName = pageNode.getDisplayName();
-                
+
                 //                if( oldName != newName ) {
                 //                    renamePin(pageNode, oldName + "pin", newName + "pin");
                 //                }
-                
                 ((LabelWidget) widget).setLabel(newName);
                 validate();
             }
-            
         }
-        
-        
-        
     }
-    
-    
-    
-    private class MyObjectSceneListener implements ObjectSceneListener{
+
+
+
+    private class MyObjectSceneListener implements ObjectSceneListener {
+
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
         public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-            
+
             throw new UnsupportedOperationException("Not supported yet.");
             /* Workaround for issue: 100275
              * selectionChanged should have been sufficient to take care of the case when a selected object is removed */
@@ -596,57 +619,45 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
             //                tc.setDefaultActivatedNode();
             //            }
         }
-        
-        public void objectStateChanged(ObjectSceneEvent event,
-                Object changedObject,
-                ObjectState previousState,
-                ObjectState newState) {
+
+        public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        public void selectionChanged(ObjectSceneEvent event,
-                Set<Object> previousSelection,
-                Set<Object> newSelection) {
-            
+
+        public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
+
             Set<Node> selected = new HashSet<Node>();
-            for( Object obj : newSelection ){
-                if( obj instanceof PageFlowSceneElement ) {
-                    PageFlowSceneElement element = (PageFlowSceneElement)obj;
-                    
+            for (Object obj : newSelection) {
+                if (obj instanceof PageFlowSceneElement) {
+                    PageFlowSceneElement element = (PageFlowSceneElement) obj;
+
                     selected.add(element.getNode());
                 }
             }
-            
-            if( selected.size() == 0 ){
+
+            if (selected.size() == 0) {
                 tc.setDefaultActivatedNode();
             } else {
                 tc.setActivatedNodes(selected.toArray(new Node[selected.size()]));
             }
-            
         }
-        
-        public void highlightingChanged(ObjectSceneEvent event,
-                Set<Object> previousHighlighting,
-                Set<Object> newHighlighting) {
+
+        public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        public void hoverChanged(ObjectSceneEvent event,
-                Object previousHoveredObject,
-                Object newHoveredObject) {
+
+        public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        public void focusChanged(ObjectSceneEvent event,
-                Object previousFocusedObject,
-                Object newFocusedObject) {
+
+        public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
-    
-    
-    
-    
+
+
+
+
     //    private void renamePin( Node pageNode, PinNode oldPinName, PinNode newPinName ){
     //        assert pageNode != null;
     //        assert oldPinName != null;
@@ -695,9 +706,4 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     //
     //
     //    }
-    
-    
-    
 }
-
-
