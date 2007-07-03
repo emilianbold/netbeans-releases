@@ -73,7 +73,7 @@ public class SelectParentAction  extends AbstractDesignBeanAction {
             return false;
         }
         
-        DesignBean parent = designBean.getBeanParent();
+        DesignBean parent = findSelectableParent(designBean);
         if (parent == null) {
             return false;
         }
@@ -94,7 +94,7 @@ public class SelectParentAction  extends AbstractDesignBeanAction {
             return;
         }
 
-        DesignBean parent = designBean.getBeanParent();
+        DesignBean parent = findSelectableParent(designBean);
         if (parent == null) {
             return;
         }
@@ -113,4 +113,31 @@ public class SelectParentAction  extends AbstractDesignBeanAction {
         }
         designer.selectComponent(componentRootElement);
     }
+    
+    // XXX #94766 There are component root elements not mapped to boxes (?!)
+    private static DesignBean findSelectableParent(DesignBean designBean) {
+        if (designBean == null) {
+            return null;
+        }
+        
+        Designer designer = JsfSupportUtilities.findDesignerForDesignContext(designBean.getDesignContext());
+        if (designer == null) {
+            // XXX
+            return null;
+        }
+        
+        DesignBean parent = designBean.getBeanParent();
+        while (parent != null) {
+            Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(parent);
+            if (componentRootElement != null) {
+                if (designer.findBoxForComponentRootElement(componentRootElement) != null) {
+                    return parent;
+                }
+            }
+            
+            parent = parent.getBeanParent();
+        }
+        return null;
+    }
+    
 }
