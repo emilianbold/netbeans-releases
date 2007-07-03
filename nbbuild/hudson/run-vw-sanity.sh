@@ -99,6 +99,12 @@ run_sanity() {
 	fi
 }
 
+###################################################################
+
+cleanup() {
+	# Stop domain
+	$J2EE_HOME/bin/asadmin stop-domain visualweb
+}
 ############################# MAIN ################################
 
 uninstall
@@ -106,5 +112,6 @@ install
 setup_appserver
 setup_properties
 run_sanity
+cleanup
 
 ############################## END ################################
