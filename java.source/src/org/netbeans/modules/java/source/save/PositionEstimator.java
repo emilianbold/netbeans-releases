@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
@@ -170,7 +171,7 @@ public abstract class PositionEstimator {
         @Override()
         public void initialize() {
             int size = oldL.size();
-            data = new ArrayList(size);
+            data = new ArrayList<int[]>(size);
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             
@@ -301,6 +302,7 @@ public abstract class PositionEstimator {
             return data.get(index);
         }
         
+        @Override
         public LineInsertionType lineInsertType() {
             return LineInsertionType.AFTER;
         }
@@ -482,6 +484,7 @@ public abstract class PositionEstimator {
             return new int [] { begin, end };
         }
         
+        @Override
         public LineInsertionType lineInsertType() {
             return LineInsertionType.AFTER;
         }
@@ -585,6 +588,7 @@ public abstract class PositionEstimator {
             return new int [] { begin, end };
         }
         
+        @Override
         public LineInsertionType lineInsertType() {
             return LineInsertionType.AFTER;
         }
@@ -623,7 +627,6 @@ public abstract class PositionEstimator {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            TokenSequence<JavaTokenId> seq = copy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             int i = 0;
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
@@ -757,7 +760,7 @@ public abstract class PositionEstimator {
         @Override()
         public void initialize() {
             int size = oldL.size();
-            data = new ArrayList(size);
+            data = new ArrayList<int[]>(size);
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             
@@ -766,8 +769,8 @@ public abstract class PositionEstimator {
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 
                 // teribolak
-                if (item instanceof CasualDiff.FieldGroupTree) { //
-                    treeEnd = ((CasualDiff.FieldGroupTree) item).endPos();
+                if (item instanceof FieldGroupTree) { //
+                    treeEnd = ((FieldGroupTree) item).endPos();
                 }
                 
                 seq.move(treeStart);
@@ -903,6 +906,7 @@ public abstract class PositionEstimator {
             return data.get(index);
         }
         
+        @Override
         public LineInsertionType lineInsertType() {
             return LineInsertionType.AFTER;
         }
@@ -956,7 +960,7 @@ public abstract class PositionEstimator {
         @Override()
         public void initialize() {
             int size = oldL.size();
-            data = new ArrayList(size);
+            data = new ArrayList<int[]>(size);
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             

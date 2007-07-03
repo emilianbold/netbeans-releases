@@ -74,7 +74,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -111,7 +111,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "    int a, b, c, d;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);

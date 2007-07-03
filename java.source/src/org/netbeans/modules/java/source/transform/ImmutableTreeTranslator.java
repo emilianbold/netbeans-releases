@@ -259,7 +259,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         comments.copyComments(from, to);
     }
 
-    protected int size(List<?> list) {
+    int size(List<?> list) {
         return list == null ? 0 : list.size();
     }
     

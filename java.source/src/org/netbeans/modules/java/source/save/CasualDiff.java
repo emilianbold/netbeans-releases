@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.save;
 import java.util.*;
 import com.sun.source.tree.*;
 import java.util.logging.Logger;
+import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -2522,53 +2523,6 @@ public class CasualDiff {
         } else {
             return diffTree(oldT, newT, elementBounds);
         }
-    }
-    
-    protected static class FieldGroupTree extends JCTree implements Tree {
-        
-        List<JCVariableDecl> vars;
-        CasualDiff diff;
-        
-        public FieldGroupTree(List<JCVariableDecl> vars, CasualDiff diff) {
-            super(0);
-            this.vars = vars;
-            this.diff = diff;
-            pos = CasualDiff.getOldPos(vars.get(0));
-        }
-        
-        public Kind getKind() {
-            return Kind.OTHER;
-        }
-
-        public List<JCVariableDecl> getVariables() {
-            return vars;
-        }
-
-        public int endPos() {
-            return diff.endPos((JCTree)vars.get(vars.size()-1));
-        }
-        
-        public <R, D> R accept(TreeVisitor<R, D> arg0, D arg1) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void accept(Visitor arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        @Override
-        public boolean equals(Object arg0) {
-            if (arg0 instanceof FieldGroupTree) {
-                return vars.equals(((FieldGroupTree) arg0).getVariables());
-            }
-            return false;
-        }
-        
-        @Override
-        public int hashCode() {
-            return vars.hashCode();
-        }
-        
     }
     
     // ---- TreeDiff inner classes - need refactoring.
