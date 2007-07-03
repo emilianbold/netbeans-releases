@@ -28,12 +28,11 @@ import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.*;
 import org.netbeans.modules.vmd.midpnb.components.svg.*;
-import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -73,8 +72,8 @@ public class ConverterSVG {
 
     // Created: YES, Adds: NO
     static void convertMenu (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, SVGMenuCD.TYPEID);
-        DesignComponent menu = producers.iterator ().next ().createComponent (document).getMainComponent ();
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, SVGMenuCD.TYPEID.toString ());
+        DesignComponent menu = producer.createComponent (document).getMainComponent ();
         convertAnimatorWrapper (id2item, item, menu);
 
         ConverterUtil.convertBoolean (menu, SVGMenuCD.PROP_INDEX_BASED_SWITCH, item.getPropertyValue ("indexBasedSwitch")); // NOI18N
@@ -114,8 +113,8 @@ public class ConverterSVG {
 
     // Created: YES, Adds: NO
     static void convertSplashScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, SVGSplashScreenCD.TYPEID);
-        DesignComponent screen = producers.iterator ().next ().createComponent (document).getMainComponent ();
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, SVGSplashScreenCD.TYPEID.toString ());
+        DesignComponent screen = producer.createComponent (document).getMainComponent ();
         convertAnimatorWrapper (id2item, item, screen);
 
         ConverterUtil.convertBoolean (screen, SVGSplashScreenCD.PROP_ALLOW_TIMEOUT_INTERRUPT, item.getPropertyValue ("allowTimeoutInterrupt")); // NOI18N
@@ -130,8 +129,8 @@ public class ConverterSVG {
 
     // Created: YES, Adds: NO
     static void convertWaitScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, SVGWaitScreenCD.TYPEID);
-        DesignComponent screen = producers.iterator ().next ().createComponent (document).getMainComponent ();
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, SVGWaitScreenCD.TYPEID.toString ());
+        DesignComponent screen = producer.createComponent (document).getMainComponent ();
         convertAnimatorWrapper (id2item, item, screen);
 
         ConverterUtil.convertConverterItemComponent (screen, WaitScreenCD.PROP_TASK, id2item, item.getPropertyValue ("task")); // NOI18N

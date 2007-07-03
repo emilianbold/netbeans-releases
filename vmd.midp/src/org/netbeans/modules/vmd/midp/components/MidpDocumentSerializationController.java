@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class MidpDocumentSerializationController extends DocumentSerializationController {
 
-    public static final String VERSION_1 = "1";
+    public static final String VERSION_1 = "1"; // NOI18N
 
     public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, final Collection<ComponentElement> componentElements) {
         final DescriptorRegistry registry = loadingDocument.getDescriptorRegistry ();

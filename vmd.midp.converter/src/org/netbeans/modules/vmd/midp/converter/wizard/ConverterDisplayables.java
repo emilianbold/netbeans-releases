@@ -32,7 +32,6 @@ import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD
 import org.netbeans.modules.vmd.midp.components.sources.ListSelectCommandEventSourceCD;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,7 +41,7 @@ import java.util.List;
 public class ConverterDisplayables {
 
     // Created: NO, Adds: YES
-    private static void convertDisplayable (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent displayable) {
+    static void convertDisplayable (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent displayable) {
         Converter.convertClass (item, displayable);
         DesignDocument document = displayable.getDocument ();
         MidpDocumentSupport.getCategoryComponent (document, DisplayablesCategoryCD.TYPEID).addComponent (displayable);
@@ -106,8 +105,8 @@ public class ConverterDisplayables {
 
     // Created: YES, Adds: NO
     public static void convertList (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, ListCD.TYPEID);
-        DesignComponent list = producers.iterator ().next ().createComponent (document).getMainComponent ();
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, ListCD.TYPEID.toString ());
+        DesignComponent list = producer.createComponent (document).getMainComponent ();
         convertScreen (id2item, item, list);
 
         ConverterItem selectCommandActionItem = id2item.get (item.getPropertyValue ("selectCommandAction")); // NOI18N

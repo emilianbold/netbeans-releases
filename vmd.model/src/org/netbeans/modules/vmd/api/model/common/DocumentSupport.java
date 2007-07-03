@@ -179,13 +179,14 @@ public class DocumentSupport {
      */
     public static Collection<ComponentProducer> getComponentProducers(DesignDocument document, TypeID typeID) {
         Collection<ComponentProducer> producers = new HashSet<ComponentProducer>();
-        for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
-            if (producer.getComponentTypeID().equals(typeID))
+        DescriptorRegistry registry = document.getDescriptorRegistry ();
+        for (ComponentProducer producer : registry.getComponentProducers()) {
+            if (registry.isInHierarchy (typeID, producer.getComponentTypeID()))
                 producers.add(producer);
         }
         return producers;
     }
-    
+
     /**
      * Returns a design component producer for given producer id.
      * @param document the document
@@ -193,7 +194,6 @@ public class DocumentSupport {
      * @return the producer
      */
     public static ComponentProducer getComponentProducer(DesignDocument document, String producerID) {
-        Collection<ComponentProducer> producers = new HashSet<ComponentProducer>();
         for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
             if (producer.getProducerID ().equals(producerID))
                 return producer;

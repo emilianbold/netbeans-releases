@@ -23,20 +23,19 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SplashScreenDismissCommandEventSourceCD;
-import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenFailureCommandEventSourceCD;
-import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
+import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessCommandEventSourceCD;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -83,8 +82,8 @@ public class ConverterBuilt {
 
     // Created: YES, Adds: NO
     static void convertSplashScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, SplashScreenCD.TYPEID);
-        DesignComponent screen = producers.iterator ().next ().createComponent (document).getMainComponent ();
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, SplashScreenCD.TYPEID.toString ());
+        DesignComponent screen = producer.createComponent (document).getMainComponent ();
         convertAbstractInfoScreen (id2item, item, screen);
 
         ConverterUtil.convertInteger (screen, SplashScreenCD.PROP_TIMEOUT, item.getPropertyValue ("timeout")); // NOI18N
@@ -100,8 +99,8 @@ public class ConverterBuilt {
 
     // Created: YES, Adds: NO
     static void convertWaitScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers (document, WaitScreenCD.TYPEID);
-        DesignComponent screen = producers.iterator ().next ().createComponent (document).getMainComponent ();
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, WaitScreenCD.TYPEID.toString ());
+        DesignComponent screen = producer.createComponent (document).getMainComponent ();
         convertAbstractInfoScreen (id2item, item, screen);
 
         ConverterUtil.convertConverterItemComponent (screen, WaitScreenCD.PROP_TASK, id2item, item.getPropertyValue ("task")); // NOI18N

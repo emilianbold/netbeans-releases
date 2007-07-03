@@ -135,24 +135,27 @@ public class Converter {
         return i >= 0 ? string.substring (i + 1) : string;
     }
 
-    private static void convert (ArrayList<String> errors, List<ConverterItem> components, DesignDocument document) {
+    private static void convert (ArrayList<String> errors, List<ConverterItem> items, DesignDocument document) {
         HashMap<String,ConverterItem> id2item = new HashMap<String, ConverterItem> ();
-        for (ConverterItem item : components)
-            id2item.put (item.getID (), item);
-        for (ConverterItem item : components)
-            convert (id2item, item, document);
-        for (ConverterItem item : components)
-            if (! item.isUsed ())
-                Debug.warning ("Unrecognized component: " + item.getTypeID ());
-    }
 
+        ConverterCustom.loadItemsToRegistry (items, document);
+
+        for (ConverterItem item : items)
+            id2item.put (item.getID (), item);
+
+        for (ConverterItem item : items)
+            convert (id2item, item, document);
+
+        for (ConverterItem item : items)
+            if (! item.isUsed ())
+                Debug.warning ("Unrecognized component: " + item.getTypeID ()); // NOI18N
+    }
+    
     private static void convert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         if (item.isUsed ())
             return;
         String id = item.getID ();
         String typeID = item.getTypeID ();
-
-        // TODO - custom component is: both id and typeID is a valid Java identifier
 
         if ("javax.microedition.lcdui.Command".equals (typeID)) // NOI18N
             ConverterResources.convertCommand (item, document);
@@ -219,7 +222,7 @@ public class Converter {
         else if ("org.netbeans.microedition.svg.SVGWaitScreen".equals (typeID)) // NOI18N
             ConverterSVG.convertWaitScreen (id2item, item, document);
 
-        if ("$MobileDevice".equals (id)) { // NOI18N
+        else if ("$MobileDevice".equals (id)) { // NOI18N
             DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
             List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
             DesignComponent mobileDevice = list.get (0);
@@ -232,7 +235,13 @@ public class Converter {
             convertObject (item, startEventSource);
             ConverterActions.convertCommandActionHandler (id2item, item, startEventSource);
         }
+
+        else if (ConverterCustom.isClassComponent (item)) {
+            ConverterCustom.convertCustom (id2item, item, document);
+        }
     }
+
+
 
     static ConverterItem convertConverterItem (HashMap<String, ConverterItem> id2item, String value, DesignDocument document) {
         ConverterItem item = id2item.get (value);

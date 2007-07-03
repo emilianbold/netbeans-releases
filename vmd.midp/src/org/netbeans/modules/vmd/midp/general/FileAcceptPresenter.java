@@ -19,21 +19,10 @@
 
 package org.netbeans.modules.vmd.midp.general;
 
-import java.io.FileNotFoundException;
-import org.netbeans.modules.vmd.api.model.common.*;
-import java.awt.datatransfer.Transferable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.filesystems.FileObject;
@@ -42,6 +31,15 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Exceptions;
+
+import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -92,10 +90,10 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
         if (propertyName == null)
             return super.accept(transferable, suggestion);
         DesignDocument document = getComponent().getDocument();
-        final Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers(document, typeID);
-        if (document == null && producers.isEmpty())
+        final ComponentProducer producer = DocumentSupport.getComponentProducer(document, typeID.toString ());
+        if (document == null || producer == null)
             return super.accept(transferable, suggestion);
-        DesignComponent newComponent  = producers.iterator().next().createComponent(document).getComponents().iterator().next();
+        DesignComponent newComponent = producer.createComponent(document).getMainComponent ();
         if (getComponent().readProperty(propertyName).getKind() == PropertyValue.Kind.ARRAY)
             MidpArraySupport.append(getComponent(), propertyName, newComponent);
         else
@@ -106,9 +104,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
     protected boolean belongsToProject(FileObject fileObject) {
         DesignDocument document = getComponent().getDocument();
         Map<FileObject, String> fileMap = MidpProjectSupport.getAllFilesForProjectByExt(document, extensionsMap.keySet());
-        if (fileMap.get(fileObject) != null)
-            return true;
-        return false;
+        return fileMap.get(fileObject) != null;
     }
     
     protected InputStream getInputStream(Transferable transferable) {
