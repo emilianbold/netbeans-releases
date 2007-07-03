@@ -62,7 +62,7 @@ build: .build-pre .build-impl .build-post
 
 .build-pre:
 	mkdir -p build
-	windres -o  build/icon.o -i resources/res.rc
+	windres -I resources -o  build/icon.o -i resources/res.rc
 
 .build-post:
 # Add your post 'build' code here...
