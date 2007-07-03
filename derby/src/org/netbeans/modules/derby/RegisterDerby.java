@@ -351,7 +351,7 @@ public class RegisterDerby implements DatabaseRuntime {
     
     public void ensureStarted() {
         if (!isRunning() && canStart()) {
-            start();
+            startNoWait();
         }
     }
     
