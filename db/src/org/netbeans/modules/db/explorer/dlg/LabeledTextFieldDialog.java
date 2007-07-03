@@ -131,9 +131,11 @@ public class LabeledTextFieldDialog {
             pane.add(edButton);
 
             edButton.addActionListener(new ActionListener() {
+                private boolean noedit = true;
                 public void actionPerformed(ActionEvent event) {
-                    if(edButton.getText().startsWith(bundle.getString("EditCommand"))) { // NOI18N
+                    if(noedit) { // NOI18N
                         // set to edit 
+                        noedit = false;
                         Mnemonics.setLocalizedText(edButton, bundle.getString("ReloadCommand"));
                         edButton.setToolTipText(bundle.getString("ACS_ReloadCommandA11yDesc"));  // NOI18N
                         notesarea.setEditable( true );
@@ -144,6 +146,7 @@ public class LabeledTextFieldDialog {
                         field.setBackground(label.getBackground()); // grey
                     } else {
                         // reload script from file
+                        noedit = true;
                         Mnemonics.setLocalizedText(edButton, bundle.getString("EditCommand"));
                         edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
                         notesarea.setText(original_notes);
