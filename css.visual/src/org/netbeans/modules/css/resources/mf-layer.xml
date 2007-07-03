@@ -188,11 +188,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
-        <!-- Lines annotated as highlighs -->
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-css-highlight.xml" url="highlight-annotation.xml"/>
-            <file name="org-netbeans-modules-css-syntax-error.xml" url="syntax-error-annotation.xml"/>
-        </folder>
     </folder>
     
 </filesystem>
