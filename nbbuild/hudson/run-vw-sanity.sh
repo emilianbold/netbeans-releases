@@ -20,6 +20,9 @@ mkdir -p $AS_ROOT
 ###################################################################
 
 uninstall() {
+	# Stop domain
+	$J2EE_HOME/bin/asadmin stop-domain visualweb
+
 	# First be good and uninstall
 	if [ -x $J2EE_HOME/bin/uninstall ]; then
             $J2EE_HOME/bin/uninstall -silent
@@ -85,7 +88,9 @@ run_sanity() {
 	# Run Sanity test on VisualWeb build
         cd $TEST_ROOT/../ravebuild
 	ant build-test-tools
-	ant commit-validation -Dxtest.results=$TEST_ROOT/../../xtest/instance/results
+        ## XXX temporarily for debugging reasons store results separately
+        # ant commit-validation -Dxtest.results=$TEST_ROOT/../../xtest/instance/results
+	ant commit-validation -Dxtest.results=$TEST_ROOT/../../xtest/instance/results/vw
 
 	ERROR_CODE=$?
 	if [ $ERROR_CODE != 0 ]; then
