@@ -388,7 +388,7 @@ final class GlobalDescriptorRegistry {
             return null;
         }
         XMLComponentProducer producer = XMLComponentProducer.deserialize (producers, document);
-        if 89
+        if (producer != null)
             return producer;
         Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ());
         return null;
