@@ -17,7 +17,6 @@
 package org.netbeans.modules.vmd.midp.producers;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
@@ -40,8 +39,4 @@ public class ChoiceElementProducer extends ComponentProducer {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.ChoiceGroup"); // NOI18N
     }
 
-    public Result createComponent(DesignDocument document) {
-        DesignComponent choiceElement = document.createComponent(ChoiceElementCD.TYPEID);
-        return new Result(choiceElement);
-    }
 }

@@ -9,7 +9,6 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -34,9 +33,8 @@ public class LoginScreenProducer extends MidpComponentProducer {
     public LoginScreenProducer() {
         super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Login Screen", "Login Screen", LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
-    
-    public Result createComponent(DesignDocument document) {
-        DesignComponent loginScreen = document.createComponent(LoginScreenCD.TYPEID);
+
+    public Result postInitialize (DesignDocument document, DesignComponent loginScreen) {
         DesignComponent loginCommand = MidpDocumentSupport.getSingletonCommand(document, LoginScreenLoginCommandCD.TYPEID);
         DesignComponent loginEventSource = document.createComponent(LoginScreenLoginCommandEventSourceCD.TYPEID);
         loginEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(loginScreen));

@@ -26,6 +26,9 @@ import java.util.List;
  * usually visualized in the palette and represents a component, a group of components or component with special post-initialization.
  * ComponentProducer is automatically created for all ComponentDescriptors which return non-null value from getPaletteDescriptor method.
  *
+ * Usually you have to implement postInitialize method to initialize main component and/or create secondary components.
+ * Then you have to implement checkValidity method.
+ *
  * @author David Kaspar
  */
 public abstract class ComponentProducer {
@@ -41,6 +44,7 @@ public abstract class ComponentProducer {
      * @param paletteDescriptor the palette descriptor used for visualization of the producer.
      */
     protected ComponentProducer (String producerID, TypeID typeID, PaletteDescriptor paletteDescriptor) {
+        assert producerID != null  &&  typeID != null  &&  paletteDescriptor != null;
         this.producerID = producerID;
         this.typeID = typeID;
         this.paletteDescriptor = paletteDescriptor;
@@ -50,7 +54,7 @@ public abstract class ComponentProducer {
      * Returns producer id.
      * @return the producer id
      */
-    public String getProducerID () {
+    public final String getProducerID () {
         return producerID;
     }
 
@@ -58,7 +62,7 @@ public abstract class ComponentProducer {
      * Returns a type id of the main component created by the producer.
      * @return the type id of the main component
      */
-    public TypeID getComponentTypeID () {
+    public final TypeID getMainComponentTypeID () {
         return typeID;
     }
 
@@ -66,16 +70,33 @@ public abstract class ComponentProducer {
      * Returns palette descriptor of the producer.
      * @return the palette descriptor
      */
-    public PaletteDescriptor getPaletteDescriptor () {
+    public final PaletteDescriptor getPaletteDescriptor () {
         return paletteDescriptor;
     }
 
     /**
-     * Called for creating a component or a group of components together with their initialization.
-     * @param document the document where the component should be created
+     * Creates a component.
+     * @param document the document
      * @return the result of creation
      */
-    public abstract Result createComponent (DesignDocument document);
+    public final Result createComponent (DesignDocument document) {
+        DesignComponent mainComponent = document.createComponent (getMainComponentTypeID ());
+        Result result = postInitialize (document, mainComponent);
+        assert result != null;
+        assert result.getMainComponent () == mainComponent;
+        return result;
+    }
+
+    /**
+     * Post-initialize main component. You can also create secondary components and initialize them too.
+     * Default implementation returns a result with unchanged main component only.
+     * @param document the document
+     * @param mainComponent the main component usually created from getMainComponentTypeID method
+     * @return the result of creation
+     */
+    public Result postInitialize (DesignDocument document, DesignComponent mainComponent) {
+        return new Result (mainComponent);
+    }
     
     /**
      * Called for checking validity or availability of the producer for a specified document.
@@ -140,10 +161,6 @@ public abstract class ComponentProducer {
             return null;
 
         return new ComponentProducer (typeid.toString (), typeid, paletteDescriptor) {
-            public Result createComponent (DesignDocument document) {
-                return new Result (document.createComponent (getComponentTypeID ()));
-            }
-
             public boolean checkValidity(DesignDocument document) {
                 return true;
             }

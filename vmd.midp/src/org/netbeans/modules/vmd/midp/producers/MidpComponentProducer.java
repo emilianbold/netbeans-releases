@@ -39,12 +39,8 @@ public abstract class MidpComponentProducer extends ComponentProducer {
         super(typeID.toString(), typeID, paletteDescriptor);
     }
 
-    public Result createComponent(DesignDocument document) {
-        return new Result(document.createComponent(getComponentTypeID()));
-    }
-
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, getComponentTypeID());
+        return MidpJavaSupport.checkValidity(document, getMainComponentTypeID ());
     }
 
     public static final class Form extends MidpComponentProducer {

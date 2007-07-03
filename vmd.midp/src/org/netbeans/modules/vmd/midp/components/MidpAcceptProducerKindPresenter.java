@@ -71,7 +71,7 @@ public class MidpAcceptProducerKindPresenter extends AcceptPresenter {
     public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
         for (TypeID type : typesMap.keySet()) {
-            if (registry.isInHierarchy(type, producer.getComponentTypeID())) {
+            if (registry.isInHierarchy(type, producer.getMainComponentTypeID ())) {
                 currentType = type;
                 return true;
             }

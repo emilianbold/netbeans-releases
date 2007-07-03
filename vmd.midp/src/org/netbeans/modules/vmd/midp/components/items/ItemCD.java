@@ -229,7 +229,7 @@ public class ItemCD extends ComponentDescriptor {
         @Override
         public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
             DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
-            return registry.isInHierarchy (CommandCD.TYPEID, producer.getComponentTypeID ());
+            return registry.isInHierarchy (CommandCD.TYPEID, producer.getMainComponentTypeID ());
         }
 
         @Override

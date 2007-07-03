@@ -20,10 +20,7 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
@@ -44,8 +41,7 @@ public class SplashScreenProducer extends MidpComponentProducer {
        super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Splash Screen", "Splash Screen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
-    public Result createComponent(DesignDocument document) {
-        DesignComponent splashScreen = document.createComponent(SplashScreenCD.TYPEID);
+    public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {
         DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand (document, SplashScreenDismissCommandCD.TYPEID);
 
         DesignComponent dismissEventSource = document.createComponent(SplashScreenDismissCommandEventSourceCD.TYPEID);

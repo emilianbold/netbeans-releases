@@ -76,7 +76,7 @@ public abstract class AddActionItem extends AbstractAction {
     public abstract void resolveAction(DesignComponent component);
     
     private static AddActionItem create(final DesignComponent component, final ComponentProducer producer) {
-        return new AddActionItem(producer.getComponentTypeID(), component, producer) {
+        return new AddActionItem(producer.getMainComponentTypeID (), component, producer) {
             private WeakReference<DesignComponent> component;
             //selectedComponent dont have to be weak is reseted right after is used. 
             private DesignComponent selectedComponent;

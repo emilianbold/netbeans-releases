@@ -19,7 +19,6 @@
 package org.netbeans.modules.vmd.midp.producers;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
@@ -36,11 +35,6 @@ public class ListElementEventSourceProducer extends ComponentProducer {
 
     public ListElementEventSourceProducer () {
         super (PRODUCER_ID, ListElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_ELEMENTS, "List Element", "List Element", ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH));
-    }
-
-    public Result createComponent (DesignDocument document) {
-        DesignComponent eventSource = document.createComponent (ListElementEventSourceCD.TYPEID);
-        return new Result (eventSource);
     }
 
     public boolean checkValidity(DesignDocument document) {

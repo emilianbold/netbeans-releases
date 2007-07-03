@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
@@ -46,9 +43,8 @@ public class SVGWaitScreenProducer extends MidpComponentProducer {
     public SVGWaitScreenProducer() {
         super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
-    
-    public Result createComponent(DesignDocument document) {
-        DesignComponent waitScreen = document.createComponent(SVGWaitScreenCD.TYPEID);
+
+    public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {
         DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand(document, SVGWaitScreenSuccessCommandCD.TYPEID);
         DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand(document, SVGWaitScreenFailureCommandCD.TYPEID);
         

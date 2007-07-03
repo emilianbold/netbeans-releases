@@ -181,7 +181,7 @@ public class DocumentSupport {
         Collection<ComponentProducer> producers = new HashSet<ComponentProducer>();
         DescriptorRegistry registry = document.getDescriptorRegistry ();
         for (ComponentProducer producer : registry.getComponentProducers()) {
-            if (registry.isInHierarchy (typeID, producer.getComponentTypeID()))
+            if (registry.isInHierarchy (typeID, producer.getMainComponentTypeID ()))
                 producers.add(producer);
         }
         return producers;

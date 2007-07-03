@@ -37,7 +37,7 @@ public class AcceptTypePresenter extends AcceptPresenter {
     
     public final boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
-        TypeID producerTypeID = producer.getComponentTypeID ();
+        TypeID producerTypeID = producer.getMainComponentTypeID ();
         return registry.isInHierarchy(typeID, producerTypeID)  &&  notifyAccepting (producerTypeID);
     }
 

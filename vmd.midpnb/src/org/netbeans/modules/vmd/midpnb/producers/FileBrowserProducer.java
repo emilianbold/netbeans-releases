@@ -9,7 +9,6 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -33,9 +32,8 @@ public class FileBrowserProducer extends MidpComponentProducer {
     public FileBrowserProducer() {
         super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "File Browser", "File Browser", FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
-    
-    public Result createComponent(DesignDocument document) {
-        DesignComponent fileBrowser = document.createComponent(FileBrowserCD.TYPEID);
+
+    public Result postInitialize (DesignDocument document, DesignComponent fileBrowser) {
         DesignComponent openCommand = MidpDocumentSupport.getSingletonCommand(document, FileBrowserOpenCommandCD.TYPEID);
         DesignComponent openEventSource = document.createComponent(FileBrowserOpenCommandEventSourceCD.TYPEID);
         openEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(fileBrowser));

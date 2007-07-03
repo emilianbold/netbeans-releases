@@ -163,7 +163,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
                         Image image = smallIcon != null ? Utilities.loadImage(smallIcon) : null;
                         sub = new RegistryWidget (scene, true, image, paletteDescriptor.getDisplayName ());
                     } else
-                        sub = new RegistryWidget (scene, false, null, producer.getComponentTypeID ().toString ());
+                        sub = new RegistryWidget (scene, false, null, producer.getMainComponentTypeID ().toString ());
                     widget.addSub ("producer:" + producer.getProducerID (), sub);
                 }
 

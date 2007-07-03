@@ -34,8 +34,7 @@ public class EntryPointProducer extends ComponentProducer {
         super (EntryPointProducer.PRODUCER_ID, EntryPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Entry Point", "Entry Point", EntryPointCD.ICON_PATH, EntryPointCD.LARGE_ICON_PATH));
     }
 
-    public Result createComponent (DesignDocument document) {
-        DesignComponent entryPoint = document.createComponent (EntryPointCD.TYPEID);
+    public Result postInitialize (DesignDocument document, DesignComponent entryPoint) {
         DesignComponent eventSource = document.createComponent (EntryStartEventSourceCD.TYPEID);
         entryPoint.addComponent (eventSource);
         entryPoint.writeProperty (EntryPointCD.PROP_START, PropertyValue.createComponentReference (eventSource));

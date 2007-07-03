@@ -9,7 +9,6 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -33,9 +32,8 @@ public class PIMBrowserProducer extends MidpComponentProducer {
     public PIMBrowserProducer() {
         super(PIMBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "PIM Browser", "PIM Browser", PIMBrowserCD.ICON_PATH, PIMBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
-    
-    public Result createComponent(DesignDocument document) {
-        DesignComponent pimBrowser = document.createComponent(PIMBrowserCD.TYPEID);
+
+    public Result postInitialize (DesignDocument document, DesignComponent pimBrowser) {
         DesignComponent openCommand = MidpDocumentSupport.getSingletonCommand(document, PIMBrowserOpenCommandCD.TYPEID);
         DesignComponent openEventSource = document.createComponent(PIMBrowserOpenCommandEventSourceCD.TYPEID);
         openEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(pimBrowser));

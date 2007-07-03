@@ -18,10 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.producers;
 
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.commands.ListSelectCommandCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListSelectCommandEventSourceCD;
@@ -40,8 +37,7 @@ public class ListProducer extends MidpComponentProducer {
         super (ListCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, "List", "List", ListCD.ICON_PATH, ListCD.ICON_LARGE_PATH)); // NOI18N
     }
 
-    public Result createComponent (DesignDocument document) {
-        DesignComponent list = document.createComponent (ListCD.TYPEID);
+    public Result postInitialize (DesignDocument document, DesignComponent list) {
         DesignComponent listSelectCommand = MidpDocumentSupport.getSingletonCommand (document, ListSelectCommandCD.TYPEID);
 
         DesignComponent listSelectCommandEventSource = document.createComponent (ListSelectCommandEventSourceCD.TYPEID);

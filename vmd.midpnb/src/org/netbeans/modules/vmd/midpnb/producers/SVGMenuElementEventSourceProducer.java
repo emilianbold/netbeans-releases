@@ -20,7 +20,6 @@
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
@@ -39,12 +38,7 @@ public class SVGMenuElementEventSourceProducer extends ComponentProducer {
         super(PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
                 "SVG Menu Element", "SVG Menu Element", SVGMenuElementEventSourceCD.ICON_PATH, SVGMenuElementEventSourceCD.ICON_LARGE_PATH));
     }
-    
-    public Result createComponent(DesignDocument document) {
-        DesignComponent eventSource = document.createComponent(SVGMenuElementEventSourceCD.TYPEID);
-        return new Result(eventSource);
-    }
-    
+
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                 MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N

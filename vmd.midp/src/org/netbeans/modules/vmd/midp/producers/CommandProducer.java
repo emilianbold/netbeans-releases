@@ -54,12 +54,11 @@ public abstract class CommandProducer extends ComponentProducer {
         this.type = type;
     }
 
-    public ComponentProducer.Result createComponent(DesignDocument document) {
-        DesignComponent component = document.createComponent(CommandCD.TYPEID);
-        component.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested(component, lower + "Command"));
-        component.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue (upper));
-        component.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(type));
-        return new ComponentProducer.Result(component);
+    public Result postInitialize (DesignDocument document, DesignComponent mainComponent) {
+        mainComponent.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested(mainComponent, lower + "Command"));
+        mainComponent.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue (upper));
+        mainComponent.writeProperty(CommandCD.PROP_TYPE, MidpTypes.createIntegerValue(type));
+        return new ComponentProducer.Result(mainComponent);
     }
 
     public boolean checkValidity(DesignDocument document) {

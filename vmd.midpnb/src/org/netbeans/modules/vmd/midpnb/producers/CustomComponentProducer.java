@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD;
@@ -44,9 +41,6 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         super(typeID.toString(), typeID, paletteDescriptor);
     }
 
-    public Result createComponent(DesignDocument document) {
-        return new Result(document.createComponent(getComponentTypeID()));
-    }
 
     public boolean checkValidity(DesignDocument document) {
         return true;

@@ -9,7 +9,6 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -33,9 +32,8 @@ public class SMSComposerProducer extends MidpComponentProducer {
     public SMSComposerProducer() {
         super(SMSComposerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "SMS Composer", "SMS Composer", SMSComposerCD.ICON_PATH, SMSComposerCD.ICON_LARGE_PATH)); // NOI18N
     }
-    
-    public Result createComponent(DesignDocument document) {
-        DesignComponent smsComposer = document.createComponent(SMSComposerCD.TYPEID);
+
+    public Result postInitialize (DesignDocument document, DesignComponent smsComposer) {
         DesignComponent sendCommand = MidpDocumentSupport.getSingletonCommand(document, SMSComposerSendCommandCD.TYPEID);
         DesignComponent smsEventSource = document.createComponent(SMSComposerSendCommandEventSourceCD.TYPEID);
         smsEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(smsComposer));

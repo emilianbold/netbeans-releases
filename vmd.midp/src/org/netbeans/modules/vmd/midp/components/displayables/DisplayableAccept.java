@@ -41,7 +41,7 @@ public class DisplayableAccept {
             if (getComponent().getComponentDescriptor().getPropertyDescriptor(DisplayableCD.PROP_COMMANDS).isReadOnly())
                 return false;
             DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
-            return registry.isInHierarchy(CommandCD.TYPEID, producer.getComponentTypeID());
+            return registry.isInHierarchy(CommandCD.TYPEID, producer.getMainComponentTypeID ());
         }
         
         public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
@@ -68,7 +68,7 @@ public class DisplayableAccept {
     //            if (getComponent ().getComponentDescriptor ().getPropertyDescriptor (DisplayableCD.PROP_COMMANDS).isReadOnly ())
     //                return false;
     //            DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
-    //            return registry.isInHierarchy (EventHandlerCD.TYPEID, producer.getComponentTypeID ());
+    //            return registry.isInHierarchy (EventHandlerCD.TYPEID, producer.getMainComponentTypeID ());
     //        }
     //
     //        public final void accept (ComponentProducer producer) {
