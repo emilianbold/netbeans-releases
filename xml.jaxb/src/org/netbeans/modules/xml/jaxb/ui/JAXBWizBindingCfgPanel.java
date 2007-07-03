@@ -42,9 +42,9 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                                         WizardDescriptor.ValidatingPanel, 
                                         WizardDescriptor.FinishablePanel{
     public static final int MODE_WIZARD  = 0;
-    public static final int MODE_EDITING = 1; 
-    
-    private static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage" ; //NOI18N
+    public static final int MODE_EDITING = 1;
+    private static final String WIZ_NEW_FILE_TITLE = "NewFileWizard_Title"; //NOI18N
+    private static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage"; //NOI18N
 
     private WizardDescriptor wd = null;
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();  
@@ -109,12 +109,12 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
             }
             
             // Do not allow characters (,.\\/;:)
-            if ((schemaName.indexOf(",") > -1) ||
-                    (schemaName.indexOf(".") > -1)  ||
-                    (schemaName.indexOf("\\") > -1) ||
-                    (schemaName.indexOf("/") > -1)  || 
-                    (schemaName.indexOf(";") > -1)  ||
-                    (schemaName.indexOf(":") > -1)  ){
+            if ((schemaName.indexOf(",") > -1) ||           //NOI18N
+                    (schemaName.indexOf(".") > -1)  ||      //NOI18N  
+                    (schemaName.indexOf("\\") > -1) ||      //NOI18N
+                    (schemaName.indexOf("/") > -1)  ||      //NOI18N
+                    (schemaName.indexOf(";") > -1)  ||      //NOI18N
+                    (schemaName.indexOf(":") > -1)  ){      //NOI18N  
                 sb.append(NbBundle.getMessage(this.getClass(),
                         "MSG_InvalidCharInSchemaName")); //NOI18N
                 valid = false;
@@ -137,8 +137,10 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
         }
         
         Map<String, Boolean> options = this.bindingInfoPnl.getOptions();
-        if (Boolean.TRUE.equals(options.get("-quiet")) && //NOI18N
-                Boolean.TRUE.equals(options.get("-verbose"))){ //NOI18N
+        if (Boolean.TRUE.equals(
+                options.get(JAXBWizModuleConstants.JAXB_OPTION_QUIET)) && 
+                Boolean.TRUE.equals(
+                options.get(JAXBWizModuleConstants.JAXB_OPTION_VERBOSE))){ 
             valid = false;
             sb.append(NbBundle.getMessage(this.getClass(), 
                     "MSG_CanNotSelectQuietAndVerbose")); //NOI18N
@@ -195,7 +197,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     
     public void storeSettings(Object settings) {
         WizardDescriptor wd = (WizardDescriptor) settings;              
-        wd.putProperty("NewFileWizard_Title", null); //NOI18N        
+        wd.putProperty(WIZ_NEW_FILE_TITLE, null);
 
         if (this.bindingInfoPnl.getSchemaName() != null) {
             wd.putProperty(JAXBWizModuleConstants.SCHEMA_NAME, 
@@ -305,8 +307,8 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new 
         // wizard's title this name is used in NewFileWizard to modify the title
         if (wd instanceof TemplateWizard){
-            wd.putProperty("NewFileWizard_Title", //NOI18N 
-                    NbBundle.getMessage(this.getClass(), 
+            wd.putProperty(WIZ_NEW_FILE_TITLE, 
+                    NbBundle.getMessage(this.getClass(),
                     "LBL_TemplateWizardTitle")); //NOI18N
         }
     }    
