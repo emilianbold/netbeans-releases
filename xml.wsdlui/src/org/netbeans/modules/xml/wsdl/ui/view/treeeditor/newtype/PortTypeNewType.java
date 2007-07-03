@@ -71,7 +71,6 @@ public class PortTypeNewType extends NewType {
             if(project != null) {
                 PortTypePanel panel = new PortTypePanel(project, model);
                 
-                panel.setPreferredSize(new Dimension(550, 600));
                 DialogDescriptor dd = new DialogDescriptor(panel, 
                                                            NbBundle.getMessage(PortTypeNewType.class, "LBL_Create_New_PortType"), 
                                                            true, 

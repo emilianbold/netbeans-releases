@@ -85,7 +85,6 @@ public class PortTypeOperationNewType extends NewType {
             if(project != null) {
                 OperationPanel panel = new OperationPanel(project, model);
                 
-                panel.setPreferredSize(new Dimension(550, 600));
                 DialogDescriptor dd = new DialogDescriptor(panel, 
                                                            NbBundle.getMessage(PortTypeNewType.class, "LBL_Create_New_Operation"), 
                                                            true, 

@@ -135,7 +135,6 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     public Component getComponent() {
         if (mPanel == null) {
             this.mPanel = new PortTypeConfigurationPanel(project);
-//            this.mPanel.setPreferredSize(new Dimension(450, 400));
             this.mPanel.setName(NbBundle.getMessage(WizardPortTypeConfigurationStep.class, "LBL_WizardPortTypeConfigurationStep"));
             TextChangeListener listener  = new TextChangeListener();
             

@@ -118,7 +118,6 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     public Component getComponent() {
         if (mPanel == null) {
             this.mPanel = new BindingConfigurationPanel();
-//            this.mPanel.setPreferredSize(new Dimension(450, 400));
             this.mPanel.setName(NbBundle.getMessage(WizardBindingConfigurationStep.class, "LBL_WizardBindingConfigurationStep"));
             TextChangeListener listener  = new TextChangeListener();
             this.mPanel.getBindingNameTextField().getDocument().addDocumentListener(listener);
