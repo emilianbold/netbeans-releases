@@ -1134,6 +1134,7 @@ public abstract class PositionEstimator {
             return data.get(index);
         }
         
+        @Override
         public LineInsertionType lineInsertType() {
             return LineInsertionType.AFTER;
         }
