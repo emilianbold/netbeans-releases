@@ -40,7 +40,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * Test case for {@link ApplicationImpl}.
@@ -68,12 +67,7 @@ public class ApplicationImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        // set our own lookup
-        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
-        assertNotNull("correct repository should be found in lookup",
-                Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ));
-        
-        TestUtil.makeScratchDir(this);
+        TestUtil.clearAndInitLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
         serverID = TestUtil.registerSunAppServer(this);
         
         // create project

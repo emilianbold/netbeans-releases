@@ -56,8 +56,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 import org.xml.sax.SAXException;
 
 /**
@@ -65,22 +64,12 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  * @author Lukas Jungmann
  */
-public final class TestUtil extends ProxyLookup {
+public final class TestUtil {
     
-    static {
-        TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", TestUtil.class.getName());
-        Assert.assertEquals(TestUtil.class, Lookup.getDefault().getClass());
-    }
-    
-    private static TestUtil DEFAULT;
     private static final int BUFFER = 2048;
     
     /** Do not call directly */
-    public TestUtil() {
-        Assert.assertNull(DEFAULT);
-        DEFAULT = this;
-        setLookup(new Object[0]);
+    private TestUtil() {
     }
     
     /**
@@ -88,20 +77,17 @@ public final class TestUtil extends ProxyLookup {
      * Caution: if you don't include Lookups.metaInfServices, you may have trouble,
      * e.g. {@link #makeScratchDir} will not work.
      */
+    @Deprecated
     public static void setLookup(Lookup l) {
-        DEFAULT.setLookups(new Lookup[] {l});
+        MockLookup.setLookup(l);
     }
     
     /**
      * Set the global default lookup with some fixed instances including META-INF/services/*.
      */
+    @Deprecated
     public static void setLookup(Object[] instances) {
-        ClassLoader l = TestUtil.class.getClassLoader();
-        DEFAULT.setLookups(new Lookup[] {
-            Lookups.fixed(instances),
-            Lookups.metaInfServices(l),
-            Lookups.singleton(l),
-        });
+        MockLookup.setInstances(instances);
     }
     
     public static void initLookup(NbTestCase test) throws Exception {
@@ -122,6 +108,7 @@ public final class TestUtil extends ProxyLookup {
         test.clearWorkDir();
         File root = test.getWorkDir();
         assert root.isDirectory() && root.list().length == 0;
+        MockLookup.init(); // URLMapper asks for default lookup
         FileObject fo = FileUtil.toFileObject(root);
         if (fo != null) {
             return fo;
@@ -144,6 +131,19 @@ public final class TestUtil extends ProxyLookup {
             Repository.getDefault().addFileSystem(lfs);
             return lfs.getRoot();
         }
+    }
+    
+    public static void clearAndInitLookup(NbTestCase testCase, String... additionalLayers) throws Exception {
+        testCase.clearWorkDir();
+        
+        // set our own lookup
+        TestUtil.initLookup(testCase, additionalLayers);
+        
+        FileObject root = FileUtil.toFileObject(testCase.getWorkDir());
+        FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
+        FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
+        
+        testCase.assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource("J2EE/InstalledServers").toString());;
     }
     
     /**
@@ -251,11 +251,11 @@ public final class TestUtil extends ProxyLookup {
     public static String registerSunAppServer(NbTestCase test, Object[] additionalLookupItems) throws Exception {
         String oldNbHome = System.getProperty("netbeans.home"); // NOI18N
         String oldNbUser = System.getProperty("netbeans.user"); // NOI18N
-        File root = test.getWorkDir();
-        File systemDir = new File(root, "ud/system"); // NOI18N
-        new File(systemDir, "J2EE/InstalledServers").mkdirs(); // NOI18N
-        new File(systemDir, "J2EE/DeploymentPlugins").mkdirs(); // NOI18N
-        new File(root, "nb").mkdirs(); // NOI18N
+        FileObject root = FileUtil.toFileObject(test.getWorkDir());
+        FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
+        FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
+        FileUtil.createFolder(systemDir, "J2EE/DeploymentPlugins"); // NOI18N
+        FileUtil.createFolder(root, "nb"); // NOI18N
         System.setProperty("netbeans.home", new File(test.getWorkDir(), "nb").getAbsolutePath()); // NOI18N
         System.setProperty("netbeans.user", new File(test.getWorkDir(), "ud").getAbsolutePath()); // NOI18N
         
@@ -272,7 +272,7 @@ public final class TestUtil extends ProxyLookup {
         } else {
             asRoot = extractAppSrv(test.getWorkDir(), new File(test.getDataDir(), "SunAppServer.zip")); // NOI18N
         }
-        FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+        FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource("J2EE/InstalledServers"); // NOI18N
         String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
         FileObject instanceFO = dir.createData(name);
         String serverID = "[" + asRoot.getAbsolutePath() + "]deployer:Sun:AppServer::localhost:4848"; // NOI18N
