@@ -76,7 +76,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         return "";
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
             if (eventHandler.getType().equals(CallPointEventHandlerCD.TYPEID) || eventHandler.getType().equals(MethodPointEventHandlerCD.TYPEID)) {
@@ -102,7 +102,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         }
     }
     
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
     }
 
     public static class CallElementFactory implements PropertyEditorElementFactory {

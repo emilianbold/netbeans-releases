@@ -69,7 +69,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
     private String defaultItem;
     
     public static PropertyEditorSVGMenuSelectCommand createInstanceMenuSelect() {
-        String mnemonic =  NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SEL_COMMAND_STR");
+        String mnemonic =  NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
         String noneItem = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_NONE");  // NOI18N
         String defaultItem  = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT");  // NOI18N
         
@@ -131,7 +131,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         saveValue(text);
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
             customEditor.setValue(null);

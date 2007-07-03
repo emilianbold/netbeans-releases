@@ -115,6 +115,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         return false;
     }
     
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -128,7 +129,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
                 return key;
             }
         }
-        return "n/a";
+        return "n/a"; // NOI18N
     }
     
     public void setText(String text) {
@@ -139,7 +140,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         return null;
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             // clear customEditor if needed
         } else {
@@ -157,12 +158,14 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
     
+    @Override
     public String[] getTags() {
         return isCurrentValueAUserCodeType() ? null : tags;
     }
@@ -175,18 +178,21 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
     }
     
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         this.componentID = component.getComponentID();
     }
     
+    @Override
     public Boolean canEditAsText() {
-        if (getTags() == null) {
+        if (isCurrentValueAUserCodeType()) {
             return super.canEditAsText();
         }
         return null;
     }
     
+    @Override
     public boolean canWrite() {
         final boolean[] canWrite = new boolean[] { true };
         if (!MidpPropertyEditorSupport.singleSelectionEditAsTextOnly()) {

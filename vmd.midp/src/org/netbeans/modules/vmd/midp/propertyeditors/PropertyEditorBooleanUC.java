@@ -106,6 +106,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     }
 
 
+    @Override
     public boolean supportsCustomEditor() {
         if (!supportsCustomEditor) {
             return false;
@@ -135,10 +136,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return false;
     }
 
-    public Boolean canEditAsText() {
-        return super.canEditAsText();
-    }
-
+    @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
@@ -156,7 +154,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return null;
     }
 
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         customEditor.setValue(value);
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
@@ -165,12 +163,14 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         super.setValue(FALSE_TEXT.equals(text) ? FALSE_VALUE : TRUE_VALUE);
     }
 
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
 
+    @Override
     public boolean canWrite() {
         return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
     }

@@ -77,10 +77,12 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public static final PropertyEditorNumber createLongInstance() {
         return new PropertyEditorNumber(){
+            @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_STR"); // NOI18N
             }
             
+            @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
                     long longValue = 0;
@@ -102,10 +104,12 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public static final PropertyEditorNumber createByteInstance() {
         return new PropertyEditorNumber(){
+            @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_STR"); // NOI18N
             }
             
+            @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
                     byte byteValue = 0;
@@ -127,10 +131,12 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public static final PropertyEditorNumber createShortInstance() {
         return new PropertyEditorNumber(){
+            @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_STR"); // NOI18N
             }
             
+            @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
                     short shortValue = 0;
@@ -152,18 +158,22 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public static final PropertyEditorNumber createFloatInstance() {
         return new PropertyEditorNumber(){
+            @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
             }
             
+            @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-\\.]+", ""); // NOI18N
             }
             
+            @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_STR"); // NOI18N
             }
             
+            @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
                     float floatValue = 0;
@@ -185,18 +195,22 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public static final PropertyEditorNumber createDoubleInstance() {
         return new PropertyEditorNumber(){
+            @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
             }
             
+            @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-\\.]+", ""); // NOI18N
             }
             
+            @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_STR"); // NOI18N
             }
             
+            @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
                     double doubleValue = 0;
@@ -218,18 +232,22 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public static final PropertyEditorNumber createCharInstance() {
         return new PropertyEditorNumber(){
+            @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-]+", text); // NOI18N
             }
             
+            @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
             }
             
+            @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_STR"); // NOI18N
             }
             
+            @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
                     char charValue = 0;
@@ -350,6 +368,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         return false;
     }
     
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -384,7 +403,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      *
      * @param value
      */
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setText(null);
         } else {
@@ -393,6 +412,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());

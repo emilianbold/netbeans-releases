@@ -59,6 +59,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return new PropertyEditorInstanceName(typeID);
     }
     
+    @Override
     public Component getCustomEditor() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null) {
@@ -67,6 +68,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return customEditor;
     }
     
+    @Override
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value == null) {
@@ -75,6 +77,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return (String) value.getPrimitiveValue();
     }
     
+    @Override
     public void setAsText(String text) {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null && value.getPrimitiveValue().equals(text))
@@ -98,6 +101,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return str[0];
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         String text = customEditor.getText();
         if (text.length() > 0) {
@@ -105,15 +109,18 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         }
     }
     
+    @Override
     public void init(DesignComponent component) {
         document = new WeakReference<DesignDocument>(component.getDocument());
         this.componentID = component.getComponentID();
     }
     
+    @Override
     public boolean supportsDefaultValue() {
         return false;
     }
     
+    @Override
     public boolean canWrite() {
         if (document.get() == null) {
             return false;
@@ -131,6 +138,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return canWrite;
     }
     
+    // TODO i18nalize it
     private String getLabelName() {
         if (typeID.equals(MethodPointCD.TYPEID)) {
             return "Method Name";
@@ -148,7 +156,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel(getLabelName() + ':');
+            JLabel label = new JLabel(getLabelName() + ':'); // NOI18N
             constraints.insets = new Insets(12, 12, 3, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;

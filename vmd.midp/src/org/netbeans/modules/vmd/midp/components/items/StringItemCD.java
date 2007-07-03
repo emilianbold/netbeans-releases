@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 
 import java.util.ArrayList;
@@ -77,7 +78,7 @@ public class StringItemCD extends ComponentDescriptor {
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT) 
                 .addProperty("Appearance", PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE)
-                .addProperty("Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_FONT);
+                .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT);
     }
 
     private static Presenter createSetterPresenter() {

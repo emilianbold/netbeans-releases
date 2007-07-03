@@ -89,6 +89,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         return true;
     }
 
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -105,7 +106,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         return null;
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setValue(0);
         } else {
@@ -118,12 +119,14 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         super.setValue(MidpTypes.createIntegerValue(customEditor.getBitMask()));
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue();
         }
     }
     
+    @Override
     public Boolean canEditAsText() {
         return false;
     }
@@ -328,7 +331,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
                     newBitmask = getComponentsBitmask().getBitmask();
                 bitMask = newBitmask;
             } else {
-                BitmaskItem bitmaskItem = (BitmaskItem) bits.get(source);
+                BitmaskItem bitmaskItem = bits.get(source);
                 assert (bitmaskItem != null);
                 boolean state = (e.getStateChange() == ItemEvent.SELECTED);
                 bitMask = layouts.addToBitmask(bitmaskItem, state);
@@ -355,14 +358,14 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         }
         
         private ItemLayouts getComponentsBitmask() {
-            ItemLayouts layouts = new ItemLayouts(0);
+            ItemLayouts _layouts = new ItemLayouts(0);
             for (JToggleButton button : bits.keySet()) {
                 if (button.isSelected()) {
-                    layouts.addToBitmask(bits.get(button), true);
+                    _layouts.addToBitmask(bits.get(button), true);
                 }
             }
             
-            return layouts;
+            return _layouts;
         }
         
         public void setValue(int value) {

@@ -23,9 +23,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.PreviousScreenEventHandlerCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorEventHandlerElement;
@@ -79,7 +77,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
         return "";
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
             if (eventHandler.getType().equals(PreviousScreenEventHandlerCD.TYPEID)) {
@@ -88,7 +86,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
         }
     }
     
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
     }
     
     public static class GoToPreviousDisplayableElementFactory implements PropertyEditorElementFactory {

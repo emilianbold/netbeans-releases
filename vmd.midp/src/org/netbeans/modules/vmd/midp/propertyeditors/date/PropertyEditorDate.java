@@ -120,7 +120,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return null;
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setText(null);
         } else {

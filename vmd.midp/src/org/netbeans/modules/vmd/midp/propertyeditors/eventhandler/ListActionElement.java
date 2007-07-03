@@ -23,9 +23,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory;
@@ -80,7 +78,7 @@ public class ListActionElement implements PropertyEditorEventHandlerElement {
         return ""; // NOI18N
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
             if (eventHandler.getType().equals(ListEventHandlerCD.TYPEID)) {
@@ -89,7 +87,7 @@ public class ListActionElement implements PropertyEditorEventHandlerElement {
         }
     }
     
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
     }
     
     public static class ListActionElementFactory implements PropertyEditorElementFactory {

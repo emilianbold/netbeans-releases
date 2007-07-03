@@ -70,7 +70,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     private String defaultItem;
 
     public static PropertyEditorListSelectCommand create() {
-        String mnemonic = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR");
+        String mnemonic = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
         String noneItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
         String defaultItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT"); // NOI18N
         return new PropertyEditorListSelectCommand(ListSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem);
@@ -110,6 +110,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         return false;
     }
 
+    @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
@@ -129,7 +130,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         saveValue(text);
     }
 
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
             customEditor.setValue(null);
@@ -149,12 +150,14 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         }
     }
 
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
 
+    @Override
     public String[] getTags() {
         if (isCurrentValueAUserCodeType()) {
             return null;
@@ -198,6 +201,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         return MidpDocumentSupport.getSingletonCommand(document, typeID);
     }
 
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         componentID = component.getComponentID();
@@ -260,7 +264,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
                     if (itemCommandEvenSource[0] == null) {
                         // create new ItemCommandEvenSource
-itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(list, command);
+                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(list, command);
                     }
                 }
             });

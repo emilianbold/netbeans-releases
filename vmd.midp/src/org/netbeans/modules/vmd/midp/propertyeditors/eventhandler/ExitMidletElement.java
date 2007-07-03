@@ -87,7 +87,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         return "";
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
             if (eventHandler.getType().equals(ExitMidletEventHandlerCD.TYPEID)) {
@@ -96,7 +96,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         }
     }
     
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
         radioButton.setEnabled(enabled);
     }
     

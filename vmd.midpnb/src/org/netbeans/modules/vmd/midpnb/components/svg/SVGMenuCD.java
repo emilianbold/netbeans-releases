@@ -57,6 +57,7 @@ public class SVGMenuCD extends ComponentDescriptor {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
@@ -87,13 +88,14 @@ public class SVGMenuCD extends ComponentDescriptor {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createSVGMenuElementParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGPlayerCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            .addSetters (MidpSetter.createSetter ("addMenuElement", MidpVersionable.MIDP_2).setArrayParameter (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT).addParameters (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT));
+            .addSetters (MidpSetter.createSetter ("addMenuElement", MidpVersionable.MIDP_2).setArrayParameter (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT).addParameters (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
                 new AcceptTypePresenter(SVGMenuElementEventSourceCD.TYPEID) {
+                    @Override
                     protected void notifyCreated (DesignComponent component) {
                         super.notifyCreated (component);
                         ArraySupport.append (getComponent (), SVGMenuCD.PROP_ELEMENTS, component);
@@ -111,6 +113,7 @@ public class SVGMenuCD extends ComponentDescriptor {
                 MidpCustomCodePresenterSupport.createSVGMenuEventHandlerCodeNamePresenter (),
                 // flow
                 new FlowSVGMenuElementPinOrderPresenter ()
+        
         );
     }
     

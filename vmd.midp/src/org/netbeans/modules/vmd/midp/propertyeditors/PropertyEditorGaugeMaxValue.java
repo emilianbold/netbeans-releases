@@ -78,6 +78,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         customEditor = new CustomEditor();
     }
     
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         this.componentID = component.getComponentID();
@@ -99,6 +100,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         return false;
     }
     
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -124,7 +126,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         return null;
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.unsetForever(true);
         } else if (MidpTypes.getInteger(value) == GaugeCD.VALUE_INDEFINITE) {
@@ -163,12 +165,14 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
     
+    @Override
     public Boolean canEditAsText() {
         if (!isCurrentValueAUserCodeType()) {
             PropertyValue value = (PropertyValue) super.getValue();

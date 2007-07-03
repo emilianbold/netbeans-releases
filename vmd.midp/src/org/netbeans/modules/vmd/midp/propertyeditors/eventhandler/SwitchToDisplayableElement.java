@@ -107,7 +107,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         return null;
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
             if (SwitchDisplayableEventHandlerCD.TYPEID.equals(eventHandler.getType())) {
@@ -139,7 +139,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         displayablesWithoutAlertsComboBox.setEnabled(false);
     }
     
-    public void setEnabled(boolean enabled) {
+    public void setElementEnabled(boolean enabled) {
     }
     
     public static class SwitchToDisplayableElementFactory implements PropertyEditorElementFactory {

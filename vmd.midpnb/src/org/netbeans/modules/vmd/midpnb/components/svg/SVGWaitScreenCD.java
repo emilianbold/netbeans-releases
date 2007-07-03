@@ -53,6 +53,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
     
+    @Override
     public void postInitialize (DesignComponent component) {
         MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
@@ -74,7 +75,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK)
-                .addProperty("Task", PropertyEditorResourcesComboBox.create(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK);
+                .addProperty("Task", PropertyEditorResourcesComboBox.create(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); // NOI18N
     }
 
     private Presenter createSetterPresenter () {
@@ -82,7 +83,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
             .addParameters (MidpParameter.create (PROP_TASK))
             .addParameters (MidpCustomCodePresenterSupport.createSVGWaitScreenCommandParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGPlayerCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK));
+            .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

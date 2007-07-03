@@ -55,6 +55,7 @@ public class SVGSplashScreenCD extends ComponentDescriptor {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
@@ -87,8 +88,8 @@ public class SVGSplashScreenCD extends ComponentDescriptor {
             .addParameters (MidpParameter.create (PROP_ALLOW_TIMEOUT_INTERRUPT))
             .addParameters (MidpCustomCodePresenterSupport.createSVGSplashScreenCommandParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGPlayerCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            .addSetters (MidpSetter.createSetter ("setTimeout", MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_SVG_TIMEOUT))
-            .addSetters (MidpSetter.createSetter ("setAllowTimeoutInterrupt", MidpVersionable.MIDP_2).addParameters (PROP_ALLOW_TIMEOUT_INTERRUPT));
+            .addSetters (MidpSetter.createSetter ("setTimeout", MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_SVG_TIMEOUT)) // NOI18N
+            .addSetters (MidpSetter.createSetter ("setAllowTimeoutInterrupt", MidpVersionable.MIDP_2).addParameters (PROP_ALLOW_TIMEOUT_INTERRUPT)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

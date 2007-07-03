@@ -116,9 +116,9 @@ public class SVGImageCD extends ComponentDescriptor {
                 } else {
                     writer.write("try {\n"); // NOI18N
                     writer.write(CodeReferencePresenter.generateDirectAccessCode(component)).write(" = "); // NOI18N
-                    writer.write("(SVGImage) SVGImage.createImage (getClass ().getResourceAsStream(");
+                    writer.write("(SVGImage) SVGImage.createImage (getClass ().getResourceAsStream("); // NOI18N
                     MidpCodeSupport.generateCodeForPropertyValue(writer, pathValue);
-                    writer.write("), ");
+                    writer.write("), "); // NOI18N
                     MidpCodeSupport.generateCodeForPropertyValue(writer, component.readProperty (PROP_EXTERNAL_RESOURCE_HANDLER));
                     writer.write(");\n"); // NOI18N
                     

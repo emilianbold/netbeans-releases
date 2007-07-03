@@ -48,162 +48,161 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class PropertyEditorString extends PropertyEditorUserCode implements PropertyEditorElement {
-    
+
     public static final int DEPENDENCE_NONE = 0;
     public static final int DEPENDENCE_TEXT_BOX = 1;
     public static final int DEPENDENCE_TEXT_FIELD = 2;
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private int dependence;
     private String comment;
     private long componentID;
-    
+
     public PropertyEditorString(String comment, int dependence) {
-        super();
         this.comment = comment;
         this.dependence = dependence;
         initComponents();
-        
+
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
-        
     }
-    
+
     public static final PropertyEditorString createInstance() {
         return new PropertyEditorString(null, DEPENDENCE_NONE);
     }
-    
+
     public static final PropertyEditorString createInstance(int dependence) {
         return new PropertyEditorString(null, dependence);
     }
-    
+
     public static final PropertyEditorString createInstanceReadOnly() {
         return new PropertyEditorString(null, DEPENDENCE_NONE) {
+            @Override
             public boolean canWrite() {
                 return false;
             }
         };
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
         customEditor = new CustomEditor(comment);
     }
-    
+
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         this.componentID = component.getComponentID();
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor.getComponent();
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return true;
     }
-    
+
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         return (String) value.getPrimitiveValue();
     }
-    
+
     public void setText(String text) {
         saveValue(text);
     }
-    
+
     public String getText() {
         return null;
     }
-    
-    public void setPropertyValue(PropertyValue value) {
+
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
-            customEditor.setText("");
+            customEditor.setText(null);
         } else {
             customEditor.setText((String) value.getPrimitiveValue());
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         final int length = text.length();
         super.setValue(MidpTypes.createStringValue(text));
-        
+
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             switch (dependence) {
-            case DEPENDENCE_TEXT_BOX:
-                document.getTransactionManager().writeAccess( new Runnable() {
-                    public void run() {
-                        DesignComponent component = document.getComponentByUID(componentID);
-                        PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
-                        if (MidpTypes.getInteger(value) < length) {
-                            component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                case DEPENDENCE_TEXT_BOX:
+                    document.getTransactionManager().writeAccess(new Runnable() {
+
+                        public void run() {
+                            DesignComponent component = document.getComponentByUID(componentID);
+                            PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
+                            if (MidpTypes.getInteger(value) < length) {
+                                component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                            }
                         }
-                    }
-                });
-                break;
-            case DEPENDENCE_TEXT_FIELD:
-                document.getTransactionManager().writeAccess( new Runnable() {
-                    public void run() {
-                        DesignComponent component = document.getComponentByUID(componentID);
-                        PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
-                        if (MidpTypes.getInteger(value) < length) {
-                            component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                    });
+                    break;
+                case DEPENDENCE_TEXT_FIELD:
+                    document.getTransactionManager().writeAccess(new Runnable() {
+
+                        public void run() {
+                            DesignComponent component = document.getComponentByUID(componentID);
+                            PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
+                            if (MidpTypes.getInteger(value) < length) {
+                                component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                            }
                         }
-                    }
-                });
-                break;
+                    });
+                    break;
             }
         }
     }
-    
+
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
-    
+
     private class CustomEditor {
+
         private JPanel panel;
         private JEditorPane editorPane;
-        private JScrollPane scrollPane;
-        private JLabel label;
-        private GridBagConstraints gridBagConstraints;
-        
+        private String comment;
+
         public CustomEditor(String comment) {
-            if (comment != null)
-                this.label = new JLabel(comment);
+            this.comment = comment;
             initComponents();
         }
-        
+
         private void initComponents() {
             panel = new JPanel(new GridBagLayout());
             editorPane = new JEditorPane();
-            scrollPane = new JScrollPane();
+            JScrollPane scrollPane = new JScrollPane();
             scrollPane.setViewportView(editorPane);
             scrollPane.setPreferredSize(new Dimension(400, 100));
-            panel.add(scrollPane);
-            
-            panel.add(scrollPane, new GridBagConstraints());
-            
-            gridBagConstraints = new GridBagConstraints();
+
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 0;
             gridBagConstraints.fill = GridBagConstraints.BOTH;
@@ -211,29 +210,30 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
             panel.add(scrollPane, gridBagConstraints);
-            if (label == null)
-                return;
-            panel.add(label);
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 1;
-            gridBagConstraints.fill = GridBagConstraints.BOTH;
-            gridBagConstraints.ipadx = 1;
-            gridBagConstraints.ipady = 10;
-            gridBagConstraints.anchor = GridBagConstraints.WEST;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 1.0;
-            panel.add(label, gridBagConstraints);
+
+            if (comment != null) {
+                JLabel label = new JLabel(comment);
+                gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.gridx = 0;
+                gridBagConstraints.gridy = 1;
+                gridBagConstraints.fill = GridBagConstraints.BOTH;
+                gridBagConstraints.ipadx = 1;
+                gridBagConstraints.ipady = 10;
+                gridBagConstraints.anchor = GridBagConstraints.WEST;
+                gridBagConstraints.weightx = 1.0;
+                gridBagConstraints.weighty = 1.0;
+                panel.add(label, gridBagConstraints);
+            }
         }
-        
+
         public JComponent getComponent() {
             return panel;
         }
-        
+
         public void setText(String text) {
             editorPane.setText(text);
         }
-        
+
         public String getText() {
             return editorPane.getText();
         }

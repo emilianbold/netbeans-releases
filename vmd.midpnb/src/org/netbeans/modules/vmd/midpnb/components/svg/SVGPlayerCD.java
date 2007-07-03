@@ -104,9 +104,9 @@ public class SVGPlayerCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("SVG Image", PropertyEditorResourcesComboBox.create(SVGImageCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE) //NOI18N
-                .addProperty("Start Animation Immediately", PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDIATELY) //NOI18N
-                .addProperty("Animation Time Increment", PropertyEditorNumber.createFloatInstance(), PROP_TIME_INCREMENT) //NOI18N
-                .addProperty("Reset Animation When Stopped", PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED); //NOI18N
+                .addProperty("Start Animation Immediately", PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDIATELY)
+                .addProperty("Animation Time Increment", PropertyEditorNumber.createFloatInstance(), PROP_TIME_INCREMENT)
+                .addProperty("Reset Animation When Stopped", PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED);
     }
 
     private Presenter createSetterPresenter() {
@@ -114,7 +114,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
                 .addParameters(MidpCustomCodePresenterSupport.createDisplayParameter())
                 .addParameters(MidpParameter.create(PROP_SVG_IMAGE, PROP_START_ANIM_IMMEDIATELY, PROP_TIME_INCREMENT, PROP_RESET_ANIMATION_WHEN_STOPPED))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-                .addSetters(MidpSetter.createSetter("setTimeIncrement", MidpVersionable.MIDP_2).addParameters(PROP_TIME_INCREMENT))
+                .addSetters(MidpSetter.createSetter("setTimeIncrement", MidpVersionable.MIDP_2).addParameters(PROP_TIME_INCREMENT)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setStartAnimationImmediately", MidpVersionable.MIDP_2).addParameters(PROP_START_ANIM_IMMEDIATELY)) //NOI18N
                 .addSetters(MidpSetter.createSetter("setResetAnimationWhenStopped", MidpVersionable.MIDP_2).addParameters(PROP_RESET_ANIMATION_WHEN_STOPPED)); //NOI18N
     }

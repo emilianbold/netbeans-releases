@@ -126,7 +126,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return null;
     }
 
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
             customEditor.setValue(null);

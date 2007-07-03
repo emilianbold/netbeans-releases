@@ -58,6 +58,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
         return new PropertyEditorTimeZone();
     }
     
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -74,6 +75,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
         }
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         for (PropertyEditorElement element : elements) {
             if (element.getRadioButton().isSelected()) {
@@ -104,7 +106,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
             return model.contains(str);
         }
         
-        public void setPropertyValue(PropertyValue value) {
+        public void updateState(PropertyValue value) {
             if (!isCurrentValueANull() && value != null) {
                 String timeZone;
                 for (int i = 0; i < model.getSize(); i++) {
@@ -157,7 +159,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
             textField.getDocument().addDocumentListener(this);
         }
         
-        public void setPropertyValue(PropertyValue value) {
+        public void updateState(PropertyValue value) {
             if (!isCurrentValueANull() && value != null) {
                 String str = (String) value.getPrimitiveValue();
                 if (!isPredefined(str)) { // if that value is not predefined

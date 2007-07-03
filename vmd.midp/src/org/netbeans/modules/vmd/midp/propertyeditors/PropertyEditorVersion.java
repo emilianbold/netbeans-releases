@@ -48,6 +48,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
         return new PropertyEditorVersion();
     }
     
+    @Override
     public Component getCustomEditor() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null && value.getKind() != PropertyValue.Kind.NULL) {
@@ -56,14 +57,17 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
         return customEditor;
     }
     
+    @Override
     public boolean supportsCustomEditor() {
         return false;
     }
     
+    @Override
     public Boolean canEditAsText() {
         return false;
     }
     
+    @Override
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value == null || value.getKind() == PropertyValue.Kind.NULL) {
@@ -72,6 +76,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
         return (String) value.getPrimitiveValue ();
     }
     
+    @Override
     public void setAsText(String text) {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null && value.getPrimitiveValue().equals(text)) {
@@ -88,10 +93,12 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
         }
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         saveValue(customEditor.getText());
     }
     
+    @Override
     public boolean supportsDefaultValue() {
         return false;
     }
@@ -103,6 +110,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
             initComponents();
         }
         
+        // TODO i18nalize it
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();

@@ -35,5 +35,5 @@ public interface PropertyEditorEventHandlerElement extends PropertyEditorElement
     
     void createEventHandler(DesignComponent eventSource);
     void updateModel(List<DesignComponent> components, int modelType);
-    void setEnabled(boolean enabled);
+    void setElementEnabled(boolean enabled);
 }

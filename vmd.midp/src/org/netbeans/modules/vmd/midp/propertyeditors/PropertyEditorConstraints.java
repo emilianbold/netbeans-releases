@@ -89,6 +89,7 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         return true;
     }
 
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -105,7 +106,7 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         return null;
     }
     
-    public void setPropertyValue(PropertyValue value) {
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setBitmask(0);
         } else {
@@ -118,12 +119,14 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         super.setValue(MidpTypes.createIntegerValue(customEditor.getBitMask()));
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue();
         }
     }
     
+    @Override
     public Boolean canEditAsText() {
         return false;
     }

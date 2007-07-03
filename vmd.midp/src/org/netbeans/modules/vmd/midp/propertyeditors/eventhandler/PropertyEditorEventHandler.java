@@ -76,6 +76,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return new PropertyEditorEventHandler();
     }
     
+    @Override
     public Component getCustomEditor() {
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
@@ -116,10 +117,12 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return customEditor;
     }
     
+    @Override
     public Boolean canEditAsText() {
         return false;
     }
     
+    @Override
     public String getAsText() {
         final String[] string = new String[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
@@ -145,10 +148,12 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return string[0];
     }
     
+    @Override
     public void init(DesignComponent component) {
         this.componentID = component.getComponentID();
     }
     
+    @Override
     public boolean executeInsideWriteTransaction() {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
@@ -158,6 +163,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         return false;
     }
     
+    @Override
     public boolean isDefaultValue() {
         return true;
     }
@@ -234,7 +240,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         public void updateModels(List<DesignComponent> components, int modelType, PropertyValue value) {
             for (PropertyEditorEventHandlerElement element : elements) {
                 element.updateModel(components, modelType);
-                element.setPropertyValue(value);
+                element.updateState(value);
                 checkDoNothing(value);
             }
         }
@@ -242,7 +248,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         public void setExitMidletEnabled(boolean enabled) {
             for (PropertyEditorEventHandlerElement element : elements) {
                 if (element instanceof ExitMidletElement) {
-                    element.setEnabled(enabled);
+                    element.setElementEnabled(enabled);
                     break;
                 }
             }

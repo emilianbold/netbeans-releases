@@ -48,54 +48,54 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public final class PropertyEditorTimeout extends PropertyEditorUserCode implements PropertyEditorElement {
-    
+
     private static final String FOREVER_TEXT = NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUTPE_FOREVER_TXT"); // NOI18N
     private static final String FOREVER_NUM_TEXT = String.valueOf(AlertCD.FOREVER_VALUE.getPrimitiveValue());
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    
+
     private PropertyEditorTimeout() {
-        super();
         initComponents();
-        
+
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
     }
-    
+
     public static final PropertyEditorTimeout createInstance() {
         return new PropertyEditorTimeout();
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUT_STR")); // NOI18N
         customEditor = new CustomEditor();
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-        
+
         Object valueValue = ((PropertyValue) super.getValue()).getPrimitiveValue();
         Object foreverValueValue = AlertCD.FOREVER_VALUE.getPrimitiveValue();
         if (foreverValueValue.equals(valueValue)) {
@@ -103,16 +103,16 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
         return String.valueOf(valueValue);
     }
-    
+
     public void setText(String text) {
         saveValue(text);
     }
-    
+
     public String getText() {
         return null;
     }
-    
-    public void setPropertyValue(PropertyValue value) {
+
+    public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.unsetForever(true);
         } else if (AlertCD.FOREVER_VALUE.getPrimitiveValue().equals(value.getPrimitiveValue())) {
@@ -123,14 +123,14 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             if (FOREVER_TEXT.equals(text) || FOREVER_NUM_TEXT.equals(text)) {
                 super.setValue(AlertCD.FOREVER_VALUE);
                 return;
             }
-            
+
             int intValue = 0;
             try {
                 text = text.replaceAll("[^0-9\\-]+", ""); // NOI18N
@@ -140,13 +140,15 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
             super.setValue(MidpTypes.createIntegerValue(intValue));
         }
     }
-    
+
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
-    
+
+    @Override
     public Boolean canEditAsText() {
         if (!isCurrentValueAUserCodeType()) {
             PropertyValue value = (PropertyValue) super.getValue();
@@ -158,39 +160,40 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
         return false;
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener, DocumentListener, FocusListener {
+
         private JTextField textField;
         private JCheckBox foreverCheckBox;
-        
+
         public CustomEditor() {
             radioButton.addFocusListener(this);
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
-            
+
             foreverCheckBox = new JCheckBox();
             foreverCheckBox.addActionListener(this);
             foreverCheckBox.addFocusListener(this);
             Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUTPE_FOREVER")); // NOI18N
             add(foreverCheckBox, BorderLayout.NORTH);
-            
+
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
             add(textField, BorderLayout.SOUTH);
         }
-        
+
         public void setText(String text) {
             textField.setText(text);
         }
-        
+
         public String getText() {
             return textField.getText();
         }
-        
+
         public void setForever(boolean changeCheckBox) {
             setText(FOREVER_NUM_TEXT);
             textField.setEditable(false);
@@ -198,7 +201,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
                 foreverCheckBox.setSelected(true);
             }
         }
-        
+
         public void unsetForever(boolean changeCheckBox) {
             setText(null);
             textField.setEditable(true);
@@ -206,7 +209,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
                 foreverCheckBox.setSelected(false);
             }
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             if (foreverCheckBox.isSelected()) {
                 setForever(false);
@@ -214,20 +217,20 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
                 unsetForever(false);
             }
         }
-        
+
         public void insertUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
             checkNumberStatus();
         }
-        
+
         public void removeUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
             checkNumberStatus();
         }
-        
+
         public void changedUpdate(DocumentEvent evt) {
         }
-        
+
         private void checkNumberStatus() {
             if (!Pattern.matches("[\\d\\-]+", textField.getText())) { // NOI18N
                 displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
@@ -243,7 +246,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
 
         public void focusLost(FocusEvent e) {
-                clearErrorStatus();
+            clearErrorStatus();
         }
     }
 }

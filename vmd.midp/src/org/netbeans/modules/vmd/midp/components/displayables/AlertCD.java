@@ -110,13 +110,14 @@ public final class AlertCD extends ComponentDescriptor {
                 .addParameters(new AlertTimeoutParameter())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE, PROP_STRING, PROP_IMAGE, PROP_ALERT_TYPE))
-                .addSetters(MidpSetter.createSetter("setImage", MidpVersionable.MIDP).addParameters(PROP_IMAGE))
-                .addSetters(MidpSetter.createSetter("setIndicator", MidpVersionable.MIDP_2).addParameters(PROP_INDICATOR))
-                .addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_STRING))
-                .addSetters(MidpSetter.createSetter("setTimeout", MidpVersionable.MIDP).addParameters(AlertTimeoutParameter.PARAM_TIMEOUT))
-                .addSetters(MidpSetter.createSetter("setType", MidpVersionable.MIDP).addParameters(PROP_ALERT_TYPE));
+                .addSetters(MidpSetter.createSetter("setImage", MidpVersionable.MIDP).addParameters(PROP_IMAGE)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setIndicator", MidpVersionable.MIDP_2).addParameters(PROP_INDICATOR)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_STRING)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setTimeout", MidpVersionable.MIDP).addParameters(AlertTimeoutParameter.PARAM_TIMEOUT)) //NOI18N
+                .addSetters(MidpSetter.createSetter("setType", MidpVersionable.MIDP).addParameters(PROP_ALERT_TYPE)); //NOI18N
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, AbstractEventHandlerCreatorPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
@@ -135,6 +136,7 @@ public final class AlertCD extends ComponentDescriptor {
             createSetterPresenter(),
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_IMAGE),
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_INDICATOR),
             // flow
             new FlowAlertViaPinOrderPresenter (),
             // screen
@@ -164,6 +166,7 @@ public final class AlertCD extends ComponentDescriptor {
             super(PARAM_TIMEOUT);
         }
 
+        @Override
         public void generateParameterCode(DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty(PROP_TIMEOUT);
             if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
@@ -176,6 +179,7 @@ public final class AlertCD extends ComponentDescriptor {
             super.generateParameterCode(component, section, index);
         }
 
+        @Override
         public boolean isRequiredToBeSet(DesignComponent component) {
             return true;
         }

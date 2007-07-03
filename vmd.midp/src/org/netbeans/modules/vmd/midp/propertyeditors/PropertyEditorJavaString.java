@@ -45,19 +45,20 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUser
  * @author Anton Chechel
  */
 public final class PropertyEditorJavaString extends DesignPropertyEditor {
-    
+
     private TypeID typeID;
     private final CustomEditor customEditor;
-    
+
     private PropertyEditorJavaString(TypeID typeID) {
         this.typeID = typeID;
         customEditor = new CustomEditor();
     }
-    
+
     public static final PropertyEditorJavaString createInstance(TypeID typeID) {
         return new PropertyEditorJavaString(typeID);
     }
-    
+
+    @Override
     public Component getCustomEditor() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null) {
@@ -65,7 +66,8 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         }
         return customEditor;
     }
-    
+
+    @Override
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value == null) {
@@ -73,7 +75,8 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         }
         return MidpTypes.getJavaCode(value);
     }
-    
+
+    @Override
     public void setAsText(String text) {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null && value.getPrimitiveValue().equals(text)) {
@@ -81,28 +84,30 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         }
         saveValue(text);
     }
-    
+
     private void saveValue(String text) {
         if (text != null) {
             super.setValue(MidpTypes.createJavaCodeValue(text));
         }
     }
-    
+
+    @Override
     public void customEditorOKButtonPressed() {
         String text = customEditor.getText();
-//        if (text.length() > 0) {
-            saveValue(text);
-//        }
+        saveValue(text);
     }
-    
+
+    @Override
     public boolean supportsDefaultValue() {
         return false;
     }
-    
+
+    @Override
     public String getCustomEditorTitle() {
         return getLabelName();
     }
-    
+
+    // TODO i18nalize it
     private String getLabelName() {
         if (typeID.equals(CallPointCD.TYPEID)) {
             return "Java Code:";
@@ -117,18 +122,20 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         }
         return "Java Expression:";
     }
-    
+
     private final class CustomEditor extends JPanel {
+
         private JEditorPane textPane;
-        
+
         public CustomEditor() {
             initComponents();
         }
-        
+
+        // TODO bind retouche dialog
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel(getLabelName() + ':');
+            JLabel label = new JLabel(getLabelName() + ':'); // NOI18N
             constraints.insets = new Insets(12, 12, 3, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
@@ -137,9 +144,11 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             constraints.weighty = 0.0;
             constraints.fill = GridBagConstraints.BOTH;
             add(label, constraints);
-            
+
             textPane = new JEditorPane();
-            SwingUtilities.invokeLater(new Runnable() {//otherwise we get: java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.
+            SwingUtilities.invokeLater(new Runnable() {
+
+                //otherwise we get: java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.
                 public void run() {
                     textPane.setContentType("text/x-java"); // NOI18N
                 }
@@ -156,11 +165,11 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             constraints.fill = GridBagConstraints.BOTH;
             add(jsp, constraints);
         }
-        
+
         public void setText(String text) {
             textPane.setText(text);
         }
-        
+
         public String getText() {
             return textPane.getText();
         }
