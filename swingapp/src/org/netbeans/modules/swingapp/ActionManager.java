@@ -35,9 +35,13 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
@@ -479,6 +483,10 @@ public class ActionManager {
         return actionName.substring(0, 1).toUpperCase() + actionName.substring(1) + "Task"; // NOI18N
     }
 
+    /**
+     * Checks if given task already exists. Returns the task name if not,
+     * otherwise null - meaning it is not a task that needs to be created.
+     */
     private String getNonExistingTaskName(String className, final String taskName) {
         FileObject sourceFile = getFileForClass(className);
         try {
@@ -677,15 +685,18 @@ public class ActionManager {
     
     private void updateActionMethod(final ProxyAction action, final FileObject sourceFile) {
         try {
-            int[] positions = getAnnotationPositions(action, sourceFile);
-            if (positions == null) {
-                return;
+            final String taskName;
+            final String newTaskName;
+            final String[] oldBodyText;
+            if (action.isTaskEnabled()) {
+                taskName = taskNameForAction(action);
+                newTaskName = getNonExistingTaskName(action.getClassname(), taskName);
+                oldBodyText = new String[1];
+            } else {
+                taskName = null;
+                newTaskName = null;
+                oldBodyText = null;
             }
-
-            // update the method signature and body
-            final String taskName = taskNameForAction(action);
-            final String newTaskName = getNonExistingTaskName(action.getClassname(), taskName);
-            final String[] oldBodyText = new String[1];
             JavaSource js = JavaSource.forFileObject(sourceFile);
             ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
                 public void cancel() {
@@ -703,10 +714,50 @@ public class ActionManager {
                                 for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
                                     if (el.getSimpleName().toString().equals(action.getId())
                                             && el.getModifiers().contains(Modifier.PUBLIC)) {
+                                        // method name matches, now check the annotation
+                                        MethodTree method = trees.getTree(el);
+                                        AnnotationTree annotation = null;
+                                        for (AnnotationTree at : method.getModifiers().getAnnotations()) {
+                                            TypeElement annEl = (TypeElement) trees.getElement(
+                                                    trees.getPath(cut, at.getAnnotationType()));
+                                            if (annEl.getQualifiedName().toString().equals("application.Action")) { // NOI18N
+                                                annotation = at;
+                                                break;
+                                            }
+                                        }
+                                        if (annotation == null) {
+                                            continue; // the method does not have @Action annotation
+                                        }
+
+                                        TreeMaker make = workingCopy.getTreeMaker();
+
+                                        // update annotation
+                                        List<AssignmentTree> annAttrs = new LinkedList<AssignmentTree>();
+                                        for (String attrName : ProxyAction.getAnnotationAttributeNames()) {
+                                            if (action.isAnnotationAttributeSet(attrName)) {
+                                                Object value = action.getAnnotationAttributeValue(attrName);
+                                                ExpressionTree expTree;
+                                                if (value instanceof String) {
+                                                    expTree = make.Literal(value);
+                                                } else if (value instanceof ProxyAction.BlockingType) {
+                                                    expTree = make.MemberSelect(
+                                                            make.MemberSelect(make.QualIdent(workingCopy.getElements().getTypeElement("application.Task")), // NOI18N
+                                                                              "BlockingScope"), // NOI18N
+                                                            value.toString());
+                                                } else {
+                                                    continue;
+                                                }
+                                                ExpressionTree identTree = make.Identifier(attrName);
+                                                AssignmentTree attrTree = make.Assignment(identTree, expTree);
+                                                annAttrs.add(attrTree);
+                                            }
+                                        }
+                                        AnnotationTree newAnnotation = make.Annotation(make.QualIdent(workingCopy.getElements().getTypeElement("application.Action")), annAttrs); // NOI18N
+                                        workingCopy.rewrite(annotation, newAnnotation);
+
+                                        // update the method return type (task)
                                         if (isAsyncActionMethod(el) != action.isTaskEnabled()) {
-                                            MethodTree method = trees.getTree(el);
-                                            MethodTree modified;
-                                            TreeMaker make = workingCopy.getTreeMaker();
+                                            MethodTree newMethod;
                                             BlockTree body = method.getBody();
                                             SourcePositions sp = trees.getSourcePositions();
                                             int start = (int) sp.getStartPosition(cut, body);
@@ -722,8 +773,7 @@ public class ActionManager {
                                                     genTaskName = taskName;
                                                     bodyText = getCommentedBodyText(bodyText);
                                                 }
-
-                                                modified = make.Method(
+                                                newMethod = make.Method(
                                                         method.getModifiers(),
                                                         method.getName(),
                                                         make.QualIdent(workingCopy.getElements().getTypeElement("application.Task")), // NOI18N
@@ -733,7 +783,7 @@ public class ActionManager {
                                                         "{\nreturn new " + genTaskName + "();\n" + bodyText + "}", // NOI18N
                                                         null);
                                             } else { // switch to void
-                                                modified = make.Method(
+                                                newMethod = make.Method(
                                                         method.getModifiers(),
                                                         method.getName(),
                                                         make.PrimitiveType(TypeKind.VOID),
@@ -743,7 +793,7 @@ public class ActionManager {
                                                         "{\n" + getCommentedBodyText(bodyText) + "}", // NOI18N
                                                         null);
                                             }
-                                            workingCopy.rewrite(method, modified);
+                                            workingCopy.rewrite(method, newMethod);
                                         }
                                         break;
                                     }
@@ -766,7 +816,8 @@ public class ActionManager {
             }
             Document doc = ec.getDocument();
 
-            if (newTaskName != null && action.isTaskEnabled()) { // generate Task impl class
+            // generate Task impl class if does not already exist
+            if (newTaskName != null) {
                 Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getId()) {
                     Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
@@ -781,108 +832,21 @@ public class ActionManager {
                                  null);
             }
 
-            // update the annotation attributes
-            // (the task class was generated below, so the annotation position is not affected)
-            int startPos = positions[0];
-            int endPos = positions[1];
-            doc.remove(startPos, endPos-startPos);
-            doc.insertString(startPos, getAnnotationCode(action), null);
-            
+//            // update the annotation attributes
+//            int[] annotationPositions = getAnnotationPositions(action, sourceFile);
+//            if (annotationPositions != null) {
+//                int startPos = annotationPositions[0];
+//                int endPos = annotationPositions[1];
+//                doc.remove(startPos, endPos-startPos);
+//                doc.insertString(startPos, getAnnotationCode(action), null);
+//            }
+
             //generate selected and enabled properties if they don't already exist
             generateProperties(action, sourceFile);
             
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        // [would be better to use the java source infrastructure, but it is too buggy...]
-/*        JavaSource js = JavaSource.forFileObject(sourceFile);
-        try {
-            ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                    for (Tree t: cut.getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS) {
-                            ClassTree classT = (ClassTree) t;
-                            if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
-                                TreePath classTPath = workingCopy.getTrees().getPath(cut, classT);
-                                TypeElement classEl = (TypeElement) workingCopy.getTrees().getElement(classTPath);
-                                for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
-                                    if (el.getSimpleName().toString().equals(action.getId())
-                                            && el.getModifiers().contains(Modifier.PUBLIC)) {
-                                        TreeMaker make = workingCopy.getTreeMaker();
-                                        ModifiersTree modifiers = workingCopy.getTrees().getTree(el)
-                                                .getModifiers();
-                                        for (AnnotationTree at : modifiers.getAnnotations()) {
-                                            TypeElement annEl = (TypeElement) workingCopy.getTrees().getElement(
-                                                    workingCopy.getTrees().getPath(cut, at.getAnnotationType()));
-                                            if (annEl.getQualifiedName().toString().equals("application.Action")) { // NOI18N
-                                                // [try to update the annotation attr values, or remove and re-add the annotation completely?]
-                                                ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, at);
-//                                                AnnotationTree newAnnT = at;
-//                                                List<ExpressionTree> annAttrs = (List<ExpressionTree>) at.getArguments();
-//                                                int index = 0;
-//                                                while (index < annAttrs.size()) {
-//                                                    ExpressionTree attr = annAttrs.get(index);
-//                                                    if (attr.getKind() == Tree.Kind.ASSIGNMENT) {
-//                                                        AssignmentTree assTree = (AssignmentTree) attr;
-//                                                        Tree attrVar = assTree.getVariable();
-//                                                        if (attrVar.getKind() == Tree.Kind.IDENTIFIER) {
-//                                                            IdentifierTree attrVarIdent = (IdentifierTree) attrVar;
-//                                                            String attrName = attrVarIdent.getName().toString();
-//                                                            if (action.isAnnotationAttributeUnset(attrName)
-//                                                                    || action.isAnnotationAttributeSet(attrName)) {
-//                                                                newAnnT = make.removeAnnotationAttrValue(newAnnT, attr);
-//                                                                annAttrs = (List<ExpressionTree>) newAnnT.getArguments();
-//                                                                index--;
-//                                                            }
-//                                                        }
-//                                                    }
-//                                                    index++;
-//                                                }
-                                                List<AssignmentTree> annAttrs = new LinkedList<AssignmentTree>();
-                                                for (String attrName : ProxyAction.getAnnotationAttributeNames()) {
-                                                    if (action.isAnnotationAttributeSet(attrName)) {
-                                                        Object value = action.getAnnotationAttributeValue(attrName);
-                                                        ExpressionTree expTree;
-                                                        if (value instanceof String) {
-                                                            expTree = make.Literal(value);
-                                                        } else if (value instanceof ProxyAction.BlockingType) {
-                                                            expTree = make.MemberSelect(
-                                                                    make.MemberSelect(make.QualIdent(workingCopy.getElements().getTypeElement("application.Action")), // NOI18N
-                                                                    "Block"), // NOI18N
-                                                                    value.toString());
-                                                        } else {
-                                                            continue;
-                                                        }
-                                                        ExpressionTree identTree = make.Identifier(attrName);
-                                                        AssignmentTree attrTree = make.Assignment(identTree, expTree);
-                                                        annAttrs.add(attrTree);
-//                                                        newAnnT = make.addAnnotationAttrValue(newAnnT, attrTree);
-                                                    }
-                                                }
-                                                AnnotationTree newAnnT = make.Annotation(make.QualIdent(workingCopy.getElements().getTypeElement("application.Action")), annAttrs); // NOI18N
-                                                newModifiers = make.addModifiersAnnotation(newModifiers, newAnnT);
-//                                                if (newAnnT != at) {
-//                                                    workingCopy.rewrite(at, newAnnT);
-//                                                }
-                                                workingCopy.rewrite(modifiers, newModifiers);
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            result.commit();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } */
     }
     
     private void generateProperties(ProxyAction action, FileObject sourceFile) {
@@ -1020,7 +984,7 @@ public class ActionManager {
             if (c > ' ' && (c != '}' || last >= 0)) {
                 break;
             } else if (c == '\n' && first >= 0) {
-                last = i;
+                last = i + 1;
                 break;
             } else if (c == '}') {
                 last = i;
