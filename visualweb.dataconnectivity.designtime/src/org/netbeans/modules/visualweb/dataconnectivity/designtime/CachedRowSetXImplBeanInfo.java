@@ -35,13 +35,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Savepoint;
 import javax.sql.RowSetListener;
+import org.openide.util.Exceptions;
 
 public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
 
-    private static EventSetDescriptor[] eventSetDescriptors;
-    private static MethodDescriptor[] methodDescriptors;
-    private static PropertyDescriptor[] propertyDescriptors;
-    protected static Class beanClass = CachedRowSetXImpl.class;
 
     public CachedRowSetXImplBeanInfo() throws NoSuchMethodException {}
     
@@ -49,7 +46,7 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
     protected BeanDescriptor beanDescriptor;
     public BeanDescriptor getBeanDescriptor() {
         if (beanDescriptor == null) {
-            beanDescriptor = new BeanDescriptor(beanClass, null);
+            beanDescriptor = new BeanDescriptor(CachedRowSetXImpl.class, null);
             /*
             beanDescriptor.setValue(
                 ConstantsExt.BeanDescriptor.INSTANCE_INITIALIZATION_PERSISTENCE_MODE, 
@@ -74,19 +71,17 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
 
     public EventSetDescriptor[] getEventSetDescriptors() {
         try {
-            if (eventSetDescriptors == null) {
-                eventSetDescriptors = new EventSetDescriptor[] {
-                    new EventSetDescriptor(beanClass, "rowSet", //NOI18N
-                    RowSetListener.class,
-                    new String[] {
-                    //!JK "cursorMoved", "rowChanged", "rowSetChanged, rowSetPopulated"
-                    "cursorMoved", "rowChanged", "rowSetChanged"
-                }
-
-                , //NOI18N
-                    "addRowSetListener", "removeRowSetListener") //NOI18N
-                };
+            EventSetDescriptor[] eventSetDescriptors = new EventSetDescriptor[] {
+                new EventSetDescriptor(CachedRowSetXImpl.class, "rowSet", //NOI18N
+                RowSetListener.class,
+                new String[] {
+                //!JK "cursorMoved", "rowChanged", "rowSetChanged, rowSetPopulated"
+                "cursorMoved", "rowChanged", "rowSetChanged"
             }
+
+            , //NOI18N
+                "addRowSetListener", "removeRowSetListener") //NOI18N
+            };
 
             return eventSetDescriptors;
         } catch (IntrospectionException e) {
@@ -110,106 +105,103 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
 
     public synchronized MethodDescriptor[] getMethodDescriptors() {
         try {
-            if (methodDescriptors == null) {
-                methodDescriptors = new MethodDescriptor[] {
-                    new MethodDescriptor(beanClass.getMethod("absolute", //NOI18N
+            MethodDescriptor[] methodDescriptors = new MethodDescriptor[] {
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("absolute", //NOI18N
                         new Class[] {int.class})),
-                    new MethodDescriptor(beanClass.getMethod("acceptChanges", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("acceptChanges", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("acceptChanges", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("acceptChanges", //NOI18N
                         new Class[] {Connection.class})),
-                    new MethodDescriptor(beanClass.getMethod("afterLast", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("beforeFirst", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("cancelRowUpdates", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("clearParameters", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("clearWarnings", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("close", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("columnUpdated", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("afterLast", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("beforeFirst", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("cancelRowUpdates", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("clearParameters", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("clearWarnings", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("close", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("columnUpdated", //NOI18N
                         new Class[] {int.class})),
-                    new MethodDescriptor(beanClass.getMethod("columnUpdated", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("columnUpdated", //NOI18N
                         new Class[] {String.class})),
-                    new MethodDescriptor(beanClass.getMethod("commit", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("createCopy", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("createCopyNoConstraints", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("createCopySchema", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("createShared", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("deleteRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("execute", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("findColumn", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("commit", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createCopy", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createCopyNoConstraints", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createCopySchema", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createShared", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("deleteRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("execute", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("findColumn", //NOI18N
                         new Class[] {String.class})),
-                    new MethodDescriptor(beanClass.getMethod("first", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getMetaData", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getKeyColumns", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getOriginal", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getOriginalRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getStatement", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("getWarnings", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("insertRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("isAfterLast", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("isBeforeFirst", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("isFirst", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("isLast", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("last", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("moveToCurrentRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("moveToInsertRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("next", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("nextPage", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("populate", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("first", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getMetaData", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getKeyColumns", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getOriginal", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getOriginalRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getStatement", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getWarnings", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("insertRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isAfterLast", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isBeforeFirst", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isFirst", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isLast", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("last", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("moveToCurrentRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("moveToInsertRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("next", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("nextPage", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("populate", //NOI18N
                         new Class[] {ResultSet.class})),
-                    new MethodDescriptor(beanClass.getMethod("previous", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("previousPage", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("refreshRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("relative", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("previous", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("previousPage", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("refreshRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("relative", //NOI18N
                         new Class[] {int.class})),
 
-                    new MethodDescriptor(beanClass.getMethod("release", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("restoreOriginal", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("rollback", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("rollback", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("release", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("restoreOriginal", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rollback", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rollback", //NOI18N
                         new Class[] {Savepoint.class})),
-                    new MethodDescriptor(beanClass.getMethod("rowDeleted", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("rowInserted", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("rowUpdated", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("setKeyColumns", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rowDeleted", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rowInserted", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rowUpdated", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("setKeyColumns", //NOI18N
                         new Class[] {int[].class})),
-                    new MethodDescriptor(beanClass.getMethod("setOriginalRow", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("toCollection", null)),//NOI18N
-                    new MethodDescriptor(beanClass.getMethod("toCollection", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("setOriginalRow", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("toCollection", null)),//NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("toCollection", //NOI18N
                         new Class[] {int.class})),
-                    new MethodDescriptor(beanClass.getMethod("toCollection", //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("toCollection", //NOI18N
                         new Class[] {String.class})),
-                    new MethodDescriptor(beanClass.getMethod("undoDelete", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("undoInsert", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("undoUpdate", null)), //NOI18N
-                    new MethodDescriptor(beanClass.getMethod("wasNull", null)) //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("undoDelete", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("undoInsert", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("undoUpdate", null)), //NOI18N
+                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("wasNull", null)) //NOI18N
 
-                };
-            }
+            };
 
             return methodDescriptors;
         } catch (NoSuchMethodException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
 
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            if (propertyDescriptors != null) {
-                return propertyDescriptors;
-            }
+            PropertyDescriptor[] propertyDescriptors;
             // command
             PropertyDescriptor command = new PropertyDescriptor(
-                "command", beanClass); //NOI18N
+                "command", CachedRowSetXImpl.class); //NOI18N
             command.setBound(true);
             // concurrency
             PropertyDescriptor concurrency = new PropertyDescriptor(
-                "concurrency", beanClass); //NOI18N
+                "concurrency", CachedRowSetXImpl.class); //NOI18N
             concurrency.setBound(true);
             concurrency.setPropertyEditorClass(
                 ConcurrencyPropertyEditor.class);
             //dataSourceName
             PropertyDescriptor dataSourceName =
-                new PropertyDescriptor("dataSourceName", beanClass); //NOI18N
+                new PropertyDescriptor("dataSourceName", CachedRowSetXImpl.class); //NOI18N
             dataSourceName.setBound(true);
             // EAT: The original prop editor
             dataSourceName.setPropertyEditorClass(
@@ -222,98 +214,98 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
             //     com.sun.jsfcl.std.reference.DataSourceNameReferenceData.NAME);
             // maxRows
             PropertyDescriptor maxRows = new PropertyDescriptor(
-                "maxRows", beanClass); //NOI18N
+                "maxRows", CachedRowSetXImpl.class); //NOI18N
             maxRows.setBound(true);
             // pageSize
             PropertyDescriptor pageSize = new PropertyDescriptor(
-                "pageSize", beanClass); //NOI18N
+                "pageSize", CachedRowSetXImpl.class); //NOI18N
             // password
             PropertyDescriptor password = new PropertyDescriptor(
-                "password", beanClass); //NOI18N
+                "password", CachedRowSetXImpl.class); //NOI18N
             password.setBound(true);
             // showDeleted
             PropertyDescriptor showDeleted = new PropertyDescriptor(
-                "showDeleted", beanClass); //NOI18N
+                "showDeleted", CachedRowSetXImpl.class); //NOI18N
             // transactionIsolation
             PropertyDescriptor transactionIsolation =
-                new PropertyDescriptor("transactionIsolation", beanClass); //NOI18N
+                new PropertyDescriptor("transactionIsolation", CachedRowSetXImpl.class); //NOI18N
             transactionIsolation.setBound(true);
             transactionIsolation.setPropertyEditorClass(
                 TransactionIsolationPropertyEditor.class);
             // tableName
             PropertyDescriptor tableName = new PropertyDescriptor(
-                "tableName", beanClass); //NOI18N
+                "tableName", CachedRowSetXImpl.class); //NOI18N
             // type
             PropertyDescriptor type =
-                new PropertyDescriptor("type", beanClass); //NOI18N
+                new PropertyDescriptor("type", CachedRowSetXImpl.class); //NOI18N
             type.setBound(true);
             type.setPropertyEditorClass(
                 TypePropertyEditor.class);
             // url
-            PropertyDescriptor url = new PropertyDescriptor("url", beanClass); //NOI18N
+            PropertyDescriptor url = new PropertyDescriptor("url", CachedRowSetXImpl.class); //NOI18N
             url.setBound(true);
             // username
             PropertyDescriptor username = new PropertyDescriptor(
-                "username", beanClass); //NOI18N
+                "username", CachedRowSetXImpl.class); //NOI18N
             username.setBound(true);
             // catalogName
             PropertyDescriptor catalogName = new PropertyDescriptor(
-                "catalogName", beanClass); //NOI18N
+                "catalogName", CachedRowSetXImpl.class); //NOI18N
             catalogName.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnCatalogNames
             PropertyDescriptor columnCatalogNames = new PropertyDescriptor(
-               "columnCatalogNames", beanClass); // NOI18N
+               "columnCatalogNames", CachedRowSetXImpl.class); // NOI18N
             columnCatalogNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             columnCatalogNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnSchemaNames
             PropertyDescriptor columnSchemaNames = new PropertyDescriptor(
-                "columnSchemaNames", beanClass); //NOI18N
+                "columnSchemaNames", CachedRowSetXImpl.class); //NOI18N
             columnSchemaNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnTableNames
             PropertyDescriptor columnTableNames = new PropertyDescriptor(
-                "columnTableNames", beanClass); //NOI18N
+                "columnTableNames", CachedRowSetXImpl.class); //NOI18N
             columnTableNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnNames
             PropertyDescriptor columnNames = new PropertyDescriptor(
-                "columnNames", beanClass); //NOI18N
+                "columnNames", CachedRowSetXImpl.class); //NOI18N
             columnNames.setValue(Constants.PropertyDescriptor.CATEGORY,
             CategoryDescriptors.ADVANCED);
             // insertableColumns
             PropertyDescriptor insertableColumns = new PropertyDescriptor(
-                "insertableColumns", beanClass); //NOI18N
+                "insertableColumns", CachedRowSetXImpl.class); //NOI18N
             insertableColumns.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // updatableColumns
             PropertyDescriptor updatableColumns = new PropertyDescriptor(
-                "updatableColumns", beanClass); //NOI18N
+                "updatableColumns", CachedRowSetXImpl.class); //NOI18N
             updatableColumns.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // printStatements
             PropertyDescriptor printStatements = new PropertyDescriptor(
-                "printStatements", beanClass); //NOI18N
+                "printStatements", CachedRowSetXImpl.class); //NOI18N
             printStatements.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);            
             // schemaName
             PropertyDescriptor schemaName = new PropertyDescriptor(
-                "schemaName", beanClass); //NOI18N
+                "schemaName", CachedRowSetXImpl.class); //NOI18N
             schemaName.setValue(Constants.PropertyDescriptor.CATEGORY, 
                 CategoryDescriptors.ADVANCED);
 
             // size
             PropertyDescriptor size = new PropertyDescriptor(
-                "size", beanClass, "size", null); //NOI18N
+                "size", CachedRowSetXImpl.class, "size", null); //NOI18N
 
 
             propertyDescriptors = new PropertyDescriptor[] {
                 command,
                 concurrency,
                 dataSourceName,
-                new PropertyDescriptor("fetchSize", beanClass), //NOI18N
+                new PropertyDescriptor("fetchSize", CachedRowSetXImpl.class), //NOI18N
                 maxRows,
                 pageSize,
                 password,
