@@ -120,25 +120,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      */
     public boolean canClose() {
         boolean result = super.canClose();
-
-        if (result) {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        // #23486: pane could not be initialized yet.
-                        if (pane != null) {
-                            Document doc = support.createStyledDocument(pane.getEditorKit());
-                            pane.setDocument(doc);
-                            pane.setEditorKit(null);
-                        }
-
-                        removeAll();
-                        initialized = false;
-                    }
-                }
-            );
-        }
-
         return result;
     }
 
@@ -276,6 +257,22 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * property change on their own.
      */
     protected void componentClosed() {
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                public void run() {
+                    // #23486: pane could not be initialized yet.
+                    if (pane != null) {
+                        Document doc = support.createStyledDocument(pane.getEditorKit());
+                        pane.setDocument(doc);
+                        pane.setEditorKit(null);
+                    }
+
+                    removeAll();
+                    initialized = false;
+                }
+            }
+        );
+
         super.componentClosed();
 
         CloneableEditorSupport ces = cloneableEditorSupport();
