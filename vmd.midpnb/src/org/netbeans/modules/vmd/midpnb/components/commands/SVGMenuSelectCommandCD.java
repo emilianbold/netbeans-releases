@@ -21,6 +21,7 @@
 package org.netbeans.modules.vmd.midpnb.components.commands;
 
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeNamePresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
@@ -74,6 +75,7 @@ public class SVGMenuSelectCommandCD extends ComponentDescriptor {
                 protected String generateDirectAccessCode() { return "SVGMenu.SELECT_COMMAND"; } // NOI18N
                 protected String generateTypeCode() { return null; }
             },
+            CodeNamePresenter.fixed (),
             // delete
             DeletePresenter.createIndeliblePresenter()
         );
