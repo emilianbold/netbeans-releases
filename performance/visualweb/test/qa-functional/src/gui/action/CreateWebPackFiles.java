@@ -180,13 +180,13 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
             objNode.select();
             objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
             objNode.select();             
-            new DeleteAction().performShortcut(objNode);
+            new DeleteAction().performPopup(objNode);
             String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
             new NbDialogOperator(dialogCaption).yes();
             
         } catch (TimeoutExpiredException timeoutExpiredException) {
             
-            log("Cleanup failed because of: "+timeoutExpiredException.getMessage() +" at: "+timeoutExpiredException.getStackTrace()[0] );
+            log("Cleanup failed because of: "+timeoutExpiredException.getMessage());
             pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
             return;
         }
