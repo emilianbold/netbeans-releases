@@ -22,6 +22,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -87,6 +89,8 @@ public class JavaFixAllImports {
                     Preferences prefs = NbPreferences.forModule(JavaFixAllImports.class).node(PREFS_KEY);
 
                     int index = 0;
+                    
+                    boolean shouldShowImportsPanel = false;
 
                     for (String key : notFilteredCandidates.keySet()) {
                         names[index] = key;
@@ -94,6 +98,8 @@ public class JavaFixAllImports {
                         List<TypeElement> unfilteredVars = notFilteredCandidates.get(key);
                         List<TypeElement> filteredVars = filteredCandidates.get(key);
 
+                        shouldShowImportsPanel |= unfilteredVars.size() > 1;
+                        
                         if (!unfilteredVars.isEmpty()) {
                             variants[index] = new String[unfilteredVars.size()];
                             icons[index] = new Icon[variants[index].length];
@@ -139,27 +145,39 @@ public class JavaFixAllImports {
                         index++;
                     }
 
-                    FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
+                    boolean fixImports = false;
+                    String[] selections = null;
+                    boolean removeUnusedImports = true;
+                    
+                    if( shouldShowImportsPanel ) {
+                        FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
 
-                    panel.initPanel(names, variants, icons, defaults, prefs.getBoolean(KEY_REMOVE_UNUSED_IMPORTS, true));
+                        panel.initPanel(names, variants, icons, defaults, prefs.getBoolean(KEY_REMOVE_UNUSED_IMPORTS, true));
 
-                    DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_Title")); //NOI18N
-                    Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+                        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_Title")); //NOI18N
+                        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 
-                    d.setVisible(true);
+                        d.setVisible(true);
 
-                    d.setVisible(false);
-                    d.dispose();
+                        d.setVisible(false);
+                        d.dispose();
+                        fixImports = dd.getValue() == DialogDescriptor.OK_OPTION;
+                        selections = panel.getSelections();
+                        removeUnusedImports = panel.getRemoveUnusedImports();
+                    } else {
+                        fixImports = true;
+                        selections = defaults;
+                    }
 
-                    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                        boolean removeUnusedImports = panel.getRemoveUnusedImports();
+                    if ( fixImports ) {
                         
-                        prefs.putBoolean(KEY_REMOVE_UNUSED_IMPORTS, removeUnusedImports);
+                        if( shouldShowImportsPanel )
+                            prefs.putBoolean(KEY_REMOVE_UNUSED_IMPORTS, removeUnusedImports);
                         
                         //do imports:
                         List<String> toImport = new ArrayList<String>();
 
-                        for (String dn : panel.getSelections()) {
+                        for (String dn : selections) {
                             String fqn = displayName2FQN.get(dn);
                             TypeElement el = fqn2TE.get(fqn != null ? fqn : dn);
 
@@ -170,9 +188,11 @@ public class JavaFixAllImports {
                         
                         CompilationUnitTree cut = wc.getCompilationUnit();
                         
+                        boolean someImportsWereRemoved = false;
                         if (removeUnusedImports) {
                             //compute imports to remove:
                             List<TreePathHandle> unusedImports = SemanticHighlighter.computeUnusedImports(wc);
+                            someImportsWereRemoved = !unusedImports.isEmpty();
                             
                             // make the changes to the source
                             for (TreePathHandle handle : unusedImports) {
@@ -190,6 +210,18 @@ public class JavaFixAllImports {
                         
                         for (String fqn : toImport) {
                             SourceUtils.resolveImport(wc, context, fqn);
+                        }
+                        if( !shouldShowImportsPanel ) {
+                            String statusText;
+                            if( toImport.isEmpty() && !someImportsWereRemoved ) {
+                                Toolkit.getDefaultToolkit().beep();
+                                statusText = NbBundle.getMessage( JavaFixAllImports.class, "MSG_NothingToFix" ); //NOI18N
+                            } else if( toImport.isEmpty() && someImportsWereRemoved ) {
+                                statusText = NbBundle.getMessage( JavaFixAllImports.class, "MSG_UnusedImportsRemoved" ); //NOI18N
+                            } else {
+                                statusText = NbBundle.getMessage( JavaFixAllImports.class, "MSG_ImportsFixed" ); //NOI18N
+                            }
+                            StatusDisplayer.getDefault().setStatusText( statusText );
                         }
                     }
                 } catch (IOException ex) {
