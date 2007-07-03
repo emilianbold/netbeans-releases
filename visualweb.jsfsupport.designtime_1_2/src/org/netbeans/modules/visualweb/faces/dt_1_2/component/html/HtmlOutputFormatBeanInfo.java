@@ -73,6 +73,8 @@ public class HtmlOutputFormatBeanInfo extends UIOutputBeanInfoBase {
         beanDescriptor.setValue(Constants.BeanDescriptor.TAG_NAME,"outputFormat");
         beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_PREFIX,"h");
         beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_URI,"http://java.sun.com/jsf/html");
+	beanDescriptor.setValue(Constants.BeanDescriptor.INLINE_EDITABLE_PROPERTIES,
+	        new String[] { "*value://span" }); // NOI18N
 
         return beanDescriptor;
 
