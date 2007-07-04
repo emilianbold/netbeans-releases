@@ -177,6 +177,7 @@ public final class FilterRepository {
             Preferences prefs = NbPreferences.forModule( FilterRepository.class );
             prefs = prefs.node( "Filters" ); //NOI18N
             prefs.clear();
+            prefs.putBoolean( "firstTimeStart", false ); //NOI18N
 
             prefs.putInt( "count", filters.size() ); //NOI18N
             prefs.putInt( "active", active ); //NOI18N
