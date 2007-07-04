@@ -1279,7 +1279,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     private String getCompAppWSDLFileName() {
         try {
-            Project jbiProject = getJBIProject();
+            Project jbiProject = getJBIProject(); 
             return JbiProjectHelper.getJbiProjectName(jbiProject) + ".wsdl"; // NOI18N
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -59,9 +59,12 @@ implements ActionListener, ListSelectionListener, DocumentListener {
             Collection<NamespaceEditor.Option> options)
     {
         mURIs = uris;
-        initComponents();
+        initComponents();        
+        initialize(currentTns, options);        
+        // Add document listeners after initialization!
+        // This is to make sure property change event caused by validation 
+        // checking doesn't get lost/filtered.
         initializeCustomListeners();
-        initialize(currentTns, options);
     }
 
     
@@ -104,8 +107,6 @@ implements ActionListener, ListSelectionListener, DocumentListener {
 
         uriList.addListSelectionListener(this);
         jScrollPane1.setViewportView(uriList);
-
-        otherNamespaceTextField.getDocument().addDocumentListener(this);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/compapp/casaeditor/properties/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(namespaceEntryLabel, bundle.getString("LBL_NamespaceEntry")); // NOI18N
@@ -195,6 +196,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
     private void initializeCustomListeners() {
         localNameTextField.getDocument().addDocumentListener(this);
         prefixTextField.getDocument().addDocumentListener(this);
+        otherNamespaceTextField.getDocument().addDocumentListener(this);
     }
     
     private void initialize(

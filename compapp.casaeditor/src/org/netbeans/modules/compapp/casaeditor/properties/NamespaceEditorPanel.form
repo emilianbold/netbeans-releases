@@ -159,9 +159,6 @@
           <ResourceString bundle="org/netbeans/modules/xml/schema/ui/basic/editors/Bundle.properties" key="HINT_OtherNamespace" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="otherNamespaceTextField.getDocument().addDocumentListener(this);"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="dummyLabel1">
     </Component>
