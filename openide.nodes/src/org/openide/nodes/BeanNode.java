@@ -289,7 +289,7 @@ public class BeanNode<T> extends AbstractNode {
     * @param info information about the bean
     */
     protected void createProperties(T bean, BeanInfo info) {
-        Descriptor d = computeProperties(bean, beanInfo);
+        Descriptor d = computeProperties(bean, info);
 
         Sheet sets = getSheet();
         Sheet.Set pset = Sheet.createPropertiesSet();
