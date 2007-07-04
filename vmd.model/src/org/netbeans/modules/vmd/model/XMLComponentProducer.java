@@ -89,11 +89,14 @@ public final class XMLComponentProducer extends ComponentProducer {
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent mainComponent) {
-        TypeID superTypeID = mainComponent.getComponentDescriptor ().getTypeDescriptor ().getSuperType ();
-        if (superTypeID != null) {
-            ComponentProducer producer = DocumentSupport.getComponentProducer (document, superTypeID.toString ());
-            if (producer != null)
-                producer.postInitialize (document, mainComponent);
+        ComponentDescriptor descriptor = document.getDescriptorRegistry ().getComponentDescriptor (getMainComponentTypeID ());
+        if (descriptor != null) {
+            TypeID superTypeID = descriptor.getTypeDescriptor ().getSuperType ();
+            if (superTypeID != null) {
+                ComponentProducer producer = DocumentSupport.getComponentProducer (document, superTypeID.toString ());
+                if (producer != null)
+                    producer.postInitialize (document, mainComponent);
+            }
         }
         return super.postInitialize (document, mainComponent);
     }
