@@ -94,13 +94,15 @@ public class RADComponentRenameRefactoringSupport {
             Iterator<Tree> it = members.iterator();
             while(it.hasNext()){
                 Tree tr = it.next();
-                Trees trees = info.getTrees();
-                TreePath path = trees.getPath(info.getCompilationUnit(), tr);
-                Element el = trees.getElement(path);
-                String sname = el.getSimpleName().toString();
-                if(sname.equals(this.member)){
-                    this.handle = TreePathHandle.create(path, info);
-                }
+                if (tr.getKind() == Tree.Kind.VARIABLE) {
+                    Trees trees = info.getTrees();
+                    TreePath path = trees.getPath(info.getCompilationUnit(), tr);
+                    Element el = trees.getElement(path);
+                    String sname = el.getSimpleName().toString();
+                    if(sname.equals(this.member)){
+                        this.handle = TreePathHandle.create(path, info);
+                    }
+                } // TODO also need to check local variables in initComponents
             }
             return null;
         }
