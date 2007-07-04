@@ -541,6 +541,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             back.setVisible(true);
             back.setEnabled(true);
             dialog.getRootPane().setDefaultButton(back);
+            if (details!=null) {
+                setPreferredSize(null);
+                dialog.pack();
+            }
         }
         cancel.setEnabled(true); 
         previewButton.setEnabled(!problem.isFatal());
