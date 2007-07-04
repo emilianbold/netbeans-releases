@@ -276,6 +276,9 @@ public class DerbyOptions {
                     JDBCDriverManager.getDefault().removeDriver(driver);
                 } catch (DatabaseException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    // better to return if the existing driver could not be registered
+                    // otherwise we would register yet another one
+                    return;
                 }
             }
         }
