@@ -24,11 +24,11 @@ import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -50,9 +50,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceMa
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
-import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
@@ -343,12 +341,15 @@ public class DesignTimeDataSourceHelper {
     public DesignTimeDataSource getDataSourceFromFullName(String fullName)
         throws NamingException {
                
+        Project currentProj = CurrentProject.getInstance().getProject();
         Context ctx = null;
-        Context existingCtx = ProjectContextManager.getInstance().lookup(CurrentProject.getInstance().getProject());       
-        if (existingCtx == null)  
-            ctx.getEnvironment();
-                
-        ctx = ProjectContextManager.getInstance().lookup(CurrentProject.getInstance().getProject());
+        Context existingCtx = ProjectContextManager.getInstance().lookup(currentProj);                 
+        ctx = existingCtx;
+        
+        if (ctx == null) {
+            Hashtable environment = new Hashtable();
+            ctx = ProjectContextManager.getInstance().createInitialContext(currentProj, new Hashtable());
+        }
         Object obj = ctx.lookup(fullName);
         if (obj instanceof DesignTimeDataSource) {
             return (DesignTimeDataSource)obj;
