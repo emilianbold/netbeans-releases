@@ -208,7 +208,7 @@ public final class ComponentInstaller {
                     PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + constructorIndex + "#" + index, true, parameter);
                     item.addProperty (property);
                     properties.add (property.getName ());
-                    String displayName = parameter.getSimpleName () + " (" + constructorIndex + ". constructor - " + index + ". parameter)";
+                    String displayName = parameter.getSimpleName () + " (" + constructorIndex + ". constructor - " + index + ". parameter defined in " + fqn + "class)";
                     item.addPresenter (new MidpPropertyPresenterSerializer (displayName, property));
                     index ++;
                 }
@@ -228,7 +228,7 @@ public final class ComponentInstaller {
                 PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + name, false, parameter);
                 item.addProperty (property);
                 properties.add (property.getName ());
-                String displayName = parameter.getSimpleName () + " (" + name + " method parameter)";
+                String displayName = parameter.getSimpleName () + " (" + name + " method parameter defined in " + fqn + "class)";
                 item.addPresenter (new MidpPropertyPresenterSerializer (displayName, property));
 
                 item.addPresenter (new MidpSetterPresenterSerializer (name, properties));
