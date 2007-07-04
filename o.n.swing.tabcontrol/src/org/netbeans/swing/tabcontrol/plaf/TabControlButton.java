@@ -20,7 +20,6 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.event.ActionEvent;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -36,7 +35,7 @@ import org.netbeans.swing.tabcontrol.event.TabActionEvent;
  * 
  * @author S. Aubrecht
  */
-abstract class TabControlButton extends JButton {
+public abstract class TabControlButton extends JButton {
     
     public static final int ID_CLOSE_BUTTON = 1;
     public static final int ID_PIN_BUTTON = 2;
