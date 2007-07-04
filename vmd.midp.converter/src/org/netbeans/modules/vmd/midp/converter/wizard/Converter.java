@@ -65,6 +65,8 @@ public class Converter {
             serializer.waitDocumentLoaded ();
             final DesignDocument document = serializer.getDocument ();
 
+            ConverterCustom.loadItemsToRegistry (components, document);
+
             document.getTransactionManager ().writeAccess (new Runnable() {
                 public void run () {
                     convert (errors, components, document);
@@ -137,8 +139,6 @@ public class Converter {
 
     private static void convert (ArrayList<String> errors, List<ConverterItem> items, DesignDocument document) {
         HashMap<String,ConverterItem> id2item = new HashMap<String, ConverterItem> ();
-
-        ConverterCustom.loadItemsToRegistry (items, document);
 
         for (ConverterItem item : items)
             id2item.put (item.getID (), item);

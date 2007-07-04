@@ -36,14 +36,57 @@ public class ConverterUtil {
     static Boolean getBoolean (String value) {
         if (value == null)
             return null;
+        value = decryptStringFromJavaCode (value);
         return "true".equalsIgnoreCase (value); // NOI18N
+    }
+
+    static Character getChar (String value) {
+        value = decryptStringFromJavaCode (value);
+        return value.length () > 0 ? value.charAt (0) : null;
+    }
+
+    static Byte getByte (String value) {
+        if (value == null)
+            return null;
+        value = decryptStringFromJavaCode (value);
+        try {
+            return Byte.parseByte (value);
+        } catch (NumberFormatException e) {
+            Debug.warning (e);
+            return null;
+        }
+    }
+
+    static Short getShort (String value) {
+        if (value == null)
+            return null;
+        value = decryptStringFromJavaCode (value);
+        try {
+            return Short.parseShort (value);
+        } catch (NumberFormatException e) {
+            Debug.warning (e);
+            return null;
+        }
     }
 
     static Integer getInteger (String value) {
         if (value == null)
             return null;
+        value = decryptStringFromJavaCode (value);
         try {
             return Integer.parseInt (value);
+        } catch (NumberFormatException e) {
+            Debug.warning (e);
+            return null;
+        }
+    }
+
+    static Long getLong (String value) {
+        if (value == null)
+            return null;
+        value = decryptStringFromJavaCode (value);
+        try {
+            return Long.parseLong (value);
         } catch (NumberFormatException e) {
             Debug.warning (e);
             return null;
@@ -53,8 +96,21 @@ public class ConverterUtil {
     static Float getFloat (String value) {
         if (value == null)
             return null;
+        value = decryptStringFromJavaCode (value);
         try {
             return Float.parseFloat (value);
+        } catch (NumberFormatException e) {
+            Debug.warning (e);
+            return null;
+        }
+    }
+
+    static Double getDouble (String value) {
+        if (value == null)
+            return null;
+        value = decryptStringFromJavaCode (value);
+        try {
+            return Double.parseDouble (value);
         } catch (NumberFormatException e) {
             Debug.warning (e);
             return null;
@@ -186,33 +242,88 @@ public class ConverterUtil {
             component.writeProperty (propertyName, propertyValue);
     }
 
-    public static void convertInteger (DesignComponent component, String propertyName, String value) {
+    static void convertByte (DesignComponent component, String propertyName, String value) {
+        Byte b = getByte (value);
+        if (b != null)
+            component.writeProperty (propertyName, MidpTypes.createByteValue (b));
+    }
+    static void convertShort (DesignComponent component, String propertyName, String value) {
+        Short s = getShort (value);
+        if (s != null)
+            component.writeProperty (propertyName, MidpTypes.createShortValue (s));
+    }
+
+    static void convertInteger (DesignComponent component, String propertyName, String value) {
         Integer integer = getInteger (value);
         if (integer != null)
             component.writeProperty (propertyName, MidpTypes.createIntegerValue (integer));
     }
+    static void convertLong (DesignComponent component, String propertyName, String value) {
+        Long l = getLong (value);
+        if (l != null)
+            component.writeProperty (propertyName, MidpTypes.createLongValue (l));
+    }
 
-    public static void convertFloat (DesignComponent component, String propertyName, String value) {
+    static void convertFloat (DesignComponent component, String propertyName, String value) {
         Float fl = getFloat (value);
         if (fl != null)
             component.writeProperty (propertyName, MidpTypes.createFloatValue (fl));
     }
 
-    public static void convertString (DesignComponent component, String propertyName, String value) {
+    static void convertDouble (DesignComponent component, String propertyName, String value) {
+        Double d = getDouble (value);
+        if (d != null)
+            component.writeProperty (propertyName, MidpTypes.createDoubleValue (d));
+    }
+
+    static void convertChar (DesignComponent component, String propertyName, String value) {
+        Character ch = getChar (value);
+        if (ch != null)
+            component.writeProperty (propertyName, MidpTypes.createCharValue (ch));
+    }
+
+    static void convertString (DesignComponent component, String propertyName, String value) {
+        value = decryptStringFromJavaCode (value);
         if (value != null)
             component.writeProperty (propertyName, MidpTypes.createStringValue (value));
     }
 
-    public static void convertBoolean (DesignComponent component, String propertyName, String value) {
+    static void convertBoolean (DesignComponent component, String propertyName, String value) {
         Boolean bool = getBoolean (value);
         if (bool != null)
             component.writeProperty (propertyName, MidpTypes.createBooleanValue (bool));
     }
 
-    public static void convertConverterItemComponent (DesignComponent component, String propertyName, HashMap<String, ConverterItem> id2item, String value) {
+    static void convertConverterItemComponent (DesignComponent component, String propertyName, HashMap<String, ConverterItem> id2item, String value) {
         DesignComponent ref = Converter.convertConverterItemComponent (id2item, value, component.getDocument ());
         if (ref != null)
             component.writeProperty (propertyName, PropertyValue.createComponentReference (ref));
+    }
+
+    static void convertToPropertyValue (DesignComponent component, String propertyName, TypeID propertyType, String value) {
+        if (MidpTypes.TYPEID_BOOLEAN.equals (propertyType))
+            convertBoolean (component, propertyName, value);
+        else if (MidpTypes.TYPEID_BYTE.equals (propertyType))
+            convertByte (component, propertyName, value);
+        else if (MidpTypes.TYPEID_CHAR.equals (propertyType))
+            component.writeProperty (propertyName, MidpTypes.createCharValue (value.charAt (0)));
+        else if (MidpTypes.TYPEID_DOUBLE.equals (propertyType))
+            convertDouble (component, propertyName, value);
+        else if (MidpTypes.TYPEID_FLOAT.equals (propertyType))
+            convertFloat (component, propertyName, value);
+        else if (MidpTypes.TYPEID_INT.equals (propertyType))
+            convertInteger (component, propertyName, value);
+        else if (MidpTypes.TYPEID_JAVA_CODE.equals (propertyType)) {
+            if (value != null)
+                component.writeProperty (propertyName, MidpTypes.createJavaCodeValue (value));
+        } else if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (propertyType))
+            convertString (component, propertyName, value);
+        else if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (propertyType))
+            convertString (component, propertyName, value);
+        else if (MidpTypes.TYPEID_LONG.equals (propertyType))
+            convertLong (component, propertyName, value);
+        else if (MidpTypes.TYPEID_SHORT.equals (propertyType))
+            convertShort (component, propertyName, value);
     }
 
 }

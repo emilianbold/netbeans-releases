@@ -20,10 +20,11 @@
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.items.*;
+import org.netbeans.modules.vmd.midp.components.displayables.*;
 import org.netbeans.modules.vmd.midp.palette.wizard.ComponentInstaller;
 import org.openide.util.Utilities;
 
@@ -64,28 +65,93 @@ public class ConverterCustom {
         return Utilities.isJavaIdentifier (item.getID ())  &&  MidpTypes.isValidFQNClassName (item.getTypeID ());
     }
 
-
+    // Created: YES, Adds: NO
     static void convertCustom (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-//        TypeID typeID = new TypeID (TypeID.Kind.COMPONENT, item.getTypeID ());
-//        document.createComponent (typeID);
-//
-//        DescriptorRegistry registry = document.getDescriptorRegistry ();
-//        ComponentDescriptor descriptor = registry.getComponentDescriptor (typeID);
-//        ComponentDescriptor desc = descriptor;
-//        while (desc != null) {
-//            if (convertCustomParent (desc.getTypeDescriptor ().getThisType (), id2item, item, document)) {
-//                convertCustomProperties (id2item, item, document);
-////                 TODO
-//            }
-//            desc = desc.getSuperDescriptor ();
-//        }
+        TypeID typeID = new TypeID (TypeID.Kind.COMPONENT, item.getTypeID ());
+        ComponentProducer producer = DocumentSupport.getComponentProducer (document, typeID.toString ());
+        if (producer == null)
+            return;
+
+        DesignComponent component = document.createComponent (producer.getMainComponentTypeID ());
+        producer.postInitialize (document, component);
+        convertCustomProperties (id2item, item, component, component.getComponentDescriptor ());
     }
 
-//    private static boolean convertCustomParent (TypeID parentTypeID, HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-//        if (DisplayableCD.TYPEID.equals (parentTypeID)) {
-//            ConverterDisplayables.convertDisplayable ();
-//        }
-//        return false; // TODO
-//    }
+    // Created: NO, Adds: NO
+    private static void convertCustomProperties (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent component, ComponentDescriptor descriptor) {
+        if (descriptor == null)
+            return;
+        TypeID typeID = descriptor.getTypeDescriptor ().getThisType ();
+        if (DisplayableCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertDisplayable (id2item, item, component);
+        else if (CanvasCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertCanvas (id2item, item, component);
+        else if (ScreenCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertScreen (id2item, item, component);
+        else if (AlertCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertAlertCore (id2item, item, component);
+        else if (FormCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertFormCore (id2item, item, component);
+        else if (ListCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertListCore (id2item, item, component);
+        else if (TextBoxCD.TYPEID.equals (typeID))
+            ConverterDisplayables.convertTextBoxCore (id2item, item, component);
+
+        else if (ItemCD.TYPEID.equals (typeID))
+            ConverterItems.convertItem (id2item, item, component);
+        else if (CustomItemCD.TYPEID.equals (typeID))
+            ConverterItems.convertCustomItem (id2item, item, component);
+        else if (DateFieldCD.TYPEID.equals (typeID))
+            ConverterItems.convertDateFieldCore (id2item, item, component);
+        else if (ChoiceGroupCD.TYPEID.equals (typeID))
+            ConverterItems.convertChoiceGroupCore (id2item, item, component);
+        else if (GaugeCD.TYPEID.equals (typeID))
+            ConverterItems.convertGaugeCore (id2item, item, component);
+        else if (ImageItemCD.TYPEID.equals (typeID))
+            ConverterItems.convertImageItemCore (id2item, item, component);
+        else if (SpacerCD.TYPEID.equals (typeID))
+            ConverterItems.convertSpacerCore (id2item, item, component);
+        else if (StringItemCD.TYPEID.equals (typeID))
+            ConverterItems.convertStringItemCore (id2item, item, component);
+        else if (TextFieldCD.TYPEID.equals (typeID))
+            ConverterItems.convertTextFieldCore (id2item, item, component);
+
+        else {
+            convertCustomProperties (id2item, item, component, descriptor.getSuperDescriptor ());
+
+            String fqn = MidpTypes.getFQNClassName (typeID);
+            for (PropertyDescriptor property : descriptor.getPropertyDescriptors ()) {
+                String prefix = fqn + "#"; // NOI18N
+                String name = property.getName ();
+                if (! name.startsWith (prefix))
+                    continue;
+                name = name.substring (prefix.length ());
+                int index = name.indexOf ('#');
+                if (index >= 0) { // NOI18N
+                    prefix = "%%" + name.substring (0, index) + "_" + name.substring (index + 1) + "_"; // NOI18N
+                    String found = null;
+                    for (String s : item.getPropertyNames ()) {
+                        if (s.startsWith (prefix)) {
+                            found = s;
+                            break;
+                        }
+                    }
+                    if (found != null)
+                        ConverterUtil.convertToPropertyValue (component, property.getName (), property.getType (), item.getPropertyValue (found));
+                } else {
+                    if (! name.startsWith ("set")) // NOI18N
+                        continue;
+                    name = name.substring ("set".length ()); // NOI18N
+                    if (item.isPropertyValueSet ("%" + name)) // NOI18N
+                        ConverterUtil.convertToPropertyValue (component, property.getName (), property.getType (), item.getPropertyValue ("%" + name)); // NOI18N
+                    else if (name.length () > 0) {
+                        name = Character.toLowerCase (name.charAt (0)) + name.substring (1);
+                        if (item.isPropertyValueSet ("%" + name)) // NOI18N
+                            ConverterUtil.convertToPropertyValue (component, property.getName (), property.getType (), item.getPropertyValue ("%" + name)); // NOI18N
+                    }
+                }
+            }
+        }
+    }
 
 }

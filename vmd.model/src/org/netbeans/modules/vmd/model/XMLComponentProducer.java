@@ -84,7 +84,6 @@ public final class XMLComponentProducer extends ComponentProducer {
                 XMLComponentDescriptor.getAttributeValue (rootNode, LARGE_ICON_ATTR)
         );
 
-
         return new XMLComponentProducer (producerID, TypeID.createFrom (typeID), paletteDescriptor);
     }
 

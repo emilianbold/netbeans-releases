@@ -40,7 +40,7 @@ import java.util.List;
 public class ConverterItems {
 
     // Created: NO, Adds: NO
-    private static void convertItem (HashMap<String, ConverterItem> id2item, ConverterItem itemItem, DesignComponent itemComponent) {
+    static void convertItem (HashMap<String, ConverterItem> id2item, ConverterItem itemItem, DesignComponent itemComponent) {
         Converter.convertClass (itemItem, itemComponent);
         DesignDocument document = itemComponent.getDocument ();
 
@@ -82,7 +82,11 @@ public class ConverterItems {
 
     // Created: YES, Adds: NO
     static void convertGauge (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent gauge = document.createComponent (GaugeCD.TYPEID);
+        convertGaugeCore (id2item, item, document.createComponent (GaugeCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    static void convertGaugeCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent gauge) {
         convertItem (id2item, item, gauge);
 
         ConverterUtil.convertBoolean (gauge, GaugeCD.PROP_INTERACTIVE, item.getPropertyValue ("interactive")); // NOI18N
@@ -100,7 +104,11 @@ public class ConverterItems {
 
     // Created: YES, Adds: NO
     static void convertSpacer (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent spacer = document.createComponent (SpacerCD.TYPEID);
+        convertSpacerCore (id2item, item, document.createComponent (SpacerCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    static void convertSpacerCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent spacer) {
         convertItem (id2item, item, spacer);
 
         ConverterUtil.convertInteger (spacer, SpacerCD.PROP_MIN_WIDTH, item.getPropertyValue ("minWidth")); // NOI18N
@@ -109,7 +117,11 @@ public class ConverterItems {
 
     // Created: YES, Adds: NO
     static void convertStringItem (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent stringComponent = document.createComponent (StringItemCD.TYPEID);
+        convertStringItemCore (id2item, item, document.createComponent (StringItemCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    static void convertStringItemCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent stringComponent) {
         convertItem (id2item, item, stringComponent);
 
         ConverterUtil.convertStringWithUserCode (stringComponent, StringItemCD.PROP_TEXT, item.getPropertyValue ("text")); // NOI18N
@@ -117,17 +129,21 @@ public class ConverterItems {
         ConverterUtil.convertConverterItemComponent (stringComponent, StringItemCD.PROP_FONT, id2item, item.getPropertyValue ("font"));// NOI18N
 
         String apperanceMode = item.getPropertyValue ("appearanceMode");// NOI18N
-        if ("PLAIN".equals (apperanceMode))
+        if ("PLAIN".equals (apperanceMode)) // NOI18N
             stringComponent.writeProperty (ItemCD.PROP_APPEARANCE_MODE, MidpTypes.createIntegerValue (ItemCD.VALUE_PLAIN));
-        else if ("BUTTON".equals (apperanceMode))
+        else if ("BUTTON".equals (apperanceMode)) // NOI18N
             stringComponent.writeProperty (ItemCD.PROP_APPEARANCE_MODE, MidpTypes.createIntegerValue (ItemCD.VALUE_BUTTON));
-        else if ("HYPERLINK".equals (apperanceMode))
+        else if ("HYPERLINK".equals (apperanceMode)) // NOI18N
             stringComponent.writeProperty (ItemCD.PROP_APPEARANCE_MODE, MidpTypes.createIntegerValue (ItemCD.VALUE_HYPERLINK));
     }
 
     // Created: YES, Adds: NO
     static void convertImageItem (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent imageComponent = document.createComponent (ImageItemCD.TYPEID);
+        convertImageItemCore (id2item, item, document.createComponent (ImageItemCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    static void convertImageItemCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent imageComponent) {
         convertItem (id2item, item, imageComponent);
 
         ConverterUtil.convertStringWithUserCode (imageComponent, ImageItemCD.PROP_ALT_TEXT, item.getPropertyValue ("altText")); // NOI18N
@@ -135,17 +151,21 @@ public class ConverterItems {
         ConverterUtil.convertConverterItemComponent (imageComponent, ImageItemCD.PROP_IMAGE, id2item, item.getPropertyValue ("image"));// NOI18N
 
         String apperanceMode = item.getPropertyValue ("appearanceMode");// NOI18N
-        if ("PLAIN".equals (apperanceMode))
+        if ("PLAIN".equals (apperanceMode)) // NOI18N
             imageComponent.writeProperty (ItemCD.PROP_APPEARANCE_MODE, MidpTypes.createIntegerValue (ItemCD.VALUE_PLAIN));
-        else if ("BUTTON".equals (apperanceMode))
+        else if ("BUTTON".equals (apperanceMode)) // NOI18N
             imageComponent.writeProperty (ItemCD.PROP_APPEARANCE_MODE, MidpTypes.createIntegerValue (ItemCD.VALUE_BUTTON));
-        else if ("HYPERLINK".equals (apperanceMode))
+        else if ("HYPERLINK".equals (apperanceMode)) // NOI18N
             imageComponent.writeProperty (ItemCD.PROP_APPEARANCE_MODE, MidpTypes.createIntegerValue (ItemCD.VALUE_HYPERLINK));
     }
 
     // Created: YES, Adds: NO
     static void convertTextField (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent textField = document.createComponent (TextFieldCD.TYPEID);
+        convertTextFieldCore (id2item, item, document.createComponent (TextFieldCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    static void convertTextFieldCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent textField) {
         convertItem (id2item, item, textField);
 
         ConverterUtil.convertInteger (textField, TextFieldCD.PROP_CONSTRAINTS, item.getPropertyValue ("constraints")); // NOI18N
@@ -156,21 +176,29 @@ public class ConverterItems {
 
     // Created: YES, Adds: NO
     static void convertDateField (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent dateField = document.createComponent (DateFieldCD.TYPEID);
+        convertDateFieldCore (id2item, item, document.createComponent (DateFieldCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    static void convertDateFieldCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent dateField) {
         convertItem (id2item, item, dateField);
 
         String inputMode = item.getPropertyValue ("inputMode");// NOI18N
-        if ("DATE".equals (inputMode))
+        if ("DATE".equals (inputMode)) // NOI18N
             dateField.writeProperty (DateFieldCD.PROP_INPUT_MODE, MidpTypes.createIntegerValue (DateFieldCD.VALUE_DATE));
-        else if ("DATE_TIME".equals (inputMode))
+        else if ("DATE_TIME".equals (inputMode)) // NOI18N
             dateField.writeProperty (DateFieldCD.PROP_INPUT_MODE, MidpTypes.createIntegerValue (DateFieldCD.VALUE_DATE_TIME));
-        else if ("TIME".equals (inputMode))
+        else if ("TIME".equals (inputMode)) // NOI18N
             dateField.writeProperty (DateFieldCD.PROP_INPUT_MODE, MidpTypes.createIntegerValue (DateFieldCD.VALUE_TIME));
     }
 
     // Created: YES, Adds: NO
     public static void convertChoiceGroup (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        DesignComponent choiceGroup = document.createComponent (ChoiceGroupCD.TYPEID);
+        convertChoiceGroupCore (id2item, item, document.createComponent (ChoiceGroupCD.TYPEID));
+    }
+
+    // Created: NO, Adds: NO
+    public static void convertChoiceGroupCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent choiceGroup) {
         convertItem (id2item, item, choiceGroup);
 
         String choiceTypeValue = item.getPropertyValue ("choiceType"); // NOI18N
@@ -194,9 +222,9 @@ public class ConverterItems {
         ArrayList<String> elementsList = item.getContainerPropertyValue ("elements"); // NOI18N
         if (elementsList != null)
             for (String elementValue : elementsList) {
-                DesignComponent choiceElement = Converter.convertConverterItemComponent (id2item, elementValue, document);
+                DesignComponent choiceElement = Converter.convertConverterItemComponent (id2item, elementValue, choiceGroup.getDocument ());
                 if (choiceElement == null) {
-                    Debug.warning ("ChoiceElement not found", elementValue);
+                    Debug.warning ("ChoiceElement not found", elementValue); // NOI18N
                     continue;
                 }
                 choiceGroup.addComponent (choiceElement);

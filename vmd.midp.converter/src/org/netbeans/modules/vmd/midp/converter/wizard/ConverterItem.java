@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * @author David Kaspar
@@ -97,6 +98,10 @@ class ConverterItem {
 
     public String toString () {
         return "ConverterItem: UID: "+ uid + ", ID: " + id + ", TypeID: " + typeid;
+    }
+
+    public Set<String> getPropertyNames () {
+        return properties.keySet ();
     }
 
 }

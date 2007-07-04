@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.midp.converter.wizard;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Exceptions;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -61,7 +62,8 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         finishMessage.setVisible(false);
         startButton.setEnabled(true);
         descriptor.setOptions(new Object[] { startButton, DialogDescriptor.CANCEL_OPTION });
-        outputFileName.requestFocusInWindow ();
+        outputFileName.selectAll ();
+        outputFileName.requestFocus ();
     }
     
     public void switchToStarted () {
@@ -166,7 +168,11 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     }
 
     public void run () {
-        Converter.convert (inputPrimaryFile, inputSecondaryFile, outputFileName.getText ());
+        try {
+            Converter.convert (inputPrimaryFile, inputSecondaryFile, outputFileName.getText ());
+        } catch (Exception e) {
+            Exceptions.printStackTrace (e);
+        }
         SwingUtilities.invokeLater (new Runnable() {
             public void run () {
                 switchToFinished ();
