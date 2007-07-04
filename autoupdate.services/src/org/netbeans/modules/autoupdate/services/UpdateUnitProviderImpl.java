@@ -117,8 +117,8 @@ public final class UpdateUnitProviderImpl {
      */
     public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
         boolean res = false;
-        ProgressHandle ownHandle = handle;
-        if (ownHandle == null) {
+        ProgressHandle ownHandle = null;
+        if (handle == null) {
             CancellableProgress cancelProgress = new CancellableProgress();
             ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"), cancelProgress);
             cancelProgress.setHandle(ownHandle);

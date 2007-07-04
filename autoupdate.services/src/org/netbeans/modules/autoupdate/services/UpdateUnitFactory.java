@@ -94,7 +94,6 @@ public class UpdateUnitFactory {
         
         // prepare items accessible in provider
         Collection<UpdateItem> itemsFromProvider = null;
-        Collection<UpdateItem> artificialItems = null;
         Map<ModuleItem, String> possibleStandaloneModules = new HashMap<ModuleItem, String> ();
         Map<ModuleItem, String> realStandaloneModules = new HashMap<ModuleItem, String> ();
         Set<String> includedModules = new HashSet<String> ();

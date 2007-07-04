@@ -943,12 +943,14 @@ public class UnitTab extends javax.swing.JPanel {
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.LOCAL_DOWNLOAD);
             } finally {
-                fireUpdataUnitChange ();
-                if (!wizardFinished) {
+                // fireUpdataUnitChange ();
+                if (wizardFinished) {
+                    reloadTask (false).schedule (10);
+                } else {
                     UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
+                    restoreSelectedRow(row);                
+                    refreshState ();
                 }
-                restoreSelectedRow(row);                
-                refreshState ();
                 focusTable ();
             }
         }

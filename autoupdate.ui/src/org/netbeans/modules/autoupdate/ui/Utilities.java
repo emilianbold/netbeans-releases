@@ -172,7 +172,7 @@ public class Utilities {
         logger.log(Level.FINER, "makeAvailableCategories (" + units.size () + ") returns " + res.size ());
 
         return res;
-        };
+    };
 
     public static void showURL (URL href) {
         HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
@@ -232,7 +232,7 @@ public class Utilities {
     // Call PluginManagerUI.updateUnitsChanged() after refresh to reflect change in model
     public static void presentRefreshProviders (PluginManagerUI manager, boolean force) {
         assert ! SwingUtilities.isEventDispatchThread () : "Don't presentRefreshProviders() call in EQ!";
-        doRefreshProviders (UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true), manager, force);
+        doRefreshProviders (null, manager, force);
     }
     
     private static void doRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
@@ -244,8 +244,12 @@ public class Utilities {
             manager.setProgressComponent (detailLabel, progressComp);
             handle.setInitialDelay (0);
             handle.start ();
-            for (UpdateUnitProvider p : providers) {
-                p.refresh (handle, force);
+            if (providers == null) {
+                UpdateUnitProviderFactory.getDefault ().refreshProviders (handle, force);
+            } else {
+                for (UpdateUnitProvider p : providers) {
+                    p.refresh (handle, force);
+                }
             }
         } catch (IOException ioe) {
             logger.log (Level.FINE, ioe.getMessage(), ioe);
