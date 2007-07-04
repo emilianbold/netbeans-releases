@@ -171,6 +171,9 @@ public class ASPanel extends DestinationPanel {
                 DEFAULT_MINIMUM_JDK_VERSION);
         setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
+        setProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
+                DEFAULT_VENDOR_JDK_ALLOWED);
+        
     }
     
     @Override
@@ -194,6 +197,9 @@ public class ASPanel extends DestinationPanel {
         jdkLocationPanel.setProperty(
                 JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+        jdkLocationPanel.setProperty(
+                JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
+                getProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY));
         
         if (getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
             jdkLocationPanel.setProperty(
@@ -1236,4 +1242,7 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_MAXIMUM_JDK_VERSION =
             ResourceUtils.getString(ASPanel.class,
             "AS.maximum.jdk.version"); // NOI18N
+    public static final String DEFAULT_VENDOR_JDK_ALLOWED = 
+            ResourceUtils.getString(ASPanel.class,
+            "AS.vendor.jdk.allowed"); // NOI18N
 }
