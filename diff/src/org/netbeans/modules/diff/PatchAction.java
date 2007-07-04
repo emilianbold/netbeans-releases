@@ -446,6 +446,13 @@ public class PatchAction extends NodeAction {
         for (int i = 0; i < files.size(); i++) {
             FileObject file = files.get(i);
             FileObject backup = backups.get(file);
+            if (backup == null) {
+                try {
+                    backup = FileUtil.toFileObject(FileUtil.normalizeFile(File.createTempFile("diff-empty-backup", "")));
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
             DiffAction.performAction(backup, file, file);
         }
     }
@@ -462,25 +469,29 @@ public class PatchAction extends NodeAction {
             FileObject targetFileObject = files.get(i);
             FileObject backup= backups.get(targetFileObject);
 
-            // delete files that become empry
+            // delete files that become empty and they have a backup file
             if (targetFileObject.getSize() == 0) {
-                try {
-                    targetFileObject.delete();
-                } catch (IOException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Patch can not delete file, skipping...");
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                if (backup != null && backup.isValid() && backup.getSize() > 0) {
+                    try {
+                        targetFileObject.delete();
+                    } catch (IOException e) {
+                        ErrorManager err = ErrorManager.getDefault();
+                        err.annotate(e, "Patch can not delete file, skipping...");
+                        err.notify(ErrorManager.INFORMATIONAL, e);
+                    }
                 }
             }
 
-            try {
-                backup.delete();
-            }
-            catch (IOException ex) {
-                filenames.append(FileUtil.getFileDisplayName(backup));
-                filenames.append('\n');
-                exceptions.append(ex.getLocalizedMessage());
-                exceptions.append('\n');
+            if (backup != null && backup.isValid()) {
+                try {
+                    backup.delete();
+                }
+                catch (IOException ex) {
+                    filenames.append(FileUtil.getFileDisplayName(backup));
+                    filenames.append('\n');
+                    exceptions.append(ex.getLocalizedMessage());
+                    exceptions.append('\n');
+                }
             }
         }
         if (filenames.length()>0)

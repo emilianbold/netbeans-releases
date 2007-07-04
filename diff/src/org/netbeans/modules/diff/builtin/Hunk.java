@@ -26,6 +26,9 @@ import java.util.*;
  * @author Maros Sandor
  */
 public final class Hunk {
+    
+    public static final String ENDING_NEWLINE = "\\ No newline at end of file";
+    
     public int baseStart;
     public int baseCount;
     public int modifiedStart; 

@@ -130,14 +130,12 @@ public final class ContextualPatch {
         }
         if (!dryRun) {
             backup(patch.targetFile);
-            writeFile(patch.targetFile, target);
+            writeFile(patch, target);
         }
     }
 
     private void backup(File target) throws IOException {
-        if (!target.exists()) {
-            copyStreamsCloseAll(new FileOutputStream(computeBackup(target)), new ByteArrayInputStream(new byte[0]));
-        } else {
+        if (target.exists()) {
             copyStreamsCloseAll(new FileOutputStream(computeBackup(target)), new FileInputStream(target));
         }
     }
@@ -156,11 +154,17 @@ public final class ContextualPatch {
         reader.close();
     }
 
-    private void writeFile(File target, List<String> lines) throws FileNotFoundException, UnsupportedEncodingException {
-        PrintWriter w = new PrintWriter(target, getEncoding(target).name());
+    private void writeFile(SinglePatch patch, List<String> lines) throws FileNotFoundException, UnsupportedEncodingException {
+        patch.targetFile.getParentFile().mkdirs();
+        PrintWriter w = new PrintWriter(patch.targetFile, getEncoding(patch.targetFile).name());
         try {
-            for (String line : lines) {
+            if (lines.size() == 0) return;
+            for (String line : lines.subList(0, lines.size() - 1)) {
                 w.println(line);
+            }
+            w.print(lines.get(lines.size() - 1));
+            if (!patch.noEndingNewline) {
+                w.println();
             }
         } finally {
             w.close();
@@ -489,6 +493,8 @@ public final class ContextualPatch {
                 hunks.add(hunk);
             } else if (c == ' ' || c == '+' || c == '-') {
                 hunk.lines.add(line);
+            } else if (line.equals(Hunk.ENDING_NEWLINE)) {
+                patch.noEndingNewline = true;
             } else {
                 throw new PatchException("Invalid hunk line: " + line);
             }
@@ -553,6 +559,7 @@ public final class ContextualPatch {
         Hunk []     hunks;
         boolean     targetMustExist = true;     // == false if the patch contains one hunk with just additions ('+' lines)
         File        targetFile;                 // computed later
+        boolean     noEndingNewline;            // resulting file should not end with a newline
     }
 
     public static enum PatchStatus { Patched, Missing, Failure };

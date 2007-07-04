@@ -124,7 +124,7 @@ final class UnifiedDiff {
                 outputLines(hunk, baseReader, "-", n);
                 hunk.baseCount += n;
                 if (!baseEndsWithNewline && i == diffInfo.getDifferences().length - 1 && diff.getFirstEnd() == currentBaseLine - 1) {
-                    hunk.lines.add("\\ No newline at end of file");
+                    hunk.lines.add(Hunk.ENDING_NEWLINE);
                 }
             }
             if (diff.getSecondEnd() > 0) {
@@ -132,7 +132,7 @@ final class UnifiedDiff {
                 outputLines(hunk, modifiedReader, "+", n);
                 hunk.modifiedCount += n;
                 if (!modifiedEndsWithNewline && i == diffInfo.getDifferences().length - 1 && diff.getSecondEnd() == currentModifiedLine - 1) {
-                    hunk.lines.add("\\ No newline at end of file");
+                    hunk.lines.add(Hunk.ENDING_NEWLINE);
                 }
             }
         }
