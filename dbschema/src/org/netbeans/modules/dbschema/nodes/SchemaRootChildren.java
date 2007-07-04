@@ -24,7 +24,8 @@ import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -114,16 +115,16 @@ public class SchemaRootChildren extends Children.Keys {
     * The node is created using node factory.
     */
     protected Node[] createNodes (final Object key) {
-    if (key instanceof SchemaElement)
-        return new Node[] { factory.createSchemaNode((SchemaElement) key) };
-    if (NOT_KEY.equals(key))
-        return new Node[] { factory.createWaitNode() };
-        
-    // never should get here
-    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-            new Exception ("DbSchema: Error node created for object " + key + 
-                " (class " + ((key == null) ? "null" : key.getClass().getName()) + ")"));
-    return new Node[] { factory.createErrorNode() };
+        if (key instanceof SchemaElement)
+            return new Node[] { factory.createSchemaNode((SchemaElement) key) };
+        if (NOT_KEY.equals(key))
+            return new Node[] { factory.createWaitNode() };
+
+        // never should get here
+        Logger.getLogger("global").log(Level.INFO, null,
+                new Exception ("DbSchema: Error node created for object " + key + 
+                    " (class " + ((key == null) ? "null" : key.getClass().getName()) + ")"));
+        return new Node[] { factory.createErrorNode() };
     }
 
 

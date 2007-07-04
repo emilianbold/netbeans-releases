@@ -25,7 +25,6 @@ import java.util.*;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
@@ -34,6 +33,7 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.jdbcimpl.*;
+import org.openide.util.Exceptions;
 
 public class CaptureSchema {
 
@@ -170,7 +170,7 @@ public class CaptureSchema {
                             else
                                 c.closeConnection();
                     } catch (Exception exc) {
-                        ErrorManager.getDefault().notify(exc);
+                        Exceptions.printStackTrace(exc);
                     }
                 }
             }, 0);

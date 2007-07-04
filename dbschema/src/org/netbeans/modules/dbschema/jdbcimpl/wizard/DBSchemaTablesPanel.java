@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -40,14 +42,14 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
 public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance("org.netbeans.modules.dbschema.jdbcimpl.wizard"); // NOI18N
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.dbschema.jdbcimpl.wizard"); // NOI18N
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
 
@@ -175,7 +177,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         
         handlers.add(new Handler() {
             public void handle(Parameters params) {
-                
+
                 //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
                 if (conn != null) {
                     try {
@@ -189,7 +191,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                 }
 
                 data.setConnected(true);
-                
+
                 schema = dbconn.getSchema();
                 driver = dbconn.getDriverClass();
 
@@ -219,8 +221,9 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                     bridge.getDriverSpecification().getTables("%", new String[] {"TABLE"}); //NOI18N
                     rs = bridge.getDriverSpecification().getResultSet();
                     if (rs != null) {
-                        while (rs.next())
+                        while (rs.next()) {
                             tables.add(rs.getString("TABLE_NAME").trim()); //NOI18N
+                        }
                         rs.close();
                     }
 
@@ -230,12 +233,13 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                         rs = bridge.getDriverSpecification().getResultSet();
                     }
                     if (rs != null) {
-                        while (rs.next())
+                        while (rs.next()) {
                             views.add(rs.getString("TABLE_NAME").trim()); //NOI18N
+                        }
                         rs.close();
                     }
                 } catch (SQLException exc) {
-                    org.openide.ErrorManager.getDefault().notify(exc);
+                    Exceptions.printStackTrace(exc);
                 }
 
                 ((SortedListModel) jListAvailableTables.getModel()).clear();
@@ -243,23 +247,25 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
                 tablesCount = tables.size();
 
-                for (int i = 0; i < tables.size(); i++)
+                for (int i = 0; i < tables.size(); i++) {
                     ((SortedListModel) jListAvailableTables.getModel()).add(bundle.getString("TablePrefix") + " " + tables.get(i).toString()); //NOI18N
-
-                for (int i = 0; i < views.size(); i++)
+                }
+                for (int i = 0; i < views.size(); i++) {
                     ((SortedListModel) jListAvailableTables.getModel()).add(bundle.getString("ViewPrefix") + " " + views.get(i).toString()); //NOI18N
-                if (jListAvailableTables.getModel().getSize() > 0)
+                }
+                if (jListAvailableTables.getModel().getSize() > 0) {
                     jListAvailableTables.setSelectedIndex(0);
+                }
                 tables.clear();
                 views.clear();
-                
+
                 params.setResult(true);
             }
-            
+
             public String getMessage() {
                 return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_RetrievingTables");
             }
-            
+
             public boolean isRunnable() {
                 return conn != null;
             }
@@ -315,7 +321,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
             Handler h = (Handler)handlers.get(i);
             if (!h.isRunnable()) {
                 if (LOG) {
-                    LOGGER.log("Skipping " + h); // NOI18N
+                    LOGGER.log(Level.FINE, "Skipping " + h);
                 }
                 continue;
             }
@@ -323,7 +329,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                 break;
             }
             if (LOG) {
-                LOGGER.log("Invoking " + h); // NOI18N
+                LOGGER.log(Level.FINE, "Invoking " + h);
             }
             if (progressPanel != null) {
                 final String message = h.getMessage();

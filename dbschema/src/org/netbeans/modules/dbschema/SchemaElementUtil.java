@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -60,7 +62,7 @@ public class SchemaElementUtil {
                     try {
                         tempURL = schemaFO.getURL().toString();
                     } catch (Exception exc) {
-                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, exc);
+                        Logger.getLogger("global").log(Level.INFO, null, exc);
                     }
                 
                 if (schemaFO == null)
@@ -101,7 +103,7 @@ public class SchemaElementUtil {
                         // just find it by unarchiving (below)
                     }
                     catch (DataObjectNotFoundException e) {
-                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger("global").log(Level.INFO, null, e);
                         // just find it by unarchiving (below)
                     }
                     if (se == null) {
@@ -133,12 +135,13 @@ public class SchemaElementUtil {
                                 tables[j].setDeclaringSchema(se);
 
                         } catch (Exception e) {
-                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                            Logger.getLogger("global").log(Level.INFO, null, e);
                             org.openide.awt.StatusDisplayer.getDefault().setStatusText(ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("CannotRetrieve")); //NOI18N
                         }
                     }
                 } else
-                    org.openide.ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("SchemaNotFound")); //NOI18N
+                    Logger.getLogger("global").log(Level.INFO, 
+                            ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("SchemaNotFound")); //NOI18N
 
                 return se;
             }

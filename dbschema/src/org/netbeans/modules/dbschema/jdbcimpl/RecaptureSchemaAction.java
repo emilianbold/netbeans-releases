@@ -20,9 +20,9 @@
 package org.netbeans.modules.dbschema.jdbcimpl;
 
 import java.sql.SQLException;
-import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dbschema.jdbcimpl.wizard.RecaptureSchema;
-import org.openide.ErrorManager;
 
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
@@ -71,10 +71,10 @@ public class RecaptureSchemaAction extends CookieAction {
             }
         }
         catch (ClassNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         catch (SQLException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
     

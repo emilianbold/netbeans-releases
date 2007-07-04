@@ -23,10 +23,11 @@ import java.beans.*;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
@@ -35,6 +36,7 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.jdbcimpl.*;
+import org.openide.util.Exceptions;
 
 public class RecaptureSchema {
     
@@ -64,7 +66,7 @@ public class RecaptureSchema {
         try {
             SchemaElement.removeFromCache(elem.getName().getFullName() + "#" + fo1.getURL().toString()); //NOI18N
         } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } 
         
         TableElement tableAndViewElements[] = elem.getTables();
@@ -212,7 +214,7 @@ public class RecaptureSchema {
                             else
                                 c.closeConnection();
                     } catch (Exception exc) {
-                        ErrorManager.getDefault().notify(exc);
+                        Exceptions.printStackTrace(exc);
                     }
                 }
             }, 0);
@@ -220,7 +222,7 @@ public class RecaptureSchema {
             String message = MessageFormat.format(bundle.getString("UnableToCreateSchema"), new String[] {exc.getMessage()}); //NOI18N
             StatusDisplayer.getDefault().setStatusText(message);
             if (debug) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                Logger.getLogger("global").log(Level.INFO, null, exc);
             }
             
             try {
