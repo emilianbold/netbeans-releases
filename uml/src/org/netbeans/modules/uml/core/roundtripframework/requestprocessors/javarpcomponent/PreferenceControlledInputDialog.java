@@ -41,6 +41,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -212,6 +213,8 @@ public class PreferenceControlledInputDialog extends JCenterDialog
                  preferenceInformation(sPreferenceKey, sPreferencePath,
                          sPreferenceName, true);
                  String bsPreferenceValue = getPreferenceValue();
+                 if ( ! bsPreferenceValue.equals("true")) return ;
+                 
                  // Set the preference strings
                  m_sAffirmative = sAffirmative;
                  m_sNegative = sNegative;
@@ -403,7 +406,19 @@ public class PreferenceControlledInputDialog extends JCenterDialog
             boolean autoUpdate =  getAutoUpdatePreference();
             if ( autoUpdate ) {
                 
-                NbPreferences.forModule(PreferenceControlledInputDialog.class).put(m_PrefName, sVal) ;
+                Preferences prefs = NbPreferences.forModule(PreferenceControlledInputDialog.class) ;
+                
+                String testVal = prefs.get (m_PrefName, null) ;
+                
+                if (testVal.equals("true") || testVal.equals("false")) {
+                    
+                    boolean tmp = false ;
+                    if (sVal.equals("PSK_YES")) tmp = true;
+                    prefs.putBoolean(m_PrefName, tmp) ;
+                    
+                }else{
+                    prefs.put(m_PrefName, sVal) ;
+                }
             }
 
         }

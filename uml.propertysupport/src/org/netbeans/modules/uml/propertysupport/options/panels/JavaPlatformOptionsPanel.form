@@ -33,7 +33,7 @@
                           <Component id="jPanel3" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="jPanel2" alignment="0" min="-2" pref="420" max="-2" attributes="1"/>
+                  <Component id="jPanel2" alignment="0" min="-2" max="-2" attributes="1"/>
               </Group>
               <EmptySpace min="-2" pref="316" max="-2" attributes="0"/>
           </Group>

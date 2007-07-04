@@ -291,34 +291,50 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
         
         if (prefs.getBoolean("UML_CAP_ON_ACCESSORS", true)) {// NOI18N
             this.capitalizeCB.setSelected(true);
+        } else {
+            capitalizeCB.setSelected(false);
         }
         
         if (prefs.getBoolean("UML_USE_GENERICS_DEFAULT", true)) {// NOI18N
             this.collectionsUseGenCB.setSelected(true);
+        }else {
+            collectionsUseGenCB.setSelected(false);
         }
         
         if (prefs.getBoolean("UML_ADD_ACCESSORS", true)) {// NOI18N
             this.createAccCB.setSelected(true);
+        }else {
+            createAccCB.setSelected(false);
         }
         
         if (prefs.getBoolean("UML_ADD_CTORS", true)) {// NOI18N
             this.createConCB.setSelected(true);
+        }else {
+            createConCB.setSelected(false);
         }
         
         if (prefs.getBoolean("UML_ADD_DTORS", false)) {// NOI18N
             this.createFinCB.setSelected(true);
+        }else {
+            createFinCB.setSelected(false);
         }
         
         if (prefs.getBoolean("UML_SHOW_DUPE_OP_DIALOG", true)) {// NOI18N
             this.displayDupCB.setSelected(true);
+        }else {
+            displayDupCB.setSelected(false);
         }
         
         if (prefs.getBoolean("UML_SET_NAVIGABLE_END_ROLE_NAME", true)) {// NOI18N
             this.nameNavEndsCB.setSelected(true);
+        }else {
+            nameNavEndsCB.setSelected(false);
         }
         
         if (prefs.getBoolean("NO_PREFIX_ON_ACCESSORS", true)) {// NOI18N
             this.removePrefixCB.setSelected(true);
+        }else {
+            removePrefixCB.setSelected(false);
         }
         
         String s = prefs.get("UML_MODIFY_REDEFINING_METHOD", PSK_ASK);// NOI18N
