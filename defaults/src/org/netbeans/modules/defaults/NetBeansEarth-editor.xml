@@ -38,5 +38,5 @@ Microsystems, Inc. All Rights Reserved.
         <font name="Monospaced" size="12" style="plain"/>
     </fontcolor>
     <fontcolor name="caret-color-insert-mode" foreColor="black"/>
-    <fontcolor name="text-limit-line-color" foreColor="ffffebeb"/>
+    <fontcolor name="text-limit-line-color" foreColor="ffffa8a8"/>
 </fontscolors>
