@@ -497,13 +497,13 @@ Microsystems, Inc. All Rights Reserved.
                 <echo>JBI admin port is: ${com.sun.appserver.instance.administrationPort}</echo>                
                 <echo>User name is: ${com.sun.appserver.instance.userName}</echo>
                 <echo>Password is: ${com.sun.appserver.instance.password}</echo>
-                <echo>Service assembly ID is: ${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}</echo>
+                <echo>Service assembly ID is: ${jbi.service-assembly.id}</echo>
                 -->
                 <property name="j2ee.server.instance" value=""/>
                 <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
                 
                 <jbi-deploy-service-assembly
-                    serviceAssemblyID="${{org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}}"
+                    serviceAssemblyID="${{jbi.service-assembly.id}}"
                     serviceAssemblyLocation="${{basedir}}/${{dist.jar}}"
                     netBeansUserDir="${{netbeans.user}}"
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
@@ -518,7 +518,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <jbi-deploy-service-assembly 
                     undeployServiceAssembly="true"
-                    serviceAssemblyID="${{org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}}"
+                    serviceAssemblyID="${{jbi.service-assembly.id}}"
                     serviceAssemblyLocation="${{basedir}}/${{dist.jar}}"
                     netBeansUserDir="${{netbeans.user}}"
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
@@ -603,8 +603,8 @@ Microsystems, Inc. All Rights Reserved.
             
             <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean application configuration."/>
             <target name="clear-casa">
-                <delete file="${{source.root}}/conf/${{org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}}.casa"/>
-                <delete file="${{src.dir}}/${{org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}}.wsdl"/>
+                <delete file="${{source.root}}/conf/${{jbi.service-assembly.id}}.casa"/>
+                <delete file="${{src.dir}}/${{jbi.service-assembly.id}}.wsdl"/>
             </target>
 
             <!-- Start Test Framework -->
