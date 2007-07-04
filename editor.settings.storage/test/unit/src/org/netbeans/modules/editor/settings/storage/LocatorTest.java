@@ -193,9 +193,12 @@ public class LocatorTest extends NbTestCase {
             "Editors/text/x-whatever/FontsColors/NetBeans/file2.xml",
             "Editors/text/x-whatever/FontsColors/NetBeans/file3.xml",
         };
+        String writableUserFile = "Editors/" + SettingsType.FONTSCOLORS.getLocator().getWritableFileName("text/x-whatever", "NetBeans", "xyz", false);
         
         createOrderedFiles(files, FC_CONTENTS);
-        TestUtilities.createFile("Editors/text/x-whatever/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml", FC_CONTENTS);
+        TestUtilities.createFile(writableUserFile, FC_CONTENTS);
+        orderFiles("Editors/text/x-whatever/FontsColors/NetBeans/file3.xml", writableUserFile);
+//"Editors/text/x-whatever/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
@@ -205,7 +208,7 @@ public class LocatorTest extends NbTestCase {
         assertEquals("Wrong number of profiles", 1, results.size());
         
         List<Object []> profileFiles = results.get("NetBeans");
-        checkProfileFiles(files, "Editors/text/x-whatever/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml", profileFiles, "NetBeans");
+        checkProfileFiles(files, writableUserFile, profileFiles, "NetBeans");
     }
     
     public void testFullKeybindingsLegacyLayout() throws Exception {
@@ -220,9 +223,11 @@ public class LocatorTest extends NbTestCase {
             "Editors/Keybindings/NetBeans/kekeke.xml",
             "Editors/Keybindings/NetBeans/dhdhdddd.xml",
         };
+        String writableUserFile = "Editors/" + SettingsType.KEYBINDINGS.getLocator().getWritableFileName(null, "NetBeans", null, false);
         
         createOrderedFiles(files, KB_CONTENTS);
-        TestUtilities.createFile("Editors/Keybindings/NetBeans/org-netbeans-modules-editor-settings-CustomKeybindings.xml", KB_CONTENTS);
+        TestUtilities.createFile(writableUserFile, KB_CONTENTS);
+        orderFiles("Editors/Keybindings/NetBeans/dhdhdddd.xml", writableUserFile);
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
@@ -266,10 +271,11 @@ public class LocatorTest extends NbTestCase {
             "Editors/CodeTemplates/kekeke.xml",
             "Editors/CodeTemplates/dhdhdddd.xml",
         };
-        String writableUserFile = "Editors/" + SettingsType.CODETEMPLATES.getLocator().getWritableFileName(null, null, false);
+        String writableUserFile = "Editors/" + SettingsType.CODETEMPLATES.getLocator().getWritableFileName(null, null, null, false);
         
         createOrderedFiles(files, CT_CONTENTS);
         TestUtilities.createFile(writableUserFile, CT_CONTENTS);
+        orderFiles("Editors/CodeTemplates/dhdhdddd.xml", writableUserFile);
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
@@ -329,7 +335,7 @@ public class LocatorTest extends NbTestCase {
             if (i + 1 < files.length) {
                 String [] thisFile = getNameParts(files[i]);
                 String [] nextFile = getNameParts(files[i + 1]);
-                
+
                 if (thisFile[0].equals(nextFile[0])) {
                     String ordering = thisFile[1] + "/" + nextFile[1];
                     f.getParent().setAttribute(ordering, Boolean.TRUE);
@@ -345,6 +351,20 @@ public class LocatorTest extends NbTestCase {
         } else {
             return new String [] { "", path };
         }
+    }
+    
+    private void orderFiles(String pathA, String pathB) throws IOException {
+        FileObject fileA = Repository.getDefault().getDefaultFileSystem().findResource(pathA);
+        FileObject fileB = Repository.getDefault().getDefaultFileSystem().findResource(pathB);
+        assertNotNull("Can't find file '" + pathA + "'", fileA);
+        assertNotNull("Can't find file '" + pathB + "'", fileB);
+        
+        FileObject parentA = fileA.getParent();
+        FileObject parentB = fileB.getParent();
+        assertSame("Can't order files from different folder.", parentA, parentB);
+        
+        String ordering = fileA.getNameExt() + "/" + fileB.getNameExt(); //NOI18N
+        parentA.setAttribute(ordering, Boolean.TRUE);
     }
     
     private String getCurrentOsId() {

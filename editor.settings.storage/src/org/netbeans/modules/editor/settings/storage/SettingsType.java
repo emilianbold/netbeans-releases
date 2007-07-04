@@ -77,7 +77,7 @@ public enum SettingsType {
     
     public static interface Locator {
         public void scan(FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, Map<String, List<Object []>> results);
-        public String getWritableFileName(String mimeType, String profileId, boolean modulesFile);
+        public String getWritableFileName(String mimeType, String profileId, String fileId, boolean modulesFile);
     }
     
     // ------------------------------------------------------------------
@@ -138,18 +138,14 @@ public enum SettingsType {
         private static final String FA_TARGET_OS = "nbeditor-settings-targetOS"; //NOI18N
         
         private final SettingsType settingType;
-        private final String settingTypeFolderName;
-        private final String writableFileName;
-        private final String modulesWritableFileName;
-        private final String usersWritableFileName;
+        private final String writableFilePrefix;
+        private final String modulesWritableFilePrefix;
         
         public DefaultLocator(SettingsType settingType) {
             assert settingType != null : "The parameter settingType can't be null"; //NOI18N
             this.settingType = settingType;
-            this.settingTypeFolderName = "/" + settingType.getId() + "/"; //NOI18N
-            this.writableFileName = WRITABLE_FILE_PREFIX + settingType.getId() + WRITABLE_FILE_SUFFIX;
-            this.modulesWritableFileName = MODULE_FILES_FOLDER + "/" + WRITABLE_FILE_PREFIX + settingType.getId() + WRITABLE_FILE_SUFFIX; //NOI18N
-            this.usersWritableFileName = writableFileName; //NOI18N
+            this.writableFilePrefix = WRITABLE_FILE_PREFIX + settingType.getId();
+            this.modulesWritableFilePrefix = MODULE_FILES_FOLDER + "/" + writableFilePrefix; //NOI18N
         }
         
         public final void scan(
@@ -190,25 +186,33 @@ public enum SettingsType {
             }
         }
 
-        public final String getWritableFileName(String mimeType, String profileId, boolean modulesFile) {
-            String part;
+        public final String getWritableFileName(String mimeType, String profileId, String fileId, boolean modulesFile) {
+            StringBuilder part = new StringBuilder(127);
             
             if (mimeType == null || mimeType.length() == 0) {
-                part = settingType.getId() + "/"; //NOI18N
+                part.append(settingType.getId()).append('/'); //NOI18N
             } else {
-                part = mimeType + settingTypeFolderName;
+                part.append(mimeType).append('/').append(settingType.getId()).append('/'); //NOI18N
             }
             
             if (settingType.isUsingProfiles()) {
                 assert profileId != null : "The profileId parameter must not be null"; //NOI18N
-                part = part + profileId + "/"; //NOI18N
+                part.append(profileId).append('/'); //NOI18N
             }
             
             if (modulesFile) {
-                return part + modulesWritableFileName;
+                part.append(modulesWritableFilePrefix);
             } else {
-                return part + usersWritableFileName;
+                part.append(writableFilePrefix);
             }
+            
+            if (fileId != null && fileId.length() != 0) {
+                part.append(fileId);
+            }
+            
+            part.append(WRITABLE_FILE_SUFFIX);
+            
+            return part.toString();
         }
         
         protected FileObject getLegacyMimeFolder(FileObject baseFolder, String mimeType) {
@@ -300,7 +304,7 @@ public enum SettingsType {
         }
         
         private final void addFiles(FileObject folder, boolean fullScan, Map<String, List<Object []>> files, String profileId, FileObject profileHome, boolean moduleFiles) {
-            Object [] writableFile = null;
+            List<Object []> writableFiles = new ArrayList<Object []>();
             List<Object []> osSpecificFiles = new ArrayList<Object []>();
             
             FileObject [] ff = getOrderedChildren(folder);
@@ -333,11 +337,14 @@ public enum SettingsType {
                     // There can be a writable file in the modules folder and it
                     // needs to be added last so that it does not get hidden by
                     // other module files.
-                    if (f.getNameExt().equals(writableFileName)) {
-                        assert writableFile == null;
-                        writableFile = oo;
-                    } else if (targetOs != null) {
-                        osSpecificFiles.add(oo);
+                    if (moduleFiles) {
+                        if (f.getNameExt().startsWith(writableFilePrefix)) {
+                            writableFiles.add(oo);
+                        } else if (targetOs != null) {
+                            osSpecificFiles.add(oo);
+                        } else {
+                            infos.add(oo);
+                        }
                     } else {
                         infos.add(oo);
                     }
@@ -357,9 +364,9 @@ public enum SettingsType {
             }
             
             // Add the writable file if there is any
-            if (writableFile != null) {
+            if (!writableFiles.isEmpty()) {
                 List<Object []> infos = files.get(profileId);
-                infos.add(writableFile);
+                infos.addAll(writableFiles);
             }
         }
         
