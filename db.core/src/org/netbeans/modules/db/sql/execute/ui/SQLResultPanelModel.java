@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
-import org.openide.util.NbBundle;
 
 /**
  *

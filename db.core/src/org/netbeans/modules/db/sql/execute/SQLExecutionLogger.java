@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import java.sql.SQLException;
-
 /**
  *
  * @author Andrei Badea

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.sql.SQLException;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.nodes.Node;
 

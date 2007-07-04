@@ -23,7 +23,8 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Encapsulates the result of the execution of a list of SQL statements.
@@ -47,7 +48,7 @@ public class SQLExecutionResults {
             try {
                 i.next().close();
             } catch (SQLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }

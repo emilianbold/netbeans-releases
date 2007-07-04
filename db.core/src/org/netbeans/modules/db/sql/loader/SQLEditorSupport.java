@@ -30,6 +30,8 @@ import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -42,7 +44,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanelModel;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -63,6 +64,7 @@ import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.CloneableEditor;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -77,8 +79,8 @@ import org.openide.windows.CloneableOpenSupport;
  */
 public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, SQLExecuteCookie {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLEditorSupport.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(SQLEditorSupport.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     static final String EDITOR_CONTAINER = "sqlEditorContainer"; // NOI18N
     
@@ -194,7 +196,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
             try {
                 getDataObject().delete();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -254,7 +256,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
             sql = doc.getText(0, doc.getLength());
         } catch (BadLocationException e) {
             // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             sql = ""; // NOI18N
         }
         execute(sql, 0, sql.length());
@@ -370,7 +372,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, javax.swing.text.BadLocationException {
         encoding = getEncoding(stream);
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "Encoding: " + encoding); // NOI18N
+            LOGGER.log(Level.INFO, "Encoding: " + encoding); // NOI18N
         }
         if (encoding != null) {
             InputStreamReader reader = new InputStreamReader(stream, encoding);
@@ -456,8 +458,8 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
             parent.setExecuting(true);
             try {
                 if (LOG) {
-                    LOGGER.log("Started the SQL execution task"); // NOI18N
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "Executing against " + dbconn); // NOI18N
+                    LOGGER.log(Level.FINE, "Started the SQL execution task"); // NOI18N
+                    LOGGER.log(Level.INFO, "Executing against " + dbconn); // NOI18N
                 }
 
                 Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
@@ -469,7 +471,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
                 Connection conn = dbconn.getJDBCConnection();
                 if (LOG) {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "SQL connection: " + conn); // NOI18N
+                    LOGGER.log(Level.FINE, "SQL connection: " + conn); // NOI18N
                 }
                 if (conn == null) {
                     return;
@@ -484,7 +486,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                         }
                     });
                 } catch (MutexException e) {
-                    ErrorManager.getDefault().notify(e.getException());
+                    Exceptions.printStackTrace(e.getException());
                     return;
                 }
 
@@ -496,7 +498,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                     setStatusText(""); // NOI18N
 
                     if (LOG) {
-                        LOGGER.log(ErrorManager.INFORMATIONAL, "Closing the old execution result" ); // NOI18N
+                        LOGGER.log(Level.INFO, "Closing the old execution result"); // NOI18N
                     }
                     parent.closeExecutionResult();
 

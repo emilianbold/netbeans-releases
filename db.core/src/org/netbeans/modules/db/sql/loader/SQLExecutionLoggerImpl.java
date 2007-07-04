@@ -24,9 +24,9 @@ import java.text.NumberFormat;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.StatementInfo;
-import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -126,7 +126,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                 writer.println(lineColumn);
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
 

@@ -25,6 +25,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -37,7 +39,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
-import org.openide.ErrorManager;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -163,7 +164,7 @@ public class SQLCloneableEditor extends CloneableEditor {
             try {
                 cloneableEditorSupport().saveDocument();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         super.componentDeactivated();
@@ -179,7 +180,7 @@ public class SQLCloneableEditor extends CloneableEditor {
             try {
                 cloneableEditorSupport().saveDocument();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         super.writeExternal(out);
@@ -360,7 +361,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                 return doc.getText(0, doc.getLength());
             } catch (BadLocationException e) {
                 // should not happen
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
                 return ""; // NOI18N
             }
         }

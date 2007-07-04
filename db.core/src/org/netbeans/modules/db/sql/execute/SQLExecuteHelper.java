@@ -29,8 +29,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.openide.ErrorManager;
 
 /**
  * Support class for executing SQL statements.
@@ -39,8 +40,8 @@ import org.openide.ErrorManager;
  */
 public final class SQLExecuteHelper {
 
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLExecuteHelper.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -68,14 +69,14 @@ public final class SQLExecuteHelper {
             
             StatementInfo info = (StatementInfo)i.next();
             String sql = info.getSQL();
-            
+
             if (LOG) {
-                LOGGER.log(ErrorManager.INFORMATIONAL, "Executing: " + sql); // NOI18N
+                LOGGER.log(Level.INFO, "Executing: " + sql);
             }
             
             SQLExecutionResult result = null;
             Statement stmt = null;
-            
+
             try {
                 if (sql.startsWith("{")) { // NOI18N
                     stmt = conn.prepareCall(sql);
@@ -92,7 +93,7 @@ public final class SQLExecuteHelper {
                 }
                 long executionTime = System.currentTimeMillis() - startTime;
                 totalExecutionTime += executionTime;
-                
+
                 if (isResultSet) {
                     result = new SQLExecutionResult(info, stmt, stmt.getResultSet(), executionTime);
                 } else {
@@ -106,7 +107,7 @@ public final class SQLExecuteHelper {
             executionLogger.log(result);
             
             if (LOG) {
-                LOGGER.log(ErrorManager.INFORMATIONAL, "Result: " + result); // NOI18N
+                LOGGER.log(Level.INFO, "Result: " + result);
             }
             
             if (computeResults || result.getException() != null) {
@@ -115,7 +116,7 @@ public final class SQLExecuteHelper {
                 try {
                     result.close();
                 } catch (SQLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }
@@ -124,7 +125,7 @@ public final class SQLExecuteHelper {
             executionLogger.finish(totalExecutionTime);
         } else {
             if (LOG) {
-                LOGGER.log(ErrorManager.INFORMATIONAL, "Execution cancelled"); // NOI18N
+                LOGGER.log(Level.INFO, "Execution cancelled"); // NOI18N
             }
             executionLogger.cancel();
         }
@@ -228,7 +229,7 @@ public final class SQLExecuteHelper {
                 if (ch == '\r') { // NOI18N
                     // the string should not contain these
                     if (LOG) {
-                        LOGGER.log(ErrorManager.INFORMATIONAL, "The SQL string contained non-supported \r characters."); // NOI18N
+                        LOGGER.log(Level.INFO, "The SQL string contained non-supported \r characters."); // NOI18N
                     }
                     continue;
                 }
