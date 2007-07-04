@@ -270,7 +270,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${xtest.testsdist.zip}"/>
     </target>
     
-    <target name="localresults-clean">
+    <target name="localresults-clean" unless="xtest.no.cleanresults">
         <delete dir="results"/>
     </target>
 
