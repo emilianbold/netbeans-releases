@@ -484,8 +484,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
          * or when this component losts preferrence in the parent window.
          */
         protected void componentDeactivated() {
-            getEditorPane().removeCaretListener(caretListener);
-            super.componentDeactivated();
+             if (getEditorPane() != null){
+                getEditorPane().removeCaretListener(caretListener);
+                super.componentDeactivated();
+            }
             taglibParseSupport.setEditorOpened(false);
         }
         
