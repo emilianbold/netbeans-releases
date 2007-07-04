@@ -24,12 +24,13 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
@@ -138,7 +139,7 @@ public abstract class SQLExecutionBaseAction extends AbstractAction implements C
                 propertyChanged(null);
 
                 if (iterator.hasNext()) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple SQLExecution instances in the action context. Will only use the first one."); // NOI18N
+                    Logger.getLogger("global").log(Level.WARNING, "Multiple SQLExecution instances in the action context. Will only use the first one."); // NOI18N
                 }
             } else {
                 setSQLExecution(null);

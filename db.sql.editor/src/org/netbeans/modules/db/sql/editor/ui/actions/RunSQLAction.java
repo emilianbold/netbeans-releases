@@ -19,10 +19,10 @@
 
 package org.netbeans.modules.db.sql.editor.ui.actions;
 
-import java.awt.Toolkit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -32,8 +32,8 @@ import org.openide.util.NbBundle;
  */
 public class RunSQLAction extends SQLExecutionBaseAction {
 
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RunSQLAction.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(RunSQLAction.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/runsql.png"; // NOI18N
 
@@ -51,7 +51,7 @@ public class RunSQLAction extends SQLExecutionBaseAction {
 
     protected void actionPerformed(SQLExecution sqlExecution) {
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "actionPerformed for " + sqlExecution); // NOI18N
+            LOGGER.log(Level.FINE, "actionPerformed for " + sqlExecution); // NOI18N
         }
         DatabaseConnection dbconn = sqlExecution.getDatabaseConnection();
         if (dbconn != null) {

@@ -22,19 +22,10 @@ package org.netbeans.modules.db.sql.editor;
 import java.io.IOException;
 import java.io.Writer;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.AbstractFormatLayer;
-import org.netbeans.editor.ext.FormatSupport;
-import org.netbeans.editor.ext.FormatWriter;
-import org.openide.ErrorManager;
 
 /**
  * Formatter for SQL

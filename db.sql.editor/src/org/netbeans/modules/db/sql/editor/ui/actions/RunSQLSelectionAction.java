@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.db.sql.editor.ui.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -35,8 +36,8 @@ import org.openide.util.actions.Presenter;
  */
 public class RunSQLSelectionAction extends SQLExecutionBaseAction {
 
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RunSQLSelectionAction.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(RunSQLSelectionAction.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     protected void initialize() {
         putValue(Action.NAME, NbBundle.getMessage(RunSQLSelectionAction.class, "LBL_RunSQLSelectionAction"));
@@ -53,7 +54,7 @@ public class RunSQLSelectionAction extends SQLExecutionBaseAction {
 
     public void actionPerformed(SQLExecution sqlExecution) {
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "actionPerformed for " + sqlExecution); // NOI18N
+            LOGGER.log(Level.FINE, "actionPerformed for " + sqlExecution); // NOI18N
         }
         DatabaseConnection dbconn = sqlExecution.getDatabaseConnection();
         if (dbconn != null) {

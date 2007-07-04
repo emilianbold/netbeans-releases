@@ -23,13 +23,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.spi.sql.editor.SQLEditorProvider;
-import org.netbeans.modules.db.sql.editor.ui.actions.ConnectionAction;
-import org.openide.ErrorManager;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -37,6 +34,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,7 +55,7 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
             try {
                 tmpFo = FileUtil.createFolder(root, CMD_FOLDER );
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         
@@ -95,14 +93,14 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
                 lock.releaseLock();
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         
         DataObject sqlDo;
         try {
             sqlDo = DataObject.find(sqlFo);
         } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return;
         }
         
