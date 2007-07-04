@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.compapp.projects.jbi.api;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -35,8 +36,8 @@ public class JbiProjectHelper {
      * @param p 
      * @return 
      */
-    public static String getJbiProjectName(JbiProject p) {
-        JbiProjectProperties props = p.getProjectProperties();
+    public static String getJbiProjectName(Project p) {
+        JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
     
         String name = (String) props.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
         if (name == null) { // for backward compatibility until project is updated
@@ -51,8 +52,8 @@ public class JbiProjectHelper {
      * @param p 
      * @return 
      */
-    public static String getServiceAssemblyDescription(JbiProject p) {
-        JbiProjectProperties props = p.getProjectProperties();
+    public static String getServiceAssemblyDescription(Project p) {
+        JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
     
         String name = (String) props.get(JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION);
         if (name == null) { // for backward compatibility until project is updated
@@ -67,8 +68,8 @@ public class JbiProjectHelper {
      * @param p 
      * @return 
      */
-    public static String getServiceUnitDescription(JbiProject p) {
-        JbiProjectProperties props = p.getProjectProperties();
+    public static String getServiceUnitDescription(Project p) {
+        JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
     
         String name = (String) props.get(JbiProjectProperties.SERVICE_UNIT_DESCRIPTION);
         if (name == null) { // for backward compatibility until project is updated
