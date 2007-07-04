@@ -24,9 +24,8 @@
 
 package org.netbeans.modules.derby;
 import java.io.*;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.windows.*;
 /**
  *
@@ -68,7 +67,7 @@ public class ExecSupport {
         }
         catch (IOException e) {
             // not a critical error, continue
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         io.select();
         copyMakers = new OutputCopier[3];
@@ -86,9 +85,8 @@ public class ExecSupport {
                         copyMakers[0].interrupt();
                         copyMakers[1].interrupt();
                         copyMakers[2].interrupt();
-                    }
-                    catch (Exception e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    } catch (Exception e) {
+                        Logger.getLogger("global").log(Level.INFO, null, e);
                     }
                 }
             }

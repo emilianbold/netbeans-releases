@@ -24,6 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -33,7 +35,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
@@ -52,8 +53,8 @@ public class RegisterDerby implements DatabaseRuntime {
     // XXX this class does too much. Should maybe be split into 
     // DatabaseRuntimeImpl and the rest.
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RegisterDerby.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(RegisterDerby.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     private static final int START_TIMEOUT = 5; // seconds
     
@@ -154,21 +155,20 @@ public class RegisterDerby implements DatabaseRuntime {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 try {
-                ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
+                    ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
                         RegisterDerby.class, "MSG_CreatingDBProgressLabel", databaseName));
-                ph.start();
+                    ph.start();
                     try {
                         DerbyDatabases.createDatabase(databaseName, user, password);
                     } finally {
                         ph.finish();
                     }
-                }
-                catch (Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+               } catch (Exception e) {
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     String message = NbBundle.getMessage(RegisterDerby.class, "ERR_CreateDatabase", e.getMessage());
                     Util.showInformation(message);
-                }
-            }
+               }
+           }
         });
     }
     
@@ -195,13 +195,13 @@ public class RegisterDerby implements DatabaseRuntime {
             fileos = new FileOutputStream(derbyProperties);
             derbyProps.store(fileos, NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyPropsFile"));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } finally {
             if (fileos != null) {
                 try {
                     fileos.close();
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
             }
         }
@@ -260,7 +260,7 @@ public class RegisterDerby implements DatabaseRuntime {
               " org.apache.derby.drda.NetworkServerControl start"
             );
             if (LOG) {
-                LOGGER.log(ErrorManager.INFORMATIONAL, "Running " + desc.getProcessName() + " " + desc.getArguments());
+                LOGGER.log(Level.FINE, "Running " + desc.getProcessName() + " " + desc.getArguments());
             }
             process = desc.exec (
                 null,
@@ -298,7 +298,7 @@ public class RegisterDerby implements DatabaseRuntime {
                 }
             }
             if (!started) {
-                LOGGER.log(ErrorManager.WARNING, "Derby server failed to start"); // NOI18N
+                LOGGER.log(Level.WARNING, "Derby server failed to start"); // NOI18N
             }
         } finally {
             progress.finish();
@@ -329,7 +329,7 @@ public class RegisterDerby implements DatabaseRuntime {
               " org.apache.derby.drda.NetworkServerControl shutdown"
             );
             if (LOG) {
-                LOGGER.log(ErrorManager.INFORMATIONAL, "Running " + desc.getProcessName() + " " + desc.getArguments());
+                LOGGER.log(Level.FINE, "Running " + desc.getProcessName() + " " + desc.getArguments());
             }
             Process shutwownProcess = desc.exec (
                 null,

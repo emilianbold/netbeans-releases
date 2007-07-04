@@ -30,7 +30,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -38,6 +37,7 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.BeanNode;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -135,13 +135,13 @@ public class DerbyOptions {
             if (!locationFile.exists()) {
                 String message = NbBundle.getMessage(DerbyOptions.class, "ERR_DirectoryDoesNotExist", locationFile);
                 IllegalArgumentException e = new IllegalArgumentException(message);
-                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                Exceptions.attachLocalizedMessage(e, message);
                 throw e;
             }
             if (!Util.isDerbyInstallLocation(locationFile)) {
                 String message = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
                 IllegalArgumentException e = new IllegalArgumentException(message);
-                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                Exceptions.attachLocalizedMessage(e, message);
                 throw e;
             }
         }
@@ -190,13 +190,13 @@ public class DerbyOptions {
             if (!derbySystemHomeFile.exists() || !derbySystemHomeFile.isDirectory()) {
                 String message = NbBundle.getMessage(DerbyOptions.class, "ERR_DirectoryDoesNotExist", derbySystemHomeFile);
                 IllegalArgumentException e = new IllegalArgumentException(message);
-                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                Exceptions.attachLocalizedMessage(e, message);
                 throw e;
             }
             if (!derbySystemHomeFile.canWrite()) {
                 String message = NbBundle.getMessage(DerbyOptions.class, "ERR_DirectoryIsNotWritable", derbySystemHomeFile);
                 IllegalArgumentException e = new IllegalArgumentException(message);
-                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                Exceptions.attachLocalizedMessage(e, message);
                 throw e;
             }
         }
@@ -239,7 +239,7 @@ public class DerbyOptions {
                 }
             });
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -275,7 +275,7 @@ public class DerbyOptions {
                 try {
                     JDBCDriverManager.getDefault().removeDriver(driver);
                 } catch (DatabaseException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     // better to return if the existing driver could not be registered
                     // otherwise we would register yet another one
                     return;
@@ -291,9 +291,9 @@ public class DerbyOptions {
                     JDBCDriver newDriver = JDBCDriver.create(driverName, driverDisplayName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
                     JDBCDriverManager.getDefault().addDriver(newDriver);
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 } catch (DatabaseException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }

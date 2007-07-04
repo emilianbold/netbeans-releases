@@ -21,11 +21,11 @@
 package org.netbeans.modules.derby;
 
 import java.awt.Dialog;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.derby.ui.CreateDatabasePanel;
-import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -78,7 +78,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
         try {
             makeDatabase(databaseName, user, password);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
     }
     
