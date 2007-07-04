@@ -358,6 +358,9 @@ public class BracketCompleterTest extends RubyTestBase {
 
     public void test108889() throws Exception {
         // Reproduce 108889: AIOOBE and AE during editing
+        // NOTE: While the test currently throws an exception, when the 
+        // exception is fixed the test won't actually pass; that's an expected
+        // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
     }
 
