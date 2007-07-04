@@ -149,16 +149,16 @@ public class JBIServiceUnitTransferObject {
                     }
                 }
             }
-//            NamedNodeMap map = el.getOwnerDocument().getDocumentElement().getAttributes();
-//            for (int j = 0; j < map.getLength(); j++) {
-//                org.w3c.dom.Node n = map.item(j);
-//                String localName = n.getLocalName();
-//                if (localName != null) {
-//                    if (n.getLocalName().trim().equals(prefix.trim())) {
-//                        return n.getNodeValue();
-//                    }
-//                }
-//            }
+            map = el.getOwnerDocument().getDocumentElement().getAttributes();
+            for (int j = 0; j < map.getLength(); j++) {
+                org.w3c.dom.Node n = map.item(j);
+                String localName = n.getLocalName();
+                if (localName != null) {
+                    if (n.getLocalName().trim().equals(prefix.trim())) {
+                        return n.getNodeValue();
+                    }
+                }
+            }
         } catch (Exception e) {
         }
         
