@@ -251,7 +251,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    public void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
+    private void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         try {                        
             boolean force = true; // file with local changes must be forced
             SvnClient client = Subversion.getInstance().getClient(false);
