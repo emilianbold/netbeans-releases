@@ -71,7 +71,7 @@ public final class SQLExecuteHelper {
             String sql = info.getSQL();
 
             if (LOG) {
-                LOGGER.log(Level.INFO, "Executing: " + sql);
+                LOGGER.log(Level.FINE, "Executing: " + sql);
             }
             
             SQLExecutionResult result = null;
@@ -107,7 +107,7 @@ public final class SQLExecuteHelper {
             executionLogger.log(result);
             
             if (LOG) {
-                LOGGER.log(Level.INFO, "Result: " + result);
+                LOGGER.log(Level.FINE, "Result: " + result);
             }
             
             if (computeResults || result.getException() != null) {
@@ -125,7 +125,7 @@ public final class SQLExecuteHelper {
             executionLogger.finish(totalExecutionTime);
         } else {
             if (LOG) {
-                LOGGER.log(Level.INFO, "Execution cancelled"); // NOI18N
+                LOGGER.log(Level.FINE, "Execution cancelled"); // NOI18N
             }
             executionLogger.cancel();
         }
@@ -229,7 +229,7 @@ public final class SQLExecuteHelper {
                 if (ch == '\r') { // NOI18N
                     // the string should not contain these
                     if (LOG) {
-                        LOGGER.log(Level.INFO, "The SQL string contained non-supported \r characters."); // NOI18N
+                        LOGGER.log(Level.FINE, "The SQL string contained non-supported \r characters."); // NOI18N
                     }
                     continue;
                 }

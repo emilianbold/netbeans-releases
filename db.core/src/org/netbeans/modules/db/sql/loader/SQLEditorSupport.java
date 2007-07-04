@@ -372,7 +372,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, javax.swing.text.BadLocationException {
         encoding = getEncoding(stream);
         if (LOG) {
-            LOGGER.log(Level.INFO, "Encoding: " + encoding); // NOI18N
+            LOGGER.log(Level.FINE, "Encoding: " + encoding); // NOI18N
         }
         if (encoding != null) {
             InputStreamReader reader = new InputStreamReader(stream, encoding);
@@ -459,7 +459,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
             try {
                 if (LOG) {
                     LOGGER.log(Level.FINE, "Started the SQL execution task"); // NOI18N
-                    LOGGER.log(Level.INFO, "Executing against " + dbconn); // NOI18N
+                    LOGGER.log(Level.FINE, "Executing against " + dbconn); // NOI18N
                 }
 
                 Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
@@ -498,7 +498,7 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                     setStatusText(""); // NOI18N
 
                     if (LOG) {
-                        LOGGER.log(Level.INFO, "Closing the old execution result"); // NOI18N
+                        LOGGER.log(Level.FINE, "Closing the old execution result"); // NOI18N
                     }
                     parent.closeExecutionResult();
 
