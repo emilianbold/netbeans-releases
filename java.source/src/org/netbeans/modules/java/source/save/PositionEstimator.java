@@ -599,7 +599,55 @@ public abstract class PositionEstimator {
         }
         
         public int[] sectionRemovalBounds(StringBuilder replacement) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            if (!initialized) initialize();
+            // this part should be generalized
+            assert !oldL.isEmpty() && newL.isEmpty(); // check the call correctness
+            SourcePositions positions = copy.getTrees().getSourcePositions();
+            CompilationUnitTree compilationUnit = copy.getCompilationUnit();
+            int sectionStart = (int) positions.getStartPosition(compilationUnit, oldL.get(0));
+            int sectionEnd = (int) positions.getEndPosition(compilationUnit, oldL.get(oldL.size()-1));
+            // end of generalization part
+            
+            seq.move(sectionStart);
+            seq.moveNext();
+            Token<JavaTokenId> token;
+            while (seq.movePrevious() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    seq.moveNext();
+                    sectionStart = seq.offset();
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    if (indexOf > -1) {
+                        sectionStart = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionStart = seq.offset();
+                    }
+                }
+            }
+            seq.move(sectionEnd);
+            seq.movePrevious();
+            while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    sectionEnd = seq.offset();
+                    if (seq.moveNext()) {
+                        sectionEnd = seq.offset();
+                    }
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    if (indexOf > -1) {
+                        sectionEnd = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionEnd += seq.offset() + token.text().length();
+                    }
+                }
+            }
+            return new int[] { sectionStart, sectionEnd };
         }
 
     }
