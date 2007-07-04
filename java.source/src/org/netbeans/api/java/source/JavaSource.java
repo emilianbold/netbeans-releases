@@ -709,6 +709,7 @@ public final class JavaSource {
                             if (todo.remove(r)) {
                                 try {
                                     runUserActionTask(task, shared);
+                                    return sync;
                                 } finally {
                                     sync.taskFinished();
                                 }
