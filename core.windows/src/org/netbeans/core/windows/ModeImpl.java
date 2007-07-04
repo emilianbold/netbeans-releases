@@ -250,13 +250,12 @@ public final class ModeImpl implements Mode {
      * Remember which top component was previously the selected one.
      * Used when switching to/from maximized mode.
      */
-    public void setPreviousSelectedTopComponent(TopComponent tc) {
-        TopComponent old = getPreviousSelectedTopComponent();
-        if(tc == old) {
+    public void setPreviousSelectedTopComponentID(String tcId) {
+        String old = getPreviousSelectedTopComponentID();
+        if(tcId.equals(old)) {
             return;
         }
-        
-        getCentral().setModePreviousSelectedTopComponent(this, tc);
+        getCentral().setModePreviousSelectedTopComponentID(this, tcId);
     }
     
     /**
@@ -264,9 +263,23 @@ public final class ModeImpl implements Mode {
      * the maximized mode.
      */
     public TopComponent getPreviousSelectedTopComponent() {
+        String tcId = getPreviousSelectedTopComponentID();
+        TopComponent res = null;
+        if( null != tcId )
+            res = WindowManagerImpl.getInstance().findTopComponent(tcId);
         WindowManagerImpl.assertEventDispatchThread();
         
-        return getCentral().getModePreviousSelectedTopComponent(this);
+        return res;
+    }
+    
+    /**
+     * @return The ID top component that was the selected one before switching to/from 
+     * the maximized mode.
+     */
+    public String getPreviousSelectedTopComponentID() {
+        WindowManagerImpl.assertEventDispatchThread();
+        
+        return getCentral().getModePreviousSelectedTopComponentID(this);
     }
     
     public void addOpenedTopComponent(TopComponent tc) {

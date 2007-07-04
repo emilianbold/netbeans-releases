@@ -150,9 +150,9 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
-    public void setPreviousSelectedTopComponent(TopComponent prevSelected) {
+    public void setPreviousSelectedTopComponentID(String prevSelectedId) {
         synchronized(LOCK_TOPCOMPONENTS) {
-            topComponentSubModel.setPreviousSelectedTopComponent(prevSelected);
+            topComponentSubModel.setPreviousSelectedTopComponentID(prevSelectedId);
         }
     }
 
@@ -253,10 +253,10 @@ final class DefaultModeModel implements ModeModel {
             return topComponentSubModel.getSelectedTopComponent();
         }
     }
-    /** Gets the top component that was selected before switching to/from maximized mode */
-    public TopComponent getPreviousSelectedTopComponent() {
+    /** Gets the ID of top component that was selected before switching to/from maximized mode */
+    public String getPreviousSelectedTopComponentID() {
         synchronized(LOCK_TOPCOMPONENTS) {
-            return topComponentSubModel.getPreviousSelectedTopComponent();
+            return topComponentSubModel.getPreviousSelectedTopComponentID();
         }
     }
 

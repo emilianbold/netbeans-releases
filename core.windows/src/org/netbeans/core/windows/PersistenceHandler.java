@@ -622,15 +622,12 @@ final public class PersistenceHandler implements PersistenceObserver {
             debugLog("mode permanent=" + modeCfg.permanent); // NOI18N
         }
         
-        TopComponent prevSelectedTC = mode.getPreviousSelectedTopComponent();
-        if(prevSelectedTC != null) {
-            if (pm.isTopComponentPersistent(prevSelectedTC)) {
-                String tc_id = wm.findTopComponentID(prevSelectedTC);
-                if(DEBUG) {
-                    debugLog("previous selected tc=" + selectedTC.getName()); // NOI18N
-                }
-                modeCfg.previousSelectedTopComponentID = tc_id;
+        String prevSelectedTCID = mode.getPreviousSelectedTopComponentID();
+        if(prevSelectedTCID != null) {
+            if(DEBUG) {
+                debugLog("previous selected tc id=" + prevSelectedTCID); // NOI18N
             }
+            modeCfg.previousSelectedTopComponentID = prevSelectedTCID;
         }
         
         // TopComponents:

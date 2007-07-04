@@ -286,11 +286,8 @@ final class TopComponentSubModel {
         }
     }
     
-    public void setPreviousSelectedTopComponent(TopComponent tc) {
-        if(tc != null )
-            previousSelectedTopComponentID = getID(tc);
-        else
-            previousSelectedTopComponentID = null;
+    public void setPreviousSelectedTopComponentID(String tcId) {
+        previousSelectedTopComponentID = tcId;
     }
     
     public void setUnloadedSelectedTopComponent(String tcID) {
@@ -334,10 +331,8 @@ final class TopComponentSubModel {
         return getTopComponent(selectedTopComponentID);
     }
     
-    public TopComponent getPreviousSelectedTopComponent() {
-        if( null != previousSelectedTopComponentID )
-            return getTopComponent(previousSelectedTopComponentID);
-        return null;
+    public String getPreviousSelectedTopComponentID() {
+        return previousSelectedTopComponentID;
     }
 
     private static TopComponent getTopComponent(String tcID) {

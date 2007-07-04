@@ -192,7 +192,7 @@ public interface Model {
     /** Sets selected TopComponent. */
     public void setModeSelectedTopComponent(ModeImpl mode, TopComponent selected);
     /** Remember which top component was the selected one before switching to/from maximized mode */
-    public void setModePreviousSelectedTopComponent(ModeImpl mode, TopComponent prevSelected);
+    public void setModePreviousSelectedTopComponentID(ModeImpl mode, String prevSelectedId);
     /** Adds opened TopComponent. */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc);
     /** Inserts opened TopComponent. */
@@ -247,8 +247,8 @@ public interface Model {
     public boolean containsModeTopComponent(ModeImpl mode, TopComponent tc);
     /** Gets selected TopComponent. */
     public TopComponent getModeSelectedTopComponent(ModeImpl mode);
-    /** Get the top component that had been the selected one before switching to/from maximzied mode */
-    public TopComponent getModePreviousSelectedTopComponent(ModeImpl mode);
+    /** Get the ID of top component that had been the selected one before switching to/from maximzied mode */
+    public String getModePreviousSelectedTopComponentID(ModeImpl mode);
     /** Gets list of top components in this workspace. */
     public List<TopComponent> getModeTopComponents(ModeImpl mode);
     /** Gets list of top components in this workspace. */

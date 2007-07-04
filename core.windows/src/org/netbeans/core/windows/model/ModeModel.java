@@ -49,7 +49,7 @@ interface ModeModel {
     /** Sets selected TopComponent. */
     public void setSelectedTopComponent(TopComponent selected);
     /** Set top component that was selected before switching to/from maximized mode */
-    public void setPreviousSelectedTopComponent(TopComponent prevSelected);
+    public void setPreviousSelectedTopComponentID(String prevSelectedId);
     /** Adds opened TopComponent. */
     public void addOpenedTopComponent(TopComponent tc);
     /** Inserts opened TopComponent. */
@@ -95,8 +95,8 @@ interface ModeModel {
     public boolean containsTopComponent(TopComponent tc);
     /** Gets selected TopComponent. */
     public TopComponent getSelectedTopComponent();
-    /** Gets the top component that was selected before switching to/from maximized mode */
-    public TopComponent getPreviousSelectedTopComponent();
+    /** Gets the ID of top component that was selected before switching to/from maximized mode */
+    public String getPreviousSelectedTopComponentID();
     /** Gets list of top components in mode. */
     public List<TopComponent> getTopComponents();
     /** Gets list of top components in mode. */

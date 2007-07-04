@@ -41,6 +41,7 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.TopComponentGroupImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
 import org.openide.windows.TopComponent;
 
@@ -591,10 +592,10 @@ final class DefaultModel implements Model {
     }
     
     /** Remember which top component was the selected one before switching to/from maximized mode */
-    public void setModePreviousSelectedTopComponent(ModeImpl mode, TopComponent prevSelected) {
+    public void setModePreviousSelectedTopComponentID(ModeImpl mode, String prevSelectedId) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            modeModel.setPreviousSelectedTopComponent(prevSelected);
+            modeModel.setPreviousSelectedTopComponentID(prevSelectedId);
         }
     }
     
@@ -790,11 +791,11 @@ final class DefaultModel implements Model {
         }
     }
     
-    /** Get the top component that had been the selected one before switching to/from maximzied mode */
-    public TopComponent getModePreviousSelectedTopComponent(ModeImpl mode) {
+    /** Get the ID of top component that had been the selected one before switching to/from maximzied mode */
+    public String getModePreviousSelectedTopComponentID(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            return modeModel.getPreviousSelectedTopComponent();
+            return modeModel.getPreviousSelectedTopComponentID();
         } else {
             return null;
         }
@@ -1254,7 +1255,11 @@ final class DefaultModel implements Model {
                     continue;
 
                 //also remember which top component is the selected one
-                modeImpl.setPreviousSelectedTopComponent( modeImpl.getSelectedTopComponent() );
+                String selTcId = null;
+                TopComponent selTc = modeImpl.getSelectedTopComponent();
+                if( null != selTc ) 
+                    selTcId = WindowManagerImpl.getInstance().findTopComponentID(selTc);
+                modeImpl.setPreviousSelectedTopComponentID( selTcId );
             }
         }
     }

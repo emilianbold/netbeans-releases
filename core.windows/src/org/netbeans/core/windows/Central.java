@@ -700,10 +700,10 @@ final class Central implements ControllerHandler {
      * Remember which TopComponent was previously the selected one, used when switching to/from maximized mode.
      * 
      * @param mode 
-     * @param tc TopComponent that was previously selected.
+     * @param tcId ID of TopComponent that was previously selected.
      */
-    public void setModePreviousSelectedTopComponent(ModeImpl mode, TopComponent tc) {
-        model.setModePreviousSelectedTopComponent( mode, tc );
+    public void setModePreviousSelectedTopComponentID(ModeImpl mode, String tcId) {
+        model.setModePreviousSelectedTopComponentID( mode, tcId );
     }
 
     /** Adds opened TopComponent into model and requests view (if needed). */
@@ -1139,8 +1139,11 @@ final class Central implements ControllerHandler {
         }
         for( ModeImpl mode : groupModes ) {
             TopComponent selTC = mode.getSelectedTopComponent();
-            if( null != selTC )
-                setModePreviousSelectedTopComponent( mode, selTC );
+            if( null != selTC ) {
+                String tcId = WindowManagerImpl.getInstance().findTopComponentID(selTC);
+                if( null != tcId )
+                    setModePreviousSelectedTopComponentID( mode, tcId );
+            }
         }
         
         // Now close those which needed.
@@ -1405,10 +1408,10 @@ final class Central implements ControllerHandler {
         return model.getModeSelectedTopComponent(mode);
     }
     /**
-     * @return TopComponent that was previously selected in the given mode or null.
+     * @return ID of TopComponent that was previously selected in the given mode or null.
      */
-    public TopComponent getModePreviousSelectedTopComponent(ModeImpl mode) {
-        return model.getModePreviousSelectedTopComponent( mode );
+    public String getModePreviousSelectedTopComponentID(ModeImpl mode) {
+        return model.getModePreviousSelectedTopComponentID( mode );
     }
     /** Gets list of top components in this workspace. */
     public List<TopComponent> getModeTopComponents(ModeImpl mode) {
