@@ -62,9 +62,10 @@ public final class InitCodeGenerator {
             for (Setter setter : presenter.getSetters ()) {
                 if (! setter.getVersionable ().isAvailable (component.getDocument ()))
                     continue;
-                if (setter.isConstructor ()  &&  component.getType ().equals (setter.getConstructorRelatedTypeID ()))
-                    constructors.add (setter);
-                else
+                if (setter.isConstructor ()) {
+                    if (component.getType ().equals (setter.getConstructorRelatedTypeID ()))
+                      constructors.add (setter);
+                } else
                     setters.add (setter);
             }
         }
