@@ -19,30 +19,30 @@
 
 package org.netbeans.modules.vmd.palette;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
-import org.openide.util.WeakListeners;
 
 /**
  * @author David Kaspar, Anton Chechel
@@ -122,7 +122,9 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
                 }
             }
         }
-        
+
+        if (document == null)
+            return;
         WeakReference<PaletteKit> kitReference = kitMap.get(document.getDocumentInterface().getProjectType());
         if (kitReference == null) {
             return;
