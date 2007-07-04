@@ -1052,7 +1052,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     for (RADComponent subcomp : visualCont.getSubComponents()) { // excluding menu
                         generateComponentAddPost(subcomp, initCodeWriter, null);
                         generateAccessibilityCode(subcomp, initCodeWriter, null);
-                        generateInjectionCode(subcomp, writer, null);
+                        generateInjectionCode(subcomp, initCodeWriter, null);
                         generateAfterAllSetCode(subcomp, writer, null);
                     }
                     emptyLineRequest++;
@@ -1092,7 +1092,7 @@ class JavaCodeGenerator extends CodeGenerator {
             boolean endingCode = false;
             if (generateAccessibilityCode(comp, initCodeWriter, codeData))
                 endingCode = true;
-            if (generateInjectionCode(comp, writer, codeData))
+            if (generateInjectionCode(comp, initCodeWriter, codeData))
                 endingCode = true;
             if (generateAfterAllSetCode(comp, writer, codeData))
                 endingCode = true;
@@ -1108,7 +1108,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeData.addGuardedBlock(substCode);
             generateComponentAddPost(comp, initCodeWriter, codeData);
             generateAccessibilityCode(comp, initCodeWriter, codeData);
-            generateInjectionCode(comp, writer, codeData);
+            generateInjectionCode(comp, initCodeWriter, codeData);
             generateAfterAllSetCode(comp, writer, codeData);
         }
     }
@@ -1675,7 +1675,7 @@ class JavaCodeGenerator extends CodeGenerator {
         return generated;
     }
 
-    private boolean generateInjectionCode(RADComponent metacomp, Writer writer, CustomCodeData codeData)
+    private boolean generateInjectionCode(RADComponent metacomp, CodeWriter initCodeWriter, CustomCodeData codeData)
         throws IOException
     {
         String injectionCode = ResourceSupport.getInjectionCode(
@@ -1684,7 +1684,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (!injectionCode.endsWith("\n")) // NOI18N
                 injectionCode = injectionCode + "\n"; // NOI18N
             if (codeData == null) {
-                writer.write(injectionCode);
+                initCodeWriter.write(injectionCode);
             }
             else { // build code data for editing
                 String code = indentCode(injectionCode);

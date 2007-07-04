@@ -138,7 +138,7 @@ final class ResourceValueImpl implements ResourceValue {
     // ResourceValue implementation
     public String getJavaInitializationCode() {
         String pre = null;
-        String resMapCode = AppFrameworkSupport.getResourceMapCode(sourceFile);
+        String resMapCode = ResourceUtils.getResourceMapCode(sourceFile);
         String methodCode;
         String param = "\"" + key + "\""; // NOI18N
         String[] paramCode = null;
@@ -164,16 +164,9 @@ final class ResourceValueImpl implements ResourceValue {
         if (pre != null) {
             buf.append(pre);
         }
-        // The code for getting the resource map is quite long - worth "caching"
-        // in a variable. Using special code mark to encode 3 data elements:
-        // - the code to replace
-        // - the type of variable to declare for the code
-        // - suggested variable name
-        buf.append(CODE_MARK_VARIABLE_SUBST).append(resMapCode);
-        buf.append(CODE_MARK_VARIABLE_SUBST).append(application.ResourceMap.class.getName());
-        buf.append(CODE_MARK_VARIABLE_SUBST).append("resourceMap"); // NOI18N
-        buf.append(CODE_MARK_LINE_COMMENT + "NOI18N"); // NOI18N
-        buf.append(CODE_MARK_END); // indicates that a normal code follows
+        buf.append(resMapCode);
+        buf.append(ResourceUtils.CODE_MARK_LINE_COMMENT + "NOI18N"); // NOI18N
+        buf.append(ResourceUtils.CODE_MARK_END); // indicates that a normal code follows
         buf.append(methodCode).append("("); // NOI18N
         for (int i=0; i < paramCode.length; i++) {
             buf.append(paramCode[i]);
@@ -184,11 +177,6 @@ final class ResourceValueImpl implements ResourceValue {
         buf.append(")"); // NOI18N
         return buf.toString();
     }
-
-    // special code marks recognized by form editor:
-    private static final String CODE_MARK_END = "*/\n\\0"; // NOI18N
-    private static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
-    private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
     // FormDesignValue implementation
     public Object getDesignValue() {

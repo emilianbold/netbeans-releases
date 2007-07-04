@@ -234,7 +234,7 @@ public class ResourceServiceImpl implements ResourceService {
         if (bean instanceof java.awt.Component) {
             java.awt.Component component = (java.awt.Component) bean;
             if (component.getParent() == null)
-                return AppFrameworkSupport.getResourceMapCode(srcFile)
+                return ResourceUtils.getResourceMapCode(srcFile) + ResourceUtils.CODE_MARK_END
                         + ".injectComponents(" + variableName + ");"; // NOI18N
         }
         return null;

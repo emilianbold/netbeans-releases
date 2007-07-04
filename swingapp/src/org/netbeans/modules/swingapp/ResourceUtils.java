@@ -143,6 +143,42 @@ class ResourceUtils {
         return resources != null ? resources.remove(srcFile) : null;
     }
 
+    /**
+     * Returns source code for obtaining the ResourceMap for given file (class).
+     * Supposing the code is only used within the given source file - so the
+     * simple class name (not FQN) can be used; and not in a static block - so
+     * getClass().getClassLoader() can be used.
+     * @param srcFile the source file for which the ResourceMap should be obtained
+     */
+    static String getResourceMapCode(FileObject srcFile) {
+        // The code for getting the resource map is quite long - worth "caching"
+        // in a variable. Using special code mark to encode 3 data elements:
+        // - the code to replace
+        // - the type of variable to declare for the code
+        // - suggested variable name
+        String appCode = AppFrameworkSupport.getApplicationCode(srcFile);
+        if (appCode != null) { // generate ResourceMap getter code for given class using Application
+            // application.Application.getInstance(pkg.MyApp.class).getContext().getResourceMap(MyGUIClass.class)
+            return CODE_MARK_VARIABLE_SUBST
+                       + appCode + ".getContext().getResourceMap(" + srcFile.getName() + ".class)" // NOI18N
+                   + CODE_MARK_VARIABLE_SUBST + application.ResourceMap.class.getName()
+                   + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
+        } else { // no application - return code creating the ResourceMap directly
+            // new application.ResourceMap(null, getClass().getClassLoader(), "pkg.resources.MyGUIClass")
+            return CODE_MARK_LINE_COMMENT + "NOI18N" // NOI18N
+                   + CODE_MARK_VARIABLE_SUBST
+                       + "new application.ResourceMap(null, getClass().getClassLoader(), \"" // NOI18N
+                       + getBundleName(AppFrameworkSupport.getClassNameForFile(srcFile)) +"\")" // NOI18N
+                   + CODE_MARK_VARIABLE_SUBST + application.ResourceMap.class.getName()
+                   + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
+        }
+    }
+
+    // special code marks recognized by form editor:
+    static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
+    static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
+    static final String CODE_MARK_END = "*/\n\\0"; // NOI18N
+
     private static String getBundleName(String className) {
         if (className == null)
             return null;
