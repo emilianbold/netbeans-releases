@@ -23,7 +23,6 @@ package org.netbeans.installer.product;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -463,6 +462,16 @@ public class Registry {
                             !product.isAncestor(dependents)) {
                         product.setVisible(false);
                     }
+                }
+            } else {
+                if (!UiUtils.showYesNoDialog(
+                        "Missing target component", 
+                        "The specified target component - " + uid + "/" + 
+                        version + "\nwas not found in the registry. The installer\n" +
+                        "can continue as if the target component was not " +
+                        "specified.\n" +
+                        "Click Yes to continue, No to exit the installer.")) {
+                    finishHandler.cancel();
                 }
             }
         }
