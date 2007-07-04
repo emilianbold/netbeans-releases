@@ -116,6 +116,23 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         displayer.addMouseListener(controller);
         displayer.addMouseMotionListener(controller);
         installControlButtons();
+        dataModel.addChangeListener( new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                showHidePinButton();
+                dataModel.removeChangeListener( this );
+            }
+        });
+    }
+    
+    void showHidePinButton() {
+        Component tabComponent = null;
+        int selIndex = Math.max( 0, displayer.getSelectionModel().getSelectedIndex() );
+        if( selIndex >= 0 && selIndex < displayer.getModel().size() ) {
+            TabData tab = displayer.getModel().getTab( selIndex );
+            tabComponent = tab.getComponent();
+        }
+        btnAutoHidePin.setVisible( tabComponent != null 
+                && !TabDisplayer.ORIENTATION_INVISIBLE.equals( displayer.getWinsysInfo().getOrientation( tabComponent ) ) );
     }
     
     protected void installControlButtons() {
@@ -150,7 +167,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             if( null != displayer.getWinsysInfo() ) {
                 btnAutoHidePin = TabControlButtonFactory.createSlidePinButton( displayer );
                 buttonsPanel.add( btnAutoHidePin );
-                
+
                 Icon icon = btnAutoHidePin.getIcon();
                 if( 0 != width )
                     width += ICON_X_PAD;
