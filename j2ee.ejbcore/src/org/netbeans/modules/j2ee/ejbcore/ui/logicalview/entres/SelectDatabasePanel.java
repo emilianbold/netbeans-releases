@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
@@ -32,13 +34,11 @@ import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.ui.EJBPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 
 /**
  * Provide an interface to support datasource reference selection.
@@ -50,7 +50,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     
     protected static final String PROTOTYPE_VALUE = "jdbc:pointbase://localhost/sample [pbpublic on PBPUBLIC] "; //NOI18N
     private final ServiceLocatorStrategyPanel slPanel;
-    private final EJBPreferences ejbPreferences;
     private final J2eeModuleProvider provider;
     private final Map<String, Datasource> references;
     private final Set<Datasource> moduleDatasources;
@@ -61,7 +60,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
             Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources) {
         initComponents();
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_ChooseDatabase"));
-        ejbPreferences = new EJBPreferences();
         this.provider = provider;
         this.references = references;
         this.moduleDatasources = moduleDatasources;
@@ -71,8 +69,29 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         dsRefCombo.setPrototypeDisplayValue(PROTOTYPE_VALUE);
         populateReferences();
         
+        dsRefCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                checkDatasourceReference();
+            }
+        });
+
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
+        slPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
+                    Object newvalue = evt.getNewValue();
+                    if (newvalue instanceof Boolean) {
+                        boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
+                        if (isServiceLocatorOk) {
+                            checkDatasourceReference();
+                        } else {
+                            firePropertyChange(IS_VALID, true, false);
+                        }
+                    }
+                }
+            }
+        });
     }
     
     public String getDatasourceReference() {
@@ -234,6 +253,14 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
     
+    protected void checkDatasourceReference() {
+        if (dsRefCombo.getSelectedItem() instanceof String) {
+            firePropertyChange(IS_VALID, false, true);
+        } else {
+            firePropertyChange(IS_VALID, true, false);
+        }
+    }
+
     private void populateReferences() {
         
         SortedSet<String> refNames = new TreeSet<String>(references.keySet());

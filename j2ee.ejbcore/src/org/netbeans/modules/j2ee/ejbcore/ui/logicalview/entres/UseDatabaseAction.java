@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -99,7 +98,7 @@ public class UseDatabaseAction extends NodeAction {
         // get all the resources
         ResourcesHolder holder = getResources(j2eeModuleProvider, fileObject);
         
-        SelectDatabasePanel selectDatabasePanel = new SelectDatabasePanel(
+        final SelectDatabasePanel selectDatabasePanel = new SelectDatabasePanel(
                 j2eeModuleProvider,
                 enterpriseReferenceContainer.getServiceLocatorName(),
                 holder.getReferences(),
@@ -115,14 +114,13 @@ public class UseDatabaseAction extends NodeAction {
                 new HelpCtx(SelectDatabasePanel.class),
                 null
                 );
-        //#73163: disable OK button when no db connections are available
-        dialogDescriptor.setValid(checkConnections());
+        dialogDescriptor.setValid(checkConnections(selectDatabasePanel));
         selectDatabasePanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(SelectDatabasePanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
                     if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        dialogDescriptor.setValid(((Boolean)newvalue).booleanValue() && checkConnections());
+                        dialogDescriptor.setValid(((Boolean)newvalue).booleanValue() && checkConnections(selectDatabasePanel));
                     }
                 }
             }
@@ -302,8 +300,8 @@ public class UseDatabaseAction extends NodeAction {
         return false;
     }
     
-    private boolean checkConnections() {
-        return ConnectionManager.getDefault().getConnections().length > 0;
+    private boolean checkConnections(SelectDatabasePanel selectDatabasePanel) {
+        return selectDatabasePanel.getDatasource() != null;
     }
     
     public String getName() {
