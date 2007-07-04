@@ -220,7 +220,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * optional step, meaning the actual call sync() should task care of the
      * preparation if it is not done.
      */
-    public synchronized void prepareSync() {
+    private void prepareSync() {
         if (needsSync()) {
             getAccess().prepareSync();
         }
@@ -605,7 +605,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         getAccess().setAutoSync(v);
     }
     
-    public synchronized void runAutoSync() {
+    void runAutoSync() {
         prepareSync();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
