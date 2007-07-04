@@ -48,11 +48,13 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiPasswordField;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxModel;
@@ -155,6 +157,8 @@ public class GlassFishPanel extends DestinationPanel {
         
         setProperty(WARNING_PORT_IN_USE_PROPERTY,
                 DEFAULT_WARNING_PORT_IN_USE);
+        setProperty(WARNING_ASADMIN_FILES_EXIST_PROPERTY,
+                DEFAULT_WARNING_ASADMIN_FILES_EXIST);
         
         setProperty(DEFAULT_USERNAME_PROPERTY,
                 DEFAULT_DEFAULT_USERNAME);
@@ -399,7 +403,7 @@ public class GlassFishPanel extends DestinationPanel {
                 }
             }
             adminPortField.setText(adminPort);
-            
+                        
             super.initialize();
         }
         
@@ -585,9 +589,11 @@ public class GlassFishPanel extends DestinationPanel {
         
         @Override
         protected String getWarningMessage() {
+            // check whether the selected ports are already in use by any other
+            // installed application server (SJSAS or GlassFish)
             final RegistryFilter filter = new OrFilter(
                     new ProductFilter("glassfish", SystemUtils.getCurrentPlatform()),
-                    new ProductFilter("sjsam", SystemUtils.getCurrentPlatform()));
+                    new ProductFilter("sjsas", SystemUtils.getCurrentPlatform()));
             final List<Product> products =
                     Registry.getInstance().queryProducts(filter);
             
@@ -634,9 +640,21 @@ public class GlassFishPanel extends DestinationPanel {
                     }
                 }
             } catch (IOException e) {
-                ErrorManager.notifyDebug("Faield to get the port value.", e);
+                ErrorManager.notifyDebug("Failed to get the port value.", e);
             } catch (XMLException e) {
-                ErrorManager.notifyDebug("Faield to get the port value.", e);
+                ErrorManager.notifyDebug("Failed to get the port value.", e);
+            }
+            
+            // check whether the .asadminpass and .asadmintruststore file exist 
+            // in the user's home directory
+            final File asadminpass = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    ".asadminpass");;
+            final File asadmintruststore = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    ".asadmintruststore");
+            if (asadminpass.exists() || asadmintruststore.exists()) {
+                return panel.getProperty(WARNING_ASADMIN_FILES_EXIST_PROPERTY);
             }
             
             return null;
@@ -778,7 +796,7 @@ public class GlassFishPanel extends DestinationPanel {
             adminPortLabel = new NbiLabel();
             adminPortLabel.setLabelFor(adminPortField);
             
-            // commentsPane /////////////////////////////////////////////////////////
+            // defaultsLabel ////////////////////////////////////////////////////////
             defaultsLabel = new NbiLabel();
             
             // this /////////////////////////////////////////////////////////////////
@@ -1048,7 +1066,6 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULTS_LABEL_TEXT_PROPERTY =
             "defaults.label.text"; // NOI18N
     
-    
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.destination.label.text"); // NOI18N
@@ -1158,6 +1175,8 @@ public class GlassFishPanel extends DestinationPanel {
     
     public static final String WARNING_PORT_IN_USE_PROPERTY =
             "warning.port.in.use"; // NOI18N
+    public static final String WARNING_ASADMIN_FILES_EXIST_PROPERTY =
+            "GFP.warning.asadmin.files.exist"; // NOI18N
     
     public static final String DEFAULT_ERROR_USERNAME_NULL =
             ResourceUtils.getString(GlassFishPanel.class,
@@ -1229,6 +1248,9 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.warning.port.in.use"); // NOI18N
+    public static final String DEFAULT_WARNING_ASADMIN_FILES_EXIST = 
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.warning.asadmin.files.exist"); // NOI18N
             
     public static final String DEFAULT_MINIMUM_JDK_VERSION =
             ResourceUtils.getString(GlassFishPanel.class,

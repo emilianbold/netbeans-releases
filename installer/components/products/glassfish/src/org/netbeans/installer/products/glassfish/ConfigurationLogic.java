@@ -43,6 +43,7 @@ import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.products.glassfish.wizard.panels.GlassFishPanel;
+import org.netbeans.installer.utils.LogManager;
 
 /**
  *
@@ -65,9 +66,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
-        final String username  = getProperty(GlassFishPanel.USERNAME_PROPERTY);
-        final String password  = getProperty(GlassFishPanel.PASSWORD_PROPERTY);
-        final String httpPort  = getProperty(GlassFishPanel.HTTP_PORT_PROPERTY);
+        final String username = getProperty(GlassFishPanel.USERNAME_PROPERTY);
+        final String password = getProperty(GlassFishPanel.PASSWORD_PROPERTY);
+        final String httpPort = getProperty(GlassFishPanel.HTTP_PORT_PROPERTY);
         final String httpsPort = getProperty(GlassFishPanel.HTTPS_PORT_PROPERTY);
         final String adminPort = getProperty(GlassFishPanel.ADMIN_PORT_PROPERTY);
         
@@ -288,9 +289,42 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     httpsPort,
                     adminPort);
         } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.create.domain"), // NOI18N
-                    e);
+            final InstallationException firstException = new InstallationException(
+                        getString("CL.install.error.create.domain"), // NOI18N
+                        e);
+                        
+            final File asadminpass = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    ".asadminpass");;
+            final File asadmintruststore = new File(
+                    SystemUtils.getUserHomeDirectory(), 
+                    ".asadmintruststore");
+            if (asadminpass.exists() || asadmintruststore.exists()) {
+                LogManager.log("either .asadminpass or .asadmintruststore " +
+                        "files exist -- deleting them");
+                
+                getProduct().addInstallationWarning(firstException);
+                
+                try {
+                    FileUtils.deleteFile(asadminpass);
+                    FileUtils.deleteFile(asadmintruststore);
+                    
+                    GlassFishUtils.createDomain(
+                            directory,
+                            DOMAIN_NAME,
+                            username,
+                            password,
+                            httpPort,
+                            httpsPort,
+                            adminPort);
+                } catch (IOException ex) {
+                    throw new InstallationException(
+                            getString("CL.install.error.create.domain"), // NOI18N
+                            ex);
+                }
+            } else {
+                throw firstException;
+            }
         }
         
         /////////////////////////////////////////////////////////////////////////////
