@@ -355,4 +355,10 @@ public class BracketCompleterTest extends RubyTestBase {
     // - backspace deletion
     // - entering incomplete output
     // automatic reindentation of "end", "else" etc.
+
+    public void test108889() throws Exception {
+        // Reproduce 108889: AIOOBE and AE during editing
+        insertChar("x = %q((^))", 'a', "x = %q((a^))");
+    }
+
 }

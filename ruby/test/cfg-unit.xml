@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/**Test.class"/>
 <exclude name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"/>
 <exclude name="org/netbeans/modules/ruby/RubyLexerRandomTest.class"/>
-<exclude name="org/netbeans/modules/ruby/RubyLexerTest.class/test93990"/>
+<exclude name="org/netbeans/modules/ruby/BracketCompleterTest.class/test108889"/>
 <exclude name="org/netbeans/modules/ruby/TypeAnalyzerTest.class/testTypeAssertions"/>
             </patternset>
         </testset>
