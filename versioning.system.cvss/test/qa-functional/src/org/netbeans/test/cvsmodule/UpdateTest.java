@@ -104,7 +104,7 @@ public class UpdateTest extends JellyTestCase {
     
     public void testOpen() throws Exception {
         File loc = new File("/tmp/work/w1153322002833");
-        //closeProject(PROJECT1);
+        //TestKit.closeProject(PROJECT1);
         //closeProject(PROJECT2);
         openProject(loc, PROJECT1);
     }
@@ -210,7 +210,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         //closeProject(PROJECT2);
         //TestKit.deleteRecursively(work);
         
@@ -226,7 +226,7 @@ public class UpdateTest extends JellyTestCase {
             editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
             //editFilesForMerge(PROJECT2, iter);
             
-            closeProject(PROJECT1);
+            TestKit.closeProject(PROJECT1);
             //closeProject(PROJECT2);
             
             checkOutProject(cvsRoot1, "test", PROJECT1);
@@ -252,7 +252,7 @@ public class UpdateTest extends JellyTestCase {
             //oto2.waitText("Committing");
             //oto2.waitText("finished");
             //delete all
-            closeProject(PROJECT1);
+            TestKit.closeProject(PROJECT1);
             //closeProject(PROJECT2);
             //TestKit.deleteRecursively(work);
             
@@ -302,7 +302,7 @@ public class UpdateTest extends JellyTestCase {
             //oto2.waitText("Committing");
             //oto2.waitText("finished");
             //delete all
-            closeProject(PROJECT1);
+            TestKit.closeProject(PROJECT1);
             //closeProject(PROJECT2);
             //TestKit.deleteRecursively(work);
             
@@ -325,7 +325,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -336,7 +336,7 @@ public class UpdateTest extends JellyTestCase {
         //change last file from last package
         editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -356,7 +356,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.waitText("Committing");
         oto1.waitText("finished");
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -411,7 +411,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         //closeProject(PROJECT2);
         //TestKit.deleteRecursively(work);
         
@@ -468,7 +468,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
                
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -477,7 +477,7 @@ public class UpdateTest extends JellyTestCase {
         
         editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
         editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
                     
         checkOutProject(cvsRoot1, "test", PROJECT1);
 
@@ -495,7 +495,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.waitText("Committing");
         oto1.waitText("finished");
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -541,7 +541,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -553,7 +553,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -571,7 +571,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -626,7 +626,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -637,7 +637,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
 
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
 
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -655,7 +655,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         updateProject(PROJECT1, cvsRoot1);
@@ -708,7 +708,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -718,7 +718,7 @@ public class UpdateTest extends JellyTestCase {
         //change last file from last package
         editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -736,7 +736,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.waitText("Committing");
         oto1.waitText("finished");
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -790,7 +790,7 @@ public class UpdateTest extends JellyTestCase {
         File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -801,7 +801,7 @@ public class UpdateTest extends JellyTestCase {
         
         editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -818,7 +818,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
@@ -872,7 +872,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -883,7 +883,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
         editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -900,7 +900,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -948,7 +948,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -958,7 +958,7 @@ public class UpdateTest extends JellyTestCase {
         iter1 = System.currentTimeMillis();
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
         editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
                     
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -976,7 +976,7 @@ public class UpdateTest extends JellyTestCase {
         oto1.waitText("Committing");
         oto1.waitText("finished");
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1031,7 +1031,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         Node node2;
@@ -1044,7 +1044,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
         editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -1061,7 +1061,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1116,7 +1116,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -1128,7 +1128,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
         editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -1145,7 +1145,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1192,7 +1192,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -1204,7 +1204,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
         editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -1221,7 +1221,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1281,7 +1281,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -1292,7 +1292,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
         editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -1309,7 +1309,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1368,7 +1368,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         Node node2;
@@ -1381,7 +1381,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
         editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         
@@ -1399,7 +1399,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1458,7 +1458,7 @@ public class UpdateTest extends JellyTestCase {
         File location1;
         File work = new File("/tmp/work");
         work.mkdirs();
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         Node node1;
         org.openide.nodes.Node nodeIDE1;
@@ -1469,7 +1469,7 @@ public class UpdateTest extends JellyTestCase {
         editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
         editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
         
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         checkOutProject(cvsRoot1, "test", PROJECT1);
         iter2 = System.currentTimeMillis();
@@ -1486,7 +1486,7 @@ public class UpdateTest extends JellyTestCase {
         co.commit();
         oto1.waitText("Committing");
         oto1.waitText("finished");
-        closeProject(PROJECT1);
+        TestKit.closeProject(PROJECT1);
         
         openProject(location1, PROJECT1);
         
@@ -1530,16 +1530,6 @@ public class UpdateTest extends JellyTestCase {
         co = CommitOperator.invoke(new Node[] {node1});
         assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
         co.cancel();           
-    }
-    
-    public static void closeProject(String project_name) {
-        try {
-            Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
-            rootNode.performPopupAction("Close Project");
-        }    
-        catch (Exception e) {
-            
-        }    
     }
     
     public void updateProject(String project, String cvsRoot) throws Exception {
