@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.api.model;
 
 import org.openide.util.Mutex;
 import org.openide.util.WeakSet;
+import org.openide.util.Exceptions;
 
 import java.util.*;
 
@@ -131,8 +132,13 @@ public final class DescriptorRegistry {
         this.descriptors = tempDescriptors;
         this.producers = tempProducers;
 
-        for (DescriptorRegistryListener listener : listeners)
-            listener.descriptorRegistryUpdated ();
+        for (DescriptorRegistryListener listener : listeners) {
+            try {
+                listener.descriptorRegistryUpdated ();
+            } catch (Exception e) {
+                Exceptions.printStackTrace (e);
+            }
+        }
     }
 
     /**
