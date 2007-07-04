@@ -202,7 +202,6 @@ public class SettingsTab extends javax.swing.JPanel {
         pluginsViewGroup.add(cbPlugins);
         org.openide.awt.Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbPlugins.text")); // NOI18N
         cbPlugins.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbPlugins.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbPlugins.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbPluginsActionPerformed(evt);
@@ -212,7 +211,6 @@ public class SettingsTab extends javax.swing.JPanel {
         pluginsViewGroup.add(cbModules);
         org.openide.awt.Mnemonics.setLocalizedText(cbModules, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbModules.text")); // NOI18N
         cbModules.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbModules.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbModules.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbModulesActionPerformed(evt);
@@ -221,7 +219,6 @@ public class SettingsTab extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbGlobalInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
         cbGlobalInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbGlobalInstall.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbGlobalInstall.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbGlobalInstallActionPerformed(evt);
@@ -241,7 +238,7 @@ public class SettingsTab extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addButton)
-                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE))
+                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE))
                         .add(1, 1, 1))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
@@ -249,23 +246,23 @@ public class SettingsTab extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(12, 12, 12)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(lPluginsView, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 33, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(lPluginsView)
                                     .add(lCheckPeriod))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(cbPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(cbModules)
-                                    .add(cbCheckPeriod, 0, 253, Short.MAX_VALUE))
+                                    .add(cbCheckPeriod, 0, 290, Short.MAX_VALUE))
                                 .add(58, 58, 58)
                                 .add(bProxy))
                             .add(layout.createSequentialGroup()
                                 .add(lGeneral)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
+                                .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .add(lConnection)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))))
+                                .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(lUpdateCenters)))
