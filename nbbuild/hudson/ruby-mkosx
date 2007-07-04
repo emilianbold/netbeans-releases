@@ -3,9 +3,9 @@
 # Build an OSX app bundle
 
 rm -rf RubyNetBeans.app && \
-unzip -q scripting/ruby/rubyide/RubyNetBeans.app.zip && \
-unzip -q scripting/ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip -d RubyNetBeans.app/Contents/Resources && \
-zip -y -r -q scripting/ruby/rubyide/dist/netbeans-rubyide-hudson-macosx-${BUILD_NUMBER}.zip RubyNetBeans.app && \
+unzip -q ruby/rubyide/RubyNetBeans.app.zip && \
+unzip -q ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip -d RubyNetBeans.app/Contents/Resources && \
+zip -y -r -q ruby/rubyide/dist/netbeans-rubyide-hudson-macosx-${BUILD_NUMBER}.zip RubyNetBeans.app && \
 rm -rf RubyNetBeans.app
-echo "Built OSX bundle  scripting/ruby/rubyide/dist/netbeans-rubyide-hudson-macosx-${BUILD_NUMBER}.zip"
+echo "Built OSX bundle  ruby/rubyide/dist/netbeans-rubyide-hudson-macosx-${BUILD_NUMBER}.zip"
 

@@ -7,7 +7,7 @@
 ant -f nbbuild/build.xml checkout && \
 ant -f nbbuild/build.xml build-nozip all-xtest && \
 ant -f lexer/test/build.xml buildtests && \
-ant -f scripting/ruby/build.xml && \
-ant -f scripting/ruby/build.xml runtests && \
-ant -f scripting/ruby/build.xml tests-junit-format
+ant -f ruby/build.xml && \
+ant -f ruby/build.xml runtests && \
+ant -f ruby/build.xml tests-junit-format
 
