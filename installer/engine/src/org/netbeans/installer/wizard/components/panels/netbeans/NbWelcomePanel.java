@@ -234,7 +234,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     }
     
     public static class NbWelcomePanelSwingUi extends ErrorMessagePanelSwingUi {
-        protected NbWelcomePanel component;
+        protected NbWelcomePanel panel;
         
         private NbiTextPane textPane;
         private NbiButton customizeButton;
@@ -253,7 +253,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 final SwingContainer container) {
             super(component, container);
             
-            this.component = component;
+            this.panel = component;
             
             registryNodes = new LinkedList<RegistryNode>();
             populateList(
@@ -352,6 +352,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             final List<Product> products =
                     Registry.getInstance().getProductsToInstall();
             
+            if (products.size() == 0) {
+                return panel.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+            }
+            
             String template = panel.getProperty(
                     ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY);
             for (Product product: products) {
@@ -444,7 +448,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 };
                 
                 customizeDialog = new NbCustomizeSelectionDialog(
-                        component,
+                        panel,
                         callback,
                         registryNodes);
             }
