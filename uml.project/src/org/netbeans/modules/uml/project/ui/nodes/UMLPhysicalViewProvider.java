@@ -24,6 +24,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
@@ -99,6 +100,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
     private final PropertyEvaluator evaluator;
     private final UMLImportsUiSupport mImportSupport;
     private UMLLogicalViewRootNode node;
+    private java.lang.ref.WeakReference<UMLLogicalViewRootNode> nodeWeakRef;
     private ReferenceHelper mResolver = null;
     
     
@@ -132,17 +134,32 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
     
     public Node createLogicalView()
     {
-        
         if (this.node == null)
         {
-            this.node = new UMLLogicalViewRootNode();
+	    if (nodeWeakRef != null) 
+	    {
+		UMLLogicalViewRootNode n = nodeWeakRef.get();
+		if (n != null) 
+		{
+		    this.node = n;	  
+		}
+	    }
+	    if (this.node == null) 
+	    {
+		this.node = new UMLLogicalViewRootNode();
+	    }
         }
-        
+	nodeWeakRef = null;
+       
         return this.node;
     }
     
     public void detachLogicalView()
     {
+	if (this.node != null) 
+	{
+	    this.nodeWeakRef = new WeakReference(this.node);
+	}
         this.node = null;
     }
     
