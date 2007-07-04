@@ -47,7 +47,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     private Version minimumVersion;
     private Version maximumVersion;
     private Version preferredVersion;
-    
+    private String  vendorAllowed;
     private List<File>   jdkLocations;
     private List<String> jdkLabels;
     
@@ -56,6 +56,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 DEFAULT_MINIMUM_JDK_VERSION);
         setProperty(MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
+        setProperty(VENDOR_JDK_ALLOWED_PROPERTY,
+                DEFAULT_VENDOR_JDK_ALLOWED);
         
         setProperty(LOCATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_LOCATION_LABEL_TEXT);
@@ -78,6 +80,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 DEFAULT_ERROR_WRONG_VERSION_OLDER);
         setProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY,
                 DEFAULT_ERROR_WRONG_VERSION_NEWER);
+        setProperty(ERROR_WRONG_VENDOR_PROPERTY,
+                DEFAULT_ERROR_WRONG_VENDOR);        
         setProperty(ERROR_UNKNOWN_PROPERTY,
                 DEFAULT_ERROR_UNKNOWN);
         setProperty(ERROR_NOTHING_FOUND_PROPERTY,
@@ -93,6 +97,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 getProperty(MINIMUM_JDK_VERSION_PROPERTY));
         maximumVersion = Version.getVersion(
                 getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
+        vendorAllowed = getProperty(VENDOR_JDK_ALLOWED_PROPERTY);
         
         if (getProperty(PREFERRED_JDK_VERSION_PROPERTY) != null) {
             preferredVersion = Version.getVersion(
@@ -163,11 +168,16 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             // location does not exist - in this case we're positive that it
             // WILL be a jdk) and if version satisfies the requirements - add
             // the location to the list
-            if ((!location.exists() || JavaUtils.isJdk(location)) &&
-                    !version.olderThan(minimumVersion) &&
-                    !version.newerThan(maximumVersion)) {
-                jdkLocations.add(location);
-                jdkLabels.add(label);
+            if ((!location.exists() || JavaUtils.isJdk(location))) {
+                String vendor = JavaUtils.getInfo(location).getVendor();
+                
+                if(!version.olderThan(minimumVersion) &&
+                        !version.newerThan(maximumVersion) &&
+                        vendor.matches(vendorAllowed)) {
+                    jdkLocations.add(location);
+                    jdkLabels.add(label);
+                }
+                
             }
         }
     }
@@ -227,7 +237,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 final VersionDistance currentDistance =
                         currentVersion.getDistance(preferredVersion);
                 
-                if ((closestDistance == null) || 
+                if ((closestDistance == null) ||
                         currentDistance.lessThan(closestDistance)) {
                     closestLocation = location;
                     closestDistance = currentDistance;
@@ -303,7 +313,15 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     version,
                     maximumVersion);
         }
-        
+        String vendor = JavaUtils.getInfo(file).getVendor();
+        if(!vendor.matches(vendorAllowed)) {
+            return StringUtils.format(
+                    getProperty(ERROR_WRONG_VENDOR_PROPERTY),
+                    path,
+                    vendor,
+                    vendorAllowed);
+        }
+    
         return null;
     }
     
@@ -330,6 +348,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             "maximum.jdk.version"; // NOI18N
     public static final String PREFERRED_JDK_VERSION_PROPERTY =
             "preferred.jdk.version"; // NOI18N
+    public static final String VENDOR_JDK_ALLOWED_PROPERTY =
+            "vendor.jdk.allowed.pattern"; // NOI18N
     
     public static final String DEFAULT_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(JdkLocationPanel.class,
@@ -355,6 +375,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             "error.wrong.version.older"; // NOI18N
     public static final String ERROR_WRONG_VERSION_NEWER_PROPERTY =
             "error.wrong.version.newer"; // NOI18N
+    public static final String ERROR_WRONG_VENDOR_PROPERTY =
+            "error.wrong.vendor"; // NOI18N
     public static final String ERROR_UNKNOWN_PROPERTY =
             "error.unknown"; // NOI18N
     
@@ -379,6 +401,10 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_ERROR_WRONG_VERSION_NEWER =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.wrong.version.newer"); // NOI18N
+    public static final String DEFAULT_ERROR_WRONG_VENDOR =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.wrong.vendor"); // NOI18N
+    
     public static final String DEFAULT_ERROR_UNKNOWN =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.unknown"); // NOI18N
@@ -392,6 +418,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_MAXIMUM_JDK_VERSION =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.maximum.jdk.version"); // NOI18N
+    public static final String DEFAULT_VENDOR_JDK_ALLOWED =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.vendor.jdk.allowed");
     
     public static final String DEFAULT_USEDBY_LABEL =
             ResourceUtils.getString(JdkLocationPanel.class,
