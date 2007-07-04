@@ -25,6 +25,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
+import org.openide.ErrorManager;
 
 public class DriverNodeInfo extends DatabaseNodeInfo {
 
@@ -52,7 +53,7 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
                 JDBCDriverManager.getDefault().removeDriver(driver);
             }
         } catch (DatabaseException e) {
-            // PENDING
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
     
