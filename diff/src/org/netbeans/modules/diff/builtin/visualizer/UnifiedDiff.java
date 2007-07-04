@@ -19,9 +19,9 @@
 package org.netbeans.modules.diff.builtin.visualizer;
 
 import org.netbeans.api.diff.Difference;
+import org.netbeans.modules.diff.builtin.Hunk;
 
 import java.io.*;
-import java.util.*;
 
 /**
  * Unified diff engine.
@@ -216,13 +216,5 @@ final class UnifiedDiff {
         }
         writer.close();
         reader.close();
-    }
-    
-    private class Hunk {
-        int baseStart; 
-        int baseCount;
-        int modifiedStart; 
-        int modifiedCount;
-        List<String> lines = new ArrayList<String>();    // each line begins with a space, plus or minus sign 
     }
 }
