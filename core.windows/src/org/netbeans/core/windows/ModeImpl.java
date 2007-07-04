@@ -252,7 +252,7 @@ public final class ModeImpl implements Mode {
      */
     public void setPreviousSelectedTopComponentID(String tcId) {
         String old = getPreviousSelectedTopComponentID();
-        if(tcId.equals(old)) {
+        if(null != tcId && tcId.equals(old)) {
             return;
         }
         getCentral().setModePreviousSelectedTopComponentID(this, tcId);
