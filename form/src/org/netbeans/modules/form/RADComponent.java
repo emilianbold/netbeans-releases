@@ -418,14 +418,36 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
      * @param value new name of the component
      */
     public void setName(String name) {
-        if (componentCodeExpression == null)
+        if (!needsVariableRename(name)) {
             return;
+        }
 
-        CodeVariable var = componentCodeExpression.getVariable();
-        if (var == null || name.equals(var.getName()))
+        resourceComponentRename(name); // do before the component has new name
+
+        String oldName = componentCodeExpression.getVariable().getName();
+
+        formModel.getCodeStructure().renameVariable(oldName, name);
+
+        renameDefaultEventHandlers(oldName, name);
+        // [possibility of renaming default event handlers should be probably
+        // configurable in options]
+
+        formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
+                                               oldName, name);
+
+        if (getNodeReference() != null)
+            getNodeReference().updateName();
+    }
+    
+    /**
+     * Method used to push setName through refactoring instead of just setting the variable name and
+     * not changing it in users custom code.
+     * @param name the new name for the variable
+     */
+    public void rename(String name) {
+        if (!needsVariableRename(name)) {
             return;
-        // [maybe we should handle the component name differently if there is
-        //  no variable for the component]
+        }
 
         if (!org.openide.util.Utilities.isJavaIdentifier(name)) {
             IllegalArgumentException iae =
@@ -447,29 +469,6 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             throw iae;
         }
 
-        resourceComponentRename(name); // do before the component has new name
-
-        String oldName = var.getName();
-
-        formModel.getCodeStructure().renameVariable(oldName, name);
-
-        renameDefaultEventHandlers(oldName, name);
-        // [possibility of renaming default event handlers should be probably
-        // configurable in options]
-
-        formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
-                                               oldName, name);
-
-        if (getNodeReference() != null)
-            getNodeReference().updateName();
-    }
-    
-    /**
-     * Method used to push setName through refactoring instead of just setting the variable name and
-     * not changing it in users custom code.
-     * @param name the new name for the variable
-     */
-    public void rename(String name) {
         try {
             RADComponentRenameRefactoringSupport rf = new RADComponentRenameRefactoringSupport(name);
             rf.setComponent(this);
@@ -479,6 +478,14 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                 setName(name);
             }
         }
+    }
+
+    private boolean needsVariableRename(String name) {
+        if (componentCodeExpression != null) {
+            CodeVariable var = componentCodeExpression.getVariable();
+            return var != null && name != null && !name.equals(var.getName());
+        }
+        return false;
     }
 
     public void setStoredName(String name) {
