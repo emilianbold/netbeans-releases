@@ -23,7 +23,9 @@ package org.netbeans.modules.uml.core.eventframework;
 import org.netbeans.modules.uml.common.ETSystem;
 
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import org.openide.ErrorManager;
 
 /**
@@ -34,6 +36,7 @@ import org.openide.ErrorManager;
 public class EventManager<Element>
 {
         private Vector<WeakReference<Object>> m_listeners = new Vector<WeakReference<Object>>();
+        private WeakHashMap<Object, Object> hashedListeners = new WeakHashMap<Object, Object>();
 	private IEventDispatcher m_dispatcher = null;
 	private IValidationSink m_Validator = null;
 
@@ -43,10 +46,11 @@ public class EventManager<Element>
             // conover - duplicate listeners were being registered, and this
             // will prevent that from happening
 	    //if (!m_listeners.contains(obj))
-            if (! (indexOf(obj) > -1))
+            if (! contains(obj))
             {
 		m_listeners.addElement(new WeakReference(obj));
-    
+		hashedListeners.put(obj, new Object());
+		
                 if (sink != null)
                     setValidator(sink);
             }
@@ -61,45 +65,62 @@ public class EventManager<Element>
 	
 	public void removeListener(Element sink)
 	{
-	        int index = indexOf(sink);
-	        if (index > -1) {
-		    m_listeners.remove(index);
+	    if (sink != null) {
+		Iterator<WeakReference<Object>> iter = m_listeners.iterator();
+		if (iter != null) 
+		{
+		    while(iter.hasNext()) 
+		    {
+			WeakReference<Object> ref = iter.next(); 
+			if (ref != null) 
+			{
+			    Object elem = ref.get();
+			    if (elem != null && elem.equals(sink)) 
+			    {
+				iter.remove();
+			    } 
+			}
+		    }
 		}
-	    
+		hashedListeners.remove(sink);	    
+	    }
 	}
 	
-        private int indexOf(Element obj) 
+        private boolean contains(Element obj) 
         {
 	    if (obj != null) 
 	    {
-		for (int i = 0 ; i < m_listeners.size() ; i++) 
+		if (hashedListeners.get(obj) != null) {
+		    return true;
+		}
+	    }
+	    return false;
+	}
+
+        private void cleanUp() 
+        {
+	    Iterator<WeakReference<Object>> iter = m_listeners.iterator();
+	    if (iter != null) 
+	    {
+		while(iter.hasNext()) 
 		{
-		    WeakReference<Object> ref = m_listeners.elementAt(i);
+		    WeakReference<Object> ref = iter.next(); 
 		    if (ref == null) 
 		    {
-			m_listeners.remove(i);
-			continue;
+			iter.remove();
 		    } 
 		    else 
 		    {
 			Object elem = ref.get();
 			if (elem == null) 
 			{
-			    m_listeners.remove(i);
-			    continue;			
-			} 
-			else 
-			{
-			    if (obj.equals(elem)) 
-			    {
-				return i;
-			    }
+			    iter.remove();
 			}
 		    }
 		}
 	    }
-	    return -1;
 	}
+    
 
 	public void setDispatcher(IEventDispatcher disp)
 	{
@@ -120,6 +141,8 @@ public class EventManager<Element>
 	{
 		if (func == null)
 			return;
+
+		cleanUp();
 		//
 		// Switched the loop to go backwards because in onCoreProductPreQuit
 		// the listeners could be removed in the execute and that was causing
@@ -134,6 +157,7 @@ public class EventManager<Element>
 			try
 			{
 				//if (validateSink(obj);
+			    //System.out.println("--EventManager.notifyListeners() m_listeners.elementAt(i).get() = "+m_listeners.elementAt(i).get());
 				func.execute(m_listeners.elementAt(i).get());
 			}
 			
@@ -149,6 +173,7 @@ public class EventManager<Element>
 		if (func == null)
 			return;
 		
+		cleanUp();
 		// See above for comment
 		//for (int i = 0; i < m_listeners.size(); i++)
 		for (int i = m_listeners.size() - 1; i >= 0 ; i--)
@@ -168,6 +193,7 @@ public class EventManager<Element>
 	
 	public void notifyListenersWithQualifiedProceed(EventFunctor func)
 	{
+		cleanUp();
 		// cvc - 6269224
 		// loop in reverse because an element might get removed outside of
 		// this instance and cause some listeners to be skipped

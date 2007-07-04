@@ -138,8 +138,8 @@ public class UMLChildren extends Children.SortedArray
    public void recalculateChildren()
    {
      
-      NetBeansUMLProjectTreeModel model = UMLModelRootNode.getProjectTreeModel(); 
-      ITreeItem item = getItem();
+      final NetBeansUMLProjectTreeModel model = UMLModelRootNode.getProjectTreeModel(); 
+      final ITreeItem item = getItem();
       item.setIsInitalized(false);
       
       // Debug.out.println("UMLChildren.recalculateChildren");
@@ -149,10 +149,21 @@ public class UMLChildren extends Children.SortedArray
          // otherwise new nodes are added in addition to the prior ones
          // Not sure if this is the most efficient thing to do or if this
          // is the right place to do it.
-         remove(getNodes());
-         // 
+	 MUTEX.readAccess(new Runnable() 
+	 {
+	     public void run() 
+	     {
+		 remove(getNodes());
+	     }
+	 });  
           
-         model.fireItemExpanding(item, new ChildrenNodeContext());    
+	 MUTEX.readAccess(new Runnable() 
+	 {
+	     public void run() 
+	     {
+		 model.fireItemExpanding(item, new ChildrenNodeContext());  
+	     }
+	 });  
          
          item.setIsInitalized(true);
       }      
