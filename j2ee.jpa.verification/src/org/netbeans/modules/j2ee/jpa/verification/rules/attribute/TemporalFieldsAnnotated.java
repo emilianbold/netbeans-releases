@@ -42,7 +42,7 @@ public class TemporalFieldsAnnotated extends JPAEntityAttributeCheck {
         String temporal = attrib.getTemporal();
         
         if (temporal == null || temporal.length() == 0){
-            if (temporalTypes.contains(attrib.getInstanceVariable().asType().toString())){
+            if (temporalTypes.contains(attrib.getType().toString())){
                 Fix fix = new CreateTemporalAnnotationHint(ctx.getFileObject(),
                         ElementHandle.create(attrib.getJavaElement()));
                 
