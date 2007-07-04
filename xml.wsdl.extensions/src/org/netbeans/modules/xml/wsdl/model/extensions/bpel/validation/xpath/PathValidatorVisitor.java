@@ -18,8 +18,8 @@
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
-import java.lang.String;
 import java.text.MessageFormat;
+import javax.xml.XMLConstants;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.Form;
@@ -100,11 +100,6 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
     //========================================================
     
     public void visit(XPathLocationPath locationPath) {
-// hot fix for # 106445 [to nikita: please, investigate it]
-//
-        if (true) return;
-
-        
         if (myInitialExpression == null) {
             myInitialExpression = locationPath;
         } else {
@@ -182,11 +177,6 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
     }
     
     public void visit(LocationStep locationStep) {
-// hot fix for # 106445 [to nikita: please, investigate it]
-//
-        if (true) return;
-
-        //
         assert parentComponent != null;
         //
         boolean isAttribute = locationStep.getAxis() == LocationStep.AXIS_ATTRIBUTE;
@@ -214,17 +204,35 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             }
             //
             // Obtain the namespace URI by the prefix
-            // The default namespace will be used in case of empty or null prefix
-            WSDLComponent contentElement = myContext.getXpathContentElement();
-            assert contentElement instanceof AbstractDocumentComponent;
-            String nsUri = ((AbstractDocumentComponent)contentElement).
-                    lookupNamespaceURI(nsPrefix, true);
-            //
-            if (nsUri == null) {
-                addResultItem(ResultType.WARNING,
-                        "UNKNOWN_NAMESPACE_PREFIX", nsPrefix); // NOI18N
-                stopPathValidation = true;
-                return;
+            // The absence of prefix means that the XPath step is unqualified.
+            // The default namespace can't be used by XPath in BPEL!
+            String nsUri = null;
+            if (nsPrefix == null) {
+                //
+                // If the prefix isn't specified then the step component can
+                // be considered as an unqualified schema object.
+                // So the effective namespace can be taken from the parent component
+                if (parentComponent != null) {
+                    nsUri = parentComponent.getModel().
+                            getEffectiveNamespace(parentComponent);
+                }
+                //
+                // If the namespace is still unknown then use empty namespace
+                if (nsUri == null) {
+                    nsUri = XMLConstants.DEFAULT_NS_PREFIX;
+                }
+            } else {
+                WSDLComponent contentElement = myContext.getXpathContentElement();
+                assert contentElement instanceof AbstractDocumentComponent;
+                nsUri = ((AbstractDocumentComponent)contentElement).
+                        lookupNamespaceURI(nsPrefix, true);
+                //
+                if (nsUri == null) {
+                    addResultItem(ResultType.WARNING,
+                            "UNKNOWN_NAMESPACE_PREFIX", nsPrefix); // NOI18N
+                    stopPathValidation = true;
+                    return;
+                }
             }
             //
             SchemaComponent foundComponent = null;
@@ -260,6 +268,9 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                         addResultItem(ResultType.ERROR,
                                 "WRONG_GLOBAL_ELEMENT", correctRootName); // NOI18N
                     }
+                    //
+                    stopPathValidation = true;
+                    return;
                 }
                 //
                 // Look for local object next time.
@@ -404,12 +415,14 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
      */ 
     private void checkNsPrefixes(SchemaComponent sComp, String nsPrefix, String nsUri) {
         Form form = null;
+        boolean isGlobal = false;
         if (sComp instanceof LocalElement){
             form = ((LocalElement) sComp).getFormEffective();
         } else if (sComp instanceof LocalAttribute){
             form = ((LocalAttribute) sComp).getFormEffective();
         } else {
             form = Form.QUALIFIED; // by default for global components
+            isGlobal = true;
         }
         //
         if (Form.UNQUALIFIED.equals(form) && nsPrefix != null) {
@@ -446,23 +459,45 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             }
             //
             String name = ((Named)sComp).getName();
-            if (sComp instanceof Element){
-                if (preferredPrefix == null) {
-                    addResultItem(ResultType.WARNING,
-                            "ELEMENT_PREFIX_REQUIRED", name); // NOI18N
-                } else {
-                    addResultItem(ResultType.WARNING,
-                            "ELEMENT_SPECIFIC_PREFIX_REQUIRED",
-                            name, preferredPrefix); // NOI18N
+            if (isGlobal) {
+                if (sComp instanceof Element){
+                    if (preferredPrefix == null) {
+                        addResultItem(ResultType.WARNING,
+                                "GLOBAL_ELEMENT_PREFIX_REQUIRED", name); // NOI18N
+                    } else {
+                        addResultItem(ResultType.WARNING,
+                                "GLOBAL_ELEMENT_SPECIFIC_PREFIX_REQUIRED",
+                                name, preferredPrefix); // NOI18N
+                    }
+                } else if (sComp instanceof Attribute){
+                    if (preferredPrefix == null) {
+                        addResultItem(ResultType.WARNING,
+                                "GLOBAL_ATTRIBUTE_PREFIX_REQUIRED", name); // NOI18N
+                    } else {
+                        addResultItem(ResultType.WARNING,
+                                "GLOBAL_ATTRIBUTE_SPECIFIC_PREFIX_REQUIRED",
+                                name, preferredPrefix); // NOI18N
+                    }
                 }
-            } else if (sComp instanceof Attribute){
-                if (preferredPrefix == null) {
-                    addResultItem(ResultType.WARNING,
-                            "ATTRIBUTE_PREFIX_REQUIRED", name); // NOI18N
-                } else {
-                    addResultItem(ResultType.WARNING,
-                            "ATTRIBUTE_SPECIFIC_PREFIX_REQUIRED",
-                            name, preferredPrefix); // NOI18N
+            } else {
+                if (sComp instanceof Element){
+                    if (preferredPrefix == null) {
+                        addResultItem(ResultType.WARNING,
+                                "ELEMENT_PREFIX_REQUIRED", name); // NOI18N
+                    } else {
+                        addResultItem(ResultType.WARNING,
+                                "ELEMENT_SPECIFIC_PREFIX_REQUIRED",
+                                name, preferredPrefix); // NOI18N
+                    }
+                } else if (sComp instanceof Attribute){
+                    if (preferredPrefix == null) {
+                        addResultItem(ResultType.WARNING,
+                                "ATTRIBUTE_PREFIX_REQUIRED", name); // NOI18N
+                    } else {
+                        addResultItem(ResultType.WARNING,
+                                "ATTRIBUTE_SPECIFIC_PREFIX_REQUIRED",
+                                name, preferredPrefix); // NOI18N
+                    }
                 }
             }
         }
