@@ -356,15 +356,11 @@ public class DebuggerAction extends AbstractAction {
             // ignore the enabled argument, check it with respect to the proper
             // actions manager.
             final boolean en = DebuggerAction.isEnabled (da.getAction ());
-            if (SwingUtilities.isEventDispatchThread()) {
-                da.setEnabled(en);
-            } else {
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        da.setEnabled (en);
-                    }
-                });
-            }
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    da.setEnabled (en);
+                }
+            });
         }
         
         private void updateCurrentActionsManager () {
