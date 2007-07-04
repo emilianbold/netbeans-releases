@@ -97,17 +97,17 @@ public enum HTMLTokenId implements TokenId {
         @Override
         protected LanguageEmbedding embedding(
         Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-//            if(token.id() == HTMLTokenId.SCRIPT) {
-//                Language lang = Language.find(JAVASCRIPT_MIMETYPE);
-//                if(lang == null) {
-//                    return null; //no javascript language found
-//                } else {
-//                    return LanguageEmbedding.create(lang, 0, 0);
-//                }
-//            } else {
-//                return null;
-//            }
-            return  null;
+            if(token.id() == HTMLTokenId.SCRIPT) {
+                Language lang = Language.find(JAVASCRIPT_MIMETYPE);
+                if(lang == null) {
+                    return null; //no javascript language found
+                } else {
+                    return LanguageEmbedding.create(lang, 0, 0);
+                }
+            } else {
+                return null;
+            }
+//            return  null;
         }
         
         @Override

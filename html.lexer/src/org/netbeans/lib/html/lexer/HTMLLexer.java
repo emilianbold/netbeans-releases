@@ -99,6 +99,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     private static final int ISA_REF_X = 32;    //
     private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
     private static final int ISI_TAG_SLASH = 34; //after slash in html tag
+    private static final int ISI_SCRIPT_CONTENT = 35; //after <script> tags closing symbol '>' - the tag content
+    private static final int ISI_SCRIPT_CONTENT_AFTER_LT = 36; //after < in script content
+    private static final int ISI_SCRIPT_CONTENT_ENDTAG = 37; //after </ in script content
+    
+    
     
     public HTMLLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
@@ -145,6 +150,38 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
         //              || ch == '\u200b' || ch == '\n' || ch == '\r' );
     }
     
+    private boolean followsScriptCloseTag() {
+        int actChar;
+        int prev_read = input.readLength(); //remember the size of the read sequence //substract the first read character
+        int read = 0;
+        while(true) {
+            actChar = input.read();
+            read++;
+            if(!(Character.isLetter(actChar) ||
+                    Character.isDigit(actChar) ||
+                    (actChar == '_') ||
+                    (actChar == '-') ||
+                    (actChar == ':') ||
+                    (actChar == '.') ||
+                    (actChar == '/')) ||
+                    (actChar == EOF)) { // EOL or not alpha
+                //end of tagname
+                CharSequence tagName = input.readText().subSequence(prev_read, prev_read + read - 1);
+                
+                input.backup(read); //put the lookahead text back to the buffer
+
+                if("script".equalsIgnoreCase(tagName.toString())) {
+                    if(actChar == '>') {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+        }
+    }
+    
+    
     public Token<HTMLTokenId> nextToken() {
         int actChar;
         
@@ -187,7 +224,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                             lexerState = INIT;
                             input.backup(1);
                             if(input.readLength() > 0) { //is there any text before & or < ???
-                                return token(lexerScriptState == INIT ? HTMLTokenId.TEXT : HTMLTokenId.SCRIPT);
+                                return token(HTMLTokenId.TEXT);
                             }
                             break;
                     }
@@ -239,13 +276,6 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     if( isName( actChar ) ) break;    // Still in endtag identifier, eat next char
                     lexerState = ISP_ENDTAG_X;
                     input.backup(1);
-                    //test if the tagname is SCRIPT
-                    //fixme: remove the 'script tag support' from the lexer completely, so far, just partially commented = disabled
-//                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
-//                        lexerScriptState = INIT;
-//                        //System.out.println("---end of script");
-//                    }
-                    
                     return token(HTMLTokenId.TAG_CLOSE);
                     
                     
@@ -281,10 +311,9 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_TAG_X;
                     input.backup(1);
                     //test if the tagname is SCRIPT
-//                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
-//                        lexerScriptState = ISI_SCRIPT;
-//                        //System.out.println("+++start of script");
-//                    }
+                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                        lexerScriptState = ISI_SCRIPT;
+                    }
                     return token(HTMLTokenId.TAG_OPEN);
                     
                 case ISP_TAG_X:     // DONE
@@ -301,7 +330,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISI_TAG_SLASH;
                             break;
                         case '>':
-                            lexerState = INIT;
+                            if(lexerScriptState == ISI_SCRIPT) {
+                                lexerState = ISI_SCRIPT_CONTENT;
+                            } else {
+                                lexerState = INIT;
+                            }
                             return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         case '<':
                             lexerState = INIT;
@@ -323,7 +356,14 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 case ISI_TAG_SLASH:
                     switch( actChar ) {
                         case '>':
-                            lexerState = INIT;
+                            switch(lexerScriptState) {
+                                case INIT:
+                                    lexerState = INIT;
+                                    break;
+                                case ISI_SCRIPT:
+                                    lexerState = ISI_SCRIPT_CONTENT;
+                                    break;
+                            }
                             return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         default:
                             lexerState = ISI_ERROR;
@@ -332,6 +372,34 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     }
                     break;
                     
+                case ISI_SCRIPT_CONTENT:   
+                    switch( actChar ) {
+                        case '<' :
+                            lexerState = ISI_SCRIPT_CONTENT_AFTER_LT;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                    
+                case ISI_SCRIPT_CONTENT_AFTER_LT:
+                    if (actChar == '/') {
+                        if (followsScriptCloseTag()) {
+                            //end of script section found
+                            lexerScriptState = INIT;
+                            lexerState = INIT;
+                            input.backup(2); //backup the '</', we will read it again
+                            if (input.readLength() > 0) {
+                                //the script has a body
+                                return token(HTMLTokenId.SCRIPT);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    lexerState = ISI_SCRIPT_CONTENT;
+                    break;
+
                 case ISI_ARG:           // DONE
                     if( isName( actChar ) ) break; // eat next char
                     lexerState = ISP_ARG_X;
@@ -640,12 +708,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
                 lexerState = INIT;
-                return token(lexerScriptState == INIT ? HTMLTokenId.TEXT : HTMLTokenId.SCRIPT);
+                return token(HTMLTokenId.TEXT);
                 
             case ISA_REF:
             case ISA_REF_HASH:
                 lexerState = INIT;
-                if( lexerSubState == ISI_TEXT ) return token(lexerScriptState == INIT ? HTMLTokenId.TEXT : HTMLTokenId.SCRIPT);
+                if( lexerSubState == ISI_TEXT ) return token(HTMLTokenId.TEXT);
                 else return token(HTMLTokenId.VALUE);
                 
             case ISI_HTML_COMMENT:
@@ -705,6 +773,13 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_REF_HEX:
                 lexerState = INIT;
                 return token(HTMLTokenId.CHARACTER);
+            case ISI_SCRIPT_CONTENT:
+            case ISI_SCRIPT_CONTENT_ENDTAG:
+            case ISI_SCRIPT_CONTENT_AFTER_LT:
+                lexerState = INIT;
+                lexerScriptState = INIT;
+                return token(HTMLTokenId.SCRIPT);
+                
         }
         
         return null;

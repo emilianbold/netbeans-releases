@@ -51,7 +51,6 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
     private static final String CSS_INLINED_MIMETYPE = "text/x-css-inlined"; //NOI18N
     
-    private static final String HTML_SCRIPT_TAG_NAME = "script"; //NOI18N
     private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());
@@ -85,10 +84,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     }
     
     private void startTag(SyntaxElement.Tag sel) {
-        //script tag content embedding
-        if(HTML_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName()) && declaresJavascript(sel)) {
-            scriptStart = sel.getElementOffset() + sel.getElementLength();
-        } else if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName()) && declaresCSS(sel)) {
+        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName()) && declaresCSS(sel)) {
             styleStart = sel.getElementOffset() + sel.getElementLength();
         } else if("a".equalsIgnoreCase(sel.getName())) {
             //check whether the href attribute value contains the javascript: prefix
@@ -118,25 +114,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             }
         }
     }
-    
-    private boolean declaresJavascript(SyntaxElement.Tag sel) {
-        TagAttribute type = sel.getAttribute("type"); //NOI18N
-        TagAttribute lang = sel.getAttribute("language"); //NOI18N
-        
-        if(type == null && lang == null) {
-            return true; //nothing specified - default is javascript
-        }
-        
-        if(type != null && unquote(type.getValue()).equalsIgnoreCase(JAVASCRIPT_MIMETYPE)) {
-            return true;
-        }
-        if(lang != null && unquote(lang.getValue()).equalsIgnoreCase("javascript")) { //NOI18N
-            return true;
-        }
-        
-        return false;
-    }
-    
+
     private boolean declaresCSS(SyntaxElement.Tag sel) {
         TagAttribute type = sel.getAttribute("type"); //NOI18N
         
@@ -172,12 +150,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     }
     
     private void endTag(SyntaxElement.Named sel) {
-        if(HTML_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName())) {
-            if(scriptStart != -1) {
-                createJavascriptEmbedding(sel, scriptStart, sel.getElementOffset());
-                scriptStart = -1;
-            }
-        } else if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName())) {
+        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName())) {
             if(styleStart != -1) {
                 createEmbedding(CSS_MIMETYPE, styleStart, sel.getElementOffset(), 0,0);
                 styleStart = -1;
