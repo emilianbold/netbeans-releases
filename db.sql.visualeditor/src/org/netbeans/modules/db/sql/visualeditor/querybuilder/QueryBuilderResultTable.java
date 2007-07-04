@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
-import java.util.Vector;
-import java.awt.Dimension;
 
 import java.awt.Color;
 import java.awt.datatransfer.StringSelection;
@@ -43,10 +41,6 @@ import java.sql.SQLException;
 import java.text.DateFormat ;
 
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Mode;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;

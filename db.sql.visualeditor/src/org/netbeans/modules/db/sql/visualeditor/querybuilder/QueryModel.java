@@ -22,11 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 
-import org.openide.ErrorManager;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
 
-import org.netbeans.modules.db.sql.visualeditor.querymodel.QueryItem;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Query;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Select;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.From;

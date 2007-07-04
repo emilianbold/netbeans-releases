@@ -39,57 +39,40 @@ import java.awt.datatransfer.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 
-import java.beans.PropertyVetoException;
 
-import java.net.URL;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.JLabel;
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JEditorPane;
 import javax.swing.JDesktopPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
-import javax.swing.JComboBox;
-import javax.swing.DefaultCellEditor;
 import javax.swing.UIManager;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameListener;
-import javax.swing.table.TableModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import java.sql.*;
 
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
 

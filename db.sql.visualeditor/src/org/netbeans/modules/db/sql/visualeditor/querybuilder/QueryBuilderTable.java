@@ -30,7 +30,6 @@ import javax.swing.table.TableColumn;
 
 import java.awt.*;
 
-import org.openide.ErrorManager;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
 

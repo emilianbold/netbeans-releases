@@ -18,15 +18,10 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.JComboBox;
-import javax.swing.JCheckBox;
 import javax.swing.DefaultCellEditor;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.JPopupMenu;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -38,7 +33,6 @@ import java.awt.*;
 
 import java.awt.event.*;
 
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;

@@ -35,7 +35,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.AbstractAction;
@@ -46,7 +45,6 @@ import javax.swing.JFrame;
 import javax.swing.RepaintManager;
 import javax.swing.text.DefaultEditorKit;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
@@ -57,11 +55,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Hashtable;
-import java.util.Iterator;
 
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.actions.DeleteAction;
@@ -87,7 +82,6 @@ import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 import org.netbeans.modules.db.sql.visualeditor.Log;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.ConnectionManager;
 
 /**
  * The top-level class for the QueryBuilder.

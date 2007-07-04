@@ -18,38 +18,26 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
-import javax.swing.JViewport;
 import javax.swing.JPanel;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JDialog;
 import javax.swing.JSplitPane;
 import javax.swing.JScrollPane;
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JList;
-// import javax.swing.BorderFactory;
 
 import javax.swing.table.DefaultTableModel;
 
 import javax.swing.event.*;
 
-import java.util.Hashtable;
 
-import java.awt.Rectangle;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Font;
 import java.awt.event.*;
 
 import org.openide.util.NbBundle;
 
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
 

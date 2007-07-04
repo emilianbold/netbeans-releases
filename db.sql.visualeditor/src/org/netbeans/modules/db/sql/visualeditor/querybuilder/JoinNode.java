@@ -19,13 +19,10 @@
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyEditor;
-
-import org.openide.ErrorManager;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Sheet;
@@ -38,8 +35,9 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.JoinTable;
 import org.netbeans.modules.db.sql.visualeditor.querymodel.Predicate;
 
-// A class for providing properties to arcs (joins)
+import org.openide.util.Exceptions;
 
+// A class for providing properties to arcs (joins)
 public class JoinNode extends AbstractNode
 {
     // Private variable
@@ -186,7 +184,7 @@ public class JoinNode extends AbstractNode
 //          p.setPropertyEditorClass(JoinTypePropertyEditor.class);
             ss.put(p);
         } catch (NoSuchMethodException nsme) {
-            ErrorManager.getDefault().notify(nsme);
+            Exceptions.printStackTrace(nsme);
         }
         return s;
     }

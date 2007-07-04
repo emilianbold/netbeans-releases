@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querybuilder;
 
-import org.openide.ErrorManager;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Sheet;
@@ -27,11 +26,11 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.PropertySupport.Reflection;
 
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
+import org.openide.util.Exceptions;
 
 /**
  * Provides a place to hang properties for a node (table) in the query graph.
@@ -144,7 +143,7 @@ public class TableNode extends AbstractNode
             p.setShortDescription(aliasShortDescription); 
             ss.put(p);
         } catch (NoSuchMethodException nsme) {
-            ErrorManager.getDefault().notify(nsme);
+            Exceptions.printStackTrace(nsme);
         }
         return s;
     }
