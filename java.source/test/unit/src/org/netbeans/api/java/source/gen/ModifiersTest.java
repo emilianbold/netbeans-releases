@@ -83,6 +83,11 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testAddMethodAnnotation2"));
 //        suite.addTest(new ModifiersTest("testChangeInterfaceModifier"));
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotation"));
+//        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute1"));
+//        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute2"));
+//        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute3"));
+//        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute4"));
+//        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute5"));
         return suite;
     }
 
@@ -1008,6 +1013,228 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 ModifiersTree mods = clazz.getModifiers();
                 ModifiersTree modified = make.removeModifiersAnnotation(mods, 0);
                 workingCopy.rewrite(mods, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveClassAnnotationAttribute1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\", attr2 = \"bb\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree ann = mods.getAnnotations().get(0);
+                AnnotationTree modified = make.removeAnnotationAttrValue(ann, 1);
+                workingCopy.rewrite(ann, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveClassAnnotationAttribute2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\", attr2 = \"bb\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree ann = mods.getAnnotations().get(0);
+                AnnotationTree modified = make.removeAnnotationAttrValue(ann, 0);
+                workingCopy.rewrite(ann, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveClassAnnotationAttribute3() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\", attr2 = \"bb\", attr3 = \"cc\")\n" +
+                "    public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\", attr3 = \"cc\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree ann = mods.getAnnotations().get(0);
+                AnnotationTree modified = make.removeAnnotationAttrValue(ann, 1);
+                workingCopy.rewrite(ann, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveClassAnnotationAttribute4() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation()\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree ann = mods.getAnnotations().get(0);
+                AnnotationTree modified = make.removeAnnotationAttrValue(ann, 0);
+                workingCopy.rewrite(ann, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveClassAnnotationAttribute5() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation(attr1 = \"aa\", attr2 = \"bb\", attr3 = \"cc\")\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation()\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree ann = mods.getAnnotations().get(0);
+                AnnotationTree modified = make.removeAnnotationAttrValue(ann, 2);
+                modified = make.removeAnnotationAttrValue(modified, 1);
+                modified = make.removeAnnotationAttrValue(modified, 0);
+                workingCopy.rewrite(ann, modified);
             }
         };
         testSource.runModificationTask(task).commit();
