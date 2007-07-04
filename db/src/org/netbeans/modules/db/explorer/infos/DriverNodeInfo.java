@@ -20,12 +20,13 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
-import org.openide.ErrorManager;
 
 public class DriverNodeInfo extends DatabaseNodeInfo {
 
@@ -53,7 +54,7 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
                 JDBCDriverManager.getDefault().removeDriver(driver);
             }
         } catch (DatabaseException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger(DriverNodeInfo.class.getName()).log(Level.INFO, null, e);
         }
     }
     
