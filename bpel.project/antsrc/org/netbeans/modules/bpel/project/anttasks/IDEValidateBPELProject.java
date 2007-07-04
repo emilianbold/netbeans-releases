@@ -52,6 +52,7 @@ import org.apache.tools.ant.BuildException;
 
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validator;
@@ -233,8 +234,8 @@ public class IDEValidateBPELProject extends Task {
       }
     }
 
+    // vlv # 100036
     private void processBpelFile(File file) throws BuildException {
-      // vlv
       BpelModel model = null;
 
       try {
@@ -243,15 +244,18 @@ public class IDEValidateBPELProject extends Task {
       catch (Exception e) {
         throw new RuntimeException("Error while trying to get BPEL Model", e);
       }
-      String targetNamespace = model.getProcess().getTargetNamespace();
-      BPELFile current = new BPELFile(file, mSourceDir, targetNamespace);
+      Process process = model.getProcess();
+
+      String qName = process.getName() + ", " + process.getTargetNamespace(); // NOI18N
+      BPELFile current = new BPELFile(file, mSourceDir, qName);
 
       for (BPELFile bpel : myBPELFiles) {
-        if (bpel.getTargetNamespace().equals(targetNamespace)) {
+        if (bpel.getQName().equals(qName)) {
           throw new BuildException(
             " \n" +
             "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
-            "have the same target name space: " + targetNamespace + " \n \n"
+            "have the same bpel process name and targetname space:\n" +
+            qName + " \n \n"
           );
         }
       }
@@ -364,12 +368,12 @@ public class IDEValidateBPELProject extends Task {
         validateBPEL(bpelFile);
       }
       catch (Throwable ex) {
-        logger.log(Level.SEVERE, "Validation has errors on "+bpelFile.getAbsolutePath() );
+        logger.log(Level.SEVERE, "Validation has errors on "+ bpelFile.getAbsolutePath());
 
-        if ( ex.getMessage() != null) {
+        if (ex.getMessage() != null) {
           logger.severe( ex.getMessage());
         }
-        if (!mAllowBuildWithError) {
+        if ( !mAllowBuildWithError) {
           StringWriter writer = new StringWriter();
           PrintWriter pWriter = new PrintWriter(writer);
           ex.printStackTrace(pWriter);
@@ -380,15 +384,14 @@ public class IDEValidateBPELProject extends Task {
 
     // ----------------------------
     private static class BPELFile {
-      // vlv
-      public BPELFile(File file, File project, String targetNamespace) {
+      public BPELFile(File file, File project, String qName) {
         myFile = file;
         myProject = project;
-        myTargetNamespace = targetNamespace;
+        myQName = qName;
       }
 
-      public String getTargetNamespace() {
-        return myTargetNamespace;
+      public String getQName() {
+        return myQName;
       }
 
       public String getName() {
@@ -403,7 +406,7 @@ public class IDEValidateBPELProject extends Task {
 
       private File myFile;
       private File myProject;
-      private String myTargetNamespace;
+      private String myQName;
     }
 
     private String mSourceDirectory;
