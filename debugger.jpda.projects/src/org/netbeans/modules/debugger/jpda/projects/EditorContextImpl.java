@@ -64,6 +64,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -1446,16 +1447,31 @@ public class EditorContextImpl extends EditorContext {
                             if (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT) {
                                 currentElementPtr[0] = ((VariableTree) tree).getName().toString();
                             }
-                        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
+                        } else if (tree.getKind() == Tree.Kind.IDENTIFIER && selectedIdentifier != null) {
                             IdentifierTree it = (IdentifierTree) tree;
-                            currentElementPtr[0] = it.getName().toString();
-                        } else if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                            String fieldName = it.getName().toString();
+                            Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                            TypeElement te = scope.getEnclosingClass();
+                            List<? extends Element> enclosedElms = te.getEnclosedElements();
+                            for (Element elm : enclosedElms) {
+                                if (elm.getKind().equals(ElementKind.FIELD) && elm.getSimpleName().contentEquals(fieldName)) {
+                                    currentElementPtr[0] = fieldName;
+                                    break;
+                                }
+                            }
+                            
+                        } else if (tree.getKind() == Tree.Kind.MEMBER_SELECT && selectedIdentifier != null) {
                             MemberSelectTree mst = (MemberSelectTree) tree;
-                            currentElementPtr[0] = mst.getIdentifier().toString();
+                            String fieldName = mst.getIdentifier().toString();
                             el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), mst.getExpression()));
-                            TypeMirror tm = el.asType();
-                            if (tm.getKind().equals(TypeKind.DECLARED)) {
-                                String fieldClassName = el.toString();
+                            if (el.asType().getKind().equals(TypeKind.DECLARED)) {
+                                List<? extends Element> enclosedElms = ((DeclaredType) el.asType()).asElement().getEnclosedElements();
+                                for (Element elm : enclosedElms) {
+                                    if (elm.getKind().equals(ElementKind.FIELD) && elm.getSimpleName().contentEquals(fieldName)) {
+                                        currentElementPtr[0] = fieldName;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
