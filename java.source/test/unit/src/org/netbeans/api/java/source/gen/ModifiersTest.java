@@ -82,13 +82,13 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testAddMethodAnnotation"));
 //        suite.addTest(new ModifiersTest("testAddMethodAnnotation2"));
 //        suite.addTest(new ModifiersTest("testChangeInterfaceModifier"));
+//        suite.addTest(new ModifiersTest("testRemoveClassAnnotation"));
         return suite;
     }
 
     /**
      * Tests the change of modifier in local variable
      */
-    @SuppressWarnings("unchecked")
     public void testChangeToFinalLocVar() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -109,7 +109,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -134,7 +134,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     /**
      * Update top-level class modifiers.
      */
-    @SuppressWarnings("unchecked")
     public void testAddClassAbstract() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -151,7 +150,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    public abstract void taragui();\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -183,7 +182,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * public static void method() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testMethodMods1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -202,7 +200,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -233,7 +231,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * void method() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testMethodMods2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -252,7 +249,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -283,7 +280,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * public Test() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testMethodMods3() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -302,7 +298,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -333,7 +329,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * Test() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testMethodMods4() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -352,7 +347,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -383,7 +378,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * static void method() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testMethodMods5() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -402,7 +396,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -433,7 +427,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * protected Test() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testMethodMods6() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -452,7 +445,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -485,7 +478,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * protected Test() {
      * }
      */
-    @SuppressWarnings("unchecked")
     public void testAnnRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -510,7 +502,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -544,7 +536,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * ...
      * 
      */
-    @SuppressWarnings("unchecked")
     public void testAddArrayValue() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -568,7 +559,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -594,7 +585,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     /*
      * Test rename annotation attribute, regression test for #99162
      */
-    @SuppressWarnings("unchecked")
     public void testRenameAnnotationAttribute() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -621,7 +611,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "public class Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -641,7 +631,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #95354
-    @SuppressWarnings("unchecked")
     public void testMakeClassAbstract() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -680,7 +669,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
             "    public String test();\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -700,7 +689,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106543 - Positions broken when removing annotation attribute value.
-    @SuppressWarnings("unchecked")
     public void test106543() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -727,7 +715,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "public class Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -747,7 +735,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106403
-    @SuppressWarnings("unchecked")
     public void test106403() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -774,7 +761,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "public class Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -797,7 +784,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106403 -2-
-    @SuppressWarnings("unchecked")
     public void test106403_2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -824,7 +810,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "public class Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -847,7 +833,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #105018 - bad formatting when adding annotation
-    @SuppressWarnings("unchecked")
     public void testAddMethodAnnotation() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -873,7 +858,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    \n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -898,7 +883,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #105018 - bad formatting when adding annotation
-    @SuppressWarnings("unchecked")
     public void testAddMethodAnnotation2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -924,7 +908,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    \n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -949,7 +933,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106252 - interface keyword doubled
-    @SuppressWarnings("unchecked")
     public void testChangeInterfaceModifier() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -964,7 +947,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "interface Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -983,6 +966,48 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                         clazz.getMembers()
                 );
                 workingCopy.rewrite(clazz, copy);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveClassAnnotation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "@Annotation\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                ModifiersTree modified = make.removeModifiersAnnotation(mods, 0);
+                workingCopy.rewrite(mods, modified);
             }
         };
         testSource.runModificationTask(task).commit();
