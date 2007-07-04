@@ -161,7 +161,7 @@ JavaVersion * getJavaVersionFromString(char * string, DWORD * result) {
                                     if(p!=NULL) p++;
                                 }
                                 if(c=='-' && p!=NULL) { // build number
-                                    strncpy(vers->build, p, min(127, getLengthA(p)));
+                                    lstrcpyn(vers->build, p, min(127, getLengthA(p)));
                                 }
                                 break;
                             }

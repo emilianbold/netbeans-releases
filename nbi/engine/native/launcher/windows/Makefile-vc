@@ -15,7 +15,7 @@ OUTPUT_FILE32=.\dist\nlw.exe
 
 CC32_OPTS=/O1 /Os \
 	/I "$(VC_2005)\include" \
-	/D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_STATIC_CPPLIB" /D "_CRT_SECURE_NO_DEPRECATE" \
+	/D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_CRT_SECURE_NO_DEPRECATE" \
 	/FD /EHsc /MT \
 	/Fo"$(BUILD_DIR32)\\"  /Fd"$(BUILD_DIR32)\vc80.pdb" \
 	/W3 /nologo /c /Wp64 /TC /errorReport:prompt
@@ -30,7 +30,7 @@ LINKING_LIBRARIES=\
 	ole32.lib \
 	oleaut32.lib \
 	userenv.lib \
-	msvcrt.lib \
+	libcmt.lib \
 	kernel32.lib
 
 L32_OPTS=\

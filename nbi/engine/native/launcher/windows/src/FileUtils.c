@@ -323,8 +323,8 @@ void deleteDirectory(LauncherProperties * props, WCHAR * dir) {
         else {
             // List all the other files in the directory.
             while (FindNextFileW(hFind, &FindFileData) != 0) {
-                if(wcscmp(FindFileData.cFileName, L".")!=0 &&
-                        wcscmp(FindFileData.cFileName, L"..")!=0 ) {
+                if(lstrcmpW(FindFileData.cFileName, L".")!=0 &&
+                        lstrcmpW(FindFileData.cFileName, L"..")!=0 ) {
                     WCHAR * child = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), FindFileData.cFileName);
                     deleteDirectory(props, child);
                     free(child);
@@ -370,7 +370,7 @@ WCHAR * getSystemTemporaryDirectory() {
             } else{
                 WCHAR * curdir = getCurrentDirectory();
                 memset(expanded, 0, sizeof(WCHAR) * MAX_PATH);
-                wcsncpy(expanded, curdir, MAX_PATH);
+                lstrcpynW(expanded, curdir, MAX_PATH);
                 free(curdir);
             }
         }

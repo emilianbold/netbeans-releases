@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Userenv.lib user32.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib gdi32.lib"
+				AdditionalDependencies="Userenv.lib user32.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib gdi32.lib libcmt.lib"
 				OutputFile="..\dist\nlw.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="false"
@@ -131,7 +131,7 @@
 				Optimization="1"
 				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_STATIC_CPPLIB;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -150,7 +150,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib user32.lib gdi32.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib userenv.lib msvcrt.lib"
+				AdditionalDependencies="kernel32.lib user32.lib gdi32.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib userenv.lib libcmt.lib"
 				OutputFile="../dist/nlw.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="false"
@@ -169,7 +169,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="$(ProjectDir)nlw.exe.manifest"
+				AdditionalManifestFiles="$(ProjectDir)..\resources\nlw.exe.manifest"
 				EmbedManifest="true"
 				SuppressStartupBanner="false"
 			/>

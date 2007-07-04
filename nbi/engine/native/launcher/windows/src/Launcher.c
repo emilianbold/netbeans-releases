@@ -58,7 +58,7 @@ const WCHAR * CLASS_SUFFIX = L".class";
 DWORD isLauncherArgument(LauncherProperties * props, WCHAR * value) {
     DWORD i=0;
     for(i=0;i<props->launcherCommandArguments->size;i++) {
-        if(wcscmp(props->launcherCommandArguments->items[i], value)==0) {
+        if(lstrcmpW(props->launcherCommandArguments->items[i], value)==0) {
             return 1;
         }
     }
@@ -70,7 +70,7 @@ DWORD getArgumentIndex(LauncherProperties * props, const WCHAR *arg, DWORD remov
     DWORD i=0;
     for(i=0;i<cmd->size;i++) {
         if(cmd->items[i]!=NULL) { // argument has not been cleaned yet
-            if(wcscmp(arg, cmd->items[i])==0) { //argument is the same as the desired
+            if(lstrcmpW(arg, cmd->items[i])==0) { //argument is the same as the desired
                 if(removeArgument) FREE(cmd->items[i]); // free it .. we don`t need it anymore
                 return i;
             }

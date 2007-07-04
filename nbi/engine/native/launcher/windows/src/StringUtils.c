@@ -106,7 +106,7 @@ const WCHAR * getI18nProperty(LauncherProperties * props, const char * name) {
         for(i=0;i<props->I18N_PROPERTIES_NUMBER;i++) {
             char * pr = props->i18nMessages->properties[i];
             if(pr!=NULL) { // hope so it`s true
-                if(strcmp(name, pr)==0) {
+                if(lstrcmpA(name, pr)==0) {
                     return props->i18nMessages->strings[i];
                 }
             }
@@ -116,70 +116,70 @@ const WCHAR * getI18nProperty(LauncherProperties * props, const char * name) {
 }
 
 WCHAR * getDefaultString(const char *name) {
-    if(strcmp(name, JVM_NOT_FOUND_PROP)==0) {
+    if(lstrcmpA(name, JVM_NOT_FOUND_PROP)==0) {
         return L"Can`t find suitable JVM. Specify it with %s argument";
-    } else if(strcmp(name, NOT_ENOUGH_FREE_SPACE_PROP)==0) {
+    } else if(lstrcmpA(name, NOT_ENOUGH_FREE_SPACE_PROP)==0) {
         return L"Not enought free space at %s";
-    } else if(strcmp(name, CANT_CREATE_TEMP_DIR_PROP)==0) {
+    } else if(lstrcmpA(name, CANT_CREATE_TEMP_DIR_PROP)==0) {
         return L"Can`t create temp directory %s";
-    } else if(strcmp(name, INTEGRITY_ERROR_PROP)==0) {
+    } else if(lstrcmpA(name, INTEGRITY_ERROR_PROP)==0) {
         return L"Integrity error. File %s is corrupted";
-    } else if(strcmp(name, JVM_USER_DEFINED_ERROR_PROP)==0) {
+    } else if(lstrcmpA(name, JVM_USER_DEFINED_ERROR_PROP)==0) {
         return L"Can`t find JVM at %s";
-    } else if(strcmp(name, JVM_UNSUPPORTED_VERSION_PROP)==0) {
+    } else if(lstrcmpA(name, JVM_UNSUPPORTED_VERSION_PROP)==0) {
         return L"Unsupported JVM at %s";
-    } else if(strcmp(name, OUTPUT_ERROR_PROP)==0) {
+    } else if(lstrcmpA(name, OUTPUT_ERROR_PROP)==0) {
         return L"Can`t create file %s.\nError: %s";
-    } else if(strcmp(name, JAVA_PROCESS_ERROR_PROP)==0) {
+    } else if(lstrcmpA(name, JAVA_PROCESS_ERROR_PROP)==0) {
         return L"Java error:\n%s";
-    } else if(strcmp(name, ARG_JAVA_PROP)==0) {
+    } else if(lstrcmpA(name, ARG_JAVA_PROP)==0) {
         return L"%s Using specified JVM";
-    }  else if(strcmp(name, ARG_OUTPUT_PROPERTY)==0) {
+    }  else if(lstrcmpA(name, ARG_OUTPUT_PROPERTY)==0) {
         return L"%s Output all stdout/stderr to the file";
-    } else if(strcmp(name, ARG_DEBUG_PROP)==0) {
+    } else if(lstrcmpA(name, ARG_DEBUG_PROP)==0) {
         return L"%s Use verbose output";
-    } else if(strcmp(name, ARG_TMP_PROP)==0) {
+    } else if(lstrcmpA(name, ARG_TMP_PROP)==0) {
         return L"%s Use specified temporary dir for extracting data";
-    } else if(strcmp(name, ARG_CPA_PROP)==0) {
+    } else if(lstrcmpA(name, ARG_CPA_PROP)==0) {
         return L"%s Append classpath";
-    }  else if(strcmp(name, ARG_CPP_PROP)==0) {
+    }  else if(lstrcmpA(name, ARG_CPP_PROP)==0) {
         return L"%s Prepend classpath";
-    } else if(strcmp(name, ARG_EXTRACT_PROP)==0) {
+    } else if(lstrcmpA(name, ARG_EXTRACT_PROP)==0) {
         return L"%s Extract all data";
-    }  else if(strcmp(name, ARG_HELP_PROP)==0) {
+    }  else if(lstrcmpA(name, ARG_HELP_PROP)==0) {
         return L"%s Using this help";
-    } else if(strcmp(name, ARG_DISABLE_SPACE_CHECK)==0) {
+    } else if(lstrcmpA(name, ARG_DISABLE_SPACE_CHECK)==0) {
         return L"%s Disable free space check";
-    } else if(strcmp(name, MSG_CREATE_TMPDIR)==0) {
+    } else if(lstrcmpA(name, MSG_CREATE_TMPDIR)==0) {
         return L"Creating tmp directory...";
-    } else if(strcmp(name, MSG_EXTRACT_DATA)==0) {
+    } else if(lstrcmpA(name, MSG_EXTRACT_DATA)==0) {
         return L"Extracting data...";
-    } else if(strcmp(name, MSG_JVM_SEARCH)==0) {
+    } else if(lstrcmpA(name, MSG_JVM_SEARCH)==0) {
         return L"Finding JVM...";
-    } else if(strcmp(name, MSG_RUNNING)==0) {
+    } else if(lstrcmpA(name, MSG_RUNNING)==0) {
         return L"Running JVM...";
-    } else if(strcmp(name, MSG_SET_OPTIONS)==0) {
+    } else if(lstrcmpA(name, MSG_SET_OPTIONS)==0) {
         return L"Setting command options...";
-    } else if(strcmp(name, MSG_MESSAGEBOX_TITLE)==0) {
+    } else if(lstrcmpA(name, MSG_MESSAGEBOX_TITLE)==0) {
         return L"Message";
-    } else if(strcmp(name, MSG_PROGRESS_TITLE)==0) {
+    } else if(lstrcmpA(name, MSG_PROGRESS_TITLE)==0) {
         return L"Running";
-    } else if(strcmp(name, EXIT_BUTTON_PROP)==0) {
+    } else if(lstrcmpA(name, EXIT_BUTTON_PROP)==0) {
         return L"Exit";
-    } else if(strcmp(name, MAIN_WINDOW_TITLE)==0) {
+    } else if(lstrcmpA(name, MAIN_WINDOW_TITLE)==0) {
         return L"NBI Launcher";
-    } else if(strcmp(name, EXTERNAL_RESOURE_LACK_PROP)==0) {
+    } else if(lstrcmpA(name, EXTERNAL_RESOURE_LACK_PROP)==0) {
         return L"Can`t run launcher\nThe following file is missing : %s";
     }
     return NULL;
 }
 
 DWORD getLengthA(const char * message) {
-    return (message!=NULL) ? strlen(message) : 0;
+    return (message!=NULL) ? lstrlenA(message) : 0;
 }
 
 DWORD getLengthW(const WCHAR * message) {
-    return (message!=NULL) ? wcslen(message) : 0;
+    return (message!=NULL) ? lstrlenW(message) : 0;
 }
 
 //adds string the the initial string
@@ -296,7 +296,7 @@ void freeStringList(StringListEntry **ss) {
 DWORD inList(StringListEntry * top, WCHAR * str) {    
     StringListEntry * tmp = top;
     while(tmp!=NULL) {
-        if(wcscmp(tmp->string, str)==0) {
+        if(lstrcmpW(tmp->string, str)==0) {
             return 1;            
         }
         tmp = tmp->next;

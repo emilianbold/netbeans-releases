@@ -113,8 +113,7 @@ extern const char * MAIN_WINDOW_TITLE;
     DWORD getLengthW(const WCHAR * message);
     
     WCHAR * getErrorDescription(DWORD dw);
-    WCHAR * formatMessageW(const WCHAR* message, const DWORD varArgsNumber, ...);
-    
+    WCHAR * formatMessageW(const WCHAR* message, const DWORD varArgsNumber, ...);    
     DWORD isOK(LauncherProperties * props);
 #ifdef	__cplusplus
 }
