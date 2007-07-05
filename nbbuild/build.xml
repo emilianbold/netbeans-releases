@@ -1293,7 +1293,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </loadfile>
       <property name="cvsdate" value=""/>
       <property name="cvs.retry" value="2"/>
-      <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
+      <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools testtools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
   </target>
 
   <target name="check-commit-validation">
