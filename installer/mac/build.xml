@@ -19,22 +19,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="NetBeans.app" basedir="." default="tarball">
+<project name="Mac App" basedir="." default="build-app">
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="appname" value="NetBeans 6.0 Dev"/>
+  <property name="appname" value="NetBeans 6.0"/>
   <property name="appversion" value="6.0 Development Version"/>
   <property name="version" value="6.0 Development Version"/>
   <property name="nbClusterDir" value="nb6.0"/>
   
-  <property name="appdir" value="${appname}.app"/>
-  <property name="tarball-name" value="netbeans6.0dev-macosx.tar.gz"/>
+  <property name="appdir" value="build/app/${appname}.app"/>
+  <property name="zipname" value="netbeans-6.0dev-macosx.zip"/>
+  <property name="dmgname" value="netbeans-6.0dev.dmg"/>
   
-  <target name="create-app" description="Organize NetBeans into a standard mac-os NetBeans.app application layout">
-    <echo>
-Creating NetBeans.app bundle using ${nb.dir} as master
-================================================================
-    </echo>
+  <target name="build-app" description="Builds Mac OS X application bundle">
+    <echo>Creating NetBeans.app bundle using ${nb.dir} as master</echo>
 
     <delete dir="${appdir}"/>
     
@@ -73,17 +71,45 @@ Creating NetBeans.app bundle using ${nb.dir} as master
     </exec>
   </target>
   
-  <target name="tarball" depends="create-app" description="Build a gzipped tarball containing NetBeans.app">
-    <echo message="Creating tarball ${tarball-name}"/>
+  <target name="build-app-zip" depends="build-app" description="Builds zipfile containing NetBeans.app">
+    <echo message="Creating ${zipname}"/>
+    <mkdir dir="dist"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="tar cf - '${appdir}' | gzip > ${tarball-name}"/>
+      <arg value="cd build/app; zip -r ../../dist/${zipname} *"/>
+    </exec>
+  </target>
+
+  <target name="build-pkg" depends="build-app">
+    <mkdir dir="build/pkg"/>
+    <delete dir="build/pkg/NetBeans.pkg"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec pack200 -g {}.pack {} \;'/>
+    </exec>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec rm {} \;'/>
+    </exec>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="/Developer/Tools/packagemaker -build -v -p build/pkg/NetBeans.pkg -proj pkg/installer.pmproj"/>
+    </exec>
+  </target>
+
+  <target name="build-dmg" depends="build-pkg">
+    <mkdir dir="dist"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="sh dmg/createdmg.sh build/pkg dist/${dmgname}"/>
     </exec>
   </target>
 
   <target name="clean">
-    <delete dir="${appdir}"/>
-    <delete file="${tarball-name}"/>
+    <delete dir="build"/>
   </target>
 
+  <target name="distclean" depends="clean">
+    <delete dir="dist"/>
+  </target>
 </project>
