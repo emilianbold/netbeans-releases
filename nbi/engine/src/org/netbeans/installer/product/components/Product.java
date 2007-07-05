@@ -234,7 +234,15 @@ public final class Product extends RegistryNode {
                         getInstallationLocation(),
                         currentProgress));
             } catch (IOException e) {
-                throw new InstallationException("Cannot extract installation data", e);
+                if (e.getMessage().equals("Not enough space")) {
+                    throw new InstallationException(
+                            "Cannot extract installation data -- not " +
+                            "enough disk space in the target directory.", 
+                            e);
+                }
+                throw new InstallationException(
+                        "Cannot extract installation data", 
+                        e);
             } catch (XMLException e) {
                 throw new InstallationException("Cannot extract installation data", e);
             }
