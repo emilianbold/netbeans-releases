@@ -22,7 +22,7 @@ package org.netbeans.installer.utils;
 
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.security.Certificate;
+import java.security.cert.Certificate;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
