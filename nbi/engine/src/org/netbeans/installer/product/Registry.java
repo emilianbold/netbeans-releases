@@ -438,6 +438,7 @@ public class Registry {
             }
         }
         LogManager.log("    ... " + targetPlatform);
+        LogManager.logExit("initializing product registry properties");
     }
     
     private void validateDependencies(
