@@ -299,7 +299,7 @@ public class JavaUtils {
     public static class JavaInfo {
         /////////////////////////////////////////////////////////////////////////////
         // Static
-        public static JavaInfo getInfo(String string) {
+        public static JavaInfo getInfo(final String string) {
             final String[] lines = string.split(StringUtils.NEW_LINE_PATTERN);
             
             Version version = null;
@@ -311,7 +311,7 @@ public class JavaUtils {
             
             if (lines.length == TEST_JDK_OUTPUT_PARAMETERS) {
                 final String javaVersion = lines[0]; // java.version
-                final String vmVersion   = lines[1]; // java.vm.version
+                final String javaVmVersion = lines[1]; // java.vm.version
                 
                 vendor = lines[2]; // java.vendor
                 osName = lines[3]; // os.name
@@ -319,14 +319,13 @@ public class JavaUtils {
                 
                 String versionString;
                 
-                // workaround as some vendors provide different data in these
-                // properties
-                if (vmVersion.indexOf(javaVersion) != -1) {
-                    versionString =
-                            vmVersion.substring(vmVersion.indexOf(javaVersion));
+                // if java.vm.version contains java.version, then use it, as it
+                // usually contains more detailed info
+                if (javaVmVersion.indexOf(javaVersion) != -1) {
+                    versionString = javaVmVersion.substring(
+                            javaVmVersion.indexOf(javaVersion));
                 } else {
-                    versionString =
-                            javaVersion;
+                    versionString = javaVersion;
                 }
                 
                 // check whether this particular jvm is non final
@@ -335,7 +334,7 @@ public class JavaUtils {
                 if (nonFinalMatcher.find()) {
                     versionString = versionString.replaceAll(
                             NON_FINAL_JVM_PATTERN, 
-                            "-");
+                            StringUtils.EMPTY_STRING);
                     
                     nonFinal = true;
                 }
@@ -350,6 +349,13 @@ public class JavaUtils {
                 if (versionString.matches(
                         "[0-9]+\\.[0-9]+\\.[0-9]+_[0-9]+-b[0-9]+")) {
                     versionString = versionString.replace("-b", ".");
+                }
+                
+                // hack for BEA: 1.6.0-20061129 -> 1.6.0.0.20061129
+                if (vendor.indexOf("BEA") != -1) {
+                    versionString = versionString.replaceAll(
+                            "([0-9]+\\.[0-9]+\\.[0-9])+-([0-9]+)", 
+                            "$1.0.$2");
                 }
                 
                 // and create the version
@@ -432,5 +438,5 @@ public class JavaUtils {
     
     public static final String NON_FINAL_JVM_PATTERN = 
             "-(ea|rc[0-9]*|beta[0-9]*|preview[0-9]*|" + // NOI18N
-            "dp[0-9]*|alpha[0-9]*|fcs)-"; // NOI18N
+            "dp[0-9]*|alpha[0-9]*|fcs)"; // NOI18N
 }

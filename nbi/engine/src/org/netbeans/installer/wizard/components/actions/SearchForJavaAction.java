@@ -102,7 +102,7 @@ public class SearchForJavaAction extends WizardAction {
         getWizardUi().setProgress(progress);
         
         progress.setTitle(SEARCH_INSTALLED_JAVAS);
-        progress.setDetail("");
+        progress.setDetail(StringUtils.EMPTY_STRING);
         progress.setPercentage(Progress.START);
         
         SystemUtils.sleep(200);
@@ -122,20 +122,31 @@ public class SearchForJavaAction extends WizardAction {
             
             if (isCanceled()) return; // check for cancel status
             
+            LogManager.logIndent("investigating java home candidate: " + javaHome);
+            
             // check whether it is a java installation - the result will be null if
             // it is not
             final JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
             
-            // filter out "private" jres
-            if (javaHome.getName().equals("jre") &&
-                    JavaUtils.isJdk(javaHome.getParentFile())) {
-                continue;
-            }
-            
-            // add the location to the list if it's not already there
-            if ((javaInfo != null) && !javaLocations.contains(javaHome)) {
-                javaLocations.add(javaHome);
-                javaLabels.add(getLabel(javaHome));
+            if (javaInfo != null) {
+                LogManager.logUnindent(
+                        "... parsed java: " + javaInfo.getVersion() + " " + // NOI18N
+                        "by " + javaInfo.getVendor() + "; " + // NOI18N
+                        "final=" + !javaInfo.isNonFinal()); // NOI18N
+                        
+                // filter out "private" jres
+                if (javaHome.getName().equals("jre") &&
+                        JavaUtils.isJdk(javaHome.getParentFile())) {
+                    continue;
+                }
+                
+                // add the location to the list if it's not already there
+                if (!javaLocations.contains(javaHome)) {
+                    javaLocations.add(javaHome);
+                    javaLabels.add(getLabel(javaHome));
+                }
+            } else {
+                LogManager.unindent();
             }
             
             progress.setPercentage(Progress.COMPLETE * i / locations.size());
@@ -218,6 +229,7 @@ public class SearchForJavaAction extends WizardAction {
         SystemUtils.sleep(200);
     }
     
+    @Override
     public boolean canExecuteForward() {
         return javaLocations.size() == 0;
     }
