@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 
@@ -119,13 +121,437 @@ public final class Iterator implements TemplateWizard.Iterator {
   /**{@inheritDoc}*/
   public void removeChangeListener(ChangeListener listener) {}
 
-    private Service createTMapService(TMapComponentFactory componentFactory,
-            TMapModel tMapModel, 
-            PartnerLinkType wizardInPlt, 
-            Role wizardInRole) 
+  private DataObject createFile(TemplateWizard wizard) throws IOException {
+    FileObject file = null;
+    Project project = Templates.getProject(wizard);
+    String choice = (String) wizard.getProperty(Panel.CHOICE);
+
+    TransformationUseCasesFactory tUseCaseFactory = 
+            TransformationUseCasesFactory.getInstance();
+    file = tUseCaseFactory.createUseCase(project, wizard);
+    
+    return DataObject.find(file);
+  }
+
+  private static TransformationUseCase getUseCase(TemplateWizard wizard) {
+      String choice = wizard == null ? null : (String) wizard.getProperty(Panel.CHOICE);      
+      return choice == null ? null :  TRANSFORMATION_USE_CASE.get(choice);
+  }
+  
+private enum TransformationUseCase {
+REQUEST_REPLY,
+FILTER_ONE_WAY,
+FILTER_REQUEST_REPLY;
+}
+  
+private static class TransformationUseCasesFactory {
+    private static TransformationUseCasesFactory INSTANCE = 
+            new TransformationUseCasesFactory();
+    private TransformationUseCasesFactory() {
+    }
+
+    public static TransformationUseCasesFactory getInstance() {
+        return INSTANCE;
+    }
+
+    public FileObject createUseCase(Project project, TemplateWizard wizard) 
+            throws IOException 
     {
-        assert componentFactory != null && tMapModel != null 
-                && wizardInPlt != null && wizardInRole != null;
+        assert project != null && wizard != null;
+
+        TransformationUseCase useCase = getUseCase(wizard);
+        assert useCase != null;
+
+        configureTMapModel(useCase, project, wizard);
+
+        return createXslFiles(useCase, project, wizard);
+    }
+
+    private FileObject createXslFiles(TransformationUseCase useCase, 
+            Project project, TemplateWizard wizard) throws IOException
+    {
+        assert project != null && useCase != null && wizard !=null;
+
+        String file1 = (String) wizard.getProperty(Panel.INPUT_FILE);
+        String file2 = TransformationUseCase.FILTER_REQUEST_REPLY.equals(useCase) 
+                ?  (String) wizard.getProperty(Panel.OUTPUT_FILE) : null;
+
+        FileObject file = null;
+        if (file1 != null) {
+            file = createXslFile(
+                    project, file1);
+        }
+
+        if (file2 != null) {
+          file = createXslFile(project, file2);
+        }
+
+        return file;
+    }
+
+
+    private FileObject createXslFile(
+        Project project,
+        String file) throws IOException
+    {
+        if (file == null || "".equals(file)) {
+            return null;
+        }
+
+        int extIndex = file.lastIndexOf(XSL)-1; 
+        if (extIndex <= 0) {
+            return null;
+        }
+
+        file = file.substring(0, extIndex);
+
+        if ("".equals(file)) {
+            return null;
+        }
+
+        return Util.copyFile(
+                Util.getSrcFolder(project), 
+                TEMPLATES_PATH, XSLT_SERVICE,
+                file, XSL);
+    }
+
+  private void configureTMapModel(TransformationUseCase useCase, 
+            Project project, TemplateWizard wizard) throws IOException
+    {
+        assert useCase != null && project != null && wizard != null;
+
+        FileObject tMapFo = getTMapFo(project);
+        TMapModel tMapModel = tMapFo == null ? null : 
+                org.netbeans.modules.xslt.tmap.util.Util.getTMapModel(tMapFo);        
+
+        if (tMapModel == null 
+                || ! TMapModel.State.VALID.equals(tMapModel.getState())) 
+        {
+            throw new IllegalStateException(""+tMapModel.getState());
+        }
+
+        switch (useCase) {
+            case REQUEST_REPLY:
+                configureRequestReply(tMapModel, wizard);
+                break;
+            case FILTER_ONE_WAY:
+                configureFilterOneWay(tMapModel, wizard);
+                break;
+            case FILTER_REQUEST_REPLY:
+                configureFilterRequestReply(tMapModel, wizard);
+                break;
+        }
+
+        saveConfiguredModel(tMapFo);
+    }
+
+    private void saveConfiguredModel(FileObject tMapFo) throws IOException {
+        if (tMapFo == null) {
+            return;
+        }
+
+        DataObject dObj = DataObject.find(tMapFo);
+        if (dObj != null && dObj.isModified()) {
+
+            SaveCookie saveCookie = dObj.getLookup().
+                    lookup(SaveCookie.class);
+            assert saveCookie != null;
+            saveCookie.save();
+        }
+    }
+
+    private FileObject getTMapFo(Project project) {
+        FileObject tMapFo = org.netbeans.modules.xslt.tmap.util.Util.getTMapFo(project);
+        if (tMapFo == null) {
+            tMapFo = org.netbeans.modules.xslt.tmap.util.Util.createDefaultTransformmap(project);
+        }
+        return tMapFo;
+    }
+
+    public void configureRequestReply(TMapModel tMapModel
+            , TemplateWizard wizard) 
+    {
+        assert tMapModel != null && wizard != null;
+        try {
+            tMapModel.startTransaction();
+            TMapComponentFactory componentFactory = tMapModel.getFactory();
+
+            org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = 
+                  setOperation(tMapModel, wizard, componentFactory);
+
+            Transform rrTransform = null;
+            if (tMapOp != null) {
+              rrTransform = createTransform(componentFactory, 
+                      (String)wizard.getProperty(Panel.INPUT_FILE), tMapOp);
+            }
+
+            if (rrTransform != null) {
+              tMapOp.addTransform(rrTransform);
+            }
+        } finally {
+          tMapModel.endTransaction();
+        }
+    }
+
+    public void configureFilterOneWay(TMapModel tMapModel, 
+            TemplateWizard wizard) 
+    {
+        assert tMapModel != null && wizard != null;
+        try {
+            tMapModel.startTransaction();
+            TMapComponentFactory componentFactory = tMapModel.getFactory();
+
+            org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = 
+                  setOperation(tMapModel, wizard, componentFactory);
+
+            Transform foTransform = null;
+            if (tMapOp != null) {
+              foTransform = createTransform(componentFactory, 
+                      (String)wizard.getProperty(Panel.INPUT_FILE), tMapOp);
+            }
+
+            Invokes invokes = null;
+            if (tMapOp != null) {
+                invokes = createInvokes(tMapOp, wizard, componentFactory);
+            }
+            
+
+            if (foTransform != null) {
+                tMapOp.addTransform(foTransform);
+            }
+            if (invokes != null) {
+                tMapOp.addInvokes(invokes);
+            }
+            
+        } finally {
+          tMapModel.endTransaction();
+        }
+    }
+
+    public void configureFilterRequestReply(TMapModel tMapModel, 
+            TemplateWizard wizard) 
+    {
+        assert tMapModel != null && wizard != null;
+        try {
+            tMapModel.startTransaction();
+            TMapComponentFactory componentFactory = tMapModel.getFactory();
+
+            org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = 
+                  setOperation(tMapModel, wizard, componentFactory);
+
+            if (tMapOp == null) {
+                return;
+            }
+// TODO m            
+            Invokes invokes = null;
+            String inputInvokesVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
+                getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1));
+            String outputInvokesVar = getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
+                getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1));
+
+
+            Transform inTransform = null;
+            inTransform = createTransform(componentFactory, 
+                    (String)wizard.getProperty(Panel.INPUT_FILE), 
+                    tMapOp);
+
+            invokes = createInvokes(tMapOp, inputInvokesVar, outputInvokesVar,
+                      wizard, componentFactory);
+
+            Transform outTransform = null;
+            outTransform = createTransform(componentFactory, 
+                    (String)wizard.getProperty(Panel.OUTPUT_FILE), 
+                    tMapOp);
+
+            if (inTransform != null) {
+                tMapOp.addTransform(inTransform);
+            }
+            if (invokes != null) {
+                tMapOp.addInvokes(invokes);
+            }
+            if (outTransform != null) {
+                tMapOp.addTransform(outTransform);
+                String source = getTMapVarRef(invokes.getOutputVariable());
+                if (source != null) {
+                    outTransform.setSource(source);
+                }
+            }
+            
+            if (inTransform != null) {
+                String result = getTMapVarRef(invokes.getInputVariable());
+                if (result != null) {
+                    inTransform.setResult(result);
+                }
+            }
+            
+        } finally {
+          tMapModel.endTransaction();
+        }
+    }
+
+    private int getVariableNumber(
+            org.netbeans.modules.xslt.tmap.model.api.Operation operation, 
+            String varNamePrefix, int startNumber) 
+    {
+        if (operation == null || varNamePrefix == null) {
+            return startNumber;
+        }
+
+        List<Variable> vars = operation.getVariables();
+        if (vars == null || vars.size() < 1) {
+        }
+
+        int count = startNumber;
+        List<String> varNames = new ArrayList<String>();
+
+        for (Variable var : vars) {
+            String tmpVarName = var == null ? null : var.getName();
+            if (tmpVarName != null) {
+                varNames.add(tmpVarName);
+            }
+        }
+
+        while (true) {
+            if (!varNames.contains(varNamePrefix + count)) {
+                break;
+            }
+            count++;
+        }
+
+        return count;
+    }
+
+    private String getVariableName(String varPrefix, int varNumber) {
+        varPrefix = varPrefix == null ? DEFAULT_VARIABLE_PREFIX : varPrefix;
+        return varPrefix + varNumber;
+    }
+
+    private Service getTMapService(TMapModel model, 
+            PartnerLinkType wizardInPlt, Role wizardInRole) 
+    {
+        if (model == null || wizardInPlt == null || wizardInRole == null) {
+            return null;
+        }
+
+        Service service = null;
+        TransformMap root = model.getTransformMap();
+        if (root == null) {
+            return service;
+        }
+
+        List<Service> services = root.getServices();
+        if (services == null || services.size() < 1) {
+            return service;
+        }
+
+        for (Service serviceElem : services) {
+            WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
+            WSDLReference<Role> roleRef = serviceElem.getRole();
+
+            if (roleRef != null && pltRef != null 
+                    && wizardInPlt.equals(pltRef.get()) 
+                    && wizardInRole.equals(roleRef.get())) 
+            {
+                service = serviceElem;
+                break;
+            }
+        }
+
+        return service;
+    }
+
+    private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
+            Service tMapService, Operation wizardInputOperation) 
+    {
+        org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
+
+        if (tMapService == null) {
+            return tMapOp;
+        }
+
+        List<org.netbeans.modules.xslt.tmap.model.api.Operation> operations = 
+                tMapService.getOperations();
+        if (operations == null || operations.size() < 1) {
+            return tMapOp;
+        }
+
+        for (org.netbeans.modules.xslt.tmap.model.api.Operation operationElem : operations) {
+             Reference<Operation> opRef = operationElem.getOperation();
+
+            if (opRef != null && wizardInputOperation.equals(opRef.get())) {
+                tMapOp = operationElem;
+                break;
+            }
+        }
+
+        return tMapOp;
+  }
+
+    private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
+            TMapModel model, PartnerLinkType wizardInPlt, Role wizardInRole, 
+            Operation wizardInputOperation) 
+    {
+        return getTMapOperation(
+                getTMapService(model, wizardInPlt, wizardInRole), 
+                wizardInputOperation);
+    }
+
+
+    private org.netbeans.modules.xslt.tmap.model.api.Operation setOperation(
+        TMapModel tMapModel, 
+        TemplateWizard wizard, 
+        TMapComponentFactory componentFactory) {
+        assert tMapModel != null && wizard != null && componentFactory != null;
+
+        String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
+        Operation wizardInputOperation = 
+                (Operation) wizard.getProperty(Panel.INPUT_OPERATION);
+        Panel.PartnerRolePort wizardInputPartnerRolePort = 
+                (Panel.PartnerRolePort) wizard.getProperty(Panel.INPUT_PARTNER_ROLE_PORT);
+
+        PartnerLinkType wizardInPlt = wizardInputPartnerRolePort == null 
+                ? null : wizardInputPartnerRolePort.getPartnerLinkType();
+        Role wizardInRole = wizardInputPartnerRolePort == null 
+                ? null : wizardInputPartnerRolePort.getRole();
+
+        if (wizardInPlt == null || wizardInRole == null 
+                || wizardInputOperation == null) 
+        {
+            return null;
+        }
+
+        Service tMapService = getTMapService(tMapModel, wizardInPlt, wizardInRole);
+        if (tMapService == null) {
+            tMapService = createTMapService(componentFactory, tMapModel, 
+                    wizardInPlt, wizardInRole);
+        }
+
+        // TODO m
+        if (tMapService == null) {
+            return null;
+        }
+
+        org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
+        tMapOp = getTMapOperation(tMapService, wizardInputOperation);
+
+        if (tMapOp == null) {
+            tMapOp = componentFactory.createOperation();
+            tMapOp.setOperation(
+                    tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
+
+            tMapService.addOperation(tMapOp);
+            tMapOp.setInputVariableName(
+                    getVariableName(INPUT_OPERATION_VARIABLE_PREFIX, 1));
+
+            tMapOp.setOutputVariableName(
+                    getVariableName(OUTPUT_OPERATION_VARIABLE_PREFIX, 1));
+        }
+
+        return tMapOp;
+    }
+
+    private Service createTMapService(TMapComponentFactory componentFactory, TMapModel tMapModel, PartnerLinkType wizardInPlt, Role wizardInRole) {
+        assert componentFactory != null && tMapModel != null && wizardInPlt != null && wizardInRole != null;
         Service tMapService = null;
 
         TransformMap root = tMapModel.getTransformMap();
@@ -145,453 +571,168 @@ public final class Iterator implements TemplateWizard.Iterator {
         tMapService.setRole(tMapService.createWSDLReference(wizardInRole, Role.class));
 
         root.addService(tMapService);
-          
+
         return tMapService;
     }
 
-    private Service getTMapService(
-            TMapModel model, 
-            PartnerLinkType wizardInPlt, 
-            Role wizardInRole) 
+    private Transform createTransform(TMapComponentFactory componentFactory, 
+            String inputFileStr, Variable source, Variable result) 
     {
-        if (model == null || wizardInPlt == null || wizardInRole == null) 
-        {
+        if (source == null || result == null) {
             return null;
         }
-        
-        Service service = null;
-        TransformMap root = model.getTransformMap();
-        if (root == null) {
-            return service;
+
+        Transform transform = componentFactory.createTransform();
+        if (inputFileStr != null && !"".equals(inputFileStr)) {
+            transform.setFile(inputFileStr);
         }
-        
-        List<Service> services = root.getServices();
-        if (services == null || services.size() < 1) {
-            return service;
-        }
-        
-        for (Service serviceElem : services) {
-            WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
-            WSDLReference<Role> roleRef = serviceElem.getRole();
-            
-            if (roleRef != null && pltRef != null 
-                    && wizardInPlt.equals(pltRef.get()) 
-                    && wizardInRole.equals(roleRef.get())) 
-            {
-                service = serviceElem;
-                break;
-            }
-        }
-        
-        return service;
+
+        // TODO m
+        String sourcePartName = getFirstPartName(source);
+
+        transform.setSource(getTMapVarRef(source, sourcePartName));
+
+        String resultPartName = getFirstPartName(result);
+        transform.setResult(getTMapVarRef(result, resultPartName));
+        return transform;
     }
 
-    private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
-            Service tMapService, 
-            Operation wizardInputOperation) 
+    private Transform createTransform(TMapComponentFactory componentFactory, 
+            String inputFileStr, VariableDeclarator variableHolder) 
     {
-        org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
-        
-        if (tMapService == null) {
-            return tMapOp;
+        if (variableHolder == null) {
+            return null;
         }
-        
-        List<org.netbeans.modules.xslt.tmap.model.api.Operation> operations 
-                = tMapService.getOperations();
-        if (operations == null || operations.size() < 1) {
-            return tMapOp;
-        }
-        
-        for (org.netbeans.modules.xslt.tmap.model.api.Operation operationElem : operations) {
-            Reference<Operation> opRef = operationElem.getOperation();
-            
-            if (opRef != null && wizardInputOperation.equals(opRef.get())) {
-                tMapOp = operationElem;
-                break;
-            }
-        }
-
-        return tMapOp;
+        return createTransform(componentFactory, inputFileStr, 
+                variableHolder.getInputVariable(), 
+                variableHolder.getOutputVariable());
     }
 
-    private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
-            TMapModel model, 
-            PartnerLinkType wizardInPlt, 
-            Role wizardInRole, 
-            Operation wizardInputOperation) 
+    private String getTMapVarRef(Variable var) {
+        String firstPartName = var == null ? null : getFirstPartName(var);
+        return getTMapVarRef(var, firstPartName);
+    }
+
+    private String getTMapVarRef(Variable var, String partName) {
+        if (partName == null || var == null) {
+            return null;
+        }
+        String varName = var.getName();
+
+        return varName == null 
+              ? null : VariableReferenceImpl.getVarRefString(varName, partName);
+    }
+
+    private String getFirstPartName(Reference<Message> messageRef) {
+        String partName = null;
+        if (messageRef == null) {
+            return partName;
+        }
+
+        Message message = messageRef.get();
+
+        Collection<Part> parts = null;
+        if (message != null) {
+            parts = message.getParts();
+        }
+
+        Part part = null;
+        if (parts != null && parts.size() > 0) {
+            java.util.Iterator<Part> partIter = parts.iterator();
+            part = partIter.next();
+        }
+
+        if (part != null) {
+            partName = part.getName();
+        }
+
+        return partName;
+    }
+
+    private String getFirstPartName(Variable var) {
+        if (var == null) {
+            return null;
+        }
+
+        return getFirstPartName(var.getMessage());
+    }
+
+    private String getFirstPartName(OperationParameter opParam) {
+        if (opParam == null) {
+            return null;
+        }
+
+        return getFirstPartName(opParam.getMessage());
+    }
+
+    private Invokes createInvokes(
+          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
+          TemplateWizard wizard, TMapComponentFactory componentFactory) 
     {
-        return getTMapOperation(getTMapService(model, wizardInPlt, wizardInRole), wizardInputOperation);
+        return createInvokes(tMapOp, null, null, wizard, componentFactory);
+
     }
 
-  private boolean isRequestTransform(TemplateWizard wizard) {
-    String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
-    return !(inputFileStr == null || "".equals(inputFileStr)
-            || ".xsl".equals(inputFileStr));
-
-  }
-  
-  private DataObject createFile(TemplateWizard wizard) throws IOException {
-    FileObject file = null;
-    Project project = Templates.getProject(wizard);
-    String choice = (String) wizard.getProperty(Panel.CHOICE);
-    
-//    TMapModelFactory tMapModelFactory = Lookup.getDefault().lookup(TMapModelFactory.class);
-//    assert tMapModelFactory != null;
-    FileObject tMapFo = org.netbeans.modules.xslt.tmap.util.Util.getTMapFo(project);
-    if (tMapFo == null) {
-        tMapFo = org.netbeans.modules.xslt.tmap.util.Util.createDefaultTransformmap(project);
-    }
-    
-    TMapModel tMapModel = 
-            org.netbeans.modules.xslt.tmap.util.Util.getTMapModel(tMapFo);
-
-    configureTMapModel(tMapModel, wizard);
-    
-    // TODO m
-    // try to save tMapFo
-    DataObject dObj = DataObject.find(tMapFo);
-    if (dObj != null && dObj.isModified()) {
-        
-        SaveCookie saveCookie = dObj.getLookup().
-                lookup(SaveCookie.class);
-        assert saveCookie != null;
-        saveCookie.save();
-    }
-    
-    if (isRequestTransform(wizard)) {
-        file = createXslFile(
-                project, (String) wizard.getProperty(Panel.INPUT_FILE));
-    }
-
-    if (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice)) {
-      file = createXslFile(
-        project, (String) wizard.getProperty(Panel.OUTPUT_FILE));
-    }
-
-
-    return DataObject.find(file);
-  }
-
-  // TODO m
-  private void configureTMapModel(TMapModel tMapModel, TemplateWizard wizard) {
-      assert tMapModel != null && wizard != null;
-      if (! TMapModel.State.VALID.equals(tMapModel.getState())) {
-          return;
-      }
-      
-      String choice = (String) wizard.getProperty(Panel.CHOICE);      
-      TMapComponentFactory componentFactory = tMapModel.getFactory();
-
-      try {
-          tMapModel.startTransaction();
-          
-          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = 
-                  setOperation(tMapModel, wizard, componentFactory);
-          
-          if (tMapOp != null 
-                  && (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice) 
-                  || Panel.CHOICE_FILTER_ONE_WAY.equals(choice))) 
-          {
-//System.out.println("choice panel is : "+choice);              
-              
-              setAdditionalTransformation(tMapOp, wizard, componentFactory,
-                      Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice));
-// TODO m | r               
-//              setInvokes(tMapOp, wizard, componentFactory,
-//                      Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice));
-          }
-      } finally {
-          tMapModel.endTransaction();
-      }
-  }
-
-  private org.netbeans.modules.xslt.tmap.model.api.Operation setOperation(
-          TMapModel tMapModel,
-          TemplateWizard wizard, 
-          TMapComponentFactory componentFactory) 
-  {
-      assert tMapModel != null && wizard != null && componentFactory != null;
-      
-      String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
-      Operation wizardInputOperation =
-              (Operation) wizard.getProperty(Panel.INPUT_OPERATION);
-      Panel.PartnerRolePort wizardInputPartnerRolePort =
-              (Panel.PartnerRolePort) wizard.getProperty(Panel.INPUT_PARTNER_ROLE_PORT);
-      
-      PartnerLinkType wizardInPlt = wizardInputPartnerRolePort == null ? null : wizardInputPartnerRolePort.getPartnerLinkType();
-      Role wizardInRole = wizardInputPartnerRolePort == null ? null : wizardInputPartnerRolePort.getRole();
-      
-      if (wizardInPlt == null || wizardInRole == null || wizardInputOperation == null) {
-          return null;
-      }
-      
-      Service tMapService = getTMapService(tMapModel, wizardInPlt, wizardInRole);
-      if (tMapService == null) {
-          tMapService = createTMapService(componentFactory, 
-                  tMapModel, wizardInPlt, wizardInRole);
-      }
-
-      // TODO m
-      if (tMapService == null) {
-          return null;
-      }
-      
-      org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
-      tMapOp = getTMapOperation(tMapService, wizardInputOperation); 
-      
-      if (tMapOp == null) {
-          tMapOp =
-                  componentFactory.createOperation();
-          tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
-
-          tMapService.addOperation(tMapOp);  
-          tMapOp.setInputVariableName(
-                  getVariableName(INPUT_OPERATION_VARIABLE_PREFIX,1));
-          
-          tMapOp.setOutputVariableName(
-                  getVariableName(OUTPUT_OPERATION_VARIABLE_PREFIX,1)); 
-      }
-     
-      Transform transform = createTransform(
-              componentFactory, 
-              inputFileStr, 
-              wizardInputOperation, 
-              tMapOp);
-      
-      tMapOp.addTransform(transform);
-
-     return tMapOp;
-  }
-  
-  private Transform createTransform(
-          TMapComponentFactory componentFactory,
-          String inputFileStr,
-          Operation wizardOperation,
-          VariableDeclarator variableHolder) 
-  {
-      Transform transform =
-              componentFactory.createTransform();
-      if (inputFileStr != null && ! "".equals(inputFileStr)) {
-          transform.setFile(inputFileStr);
-      }
-      
-      // TODO m
-      String sourcePartName = getFirstPartName(wizardOperation.getInput());
-      
-      
-      transform.setSource(
-              getTMapVarRef(variableHolder.getInputVariable(), sourcePartName));
-
-      String resultPartName = getFirstPartName(wizardOperation.getOutput());
-      transform.setResult(
-              getTMapVarRef(variableHolder.getOutputVariable(), resultPartName));
-      return transform;
-  }
-  
-  private String  getTMapVarRef(Variable var, String partName) {
-      if (partName == null || var == null) {
-          return null;
-      }
-      String varName = var.getName();
-      
-      return varName == null ? null
-              : VariableReferenceImpl.getVarRefString(varName, partName);
-  }
-  
-  private String getFirstPartName(OperationParameter opParam) {
-      String partName = null;
-      if (opParam == null) {
-          return partName;
-      }
-      
-      NamedComponentReference<Message> messageRef = opParam.getMessage();
-      Message message = messageRef == null ? null : messageRef.get();
-      
-      Collection<Part> parts = null;
-      if (message != null) {
-          parts = message.getParts();
-      }
-      
-      Part part = null;
-      if (parts != null && parts.size() > 0) {
-          java.util.Iterator<Part> partIter = parts.iterator();
-          part = partIter.next();
-      }
-      
-      if (part != null) {
-          partName = part.getName();
-      }
-      
-      return partName;
-  }
-  
-// TODO m | r
-    private void setAdditionalTransformation(
-            org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp,
-            TemplateWizard wizard, 
-            TMapComponentFactory componentFactory, 
-            boolean isFilterRequestReply) 
+    private Invokes createInvokes(
+          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
+          String inputInvokesVar,
+          String outputInvokesVar,
+          TemplateWizard wizard, TMapComponentFactory componentFactory) 
     {
         assert tMapOp != null && wizard != null && componentFactory != null;
         Invokes invokes = null;
-        Transform transform = null;
-        String outputFileStr = (String) wizard.getProperty(Panel.OUTPUT_FILE);
+
         Operation wizardOutputOperation = 
                 (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
         Panel.PartnerRolePort wizardOutputPartnerRolePort = 
                 (Panel.PartnerRolePort) wizard.getProperty(Panel.OUTPUT_PARTNER_ROLE_PORT);
 
         PartnerLinkType wizardOutPlt = wizardOutputPartnerRolePort == null 
-                ? null 
-                : wizardOutputPartnerRolePort.getPartnerLinkType();
+                ? null : wizardOutputPartnerRolePort.getPartnerLinkType();
         Role wizardOutRole = wizardOutputPartnerRolePort == null 
-                ? null 
-                : wizardOutputPartnerRolePort.getRole();
+                ? null : wizardOutputPartnerRolePort.getRole();
 
-        if (wizardOutPlt != null && wizardOutRole != null && wizardOutputOperation != null) {
-            invokes = componentFactory.createInvokes();
-            invokes.setPartnerLinkType(invokes.
-                    createWSDLReference(wizardOutPlt, PartnerLinkType.class));
-            invokes.setRole(invokes.
-                    createWSDLReference(wizardOutRole, Role.class));
-            invokes.setOperation(invokes.
-                    createWSDLReference(wizardOutputOperation, Operation.class));
+        if (wizardOutPlt != null 
+                && wizardOutRole != null 
+                && wizardOutputOperation != null) 
+        {
+          invokes = componentFactory.createInvokes();
+          invokes.setPartnerLinkType(
+                  invokes.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
+          invokes.setRole(
+                  invokes.createWSDLReference(wizardOutRole, Role.class));
+          invokes.setOperation(
+                  invokes.createWSDLReference(wizardOutputOperation, Operation.class));
 
-            // TODO m
-            invokes.setInputVariableName(
-                  getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
-                  getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1)));
-            invokes.setOutputVariableName(
-                  getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
-                  getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1)));
-
-
-            if (isFilterRequestReply) {
-                transform = createTransform(
-                        componentFactory, 
-                        outputFileStr, 
-                        wizardOutputOperation, 
-                        invokes);
-            }
-        }
-
-        if (invokes != null) {
-            tMapOp.addInvokes(invokes);
-        }
-        
-        if (transform != null) {
-            tMapOp.addTransform(transform);
-        }
-    }
-
-// TODO m | r
-// TODO m | r  
-//  private Invokes setInvokes(
-//          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp,
-//          TemplateWizard wizard, 
-//          TMapComponentFactory componentFactory,
-//          boolean isFilterRequestReply) 
-//  {
-//      assert tMapOp != null && wizard != null && componentFactory != null;
-//      Invokes invokes = null;
-//      String outputFileStr = (String) wizard.getProperty(Panel.OUTPUT_FILE);
-//      Operation wizardOutputOperation =
-//              (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
-//      Panel.PartnerRolePort wizardOutputPartnerRolePort = 
-//              (Panel.PartnerRolePort) wizard.getProperty(Panel.OUTPUT_PARTNER_ROLE_PORT);
-//      Boolean wizardOutputIsTransformJBI = ((Boolean) wizard.getProperty(Panel.OUTPUT_TRANSFORM_JBI));
-//      
-//      PartnerLinkType wizardOutPlt = wizardOutputPartnerRolePort == null ? null : wizardOutputPartnerRolePort.getPartnerLinkType();
-//      Role wizardOutRole = wizardOutputPartnerRolePort == null ? null : wizardOutputPartnerRolePort.getRole();
-//      
-//      if (wizardOutPlt != null 
-//              && wizardOutRole != null 
-//              && wizardOutputOperation != null) 
-//      {
-//          invokes = componentFactory.createInvokes();
-//          invokes.setPartnerLinkType(invokes.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
-//          invokes.setRole(invokes.createWSDLReference(wizardOutRole, Role.class));
-//          invokes.setOperation(invokes.createWSDLReference(wizardOutputOperation, Operation.class));
-//          
-//          if (isFilterRequestReply) {
-//              if (outputFileStr != null && ! "".equals(outputFileStr)) {
-//                  invokes.setFile(outputFileStr);
-//              }
-//              invokes.setTransformJbi(BooleanType.parseBooleanType(wizardOutputIsTransformJBI));
-//          }
-//      }
-//      
-//      if (invokes != null) {
-//        tMapOp.addInvokes(invokes);
-//      }
-//      
-//      return invokes;
-//  }
-  
-  private FileObject createXslFile(
-    Project project,
-    String file) throws IOException
-  {
-    if (file == null || "".equals(file)) {
-        return null;
-    }
-
-    int extIndex = file.lastIndexOf(XSL)-1; 
-    if (extIndex <= 0) {
-        return null;
-    }
-    
-    file = file.substring(0, extIndex);
-      
-    if ("".equals(file)) {
-        return null;
-    }
-    
-    return Util.copyFile(
-            Util.getSrcFolder(project), 
-            TEMPLATES_PATH, XSLT_SERVICE,
-            file, XSL);
-  }
-
-  private int getVariableNumber(
-          org.netbeans.modules.xslt.tmap.model.api.Operation operation, 
-          String varNamePrefix,
-          int startNumber) 
-  {
-      if (operation == null || varNamePrefix == null) {
-          return startNumber;
-      }
-      
-      List<Variable> vars = operation.getVariables();
-      if (vars == null || vars.size()< 1) {
-      }
-      
-      int count = startNumber;
-      List<String> varNames = new ArrayList<String>();
-      
-      for (Variable var : vars) {
-          String tmpVarName = var == null ? null : var.getName();
-          if (tmpVarName != null) {
-              varNames.add(tmpVarName);
+          // TODO m
+          if (inputInvokesVar == null || "".equals(inputInvokesVar)) {
+              inputInvokesVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
+                  getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1));
           }
-      }
-      
-      while (true) {
-          if (!varNames.contains(varNamePrefix+count)) {
-              break;
-          } 
-          count++;
-      }
+          if (outputInvokesVar == null || "".equals(outputInvokesVar)) {
+              outputInvokesVar = getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
+                  getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1));
+          }
+          invokes.setInputVariableName(inputInvokesVar);
+          invokes.setOutputVariableName(outputInvokesVar);
+        }
 
-      return count;
+        return invokes;
+    }
+
+}
+
+  private static Map<String, TransformationUseCase> TRANSFORMATION_USE_CASE = 
+          new HashMap<String, TransformationUseCase>();
+  static {
+      TRANSFORMATION_USE_CASE.put(Panel.CHOICE_REQUEST_REPLY,
+              TransformationUseCase.REQUEST_REPLY);
+      TRANSFORMATION_USE_CASE.put(Panel.CHOICE_FILTER_ONE_WAY,
+              TransformationUseCase.FILTER_ONE_WAY);
+      TRANSFORMATION_USE_CASE.put(Panel.CHOICE_FILTER_REQUEST_REPLY,
+              TransformationUseCase.FILTER_REQUEST_REPLY);
   }
-  
-  private String getVariableName(String varPrefix, int varNumber) {
-      varPrefix = varPrefix == null ? DEFAULT_VARIABLE_PREFIX 
-              : varPrefix;
-      return varPrefix+varNumber;
-  }
-  
+          
   private static String TEMPLATES_PATH = "Templates/SOA/"; // NOI18N
   private static String XSLT_SERVICE = "xslt.service"; // NOI18N
   private static String XSL = "xsl"; // NOI18N
@@ -604,3 +745,4 @@ public final class Iterator implements TemplateWizard.Iterator {
 
   private Panel<WizardDescriptor> myPanel;
 }
+

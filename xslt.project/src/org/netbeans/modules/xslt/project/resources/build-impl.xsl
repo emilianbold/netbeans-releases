@@ -152,6 +152,12 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
                 </path>
                 
                 <taskdef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.GenerateJBIDescriptorTask">

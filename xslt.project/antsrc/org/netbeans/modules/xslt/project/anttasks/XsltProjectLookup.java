@@ -31,6 +31,7 @@ public class XsltProjectLookup extends Lookup {
         
     }
     private static Lookup   getInstance(){
+        System.out.println("try to get XsltLookupInstance");
         if (m_instance == null ) {
             m_instance = new XsltProjectLookup();
         }
@@ -41,14 +42,17 @@ public class XsltProjectLookup extends Lookup {
     }
     
     public Object lookup(Class clazz) {
+        System.out.println("lookup(clazz): "+clazz);
         return getInstance().lookup(clazz);
     }
               
     public  Lookup.Result lookup(Lookup.Template template) {
+        System.out.println("lookup(template): "+template);
         return getInstance().lookup(template);
     }
     
     public Lookup.Item  lookupItem(Lookup.Template template) {
+        System.out.println("lookupItem(template): "+template);
         return getInstance().lookupItem(template);
     }
     
