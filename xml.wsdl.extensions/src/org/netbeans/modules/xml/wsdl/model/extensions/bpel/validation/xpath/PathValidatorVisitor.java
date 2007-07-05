@@ -28,17 +28,12 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
-import org.netbeans.modules.xml.wsdl.model.Import;
-import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -451,13 +446,6 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                 }
             }
             //
-            // Check if the schema is imported, where current step is defined.
-            if (!isSchemaImported(sComp)) {
-                // Error. The required prefix isn't declared
-                addResultItem(ResultType.WARNING,
-                        "MISSING_SCHEMA_IMPORT", nsUri); // NOI18N
-            }
-            //
             String name = ((Named)sComp).getName();
             if (isGlobal) {
                 if (sComp instanceof Element){
@@ -542,34 +530,4 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
         return nsPrefix;
     }
     
-    /**
-     * Schema can be either imported directly to WSDL or it can be derived
-     * by another imported or inplace schema.
-     * TODO: It's unclear if it necessary to look for nested imports deeper then 1 level.
-     */
-    private boolean isSchemaImported(SchemaComponent sc) {
-        String soughtNamspace = sc.getModel().getEffectiveNamespace(sc);
-        assert soughtNamspace != null;
-        //
-        WSDLModel model = myContext.getWsdlContext().getModel();
-        if (model.getState() == State.VALID) {
-            for (Import anImport : model.getDefinitions().getImports()) {
-                if (soughtNamspace.equals(anImport.getNamespace())) {
-                    return true;
-                }
-            }
-        }
-        //
-        // Check the imports of nested types
-        Types types = model.getDefinitions().getTypes();
-        for (Schema schema : types.getSchemas()) {
-            for (org.netbeans.modules.xml.schema.model.Import anImport : schema.getImports()) {
-                if (soughtNamspace.equals(anImport.getNamespace())) {
-                    return true;
-                }
-            }
-        }
-        //
-        return false;
-    }
 }
