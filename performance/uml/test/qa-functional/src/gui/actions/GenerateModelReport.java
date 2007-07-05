@@ -72,7 +72,7 @@ public class GenerateModelReport extends org.netbeans.performance.test.utilities
     public ComponentOperator open() {
         log("::open");
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        pNode.performPopupActionNoBlock("Generate Model Report");
+        pNode.performPopupAction("Generate Model Report");
         OutputOperator oot = new OutputOperator();
         oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
         OutputTabOperator asot = oot.getOutputTab("UML Report Log");
