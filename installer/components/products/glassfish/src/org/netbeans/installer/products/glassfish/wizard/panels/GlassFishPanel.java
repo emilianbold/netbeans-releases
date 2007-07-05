@@ -175,8 +175,10 @@ public class GlassFishPanel extends DestinationPanel {
                 DEFAULT_MINIMUM_JDK_VERSION);
         setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
-         setProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
-                DEFAULT_VENDOR_JDK_ALLOWED);
+        setProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
+                SystemUtils.isMacOS() ? 
+                    DEFAULT_VENDOR_JDK_ALLOWED_MACOSX : 
+                    DEFAULT_VENDOR_JDK_ALLOWED);        
     }
     
     @Override
@@ -1266,4 +1268,7 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_VENDOR_JDK_ALLOWED = 
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.vendor.jdk.allowed"); // NOI18N
+    public static final String DEFAULT_VENDOR_JDK_ALLOWED_MACOSX = 
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.vendor.jdk.allowed.macosx"); // NOI18N
 }
