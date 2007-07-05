@@ -172,7 +172,9 @@ public class ASPanel extends DestinationPanel {
         setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
         setProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
-                DEFAULT_VENDOR_JDK_ALLOWED);
+                SystemUtils.isMacOS() ? 
+                    DEFAULT_VENDOR_JDK_ALLOWED_MACOSX : 
+                    DEFAULT_VENDOR_JDK_ALLOWED);
         
     }
     
@@ -1245,4 +1247,7 @@ public class ASPanel extends DestinationPanel {
     public static final String DEFAULT_VENDOR_JDK_ALLOWED = 
             ResourceUtils.getString(ASPanel.class,
             "AS.vendor.jdk.allowed"); // NOI18N
+    public static final String DEFAULT_VENDOR_JDK_ALLOWED_MACOSX = 
+            ResourceUtils.getString(ASPanel.class,
+            "AS.vendor.jdk.allowed.macosx"); // NOI18N
 }
