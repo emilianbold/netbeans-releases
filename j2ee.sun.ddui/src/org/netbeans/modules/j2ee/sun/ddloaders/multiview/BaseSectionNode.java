@@ -19,6 +19,9 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview;
 
 import java.awt.Component;
+import java.awt.event.FocusListener;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.xml.multiview.SectionNode;
@@ -87,15 +90,57 @@ public class BaseSectionNode extends SectionNode {
     public SectionNodePanel getSectionNodePanel() {
         SectionNodePanel nodePanel = super.getSectionNodePanel();
         
-        /** Remove border and put back visible underbar under header when panel
-         *  is expanded.
-         */
         if(isExpanded()) {
+            /** Remove border and put back visible underbar under header when panel
+             *  is expanded.
+             */
             nodePanel.setBorder(null);
             setHeaderSeparatorVisibility(nodePanel, true);
+        } else {
+            /** Remove focus listener from title button when not expanded (ie when expandable).
+             */ 
+            disableTitleButtonFocusListener(nodePanel);
         }
         
         return nodePanel;
+    }
+
+    /**
+     * Hack: I need to disable the focus listener for the title button, but cannot
+     * do that via SectionNodePanel constructor because the parameter is blocked.
+     */
+    protected void disableTitleButtonFocusListener(SectionNodePanel nodePanel) {
+        JButton titleButton = getTitleButton(nodePanel);
+        if(titleButton != null) {
+            FocusListener [] listeners = titleButton.getFocusListeners();
+            if(listeners != null && listeners.length == 2) {
+                titleButton.removeFocusListener(listeners[1]);
+            }
+        }
+    }
+    
+    protected JButton getTitleButton(SectionNodePanel nodePanel) {
+        JButton result = null;
+        int panelCount = 0;
+        Component [] c1 = nodePanel.getComponents();
+        if(c1 != null) {
+            for(int i = 0; i < c1.length; i++) {
+                if(c1[i] instanceof JPanel && ++panelCount == 2) {
+                    JPanel titlePanel = (JPanel) c1[i];
+                    Component [] c2 = titlePanel.getComponents();
+                    if(c2 != null) {
+                        for(int j = 0; j < c2.length; j++) {
+                            if(c2[j] instanceof JButton) {
+                                result = (JButton) c2[j];
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return result;
     }
     
     /**
