@@ -169,6 +169,8 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
                 helper.enableWSPSecurity(secMech.getName());
             } else {
                 helper.disableWSPSecurity();
+                configurator.disable();
+                configurator.save();
             }
         }
         

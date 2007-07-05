@@ -403,7 +403,11 @@ public class ProviderConfigurator extends Configurator {
         try {
             if (providerConfig != null) {
                 //System.out.println("saveProvider");
-                providerConfig.saveProvider();
+                if (!disabled) {
+                    providerConfig.saveProvider();
+                } else {
+                    providerConfig.deleteProvider();
+                }
             }
         } catch (ConfiguratorException ex) {
             ex.printStackTrace();

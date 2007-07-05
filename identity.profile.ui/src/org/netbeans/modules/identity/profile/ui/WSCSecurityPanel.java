@@ -238,6 +238,10 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             } else {
                 //helper.removeAMSecurityConstraint();
                 helper.disableWSCSecurity();
+                for (ProviderConfigurator configurator : configurators) {
+                    configurator.disable();
+                    configurator.save();
+                }
             }
         }
         
