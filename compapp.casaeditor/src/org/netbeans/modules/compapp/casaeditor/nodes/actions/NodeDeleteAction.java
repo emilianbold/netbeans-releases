@@ -47,18 +47,18 @@ public class NodeDeleteAction extends NodeAbstractAction {
     
     
     public void actionPerformed(ActionEvent e) {
-        List widgetsToDelete = new ArrayList();
+        List<CasaComponent> widgetsToDelete = new ArrayList<CasaComponent>();
         Object data = getData();
-        if (data != null) {
-            widgetsToDelete.add(data);
+        if (data != null && data instanceof CasaComponent) {
+            widgetsToDelete.add((CasaComponent)data);
         }
         delete(getModel(), widgetsToDelete);
     }
     
-    public static void delete(CasaWrapperModel model, List objectsToDelete) {
+    public static void delete(CasaWrapperModel model, List<CasaComponent> objectsToDelete) {
         DeleteVisitorCasa deleterCasa = new DeleteVisitorCasa(model);
-        for (Object object : objectsToDelete) {
-            ((CasaComponent) object).accept(deleterCasa);
+        for (CasaComponent object : objectsToDelete) {
+            object.accept(deleterCasa);
         }
     }
     

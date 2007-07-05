@@ -34,7 +34,7 @@ import org.openide.util.Lookup;
  *
  * @author rdara
  */
-public class CasaPaletteCategoryChildren extends Children.Keys {
+public class CasaPaletteCategoryChildren extends Children.Keys<CasaPaletteCategoryID> {
     
     private Lookup mLookup;
     
@@ -43,15 +43,14 @@ public class CasaPaletteCategoryChildren extends Children.Keys {
     }
     
     
-    protected Node[] createNodes(Object key) {
-        CasaPaletteCategoryID categoryID = (CasaPaletteCategoryID) key;
-        return new Node[] { new CasaPaletteCategoryNode(categoryID, mLookup) };
+    protected Node[] createNodes(CasaPaletteCategoryID key) {
+        return new Node[] { new CasaPaletteCategoryNode(key, mLookup) };
     }
     
     protected void addNotify() {
         super.addNotify();
         
-        java.util.Map<String,CasaPaletteCategoryID> categoryMap = new HashMap<String,CasaPaletteCategoryID>();
+        java.util.Map<String, CasaPaletteCategoryID> categoryMap = new HashMap<String, CasaPaletteCategoryID>();
         List<CasaPaletteCategoryID> categories = new ArrayList<CasaPaletteCategoryID>();
         Collection<? extends CasaPalettePlugin> plugins = CasaPalette.getPlugins();
         for (CasaPalettePlugin plugin : plugins) {

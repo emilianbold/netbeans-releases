@@ -53,7 +53,7 @@ public class AddWSDLPortsAction extends AbstractAction {
         super(
                 NbBundle.getMessage(AddWSDLPortsAction.class, "LBL_AddWSDLPortsAction_Name"), 
                 null);
-        mReference = new WeakReference(dataObject);
+        mReference = new WeakReference<CasaDataObject>(dataObject);
     }
     
     
@@ -70,12 +70,12 @@ public class AddWSDLPortsAction extends AbstractAction {
         }
     }
 
-    private HashMap getWsdlTemplates() {
+    private Map<String, LocalizedTemplateGroup> getWsdlTemplates() {
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
         LocalizedTemplateGroup ltg = null;
-        HashMap temps = new HashMap();
+        Map<String, LocalizedTemplateGroup> temps = new HashMap<String, LocalizedTemplateGroup>();
         for (TemplateGroup group : groups) {
             ltg = factory.getLocalizedTemplateGroup(group);
             protocols.add(ltg);
@@ -94,11 +94,11 @@ public class AddWSDLPortsAction extends AbstractAction {
         
         final CasaWrapperModel model = dataObject.getEditorSupport().getModel();
 
-        final Map<String, JbiBindingInfo> portMap = new HashMap();
+        final Map<String, JbiBindingInfo> portMap = new HashMap<String, JbiBindingInfo>();
 
         JbiDefaultComponentInfo bcinfo = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
         if (bcinfo != null) {
-            HashMap bcTemplates = getWsdlTemplates();
+            Map<String, LocalizedTemplateGroup> bcTemplates = getWsdlTemplates();
             List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
             for (JbiBindingInfo bi : bclist) {
                 String biName = bi.getBindingName().toUpperCase();

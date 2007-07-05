@@ -245,7 +245,7 @@ implements ExplorerManager.Provider, HelpCtx.Provider, Runnable, PropertyChangeL
     private void findNavigatorNode(
             Node parent, 
             Object datumToFind,
-            List toSelect) {
+            List<Node> toSelect) {
         Children children = parent.getChildren();
         for (Node n : children.getNodes()) {
             if (n instanceof CasaNode) {

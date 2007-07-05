@@ -102,7 +102,7 @@ public class CenteredFlowLayout {
         private int mAllowedWidth;
         private int mEdgeSpacing;
         private int mVerticalSpacing;
-        private Comparator mComparator = new XOrderComparator();
+        private Comparator<CasaNodeWidget> mComparator = new XOrderComparator();
         
         
         public LayoutRow(int allowedWidth, int edgeSpacing, int verticalSpacing) {

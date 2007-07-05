@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
 public class PortTypeProperty extends BaseCasaProperty {
 
     public PortTypeProperty(CasaNode node) {
-                super(
+                super( // <T>?
                 node, 
                 (CasaComponent) node.getData(), 
                 JBIAttributes.INTERFACE_NAME.getName(), 

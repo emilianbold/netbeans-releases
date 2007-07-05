@@ -50,7 +50,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Josh Sandusky
  */
-public abstract class CasaNode<T> extends AbstractNode
+public abstract class CasaNode extends AbstractNode
 {
     private WeakReference mDataReference;
     private static Map<Object, Image> mImageMap = new HashMap<Object, Image>();
@@ -66,7 +66,7 @@ public abstract class CasaNode<T> extends AbstractNode
     
     private CasaNode(Object data, Children children, InstanceContent content) {
         super(children, new AbstractLookup(content));
-        mDataReference = new WeakReference(data);
+        mDataReference = new WeakReference<Object>(data);
         content.add(new SaveCookieDelegate());
         content.add(new PrintProviderCookieDelegate());
     }
@@ -102,11 +102,11 @@ public abstract class CasaNode<T> extends AbstractNode
     }
     
     public CasaDataObject getDataObject() {
-        return (CasaDataObject) getLookup().lookup(CasaDataObject.class);
+        return getLookup().lookup(CasaDataObject.class);
     }
         
     public CasaWrapperModel getModel() {
-        return (CasaWrapperModel) getLookup().lookup(CasaWrapperModel.class);
+        return getLookup().lookup(CasaWrapperModel.class);
     }
     
     public boolean isEditable(String propertyType) {
@@ -117,12 +117,12 @@ public abstract class CasaNode<T> extends AbstractNode
         return false;
     }
     
-    public void addCustomActions(List actions) {
+    public void addCustomActions(List<Action> actions) {
         // Subclasses can override this to provide custom actions.
     }
     
     public final Action[] getActions(boolean context) {
-        List actions = new ArrayList();
+        List<Action> actions = new ArrayList<Action>();
         
         addCustomActions(actions);
         if (actions.size() > 0) {

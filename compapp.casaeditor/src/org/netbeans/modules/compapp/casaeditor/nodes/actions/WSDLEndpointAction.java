@@ -128,7 +128,7 @@ public class WSDLEndpointAction extends NodeAction {
         //System.out.println("Got WSDLEndpoint Action.. Pt: "+pt);
 
         WSDLModel wsdlModel = (WSDLModel) b.getModel();
-        Collection<Binding> bindings = new HashSet();
+        Collection<Binding> bindings = new HashSet<Binding>();
         bindings.add(b);
         final JComponent stc = WSITConfigProvider.getDefault().getWSITServiceConfig(wsdlModel, null, bindings);
         // final ServiceTopComponent stc = new ServiceTopComponent(null, null, wsdlModel, node, null, bindings);

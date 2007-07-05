@@ -48,7 +48,7 @@ public class DependenciesRegistry {
     
     public void registerDependency(Widget.Dependency dependency) {
         if (mDependencies == null) {
-            mDependencies = new ArrayList();
+            mDependencies = new ArrayList<Widget.Dependency>();
         }
         mDependencies.add(dependency);
         mWidget.addDependency(dependency);

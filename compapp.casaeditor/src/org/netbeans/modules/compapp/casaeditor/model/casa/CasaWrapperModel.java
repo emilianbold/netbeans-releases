@@ -99,14 +99,13 @@ public class CasaWrapperModel extends CasaModelImpl {
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
     
     private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
-//    private static final String CASA_WSDL_FILENAME = "casa.wsdl";               // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
            
     private static final String NEWLINE = System.getProperty("line.separator");
     private static final String CASA_WSDL_TNS_PREFIX = "http://enterprise.netbeans.org/casa/"; 
     
-    private static JarCatalogModel acm = new JarCatalogModel();
+//    private static JarCatalogModel acm = new JarCatalogModel();
     private static CatalogWriteModel catalogModel;
     
     private PropertyChangeSupport mSupport = new PropertyChangeSupport(this);
@@ -584,7 +583,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             newImport.setLocation(wsdlLocation);
         }
         
-        Map configurationMap = new HashMap();
+        Map<String, Object> configurationMap = new HashMap<String, Object>();
         configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindingName);
         configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
         configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);

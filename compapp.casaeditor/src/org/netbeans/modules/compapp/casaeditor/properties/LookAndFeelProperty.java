@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
  *
  * @author jsandusky
  */
-public class LookAndFeelProperty extends BaseCasaProperty {
+public class LookAndFeelProperty extends BaseCasaProperty<String> {
     
     public LookAndFeelProperty(CasaNode node)
     {
@@ -54,11 +54,11 @@ public class LookAndFeelProperty extends BaseCasaProperty {
         return new LookAndFeelEditor(getDisplayName());
     }
 
-    public Object getValue() throws IllegalAccessException, InvocationTargetException {
+    public String getValue() throws IllegalAccessException, InvocationTargetException {
         return NbBundle.getMessage(getClass(), "LBL_EditLookAndFeel"); // NOI18N
     }
 
-    public void setValue(Object object) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void setValue(String object) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     }
     
     public void restoreDefaultValue() {

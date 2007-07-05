@@ -29,7 +29,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
  *
  * @author Josh Sandusky
  */
-public class PropertyEndpointEndpointName extends BaseCasaProperty {
+public class PropertyEndpointEndpointName extends BaseCasaProperty<String> {
     
     
     public PropertyEndpointEndpointName(
@@ -44,14 +44,14 @@ public class PropertyEndpointEndpointName extends BaseCasaProperty {
     }
 
     
-    public Object getValue()
+    public String getValue()
     throws IllegalAccessException, InvocationTargetException {
         return ((CasaEndpointRef) getComponent()).getEndpointName();
     }
 
-    public void setValue(Object object)
+    public void setValue(String value)
     throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        getModel().setEndpointName((CasaEndpointRef) getComponent(), (String) object);
+        getModel().setEndpointName((CasaEndpointRef) getComponent(), value);
     }
     
     @Override

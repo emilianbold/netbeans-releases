@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
@@ -63,7 +64,7 @@ public class CasaBasePlugin implements CasaPalettePlugin {
     
     private List<CasaPaletteItemID> getExternalWsdlPointItems() {
         List<CasaPaletteItemID> bcItems = new ArrayList<CasaPaletteItemID>();
-        HashMap bcTemplates = getWsdlTemplates();
+        Map<String, LocalizedTemplateGroup> bcTemplates = getWsdlTemplates();
         JbiDefaultComponentInfo bcinfo = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
         if (bcinfo != null) {
             List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
@@ -83,12 +84,12 @@ public class CasaBasePlugin implements CasaPalettePlugin {
         return bcItems;
     }
     
-    private HashMap getWsdlTemplates() {
+    private Map<String, LocalizedTemplateGroup> getWsdlTemplates() {
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
         LocalizedTemplateGroup ltg = null;
-        HashMap temps = new HashMap();
+        Map<String, LocalizedTemplateGroup> temps = new HashMap<String, LocalizedTemplateGroup>();
         for (TemplateGroup group : groups) {
             ltg = factory.getLocalizedTemplateGroup(group);
             protocols.add(ltg);

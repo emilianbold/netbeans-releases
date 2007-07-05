@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 
 /**
  * Check WSDL files within a SU and list available ports for loading
@@ -104,7 +105,7 @@ public class LoadWSDLPortsAction extends NodeAction {
         File suRoot = new File(casaPath + "/../../jbiServiceUnits/"+suname); // NOI18N
         List<File> fs = new ArrayList<File>();
         List<Port> portList = new ArrayList<Port>();
-        HashMap fileMap = new HashMap();
+        Map<Port, File> fileMap = new HashMap<Port, File>();
         visitAllWsdlFiles(suRoot, fs);
         
         for (File f : fs) {
@@ -135,7 +136,7 @@ public class LoadWSDLPortsAction extends NodeAction {
         }
         
         final List<Port> plist = portList;
-        final HashMap fmap = fileMap;
+        final Map<Port, File> fmap = fileMap;
         if (plist.size() > 0) {
             final String[] slist = new String[portList.size()];
             for (int i=0; i < portList.size(); i++) {
@@ -157,7 +158,7 @@ public class LoadWSDLPortsAction extends NodeAction {
                         int sel = panel.getSelectedIndex();
                         
                         Port port = plist.get(sel);
-                        File f = (File) fmap.get(port);
+                        File f = fmap.get(port);
                         model.addCasaPortFromWsdlPort(port, f);
                     }
                 }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
-import java.awt.datatransfer.DataFlavor;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +70,7 @@ public class JBIServiceUnitTransferObject {
         return serviceUnitName;
     }
     
-    public List getProvidesEndpoints() {
+    public List<Endpoint> getProvidesEndpoints() {
         if (providesList == null) {
             providesList = new ArrayList<Endpoint>();
             
@@ -92,7 +91,7 @@ public class JBIServiceUnitTransferObject {
         return providesList;
     }
     
-    public List getConsumesEndpoints() {
+    public List<Endpoint> getConsumesEndpoints() {
         if (consumesList == null) {
             consumesList = new ArrayList<Endpoint>();
             

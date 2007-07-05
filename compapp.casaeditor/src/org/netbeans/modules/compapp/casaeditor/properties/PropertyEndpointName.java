@@ -30,7 +30,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
  *
  * @author Josh Sandusky
  */
-public class PropertyEndpointName extends BaseCasaProperty {
+public class PropertyEndpointName extends BaseCasaProperty<String> {
     
     
     public PropertyEndpointName(
@@ -45,7 +45,7 @@ public class PropertyEndpointName extends BaseCasaProperty {
     }
 
     
-    public Object getValue()
+    public String getValue()
     throws IllegalAccessException, InvocationTargetException {
         CasaComponent component = getComponent();
         if        (component instanceof CasaEndpointRef) {
@@ -56,13 +56,13 @@ public class PropertyEndpointName extends BaseCasaProperty {
         return null;
     }
 
-    public void setValue(Object object)
+    public void setValue(String value)
     throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         CasaComponent component = getComponent();
         if        (component instanceof CasaEndpointRef) {
-            getModel().setEndpointName((CasaEndpointRef) getComponent(), (String) object);
+            getModel().setEndpointName((CasaEndpointRef) getComponent(), value);
         } else if (component instanceof CasaPort) {
-            getModel().setEndpointName((CasaPort) getComponent(), (String) object);
+            getModel().setEndpointName((CasaPort) getComponent(), value);
         }
     }
     

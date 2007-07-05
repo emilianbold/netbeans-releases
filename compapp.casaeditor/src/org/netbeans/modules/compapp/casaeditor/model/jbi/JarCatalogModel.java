@@ -26,6 +26,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import java.net.URI;
 import java.util.HashMap;
 import java.io.File;
+import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.w3c.dom.ls.LSInput;
 import org.xml.sax.InputSource;
@@ -38,8 +39,8 @@ import org.xml.sax.SAXException;
  */
 public class JarCatalogModel implements CatalogModel {
 
-    private HashMap srcs = new HashMap();
-    private HashMap nss = new HashMap();
+    private Map<URI, ModelSource> srcs = new HashMap<URI, ModelSource>();
+    private Map<String, ModelSource> nss = new HashMap<String, ModelSource>();
 
     /**
      * Add model source with key
@@ -67,7 +68,7 @@ public class JarCatalogModel implements CatalogModel {
         if (!uri.isAbsolute()) {
             // if a relative uri, try to normalize using referencing model's file path
             try {
-                File f = (File) ms.getLookup().lookup(File.class);
+                File f = ms.getLookup().lookup(File.class);
                 String path = f.getParentFile().getPath().replace('\\', '/') + Constants.FORWARD_SLASH + uri.toString();
                 int idx = path.indexOf("build/SEDeployment.jar"); // NOI18N
                 if (idx > 0) { // OK, needs to strip off Chris W. fixes..
@@ -82,7 +83,9 @@ public class JarCatalogModel implements CatalogModel {
         return uri;
     }
 
-    public ModelSource getModelSource(URI locationURI, ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
+    public ModelSource getModelSource(URI locationURI, 
+            ModelSource modelSourceOfSourceDocument) 
+            throws CatalogModelException {
         // try lookup using the uri as is..
         Object ms = lookup(locationURI);
 

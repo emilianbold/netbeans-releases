@@ -28,7 +28,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
  *
  * @author Josh Sandusky
  */
-public class PropertyServiceUnitName extends BaseCasaProperty {
+public class PropertyServiceUnitName extends BaseCasaProperty<String> {
     
     
     public PropertyServiceUnitName(
@@ -43,14 +43,14 @@ public class PropertyServiceUnitName extends BaseCasaProperty {
     }
 
     
-    public Object getValue()
+    public String getValue()
     throws IllegalAccessException, InvocationTargetException {
         return ((CasaServiceUnit) getComponent()).getUnitName();
     }
 
-    public void setValue(Object object)
+    public void setValue(String value)
     throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        getModel().setUnitName((CasaServiceUnit) getComponent(), (String) object);
+        getModel().setUnitName((CasaServiceUnit) getComponent(), value);
     }
     
     @Override

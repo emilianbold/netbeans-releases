@@ -47,7 +47,7 @@ public class BuildAction extends AbstractAction {
         super(
                 NbBundle.getMessage(BuildAction.class, "TXT_Build"), // NOI18N
                 new ImageIcon(ICON_IMAGE));
-        mReference = new WeakReference(model);
+        mReference = new WeakReference<CasaWrapperModel>(model);
     }
     
     public void actionPerformed(ActionEvent e) {

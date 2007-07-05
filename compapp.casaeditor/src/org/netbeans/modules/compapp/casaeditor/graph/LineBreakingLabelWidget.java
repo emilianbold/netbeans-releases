@@ -165,7 +165,7 @@ public class LineBreakingLabelWidget extends Widget {
         
         mLineMeasurer.setPosition(mParagraphStart);
         int oldPos = mParagraphStart;
-        List strings = new ArrayList();
+        List<String> strings = new ArrayList<String>();
         
         // Get lines from lineMeasurer until the entire
         // paragraph has been displayed.

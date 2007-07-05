@@ -51,12 +51,12 @@ public class CasaRemoveAction extends WidgetAction.Adapter {
     public State keyPressed(Widget widget, WidgetKeyEvent event) {
         if (event.getKeyCode() == KeyEvent.VK_DELETE) {
             Set selectedObjects = mScene.getSelectedObjects();
-            List objectsToDelete = new ArrayList();
+            List<CasaComponent> objectsToDelete = new ArrayList<CasaComponent>();
             for (Object object : selectedObjects) {
                 CasaNode node = 
                         (CasaNode) mScene.getNodeFactory().createNodeFor((CasaComponent) object);
                 if (node != null && node.isDeletable()) {
-                    objectsToDelete.add(object);
+                    objectsToDelete.add((CasaComponent)object);
                 }
             }
             

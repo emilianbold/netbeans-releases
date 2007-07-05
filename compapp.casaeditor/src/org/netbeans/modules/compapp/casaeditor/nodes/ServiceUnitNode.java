@@ -56,7 +56,7 @@ public class ServiceUnitNode extends CasaNode {
     }
     
     
-    public void addCustomActions(List actions) {
+    public void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su != null && su.isInternal()) {
             actions.add(SystemAction.get(LoadWSDLPortsAction.class));
@@ -80,7 +80,6 @@ public class ServiceUnitNode extends CasaNode {
             CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
             String decoration = null;
             if (casaSU != null) {
-                CasaWrapperModel model = (CasaWrapperModel) casaSU.getModel(); // TMP
                 decoration = NbBundle.getMessage(WSDLEndpointNode.class, "LBL_NameAttr",        // NOI18N
                         casaSU.getUnitName());
             }
@@ -98,9 +97,7 @@ public class ServiceUnitNode extends CasaNode {
         final CasaServiceEngineServiceUnit casaSU = (CasaServiceEngineServiceUnit) getData();
         if (casaSU == null) {
             return;
-        }
-        CasaWrapperModel model = (CasaWrapperModel) casaSU.getModel();
-        
+        }        
         Sheet.Set identificationProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.IDENTIFICATION_SET);
         
@@ -111,7 +108,7 @@ public class ServiceUnitNode extends CasaNode {
                 NbBundle.getMessage(getClass(), "PROP_Name"),           // NOI18N
                 NbBundle.getMessage(getClass(), "PROP_Name"));          // NOI18N
         
-        Node.Property descriptionSupport = new PropertySupport.ReadOnly(
+        Node.Property<String> descriptionSupport = new PropertySupport.ReadOnly<String>(
                 "description", // NOI18N
                 String.class, 
                 NbBundle.getMessage(getClass(), "PROP_Description"),    // NOI18N
@@ -124,7 +121,7 @@ public class ServiceUnitNode extends CasaNode {
         
         Sheet.Set targetProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.TARGET_SET);
-        Node.Property artifactsZipSupport = new PropertySupport.ReadOnly(
+        Node.Property<String> artifactsZipSupport = new PropertySupport.ReadOnly<String>(
                 "artifactsZip", // NOI18N
                 String.class, 
                 NbBundle.getMessage(getClass(), "PROP_ArtifactsZip"),   // NOI18N
@@ -135,7 +132,7 @@ public class ServiceUnitNode extends CasaNode {
         };
         targetProperties.put(artifactsZipSupport);
         
-        Node.Property componentNameSupport = new PropertySupport.ReadOnly(
+        Node.Property<String> componentNameSupport = new PropertySupport.ReadOnly<String>(
                 "componentName", // NOI18N
                 String.class, 
                 NbBundle.getMessage(getClass(), "PROP_ComponentName"),  // NOI18N
@@ -169,7 +166,7 @@ public class ServiceUnitNode extends CasaNode {
             return null;
         }
         public Object getChildKeys(Object data)  {
-            List children = new ArrayList();
+            List<String> children = new ArrayList<String>();
             children.add(CHILD_ID_CONSUMES_LIST);
             children.add(CHILD_ID_PROVIDES_LIST);
             return children;

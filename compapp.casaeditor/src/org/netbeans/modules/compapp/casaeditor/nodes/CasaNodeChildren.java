@@ -25,13 +25,12 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author Josh Sandusky
  */
-public abstract class CasaNodeChildren extends Children.Keys {
+public abstract class CasaNodeChildren<T> extends Children.Keys<T> {
     
     protected CasaNodeFactory mNodeFactory;
     private WeakReference mDataReference;
@@ -44,16 +43,13 @@ public abstract class CasaNodeChildren extends Children.Keys {
         
         // for casual data references, use a weak reference which allows our
         // reference to be garbage collected when no longer needed
-        mDataReference = new WeakReference(data);
+        mDataReference = new WeakReference<Object>(data);
         
         // for initialization purposes, use a hard reference. we manually
         // control when this reference is set to null. initialization needs
         // a preserved handle to the data, even though the model may not.
         mHardInitializationReference = data;
     }
-    
-    
-    protected abstract Node[] createNodes(Object key);
     
     
     protected Object getData() {
@@ -70,11 +66,11 @@ public abstract class CasaNodeChildren extends Children.Keys {
     }
     
     public Object getChildKeys(Object data) {
-        List<CasaComponent> children = null;
+        List children = null;
         if (data instanceof CasaComponent) {
             children = ((CasaComponent) data).getChildren();
         } else if (data instanceof List) {
-            children = (List<CasaComponent>) data;
+            children = (List) data;
         }
         return children;
     }
@@ -101,11 +97,13 @@ public abstract class CasaNodeChildren extends Children.Keys {
         }
         Object children = getChildKeys(data);
         if (children instanceof Collection) {
-            setKeys((Collection) children);
+            setKeys((Collection<T>) children);
         } else if (children instanceof Object[]) {
-            setKeys((Object[]) children);
+            T[] x = (T[]) children; // ?
+            setKeys(x);
         } else {
-            setKeys(Collections.emptyList());
+            List<T> keys = Collections.emptyList();
+            setKeys(keys);
         }
         // We initialized, so we don't need the initialization reference anymore.
         mHardInitializationReference = null;

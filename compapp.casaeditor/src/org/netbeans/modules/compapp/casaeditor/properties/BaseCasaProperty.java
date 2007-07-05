@@ -32,7 +32,7 @@ import org.openide.nodes.Node;
  *
  * @author Josh
  */
-public abstract class BaseCasaProperty extends Node.Property {
+public abstract class BaseCasaProperty<T> extends Node.Property<T> {
     
     private CasaNode mNode;
     private String mPropertyType;
@@ -43,7 +43,7 @@ public abstract class BaseCasaProperty extends Node.Property {
             CasaNode node,
             CasaComponent component, 
             String propertyType, 
-            Class valueType,
+            Class<T> valueType,
             String property,
             String propDispName, 
             String propDesc)

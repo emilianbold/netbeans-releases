@@ -62,7 +62,7 @@ public abstract class PropertyUtils {
     
     
     public static Node.Property createErrorProperty(String displayName) {
-        return new PropertySupport.ReadOnly(
+        return new PropertySupport.ReadOnly<String>(
             "error", // NOI18N
             String.class,
             displayName,

@@ -44,7 +44,7 @@ public class AutoLayoutAction extends AbstractAction {
         super(
                 NbBundle.getMessage(AutoLayoutAction.class, "TXT_AutoLayout"), 
                 new ImageIcon(ICON_IMAGE));
-        mReference = new WeakReference(dataObject);
+        mReference = new WeakReference<CasaDataObject>(dataObject);
     }
     
     

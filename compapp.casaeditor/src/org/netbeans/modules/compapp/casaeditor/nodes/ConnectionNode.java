@@ -65,16 +65,16 @@ public class ConnectionNode extends CasaNode {
         
         Sheet.Set consumerProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.CONSUMER_SET);
-        Node.Property consumerServiceNameSupport = new PropertySupport.ReadOnly(
+        Node.Property<QName> consumerServiceNameSupport = new PropertySupport.ReadOnly<QName>(
                 "serviceName",  // NOI18N
-                String.class,
+                QName.class,
                 NbBundle.getMessage(getClass(), "PROP_ServiceName"),    // NOI18N
                 Constants.EMPTY_STRING) {
             public QName getValue() {
                 return casaConsumes.getServiceQName();
             }
         };
-        Node.Property consumerEndpointNameSupport = new PropertySupport.ReadOnly(
+        Node.Property<String> consumerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
                 "endpointName", // NOI18N
                 String.class,
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"), // NOI18N
@@ -88,16 +88,16 @@ public class ConnectionNode extends CasaNode {
         
         Sheet.Set providerProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.PROVIDER_SET);
-        Node.Property providerServiceNameSupport = new PropertySupport.ReadOnly(
+        Node.Property<QName> providerServiceNameSupport = new PropertySupport.ReadOnly<QName>(
                 "serviceName", // NOI18N
-                String.class,
+                QName.class,
                 NbBundle.getMessage(getClass(), "PROP_ServiceName"), // NOI18N
                 Constants.EMPTY_STRING) {
             public QName getValue() {
                 return casaProvides.getServiceQName();
             }
         };
-        Node.Property providerEndpointNameSupport = new PropertySupport.ReadOnly(
+        Node.Property<String> providerEndpointNameSupport = new PropertySupport.ReadOnly<String>(
                 "endpointName", // NOI18N
                 String.class,
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"),   // NOI18N

@@ -151,7 +151,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     /* Receive all transferable objects */
     private List getTransferableObjects(Transferable transferable) {
-        List retList = new ArrayList();
+        List<Object> retList = new ArrayList<Object>();
         DataFlavor[] dfs = transferable.getTransferDataFlavors();
         if (dfs.length > 0) {
             try {

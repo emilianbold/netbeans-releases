@@ -116,7 +116,7 @@ public class WSDLEndpointNode extends CasaNode {
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
                 NbBundle.getMessage(getClass(), "PROP_EndpointName"));      // NOI18N
         
-        Node.Property componentNameSupport = new PropertySupport.ReadOnly(
+        Node.Property<String> componentNameSupport = new PropertySupport.ReadOnly<String>(
                 "componentName", // NOI18N
                 String.class,
                 NbBundle.getMessage(getClass(), "PROP_ComponentName"),  // NOI18N
@@ -175,7 +175,7 @@ public class WSDLEndpointNode extends CasaNode {
         }
         
         public Object getChildKeys(Object data)  {
-            List children = new ArrayList();
+            List<Object> children = new ArrayList<Object>();
             CasaPort endpoint = (CasaPort) getData();
             if (endpoint != null) {
                 

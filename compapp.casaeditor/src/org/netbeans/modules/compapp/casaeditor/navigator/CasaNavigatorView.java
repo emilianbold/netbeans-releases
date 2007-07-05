@@ -74,7 +74,7 @@ public class CasaNavigatorView implements LookupListener, NavigatorPanel {
     public void panelActivated(Lookup context) {
         getComponent();
         TopComponent.getRegistry().addPropertyChangeListener(mNavigatorPanel);
-        mLookupResult = context.lookup(new Lookup.Template(DataObject.class));
+        mLookupResult = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         mLookupResult.addLookupListener(this);
         resultChanged(null);
         

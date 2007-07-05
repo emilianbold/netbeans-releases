@@ -31,6 +31,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
@@ -130,7 +131,7 @@ public class CasaRootNode extends CasaNode {
         return true;
     }
     
-    public void addCustomActions(List actions) {
+    public void addCustomActions(List<Action> actions) {
         try {
             final Project jbiProject = getModel().getJBIProject();
             actions.add(new AddJBIModuleAction(jbiProject));
@@ -144,14 +145,13 @@ public class CasaRootNode extends CasaNode {
     
     
     
-    private static class MyChildren extends CasaNodeChildren {
+    private static class MyChildren extends CasaNodeChildren<String> {
         private WeakReference mReference;
         public MyChildren(Object data, CasaNodeFactory factory) {
             super(data, factory);
-            mReference = new WeakReference(data);
+            mReference = new WeakReference<Object>(data);
         }
-        protected Node[] createNodes(Object key) {
-            String keyName = (String) key;
+        protected Node[] createNodes(String keyName) {
             if (mReference.get() != null) {
                 try {
                     CasaWrapperModel model = (CasaWrapperModel) mReference.get();
@@ -184,7 +184,7 @@ public class CasaRootNode extends CasaNode {
         
         public AddJBIModuleAction(Project jbiProject) {
             super(NbBundle.getMessage(CasaRootNode.class, "LBL_AddProjectAction_Name"), null);
-            mProjectReference = new WeakReference(jbiProject);
+            mProjectReference = new WeakReference<Project>(jbiProject);
         }
         
         public void actionPerformed(ActionEvent e) {

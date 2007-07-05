@@ -62,17 +62,17 @@ public class LookAndFeelNode extends CasaNode {
 
         for(String key : CasaFactory.getCasaCustomizer().getColorsMapReference().keySet()) {
             colorPropertySet.put (
-                  new PropertySupport.ReadWrite(
+                  new PropertySupport.ReadWrite<Color>(
                         key, // NO18N
                         Color.class, 
                         NbBundle.getMessage(getClass(), key), 
                         Constants.EMPTY_STRING) {
                     
-                    public Object getValue() {
-                        return CasaFactory.getCasaCustomizer().getValue(getName());
+                    public Color getValue() {
+                        return (Color) CasaFactory.getCasaCustomizer().getValue(getName());
                     }
-                    public void setValue(Object value) {
-                        CasaFactory.getCasaCustomizer().setValue(getName(), (Color) value);
+                    public void setValue(Color value) {
+                        CasaFactory.getCasaCustomizer().setValue(getName(), value);
                     }
                     public void restoreDefaultValue() {
                         CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
@@ -91,17 +91,17 @@ public class LookAndFeelNode extends CasaNode {
         
         for(String key : CasaFactory.getCasaCustomizer().getFontsMapReference().keySet()) {
             fontPropertySet.put (
-                  new PropertySupport.ReadWrite(
+                  new PropertySupport.ReadWrite<Font>(
                         key, // NO18N
                         Font.class, 
-                            NbBundle.getMessage(getClass(), key), 
+                        NbBundle.getMessage(getClass(), key), 
                         Constants.EMPTY_STRING) {
                     
-                    public Object getValue() {
-                        return CasaFactory.getCasaCustomizer().getValue(getName());
+                    public Font getValue() {
+                        return (Font) CasaFactory.getCasaCustomizer().getValue(getName());
                     }
-                    public void setValue(Object value) {
-                        CasaFactory.getCasaCustomizer().setValue(getName(), (Font) value);
+                    public void setValue(Font value) {
+                        CasaFactory.getCasaCustomizer().setValue(getName(), value);
                     }
                     public void restoreDefaultValue() {
                         CasaCustomizer customizer = CasaFactory.getCasaCustomizer();

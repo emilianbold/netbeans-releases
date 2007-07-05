@@ -37,7 +37,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
  *
  * @author Josh Sandusky
  */
-public abstract class PropertyQName extends BaseCasaProperty {
+public abstract class PropertyQName extends BaseCasaProperty<QName> {
     
     
     public PropertyQName(
