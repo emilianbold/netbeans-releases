@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.modules.gsf.Language;
-//import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -38,6 +37,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
@@ -57,19 +57,32 @@ public class GsfDataObject extends MultiDataObject {
     public GsfDataObject(FileObject pf, MultiFileLoader loader, Language language) throws DataObjectExistsException {
         super(pf, loader);
         this.language = language;
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs( FileObject folder, String fileName ) throws IOException {
+                createEditorSupport().saveAs( folder, fileName );
+            }
+        });
     }
     
     public @Override Node createNodeDelegate() {
         return new GsfDataNode(this, language);
     }
 
-    public @Override Cookie getCookie(Class type) {
+    public @Override <T extends Cookie> T getCookie(Class<T> type) {
         if (type.isAssignableFrom(GenericEditorSupport.class)) {
-            return createEditorSupport ();
+            return type.cast(createEditorSupport ());
         }
         return super.getCookie(type);
     }
-    
+
+    @Override
+    protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
+        FileObject fo = getPrimaryEntry ().copyRename (df.getPrimaryFile (), name, ext);
+        DataObject dob = DataObject.find( fo );
+        //TODO invoke refactoring here (if needed)
+        return dob;
+    }
+
     protected @Override DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
         if (name == null) {
             // special case: name is null (unspecified or from one-parameter createFromTemplate)
@@ -104,7 +117,7 @@ public class GsfDataObject extends MultiDataObject {
         return jes;
     }            
     
-    public static class GenericEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
+    public static final class GenericEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
         
         private static class Environment extends DataEditorSupport.Env {
             
@@ -128,6 +141,7 @@ public class GsfDataObject extends MultiDataObject {
             }
             
             protected FileLock takeLock() throws java.io.IOException {
+                //return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
                 return this.getFile().lock();
             }
             
