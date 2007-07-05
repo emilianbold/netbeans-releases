@@ -108,6 +108,7 @@ public class NBCvs extends Task {
 
         String[] modules = cvspackage.split(" ");
         for (String m : modules) {
+            long time = System.currentTimeMillis();
             log("Processing module: " + m);
             int tries = 0;
             boolean ok = false;
@@ -121,9 +122,11 @@ public class NBCvs extends Task {
                     if (tries == reTry)
                         throw be;
                     tries++;
-                    log("cvs command failed on module '" + m + "' for " + tries + ". time");
+                    log("cvs command failed on module '" + m + "'.  Retrying...");
                 }
             }
+            long timedelta = (System.currentTimeMillis() - time) / 1000;
+            log("Processed  module: " + m + " (" +  timedelta + "s)");
         }
     }
 }
