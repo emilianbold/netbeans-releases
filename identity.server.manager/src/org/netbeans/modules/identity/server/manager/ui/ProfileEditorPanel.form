@@ -49,7 +49,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="certSettingsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="323" max="32767" attributes="0"/>
+                              <EmptySpace pref="316" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
@@ -61,11 +61,12 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="keystoreLocationTF" pref="353" max="32767" attributes="0"/>
-                                  <Component id="keyAliasTF" alignment="0" pref="353" max="32767" attributes="0"/>
-                                  <Component id="keyPasswordTF" alignment="0" pref="353" max="32767" attributes="0"/>
-                                  <Component id="keystorePasswordTF" alignment="0" pref="353" max="32767" attributes="0"/>
+                                  <Component id="keyPasswordTF" pref="346" max="32767" attributes="0"/>
+                                  <Component id="keyAliasTF" alignment="0" pref="346" max="32767" attributes="0"/>
+                                  <Component id="keystorePasswordTF" alignment="0" pref="346" max="32767" attributes="0"/>
+                                  <Component id="keystoreLocationTF" alignment="1" pref="346" max="32767" attributes="0"/>
                               </Group>
+                              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -98,8 +99,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="keystoreLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="keystoreLocationTF" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keystoreLocationTF" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
