@@ -565,7 +565,11 @@ public class Wizard {
         
         switch (UiMode.getCurrentUiMode()) {
         case SWING:
-            container.setVisible(false);
+            // if the container has not yet been initialized -- we do not need to 
+            // do anything with it
+            if (container != null) {
+                container.setVisible(false);
+            }
             break;
         case SILENT:
             // we don't have to initialize anything for silent mode
