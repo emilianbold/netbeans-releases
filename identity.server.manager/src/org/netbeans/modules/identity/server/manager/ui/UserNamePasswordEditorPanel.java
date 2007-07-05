@@ -29,8 +29,8 @@ import org.openide.util.NbBundle;
  *
  * @author  ptliu
  */
-public class UserNamePasswordEditorPanel extends javax.swing.JPanel 
-    implements EditDialogDescriptor.Panel {
+public class UserNamePasswordEditorPanel extends javax.swing.JPanel
+        implements EditDialogDescriptor.Panel {
     
     private boolean add;
     private String[] userNames;
@@ -73,15 +73,16 @@ public class UserNamePasswordEditorPanel extends javax.swing.JPanel
         String userName = userNameTF.getText();
         
         if (userName == null || userName.trim().length() == 0) {
-            return NbBundle.getMessage(UserNamePasswordEditorPanel.class,
-                    "MSG_EnterUsername");
+            // return NbBundle.getMessage(UserNamePasswordEditorPanel.class,
+            //          "MSG_EnterUsername");
+            return "";      //NOI18N
         }
         
         for (int i = 0; i < userNames.length; i++) {
             if ((!add && !userName.equals(originalUserName)) || add) {
                 if (userName.equals(userNames[i])) {
                     return NbBundle.getMessage(UserNamePasswordEditorPanel.class,
-                    "MSG_UserNameExists");
+                            "MSG_UserNameExists");
                 }
             }
         }
@@ -89,8 +90,9 @@ public class UserNamePasswordEditorPanel extends javax.swing.JPanel
         String password = new String(passwordTF.getPassword());
         
         if (password == null || password.trim().length() == 0) {
-            return NbBundle.getMessage(UserNamePasswordEditorPanel.class,
-                    "MSG_EnterPassword");
+            //return NbBundle.getMessage(UserNamePasswordEditorPanel.class,
+            //        "MSG_EnterPassword");
+            return "";      //NOI18N
         }
         
         
