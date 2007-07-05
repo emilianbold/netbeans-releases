@@ -28,10 +28,10 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
-import org.openide.modules.InstalledFileLocator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
@@ -52,6 +52,7 @@ import org.xml.sax.InputSource;
 public class J2SESampleProjectGenerator {
 
     private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3";   //NOI18N
+    private static final String SOURCE_ENCODING = "source.encoding";   //NOI18N
 
     private J2SESampleProjectGenerator() {}
 
@@ -82,12 +83,34 @@ public class J2SESampleProjectGenerator {
                     //No need to load the properties the file is empty
                     Properties p = new Properties ();                    
                     p.put ("javadoc.preview","true");   //NOI18N
-                    FileOutputStream out = new FileOutputStream (privateProperties);
+                    OutputStream out = new FileOutputStream (privateProperties);
                     try {
                         p.store(out,null);                    
                     } finally {
                         out.close ();
                     }
+                    FileObject projectProps = prjLoc.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (projectProps != null) {
+                        FileLock lock = projectProps.lock();
+                        try {
+                            EditableProperties props = new EditableProperties ();
+                            InputStream in = projectProps.getInputStream();
+                            try {
+                                props.load(in);
+                            } finally {
+                                in.close ();
+                            }
+                            props.put(SOURCE_ENCODING, FileEncodingQuery.getDefaultEncoding().name());
+                            out = projectProps.getOutputStream(lock);
+                            try {
+                                props.store(out);
+                            } finally {
+                                out.close();
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }                        
+                    }                                        
                 }                
                 
             } catch (Exception e) {
