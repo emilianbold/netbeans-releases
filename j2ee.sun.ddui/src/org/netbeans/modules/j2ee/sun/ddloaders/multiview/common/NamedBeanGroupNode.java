@@ -45,6 +45,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
@@ -207,6 +208,39 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             nodeMap.put(((SectionNode) node).getKey(), node);
+            
+            if(node instanceof NamedBeanNode) {
+                NamedBeanNode nbn = (NamedBeanNode) node;
+                DDBinding nodeBinding = nbn.getBinding();
+                
+                if(!nodeBinding.isVirtual()) {
+                    // Nonvirtual nodes should alread be handled... 
+                    // (barring obscure race conditions at least.)
+                    continue;
+                }
+                
+                CommonDDBean nodeSunBean = nodeBinding.getSunBean();
+                
+                // Attempt to normalize sunbeans for virtual nodes.
+                // *** N^2 algorithm - find a better way...
+                for(DDBinding candidate: bindingDataSet) {
+                    CommonDDBean candidateSunBean = candidate.getSunBean();
+                    if(nodeSunBean == candidateSunBean) {
+                        break; 
+                    }
+
+                    if(!candidate.isVirtual()) {
+                        continue;
+                    }
+                    
+                    if(Utils.strEquivalent(nodeBinding.getBeanName(), candidate.getBeanName())) {
+                        DDBinding replacement = candidate.rebind(nodeSunBean);
+                        bindingDataSet.remove(candidate);
+                        bindingDataSet.add(replacement);
+                        break;
+                    }
+                }
+            }
         }
        
         // !PW Optimization - How to match virtual servlets from prior pass with virtual servlets from this pass?

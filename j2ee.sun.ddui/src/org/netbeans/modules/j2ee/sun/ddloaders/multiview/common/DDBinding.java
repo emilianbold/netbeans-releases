@@ -50,8 +50,8 @@ public class DDBinding implements Comparable<DDBinding> {
     
     protected final BeanResolver resolver;
     protected final CommonDDBean sunBean;
-    protected Map<String, Object> standardMap;
-    protected Map<String, Object> annotationMap;
+    protected final Map<String, Object> standardMap;
+    protected final Map<String, Object> annotationMap;
     protected boolean virtual;
 
     public DDBinding(BeanResolver resolver, CommonDDBean sunBean,
@@ -110,6 +110,10 @@ public class DDBinding implements Comparable<DDBinding> {
         return standardMap != null ? standardMap.get(property) : annotationMap != null ? annotationMap.get(property) : null;
     }
     
+    public DDBinding rebind(CommonDDBean newSunBean) {
+        return new DDBinding(resolver, newSunBean, standardMap, annotationMap, virtual);
+    }
+    
     public int compareTo(DDBinding other) {
         return getBeanName().compareTo(other.getBeanName());
     }
@@ -132,13 +136,62 @@ public class DDBinding implements Comparable<DDBinding> {
         }
         
         if(standardMap != other.standardMap) {
-            // TODO compare contents?
-            return false;
+            if(standardMap == null || other.standardMap == null) {
+                return false;
+            }
+            
+            if(!compareMap(standardMap, other.standardMap)) {
+                return false;
+            }
         }
     
         if(annotationMap != other.annotationMap) {
-            // TODO compare contents?
+            if(annotationMap == null || other.annotationMap == null) {
+                return false;
+            }
+            
+            if(!compareMap(annotationMap, other.annotationMap)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private static boolean compareMap(Map<String, Object> a, Map<String, Object> b) {
+        if(a.size() != b.size()) {
             return false;
+        }
+        
+        for(Map.Entry<String, Object> a_entry : a.entrySet()) {
+            Object a_object = a_entry.getValue();
+            Object b_object = b.get(a_entry.getKey());
+
+            if(a_object == b_object) {
+                continue;
+            }
+            
+            if(a_object == null || b_object == null) {
+                return false;
+            }
+            
+            if(a_object instanceof String) {
+                if(b_object instanceof String) {
+                    if(((String) a_object).equals((String) b_object)) {
+                        continue;
+                    }
+                }
+                return false;
+            } else if(a_object instanceof Map<?, ?>) {
+                if(b_object instanceof Map<?, ?>) {
+                    if(compareMap((Map<String, Object>) a_object, (Map<String, Object>) b_object)) {
+                        continue;
+                    }
+                }
+                return false;
+            } else {
+                return false;
+            }
         }
         
         return true;
