@@ -45,6 +45,7 @@ import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.GroupFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.ExtendedUri;
@@ -177,7 +178,10 @@ public class Registry {
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
-        compositeProgress.setTitle("Loading local registry [" + localRegistryFile + "]");
+        compositeProgress.setTitle(
+                ResourceUtils.getString(Registry.class,
+                LOADING_LOCAL_REGISTRY_KEY,
+                localRegistryFile));
         
         try {
             loadProductRegistry(
@@ -187,12 +191,11 @@ public class Registry {
                     false);
         } catch (InitializationException e) {
             if (!UiUtils.showYesNoDialog(
-                    "Failed to load the local registry", 
-                    "The bundled registry (" + localRegistryFile + ") " +
-                    "could not be loaded, or was loaded partially.\n" +
-                    "The installer can continue to work normally, but doing " +
-                    "so may result in a corrupted global registry.\n\n" +
-                    "Choose Yes to continue, No to exit the installer.")) {
+                    ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_LOCAL_REGISTRY_TITLE_KEY),
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_LOADING_LOCAL_REGISTRY_MESSAGE_KEY, localRegistryFile)
+                    )) {
                 finishHandler.criticalExit();
             } else {
                 LogManager.log(ErrorLevel.ERROR, e);
@@ -201,7 +204,9 @@ public class Registry {
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk);
-        compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryUri + "]");
+        compositeProgress.setTitle( ResourceUtils.getString(Registry.class,
+                LOADING_BUNDLED_REGISTRY_KEY,
+                bundledRegistryUri));
         
         try {
             loadProductRegistry(
@@ -211,12 +216,11 @@ public class Registry {
                     true);
         } catch (InitializationException e) {
             if (!UiUtils.showYesNoDialog(
-                    "Failed to load the bundled registry", 
-                    "The bundled registry (" + bundledRegistryUri + ") " +
-                    "could not be loaded, or was loaded partially.\n" +
-                    "The installer can continue to work normally, but doing " +
-                    "so may result in a corrupted global registry.\n\n" +
-                    "Choose Yes to continue, No to exit the installer.")) {
+                    ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_BUNDLED_REGISTRY_TITLE_KEY),
+                    ResourceUtils.getString(Registry.class,
+                    ERROR_LOADING_BUNDLED_REGISTRY_MESSAGE_KEY, bundledRegistryUri)
+                    )) {
                 finishHandler.criticalExit();
             } else {
                 LogManager.log(ErrorLevel.ERROR, e);
@@ -226,7 +230,9 @@ public class Registry {
         for (String remoteRegistryURI: remoteRegistryUris) {
             childProgress = new Progress();
             compositeProgress.addChild(childProgress, percentageChunk);
-            compositeProgress.setTitle("Loading remote registry [" + remoteRegistryURI + "]");
+            compositeProgress.setTitle(ResourceUtils.getString(Registry.class,
+                    LOADING_REMOTE_REGISTRY_KEY,
+                    remoteRegistryURI));
             
             try {
                 loadProductRegistry(
@@ -236,12 +242,11 @@ public class Registry {
                         true);
             } catch (InitializationException e) {
                 if (!UiUtils.showYesNoDialog(
-                        "Failed to load the remote registry", 
-                        "The bundled registry (" + remoteRegistryURI + ") " +
-                        "could not be loaded, or was loaded partially.\n" +
-                        "The installer can continue to work normally, but doing " +
-                        "so may result in a corrupted global registry.\n\n" +
-                        "Choose Yes to continue, No to exit the installer.")) {
+                        ResourceUtils.getString(
+                        Registry.class, ERROR_LOADING_REMOTE_REGISTRY_TITLE_KEY),
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_LOADING_REMOTE_REGISTRY_MESSAGE_KEY, remoteRegistryURI)
+                        )) {
                     finishHandler.criticalExit();
                 } else {
                     LogManager.log(ErrorLevel.ERROR, e);
@@ -274,6 +279,7 @@ public class Registry {
         // local uri is different from the remote one and is not contained in the
         // list of alternate uris -- as we could be useing a locally located remote
         // registry
+        LogManager.log("... removing remaining installation data for all the products");
         for (Product product: getProducts()) {
             for (ExtendedUri uri: product.getDataUris()) {
                 if ((uri.getLocal() != null) &&
@@ -284,18 +290,21 @@ public class Registry {
                         uri.setLocal(null);
                     } catch (IOException e) {
                         ErrorManager.notifyWarning(
-                                "Cannot delete the cached installation data",
+                                ResourceUtils.getString(Registry.class,
+                                ERROR_CANNOT_DELETE_DATA_KEY),
                                 e);
                     }
                 }
             }
         }
-        
+        LogManager.log("... save local registry if necessary");
         // save the local registry if we're executing in normal mode (i.e. not
         // creating a bundle)
         if (ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL) {
-            progress.setTitle("Saving local registry");
-            progress.setDetail("Saving to " + localRegistryFile);
+            progress.setTitle(ResourceUtils.getString(Registry.class,
+                    SAVE_LOCAL_REGISTRY_TITLE_KEY));
+            progress.setDetail(ResourceUtils.getString(Registry.class,
+                    SAVE_LOCAL_REGISTRY_DETAIL_KEY,  localRegistryFile));
             
             saveProductRegistry(
                     localRegistryFile,
@@ -465,12 +474,11 @@ public class Registry {
                 }
             } else {
                 if (!UiUtils.showYesNoDialog(
-                        "Missing target component", 
-                        "The specified target component - " + uid + "/" + 
-                        version + "\nwas not found in the registry. The installer\n" +
-                        "can continue as if the target component was not " +
-                        "specified.\n" +
-                        "Click Yes to continue, No to exit the installer.")) {
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_MISSING_TARGET_COMPONENT_TITLE_KEY),
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_MISSING_TARGET_COMPONENT_MSG_KEY,
+                        uid, version ))) {
                     finishHandler.cancel();
                 }
             }
@@ -535,7 +543,7 @@ public class Registry {
     }
     
     private void validateRequirements(
-            final Product product, 
+            final Product product,
             final List<Product> prohibitedList) throws InitializationException {
         for (Dependency requirement: product.getDependencies(Requirement.class)) {
             // get the list of products that satisfy the requirement
@@ -548,18 +556,18 @@ public class Registry {
             // if there are no products that satisfy the requirement, the registry
             // is inconsistent
             if (requirees.size() == 0) {
-                String sourceId = 
-                        product.getUid() + "/" + 
+                String sourceId =
+                        product.getUid() + "/" +
                         product.getVersion();
-                String requirementId = 
-                        requirement.getUid() + "/" + 
-                        requirement.getVersionLower() + " - " + 
-                        requirement.getVersionUpper() + 
-                        (requirement.getVersionResolved() != null ? 
+                String requirementId =
+                        requirement.getUid() + "/" +
+                        requirement.getVersionLower() + " - " +
+                        requirement.getVersionUpper() +
+                        (requirement.getVersionResolved() != null ?
                             " [" + requirement.getVersionResolved() + "]" : "");
                 
                 throw new InitializationException("No components " +
-                        "matching the requirement: " + sourceId + 
+                        "matching the requirement: " + sourceId +
                         " requires " + requirementId);
             }
             
@@ -627,7 +635,7 @@ public class Registry {
     }
     
     private void validateInstallAfters(
-            final Product product, 
+            final Product product,
             final List<Product> prohibitedList) throws InitializationException {
         for (Dependency installafter: product.getDependencies(InstallAfter.class)) {
             // get the list of products that satisfy the install-after dependency
@@ -672,16 +680,16 @@ public class Registry {
     }
     
     /**
-     * Returns the list of products for which the given product is the only one, 
+     * Returns the list of products for which the given product is the only one,
      * that satisfies the requirement. In other words the returned products define
      * at least one requirement that is directly or indirectly satisfied by this
      * particular product and not by any other products.
-     * 
+     *
      * <p>
-     * Product's status is also taken into account, i.e. if the dependent product 
+     * Product's status is also taken into account, i.e. if the dependent product
      * is installed, a not installed product cannot be considered as satisfying the
      * requirement.
-     * 
+     *
      * @param product Product for which the dependents chain should be constructed.
      * @return The list of products for which the given product is the only one
      *      satisfying their requirements.
@@ -693,7 +701,7 @@ public class Registry {
             for (Dependency requirement: candidate.getDependencies(Requirement.class)) {
                 final List<Product> requirees = getProducts(requirement);
                 
-                // if the candidate product is installed, then not installed 
+                // if the candidate product is installed, then not installed
                 // products cannot be counted as satisfying the requirement
                 if (candidate.getStatus() == Status.INSTALLED) {
                     for (int i = 0; i < requirees.size(); i++) {
@@ -703,14 +711,14 @@ public class Registry {
                     }
                 }
                 
-                // if the requirees size is 0 then we're in trouble, but this method 
-                // should not be concerned about this stuff -- it's the 
+                // if the requirees size is 0 then we're in trouble, but this method
+                // should not be concerned about this stuff -- it's the
                 // reponsibility of the requirement validating methods
                 
-                // if the list of requirees contains only one element and this 
+                // if the list of requirees contains only one element and this
                 // element equals to the given product -- the candidate should be
                 // included in the list of inavoidable dependents; additionally we
-                // need to checks for indirect requirements, i.e. run this method 
+                // need to checks for indirect requirements, i.e. run this method
                 // recursively on the dependent
                 if ((requirees.size() == 1) && requirees.get(0).equals(product)) {
                     dependents.add(candidate);
@@ -729,20 +737,18 @@ public class Registry {
                 final String message = product.getLogic().validateInstallation();
                 
                 if (message != null) {
-                    final List<Product> inavoidableDependents = 
+                    final List<Product> inavoidableDependents =
                             getInavoidableDependents(product);
                     
                     boolean result = UiUtils.showYesNoDialog(
-                            "Validation Problem",
-                            "It seems that the installation of " +
-                            product.getDisplayName() + " is corrupted.\nThe " +
-                            "validation procedure issued the following " +
-                            "warning:\n\n" + message + "\n\nWould you like to " +
-                            "mark this product as not installed and continue?\nIf " +
-                            "you click No the installer will exit.\n\n" + 
-                            "Note that these products that depend on " + 
-                            product.getDisplayName() + " will also be disabled:" + 
-                            StringUtils.asString(inavoidableDependents));
+                            ResourceUtils.getString(Registry.class, 
+                            ERROR_VALIDATION_TITLE_KEY),
+                            ResourceUtils.getString(Registry.class, 
+                            ERROR_VALIDATION_MSG_KEY,
+                            product.getDisplayName(),
+                            message , 
+                            product.getDisplayName(),
+                            StringUtils.asString(inavoidableDependents)));
                     
                     if (result) {
                         product.getParent().removeChild(product);
@@ -769,9 +775,9 @@ public class Registry {
     }
     
     public void loadProductRegistry(
-            final String uri, 
-            final Progress progress, 
-            final RegistryType registryType, 
+            final String uri,
+            final Progress progress,
+            final RegistryType registryType,
             final boolean loadIncludes) throws InitializationException {
         try {
             final Element registryElement =
@@ -849,10 +855,10 @@ public class Registry {
     }
     
     public void saveProductRegistry(
-            final File file, 
-            final RegistryFilter filter, 
-            final boolean saveIncludes, 
-            final boolean saveProperties, 
+            final File file,
+            final RegistryFilter filter,
+            final boolean saveIncludes,
+            final boolean saveProperties,
             final boolean saveFeatures) throws FinalizationException {
         try {
             XMLUtils.saveXMLDocument(getRegistryDocument(
@@ -867,9 +873,9 @@ public class Registry {
     }
     
     public Document getRegistryDocument(
-            final RegistryFilter filter, 
-            final boolean saveIncludes, 
-            final boolean saveProperties, 
+            final RegistryFilter filter,
+            final boolean saveIncludes,
+            final boolean saveProperties,
             final boolean saveFeatures) throws XMLException, FinalizationException {
         final Document document = getEmptyRegistryDocument();
         final Element documentElement = document.getDocumentElement();
@@ -914,10 +920,10 @@ public class Registry {
             try {
                 factory.setSchema(schema);
             } catch (UnsupportedOperationException e) {
-                // if the parser does not support schemas, let it be -- we can do 
+                // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        "The current parser - " + factory.getClass() + " - does not support schemas.",
                         e);
             }
             factory.setNamespaceAware(true);
@@ -937,8 +943,8 @@ public class Registry {
     }
     
     private void loadRegistryComponents(
-            final RegistryNode parentNode, 
-            final Element parentElement, 
+            final RegistryNode parentNode,
+            final Element parentElement,
             final RegistryType registryType) throws InitializationException {
         final Element element = XMLUtils.getChild(parentElement, "components");
         
@@ -948,7 +954,7 @@ public class Registry {
                     final Product product = new Product().loadFromDom(child);
                     
                     // find the existing products which have the same uid/version
-                    // and whose platforms itersect with the platforms of the 
+                    // and whose platforms itersect with the platforms of the
                     // currently loaded component (i.e. at least one of the platforms
                     // in the existing product is compatible a platform in the
                     // currept product's set and vice versa)
@@ -1310,10 +1316,10 @@ public class Registry {
             try {
                 factory.setSchema(schema);
             } catch (UnsupportedOperationException e) {
-                // if the parser does not support schemas, let it be -- we can do 
+                // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        "The current parser - " + factory.getClass() + " - does not support schemas.",
                         e);
             }
             factory.setNamespaceAware(true);
@@ -1431,10 +1437,10 @@ public class Registry {
             try {
                 factory.setSchema(schema);
             } catch (UnsupportedOperationException e) {
-                // if the parser does not support schemas, let it be -- we can do 
+                // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        "The current parser - " + factory.getClass() + " - does not support schemas.",
                         e);
             }
             factory.setNamespaceAware(true);
@@ -1646,4 +1652,39 @@ public class Registry {
     
     public static final String LAZY_LOAD_ICONS_PROPERTY =
             "nbi.product.lazy.load.icons";
+    
+    private static final String LOADING_LOCAL_REGISTRY_KEY =
+            "R.loading.local.registry"; //NOI18N
+    private static final String ERROR_LOADING_LOCAL_REGISTRY_TITLE_KEY =
+            "R.error.loading.local.registry.failed.title";//NOI18N
+    private static final String ERROR_LOADING_LOCAL_REGISTRY_MESSAGE_KEY =
+            "R.error.loading.local.registry.failed.msg";//NOI18N
+    
+    private static final String LOADING_BUNDLED_REGISTRY_KEY =
+            "R.loading.bundled.registry"; //NOI18N
+    private static final String ERROR_LOADING_BUNDLED_REGISTRY_TITLE_KEY =
+            "R.error.loading.bundled.registry.failed.title";//NOI18N
+    private static final String ERROR_LOADING_BUNDLED_REGISTRY_MESSAGE_KEY =
+            "R.error.loading.bundled.registry.failed.msg";//NOI18N
+    
+    private static final String LOADING_REMOTE_REGISTRY_KEY =
+            "R.loading.remote.registry"; //NOI18N
+    private static final String ERROR_LOADING_REMOTE_REGISTRY_TITLE_KEY =
+            "R.error.loading.remote.registry.failed.title";//NOI18N
+    private static final String ERROR_LOADING_REMOTE_REGISTRY_MESSAGE_KEY =
+            "R.error.loading.remote.registry.failed.msg"; //NOI18N
+    private static final String ERROR_CANNOT_DELETE_DATA_KEY =
+            "R.error.cannot.delete.data"; //NOI18N
+    private static final String SAVE_LOCAL_REGISTRY_TITLE_KEY =
+            "R.save.local.registry.title";//NOI18N
+    private static final String SAVE_LOCAL_REGISTRY_DETAIL_KEY =
+            "R.save.local.registry.detail"; //NOI18N
+    private static final String ERROR_MISSING_TARGET_COMPONENT_TITLE_KEY =
+            "R.error.missing.target.component.title"; //NOI18N
+    private static final String ERROR_MISSING_TARGET_COMPONENT_MSG_KEY =
+            "R.error.missing.target.component.msg"; //NOI18N
+    private static final String ERROR_VALIDATION_TITLE_KEY = 
+            "R.error.validation.title";//NOI18N
+    private static final String ERROR_VALIDATION_MSG_KEY = 
+            "R.error.validation.msg";//NOI18N
 }
