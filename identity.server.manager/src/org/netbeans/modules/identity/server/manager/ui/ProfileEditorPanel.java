@@ -66,6 +66,8 @@ public class ProfileEditorPanel extends JPanel
     
     private static final String HELP_ID = "idmtools_am_config_am_sec_mech"; //NOI18N
     
+    private static final String AM_INVALID_KEYSTORE_ERR = "Invalid KeyStore";   //NOI18N
+    
     private enum State {
         INITIALIZING,
         INITIALIZED,
@@ -327,7 +329,19 @@ public class ProfileEditorPanel extends JPanel
                 return NbBundle.getMessage(ProfileEditorPanel.class,
                         "MSG_InitFailed", cause.toString());
             case INITIALIZED:
-                return configurator.getError();
+                String errorMsg = configurator.getError();
+                
+                //
+                // Replace the unlocalized "Invalid KeyStore" message
+                // from the AM client code with our localized version.
+                //
+                if (errorMsg != null &&
+                        errorMsg.startsWith(AM_INVALID_KEYSTORE_ERR)) {
+                    errorMsg = NbBundle.getMessage(ProfileEditorPanel.class, 
+                            "ERR_InvalidKeystore");
+                }
+                
+                return errorMsg;
         }
         
         return null;
