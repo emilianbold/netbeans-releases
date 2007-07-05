@@ -388,7 +388,7 @@ private class Listener implements ListSelectionListener,  TableModelListener {
         try {
             URL oldUrl = provider.getProviderURL ();
             URL newUrl = new URL (panel.getProviderURL ());
-            if (! oldUrl.equals (newUrl)) {
+            if (! oldUrl.toExternalForm ().equals (newUrl.toExternalForm ())) {
                 provider.setProviderURL (newUrl);
                 refreshModel = true;
                 forceRead = true;

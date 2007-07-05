@@ -403,7 +403,7 @@ public final class UpdateUnitProviderImpl {
             if (p instanceof AutoupdateCatalogProvider) {
                 orig = ((AutoupdateCatalogProvider) p).getUpdateCenterURL ();
             }
-            if (! url.equals (orig)) {
+            if (! url.toExternalForm ().equals (orig.toExternalForm ())) {
                 providerPreferences.put (URL, url.toExternalForm ());
                 if (p instanceof AutoupdateCatalogProvider) {
                     ((AutoupdateCatalogProvider) p).setUpdateCenterURL (url);
