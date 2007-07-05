@@ -777,7 +777,7 @@ public class Installer implements FinishHandler {
     
     /** Errorcode to be used when the installer exits because of a critical error */
     public static final int CRITICAL_ERRORCODE = 
-            Integer.MAX_VALUE;
+            255;
     
     // command line arguments ///////////////////////////////////////////////////////
     public static final String TARGET_ARG = 
