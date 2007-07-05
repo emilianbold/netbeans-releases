@@ -305,7 +305,7 @@ public class Registry {
                     SAVE_LOCAL_REGISTRY_TITLE_KEY));
             progress.setDetail(ResourceUtils.getString(Registry.class,
                     SAVE_LOCAL_REGISTRY_DETAIL_KEY,  localRegistryFile));
-            
+            LogManager.log("... save registry to file " + localRegistryFile);            
             saveProductRegistry(
                     localRegistryFile,
                     new ProductFilter(Status.INSTALLED),
@@ -316,10 +316,11 @@ public class Registry {
         
         // save the state file if it is required (i.e. --record command line option
         // was specified)
+	LogManager.log("... save state file if necessary");            
         if (System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY) != null) {
             File stateFile =
                     new File(System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY));
-            
+            LogManager.log("... save state file to " + stateFile);            
             saveStateFile(stateFile, new Progress());
         }
         
@@ -861,10 +862,17 @@ public class Registry {
             final boolean saveProperties,
             final boolean saveFeatures) throws FinalizationException {
         try {
-            XMLUtils.saveXMLDocument(getRegistryDocument(
-                    filter, saveIncludes, saveProperties, saveFeatures), file);
+            LogManager.logEntry("saving product registry file");
+            LogManager.log("... getting registry document");
+            Document document = getRegistryDocument(
+                    filter, saveIncludes, saveProperties, saveFeatures);
+            LogManager.log("... saving registry document to file " + file);
+            XMLUtils.saveXMLDocument(document, file);
+            LogManager.log("... saving XML file succesfully finished");
         } catch (XMLException e) {
             throw new FinalizationException("Could not finalize registry", e);
+        } finally {
+            LogManager.logExit("... saving product registry done");
         }
     }
     

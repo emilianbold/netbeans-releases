@@ -150,7 +150,7 @@ public final class LogManager {
     
     public static synchronized void logEntry(String message) {
         final StackTraceElement traceElement = 
-                Thread.currentThread().getStackTrace()[2];
+                Thread.currentThread().getStackTrace()[3];
         
         log(ErrorLevel.DEBUG, 
                 "entering -- " +
@@ -163,7 +163,7 @@ public final class LogManager {
     }
     
     public static synchronized void logExit(String message) {
-        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[2];
+        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[3];
         
         unindent();
         log(message);
