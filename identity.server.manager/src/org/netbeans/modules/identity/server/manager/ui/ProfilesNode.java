@@ -117,8 +117,8 @@ public class ProfilesNode extends AbstractNode {
         }
         
         private void updateKeys() {
-            Collection<SecurityMechanism> secMechs =
-                    SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms();
+            Collection<SecurityMechanism> secMechs = 
+                    ((new SecurityMechanismHelper(instance.getID()))).getAllWSPSecurityMechanisms();
            
             setKeys(secMechs);
         }

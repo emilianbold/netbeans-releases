@@ -28,7 +28,7 @@
 
 package org.netbeans.modules.identity.profile.ui.editor;
 
-import java.io.File;
+import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
 import org.openide.nodes.Node;
@@ -51,8 +51,10 @@ public class SecurityWSEditorProvider implements WSEditorProvider {
     }
     
     public boolean enable(Node node) {
-        return true;
-    }
-    
-    
+        try {
+            return J2eeProjectHelper.newInstance(node, null).isAMInstalled();
+        } catch (Exception ex) {
+            return false;
+        }
+    }  
 }

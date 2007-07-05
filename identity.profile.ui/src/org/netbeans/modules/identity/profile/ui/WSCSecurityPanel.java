@@ -70,7 +70,8 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             
             for (String service : services) {
                 configurators.add(ProviderConfigurator.getConfigurator(service,
-                        Type.WSC, AccessMethod.FILE, helper.getConfigPath()));
+                        Type.WSC, AccessMethod.FILE, helper.getConfigPath(), 
+                        helper.getServerID()));
             }
             
         } catch (ConfiguratorException ex) {
@@ -90,8 +91,8 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             for (ProviderConfigurator configurator : configurators) {                
                 configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
                         (helper.getProjectType() == ProjectType.WEB) ?
-                            SecurityMechanismHelper.getDefault().getAllWSCSecurityMechanisms() :
-                            SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
+                            configurator.getSecMechHelper().getAllWSCSecurityMechanisms() :
+                            configurator.getSecMechHelper().getAllMessageLevelSecurityMechanisms());
                 
                 configurator.addModifier(Configurable.SIGN_RESPONSE, signResponseCB);
                 configurator.addModifier(Configurable.USE_DEFAULT_KEYSTORE, useDefaultKeyStoreCB);
@@ -99,8 +100,6 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 configurator.addModifier(Configurable.KEYSTORE_PASSWORD, keystorePasswordTF);
                 configurator.addModifier(Configurable.KEY_ALIAS, keyAliasTF);
                 configurator.addModifier(Configurable.KEY_PASSWORD, this.keyPasswordTF);
-                configurator.addModifier(Configurable.SERVER_PROPERTIES, serverCB,
-                        ServerManager.getDefault().getAllServerProperties());
                 configurator.addModifier(Configurable.USERNAME, userNameTF);
                 configurator.addModifier(Configurable.PASSWORD, passwordTF);
                 
@@ -174,8 +173,6 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 keyPasswordTF.setEnabled(false);
                 browseButton.setEnabled(false);
             }
-            serverLabel.setEnabled(true);
-            serverCB.setEnabled(true);
         } else {
             disableAll();
         }
@@ -216,8 +213,6 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         keyAliasTF.setEnabled(false);
         keyAliasPasswordLabel.setEnabled(false);
         keyPasswordTF.setEnabled(false);
-        serverLabel.setEnabled(false);
-        serverCB.setEnabled(false);
         browseButton.setEnabled(false);
         userNameLabel.setVisible(false);
         userNameTF.setVisible(false);
@@ -266,6 +261,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jSeparator2 = new javax.swing.JSeparator();
         enableSecurityCB = new javax.swing.JCheckBox();
         secMechLabel = new javax.swing.JLabel();
@@ -284,15 +280,12 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         keyAliasTF = new javax.swing.JTextField();
         keyAliasPasswordLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        serverLabel = new javax.swing.JLabel();
-        serverCB = new javax.swing.JComboBox();
         browseButton = new javax.swing.JButton();
         keystorePasswordTF = new javax.swing.JPasswordField();
         keyPasswordTF = new javax.swing.JPasswordField();
         useDefaultKeyStoreCB = new javax.swing.JCheckBox();
         passwordTF = new javax.swing.JPasswordField();
         errorLabel = new javax.swing.JLabel();
-        jSeparator3 = new javax.swing.JSeparator();
 
         setEnabled(false);
         addFocusListener(new java.awt.event.FocusAdapter() {
@@ -310,7 +303,8 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(enableSecurityCB, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_EnableSecurity"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(enableSecurityCB, bundle.getString("LBL_EnableSecurity")); // NOI18N
         enableSecurityCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableSecurityCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
         enableSecurityCB.setOpaque(false);
@@ -320,10 +314,10 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
             }
         });
 
-        secMechLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_SecurityMechanisms"));
+        secMechLabel.setText(bundle.getString("LBL_SecurityMechanisms")); // NOI18N
 
         requestLabel.setLabelFor(requestSecMechCB);
-        org.openide.awt.Mnemonics.setLocalizedText(requestLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Request"));
+        org.openide.awt.Mnemonics.setLocalizedText(requestLabel, bundle.getString("LBL_Request")); // NOI18N
 
         requestSecMechCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,43 +326,40 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
         });
 
         userNameLabel.setLabelFor(userNameTF);
-        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_UserName"));
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, bundle.getString("LBL_UserName")); // NOI18N
 
         passwordLabel.setLabelFor(passwordTF);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Password"));
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, bundle.getString("LBL_Password")); // NOI18N
 
-        responseLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Response"));
+        responseLabel.setText(bundle.getString("LBL_Response")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(signResponseCB, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_VerifyResponse"));
+        org.openide.awt.Mnemonics.setLocalizedText(signResponseCB, bundle.getString("LBL_VerifyResponse")); // NOI18N
         signResponseCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         signResponseCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
         signResponseCB.setOpaque(false);
 
-        certSettingsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_CertificateSettings"));
+        certSettingsLabel.setText(bundle.getString("LBL_CertificateSettings")); // NOI18N
 
         keystoreLocationLabel.setLabelFor(keystoreLocationTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keystoreLocationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_KeyStoreLocation"));
+        org.openide.awt.Mnemonics.setLocalizedText(keystoreLocationLabel, bundle.getString("LBL_KeyStoreLocation")); // NOI18N
 
         keystorePasswordLabel.setLabelFor(keystorePasswordTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keystorePasswordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_KeystorePassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(keystorePasswordLabel, bundle.getString("LBL_KeystorePassword")); // NOI18N
 
         keyAliasLabel.setLabelFor(keyAliasTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keyAliasLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_KeyAlias"));
+        org.openide.awt.Mnemonics.setLocalizedText(keyAliasLabel, bundle.getString("LBL_KeyAlias")); // NOI18N
 
         keyAliasPasswordLabel.setLabelFor(keyPasswordTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keyAliasPasswordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_KeyAliasPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(keyAliasPasswordLabel, bundle.getString("LBL_KeyAliasPassword")); // NOI18N
 
-        serverLabel.setLabelFor(serverCB);
-        org.openide.awt.Mnemonics.setLocalizedText(serverLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Server"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, bundle.getString("LBL_Browse")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(useDefaultKeyStoreCB, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_UseDefaultKeyStore"));
+        org.openide.awt.Mnemonics.setLocalizedText(useDefaultKeyStoreCB, bundle.getString("LBL_UseDefaultKeyStore")); // NOI18N
         useDefaultKeyStoreCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         useDefaultKeyStoreCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
         useDefaultKeyStoreCB.setOpaque(false);
@@ -395,7 +386,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                             .add(layout.createSequentialGroup()
                                 .add(requestLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(requestSecMechCB, 0, 322, Short.MAX_VALUE))
+                                .add(requestSecMechCB, 0, 343, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .add(10, 10, 10)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -403,8 +394,8 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                                     .add(userNameLabel))
                                 .add(6, 6, 6)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(passwordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
-                                    .add(userNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))
+                                    .add(passwordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                                    .add(userNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                             .add(layout.createSequentialGroup()
                                 .add(responseLabel)
@@ -417,7 +408,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                             .add(layout.createSequentialGroup()
                                 .add(keystoreLocationLabel)
                                 .add(10, 10, 10)
-                                .add(keystoreLocationTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
+                                .add(keystoreLocationTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
                             .add(useDefaultKeyStoreCB)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -434,13 +425,8 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(enableSecurityCB)
-                    .add(layout.createSequentialGroup()
-                        .add(serverLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(serverCB, 0, 340, Short.MAX_VALUE))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(errorLabel)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                    .add(errorLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -490,14 +476,8 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
                 .add(11, 11, 11)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(serverLabel)
-                    .add(serverCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(errorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -583,7 +563,6 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     private javax.swing.JLabel errorLabel;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JLabel keyAliasLabel;
     private javax.swing.JLabel keyAliasPasswordLabel;
     private javax.swing.JTextField keyAliasTF;
@@ -598,8 +577,6 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
     private javax.swing.JComboBox requestSecMechCB;
     private javax.swing.JLabel responseLabel;
     private javax.swing.JLabel secMechLabel;
-    private javax.swing.JComboBox serverCB;
-    private javax.swing.JLabel serverLabel;
     private javax.swing.JCheckBox signResponseCB;
     private javax.swing.JCheckBox useDefaultKeyStoreCB;
     private javax.swing.JLabel userNameLabel;

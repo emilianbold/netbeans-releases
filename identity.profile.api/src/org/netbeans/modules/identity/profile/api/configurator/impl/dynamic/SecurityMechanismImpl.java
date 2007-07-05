@@ -109,7 +109,7 @@ class SecurityMechanismImpl implements SecurityMechanism {
     }
     
     public boolean isPasswordCredentialRequired() {
-        return getName().equals(USERNAME_TOKEN);
+        return getName().startsWith(USERNAME_TOKEN);
     }
     
     public boolean isLiberty() {

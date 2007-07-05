@@ -51,7 +51,7 @@ public class SecurityWSEditor implements WSEditor {
     public JComponent createWSEditorComponent(Node node,
             JaxWsModel jaxWsModel) {
         helper = J2eeProjectHelper.newInstance(node, jaxWsModel);
-        
+   
         if (!helper.isAppServerSun()) {
             iPanel = new MessagePanel(NbBundle.getMessage(
                     SecurityWSEditor.class, "LBL_AppSrvNotSun")); //NOI18N

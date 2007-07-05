@@ -53,7 +53,7 @@ public class SecurityCheckerImpl extends SecurityChecker {
         if (!isTransientStateSet) {
             J2eeProjectHelper helper = J2eeProjectHelper.newInstance(node, jaxWsModel);
             
-            if (helper.isAppServerSun() && helper.isSecurable()) {
+            if (helper.isAMInstalled() && helper.isSecurable()) {
                 isSecurityEnabled = helper.isSecurityEnabled();
                 
                 //System.out.println("helper.isSecurityEnabled() = " + isSecurityEnabled);

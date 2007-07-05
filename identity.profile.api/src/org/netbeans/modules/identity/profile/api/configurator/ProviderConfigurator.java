@@ -76,6 +76,7 @@ public class ProviderConfigurator extends Configurator {
     
     private String providerName;
     private Type type;
+    private String serverID;
     private ProviderConfig providerConfig;
     private String keystoreLocation;
     private String keystorePassword;
@@ -84,30 +85,33 @@ public class ProviderConfigurator extends Configurator {
     private JLabel errorComponent;
     private String errorText;
     private Collection<ChangeListener> listeners;
+    private SecurityMechanismHelper secMechHelper;
     
     /** Creates a new instance of ProviderConfigurator */
-    private ProviderConfigurator(String providerName, Type type) {
+    private ProviderConfigurator(String providerName, Type type, String serverID) {
         this.providerName = providerName;
         this.type = type;
+        this.serverID = serverID;
         
         //
         // Force loading the SecurityMechanisms which will load
         // the amclientsdk.  If anything goes wrong, the exception
         // will be thrown from here.
         //
-        SecurityMechanismHelper.getDefault().getAllSecurityMechanisms();
+        secMechHelper = new SecurityMechanismHelper(serverID);
+        secMechHelper.getAllSecurityMechanisms();
     }
     
     public static ProviderConfigurator getConfigurator(String providerName, Type type,
-            AccessMethod accessMethod, Object accessToken) {
-        ProviderConfigurator configurator = new ProviderConfigurator(providerName, type);
+            AccessMethod accessMethod, Object accessToken, String serverID) {
+        ProviderConfigurator configurator = new ProviderConfigurator(providerName, type, serverID);
         configurator.init(accessMethod, accessToken);
         
         return configurator;
     }
     
     public static Collection<ProviderConfigurator> getAllConfigurators(Type type,
-            AccessMethod accessMethod, Object accessToken) {
+            AccessMethod accessMethod, Object accessToken, String id) {
         //
         // Use a dummy ProviderConfig instance to retrieve the list of
         // all the provider names for the given type.
@@ -122,7 +126,7 @@ public class ProviderConfigurator extends Configurator {
                 continue;
             
             result.add(ProviderConfigurator.getConfigurator(name, type, accessMethod,
-                    accessToken));
+                    accessToken, id));
         }
         
         return result;
@@ -283,7 +287,7 @@ public class ProviderConfigurator extends Configurator {
                 case WSP_ENDPOINT:
                     return providerConfig.getWSPEndpoint();
                 case SERVER_PROPERTIES:
-                    return providerConfig.getServerProperties();
+                    return providerConfig.getServerProperties(serverID);
                 case USERNAME:
                     return providerConfig.getUserName();
                 case PASSWORD:
@@ -369,6 +373,10 @@ public class ProviderConfigurator extends Configurator {
             validate();
             fireStateChanged();
         }
+    }
+    
+    public SecurityMechanismHelper getSecMechHelper() {
+        return secMechHelper;
     }
     
     public void setError(String errorMsg) {
@@ -488,7 +496,7 @@ public class ProviderConfigurator extends Configurator {
     }
     
     private Collection<SecurityMechanism> getSecurityMechanisms() {
-        return SecurityMechanismHelper.getDefault().getSecurityMechanismsFromURIs(providerConfig.getSecurityMechanisms());
+        return secMechHelper.getSecurityMechanismsFromURIs(providerConfig.getSecurityMechanisms());
     }
     
     private SecurityMechanism getSecurityMechanism() {
@@ -502,8 +510,7 @@ public class ProviderConfigurator extends Configurator {
     }
     
     private void setSecurityMechanisms(Collection<SecurityMechanism> secMechs) {
-        providerConfig.setSecurityMechanisms(
-                SecurityMechanismHelper.getDefault().getSecurityMechanismURIs(secMechs));
+        providerConfig.setSecurityMechanisms(secMechHelper.getSecurityMechanismURIs(secMechs));
     }
     
     private void setSecurityMechanism(SecurityMechanism secMech) {

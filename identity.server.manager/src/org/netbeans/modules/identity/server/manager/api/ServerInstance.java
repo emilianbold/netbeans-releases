@@ -38,8 +38,6 @@ public class ServerInstance extends Object implements Serializable {
     
     public static final String PROP_ID = "id";                      //NOI18N
     
-    public static final String PROP_DISPLAY_NAME = "displayName";   //NOI18N
-    
     public static final String PROP_HOST = "host";                  //NOI18N
     
     public static final String PROP_PORT = "port";                  //NOI18N
@@ -50,16 +48,15 @@ public class ServerInstance extends Object implements Serializable {
     
     public static final String PROP_PASSWORD = "password";          //NOI18N
     
+    public static final String LOCAL_HOST = "localhost";            //NOI18N
+    
     private String id;
-    private String displayName;
     private String host;
     private String port;
     private String contextRoot;
     private String userName;
     private String password;
-    private boolean isDefault;
     private ServerProperties properties;
-    
     private PropertyChangeSupport propertySupport;
     
     public ServerInstance() {
@@ -69,11 +66,7 @@ public class ServerInstance extends Object implements Serializable {
     public String getID() {
         return id;
     }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
+   
     public String getHost() {
         return host;
     }
@@ -96,12 +89,6 @@ public class ServerInstance extends Object implements Serializable {
     
     void setID(String id) {
         this.id = id;
-    }
-    
-    public void setDisplayName(String value) throws PropertyVetoException {
-        String oldValue = displayName;
-        displayName = value;
-        propertySupport.firePropertyChange(PROP_DISPLAY_NAME, oldValue, displayName);
     }
     
     public void setHost(String value) {
@@ -134,12 +121,8 @@ public class ServerInstance extends Object implements Serializable {
         propertySupport.firePropertyChange(PROP_PASSWORD, oldValue, password);
     }
     
-    public boolean isDefault() {
-        return isDefault;
-    }
-    
-    void setIsDefault(boolean flag) {
-        isDefault = flag;
+    public boolean isLocal() {
+        return (getHost().equals(LOCAL_HOST));
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -152,23 +135,18 @@ public class ServerInstance extends Object implements Serializable {
     
     public ServerProperties getServerProperties() {
         if (properties == null) {
-            properties = new ServerProperties();
+            properties = ServerProperties.getInstance(getID());
         }
         
-        // Update the ServerProperties with the current configuration data.
-        
-        if (!isDefault()) {
-            // Use the displayName to identity the ServerProperties.
-            properties.setProperty(ServerProperties.PROP_ID, displayName);
+        //if (!isLocal()) {           
             properties.setProperty(ServerProperties.PROP_HOST, host);
             properties.setProperty(ServerProperties.PROP_PORT, port);
             properties.setProperty(ServerProperties.PROP_CONTEXT_ROOT, contextRoot);
             properties.setProperty(ServerProperties.PROP_USERNAME, userName);
             properties.setProperty(ServerProperties.PROP_PASSWORD, password);
-        }
+        //}
         
-        return properties;
-        
+        return properties;       
     }
     
     public String getAdminURL() {

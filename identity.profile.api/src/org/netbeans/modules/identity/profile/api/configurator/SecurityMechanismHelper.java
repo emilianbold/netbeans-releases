@@ -35,9 +35,7 @@ import org.netbeans.modules.identity.profile.api.configurator.impl.dynamic.Secur
 public class SecurityMechanismHelper {
     
     private static final String LIBERTY_PREFIX = "Liberty";     //NOI18N
-    
-    private static SecurityMechanismHelper instance;
-    
+  
     private Collection<SecurityMechanism> allSecurityMechs;
     
     private Collection<SecurityMechanism> allMsgLevelSecurityMechs;
@@ -50,18 +48,12 @@ public class SecurityMechanismHelper {
     
     private Collection<SecurityMechanism> allWSCSecurityMechs;
     
-    private SecurityMechanismHelper() {
-        
-    }
+    private SecurityMechanismRetriever retriever;
     
-    public static SecurityMechanismHelper getDefault() {
-        if (instance == null) {
-            instance = new SecurityMechanismHelper();
-        }
-        
-        return instance;
+    public SecurityMechanismHelper(String id) {
+        retriever = new SecurityMechanismRetriever(id);
     }
-    
+   
     /**
      * Returns all the security mechanism including Liberty.
      *
@@ -81,8 +73,7 @@ public class SecurityMechanismHelper {
     
     public Collection<SecurityMechanism> getAllMessageLevelSecurityMechanisms() {
         if (allMsgLevelSecurityMechs == null) {
-            allMsgLevelSecurityMechs =
-                    SecurityMechanismRetriever.getAllMessageLevelSecurityMechanism();
+            allMsgLevelSecurityMechs = retriever.getAllMessageLevelSecurityMechanism();
         }
         
         return allMsgLevelSecurityMechs;
@@ -90,8 +81,7 @@ public class SecurityMechanismHelper {
     
     public Collection<SecurityMechanism> getAllWSPLibertySecurityMechanisms() {
         if (allWSPLibertySecurityMechs == null) {
-            Collection<SecurityMechanism> secMechs = 
-                    SecurityMechanismRetriever.getAllWSPLibertySecurityMechanisms();
+            Collection<SecurityMechanism> secMechs = retriever.getAllWSPLibertySecurityMechanisms();
             
             allWSPLibertySecurityMechs = new ArrayList<SecurityMechanism>();
             
@@ -110,8 +100,7 @@ public class SecurityMechanismHelper {
     
    public Collection<SecurityMechanism> getAllWSCLibertySecurityMechanisms() {
         if (allWSCLibertySecurityMechs == null) {
-            Collection<SecurityMechanism> secMechs = 
-                    SecurityMechanismRetriever.getAllWSCLibertySecurityMechanisms();
+            Collection<SecurityMechanism> secMechs = retriever.getAllWSCLibertySecurityMechanisms();
             
             allWSCLibertySecurityMechs = new ArrayList<SecurityMechanism>();
             

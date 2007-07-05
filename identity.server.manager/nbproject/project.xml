@@ -81,6 +81,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.identity.ant</friend>
                 <package>org.netbeans.modules.identity.server.manager.api</package>
             </friend-packages>
         </data>

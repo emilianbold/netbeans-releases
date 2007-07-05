@@ -132,7 +132,8 @@ public class ProfileEditorPanel extends JPanel
         try {
             configurator = ProviderConfigurator.getConfigurator(secMech.getName(), Type.WSP,
                     AccessMethod.DYNAMIC,
-                    instance.getServerProperties());
+                    instance.getServerProperties(),
+                    instance.getID());
             
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
@@ -270,7 +271,7 @@ public class ProfileEditorPanel extends JPanel
         keyPasswordTF.setEnabled(flag);
         
         if (flag) {
-            if (instance.isDefault()) {
+            if (instance.isLocal()) {
                 browseButton.setEnabled(true);
             } else {
                 browseButton.setEnabled(false);
@@ -425,6 +426,7 @@ public class ProfileEditorPanel extends JPanel
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         signResponseCB = new javax.swing.JCheckBox();
@@ -460,7 +462,8 @@ public class ProfileEditorPanel extends JPanel
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        org.openide.awt.Mnemonics.setLocalizedText(signResponseCB, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_SignResponse"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(signResponseCB, bundle.getString("LBL_SignResponse")); // NOI18N
         signResponseCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         signResponseCB.setEnabled(false);
         signResponseCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -471,28 +474,28 @@ public class ProfileEditorPanel extends JPanel
             }
         });
 
-        certSettingsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_CertificateSettings"));
+        certSettingsLabel.setText(bundle.getString("LBL_CertificateSettings")); // NOI18N
         certSettingsLabel.setEnabled(false);
 
         keystoreLocationLabel.setLabelFor(keystoreLocationTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keystoreLocationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_KeyStoreLocation"));
+        org.openide.awt.Mnemonics.setLocalizedText(keystoreLocationLabel, bundle.getString("LBL_KeyStoreLocation")); // NOI18N
         keystoreLocationLabel.setEnabled(false);
 
         keystoreLocationTF.setEnabled(false);
         keystoreLocationTF.setNextFocusableComponent(browseButton);
 
         keystorePasswordLabel.setLabelFor(keystorePasswordTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keystorePasswordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_KeystorePassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(keystorePasswordLabel, bundle.getString("LBL_KeystorePassword")); // NOI18N
         keystorePasswordLabel.setEnabled(false);
 
         keyAliasLabel.setLabelFor(keyAliasTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keyAliasLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_KeyAlias"));
+        org.openide.awt.Mnemonics.setLocalizedText(keyAliasLabel, bundle.getString("LBL_KeyAlias")); // NOI18N
         keyAliasLabel.setEnabled(false);
 
         keyAliasTF.setEnabled(false);
         keyAliasTF.setNextFocusableComponent(keyPasswordTF);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, bundle.getString("LBL_Browse")); // NOI18N
         browseButton.setEnabled(false);
         browseButton.setNextFocusableComponent(keystorePasswordTF);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -502,6 +505,7 @@ public class ProfileEditorPanel extends JPanel
         });
 
         userNameTableScrollPane.setEnabled(false);
+
         userNameTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {},
@@ -516,10 +520,10 @@ public class ProfileEditorPanel extends JPanel
         userNameTableScrollPane.setViewportView(userNameTable);
 
         usernameInfoLabel.setLabelFor(userNameTable);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameInfoLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_UsernameTokenProfileInfo"));
+        org.openide.awt.Mnemonics.setLocalizedText(usernameInfoLabel, bundle.getString("LBL_UsernameTokenProfileInfo")); // NOI18N
         usernameInfoLabel.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString("LBL_Add")); // NOI18N
         addButton.setEnabled(false);
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -527,7 +531,7 @@ public class ProfileEditorPanel extends JPanel
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_Edit"));
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, bundle.getString("LBL_Edit")); // NOI18N
         editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -535,7 +539,7 @@ public class ProfileEditorPanel extends JPanel
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, bundle.getString("LBL_Remove")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -543,13 +547,13 @@ public class ProfileEditorPanel extends JPanel
             }
         });
 
-        usernameInfoDescLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_UsernameInfoDesc"));
+        usernameInfoDescLabel.setText(bundle.getString("LBL_UsernameInfoDesc")); // NOI18N
         usernameInfoDescLabel.setEnabled(false);
 
         keystorePasswordTF.setEnabled(false);
         keystorePasswordTF.setNextFocusableComponent(keyAliasTF);
 
-        org.openide.awt.Mnemonics.setLocalizedText(useDefaultKeyStoreCB, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_UseDefaultKeyStore"));
+        org.openide.awt.Mnemonics.setLocalizedText(useDefaultKeyStoreCB, bundle.getString("LBL_UseDefaultKeyStore")); // NOI18N
         useDefaultKeyStoreCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         useDefaultKeyStoreCB.setEnabled(false);
         useDefaultKeyStoreCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -561,7 +565,7 @@ public class ProfileEditorPanel extends JPanel
         });
 
         keyPasswordLabel.setLabelFor(keyPasswordTF);
-        org.openide.awt.Mnemonics.setLocalizedText(keyPasswordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_KeyAliasPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(keyPasswordLabel, bundle.getString("LBL_KeyAliasPassword")); // NOI18N
         keyPasswordLabel.setEnabled(false);
 
         keyPasswordTF.setEnabled(false);
@@ -591,10 +595,10 @@ public class ProfileEditorPanel extends JPanel
                                     .add(keyPasswordLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(keystoreLocationTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
-                                    .add(keyAliasTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
-                                    .add(keyPasswordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
-                                    .add(keystorePasswordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))))
+                                    .add(keystoreLocationTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                                    .add(keyAliasTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                                    .add(keyPasswordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                                    .add(keystorePasswordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(usernameInfoLabel)
@@ -604,28 +608,25 @@ public class ProfileEditorPanel extends JPanel
                         .add(editButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton))
-                    .add(usernameInfoDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, userNameTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
+                    .add(usernameInfoDescLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 558, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, userNameTableScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(signResponseCB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(certSettingsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(useDefaultKeyStoreCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(keystoreLocationLabel)
-                            .add(keystoreLocationTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(browseButton))
+                .add(signResponseCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(certSettingsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(useDefaultKeyStoreCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(keystoreLocationLabel)
+                    .add(keystoreLocationTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keystorePasswordLabel)
                     .add(keystorePasswordTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))

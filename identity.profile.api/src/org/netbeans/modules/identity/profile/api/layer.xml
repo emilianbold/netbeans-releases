@@ -31,5 +31,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </folder>
         </folder>
     </folder>
+      <folder name="J2EE">
+        <folder name="SunAppServer">
+            <folder name="Bridge">
+                <file name="AMApiBridge">
+                    <attr name="jar.location" stringvalue="modules/org-netbeans-modules-identity-profile-api.jar"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
 

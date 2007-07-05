@@ -24,13 +24,13 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder>
     </folder>
     
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org-netbeans-modules-identity-server-manager-ui-ServerManagerNode.instance">
-                <!--module name="org.netbeans.modules.identity.server.manager/1" spec="1.0"/--> 
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.identity.server.manager.ui.ServerManagerNode"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-            </folder>   
+     <folder name="J2EE">
+        <folder name="SunAppServer">
+            <folder name="Bridge">
+                <file name="AMBridge">
+                    <attr name="jar.location" stringvalue="modules/org-netbeans-modules-identity-server-manager.jar"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

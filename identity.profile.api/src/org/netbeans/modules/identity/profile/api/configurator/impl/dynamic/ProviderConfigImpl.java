@@ -121,6 +121,7 @@ public class ProviderConfigImpl implements ProviderConfig {
     private String providerName;
     private String providerType;
     private ServerProperties properties;
+    private SecurityMechanismHelper secMechHelper;
     
     /**
      * Creates a new instance of ProviderConfigImpl
@@ -130,6 +131,7 @@ public class ProviderConfigImpl implements ProviderConfig {
         this.providerName = providerName;
         this.providerType = type;
         this.properties = properties;
+        this.secMechHelper = new SecurityMechanismHelper(properties.getProperty(ServerProperties.PROP_ID));
         
         //
         // Initialize providerConfig now so we can report
@@ -180,8 +182,7 @@ public class ProviderConfigImpl implements ProviderConfig {
     private void createProvider() {
         Collection<String> names = new ArrayList<String>();
         names.add(providerName);
-        Collection<String> uris =
-                SecurityMechanismHelper.getDefault().getSecurityMechanismURIsFromNames(names);
+        Collection<String> uris = secMechHelper.getSecurityMechanismURIsFromNames(names);
         setSecurityMechanisms(uris);
         setDefaultKeyStore(true);
         
@@ -379,7 +380,7 @@ public class ProviderConfigImpl implements ProviderConfig {
         
     }
     
-    public ServerProperties getServerProperties() {
+    public ServerProperties getServerProperties(String id) {
         return properties;
     }
     

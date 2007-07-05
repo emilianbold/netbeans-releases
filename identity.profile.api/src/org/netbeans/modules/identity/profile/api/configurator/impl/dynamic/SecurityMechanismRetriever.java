@@ -54,13 +54,20 @@ public class SecurityMechanismRetriever {
     private static final String AM_GET_SECURITY_MECHANISM_METHOD = "getSecurityMechanism";  //NOI18N
     
     private static final String AM_LIBERTY_DS_SECURITY_FIELD = "LIBERTY_DS_SECURITY";   //NOI18N
+
+    private ClassLoader loader;
+    
+    public SecurityMechanismRetriever(String id) {
+        loader = ClassLoaderManager.getDefault().getClassLoader(ServerProperties.getInstance(id));
+    }
+    
+    
     /**
      * Returns all the non-Liberty security mechanisms.
      *
      */
-    public static Collection<SecurityMechanism> getAllSupportedSecurityMechanisms() {
+    public Collection<SecurityMechanism> getAllSupportedSecurityMechanisms() {
         try {
-            ClassLoader loader = ClassLoaderManager.getDefault().getClassLoader(new ServerProperties());
             Class clazz = loader.loadClass(AM_PROVIDER_CONFIG_CLASS);
             Method method = clazz.getMethod(AM_GET_ALL_SUPPORT_SECURITY_MECH_METHOD);
             return convertToSecurityMechProxies((List) method.invoke(null));
@@ -73,9 +80,8 @@ public class SecurityMechanismRetriever {
      * Returns all the non-Liberty message-level security mechanisms.
      *
      */
-    public static Collection<SecurityMechanism> getAllMessageLevelSecurityMechanism() {
+    public Collection<SecurityMechanism> getAllMessageLevelSecurityMechanism() {
         try {
-            ClassLoader loader = ClassLoaderManager.getDefault().getClassLoader(new ServerProperties());
             Class clazz = loader.loadClass(AM_PROVIDER_CONFIG_CLASS);
             Method method = clazz.getMethod(AM_GET_ALL_MESSAGE_LEVEL_SECURITY_MECH_METHOD);
             
@@ -89,9 +95,8 @@ public class SecurityMechanismRetriever {
      * Returns all the WSP Liberty security mechanism.
      *
      */
-    public static Collection<SecurityMechanism> getAllWSPLibertySecurityMechanisms() {
+    public Collection<SecurityMechanism> getAllWSPLibertySecurityMechanisms() {
         try {
-            ClassLoader loader = ClassLoaderManager.getDefault().getClassLoader(new ServerProperties());
             Class clazz = loader.loadClass(AM_SECURITY_MECHANISM_CLASS);
             Method method = clazz.getMethod(AM_GET_LIBERTY_SECURITY_MECHANISM_URIS_METHOD);
             List uris = (List) method.invoke(null);
@@ -114,11 +119,10 @@ public class SecurityMechanismRetriever {
      *
      *
      */
-    public static Collection<SecurityMechanism> getAllWSCLibertySecurityMechanisms() {
+    public Collection<SecurityMechanism> getAllWSCLibertySecurityMechanisms() {
         ArrayList secMechs = new ArrayList();
         
         try {
-            ClassLoader loader = ClassLoaderManager.getDefault().getClassLoader(new ServerProperties());
             Class clazz = loader.loadClass(AM_SECURITY_MECHANISM_CLASS);
             Field field = clazz.getField(AM_LIBERTY_DS_SECURITY_FIELD);
             secMechs.add(field.get(null));
@@ -129,7 +133,7 @@ public class SecurityMechanismRetriever {
         }
     }
     
-    private static Collection<SecurityMechanism> convertToSecurityMechProxies(List secMechs) {
+    private Collection<SecurityMechanism> convertToSecurityMechProxies(List secMechs) {
         ArrayList<SecurityMechanism> secMechProxies = new ArrayList<SecurityMechanism>();
         Iterator iter = secMechs.iterator();
         

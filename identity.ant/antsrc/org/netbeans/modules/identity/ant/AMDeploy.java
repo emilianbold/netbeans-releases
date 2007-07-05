@@ -31,6 +31,8 @@ import org.netbeans.modules.identity.profile.api.configurator.DiscoveryConfigura
 import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
 import org.netbeans.modules.identity.profile.api.configurator.TrustAuthorityConfigurator;
+import org.netbeans.modules.identity.server.manager.api.ServerInstance;
+import org.netbeans.modules.identity.server.manager.api.ServerManager;
 
 /**
  * Ant task for deploying configuration data to the AM server.
@@ -46,9 +48,9 @@ public class AMDeploy extends Task {
 //    private static final String WSC = "wsc";    //NOI18N
     
     private static final String LOCAL_DISCO = "LocalDisco";     //NOI18N
-    
-    private String amConfigFile;
+ 
     private String amConfigXmlDir;
+    private String amAsUrl;
     private DiscoveryConfigurator discoveryConfig;
     
     private static final Configurable[] wscConfigurables = {
@@ -74,20 +76,24 @@ public class AMDeploy extends Task {
     public AMDeploy() {
     }
     
-    public void setAmconfigfile(String amConfigFile) {
-        this.amConfigFile = amConfigFile;
-        log("amConfigFile: " + amConfigFile);          //NOI18N
-        if (System.getProperty(PROP_AM_CONFIG_FILE) == null) {
-            System.setProperty(PROP_AM_CONFIG_FILE, amConfigFile);
-        }
-    }
-    
     public void setAmconfigxmldir(String amConfigXmlDir) {
         this.amConfigXmlDir = amConfigXmlDir;
         log("amConfigXmlDir: " + amConfigXmlDir);      //NOI18N
     }
     
-    public void execute() throws BuildException {
+    public void setAmasurl(String url) {
+        this.amAsUrl = url;
+        log("amAsUrl: " + amAsUrl);      //NOI18N
+    }
+    
+    public void execute() throws BuildException {       
+        try {
+            ServerProperties.getInstance(amAsUrl);
+        } catch (ConfiguratorException ex) {
+            log("skip am deploy");
+            return;
+        }
+        
         try {
             deployWSCProviders();
             deployWSPProviders();
@@ -102,17 +108,21 @@ public class AMDeploy extends Task {
     private void deployWSCProviders() {
         Collection<ProviderConfigurator> fileConfigs =
                 ProviderConfigurator.getAllConfigurators(Type.WSC,
-                AccessMethod.FILE, amConfigXmlDir);
+                AccessMethod.FILE, amConfigXmlDir, amAsUrl);
         
         for (ProviderConfigurator fileConfig : fileConfigs) {
             log("Deploying wsc provider " + fileConfig.getProviderName()); //NOI18N
-            log("ServerProperties: " + 
-                    fileConfig.getValue(Configurable.SERVER_PROPERTIES)); //NOI18N
             
+            ServerInstance instance = ServerManager.getDefault().getServerInstance(amAsUrl);
+            ServerProperties properties = instance.getServerProperties();
+            
+            log("ServerProperties: " + properties);     //NOI18N
+        
             ProviderConfigurator dynamicConfig =
                     ProviderConfigurator.getConfigurator(fileConfig.getProviderName(),
                     fileConfig.getType(), AccessMethod.DYNAMIC,
-                    (ServerProperties) fileConfig.getValue(Configurable.SERVER_PROPERTIES));
+                    properties,
+                    amAsUrl);
             
             //
             // This is temporary until we have the appserver fix for FCS.  For
@@ -132,7 +142,7 @@ public class AMDeploy extends Task {
             
             if (isLiberty(fileConfig)) {
                 ArrayList list = new ArrayList();
-                list.add(getDiscoveryConfigurator((ServerProperties) fileConfig.getValue(Configurable.SERVER_PROPERTIES)));
+                list.add(getDiscoveryConfigurator(properties));
                 dynamicConfig.setValue(Configurable.TRUST_AUTHORITY_CONFIG_LIST, list);
             }
             
@@ -144,19 +154,24 @@ public class AMDeploy extends Task {
     private void deployWSPProviders() {
         Collection<ProviderConfigurator> fileConfigs =
                 ProviderConfigurator.getAllConfigurators(Type.WSP,
-                AccessMethod.FILE, amConfigXmlDir);
+                AccessMethod.FILE, amConfigXmlDir, amAsUrl);
         
         for (ProviderConfigurator fileConfig : fileConfigs) {
             log("Deploying wsp provider " + fileConfig.getProviderName()); //NOI18N
-            log("ServerProperties: " + 
-                    fileConfig.getValue(Configurable.SERVER_PROPERTIES)); //NOI18N
+                    
+            ServerInstance instance = ServerManager.getDefault().getServerInstance(amAsUrl);
+            ServerProperties properties = instance.getServerProperties();
+            
+            log("ServerProperties: " + properties);     //NOI18N
+        
             SecurityMechanism secMech =
                     (SecurityMechanism) fileConfig.getValue(Configurable.SECURITY_MECH);
             
             ProviderConfigurator dynamicConfig =
                     ProviderConfigurator.getConfigurator(secMech.getName(),
                     Type.WSP, AccessMethod.DYNAMIC,
-                    (ServerProperties) fileConfig.getValue(Configurable.SERVER_PROPERTIES));
+                    properties,
+                    amAsUrl);
 
             transferConfigurationData(fileConfig, dynamicConfig,
                     wspConfigurables);
@@ -174,9 +189,8 @@ public class AMDeploy extends Task {
                 
                 dynamicConfig.save();
               
-                DiscoveryConfigurator discoveryConfig = getDiscoveryConfigurator(
-                        (ServerProperties) fileConfig.getValue(Configurable.SERVER_PROPERTIES));
-        
+                DiscoveryConfigurator discoveryConfig = getDiscoveryConfigurator(properties);
+       
                 log("Registering provider with Discovery Service"); //NOI18N
                 discoveryConfig.unregisterProvider(dynamicConfig);
                 discoveryConfig.registerProvider(dynamicConfig);

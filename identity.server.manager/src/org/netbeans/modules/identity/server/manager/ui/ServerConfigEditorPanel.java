@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
  * @author  ptliu
  */
 public class ServerConfigEditorPanel extends javax.swing.JPanel
-    implements EditDialogDescriptor.Panel {
+        implements EditDialogDescriptor.Panel {
     
     private static final int MAX_PORT = 65535;
     
@@ -58,43 +58,30 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
     }
     
     public JComponent[] getEditableComponents() {
-        return new JTextField[] {instanceNameTF, hostTF,
+        return new JTextField[] {hostTF,
         portTF, contextRootTF, usernameTF, passwordTF
         };
     }
     
     public void init() {
-        instanceNameTF.setText(instance.getDisplayName());
         hostTF.setText(instance.getHost());
         portTF.setText(instance.getPort());
         contextRootTF.setText(instance.getContextRoot());
         usernameTF.setText(instance.getUserName());
         passwordTF.setText(instance.getPassword());
         
-        if (instance.isDefault()) {
-            instanceNameTF.setEditable(false);
-            hostTF.setEditable(false);
-            portTF.setEditable(false);
-            contextRootTF.setEditable(false);
-            usernameTF.setEditable(false);
-            passwordTF.setEditable(false);
-        }
+        //        if (instance.isLocal()) {
+        //            hostTF.setEditable(false);
+        //            portTF.setEditable(false);
+        //            contextRootTF.setEditable(false);
+        //            usernameTF.setEditable(false);
+        //            passwordTF.setEditable(false);
+        //        } else {
+        hostTF.setEditable(false);
+        //       }
     }
     
     public String checkValues() {
-        String name = instanceNameTF.getText();
-        
-        if (name == null || name.trim().length() == 0) {
-            return NbBundle.getMessage(ServerConfigEditorPanel.class,
-                    "MSG_EnterInstanceName");
-        }
-        
-        if (!name.equals(instance.getDisplayName()) &&
-                ServerManager.getDefault().getServerInstance(name.trim()) != null) {
-            return NbBundle.getMessage(ServerConfigEditorPanel.class,
-                    "MSG_InstanceNameExists");
-        }
-        
         String host = hostTF.getText();
         
         if (host == null || host.trim().length() == 0) {
@@ -102,8 +89,8 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
                     "MSG_EnterHost");
         } else {
             if (host.split("\\s").length > 1) {             //NOI18N
-                 return NbBundle.getMessage(ServerConfigEditorPanel.class,
-                    "MSG_InvalidHost");
+                return NbBundle.getMessage(ServerConfigEditorPanel.class,
+                        "MSG_InvalidHost");
             }
         }
         
@@ -119,7 +106,7 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
             
             if (portNumber < MIN_PORT || portNumber > MAX_PORT) {
                 return NbBundle.getMessage(ServerConfigEditorPanel.class,
-                    "MSG_InvalidPort");
+                        "MSG_InvalidPort");
             }
         } catch (NumberFormatException ex) {
             return NbBundle.getMessage(ServerConfigEditorPanel.class,
@@ -152,23 +139,43 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
     
     
     public void updateInstance() {
-        try {
-            
-            instance.setDisplayName(instanceNameTF.getText());
-        } catch (PropertyVetoException ex) {
-            ex.printStackTrace();
+        boolean isModified = false;
+        
+        String value = hostTF.getText().trim();
+        if (!instance.getHost().equals(value)) {
+            isModified = true;
+            instance.setHost(value);
         }
         
-        instance.setHost(hostTF.getText());
-        instance.setPort(portTF.getText());
-        instance.setContextRoot(contextRootTF.getText());
-        instance.setUserName(usernameTF.getText());
-        instance.setPassword(new String(passwordTF.getPassword()));
+        value = portTF.getText().trim();
+        if (!instance.getPort().equals(value)) {
+            isModified = true;
+            instance.setPort(value);
+        }
         
-        try {        
-            ServerManager.getDefault().writeInstanceToFile(instance);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        value = contextRootTF.getText().trim();
+        if (!instance.getContextRoot().equals(value)) {
+            isModified = true;
+            instance.setContextRoot(value);
+        }
+        
+        value = usernameTF.getText().trim();
+        if (!instance.getUserName().equals(value)) {
+            isModified = true;
+            instance.setUserName(value);
+        }
+        
+        if (!instance.getPassword().equals(passwordTF.getPassword())) {
+            isModified = true;
+            instance.setPassword(new String(passwordTF.getPassword()));
+        }
+        
+        if (isModified) {
+            try {
+                ServerManager.getDefault().writeInstanceToFile(instance);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
@@ -179,8 +186,7 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        nameLabel = new javax.swing.JLabel();
-        instanceNameTF = new javax.swing.JTextField();
+
         hostLabel = new javax.swing.JLabel();
         hostTF = new javax.swing.JTextField();
         portLabel = new javax.swing.JLabel();
@@ -192,23 +198,21 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
         contextRootLabel = new javax.swing.JLabel();
         contextRootTF = new javax.swing.JTextField();
 
-        nameLabel.setLabelFor(instanceNameTF);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_InstanceName"));
-
         hostLabel.setLabelFor(hostTF);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_Host"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, bundle.getString("LBL_Host")); // NOI18N
 
         portLabel.setLabelFor(portTF);
-        org.openide.awt.Mnemonics.setLocalizedText(portLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_Port"));
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, bundle.getString("LBL_Port")); // NOI18N
 
         usernameLabel.setLabelFor(usernameTF);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_AdminUserName"));
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, bundle.getString("LBL_AdminUserName")); // NOI18N
 
         passwordLabel.setLabelFor(passwordTF);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_AdminPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, bundle.getString("LBL_AdminPassword")); // NOI18N
 
         contextRootLabel.setLabelFor(contextRootTF);
-        org.openide.awt.Mnemonics.setLocalizedText(contextRootLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/server/manager/ui/Bundle").getString("LBL_ContextRoot"));
+        org.openide.awt.Mnemonics.setLocalizedText(contextRootLabel, bundle.getString("LBL_ContextRoot")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -217,20 +221,26 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(usernameLabel)
-                    .add(nameLabel)
-                    .add(hostLabel)
-                    .add(passwordLabel)
-                    .add(portLabel)
-                    .add(contextRootLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(hostTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, instanceNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, portTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                    .add(usernameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                    .add(passwordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                    .add(contextRootTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(hostLabel)
+                        .add(53, 53, 53)
+                        .add(hostTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(portLabel)
+                        .add(55, 55, 55)
+                        .add(portTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(contextRootLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(contextRootTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(usernameLabel)
+                        .add(20, 20, 20)
+                        .add(usernameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(passwordLabel)
+                        .add(23, 23, 23)
+                        .add(passwordTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -238,16 +248,12 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameLabel)
-                    .add(instanceNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(hostLabel)
                     .add(hostTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(portTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(portLabel))
+                    .add(portLabel)
+                    .add(portTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(contextRootLabel)
@@ -270,8 +276,6 @@ public class ServerConfigEditorPanel extends javax.swing.JPanel
     private javax.swing.JTextField contextRootTF;
     private javax.swing.JLabel hostLabel;
     private javax.swing.JTextField hostTF;
-    private javax.swing.JTextField instanceNameTF;
-    private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JPasswordField passwordTF;
     private javax.swing.JLabel portLabel;

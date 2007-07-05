@@ -56,6 +56,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.identity.profile.api.bridgeapi.RuntimeBridge;
+import org.netbeans.modules.identity.profile.api.configurator.ConfiguratorException;
+import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
@@ -222,6 +224,19 @@ public class J2eeProjectHelper {
     
     public boolean isServer() {
         return (getService() != null);
+    }
+    
+    public boolean isAMInstalled() {
+        try {
+            ServerProperties.getInstance(getServerID());
+            return true;
+        } catch (ConfiguratorException ex){
+            return false;
+        }
+    }
+    
+    public String getServerID() {
+        return getProvider().getServerInstanceID();
     }
     
     public void refreshBuildScript() {

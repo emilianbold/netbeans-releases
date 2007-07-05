@@ -77,7 +77,7 @@ public interface ProviderConfig {
     
     public boolean isProviderExists();
     
-    public ServerProperties getServerProperties();
+    public ServerProperties getServerProperties(String id);
     
     public void setServerProperties(ServerProperties properties);
     

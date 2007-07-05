@@ -25,7 +25,9 @@
     </Container>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -59,10 +61,10 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="keystoreLocationTF" pref="349" max="32767" attributes="0"/>
-                                  <Component id="keyAliasTF" alignment="0" pref="349" max="32767" attributes="0"/>
-                                  <Component id="keyPasswordTF" alignment="0" pref="349" max="32767" attributes="0"/>
-                                  <Component id="keystorePasswordTF" alignment="0" pref="349" max="32767" attributes="0"/>
+                                  <Component id="keystoreLocationTF" pref="353" max="32767" attributes="0"/>
+                                  <Component id="keyAliasTF" alignment="0" pref="353" max="32767" attributes="0"/>
+                                  <Component id="keyPasswordTF" alignment="0" pref="353" max="32767" attributes="0"/>
+                                  <Component id="keystorePasswordTF" alignment="0" pref="353" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -77,8 +79,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="usernameInfoDescLabel" alignment="0" pref="532" max="32767" attributes="0"/>
-                  <Component id="userNameTableScrollPane" alignment="1" pref="532" max="32767" attributes="0"/>
+                  <Component id="usernameInfoDescLabel" alignment="0" pref="558" max="32767" attributes="0"/>
+                  <Component id="userNameTableScrollPane" alignment="1" pref="558" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -88,23 +90,18 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="signResponseCB" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="certSettingsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="useDefaultKeyStoreCB" min="-2" pref="15" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="keystoreLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="keystoreLocationTF" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="browseButton" alignment="1" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="signResponseCB" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="certSettingsLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="useDefaultKeyStoreCB" min="-2" pref="15" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="keystoreLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keystoreLocationTF" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="keystorePasswordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keystorePasswordTF" alignment="3" min="-2" max="-2" attributes="0"/>

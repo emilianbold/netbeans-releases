@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -221,9 +221,9 @@ public class ProviderConfigImpl implements ProviderConfig {
         return true;
     }
     
-    public ServerProperties getServerProperties() {
+    public ServerProperties getServerProperties(String id) {
         ServerConfigType serverConfigType = amconfig.getValue().getServerConfig();
-        ServerProperties properties = new ServerProperties();
+        ServerProperties properties = ServerProperties.getInstance(id);
         
         if (serverConfigType != null) {
             properties.setProperty(ServerProperties.PROP_ID, serverConfigType.getName());
@@ -237,26 +237,19 @@ public class ProviderConfigImpl implements ProviderConfig {
     }
     
     public void setServerProperties(ServerProperties properties) {
-        if (properties.isDefault()) {
-            //
-            // Never store the default ServerProperties because it can 
-            // be different for each user.
-            //
-            amconfig.getValue().setServerConfig(null);
-        } else {
-            ServerConfigType serverConfigType = amconfig.getValue().getServerConfig();
-            
-            if (serverConfigType == null) {
-                serverConfigType = objFactory.createServerConfigType();
-                amconfig.getValue().setServerConfig(serverConfigType);
-            }
-            
-            serverConfigType.setName(properties.getProperty(ServerProperties.PROP_ID));
-            serverConfigType.setHost(properties.getProperty(ServerProperties.PROP_HOST));
-            serverConfigType.setPort(properties.getProperty(ServerProperties.PROP_PORT));
-            serverConfigType.setUsername(properties.getProperty(ServerProperties.PROP_USERNAME));
-            serverConfigType.setPassword(properties.getProperty(ServerProperties.PROP_PASSWORD));
+        ServerConfigType serverConfigType = amconfig.getValue().getServerConfig();
+        
+        if (serverConfigType == null) {
+            serverConfigType = objFactory.createServerConfigType();
+            amconfig.getValue().setServerConfig(serverConfigType);
         }
+        
+        serverConfigType.setName(properties.getProperty(ServerProperties.PROP_ID));
+        serverConfigType.setHost(properties.getProperty(ServerProperties.PROP_HOST));
+        serverConfigType.setPort(properties.getProperty(ServerProperties.PROP_PORT));
+        serverConfigType.setUsername(properties.getProperty(ServerProperties.PROP_USERNAME));
+        serverConfigType.setPassword(properties.getProperty(ServerProperties.PROP_PASSWORD));
+        
     }
     
     public String getUserName() {
@@ -336,11 +329,11 @@ public class ProviderConfigImpl implements ProviderConfig {
         
         return providerNames;
     }
-
+    
     public void setServiceType(String serviceType) {
         providerConfig.setServiceType(serviceType);
     }
-
+    
     public void setDefaultKeyStore(boolean flag) {
         CertificateSettingsType certType = providerConfig.getCertificateSettings();
         if (certType == null) {
@@ -349,7 +342,7 @@ public class ProviderConfigImpl implements ProviderConfig {
         }
         certType.setDefaultKeystore(flag);
     }
-
+    
     public boolean useDefaultKeyStore() {
         CertificateSettingsType certType = providerConfig.getCertificateSettings();
         
@@ -360,18 +353,18 @@ public class ProviderConfigImpl implements ProviderConfig {
         
         return true;
     }
-
+    
     public String getServiceType() {
         return providerConfig.getServiceType();
     }
-
+    
     public String getKeyPassword() {
         CertificateSettingsType certType = providerConfig.getCertificateSettings();
         if (certType != null)
             return certType.getKeyPassword();
         return null;
     }
-
+    
     public void setTrustAuthorityConfigList(List<TrustAuthorityConfig> trustAuthConfigs) {
         //noop
     }

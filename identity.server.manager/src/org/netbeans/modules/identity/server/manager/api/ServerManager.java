@@ -27,9 +27,7 @@
 
 package org.netbeans.modules.identity.server.manager.api;
 
-import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,10 +40,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+
 
 /**
- * This class manages multiples instances of ServerInstance. 
+ * This class manages multiples instances of ServerInstance.
  *
  * Created on June 14, 2006, 1:05 AM
  *
@@ -54,18 +52,12 @@ import org.openide.util.NbBundle;
 public class ServerManager {
     private static String DIR_CONFIGURED_SERVERS = "/Identity/ConfiguredServers"; //NOI18N
     
-    public static final String DEFAULT_ID = "Default";              //NOI18N
-    
-    //public static final String DEFAULT_DISPLAY_NAME = "Default Instance";   //NOI18N
-    
     private static ServerManager instance;
     
     private Map<String, ServerInstance> instancesMap;
     
     private Set<ServerInstanceListener> listeners;
     
-    private ServerInstance defaultServerInstance;
-   
     /** Creates a new instance of ServerManager */
     private ServerManager() {
         init();
@@ -83,9 +75,6 @@ public class ServerManager {
         listeners = new HashSet<ServerInstanceListener>();
         instancesMap = new HashMap<String, ServerInstance>();
         
-        defaultServerInstance = createDefaultServerInstance();
-        addServerInstanceInternal(defaultServerInstance);
-        
         FileObject dir = getConfiguredServersDirectory();
         //dir.addFileChangeListener(new InstanceInstallListener());
         FileObject[] ch = dir.getChildren();
@@ -97,21 +86,34 @@ public class ServerManager {
         }
     }
     
-    private ServerInstance createDefaultServerInstance() {
-        ServerInstance instance = new ServerInstance();
-        ServerProperties properties = new ServerProperties();
+    public Collection<ServerInstance> getServerInstances() {
+        return Collections.unmodifiableCollection(instancesMap.values());
+    }
+    
+    public ServerInstance getServerInstance(ServerProperties properties) {
+        String id = properties.getProperty(ServerProperties.PROP_ID);
         
-        instance.setID(DEFAULT_ID);
+        ServerInstance instance = instancesMap.get(id);
         
-        try {
-            instance.setDisplayName(NbBundle.getMessage(ServerManager.class, 
-                    "LBL_DefaultInstanceName")); //NOI18N
-        } catch (PropertyVetoException ex) {
-            ex.printStackTrace();
+        if (instance == null) {
+            instance = createServerInstance(properties);
+            addServerInstance(instance);
         }
         
-        instance.setIsDefault(true);
+        return instance;
+    }
+    
+    public ServerInstance getServerInstance(String id) {
+        ServerProperties properties = ServerProperties.getInstance(id);
         
+        return getServerInstance(properties);
+        
+    }
+    
+    private ServerInstance createServerInstance(ServerProperties properties) {
+        ServerInstance instance = new ServerInstance();
+        
+        instance.setID(properties.getProperty(ServerProperties.PROP_ID));
         instance.setHost(properties.getProperty(ServerProperties.PROP_HOST));
         instance.setPort(properties.getProperty(ServerProperties.PROP_PORT));
         instance.setContextRoot(properties.getProperty(ServerProperties.PROP_CONTEXT_ROOT));
@@ -121,60 +123,12 @@ public class ServerManager {
         return instance;
     }
     
-    public ServerInstance getDefaultServerInstance() {
-        return defaultServerInstance;
-    }
-    
-    public Collection<ServerInstance> getServerInstances() {
-        return Collections.unmodifiableCollection(instancesMap.values());
-    }
-    
-    public ServerInstance getSeverInstance(ServerProperties properties) {
-        String displayName = properties.getProperty(ServerProperties.PROP_ID);
-        
-        return getServerInstance(displayName);
-    }
-    
-    public ServerInstance getServerInstance(String displayName) {
-        Collection<ServerInstance> instances = getServerInstances();
-        
-        for (ServerInstance instance : instances) {
-            if (displayName.equals(instance.getDisplayName())) {
-                return instance;
-            }
-        }
-        
-        //return getDefaultServerInstance();
-        return null;
-    }
-   
-    public Collection<ServerProperties> getAllServerProperties() {
-        Collection<ServerInstance> instances = getServerInstances();
-        Collection<ServerProperties> result = new ArrayList<ServerProperties>();
-        
-        for (ServerInstance instance : instances) {
-            result.add(instance.getServerProperties());
-        }
-        
-        return result;
-    }
-    
     public boolean addServerInstance(ServerInstance instance) {
-        if (serverInstanceExists(instance)) {
-            // TODO:  Need to report error
-            return false;
-        }
-        try {
-            writeInstanceToFile(instance);
-            addServerInstanceInternal(instance);
-            fireServerInstanceAdded(instance);
-            
-            return true;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        //writeInstanceToFile(instance);
+        addServerInstanceInternal(instance);
+        fireServerInstanceAdded(instance);
         
-        return false;
+        return true;
     }
     
     public void removeServerInstance(ServerInstance instance) {
@@ -230,27 +184,20 @@ public class ServerManager {
     }
     
     private ServerInstance convertToServerInstance(FileObject fObj) {
-        try {
-            ServerInstance instance = new ServerInstance();
-            
-            instance.setID((String) fObj.getAttribute(ServerInstance.PROP_ID));
-            instance.setDisplayName((String) fObj.getAttribute(ServerInstance.PROP_DISPLAY_NAME));
-            instance.setHost((String) fObj.getAttribute(ServerInstance.PROP_HOST));
-            instance.setPort((String) fObj.getAttribute(ServerInstance.PROP_PORT));
-            instance.setContextRoot((String) fObj.getAttribute(ServerInstance.PROP_CONTEXT_ROOT));
-            instance.setUserName((String) fObj.getAttribute(ServerInstance.PROP_USERNAME));
-            instance.setPassword((String) fObj.getAttribute(ServerInstance.PROP_PASSWORD));
-            
-            return instance;
-        } catch (PropertyVetoException ex) {
-            ex.printStackTrace();
-        }
+        ServerInstance instance = new ServerInstance();
         
-        return null;
+        instance.setID((String) fObj.getAttribute(ServerInstance.PROP_ID));
+        instance.setHost((String) fObj.getAttribute(ServerInstance.PROP_HOST));
+        instance.setPort((String) fObj.getAttribute(ServerInstance.PROP_PORT));
+        instance.setContextRoot((String) fObj.getAttribute(ServerInstance.PROP_CONTEXT_ROOT));
+        instance.setUserName((String) fObj.getAttribute(ServerInstance.PROP_USERNAME));
+        instance.setPassword((String) fObj.getAttribute(ServerInstance.PROP_PASSWORD));
+        
+        return instance;
     }
     
     public synchronized void writeInstanceToFile(ServerInstance instance)
-    throws IOException {
+            throws IOException {
         FileObject dir = getConfiguredServersDirectory();
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;
@@ -266,11 +213,9 @@ public class ServerManager {
         if (instanceFO == null) {
             String fileName = FileUtil.findFreeFileName(dir, "instance", null);  //NOI18N
             instanceFO = dir.createData(fileName);
-            instance.setID(fileName);
         }
         
         instanceFO.setAttribute(ServerInstance.PROP_ID, instance.getID());
-        instanceFO.setAttribute(ServerInstance.PROP_DISPLAY_NAME, instance.getDisplayName());
         instanceFO.setAttribute(ServerInstance.PROP_HOST, instance.getHost());
         instanceFO.setAttribute(ServerInstance.PROP_PORT, instance.getPort());
         instanceFO.setAttribute(ServerInstance.PROP_CONTEXT_ROOT, instance.getContextRoot());
@@ -279,7 +224,7 @@ public class ServerManager {
     }
     
     private void removeInstanceFromFile(ServerInstance instance)
-    throws IOException {
+            throws IOException {
         FileObject dir = getConfiguredServersDirectory();
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;

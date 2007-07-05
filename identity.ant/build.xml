@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
      <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="ant-extra" depends="init">
+        <echo message="ant.jar = ${ant.jar}"/>
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
             <classpath>

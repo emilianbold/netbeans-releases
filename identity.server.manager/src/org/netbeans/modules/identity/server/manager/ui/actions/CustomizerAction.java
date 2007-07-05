@@ -52,7 +52,7 @@ public class CustomizerAction extends NodeAction {
         final ServerConfigEditorPanel panel = new ServerConfigEditorPanel(instance);
         EditDialogDescriptor descriptor = new EditDialogDescriptor(
                 panel, 
-                instance.getDisplayName(),
+                NbBundle.getMessage(CustomizerAction.class, "LBL_ServerInstanceNode"),
                 false,
                 panel.getEditableComponents(),
                 getHelpCtx()) {

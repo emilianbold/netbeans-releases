@@ -19,9 +19,8 @@
 package org.netbeans.modules.identity.profile.api.configurator;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Properties;
 import org.openide.util.NbBundle;
 
@@ -61,64 +60,58 @@ public class ServerProperties extends Properties implements Cloneable {
             "org.netbeans.modules.identity.profile.api.configurator.libertydiscoserviceurl"; //NOI18N
     
     public static final String PROP_AS_ROOT = "org.netbeans.modules.identity.profile.api.configurator.asroot";  //NOI18N
-    
-    private static final String DEFAULT_ID = "Default";         //NOI18N
-    
-    private static final String DEFAULT_PROTOCOL = "http";      //NOI18N
-    
-    private static final String DEFAULT_HOST = "localhost";     //NOI18N
-    
-    private static final String DEFAULT_PORT = "8080";      //NOI18N
-    
-    private static final String DEFAULT_USERNAME = "amadmin";   //NOI18N
-    
-    private static final String DEFAULT_PASSWORD = "admin123";  //NOI18N
-    
-    private static final String AM_CONFIG_FILE = "AM_CONFIG_FILE";   //NOI18N
-    
-    private static final String AS_DOMAINS = "/domains";  //NOI18N
-    
+  
     private static final String NAMING_SERVICE = "/namingservice";  //NOI18N
     
     private static final String IS_ALIVE_JSP = "/isAlive.jsp";      //NOI18N
     
     private static final String LIBERTY_DISCO_SERVICE = "/Liberty/disco";   //NOI18N
     
+    private static final String AM_CONFIG_FILE = "/domains/domain1/config/AMConfig.properties"; //NOI18N
     
-    private boolean isDefault;
+    private static HashMap<String, ServerProperties> instanceMap = new HashMap<String, ServerProperties>();
+    
+    public synchronized static ServerProperties getInstance(String id) {
+        ServerProperties instance = instanceMap.get(id);
+        
+        if (instance == null) {
+            instance = new ServerProperties(id);
+            instanceMap.put(id, instance);
+        }
+        
+        return instance;
+    }
     
     /** Creates a new instance of ServerProperties */
-    public ServerProperties() throws ConfiguratorException {
+    private ServerProperties(String id) throws ConfiguratorException {
         super();
         
-        String amConfigFile = System.getProperty(AM_CONFIG_FILE);
-        //System.out.println("amConfigFile = " + amConfigFile);
+        init(id);
+    }
+    
+    private void init(String id) {
+        String asRoot = id.substring(1, id.indexOf(']'));    
+        String amConfigFile = asRoot + AM_CONFIG_FILE;       
+        String[] segments = id.substring(id.indexOf(']')+1).split(":");     //NOI18N
+        String host = segments[4];
         
         // RESOLVE:
         // Need to figure a way to report errors.
         // close the input stream?
         // should cache
-        if (amConfigFile != null && amConfigFile.trim().length() != 0) {
-            try {
-                load(new FileInputStream(amConfigFile.trim()));
-                setProperty(PROP_AM_CONFIG_FILE, amConfigFile);
-                setProperty(PROP_AS_ROOT, getASRoot(amConfigFile));
-                setProperty(PROP_ID, DEFAULT_ID);
-                setProperty(PROP_CONTEXT_ROOT, getContextRoot());
-                updateURLs();
-                isDefault = true;
-            } catch (Exception ex) {
-                throw new ConfiguratorException(NbBundle.getMessage(ServerProperties.class,
-                    "TXT_InvalidAMConfigFile"));
-            }
-        } else {
+        try {
+            load(new FileInputStream(amConfigFile.trim()));
+            setProperty(PROP_AM_CONFIG_FILE, amConfigFile);
+            setProperty(PROP_AS_ROOT, asRoot);
+            setProperty(PROP_ID, id);
+            setProperty(PROP_CONTEXT_ROOT, getContextRoot());
+            setProperty(PROP_HOST, host);
+            updateURLs();
+        } catch (Exception ex) {
             throw new ConfiguratorException(NbBundle.getMessage(ServerProperties.class,
                     "TXT_InvalidAMConfigFile"));
         }
-    }
-    
-    public boolean isDefault() {
-        return isDefault;
+        
     }
     
     public Object setProperty(String key, String value) {
@@ -133,9 +126,7 @@ public class ServerProperties extends Properties implements Cloneable {
         if (key.equals(PROP_PORT) || key.equals(PROP_HOST) ||
                 key.equals(PROP_PROTOCOL) || key.equals(PROP_CONTEXT_ROOT)) {
             updateURLs();
-            isDefault = false;
         } else if (key.equals(PROP_USERNAME) || key.equals(PROP_PASSWORD)) {
-            isDefault = false;
         }
     }
     
@@ -167,17 +158,6 @@ public class ServerProperties extends Properties implements Cloneable {
         String contextRoot = adminURL.substring(adminURL.lastIndexOf('/') + 1);
         
         return contextRoot;
-    }
-    
-    private String getASRoot(String amConfigFile) {
-        amConfigFile = amConfigFile.replace('\\', '/');
-        int index = amConfigFile.indexOf(AS_DOMAINS);
-        
-        if (index != -1) {
-            return amConfigFile.substring(0, index);
-        }
-        
-        return null;
     }
     
     public boolean equals(Object obj) {

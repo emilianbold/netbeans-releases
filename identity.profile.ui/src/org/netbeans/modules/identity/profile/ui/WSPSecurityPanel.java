@@ -59,7 +59,7 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
         
         try {
             configurator = ProviderConfigurator.getConfigurator(helper.getServiceDescriptionName(),
-                    Type.WSP, AccessMethod.FILE, helper.getConfigPath());
+                    Type.WSP, AccessMethod.FILE, helper.getConfigPath(), helper.getServerID());
         } catch (ConfiguratorException ex) {
             errorLabel.setText(ex.getMessage());
             disabled = true;
@@ -73,14 +73,11 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             }
             
             configurator.addModifier(Configurable.SECURITY_MECH, requestSecMechCB,
-                    SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms());
+                    configurator.getSecMechHelper().getAllWSPSecurityMechanisms());
             //(helper.getVersion() == Version.VERSION_1_4) ?
             //    SecurityMechanismHelper.getDefault().getAllWSPSecurityMechanisms() :
             //SecurityMechanismHelper.getDefault().getAllMessageLevelSecurityMechanisms());
             
-            //configurator.addErrorComponent(errorLabel);
-            configurator.addModifier(Configurable.SERVER_PROPERTIES, serverCB,
-                    ServerManager.getDefault().getAllServerProperties());
         }
         
         updateVisualState();
@@ -127,9 +124,6 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             
             certSettingsInfoLabel.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));  //NOI18N
             certSettingsInfoLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("Label.foreground"));  //NOI18N
-            
-            serverLabel.setEnabled(true);
-            serverCB.setEnabled(true);
         } else {
             secMechLabel.setEnabled(false);
             requestLabel.setEnabled(false);
@@ -140,9 +134,6 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             
             certSettingsInfoLabel.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.disabledShadow"));  //NOI18N
             certSettingsInfoLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground")); //NOI18N
-            
-            serverLabel.setEnabled(false);
-            serverCB.setEnabled(false);
         }
         
         SecurityMechanism secMech = (SecurityMechanism) requestSecMechCB.getSelectedItem();
@@ -165,9 +156,7 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
         
         certSettingsInfoLabel.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.disabledShadow"));  //NOI18N
         certSettingsInfoLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground")); //NOI18N
-        
-        serverLabel.setEnabled(false);
-        serverCB.setEnabled(false);   
+  
         userNameInfoLabel.setVisible(false);
     }
     
@@ -197,18 +186,16 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jTabbedPane1 = new javax.swing.JTabbedPane();
         enableSecurityCB = new javax.swing.JCheckBox();
-        serverLabel = new javax.swing.JLabel();
         secMechLabel = new javax.swing.JLabel();
         requestLabel = new javax.swing.JLabel();
         userNameInfoLabel = new javax.swing.JLabel();
-        serverCB = new javax.swing.JComboBox();
         requestSecMechCB = new javax.swing.JComboBox();
         certSettingsInfoLabel = new javax.swing.JLabel();
         certSettingsLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        jSeparator2 = new javax.swing.JSeparator();
         errorLabel = new javax.swing.JLabel();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
@@ -226,7 +213,8 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(enableSecurityCB, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_EnableSecurity"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(enableSecurityCB, bundle.getString("LBL_EnableSecurity")); // NOI18N
         enableSecurityCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableSecurityCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
         enableSecurityCB.setOpaque(false);
@@ -236,15 +224,12 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             }
         });
 
-        serverLabel.setLabelFor(serverCB);
-        org.openide.awt.Mnemonics.setLocalizedText(serverLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Server"));
-
-        secMechLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_SecurityMechanisms"));
+        secMechLabel.setText(bundle.getString("LBL_SecurityMechanisms")); // NOI18N
 
         requestLabel.setLabelFor(requestSecMechCB);
-        org.openide.awt.Mnemonics.setLocalizedText(requestLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_Request"));
+        org.openide.awt.Mnemonics.setLocalizedText(requestLabel, bundle.getString("LBL_Request")); // NOI18N
 
-        userNameInfoLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("MSG_UserNameInfo"));
+        userNameInfoLabel.setText(bundle.getString("MSG_UserNameInfo")); // NOI18N
 
         requestSecMechCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -252,10 +237,10 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
             }
         });
 
-        certSettingsInfoLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("MSG_CertificateSettingsInfo"));
+        certSettingsInfoLabel.setText(bundle.getString("MSG_CertificateSettingsInfo")); // NOI18N
         certSettingsInfoLabel.setFocusable(false);
 
-        certSettingsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/identity/profile/ui/Bundle").getString("LBL_CertificateSettings"));
+        certSettingsLabel.setText(bundle.getString("LBL_CertificateSettings")); // NOI18N
 
         errorLabel.setForeground(new java.awt.Color(255, 0, 0));
         errorLabel.setText("Error:");
@@ -264,12 +249,15 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(20, 20, 20)
+                        .add(certSettingsInfoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(30, 30, 30)
+                        .add(userNameInfoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(enableSecurityCB)
@@ -279,24 +267,13 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
                                 .add(requestLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(requestSecMechCB, 0, 321, Short.MAX_VALUE))))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(serverLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(serverCB, 0, 339, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(certSettingsLabel))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(certSettingsInfoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(30, 30, 30)
-                        .add(userNameInfoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(errorLabel)))
                 .addContainerGap())
@@ -313,22 +290,16 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
                     .add(requestLabel)
                     .add(requestSecMechCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(userNameInfoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(userNameInfoLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(certSettingsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(certSettingsInfoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(7, 7, 7)
+                .add(certSettingsInfoLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(serverLabel)
-                    .add(serverCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(errorLabel)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -375,13 +346,10 @@ public class WSPSecurityPanel extends SectionNodeInnerPanel {
     private javax.swing.JCheckBox enableSecurityCB;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel requestLabel;
     private javax.swing.JComboBox requestSecMechCB;
     private javax.swing.JLabel secMechLabel;
-    private javax.swing.JComboBox serverCB;
-    private javax.swing.JLabel serverLabel;
     private javax.swing.JLabel userNameInfoLabel;
     // End of variables declaration//GEN-END:variables
     

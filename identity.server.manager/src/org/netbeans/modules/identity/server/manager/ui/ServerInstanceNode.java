@@ -19,12 +19,9 @@
 
 package org.netbeans.modules.identity.server.manager.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.modules.identity.server.manager.api.ServerInstance;
 import org.netbeans.modules.identity.server.manager.ui.actions.CustomizerAction;
-import org.netbeans.modules.identity.server.manager.ui.actions.RemoveServerInstanceAction;
 import org.netbeans.modules.identity.server.manager.ui.actions.ViewAdminConsoleAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -59,29 +56,19 @@ public class ServerInstanceNode extends AbstractNode {
         this.instance = instance;
         
         setName(instance.getID());
-        setDisplayName(instance.getDisplayName());
+        setDisplayName(NbBundle.getMessage(ServerInstanceNode.class,
+                "LBL_ServerInstanceNode"));
         setIconBaseWithExtension(SERVER_INSTANCE_ICON);
         setShortDescription(NbBundle.getMessage(ServerInstanceNode.class,
                 "DESC_ServerInstanceNode", instance.getHost()));
-        
-        instance.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                refreshNode();
-               
-            }
-        });
     }
-    
-    private void refreshNode() {
-        setDisplayName(instance.getDisplayName());
-    }
-    
+     
     public Action[] getActions(boolean context) {
         Action[] actions = new Action[] {
             SystemAction.get(ViewAdminConsoleAction.class),
             null,
-            SystemAction.get(RemoveServerInstanceAction.class),
-            null,
+            //SystemAction.get(RemoveServerInstanceAction.class),
+            //null,
             SystemAction.get(CustomizerAction.class)
         };
         
