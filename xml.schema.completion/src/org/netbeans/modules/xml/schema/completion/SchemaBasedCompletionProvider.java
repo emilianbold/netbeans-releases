@@ -48,10 +48,7 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        FileObject primaryFile = getPrimaryFile();
-//        if(primaryFile == null || primaryFile.getExt().equals("xsd")) //NOI18N
-//            return null;
-        
+        FileObject primaryFile = getPrimaryFile();        
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE)
             return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);
         
@@ -62,7 +59,7 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
         TopComponent activatedTC = TopComponent .getRegistry().getActivated();
         if(activatedTC == null)
             return null;
-        DataObject activeFile = (DataObject)activatedTC.getLookup().lookup(DataObject.class);
+        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
         if(activeFile == null)
             return null;
         

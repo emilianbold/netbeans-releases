@@ -179,6 +179,8 @@ public class CompletionContextImpl extends CompletionContext {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
+                    if(chars != null && chars.startsWith("<"))
+                        typedChars = chars.substring(1);
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element);
                     break;
