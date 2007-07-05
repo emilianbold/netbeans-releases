@@ -21,10 +21,12 @@ package gui.action;
 
 import footprint.VWPFootprintUtilities;
 import gui.window.WebFormDesignerOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -115,6 +117,8 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);        
         wizard_location.waitClosed();
+        waitProjectCreatingDialogClosed();
+
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
         
 
@@ -122,7 +126,17 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
 
         return null;
     }
-    
+    private void waitProjectCreatingDialogClosed()
+    {
+       String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
+       try {
+           NbDialogOperator dlg = new NbDialogOperator(dlgName);
+           dlg.waitClosed();
+       } catch(TimeoutExpiredException tex) {
+           //
+       }
+       
+    }    
     public void close(){
         log("::close");
 
