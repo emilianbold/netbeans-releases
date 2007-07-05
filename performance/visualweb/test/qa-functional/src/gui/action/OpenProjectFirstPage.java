@@ -39,6 +39,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     
     private Node openNode;
     private String targetProject;
+    private ProjectsTabOperator pto;
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
@@ -70,22 +71,30 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     public void initialize(){
         log("::initialize::");
         EditorOperator.closeDiscardAll();
-        
+        pto = ProjectsTabOperator.invoke();        
         //Workaround for "Update data sources" dialog
         try {
             new JDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.dataconnectivity.utils.Bundle", "MSG_Update_Datasources_Title")).close();
         } catch (TimeoutExpiredException tex) {
             // Do nothing
+            log(tex.toString());
         }        
     }
     
     public void prepare(){
         log("::prepare");
-        
-        openNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + '|' + "Page1.jsp");
+        long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        try {
+            openNode = new Node(pto.getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + '|' + "Page1.jsp");
+        } catch(TimeoutExpiredException tex) {
+            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
+            throw new Error("Cannot find expected node because of Timeout");
+        }
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
         
         if (this.openNode == null) {
-            throw new Error("Cannot find expected node ");
+            throw new Error("Cannot find expected node");
         }
         openNode.select();
     }
