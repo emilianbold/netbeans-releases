@@ -218,7 +218,7 @@ public abstract class NativeUtils {
             }
         }
         
-        LogManager.logIndent("... successfully loaded the library");
+        LogManager.logUnindent("... successfully loaded the library");
     }
     
     protected void initializeForbiddenFiles(String ... filepaths) {
