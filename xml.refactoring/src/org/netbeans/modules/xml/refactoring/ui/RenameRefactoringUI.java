@@ -62,7 +62,7 @@ public class RenameRefactoringUI implements org.netbeans.modules.refactoring.spi
     
     private WhereUsedQuery query;
     private WhereUsedView view;
-    private String newName = "", oldName = "";  //NOI18N
+    private String newName = "", oldName = "", displayName = "";  //NOI18N
     private RenamePanel panel;
     private Nameable target;
     private boolean editable;
@@ -74,6 +74,22 @@ public class RenameRefactoringUI implements org.netbeans.modules.refactoring.spi
     public RenameRefactoringUI(Nameable ref){
         this.target = ref;
         oldName = ref.getName();
+        displayName = oldName;
+        this.editable = true;
+        refactoring = new RenameRefactoring(Lookups.singleton(ref));
+        XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)ref, refactoring);
+        refactoring.getContext().add(transaction);
+        //TEMP solution :: ask jbecika if renameRefactring can have a getOldName() 
+        refactoring.getContext().add(oldName);
+    }
+    
+    public RenameRefactoringUI(Nameable ref, String newName){
+        this.target = ref;
+        oldName = ref.getName();
+        if(displayName != null)
+            displayName = newName;
+        else
+            displayName = oldName;
         this.editable = true;
         refactoring = new RenameRefactoring(Lookups.singleton(ref));
         XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)ref, refactoring);
@@ -117,7 +133,7 @@ public class RenameRefactoringUI implements org.netbeans.modules.refactoring.spi
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
          if (panel == null) {
             String name = oldName;
-            panel = new RenamePanel(oldName, 
+            panel = new RenamePanel(displayName, 
                     parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), 
                     editable, 
                     false);

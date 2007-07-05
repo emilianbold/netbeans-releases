@@ -394,7 +394,11 @@ public class SharedUtils {
     }
       
       public static void showRenameRefactoringUI(Nameable target) {
-          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new RenameRefactoringUI(target);
+          showRenameRefactoringUI(target, null);
+    }
+      
+       public static void showRenameRefactoringUI(Nameable target, String newName) {
+          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new RenameRefactoringUI(target, newName);
           TopComponent activetc = TopComponent.getRegistry().getActivated();
           if (activetc instanceof CloneableEditorSupport.Pane) {
               //new RefactoringPanel(ui, activetc);
@@ -515,7 +519,11 @@ public class SharedUtils {
             DialogDisplayer.getDefault().notify(nd);
         } catch (CannotRefactorException cre) {
             Referenceable target = request.getRefactoringSource().lookup(Referenceable.class);
-            showRenameRefactoringUI((Nameable)target);
+            
+            if(request instanceof RenameRefactoring) {
+                String newName = ((RenameRefactoring)request).getNewName();
+                showRenameRefactoringUI((Nameable)target, newName);
+            }
         }
     }
     
