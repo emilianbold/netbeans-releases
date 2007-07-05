@@ -22,22 +22,22 @@ package org.netbeans.installer.utils;
 
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.security.Certificate;
 import java.security.Principal;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.UiMode;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
-import javax.swing.JProgressBar;
-import org.netbeans.installer.utils.exceptions.InitializationException;
 
 /**
  *
@@ -225,8 +225,9 @@ public final class UiUtils {
         if (lookAndFeelInitialized) {
             return;
         }
+        
         try {
-            LogManager.log("... initializing L&F");
+            LogManager.log("... initializing look and feel");
             LogManager.indent();
             switch (UiMode.getCurrentUiMode()) {
                 case SWING:
@@ -238,7 +239,10 @@ public final class UiUtils {
                     
                     LogManager.log("... class name: " + className);
                     
-                    JFrame.setDefaultLookAndFeelDecorated(true);
+                    if (Boolean.getBoolean(LAF_DECORATED_WINDOWS_PROPERTY)) {
+                        JFrame.setDefaultLookAndFeelDecorated(true);
+                    }
+                    
                     try {
                         try {
                             // this helps to avoid some GTK L&F bugs for some locales
@@ -385,4 +389,12 @@ public final class UiUtils {
      */
     public static final String LAF_CLASS_NAME_PROPERTY =
             "nbi.look.and.feel"; // NOI18N
+    
+    /**
+     * Name of the system property, which tells the UiUtils whether the wizard
+     * windows should be decorated by the current look and feel or the system
+     * window manager.
+     */
+    public static final String LAF_DECORATED_WINDOWS_PROPERTY = 
+            "nbi.look.and.feel.decorate.windows"; // NOI18N
 }
