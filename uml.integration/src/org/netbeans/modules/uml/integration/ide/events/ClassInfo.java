@@ -668,7 +668,7 @@ public class ClassInfo extends ElementInfo
 
                 // Class is generalizing one of its inner classes;
                 // UML allows this, but Java does not
-                else if (JavaClassUtils.getOuterMostOwner(general) == clazz)
+                else if (JavaClassUtils.isAnOwner(clazz, general))
                     return null;
                     
                 else
@@ -704,8 +704,7 @@ public class ClassInfo extends ElementInfo
                     
                     // Interface is implementing one of its inner interfaces;
                     // UML allows this, but Java does not, so just ignore it
-                    if (JavaClassUtils.getOuterMostOwner(
-                        (IClassifier)interf) == clazz)
+                    if (JavaClassUtils.isAnOwner(clazz, (IClassifier)interf))
                     {
                         continue;
                     }
@@ -732,8 +731,7 @@ public class ClassInfo extends ElementInfo
                     
                     // Class is implementing one of its inner interfaces;
                     // UML allows this, but Java does not, so just ignore it
-                    if (JavaClassUtils.getOuterMostOwner(
-                        (IClassifier)interf) == clazz)
+                    if (JavaClassUtils.isAnOwner(clazz, (IClassifier)interf))
                     {
                         continue;
                     }

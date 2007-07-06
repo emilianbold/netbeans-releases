@@ -1259,4 +1259,35 @@ public class JavaClassUtils {
         else
             return null;
     }
+
+    public static boolean isAnOwner(IClassifier elem, IClassifier clazz)
+    {
+	if (elem == null || clazz == null) 
+	{
+	    return false;
+	}
+
+        IElement owner = clazz.getOwner();
+        
+        if (owner == null || owner instanceof IProject ||
+            owner instanceof IPackage)
+        {
+            return false;
+        }
+        
+        else if (owner instanceof IClassifier) 
+	{
+	    if (elem.equals((IClassifier)owner)) 
+	    {
+		return true;
+	    }
+	    else 
+	    {
+		return isAnOwner(elem, (IClassifier)owner);
+	    }
+	}
+	else 
+            return false;
+    }
+
 }
