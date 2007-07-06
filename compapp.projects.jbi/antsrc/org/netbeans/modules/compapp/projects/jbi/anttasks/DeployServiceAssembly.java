@@ -19,31 +19,21 @@
 
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
-import java.io.File;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.jbiserver.JbiClassLoader;
 import org.netbeans.modules.compapp.jbiserver.settings.Instance;
-import org.netbeans.modules.compapp.jbiserver.settings.ReadSettings;
-import org.netbeans.modules.compapp.jbiserver.connectors.HTTPServerConnector;
 import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIServiceAssemblyDocument;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIServiceAssemblyStatus;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.InputSource;
 
 /**
@@ -200,6 +190,16 @@ public class DeployServiceAssembly extends Task {
      *             DOCUMENT ME!
      */
     public void execute() throws BuildException {
+        if (serviceAssemblyID != null && 
+                serviceAssemblyID.equals("${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}")) {
+            String msg = "Unknown Service Assembly ID: " + serviceAssemblyID + 
+                    System.getProperty("line.separator") +
+                    "Please re-open your CompApp project using the latest NetBeans to refresh your CompApp project." +
+                    System.getProperty("line.separator") +
+                    "See http://www.netbeans.org/issues/show_bug.cgi?id=108702 for more info."; 
+            throw new BuildException(msg);
+        }
+        
         String nbUserDir = getNetBeansUserDir();
         String j2eeServerInstance = getJ2eeServerInstance();
         
