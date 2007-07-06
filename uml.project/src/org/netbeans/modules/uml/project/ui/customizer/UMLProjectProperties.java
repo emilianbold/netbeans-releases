@@ -74,6 +74,7 @@ public class UMLProjectProperties
     public static final String CODE_GEN_TEMPLATES = "code.gen.templates"; // NOI18N
     public static final String CODE_GEN_BACKUP_SOURCES = "code.gen.backup.sources"; // NOI18N
     public static final String CODE_GEN_USE_MARKERS = "code.gen.use.markers"; // NOI18N
+    public static final String CODE_GEN_ADD_MARKERS = "code.gen.add.markers"; // NOI18N
     public static final String CODE_GEN_SHOW_DIALOG = "code.gen.show.dialog"; // NOI18N
     
     public static final String DEFAULT_JAVA_TEMPLATES = 
@@ -91,6 +92,7 @@ public class UMLProjectProperties
     public String codeGenFolderLocation;
     public String codeGenBackupSources;
     public String codeGenUseMarkers;
+    public String codeGenAddMarkers;
     public String codeGenShowDialog;
     
     UMLImportsSupport importsSupport;
@@ -171,6 +173,7 @@ public class UMLProjectProperties
         codeGenTemplates = projectProperties.get(CODE_GEN_TEMPLATES);
         codeGenBackupSources = projectProperties.get(CODE_GEN_BACKUP_SOURCES);
         codeGenUseMarkers = projectProperties.get(CODE_GEN_USE_MARKERS);
+        codeGenAddMarkers = projectProperties.get(CODE_GEN_ADD_MARKERS);
         codeGenShowDialog = projectProperties.get(CODE_GEN_SHOW_DIALOG);
     }
     
@@ -251,6 +254,9 @@ public class UMLProjectProperties
         
         if (codeGenUseMarkers != null)
             projectProperties.setProperty(CODE_GEN_USE_MARKERS, codeGenUseMarkers);
+
+        if (codeGenAddMarkers != null)
+            projectProperties.setProperty(CODE_GEN_ADD_MARKERS, codeGenAddMarkers);
 
         if (codeGenShowDialog != null)
             projectProperties.setProperty(CODE_GEN_SHOW_DIALOG, codeGenShowDialog);
@@ -477,6 +483,21 @@ public class UMLProjectProperties
         codeGenUseMarkers = String.valueOf(val);
     }
 
+    public boolean isCodeGenAddMarkers()
+    {
+        String val = evaluator.getProperty(CODE_GEN_ADD_MARKERS);
+        
+        if (val == null)
+            val = "false";
+        
+        return Boolean.valueOf(val);
+    }
+
+    public void setCodeGenAddMarkers(boolean val)
+    {
+        codeGenAddMarkers = String.valueOf(val);
+    }
+
     public boolean isCodeGenShowDialog()
     {
         String val = evaluator.getProperty(CODE_GEN_SHOW_DIALOG);
@@ -495,9 +516,6 @@ public class UMLProjectProperties
     
     public File getJavaSourceRootFolder()
     {
-        if (referencedJavaSourceRootsModel == null)
-            return null;
-        
         if (referencedJavaSourceRootsModel == null ||
             referencedJavaSourceRootsModel.getSourceGroups().length == 0)
         {

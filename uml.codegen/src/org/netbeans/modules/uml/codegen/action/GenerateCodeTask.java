@@ -43,6 +43,7 @@ public class GenerateCodeTask extends AbstractNBTask
     private final static int SUBTASK_TOT = 1;
     private boolean backup = true;
     private boolean generateMarkers = true;
+    private boolean addMarkers = false;
     
     //Kris Richards - this is no longer an option. Set to default value.
     public final static String ATTR_PREFIX = "m"; // NOI18N
@@ -53,7 +54,8 @@ public class GenerateCodeTask extends AbstractNBTask
         String umlProjectName, 
         String destFolderName,
         boolean backupFiles,
-	boolean generateMarkers)
+        boolean generateMarkers,
+	boolean addMarkers)
     {
         super(settings);
         elements = selElements;
@@ -61,6 +63,7 @@ public class GenerateCodeTask extends AbstractNBTask
         sourceFolderName = destFolderName;
         backup = backupFiles;
 	this.generateMarkers = generateMarkers;
+	this.addMarkers = addMarkers;
     }
     
     
@@ -100,10 +103,13 @@ public class GenerateCodeTask extends AbstractNBTask
             return;
 
 	ICodeGeneratorFactory factory = 
-	    (ICodeGeneratorFactory)Lookup.getDefault().lookup(ICodeGeneratorFactory.class);
+	    (ICodeGeneratorFactory)Lookup.getDefault()
+            .lookup(ICodeGeneratorFactory.class);
+        
 	ICodeGenerator cg = factory.getCodeGenerator("Java"); // NOI18N
 	Properties genProps = new Properties();
 	genProps.setProperty("generateMarkers", new Boolean(generateMarkers).toString()); // NOI18N
+	genProps.setProperty("addMarkers", new Boolean(addMarkers).toString()); // NOI18N
 	genProps.setProperty("backup", new Boolean(backup).toString()); // NOI18N
 	cg.generate(this, elements, sourceFolderName, genProps);
     }

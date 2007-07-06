@@ -86,6 +86,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
         
         backupSourcesCheck.setSelected(prjProps.isCodeGenBackupSources());
         generateMarkersCheck.setSelected(prjProps.isCodeGenUseMarkers());
+        addMarkersCheck.setSelected(prjProps.isCodeGenAddMarkers());
         showDialogCheckBox.setSelected(prjProps.isCodeGenShowDialog());
         
         scrollPlaceHolder.setVisible(true);
@@ -160,12 +161,13 @@ public class GenerateCodePanel extends javax.swing.JPanel
         browseButton = new javax.swing.JButton();
         backupSourcesCheck = new javax.swing.JCheckBox();
         generateMarkersCheck = new javax.swing.JCheckBox();
-        templatesLabel = new javax.swing.JLabel();
+        addMarkersCheck = new javax.swing.JCheckBox();
+        showDialogCheckBox = new javax.swing.JCheckBox();
         advancedBtn = new javax.swing.JButton();
+        templatesLabel = new javax.swing.JLabel();
         scrollPlaceHolder = new javax.swing.JScrollPane();
         panelPlaceHolder = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
-        showDialogCheckBox = new javax.swing.JCheckBox();
 
         locationLabel.setLabelFor(locationText);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/uml/codegen/action/ui/Bundle"); // NOI18N
@@ -191,7 +193,14 @@ public class GenerateCodePanel extends javax.swing.JPanel
         generateMarkersCheck.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         generateMarkersCheck.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        templatesLabel.setText("Templates:");
+        addMarkersCheck.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_AddMergeMarkers")); // NOI18N
+        addMarkersCheck.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        addMarkersCheck.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        showDialogCheckBox.setSelected(true);
+        showDialogCheckBox.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_GenCodeShowDialog")); // NOI18N
+        showDialogCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        showDialogCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
         advancedBtn.setActionCommand("TEMPLATES_PANEL_SWITCH");
@@ -203,16 +212,13 @@ public class GenerateCodePanel extends javax.swing.JPanel
             }
         });
 
+        templatesLabel.setText("Templates:");
+
         panelPlaceHolder.setLayout(new java.awt.BorderLayout());
         scrollPlaceHolder.setViewportView(panelPlaceHolder);
 
         statusLabel.setForeground(new java.awt.Color(255, 0, 0));
         statusLabel.setText("<status message>");
-
-        showDialogCheckBox.setSelected(true);
-        showDialogCheckBox.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_GenCodeShowDialog")); // NOI18N
-        showDialogCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        showDialogCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -221,35 +227,21 @@ public class GenerateCodePanel extends javax.swing.JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(templatesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
-                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(locationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(showDialogCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
-                                .add(18, 18, 18)
-                                .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())
-                            .add(layout.createSequentialGroup()
-                                .add(generateMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
-                                .addContainerGap())
-                            .add(layout.createSequentialGroup()
-                                .add(locationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton)
-                                .add(10, 10, 10))
-                            .add(layout.createSequentialGroup()
-                                .add(backupSourcesCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
-                                .add(97, 97, 97))))))
+                        .add(locationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseButton))
+                    .add(backupSourcesCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+                    .add(generateMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+                    .add(showDialogCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+                    .add(addMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(templatesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -264,13 +256,15 @@ public class GenerateCodePanel extends javax.swing.JPanel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(generateMarkersCheck)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(showDialogCheckBox))
+                .add(addMarkersCheck)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(showDialogCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(templatesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(statusLabel)
                 .addContainerGap())
@@ -401,6 +395,11 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
         return generateMarkersCheck.isSelected();
     }
     
+    public boolean isAddMarkers()
+    {
+        return addMarkersCheck.isSelected();
+    }
+    
     public boolean isShowDialog()
     {
         return showDialogCheckBox.isSelected();
@@ -493,6 +492,7 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox addMarkersCheck;
     private javax.swing.JButton advancedBtn;
     private javax.swing.JCheckBox backupSourcesCheck;
     private javax.swing.JButton browseButton;

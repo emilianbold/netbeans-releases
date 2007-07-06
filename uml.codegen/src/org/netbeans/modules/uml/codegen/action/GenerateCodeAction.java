@@ -170,30 +170,31 @@ public class GenerateCodeAction extends CookieAction
         // if UML project is dirty, save it first
         if (parentProject.isDirty())
         {
-            boolean prefVal = NbPreferences.forModule(DummyCorePreference.class)
-                .getBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
-            
-            if (prefVal)
-            {
-                Object result = SaveNotifier.getDefault().displayNotifier(
-                    NbBundle.getMessage(GenerateCodeAction.class,
-                        "MSG_DialogTitle_AuthorizeUMLProjectSave"), // NOI18N
-                        NbBundle.getMessage(GenerateCodeAction.class, "MSG_UMLProject"), // NOI18N
-                    parentProject.getName());
-
-                if (result == NotifyDescriptor.CANCEL_OPTION || 
-                    result == NotifyDescriptor.CLOSED_OPTION)
-                {
-                    // don't save project means abort code gen action
-                    return;
-                }
-
-                if (result == SaveNotifier.SAVE_ALWAYS_OPTION)
-                {
-                    NbPreferences.forModule(DummyCorePreference.class)
-                        .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
-                }
-            }
+// Default to autosave the model from now on
+//            boolean prefVal = NbPreferences.forModule(DummyCorePreference.class)
+//                .getBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
+//            
+//            if (prefVal)
+//            {
+//                Object result = SaveNotifier.getDefault().displayNotifier(
+//                    NbBundle.getMessage(GenerateCodeAction.class,
+//                        "MSG_DialogTitle_AuthorizeUMLProjectSave"), // NOI18N
+//                        NbBundle.getMessage(GenerateCodeAction.class, "MSG_UMLProject"), // NOI18N
+//                    parentProject.getName());
+//
+//                if (result == NotifyDescriptor.CANCEL_OPTION || 
+//                    result == NotifyDescriptor.CLOSED_OPTION)
+//                {
+//                    // don't save project means abort code gen action
+//                    return;
+//                }
+//
+//                if (result == SaveNotifier.SAVE_ALWAYS_OPTION)
+//                {
+//                    NbPreferences.forModule(DummyCorePreference.class)
+//                        .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
+//                }
+//            }
             
             // umlProject.saveProject();
             parentProject.save(parentProject.getFileName(), true);
@@ -254,10 +255,11 @@ public class GenerateCodeAction extends CookieAction
         final String destFolderName = prjProps.getCodeGenFolderLocation();
         final boolean backupSources = prjProps.isCodeGenBackupSources();
 	final boolean generateMarkers = prjProps.isCodeGenUseMarkers();
+	final boolean addMarkers = prjProps.isCodeGenAddMarkers();
         
         GenerateCodeTask task = new GenerateCodeTask(
             settings, selElements, parentProject.getName(), 
-            destFolderName, backupSources, generateMarkers);
+            destFolderName, backupSources, generateMarkers, addMarkers);
         
         processor.post(task);
 
