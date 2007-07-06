@@ -119,6 +119,8 @@ public class NewWSDLGenerator {
             configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
             configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
             
+            mModel.getDefinitions().setName((String) configurationMap.get(WsdlPanel.WSDL_DEFINITION_NAME));
+            
             if (namespaceToPrefixMap != null) {
                 for (String namespace : namespaceToPrefixMap.keySet()) {
                     ((AbstractDocumentComponent) mModel.getDefinitions()).addPrefix(namespaceToPrefixMap.get(namespace), namespace);

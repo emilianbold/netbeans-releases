@@ -66,7 +66,7 @@ public class PartnerLinkTypeGenerator implements Command {
                     ExtensibilityElement partnerLinkTypeRole = (ExtensibilityElement) this.mModel.getFactory().create(partnerLinkType, partnerLinkTypeRoleQName);
                     partnerLinkType.addExtensibilityElement(partnerLinkTypeRole);
                     
-                    String partnerLinkTypeName = NameGenerator.getInstance().generateUniquePartnerLinkType(wsdlDefinitionName, partnerLinkTypeQName, this.mModel);
+                    String partnerLinkTypeName = NameGenerator.generateUniquePartnerLinkType(wsdlDefinitionName, partnerLinkTypeQName, this.mModel);
                     if(partnerLinkTypeName != null) {
                         partnerLinkType.setAttribute("name", partnerLinkTypeName);    //NOI18N
                         partnerLinkTypeRole.setAttribute("name",  portTypeName + "Role"); //NOI18N

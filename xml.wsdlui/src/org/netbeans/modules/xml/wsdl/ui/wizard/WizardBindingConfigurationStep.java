@@ -89,7 +89,7 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     
     private String mBindingSubTypeError;
     
-    private final List<ChangeListener> listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     private WizardDescriptor wiz = null;
    

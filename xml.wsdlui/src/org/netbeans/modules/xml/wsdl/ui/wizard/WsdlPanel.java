@@ -70,7 +70,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     private static final String DEFAULT_TARGET_NAMESPACE = "urn:WS/wsdl"; //NOI18N
     
-    private final List<ChangeListener> listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private WsdlUIPanel gui;
 
     private Project project;
@@ -183,7 +183,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                 populateFileFromTemplate(tempWSDLFile);
                 templateWizard.putProperty(
                         WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
-                mTempWSDLModel = prepareModelFromFile(tempWSDLFile);
+                mTempWSDLModel = prepareModelFromFile(tempWSDLFile, definitionName);
                 templateWizard.putProperty(
                         WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
             } else {
@@ -247,10 +247,9 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
      * @param  file  the file with a minimal WSDL definition.
      * @return  the model.
      */
-    WSDLModel prepareModelFromFile(File file) {
+    WSDLModel prepareModelFromFile(File file, String definitionName) {
         file = FileUtil.normalizeFile(file);
         FileObject fobj = FileUtil.toFileObject(file);
-        String definitionName = fobj.getName();
         ModelSource modelSource = org.netbeans.modules.xml.retriever.
                 catalog.Utilities.getModelSource(fobj, fobj.canWrite());
         WSDLModel model = WSDLModelFactory.getDefault().getModel(modelSource);

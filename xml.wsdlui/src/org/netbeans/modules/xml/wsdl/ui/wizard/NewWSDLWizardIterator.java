@@ -189,7 +189,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 def.setName(definitionName);
                 def.setTargetNamespace(targetNamespace);
                 ((AbstractDocumentComponent) def).addPrefix("tns", targetNamespace);
-                if (def.getTypes() != null) {
+                if (def.getTypes() == null) {
                     def.setTypes(model.getFactory().createTypes());
                 }
                 

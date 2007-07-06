@@ -23,7 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JTextField;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -70,8 +74,8 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         nsTF.setText(TARGET_URL_PREFIX);
     }
     
-    void attachFileNameListener(javax.swing.JTextField fileNameTF) {
-        this.fileNameTF=fileNameTF;
+    void attachFileNameListener(javax.swing.JTextField fileNameTextField) {
+        this.fileNameTF = fileNameTextField;
         if (fileNameTF!=null) {
             nsTF.setText(TARGET_URL_PREFIX+fileNameTF.getText());
             DocListener list = new DocListener();
@@ -190,6 +194,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         // Create a temporary file and model for the import creator to use.
         Project project = wizardPanel.getProject();
         FileObject prjdir = project.getProjectDirectory();
+        //XXX:SKINI: Relook this hack
         // HACK: hard-coded NB project directory name
         FileObject privdir = prjdir.getFileObject("nbproject/private");
         // We prefer to use the private directory, but at the very
@@ -211,7 +216,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
             }
             return;
         }
-        WSDLModel model = wizardPanel.prepareModelFromFile(file);
+        WSDLModel model = wizardPanel.prepareModelFromFile(file, fname);
         model.startTransaction();
         WSDLSchema wsdlSchema = model.getFactory().createWSDLSchema();
         Definitions defs = model.getDefinitions();
@@ -349,12 +354,13 @@ public class WsdlUIPanel extends javax.swing.JPanel {
             }
             String ns = handler.getNs();
             if (ns==null) return "";
-            else return ns;
+            return ns;
         }
         
         private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
             private String ns;
             
+            @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                 if (qName.endsWith("schema")) { //NOI18N
                     ns=attributes.getValue("targetNamespace"); //NOI18N
@@ -381,7 +387,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         if (cbImport.isSelected()) {
             String schemas = schemaTF.getText();
             String[] urls = schemas.split(",");
-            java.util.List infos = new java.util.ArrayList();
+            List<SchemaInfo> infos = new ArrayList<SchemaInfo>();
             for (int i=0;i<urls.length;i++) {
                 String urlString=urls[i].trim();
                 if (urlString.length()==0) continue;
@@ -400,9 +406,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
                     } catch (java.io.IOException ex1) {}
                 }
             }
-            SchemaInfo[] result = new SchemaInfo[infos.size()];
-            infos.toArray(result);
-            return result;
+            return infos.toArray(new SchemaInfo[infos.size()]);
         }
         return new SchemaInfo[]{};
     }
