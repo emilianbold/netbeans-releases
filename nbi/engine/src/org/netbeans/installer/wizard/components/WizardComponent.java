@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import javax.swing.JComponent;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -509,11 +508,9 @@ public abstract class WizardComponent {
                     WizardComponent.class,
                     RESOURCE_CANCEL_DIALOG_TEXT);
             
-            if (!UiUtils.showYesNoDialog(cancelDialogTitle, canceldialogText)) {
-                return;
+            if (UiUtils.showYesNoDialog(cancelDialogTitle, canceldialogText)) {
+                component.getWizard().getFinishHandler().cancel();
             }
-            
-            component.getWizard().getFinishHandler().cancel();
         }
         
         /**
@@ -703,12 +700,12 @@ public abstract class WizardComponent {
     /**
      * Name of a resource bundle entry.
      */
-    private static final String RESOURCE_CANCEL_DIALOG_TITLE =
+    public static final String RESOURCE_CANCEL_DIALOG_TITLE =
             "WC.cancel.dialog.title"; // NOI18N
     
     /**
      * Name of a resource bundle entry.
      */
-    private static final String RESOURCE_CANCEL_DIALOG_TEXT =
+    public static final String RESOURCE_CANCEL_DIALOG_TEXT =
             "WC.cancel.dialog.text"; // NOI18N
 }

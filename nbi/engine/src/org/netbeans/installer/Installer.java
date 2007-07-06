@@ -20,6 +20,10 @@
 
 package org.netbeans.installer;
 
+import com.apple.eawt.Application;
+import com.apple.eawt.ApplicationAdapter;
+import com.apple.eawt.ApplicationEvent;
+import com.apple.eawt.ApplicationListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +45,7 @@ import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.components.WizardComponent;
 
 /**
  * The main class of the NBI engine. It represents the installer and provides
@@ -145,6 +150,9 @@ public class Installer implements FinishHandler {
         
         // create the lock file
         createLockFile();
+        
+        // perform some additional intiialization for Mac OS
+        initializeMacOS();
         
         LogManager.logExit("... finished initializing the engine"); // NOI18N
     }
@@ -761,6 +769,31 @@ public class Installer implements FinishHandler {
         }
         
         LogManager.logUnindent("finished creating lock file"); // NOI18N
+    }
+    
+    private void initializeMacOS() {
+        if (SystemUtils.isMacOS()) {
+            final Application application = Application.getApplication();
+            
+            application.removeAboutMenuItem();
+            application.removePreferencesMenuItem();
+            
+            application.addApplicationListener(new ApplicationAdapter() {
+                @Override
+                public void handleQuit(ApplicationEvent event) {
+                    final String dialogTitle = ResourceUtils.getString(
+                            WizardComponent.class,
+                            WizardComponent.RESOURCE_CANCEL_DIALOG_TITLE);
+                    final String dialogText = ResourceUtils.getString(
+                            WizardComponent.class,
+                            WizardComponent.RESOURCE_CANCEL_DIALOG_TEXT);
+
+                    if (UiUtils.showYesNoDialog(dialogTitle, dialogText)) {
+                        cancel();
+                    }
+                }
+            });
+        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
