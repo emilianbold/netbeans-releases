@@ -305,7 +305,7 @@ public class Registry {
                     SAVE_LOCAL_REGISTRY_TITLE_KEY));
             progress.setDetail(ResourceUtils.getString(Registry.class,
                     SAVE_LOCAL_REGISTRY_DETAIL_KEY,  localRegistryFile));
-            LogManager.log("... save registry to file " + localRegistryFile);            
+            LogManager.log("... save registry to file " + localRegistryFile);
             saveProductRegistry(
                     localRegistryFile,
                     new ProductFilter(Status.INSTALLED),
@@ -316,11 +316,11 @@ public class Registry {
         
         // save the state file if it is required (i.e. --record command line option
         // was specified)
-	LogManager.log("... save state file if necessary");            
+        LogManager.log("... save state file if necessary");
         if (System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY) != null) {
             File stateFile =
                     new File(System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY));
-            LogManager.log("... save state file to " + stateFile);            
+            LogManager.log("... save state file to " + stateFile);
             saveStateFile(stateFile, new Progress());
         }
         
@@ -568,9 +568,9 @@ public class Registry {
                         (requirement.getVersionResolved() != null ?
                             " [" + requirement.getVersionResolved() + "]" : "");
                 
-                throw new InitializationException("No components " +
-                        "matching the requirement: " + sourceId +
-                        " requires " + requirementId);
+                throw new InitializationException(
+                        ResourceUtils.getString(Registry.class,
+                        ERROR_REQUIREMENT_KEY, sourceId, requirementId));
             }
             
             // iterate over the list of satisfying products, and check whether they
@@ -581,15 +581,18 @@ public class Registry {
                 for (Dependency dependency: requiree.getDependencies()) {
                     if (product.satisfies(dependency)) {
                         throw new InitializationException(
-                                "Cyclic dependency: " + product.getUid() +
-                                ", " + dependency.getUid());
+                                ResourceUtils.getString(Registry.class,
+                                ERROR_CYCLIC_DEPENDENCY_KEY,
+                                product.getUid(), dependency.getUid()));
+                        
                     }
                     
                     for (Product prohibited: prohibitedList) {
                         if (prohibited.satisfies(dependency)) {
                             throw new InitializationException(
-                                    "Cyclic dependency: " + prohibited.getUid() +
-                                    ", " + dependency.getUid());
+                                    ResourceUtils.getString(Registry.class,
+                                    ERROR_CYCLIC_DEPENDENCY_KEY,
+                                    prohibited.getUid(), dependency.getUid()));
                         }
                     }
                 }
@@ -656,15 +659,17 @@ public class Registry {
                         InstallAfter.class)) {
                     if (product.satisfies(dependency)) {
                         throw new InitializationException(
-                                "Cyclic dependency: " + product.getUid() +
-                                ", " + dependency.getUid());
+                                ResourceUtils.getString(Registry.class,
+                                ERROR_CYCLIC_DEPENDENCY_KEY,
+                                product.getUid(), dependency.getUid()));
                     }
                     
                     for (Product prohibited: prohibitedList) {
                         if (prohibited.satisfies(dependency)) {
                             throw new InitializationException(
-                                    "Cyclic dependency: " + prohibited.getUid() +
-                                    ", " + dependency.getUid());
+                                    ResourceUtils.getString(Registry.class,
+                                    ERROR_CYCLIC_DEPENDENCY_KEY,
+                                    prohibited.getUid(), dependency.getUid()));
                         }
                     }
                 }
@@ -743,12 +748,12 @@ public class Registry {
                             getInavoidableDependents(product);
                     
                     boolean result = UiUtils.showYesNoDialog(
-                            ResourceUtils.getString(Registry.class, 
+                            ResourceUtils.getString(Registry.class,
                             ERROR_VALIDATION_TITLE_KEY),
-                            ResourceUtils.getString(Registry.class, 
+                            ResourceUtils.getString(Registry.class,
                             ERROR_VALIDATION_MSG_KEY,
                             product.getDisplayName(),
-                            message , 
+                            message ,
                             product.getDisplayName(),
                             StringUtils.asString(inavoidableDependents)));
                     
@@ -871,7 +876,8 @@ public class Registry {
             XMLUtils.saveXMLDocument(document, file);
             LogManager.log("... saving XML file succesfully finished");
         } catch (XMLException e) {
-            throw new FinalizationException("Could not finalize registry", e);
+            throw new FinalizationException(ResourceUtils.getString(
+                    Registry.class, ERROR_REGISTRY_FINALIZATION), e);
         } finally {
             LogManager.logExit("... saving product registry done");
         }
@@ -941,13 +947,17 @@ public class Registry {
             
             return builder.parse(registryFile);
         } catch (DownloadException e) {
-            throw new XMLException("Could not load registry document", e);
+            throw new XMLException(ResourceUtils.getString(Registry.class, 
+                    ERROR_REGISTRY_DOCUMENT_LOADING), e);
         } catch (ParserConfigurationException e) {
-            throw new XMLException("Could not load registry document", e);
+            throw new XMLException(ResourceUtils.getString(Registry.class, 
+                    ERROR_REGISTRY_DOCUMENT_LOADING), e);
         } catch (SAXException e) {
-            throw new XMLException("Could not load registry document", e);
+            throw new XMLException(ResourceUtils.getString(Registry.class, 
+                    ERROR_REGISTRY_DOCUMENT_LOADING), e);
         } catch (IOException e) {
-            throw new XMLException("Could not load registry document", e);
+            throw new XMLException(ResourceUtils.getString(Registry.class, 
+                    ERROR_REGISTRY_DOCUMENT_LOADING), e);
         }
     }
     
@@ -1354,7 +1364,8 @@ public class Registry {
             final Element propertiesElement =
                     XMLUtils.getChild(element, "properties");
             if (propertiesElement != null) {
-                progress.setDetail("Loading registry properties");
+                progress.setDetail(ResourceUtils.getString(Registry.class,
+                        LOADING_REGISTRY_PROPERTIES_KEY));
                 properties.putAll(XMLUtils.parseNbiProperties(propertiesElement));
             }
             
@@ -1375,7 +1386,8 @@ public class Registry {
                             StringUtils.parsePlatforms(productElement.getAttribute("platform"));
                     
                     LogManager.log("        parsing component uid=" + uid + ", version=" + version);
-                    progress.setDetail("Loading component: uid=" + uid + ", version=" + version);
+                    progress.setDetail(ResourceUtils.getString(Registry.class,
+                            LOADING_COMPONENT_KEY, uid, version));
                     if (platforms.contains(targetPlatform)) {
                         final Product product = getProduct(uid, version);
                         
@@ -1413,20 +1425,20 @@ public class Registry {
             }
             LogManager.log(ErrorLevel.DEBUG, "    ...complete");
         } catch (DownloadException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_COMPONENTS), e);
         } catch (ParserConfigurationException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_COMPONENTS), e);
         } catch (SAXException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_COMPONENTS), e);
         } catch (IOException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_COMPONENTS), e);
         } catch (ParseException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+            throw new InitializationException(ResourceUtils.getString(
+                    Registry.class, ERROR_LOADING_COMPONENTS), e);
         }
     }
     
@@ -1535,15 +1547,20 @@ public class Registry {
             FileUtils.mkdirs(stateFile.getParentFile());
             XMLUtils.saveXMLDocument(document, stateFile);
         } catch (DownloadException e) {
-            throw new FinalizationException("Could not finalize registry", e);
+            throw new FinalizationException(ResourceUtils.getString(
+                    Registry.class, ERROR_REGISTRY_FINALIZATION), e);
         } catch (ParserConfigurationException e) {
-            throw new FinalizationException("Could not finalize registry", e);
+            throw new FinalizationException(ResourceUtils.getString(
+                    Registry.class, ERROR_REGISTRY_FINALIZATION), e);
         } catch (SAXException e) {
-            throw new FinalizationException("Could not finalize registry", e);
+            throw new FinalizationException(ResourceUtils.getString(
+                    Registry.class, ERROR_REGISTRY_FINALIZATION), e);
         } catch (IOException e) {
-            throw new FinalizationException("Could not finalize registry", e);
+            throw new FinalizationException(ResourceUtils.getString(
+                    Registry.class, ERROR_REGISTRY_FINALIZATION), e);
         } catch (XMLException e) {
-            throw new FinalizationException("Could not finalize registry", e);
+            throw new FinalizationException(ResourceUtils.getString(
+                    Registry.class, ERROR_REGISTRY_FINALIZATION), e);
         }
     }
     
@@ -1692,8 +1709,22 @@ public class Registry {
             "R.error.missing.target.component.title"; //NOI18N
     private static final String ERROR_MISSING_TARGET_COMPONENT_MSG_KEY =
             "R.error.missing.target.component.msg"; //NOI18N
-    private static final String ERROR_VALIDATION_TITLE_KEY = 
+    private static final String ERROR_VALIDATION_TITLE_KEY =
             "R.error.validation.title";//NOI18N
-    private static final String ERROR_VALIDATION_MSG_KEY = 
+    private static final String ERROR_VALIDATION_MSG_KEY =
             "R.error.validation.msg";//NOI18N
+    private static final String ERROR_REQUIREMENT_KEY =
+            "R.error.matching.requirement";//NOI18N
+    private static final String ERROR_CYCLIC_DEPENDENCY_KEY =
+            "R.error.cyclic.dependency";//NOI18N
+    private static final String LOADING_REGISTRY_PROPERTIES_KEY =
+            "R.loading.registry.properties";//NOI18N
+    private static final String LOADING_COMPONENT_KEY =
+            "R.loading.component";//NOI18N
+    private static final String ERROR_LOADING_COMPONENTS =
+            "R.error.loading.components";//NOI18N
+    private static final String ERROR_REGISTRY_FINALIZATION =
+            "R.error.registry.finalization";//NOI18N
+    private static final String ERROR_REGISTRY_DOCUMENT_LOADING =
+            "R.error.registry.document.loading";//NOI18N
 }
