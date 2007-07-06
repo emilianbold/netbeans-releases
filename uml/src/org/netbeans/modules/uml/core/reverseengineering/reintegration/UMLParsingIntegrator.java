@@ -4175,6 +4175,7 @@ public class UMLParsingIntegrator
                 nameElement(pNavEnd, attr);
                 setDefaultValue(pNavEnd, attr);
                 setMultiplicity(pNavEnd, attr);
+		setVisibility(pNavEnd, attr);
             }
             //NameNavigableEnd(assoc, to, attr));
         }
@@ -5620,6 +5621,31 @@ public class UMLParsingIntegrator
                 }
             }
         }
+        catch (Exception e)
+        {
+            // I just want to forward the error to the listener.
+            sendExceptionMessage(e);
+        }
+    }
+
+    protected void setVisibility(INamedElement pElement, Node pAttr)
+    {
+        try
+        {
+	    String visibility = XMLManip.getAttributeValue(pAttr, "visibility"); // NOI18N
+            if (visibility != null) 
+	    {
+		visibility = visibility.trim();
+		if (! visibility.equals("")) 
+		{
+		    Node pNode = pElement.getNode();
+		    if (pNode != null)
+		    {
+			XMLManip.setAttributeValue(pNode, "visibility", visibility) ; // NOI18N
+		    }
+		}
+	    }
+	}
         catch (Exception e)
         {
             // I just want to forward the error to the listener.
