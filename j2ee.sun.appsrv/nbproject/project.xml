@@ -199,15 +199,16 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.identity.server.manager</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
+                <friend>org.netbeans.modules.j2ee.sun.avk</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
-                <friend>org.netbeans.modules.j2ee.sun.avk</friend>
-                <package>org.netbeans.modules.j2ee.sun.ide.editors</package>
                 <package>org.netbeans.modules.j2ee.sun.api</package>
-                <package>org.netbeans.modules.j2ee.sun.sunresources.beans</package>
-                <package>org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping</package>
                 <package>org.netbeans.modules.j2ee.sun.appsrvapi</package>
+                <package>org.netbeans.modules.j2ee.sun.ide.editors</package>
+                <package>org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping</package>
+                <package>org.netbeans.modules.j2ee.sun.sunresources.beans</package>
             </friend-packages>
         </data>
     </configuration>
