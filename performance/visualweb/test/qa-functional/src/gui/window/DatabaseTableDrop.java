@@ -156,10 +156,12 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         Node table = new Node(tree,"Page1|page1|html1|body1|form1|table1");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
+        surface.clickOnSurface(10,10);
         
         table = new Node(tree,"Page1|tripDataProvider");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
+        surface.clickOnSurface(10,10);
         
         table  = new Node(tree,"SessionBean1|tripRowSet:");
         new DeleteAction().perform(table);
