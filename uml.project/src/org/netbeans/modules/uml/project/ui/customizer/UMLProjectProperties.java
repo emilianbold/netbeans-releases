@@ -498,6 +498,12 @@ public class UMLProjectProperties
         if (referencedJavaSourceRootsModel == null)
             return null;
         
+        if (referencedJavaSourceRootsModel == null ||
+            referencedJavaSourceRootsModel.getSourceGroups().length == 0)
+        {
+            return null;
+        }
+        
         return FileUtil.toFile(referencedJavaSourceRootsModel.
             getSourceGroup(0).getRootFolder());
     }
