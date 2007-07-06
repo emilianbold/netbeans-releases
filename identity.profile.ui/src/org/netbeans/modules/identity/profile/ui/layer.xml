@@ -24,11 +24,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <file name="org-netbeans-modules-identity-profile-ui-resources-helpset.xml" url="resources/helpset.xml">
                 <attr name="position" intvalue="2500"/>
             </file>
-            </folder>
+        </folder>
     </folder>
     
     <folder name="Templates">
         <folder name="Identity">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.profile.ui.support.Bundle"/>
             <folder name="SunDD">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.profile.ui.support.Bundle"/>
                 <file name="sun-web.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-web.template"/>
