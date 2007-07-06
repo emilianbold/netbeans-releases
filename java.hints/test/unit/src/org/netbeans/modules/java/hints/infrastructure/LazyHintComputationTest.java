@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -138,7 +139,7 @@ public class LazyHintComputationTest extends NbTestCase {
         }
         
         @Override
-        public void compute(CompilationInfo info) {
+        public void compute(CompilationInfo info, AtomicBoolean cancelled) {
             marker[0] = true;
             
             if (callback != null)

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
@@ -50,7 +51,7 @@ public class CreatorBasedLazyFixListTest extends HintsTestBase {
         prepareTest("Simple");
         
         final int[] calledCount = new int[1];
-        final boolean[] cancel = new boolean[1];
+        final AtomicBoolean[] cancel = new AtomicBoolean[1];
         final CreatorBasedLazyFixList[] list = new CreatorBasedLazyFixList[1];
         
         list[0] = new CreatorBasedLazyFixList(null, "", 0, Collections.singleton((ErrorRule) new ErrorRule() {
@@ -62,7 +63,8 @@ public class CreatorBasedLazyFixListTest extends HintsTestBase {
                     String diagnosticKey, int offset, TreePath treePath,
                     Data data) {
                 calledCount[0]++;
-                if (cancel[0]) {
+                if (cancel[0] != null) {
+                    cancel[0].set(true);
                     list[0].cancel();
                 }
                 
@@ -86,23 +88,27 @@ public class CreatorBasedLazyFixListTest extends HintsTestBase {
             }
         }), new HashMap<Class, Data>());
         
-        cancel[0] = true;
+        cancel[0] = new AtomicBoolean();
         
-        list[0].compute(info);
+        list[0].compute(info, cancel[0]);
         
         assertEquals(1, calledCount[0]);
         
-        list[0].compute(info);
+        cancel[0] = new AtomicBoolean();
+        
+        list[0].compute(info, cancel[0]);
         
         assertEquals(2, calledCount[0]);
         
-        cancel[0] = false;
+        cancel[0] = null;
         
-        list[0].compute(info);
+        list[0].compute(info, new AtomicBoolean());
         
         assertEquals(3, calledCount[0]);
         
-        list[0].compute(info);
+        cancel[0] = null;
+        
+        list[0].compute(info, new AtomicBoolean());
         
         assertEquals(3, calledCount[0]);
     }
