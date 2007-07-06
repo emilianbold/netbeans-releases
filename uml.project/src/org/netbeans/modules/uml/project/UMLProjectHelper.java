@@ -26,7 +26,7 @@
 package org.netbeans.modules.uml.project;
 
 import java.io.File;
-
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -38,7 +38,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
-
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductManager;
@@ -48,7 +47,6 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.ADProduct;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADApplication;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADProduct;
-
 import org.netbeans.modules.uml.project.ui.MDREventProcessor;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.openide.windows.TopComponent;
@@ -298,9 +296,13 @@ public class UMLProjectHelper
         // this was disabled. reenabled so that open diagram drawing areas will
         // close when its Project is closed
         // 80014, save documentation before exiting IDE
-        TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
-        if (tc != null)
-            tc.canClose();
+        // made changes to doc pane to listen to mouse event and update element 
+//        TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
+//        if (tc != null)
+//            tc.canClose();
+        
+        if (mProject == null)
+            return;
         
         mApplication.closeProject(mProject, save);
         mNBProject.removeUMLProjectMetaListener();
