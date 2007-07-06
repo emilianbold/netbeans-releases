@@ -34,10 +34,15 @@ import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.UiMode;
+
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
+import static org.netbeans.installer.utils.SystemUtils.getCurrentPlatform;
+import static org.netbeans.installer.utils.SystemUtils.getEnvironmentVariable;
 
 /**
  *
@@ -250,7 +255,7 @@ public final class UiUtils {
                             
                             UIManager.setLookAndFeel(className);
                             
-                            if(SystemUtils.isWindows()) {
+                            if (SystemUtils.isWindows()) {
                                 // workaround for the issue with further using JFileChooser
                                 // in case of missing system icons
                                 // Java Issue :
@@ -259,6 +264,7 @@ public final class UiUtils {
                                 // http://www.netbeans.org/issues/show_bug.cgi?id=105065
                                 LogManager.log("... creating JFileChooser object to check possible issues with UI");
                                 new JFileChooser();
+                                
                                 LogManager.log("... getting default Toolkit to check possible issues with UI");
                                 Toolkit.getDefaultToolkit();
                                 
@@ -267,26 +273,32 @@ public final class UiUtils {
                                 // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6337517
                                 LogManager.log("... creating JProgressBar object to check possible issues with UI");
                                 new JProgressBar().getMaximumSize();
+                                
                                 LogManager.log("... all UI checks done");
                             }                            
                         } catch (Throwable e) {
-                            // we're catching Exception here as pretty much anything can happen
+                            // we're catching Throwable here as pretty much anything can happen
                             // while setting the look and feel and we have no control over it
                             // if something wrong happens we should fall back to the default
                             // cross-platform look and feel which is assumed to be working
                             // correctly
-                            if(e instanceof InternalError) {
+                            if (e instanceof InternalError) {
                                 System.err.println(e.getMessage());
-                            }  else if(e instanceof ExceptionInInitializerError) {
-                                Throwable cause = e.getCause();
-                                if(cause!=null && cause instanceof HeadlessException) {
+                            } else if (e instanceof ExceptionInInitializerError) {
+                                final Throwable cause = e.getCause();
+                                
+                                if ((cause != null) && 
+                                        (cause instanceof HeadlessException)) {
                                     System.err.println(cause.getMessage());
                                 }
                             }
                             LogManager.log("... could not activate defined L&F, initializing cross-platfrom one", e);
-                            String cpLapName = UIManager.getCrossPlatformLookAndFeelClassName();
-                            LogManager.log("... cross-platform L&F class-name : " + cpLapName);
-                            UIManager.setLookAndFeel(cpLapName);
+                            
+                            className = UIManager.getCrossPlatformLookAndFeelClassName();
+                            LogManager.log("... cross-platform L&F class-name : " + className);
+                            
+                            UIManager.setLookAndFeel(className);
+                            
                             // this exception would be thrown only if cross-platform LAF is successfully installed
                             throw new InitializationException("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
                         }
@@ -314,7 +326,33 @@ public final class UiUtils {
             ) {
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
-                return UIManager.getSystemLookAndFeelClassName();
+                String className = UIManager.getSystemLookAndFeelClassName();
+                
+                // if the default look and feel is the cross-platform one, we might
+                // need to correct this choice. E.g. - KDE, where GTK look and feel 
+                // would be much more appropriate
+                if (className.equals(UIManager.getCrossPlatformLookAndFeelClassName())) {
+                    
+                    // if the current platform is Linux and the desktop manager is
+                    // KDE, then we should try to use the GTK look and feel
+                    try {
+                        if (getCurrentPlatform().isCompatibleWith(Platform.LINUX) && 
+                                (getEnvironmentVariable("KDE_FULL_SESSION") != null)) {
+                            // check whether the GTK look and feel class is 
+                            // available -- we'll get CNFE if it is not and it will
+                            // not be set
+                            Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+                            
+                            className = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+                        }
+                    } catch (NativeException e) {
+                        ErrorManager.notifyDebug("Cannot force the use of GTK look and feel", e);
+                    } catch (ClassNotFoundException e) {
+                        ErrorManager.notifyDebug("Cannot force the use of GTK look and feel", e);
+                    }
+                }
+                
+                return className;
             default:
                 return null;
         }
