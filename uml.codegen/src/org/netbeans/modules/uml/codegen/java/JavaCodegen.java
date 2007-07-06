@@ -387,14 +387,24 @@ public class JavaCodegen implements ICodeGenerator
 				    
 				if (fmap.existingFileInfo != null) 
 				{
-				    task.log(task.SUMMARY, LOG_INDENT 
-					     + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
-				    merger.merge(fmap.generatedFileInfo, 
-						 fmap.generatedFilePath,
-						 fmap.existingFileInfo, 
-						 fmap.existingSourceBackupPath, 
-						 fmap.targetFilePath);     
-				    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
+				    if (fmap.generatedFileInfo != null) 
+				    {
+					task.log(task.SUMMARY, LOG_INDENT 
+						 + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
+					merger.merge(fmap.generatedFileInfo, 
+						     fmap.generatedFilePath,
+						     fmap.existingFileInfo, 
+						     fmap.existingSourceBackupPath, 
+						     fmap.targetFilePath);     
+					task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
+				    } 
+				    else 
+				    {
+					fmap.merge = false;
+					task.log(task.SUMMARY, LOG_INDENT 
+						 + getBundleMessage("MSG_GeneratedSourceNotParseableOverwritten")); // NOI18N
+					continue;
+				    }
 				} 
 				else 
 				{
