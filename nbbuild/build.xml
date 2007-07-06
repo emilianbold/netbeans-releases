@@ -988,6 +988,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <fileset dir=".">
         <include name="NetBeans-*.log"/>
         <include name="NetBeans-*.zip"/>
+        <include name="nbproject/private/*.ser"/>
       </fileset>
     </delete>
     <!-- This step must be last: -->
