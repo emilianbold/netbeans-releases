@@ -14,6 +14,7 @@ import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
@@ -79,24 +80,32 @@ public class BracketCompleterTest extends RubyTestBase {
         Caret caret = ta.getCaret();
         caret.setDot(insertOffset);
         int newOffset = bc.beforeBreak(doc, insertOffset, caret);
-        doc.insertString(caret.getDot(), "\n", null);
-        // Indent the new line
-        Formatter formatter = new Formatter();
-        FormattingPreferences preferences = new IndentPrefs(2,2);
-        //ParserResult result = parse(fo);
-        int indent = formatter.getLineIndent(doc, insertOffset+1, preferences);
-        doc.getFormatter().changeRowIndent(doc, Utilities.getRowStart(doc, insertOffset+1), indent);
-        
-        //bc.afterBreak(doc, insertOffset, caret);
-        String formatted = doc.getText(0, doc.getLength());
-        assertEquals(expected, formatted);
-        if (newOffset != -1) {
-            caret.setDot(newOffset);
-        } else {
-            caret.setDot(insertOffset+1+indent);
-        }
-        if (finalCaretPos != -1) {
-            assertEquals(finalCaretPos, caret.getDot());
+        doc.atomicLock();
+        DocumentUtilities.setTypingModification(doc, true);
+
+        try {
+            doc.insertString(caret.getDot(), "\n", null);
+            // Indent the new line
+            Formatter formatter = new Formatter();
+            FormattingPreferences preferences = new IndentPrefs(2,2);
+            //ParserResult result = parse(fo);
+            int indent = formatter.getLineIndent(doc, insertOffset+1, preferences);
+            doc.getFormatter().changeRowIndent(doc, Utilities.getRowStart(doc, insertOffset+1), indent);
+
+            //bc.afterBreak(doc, insertOffset, caret);
+            String formatted = doc.getText(0, doc.getLength());
+            assertEquals(expected, formatted);
+            if (newOffset != -1) {
+                caret.setDot(newOffset);
+            } else {
+                caret.setDot(insertOffset+1+indent);
+            }
+            if (finalCaretPos != -1) {
+                assertEquals(finalCaretPos, caret.getDot());
+            }
+        } finally {
+            DocumentUtilities.setTypingModification(doc, false);
+            doc.atomicUnlock();
         }
     }
 
@@ -113,19 +122,63 @@ public class BracketCompleterTest extends RubyTestBase {
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(insertOffset);
-        boolean handled = bc.beforeCharInserted(doc, insertOffset, caret, insertText);
-        if (!handled) {
-            doc.insertString(caret.getDot(), ""+insertText, null);
-            caret.setDot(insertOffset+1);
-            bc.afterCharInserted(doc, insertOffset, caret, insertText);
+
+        doc.atomicLock();
+        DocumentUtilities.setTypingModification(doc, true);
+
+        try {
+        
+            boolean handled = bc.beforeCharInserted(doc, insertOffset, caret, insertText);
+            if (!handled) {
+                doc.insertString(caret.getDot(), ""+insertText, null);
+                caret.setDot(insertOffset+1);
+                bc.afterCharInserted(doc, insertOffset, caret, insertText);
+            }
+            String formatted = doc.getText(0, doc.getLength());
+            assertEquals(expected, formatted);
+            if (finalCaretPos != -1) {
+                assertEquals(finalCaretPos, caret.getDot());
+            }
+        } finally {
+            DocumentUtilities.setTypingModification(doc, false);
+            doc.atomicUnlock();
         }
-        String formatted = doc.getText(0, doc.getLength());
-        assertEquals(expected, formatted);
-        if (finalCaretPos != -1) {
-            assertEquals(finalCaretPos, caret.getDot());
-        }
+        
     }
 
+    private void deleteChar(String original, String expected) throws BadLocationException {
+        int afterRemoveOffset = original.indexOf('^');
+        int finalCaretPos = expected.indexOf('^');
+        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
+        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+
+        BracketCompleter bc = new BracketCompleter();
+
+        BaseDocument doc = getDocument(original);
+
+        JTextArea ta = new JTextArea(doc);
+        Caret caret = ta.getCaret();
+        caret.setDot(afterRemoveOffset);
+        int dot = afterRemoveOffset;
+        char ch = doc.getChars(dot-1, 1)[0];
+
+        doc.atomicLock();
+        DocumentUtilities.setTypingModification(doc, true);
+
+        try {
+            doc.remove(dot - 1, 1);
+            caret.setDot(dot-1);
+            boolean handled = bc.charBackspaced(doc, dot-1, caret, ch);
+            String formatted = doc.getText(0, doc.getLength());
+            assertEquals(expected, formatted);
+            if (finalCaretPos != -1) {
+                assertEquals(finalCaretPos, caret.getDot());
+            }
+        } finally {
+            DocumentUtilities.setTypingModification(doc, false);
+            doc.atomicUnlock();
+        }
+    }
     
     public void testInsertX() throws Exception {
         insertChar("c^ass", 'l', "cl^ass");
@@ -135,6 +188,26 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("clas^", 's', "class^");
     }
 
+    public void testNoMatchInComments() throws Exception {
+        insertChar("# Hello^", '\'', "# Hello'^");
+        insertChar("# Hello^", '"', "# Hello\"^");
+        insertChar("# Hello^", '[', "# Hello[^");
+        insertChar("# Hello^", '(', "# Hello(^");
+    }
+
+    // BROKEN because of the lexer bug (108889) - disabled for now
+//    public void testNoMatchInStrings() throws Exception {
+//        insertChar("x = \"^\"", '\'', "x = \"'^\"");
+//        insertChar("x = \"^\"", '[', "x = \"[^\"");
+//        insertChar("x = \"^\"", '(', "x = \"(^\"");
+//        insertChar("x = \"^)\"", ')', "x = \")^)\"");
+//        insertChar("x = '^'", '"', "x = '\"^'");
+//        insertChar("x = \"\nf^\n\"", '\'', "x = \"\nf'^\n\"");
+//        insertChar("x = \"\nf^\n\"", '[', "x = \"\nf[^\n\"");
+//        insertChar("x = \"\nf^\n\"", '(', "x = \"\nf(^\n\"");
+//        insertChar("x = '\nf^\n'", '"', "x = '\nf\"^\n'");
+//    }
+    
     public void testSingleQuotes1() throws Exception {
         insertChar("x = ^", '\'', "x = '^'");
     }
@@ -340,16 +413,57 @@ public class BracketCompleterTest extends RubyTestBase {
         // Test heredocs
         match("x=f(^<<ABC,\"hello\")\nfoo\nbar\n^ABC\n");
     }
+    
+    public void testBackspace1() throws Exception {
+        deleteChar("x^", "^");
+    }
 
-//    public void testFindMatching6() throws Exception {
-//        // Test heredocs
-//        match("x=f(^<<ABC,'hello',<<-DEF,'bye')\nfoo\nbar\n^ABC\nbaz\n  DEF\nwhatever");
-//    }
-//
-//    public void testFindMatching7() throws Exception {
-//        // Test heredocs
-//        match("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
-//    }
+    public void testBackspace2() throws Exception {
+        deleteChar("x^y", "^y");
+    }
+    
+    public void testBackspace3() throws Exception {
+        deleteChar("xy^z", "x^z");
+    }
+    
+    public void testBackspace4() throws Exception {
+        deleteChar("xy^z", "x^z");
+    }
+    
+    public void testNoContComment2() throws Exception {
+        // No auto-# on new lines
+        insertBreak("foo # ^", "foo # \n^");
+    }
+    
+    // Not yet enabled
+    public void testContComment() throws Exception {
+        if (BracketCompleter.CONTINUE_COMMENTS) {
+            insertBreak("# ^", "# \n# ^");
+        } else {
+            insertBreak("# ^", "# \n^");
+        }
+    }
+    
+    public void testDeleteContComment() throws Exception {
+        deleteChar("# ^", "^");
+        deleteChar("\n# ^", "\n^");
+    }
+    
+    public void testNoDeleteContComment() throws Exception {
+        deleteChar("#  ^", "# ^");
+        deleteChar("#^", "^");
+        deleteChar("puts '# ^'", "puts '#^'");
+    }
+
+    public void testFindMatching6() throws Exception {
+        // Test heredocs
+        match("x=f(^<<ABC,'hello',<<-DEF,'bye')\nfoo\nbar\n^ABC\nbaz\n  DEF\nwhatever");
+    }
+
+    public void testFindMatching7() throws Exception {
+        // Test heredocs
+        match("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
+    }
 
     // TODO: Test
     // - backspace deletion

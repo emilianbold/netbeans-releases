@@ -87,7 +87,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     /** When true, continue comments if you press return in a line comment (that does not
      * also have code on the same line 
      */
-    private static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("ruby.cont.comment"); // NOI18N
+    //static final boolean CONTINUE_COMMENTS = !Boolean.getBoolean("ruby.no.cont.comment"); // NOI18N
+    static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("ruby.cont.comment"); // NOI18N
     
     /** Tokens which indicate that we're within a literal string */
     private static TokenId[] STRING_TOKENS = // XXX What about RubyTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
@@ -817,6 +818,18 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     public boolean charBackspaced(Document document, int dotPos, Caret caret, char ch)
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
+        
+        // Backspacing over "# " ? Delete the "#" too!
+        if (/*CONTINUE_COMMENTS && */ ch == ' ') {
+            Token token = LexUtilities.getToken(doc, dotPos);
+            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
+            ts.move(dotPos);
+            if (ts.movePrevious() && ts.offset() == dotPos-1 && ts.token().id() == RubyTokenId.LINE_COMMENT) {
+                doc.remove(dotPos-1, 1);
+                
+                return true;
+            }
+        }
 
         if ((ch == '(') || (ch == '[')) {
             char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
