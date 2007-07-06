@@ -54,7 +54,7 @@ public interface IDrawingAreaAcceleratorKind
 	public static final String DAVK_CREATE_ERENTITY = RESOURCE_BUNDLE.getString("IDS_ALTSHIFTC"); //(ETD Only)
 	// Layout
 	public static final String DAVK_LAYOUT_CIRCULAR_STYLE = RESOURCE_BUNDLE.getString("IDS_CTRLSHIFTC");
-	public static final String DAVK_LAYOUT_HIERARCHICAL_STYLE = RESOURCE_BUNDLE.getString("IDS_CTRLSHIFTH");
+	public static final String DAVK_LAYOUT_HIERARCHICAL_STYLE = RESOURCE_BUNDLE.getString("IDS_CTRLSHIFTK");
 	public static final String DAVK_LAYOUT_INCREMENTAL_LAYOUT = RESOURCE_BUNDLE.getString("IDS_CTRLSHIFTI");
 	public static final String DAVK_LAYOUT_RELAYOUT = RESOURCE_BUNDLE.getString("IDS_CTRLSHIFTL");
 	public static final String DAVK_LAYOUT_ORTHOGONAL_STYLE = RESOURCE_BUNDLE.getString("IDS_CTRLSHIFTB");

@@ -190,8 +190,10 @@ public class ADDiagramStateEngine extends ADCoreEngine
    {
       ETList < String > accelsToRegister = new ETArrayList < String > ();
 
-      // Add the normal accelerators, minus the layout stuff
-      addNormalAccelerators(accelsToRegister, false);
+      // Add the normal accelerators
+      // Fixed 99018. Changed the second paramter to 'true' to include
+      // shortcuts for layouts.
+      addNormalAccelerators(accelsToRegister, true);
 
       // Unique to the state diagram 
       accelsToRegister.add(IDrawingAreaAcceleratorKind.DAVK_CREATE_SIMPLESTATE);
