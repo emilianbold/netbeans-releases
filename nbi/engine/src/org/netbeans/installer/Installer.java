@@ -23,7 +23,6 @@ package org.netbeans.installer;
 import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
-import com.apple.eawt.ApplicationListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -251,8 +250,18 @@ public class Installer implements FinishHandler {
     private void loadProperties() {
         LogManager.logEntry("loading engine properties"); // NOI18N
         
+        LogManager.logIndent("setting some default values"); // NOI18N
+        
+        System.setProperty(
+                INSTALLER_APPLICATION_NAME_PROPERTY, 
+                DEFAULT_INSTALLER_APPLICATION_NAME);
+        LogManager.log(INSTALLER_APPLICATION_NAME_PROPERTY + " => " + // NOI18N
+                DEFAULT_INSTALLER_APPLICATION_NAME);
+        
+        LogManager.unindent();
+        
         try {
-            LogManager.log("loading properties file from " + // NOI18N
+            LogManager.logIndent("loading properties file from " + // NOI18N
                     EngineResources.ENGINE_PROPERTIES);
             
             final InputStream input = getClass().getClassLoader().
@@ -278,6 +287,8 @@ public class Installer implements FinishHandler {
             
             ErrorManager.notifyWarning(message, e);
         }
+        
+        LogManager.unindent();
         
         LogManager.logExit("... finished loading engine properties"); // NOI18N
     }
@@ -954,4 +965,10 @@ public class Installer implements FinishHandler {
     
     private static final String ERROR_CANNOT_CREATE_LOCK_FILE_KEY = 
             "I.error.cannot.create.lock.file"; // NOI18N
+    
+    public static final String INSTALLER_APPLICATION_NAME_PROPERTY = 
+            "nbi.installer.application.name"; // NOI18N
+    
+    public static final String DEFAULT_INSTALLER_APPLICATION_NAME = 
+            "NBI Installer"; // NOI18N
 }

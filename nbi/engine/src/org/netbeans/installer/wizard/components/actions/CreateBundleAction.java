@@ -109,7 +109,7 @@ public class CreateBundleAction extends WizardAction {
         
         getWizardUi().setProgress(progress);
         
-        JarFile         engine = null;
+        JarFile engine = null;
         JarOutputStream output = null;
         
         try {

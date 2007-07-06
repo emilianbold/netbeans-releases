@@ -22,6 +22,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
@@ -59,29 +60,49 @@ public class CreateNativeLauncherAction extends WizardAction {
     }
     
     public void execute() {
-        LogManager.log("Create native launcher...");
-        LogManager.indent();
-        final String targetPath = System.getProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY);
-        final File   targetFile = new File(targetPath);
+        LogManager.logEntry("creating the native launcher");
         
-        Progress progress = new Progress();
+        final String targetPath = 
+                System.getProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY);
+        final File targetFile = new File(targetPath);
+        
+        final Progress progress = new Progress();
+        
         getWizardUi().setProgress(progress);
         try {
+            final Platform platform = Registry.getInstance().getTargetPlatform();
+            final LauncherProperties properties = new LauncherProperties();
             
-            Platform platform = Registry.getInstance().getTargetPlatform();
-            LauncherProperties props = new LauncherProperties();
-            props.addJar(new LauncherResource(new File(targetPath)));
-            props.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
+            properties.addJar(new LauncherResource(new File(targetPath)));
+            if (platform.isCompatibleWith(Platform.MACOSX)) {
+                final String applicationName = System.getProperty(
+                        Installer.INSTALLER_APPLICATION_NAME_PROPERTY);
+                
+                properties.setJvmArguments(new String[]{
+                    "-Xmx256m", 
+                    "-Xms64m",
+                    "-Xdock:name=" + applicationName.replace(" ", "\\ "),
+                });
+            } else {
+                properties.setJvmArguments(new String[]{
+                    "-Xmx256m", 
+                    "-Xms64m",
+                });
+            }
             
-            File f = SystemUtils.createLauncher(props, platform, progress).getOutputFile();
+            File file = SystemUtils.createLauncher(
+                    properties, platform, progress).getOutputFile();
             
-            if ( !targetFile.equals(f)) {
+            if ( !targetFile.equals(file)) {
                 FileUtils.deleteFile(targetFile);
-                System.setProperty(Registry.CREATE_BUNDLE_PATH_PROPERTY, f.getPath());
+                System.setProperty(
+                        Registry.CREATE_BUNDLE_PATH_PROPERTY, 
+                        file.getPath());
             }
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to create the launcher", e);
         }
-        LogManager.unindent();
+        
+        LogManager.logExit("finished creating the native launcher");
     }
 }
