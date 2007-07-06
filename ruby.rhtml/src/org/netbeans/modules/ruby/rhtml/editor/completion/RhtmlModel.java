@@ -189,9 +189,7 @@ public class RhtmlModel {
                     text = text.substring(0, text.length()-1);
                     skipNewline = true;
                 }
-                // Escape 's in the document so they don't escape out of the ruby code
-                // I don't have to do this on lines that are in comments... But no big harm
-                text = text.replace("'", "\\'");
+
                 buffer.append(text);
 
                 int generatedEnd = buffer.length();

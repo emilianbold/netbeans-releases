@@ -85,4 +85,8 @@ public class RhtmlModelTest extends NbTestCase {
     public void testEruby2() throws Exception {
         checkEruby(this, "testfiles/test2");
     }
+
+    public void testEruby108990() throws Exception {
+        checkEruby(this, "testfiles/quotes");
+    }
 }

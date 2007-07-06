@@ -23,7 +23,7 @@ _buf << '
 <div id="overview">
   '; _buf << ( link_to 'Subscribe', overview_url, :class => 'feed right' ).to_s;
 _buf << '  ';   
-    # Here\'s some code which calls render_events again
+    # Here's some code which calls render_events again
   
 _buf << '  <h4>Today '; _buf << ( todays_short_date ).to_s;;_buf << '</h4>
   '; _buf << ( feed ).to_s;
