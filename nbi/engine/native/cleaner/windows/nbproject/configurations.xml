@@ -1,25 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  The contents of this file are subject to the terms of the Common Development and
-  Distribution License (the License). You may not use this file except in compliance
-  with the License.
-  
-  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
-  http://www.netbeans.org/cddl.txt.
-  
-  When distributing Covered Code, include this CDDL Header Notice in each file and
-  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
-  the following below the CDDL Header, with the fields enclosed by brackets []
-  replaced by your own identifying information:
-  
-      "Portions Copyrighted [year] [name of copyright owner]"
-  
-  The Original Software is NetBeans. The Initial Developer of the Original Software
-  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
-  Rights Reserved.
--->
-
-<configurationDescriptor version="31">
+<configurationDescriptor version="35">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -45,34 +25,32 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <compilerSet>1</compilerSet>
+        <compilerSet>Cygwin</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
         <platform>3</platform>
       </toolsSet>
       <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-        <fortranCompilerTool>
-        </fortranCompilerTool>
         <linkerTool>
           <output>dist/cleaner</output>
           <stripSymbols>true</stripSymbols>
           <linkerLibItems>
-            <linkerOptionItem>-lole32 -lkernel32</linkerOptionItem>
+            <linkerOptionItem>-lshell32 -lkernel32</linkerOptionItem>
           </linkerLibItems>
           <commandLine>-mno-cygwin -mwindows</commandLine>
         </linkerTool>
       </compileType>
       <item path="src/main.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>1</compilerSet>
+        <compilerSet>Cygwin</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -92,8 +70,6 @@
       </compileType>
       <item path="src/main.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
     </conf>
   </confs>

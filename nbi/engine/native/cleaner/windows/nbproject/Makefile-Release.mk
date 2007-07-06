@@ -12,17 +12,20 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=g77
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Release/Cygwin-Windows
+
 # Object Files
 OBJECTFILES= \
-	build/Release/GNU-Windows/src/main.o
+	${OBJECTDIR}/src/main.o
 
 # C Compiler Flags
 CFLAGS=
@@ -38,15 +41,15 @@ FFLAGS=
 LDLIBSOPTIONS=
 
 # Build Targets
-.build-conf: ${BUILD_SUBPROJECTS} dist/Release/GNU-Windows/windows.exe
+.build-conf: ${BUILD_SUBPROJECTS} dist/Release/Cygwin-Windows/windows.exe
 
-dist/Release/GNU-Windows/windows.exe: ${OBJECTFILES}
-	${MKDIR} -p dist/Release/GNU-Windows
-	${LINK.c} -o dist/Release/GNU-Windows/windows ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/Release/Cygwin-Windows/windows.exe: ${OBJECTFILES}
+	${MKDIR} -p dist/Release/Cygwin-Windows
+	${LINK.c} -o dist/Release/Cygwin-Windows/windows ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Release/GNU-Windows/src/main.o: src/main.c 
-	${MKDIR} -p build/Release/GNU-Windows/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Windows/src/main.o src/main.c
+${OBJECTDIR}/src/main.o: src/main.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/src/main.o src/main.c
 
 # Subprojects
 .build-subprojects:
@@ -54,7 +57,7 @@ build/Release/GNU-Windows/src/main.o: src/main.c
 # Clean Targets
 .clean-conf:
 	${RM} -r build/Release
-	${RM} dist/Release/GNU-Windows/windows.exe
+	${RM} dist/Release/Cygwin-Windows/windows.exe
 
 # Subprojects
 .clean-subprojects:

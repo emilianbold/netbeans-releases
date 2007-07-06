@@ -12,17 +12,20 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=g77
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Debug/Cygwin-Windows
+
 # Object Files
 OBJECTFILES= \
-	build/Debug/GNU-Windows/src/main.o
+	${OBJECTDIR}/src/main.o
 
 # C Compiler Flags
 CFLAGS=
@@ -36,7 +39,7 @@ FFLAGS=
 
 # Link Libraries and Options
 LDLIBSOPTIONS=\
-	-lole32 \
+	-lshell32 \
 	-lkernel32
 
 # Build Targets
@@ -46,9 +49,9 @@ dist/cleaner.exe: ${OBJECTFILES}
 	${MKDIR} -p dist
 	${LINK.c} -mno-cygwin -mwindows -o dist/cleaner -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Debug/GNU-Windows/src/main.o: src/main.c 
-	${MKDIR} -p build/Debug/GNU-Windows/src
-	$(COMPILE.c) -g -o build/Debug/GNU-Windows/src/main.o src/main.c
+${OBJECTDIR}/src/main.o: src/main.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	$(COMPILE.c) -g -o ${OBJECTDIR}/src/main.o src/main.c
 
 # Subprojects
 .build-subprojects:
