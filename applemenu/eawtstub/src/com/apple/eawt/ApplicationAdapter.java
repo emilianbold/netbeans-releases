@@ -25,7 +25,7 @@
 
 package com.apple.eawt;
 
-public class ApplicationAdapter {
+public class ApplicationAdapter implements ApplicationListener {
     public void handleAbout(ApplicationEvent event) {}
     public void handleOpenApplication(ApplicationEvent event) {}
     public void handleOpenFile(ApplicationEvent event) {}
