@@ -38,7 +38,6 @@ Microsystems, Inc. All Rights Reserved.
 <exclude name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"/>
 <exclude name="org/netbeans/modules/ruby/RubyLexerRandomTest.class"/>
 <exclude name="org/netbeans/modules/ruby/BracketCompleterTest.class/test108889"/>
-<exclude name="org/netbeans/modules/ruby/TypeAnalyzerTest.class/testTypeAssertions"/>
             </patternset>
         </testset>
     </testbag>
@@ -47,7 +46,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="code" name="failing">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/TypeAnalyzerTest.class/testTypeAssertions"/>
                 <include name="**/**Test.class"/>
 <include name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"
          expectedFail="due to failure in heredoc statements with extra line input"/>
@@ -55,8 +53,6 @@ Microsystems, Inc. All Rights Reserved.
          expectedFail="problems in incremental lexing"/>
 <include name="org/netbeans/modules/ruby/RubyLexerTest.class/test93990"
          expectedFail="problems in incremental lexing"/>
-<include name="org/netbeans/modules/ruby/TypeAnalyzerTest.class/testTypeAssertions"
-         expectedFail="test requires parsetree; not yet available"/>
             </patternset>
         </testset>
     </testbag>

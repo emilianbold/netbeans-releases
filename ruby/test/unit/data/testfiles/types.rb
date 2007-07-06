@@ -15,8 +15,8 @@
 class FooBar < Test::Unit::TestCase
   
 end
-#:arg:param1:String
-#:arg:param2:Hash
+#:arg:param1=>String
+#:arg: param2 => Hash 
 def foo(param1,param2)
   if (true)
     whatever = 5.2

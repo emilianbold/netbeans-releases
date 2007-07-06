@@ -7,7 +7,9 @@
 
 package org.netbeans.modules.ruby;
 
+import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.openide.filesystems.FileObject;
 
@@ -55,32 +57,43 @@ public class TypeAnalyzerTest extends RubyTestBase {
         assertEquals("Hash", instance.getType("loc2"));
     }
  
-    /** This doesn't pass yet; I have to pass in a valid BaseDocument */
     public void testTypeAssertions() {
-        Node root = getRootNode("testfiles/types.rb");
-        TypeAnalyzer instance = new TypeAnalyzer(root, null, 794, 794, null, null);
+        String file = "testfiles/types.rb";
+        FileObject fileObject = getTestFile(file);
+        BaseDocument doc = getDocument(fileObject);
+
+        Node root = getRootNode(file);
+        int offset = 794;
+        MethodDefNode method = AstUtilities.findMethodAtOffset(root, offset);
+        assertNotNull(method);
+        TypeAnalyzer instance = new TypeAnalyzer(method, null, offset, offset, doc, fileObject);
         assertEquals("String", instance.getType("param1"));
         assertEquals("Hash", instance.getType("param2"));
     }
 
-    /** This doesn't pass yet; I have to pass in a valid BaseDocument */
     public void testBegin() {
-        Node root = getRootNode("testfiles/types2.rb");
+        String file = "testfiles/types2.rb";
+        FileObject fileObject = getTestFile(file);
+        BaseDocument doc = getDocument(fileObject);
+        Node root = getRootNode(file);
         int pos = 3000;
+        MethodDefNode method = AstUtilities.findMethodAtOffset(root, pos);
+        assertNotNull(method);
         AstPath path = new AstPath(root, pos);
         Node node = path.leaf();
-        TypeAnalyzer instance = new TypeAnalyzer(root, node, pos, pos, null, null);
+        TypeAnalyzer instance = new TypeAnalyzer(method, node, pos, pos, doc, fileObject);
         assertEquals("GetoptLong", instance.getType("go"));
     }
 
-/** This doesn't pass yet; I have to pass in a valid BaseDocument */
     public void testRailsController() {
-        FileObject fo = getTestFile("testfiles/type_controller.rb");
-        Node root = getRootNode("testfiles/type_controller.rb");
+        String file = "testfiles/type_controller.rb";
+        FileObject fo = getTestFile(file);
+        Node root = getRootNode(file);
+        BaseDocument doc = getDocument(fo);
         int pos = 46;
         AstPath path = new AstPath(root, pos);
         Node node = path.leaf();
-        TypeAnalyzer instance = new TypeAnalyzer(root, node, pos, pos, null, fo);
+        TypeAnalyzer instance = new TypeAnalyzer(root, node, pos, pos, doc, fo);
         assertEquals("ActionController::CgiRequest", instance.getType("request"));
     }
 }
