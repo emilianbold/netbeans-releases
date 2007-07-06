@@ -69,7 +69,7 @@ public class CheckBundles extends Task {
     public void setSrcdir(File f) {
         // Note: f will automatically be absolute (resolved from project basedir).
         if (!f.isDirectory())
-            throw new IllegalArgumentException ("srcdir must be a directory");
+            throw new IllegalArgumentException (f + " must be a directory");
         
         srcdir = f;
     }
