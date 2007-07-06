@@ -58,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">  
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.jaxb.Bundle"/>                                
                 <folder name="CodeTemplates">
                     <file name="org-netbeans-modules-editor-settingsCustom-CodeTemplates.xml" url="CodeTemplates.xml"/>
                 </folder>                                
