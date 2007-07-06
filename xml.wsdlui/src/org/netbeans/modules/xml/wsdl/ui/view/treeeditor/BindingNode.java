@@ -48,7 +48,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingOperation
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
-import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -242,21 +241,16 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
             boolean enable = false;
             PortType type = binding.getType() != null ? binding.getType().get() : null;
             if (type == null) return true;
-            if (type != null) {
-                Collection operations = type.getOperations();
-                if (operations != null) {
-                    int boSize =  binding.getBindingOperations() != null ? binding.getBindingOperations().size() : 0;
-                    if (type.getOperations().size() > boSize) {
-                        enable = true;
-                    }
+            Collection operations = type.getOperations();
+            if (operations != null) {
+                int boSize =  binding.getBindingOperations() != null ? binding.getBindingOperations().size() : 0;
+                if (type.getOperations().size() > boSize) {
+                    enable = true;
                 }
             }
             
             return enable;
         }
-        
-        
-        
     }
 
 
@@ -279,7 +273,6 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
         }
         
         if (decoration == null) {
-            //decoration = NbBundle.getMessage(OperationParameterNode.class, "LBL_PortTypeNotSet");
             return htmlDisplayName;
         }
         return htmlDisplayName + " <font color='#999999'>"+decoration+"</font>";

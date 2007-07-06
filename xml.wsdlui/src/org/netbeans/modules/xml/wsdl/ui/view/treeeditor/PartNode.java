@@ -119,11 +119,15 @@ public class PartNode extends WSDLNamedElementNode<Part> {
         }
     }
     
+    
+    
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (event.getSource() == getWSDLComponent() && isValid()) {
             String propertyName = event.getPropertyName();
             if (propertyName.equals(Part.ELEMENT_PROPERTY) || propertyName.equals(Part.TYPE_PROPERTY)) {
+                propertyName = Part.ELEMENT_PROPERTY + Part.TYPE_PROPERTY;
+                updateDisplayName();
                 firePropertyChange(propertyName, event.getOldValue(),
                         event.getNewValue());
             } else {

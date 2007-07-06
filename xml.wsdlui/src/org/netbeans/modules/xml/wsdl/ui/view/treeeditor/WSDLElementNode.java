@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -203,10 +202,6 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         weakComponentListener = WeakListeners.create(ComponentListener.class, this, wsdlmodel);
         wsdlmodel.get().addComponentListener(weakComponentListener);
         
-//        weakNodeListener = WeakListeners.create(NodeListener.class, new WSDLNodeListener(this), this);
-//        addNodeListener(weakNodeListener);
-        
-        //mSheet = super.createSheet();
         // Let the node try to update its display name.
         updateDisplayName();
         //Update the documentation.
@@ -347,7 +342,7 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         }
         return null;
     }
-
+    
     @Override
     public boolean canDestroy() {
         WSDLModel model = mElement.getModel();
@@ -465,7 +460,6 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
             updateDisplayName();
             String propName = event.getPropertyName();
             
-            //mLogger.log(Level.WARNING, "propertyName" + propName + "\t element name" + getName()); 
             if (event.getOldValue() != null && event.getNewValue() == null && 
                     WSDLComponent.class.isInstance(event.getOldValue())) {
                 ExtensibilityElementPrefixCleanupVisitor visitor = 
