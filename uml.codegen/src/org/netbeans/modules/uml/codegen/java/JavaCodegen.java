@@ -254,8 +254,13 @@ public class JavaCodegen implements ICodeGenerator
 		    }
 		    catch (IOException ex) 
 		    {
+			String excMsg = ex.getMessage();
+			if (excMsg == null) 
+			{
+			    excMsg = ex.getClass().getName();
+			}
 			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
-				 + " " + ex.getMessage()); // NOI18N
+				 + " " + excMsg); // NOI18N
 			errorsCount++;
 			ex.printStackTrace();
 		    }					    
@@ -483,8 +488,13 @@ public class JavaCodegen implements ICodeGenerator
 	    } 	    
 	    catch (Exception e) 
 	    {
+		String excMsg = e.getMessage();
+		if (excMsg == null) 
+		{
+		    excMsg = e.getClass().getName();
+		}
 		task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
-                    + " " + e.getMessage());
+                    + " " + excMsg);
 		errorsCount++;
 		e.printStackTrace();		
 	    }	    
