@@ -24,6 +24,7 @@ import org.netbeans.modules.identity.server.manager.api.ServerManager;
 import org.netbeans.modules.j2ee.sun.bridge.apis.NodeExtension;
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtController;
 import org.openide.nodes.Node;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 
 /**
@@ -34,7 +35,16 @@ public class NodeExtensionImpl extends NodeExtension {
     
     public Node getAppserverExtensionNode(AppserverMgmtController controller) {    
         try {
-            ServerInstance instance = ServerManager.getDefault().getServerInstance("[C:\\Sun\\SDK]deployer:Sun:AppServer::localhost:4848");
+            SunDeploymentManagerInterface deployMgr = (SunDeploymentManagerInterface) controller.getDeploymentManager();
+            String root = deployMgr.getPlatformRoot().getPath();
+            System.out.println("root = " + root);
+            String host = deployMgr.getHost();
+            int port = deployMgr.getPort();
+            String url = "[" + root + "]deployer:Sun:AppServer::" + host + ":" + port;
+
+            System.out.println("url = " + url);
+
+            ServerInstance instance = ServerManager.getDefault().getServerInstance(url);
             return new ServerInstanceNode(instance);
         } catch (ConfiguratorException ex) {
             return null;
