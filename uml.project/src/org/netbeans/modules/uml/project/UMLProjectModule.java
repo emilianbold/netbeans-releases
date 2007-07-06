@@ -122,33 +122,46 @@ public class UMLProjectModule extends ModuleInstall
     
     public void uninstalled()
     {
-        Project[] projects = ProjectUtil.getOpenUMLProjects();
+        final Project[] projects = ProjectUtil.getOpenUMLProjects();
+        
+        // 108119, save changes before uninstalling modules
         for (Project p: projects)
         {
             UMLProjectHelper h = (UMLProjectHelper)p.getLookup().lookup(UMLProjectHelper.class);
             if (h != null)
             {
-                IProductDiagramManager pDiaMgr =
-                            ProductHelper.getProductDiagramManager();
-                pDiaMgr.closeAllDiagrams();
+                h.closeProject(true);
             }
         }
+        
         SwingUtilities.invokeLater( new Runnable()
         {
             public void run()
             {
+                for (Project p: projects)
+                {
+                    UMLProjectHelper h = (UMLProjectHelper)p.getLookup().lookup(UMLProjectHelper.class);
+                    if (h != null)
+                    {
+                        IProductDiagramManager pDiaMgr =
+                                ProductHelper.getProductDiagramManager();
+                        pDiaMgr.closeAllDiagrams();
+                    }
+                }
+                
                 TopComponent tc = WindowManager.getDefault().findTopComponent("designpattern");
                 if (tc != null)
                     tc.close();
                 tc = WindowManager.getDefault().findTopComponent("documentation");
                 if (tc != null)
                     tc.close();
+                
             }
         });
         
-        OpenProjects.getDefault().close(projects);      
+        OpenProjects.getDefault().close(projects);
     }
-    
+
     
     ////////////////////////////////////////////////////////////////////////////
     // Data Access Methods

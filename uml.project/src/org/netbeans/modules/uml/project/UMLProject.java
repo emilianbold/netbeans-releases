@@ -30,11 +30,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
-
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -64,12 +62,10 @@ import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
@@ -81,6 +77,8 @@ import org.netbeans.modules.uml.project.ui.nodes.ModelRootNodeCookie;
 import org.netbeans.modules.uml.project.ui.customizer.UMLImportsUiSupport;
 import org.netbeans.modules.uml.util.ITaskFinishListener;
 import org.openide.loaders.DataObject;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -663,17 +661,13 @@ public class UMLProject implements Project, AntProjectListener
              
    
         protected void projectClosed()	    
-        {               
-	    if (mImportSupport != null) 
-		mImportSupport.unInitializeProject();
-
+        {                  
 	    if (mHelper != null) 
-	    {
-		// save==false as it has been already taken care for 
-		// by the newly implemented save fucntionality, and
-		// now we just need to correctly revoke all listeners, etc..
-		mHelper.closeProject(false);
-	    }     
+		mHelper.closeProject(false);  
+            
+            if (mImportSupport != null) 
+		mImportSupport.unInitializeProject();
+            
 	    Lookup l = UMLProject.this.getLookup();
 	    if (l != null) 
 	    {
@@ -681,7 +675,25 @@ public class UMLProject implements Project, AntProjectListener
                     (UMLPhysicalViewProvider)l.lookup(UMLPhysicalViewProvider.class);
 		if (physicalViewProvider != null) 
 		    physicalViewProvider.detachLogicalView();
-	    }	    
+	    }
+            
+            Project[] projects = ProjectUtil.getOpenUMLProjects();
+            // close TCs in case all uml projects are closed
+            if (projects.length == 0)
+            {
+                SwingUtilities.invokeLater( new Runnable()
+                {
+                    public void run()
+                    {
+                        TopComponent tc = WindowManager.getDefault().findTopComponent("designpattern");
+                        if (tc != null)
+                            tc.close();
+                        tc = WindowManager.getDefault().findTopComponent("documentation");
+                        if (tc != null)
+                            tc.close();
+                    }
+                });
+            }
         }
         
         /* listen to IProject change event, and modify project file data object

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -75,13 +75,13 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramMan
  * @author sumitabhk
  *
  */
-public class Application implements IApplication, 
-        IWSProjectEventsSink, IExternalElementEventsSink, 
+public class Application implements IApplication,
+        IWSProjectEventsSink, IExternalElementEventsSink,
         ICoreProductInitEventsSink
 {
     /**
-    * Creates and initializes an Application.
-    */
+     * Creates and initializes an Application.
+     */
     public Application()
     {
         super();
@@ -94,7 +94,7 @@ public class Application implements IApplication,
         establishDispatchers();
         establishQueryManager();
     }
-
+    
     /**
      * Establish the connection between this Application and the WorkspaceManager
      * and workspace dispatcher on the CoreProduct.
@@ -105,14 +105,14 @@ public class Application implements IApplication,
         if (product != null)
         {
             IEventDispatcher disp =
-                (IEventDispatcher) EventDispatchRetriever.instance()
+                    (IEventDispatcher) EventDispatchRetriever.instance()
                     .getDispatcher(
                     EventDispatchNameKeeper.workspaceName());
             if (disp != null && disp instanceof IWorkspaceEventDispatcher)
             {
                 m_EventDispatcher = (IWorkspaceEventDispatcher) disp;
             }
-                
+            
             if (m_EventDispatcher != null)
             {
                 IWorkspaceManager man = product.getWorkspaceManager();
@@ -133,14 +133,14 @@ public class Application implements IApplication,
     protected void establishDispatchers()
     {
         IElementChangeEventDispatcher eceDispatcher =
-            (IElementChangeEventDispatcher) EventDispatchRetriever
+                (IElementChangeEventDispatcher) EventDispatchRetriever
                 .instance()
                 .getDispatcher(
                 EventDispatchNameKeeper.modifiedName());
         if (eceDispatcher != null)
             eceDispatcher.registerForExternalElementEventsSink(this);
         ICoreProductEventDispatcher cpeDispatcher =
-            (ICoreProductEventDispatcher) EventDispatchRetriever.instance()
+                (ICoreProductEventDispatcher) EventDispatchRetriever.instance()
                 .getDispatcher(EventDispatchNameKeeper.coreProduct());
         if (cpeDispatcher != null)
             cpeDispatcher.registerForInitEvents(this);
@@ -163,7 +163,7 @@ public class Application implements IApplication,
     {
         return createProject("");
     }
-
+    
     /**
      * Opens a project at the file specified.
      *
@@ -174,7 +174,7 @@ public class Application implements IApplication,
     {
         if (fileName == null)
             throw new IllegalArgumentException("null filename");
-
+        
         IProject project = null;
         File projectFile = new File(fileName);
         if (projectFile.exists())
@@ -195,7 +195,7 @@ public class Application implements IApplication,
                 {
                     IWorkspace workspace = getCurrentWorkspace();
                     IEventPayload payload =
-                        dispatcher.createPayload("ProjectPreOpen");
+                            dispatcher.createPayload("ProjectPreOpen");
                     boolean proceed = dispatcher.fireProjectPreOpen(workspace, fileName, payload);
                     
                     if (proceed)
@@ -211,17 +211,21 @@ public class Application implements IApplication,
                             
                             if (m_QueryManager != null)
                             {
-                                // Delete the .QueryCache if it exists.  The file will be regenerated 
+                                // Delete the .QueryCache if it exists.  The file will be regenerated
                                 // in m_QueryManager.establishCache(project).
                                 // This is to eleminate .QueryCache file that created in previous releases
                                 // which has references to old package name.
                                 String qcFilePath = StringUtilities.getPath(project.getFileName() );
                                 qcFilePath += QueryManager.QUERY_CACHE;
                                 File qcFile = new File(qcFilePath);
-                                if (qcFile.exists() && !qcFile.isDirectory()) {
-                                    try {
+                                if (qcFile.exists() && !qcFile.isDirectory())
+                                {
+                                    try
+                                    {
                                         qcFile.delete();
-                                    } catch (Exception e) {
+                                    }
+                                    catch (Exception e)
+                                    {
                                         // can not delete file; do nothing
                                     }
                                 }
@@ -241,8 +245,8 @@ public class Application implements IApplication,
         }
         return project;
     }
-
-	/**
+    
+    /**
      * Creates a project object, connects it to the XML Document given, and adds
      * it to the list of open projects.
      *
@@ -252,7 +256,7 @@ public class Application implements IApplication,
      */
     protected IProject establishOpenProject(Document doc, String fileName)
     {
-    	IProject project = null;
+        IProject project = null;
         if (m_Projects != null)
         {
             project = getProjectByFileName(fileName);
@@ -263,7 +267,7 @@ public class Application implements IApplication,
                 if (node != null)
                 {
                     TypedFactoryRetriever<IProject> fact =
-                        new TypedFactoryRetriever<IProject>();
+                            new TypedFactoryRetriever<IProject>();
                     project = fact.createTypeAndFill("Project", node);
                     if (project != null)
                     {
@@ -281,29 +285,29 @@ public class Application implements IApplication,
     }
     
     /**
-	 * Makes sure the passed in Project is on our internal collection as well
-	 * as making sure that the Application is properly advised to the Project
-     * 
+     * Makes sure the passed in Project is on our internal collection as well
+     * as making sure that the Application is properly advised to the Project
+     *
      * @param project The <code>IProject</code>.
      */
     protected void attachProject(IProject project)
     {
         FactoryRetriever fact = FactoryRetriever.instance();
-		// Make sure the project is on the Object in
-		// memory table
-		if (fact != null)
-		{
-	        fact.addObject(project);
-		}
+        // Make sure the project is on the Object in
+        // memory table
+        if (fact != null)
+        {
+            fact.addObject(project);
+        }
         if (!m_Projects.contains(project))
         {
-			m_Projects.add(project);
+            m_Projects.add(project);
         }
     }
-
+    
     /**
      * Retrieves the current workspace off the Describe product.
-     * 
+     *
      * @return The current <code>IWorkspace</code>, possibly <code>null</code>.
      */
     protected IWorkspace getCurrentWorkspace()
@@ -311,17 +315,17 @@ public class Application implements IApplication,
         ICoreProduct product = getProduct();
         return product.getCurrentWorkspace();
     }
-
+    
     /**
      * Retrieves the current Describe product.
-     * 
+     *
      * @return The <code>IProduct</code>.
      */
     protected ICoreProduct getProduct()
     {
         return ProductRetriever.retrieveProduct();
     }
-
+    
     /**
      * Retrieves the event dispatcher specific to the project.
      * @return A <code>IStructureEventDispatcher</code>, if obtained.
@@ -329,15 +333,15 @@ public class Application implements IApplication,
     private IStructureEventDispatcher getProjectDispatcher()
     {
         EventDispatchRetriever ret = EventDispatchRetriever.instance();
-		IStructureEventDispatcher structureEventDispatcher = null;
+        IStructureEventDispatcher structureEventDispatcher = null;
         Object dispatcher = ret.getDispatcher(EventDispatchNameKeeper.structure());
         if (dispatcher != null && dispatcher instanceof IStructureEventDispatcher)
         {
-        	structureEventDispatcher = (IStructureEventDispatcher) dispatcher;
+            structureEventDispatcher = (IStructureEventDispatcher) dispatcher;
         }
         return structureEventDispatcher;
     }
-
+    
     /**
      * @return
      */
@@ -346,99 +350,100 @@ public class Application implements IApplication,
         // TODO Auto-generated method stub
         return null;
     }
-
-	/**
-	 *
-	 * Closes a top level model used to house all other elements.
-	 *
-	 * @param project [in] The project to close
-	 *
-	 * @param save [in] True to save the project before closing, else false
-	 * to discard any changes and just close.
-	 *
-	 */
-	public void closeProject(IProject project, boolean save) 
-	{
+    
+    /**
+     *
+     * Closes a top level model used to house all other elements.
+     *
+     * @param project [in] The project to close
+     *
+     * @param save [in] True to save the project before closing, else false
+     * to discard any changes and just close.
+     *
+     */
+    public void closeProject(IProject project, boolean save)
+    {
         PreventElementReEntrance blocker = new PreventElementReEntrance(this);
-        try 
+        try
         {
             if (blocker.isBlocking())
                 return;
-
-		IStructureEventDispatcher dispatcher = getProjectDispatcher();
-		boolean proceed = true;
-		if (dispatcher != null)
-		{
-			IEventPayload payload = dispatcher.createPayload("ProjectPreClose");
-			proceed = dispatcher.fireProjectPreClose(project, payload);
-		}
-		if (proceed)
-		{
-			if (save)
-			{
-				saveProject(project);
-			}
-
-			// Find this project in our collection and remove it.
-			int count = m_Projects.size();
-			
-			for (int i=0; i<count; i++)
-			{
-				IProject proj = m_Projects.get(i);
-				if (proj.isSame(project))
-				{
-					m_Projects.remove(i);
-					if (dispatcher != null)
-					{
-						IEventPayload payload = dispatcher.createPayload("ProjectClosed");
-						dispatcher.fireProjectClosed(project, payload);
-					}
-					break;
-				}
-			}
-
-			// Be sure to completely Deinitialize the Project by calling Close
-			// on it. This should be the very last thing that is done to the Project
-			project.close();
-		}
-	}
+            
+            IStructureEventDispatcher dispatcher = getProjectDispatcher();
+            boolean proceed = true;
+            if (dispatcher != null)
+            {
+                IEventPayload payload = dispatcher.createPayload("ProjectPreClose");
+                proceed = dispatcher.fireProjectPreClose(project, payload);
+            }
+            if (proceed)
+            {
+                if (save)
+                {
+                    saveProject(project);
+                }
+                
+                // Find this project in our collection and remove it.
+                int count = m_Projects.size();
+                
+                for (int i=0; i<count; i++)
+                {
+                    IProject proj = m_Projects.get(i);
+                    if (proj.isSame(project))
+                    {
+                        m_Projects.remove(i);
+                        if (dispatcher != null)
+                        {
+                            IEventPayload payload = dispatcher.createPayload("ProjectClosed");
+                            dispatcher.fireProjectClosed(project, payload);
+                        }
+                        break;
+                    }
+                }
+                
+                // Be sure to completely Deinitialize the Project by calling Close
+                // on it. This should be the very last thing that is done to the Project
+                project.close();
+            }
+        }
         finally
         {
             blocker.releaseBlock();
         }
-	}
-
-//	/////////////////////////////////////////////////////////////////////////////
-//
-//	 HRESULT Application::SaveProject( IProject* project )
-//
-//	 Saves the project by retrieving the href attribute on the project's
-//	 node and saving to that location. If the href value does not exist,
-//	 this means the project has never been saved before. An error results.
-//
-//	 INPUT:
-//		project  -  the project we are saving.
-//
-//	 OUTPUT:
-//		None.
-//
-//	 RETURN:
-//		HRESULTs
-//
-//	 CAVEAT:
-//		None.
-//
-//	/////////////////////////////////////////////////////////////////////////////
-  public void saveProject( IProject project )
-  {
-  	if (project != null)
-  	{
-  		String fileName = project.getFileName();
-  		if (fileName != null && fileName.length() > 0)
-  		{
-  			project.save(fileName, true);
-  		}
-  	}
+    }
+    
+    //	/////////////////////////////////////////////////////////////////////////////
+    //
+    //	 HRESULT Application::SaveProject( IProject* project )
+    //
+    //	 Saves the project by retrieving the href attribute on the project's
+    //	 node and saving to that location. If the href value does not exist,
+    //	 this means the project has never been saved before. An error results.
+    //
+    //	 INPUT:
+    //		project  -  the project we are saving.
+    //
+    //	 OUTPUT:
+    //		None.
+    //
+    //	 RETURN:
+    //		HRESULTs
+    //
+    //	 CAVEAT:
+    //		None.
+    //
+    //	/////////////////////////////////////////////////////////////////////////////
+    public void saveProject( IProject project )
+    {
+        if (project != null)
+        {
+            String fileName = project.getFileName();
+            if (fileName != null && fileName.length() > 0)
+            {
+                if (project.getDirty())
+                    project.save(fileName, true);
+            }
+        }
         
         // shouldn't we save all the modified diagrams as well?
         IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
@@ -447,181 +452,183 @@ public class Application implements IApplication,
         {
             IDiagram dia = diagram.getDiagram();
             if (dia != null && dia.getProject().equals(project))
-                dia.save();
+                if (dia.getIsDirty())
+                    dia.save();
         }
-  }
-
-  /**
-   *
-   * Closes all the open projects.
-   *
-   * @param save [in] True to save any modified projects, else False to
-   * discard any and all changes
-   *
-   */
-	public void closeAllProjects(boolean save) 
-	{
-		if (m_Projects != null)
-		{
-			// Fire the PreAllProjectClose event
-			IResultCell cell = new ResultCell();
-			boolean proceed = cell.canContinue();
-			if (proceed)
-			{
-				int count = m_Projects.size();
-				while (count > 0)
-				{
-					IProject proj = m_Projects.get(0);
-					closeProject(proj, save);
-					count = m_Projects.size();
-				}
-			}
-		}
-	}
-
-	/**
-	 *
-	 * Retrieves the collection object that holds all the projects that this 
-	 * application has.
-	 *
-	 * @param pVal [out] The list of projects
-	 */
-	public ETList<IProject> getProjects() 
-	{
-		return getProjects(FileExtensions.MD_EXT_NODOT);
-	}
-
-	/**
-	 *
-	 * Retrieves all open Projects that have a particular file extension. The compare of the file
-	 * extensions is case insensitive
-	 *
-	 * @param fileExtension[in]
-	 * @param pVal[in]
-	 */
-	public ETList<IProject> getProjects(String fileExtension) 
-	{
-		ETList<IProject> retProjs = new ETArrayList<IProject>();
-		try
-		{
-			if (m_Projects != null && fileExtension != null && fileExtension.length() > 0)
-			{
-				int size = m_Projects.size();
-				for (int i=0;i<size;i++)
-				{
-					IProject proj = m_Projects.get(i);
-					if (proj != null)
-					{
-						String fName = proj.getFileName();
-						if (fName != null && fName.length() > 0)
-						{
-							String extn = StringUtilities.getExtension(fName);
-							if (fileExtension.equalsIgnoreCase(extn))
-							{
-								retProjs.add(proj);
-							}
-						}
-					}
-				}
-			}
-		}
-		catch(Exception e)
-		{
-			//donot do anything for now
-		}
-		return retProjs;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.IApplication#getProjectByName(java.lang.String)
-	 */
-	public IProject getProjectByName(String projectName)
+    }
+    
+    /**
+     *
+     * Closes all the open projects.
+     *
+     * @param save [in] True to save any modified projects, else False to
+     * discard any and all changes
+     *
+     */
+    public void closeAllProjects(boolean save)
+    {
+        if (m_Projects != null)
+        {
+            // Fire the PreAllProjectClose event
+            IResultCell cell = new ResultCell();
+            boolean proceed = cell.canContinue();
+            if (proceed)
+            {
+                int count = m_Projects.size();
+                while (count > 0)
+                {
+                    IProject proj = m_Projects.get(0);
+                    closeProject(proj, save);
+                    count = m_Projects.size();
+                }
+            }
+        }
+    }
+    
+    /**
+     *
+     * Retrieves the collection object that holds all the projects that this
+     * application has.
+     *
+     * @param pVal [out] The list of projects
+     */
+    public ETList<IProject> getProjects()
+    {
+        return getProjects(FileExtensions.MD_EXT_NODOT);
+    }
+    
+    /**
+     *
+     * Retrieves all open Projects that have a particular file extension. The compare of the file
+     * extensions is case insensitive
+     *
+     * @param fileExtension[in]
+     * @param pVal[in]
+     */
+    public ETList<IProject> getProjects(String fileExtension)
+    {
+        ETList<IProject> retProjs = new ETArrayList<IProject>();
+        try
+        {
+            if (m_Projects != null && fileExtension != null && fileExtension.length() > 0)
+            {
+                int size = m_Projects.size();
+                for (int i=0;i<size;i++)
+                {
+                    IProject proj = m_Projects.get(i);
+                    if (proj != null)
+                    {
+                        String fName = proj.getFileName();
+                        if (fName != null && fName.length() > 0)
+                        {
+                            String extn = StringUtilities.getExtension(fName);
+                            if (fileExtension.equalsIgnoreCase(extn))
+                            {
+                                retProjs.add(proj);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            //donot do anything for now
+        }
+        return retProjs;
+    }
+    
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.uml.core.IApplication#getProjectByName(java.lang.String)
+         */
+    public IProject getProjectByName(String projectName)
     {
         if (projectName != null && m_Projects != null)
         {
-            for (Iterator<IProject> iter = m_Projects.iterator(); 
-                        iter.hasNext(); )
+            for (Iterator<IProject> iter = m_Projects.iterator();
+            iter.hasNext(); )
             {
                 IProject proj = (IProject) iter.next();
                 if (projectName.equals(proj.getName()))
                     return proj;
             }
         }
-		return null;
-	}
-
-	/**
-	 *
-	 * Retrieves an open project that matches the passed-in name.
-	 *
-	 * @param pWorkspace [in] The workspace we're associated with
-	 * @param projectName [in] The name of the project to retrieve
-	 * @param project [out] The found project
-	 *
-	 * @return HRESULT
-	 *
-	 */
-	public IProject getProjectByName(IWorkspace pWorkspace, String projectName )
-	{
-		IProject retProj = null;
-		if (pWorkspace == null)
-		{
-			pWorkspace = getCurrentWorkspace();
-		}
-		
-		if (m_Projects != null && pWorkspace != null)
-		{
-			int numProjs = m_Projects.size();
-			for (int i=0; i<numProjs; i++)
-			{
-				IProject proj = m_Projects.get(i);
-				String name = proj.getName();
-				if (projectName.equals(name))
-				{
-					// Make sure this project is in the workspace we've been asked about
-					String sFilename = proj.getFileName();
-					if (sFilename != null && sFilename.length() > 0)
-					{
-						// If we have a pattern just return the first project we find.
-						// patterns do not exist in projects
-						if (StringUtilities.hasExtension(sFilename, FileExtensions.PATTERN_EXT) )
-						{
-							retProj = proj;
-							break;
-						}
-						else
-						{
-							try
-							{
-								pWorkspace.verifyUniqueElementLocation(sFilename);
-								retProj = proj;
-								break;
-							}
-							catch (WorkspaceManagementException e)
-							{
-								e.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		return retProj;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.IApplication#getProjectByFileName(java.lang.String)
-	 */
-	public IProject getProjectByFileName(String fileName) {
+        return null;
+    }
+    
+    /**
+     *
+     * Retrieves an open project that matches the passed-in name.
+     *
+     * @param pWorkspace [in] The workspace we're associated with
+     * @param projectName [in] The name of the project to retrieve
+     * @param project [out] The found project
+     *
+     * @return HRESULT
+     *
+     */
+    public IProject getProjectByName(IWorkspace pWorkspace, String projectName )
+    {
+        IProject retProj = null;
+        if (pWorkspace == null)
+        {
+            pWorkspace = getCurrentWorkspace();
+        }
+        
+        if (m_Projects != null && pWorkspace != null)
+        {
+            int numProjs = m_Projects.size();
+            for (int i=0; i<numProjs; i++)
+            {
+                IProject proj = m_Projects.get(i);
+                String name = proj.getName();
+                if (projectName.equals(name))
+                {
+                    // Make sure this project is in the workspace we've been asked about
+                    String sFilename = proj.getFileName();
+                    if (sFilename != null && sFilename.length() > 0)
+                    {
+                        // If we have a pattern just return the first project we find.
+                        // patterns do not exist in projects
+                        if (StringUtilities.hasExtension(sFilename, FileExtensions.PATTERN_EXT) )
+                        {
+                            retProj = proj;
+                            break;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                pWorkspace.verifyUniqueElementLocation(sFilename);
+                                retProj = proj;
+                                break;
+                            }
+                            catch (WorkspaceManagementException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return retProj;
+    }
+    
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.uml.core.IApplication#getProjectByFileName(java.lang.String)
+         */
+    public IProject getProjectByFileName(String fileName)
+    {
         if (m_Projects != null)
         {
             // Compare File objects instead of Strings. This will do the right
             // thing (case insensitive compare on Windows, case sensitive on
             // Unixen) on all OSes.
             File projFile = new File(fileName);
-            for (Iterator<IProject> iter = m_Projects.iterator(); 
-                        iter.hasNext(); )
+            for (Iterator<IProject> iter = m_Projects.iterator();
+            iter.hasNext(); )
             {
                 IProject curr = iter.next();
                 String currFile = curr.getFileName();
@@ -631,539 +638,546 @@ public class Application implements IApplication,
                     return curr;
             }
         }
-		return null;
-	}
-
-	/**
-	 *
-	 * Retrieves a Project from the Application by the ID of the project.
-	 *
-	 * @param id[in] The ID of the project to retrieve
-	 * @param project[out] The found Project, else 0 if not found.
-	 *
-	 * @return HRESULTs
-	 */
-	public IProject getProjectByID(String projID) 
-	{
-		IProject retProj = null;
-		if (m_Projects != null)
-		{
-			int count = m_Projects.size();
-			for (int i=0; i<count; i++)
-			{
-				IProject proj = m_Projects.get(i);
-				if (proj instanceof IVersionableElement)
-				{
-					IVersionableElement ver = proj;
-					Node node = ver.getNode();
-					if (node != null)
-					{
-						String temp = XMLManip.getAttributeValue(node, "xmi.id");
-						if (temp != null && temp.equals(projID))
-						{
-							retProj = proj;
-							break;
-						}
-					}
-				}
-			}
-		}
-		if (retProj == null)
-		{
-			retProj = resolveProjectByID(projID);
-		}
-		return retProj;
-	}
-
-	/**
-	 *
-	 * Attempts to find a Project by querying the current workspace, looking for an
-	 * element whose data section matches the id passed in.
-	 *
-	 * @param projID[in]          The ID of the IProject to find
-	 * @param foundProject[out]   The found project if found
-	 *
-	 * @return HRESULT
-	 *
-	 */
-	private IProject resolveProjectByID(String projID)
-	{
-		IProject retProj = null;
-		
+        return null;
+    }
+    
+    /**
+     *
+     * Retrieves a Project from the Application by the ID of the project.
+     *
+     * @param id[in] The ID of the project to retrieve
+     * @param project[out] The found Project, else 0 if not found.
+     *
+     * @return HRESULTs
+     */
+    public IProject getProjectByID(String projID)
+    {
+        IProject retProj = null;
+        if (m_Projects != null)
+        {
+            int count = m_Projects.size();
+            for (int i=0; i<count; i++)
+            {
+                IProject proj = m_Projects.get(i);
+                if (proj instanceof IVersionableElement)
+                {
+                    IVersionableElement ver = proj;
+                    Node node = ver.getNode();
+                    if (node != null)
+                    {
+                        String temp = XMLManip.getAttributeValue(node, "xmi.id");
+                        if (temp != null && temp.equals(projID))
+                        {
+                            retProj = proj;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (retProj == null)
+        {
+            retProj = resolveProjectByID(projID);
+        }
+        return retProj;
+    }
+    
+    /**
+     *
+     * Attempts to find a Project by querying the current workspace, looking for an
+     * element whose data section matches the id passed in.
+     *
+     * @param projID[in]          The ID of the IProject to find
+     * @param foundProject[out]   The found project if found
+     *
+     * @return HRESULT
+     *
+     */
+    private IProject resolveProjectByID(String projID)
+    {
+        IProject retProj = null;
+        
         PreventElementReEntrance blocker = new PreventElementReEntrance(this);
-        try 
+        try
         {
             if (blocker.isBlocking())
                 return retProj;
-
-		// We didn't find any project's that are currently open by the passed in ID. Let's see
-		// If a project exists in the current workspace by that ID. If it does, we'll open the project
-		// and return it.
-		IWorkspace space = getCurrentWorkspace();
-		if (space != null)
-		{
-			ETList<IWSElement> foundElements = space.getElementsByDataValue(projID);
-			if (foundElements != null)
-			{
-				int count = foundElements.size();
-				if (count > 0)
-				{
-					try {
-						// There should only ever be one, so grab that one
-						IWSElement wsElem = foundElements.get(0);
-						String location = wsElem.getLocation();
-						if (location.length() > 0)
-						{
-							IWSProject wsProj = space.openWSProjectByLocation(location);
-							if (wsProj != null)
-							{
-								retProj = openProjectFromWSProject(wsProj);
-								if (retProj != null)
-								{
-									String projName = retProj.getName();
-								}
-							}
-						}
-					}
-					catch (WorkspaceManagementException e)
-					{
-					}
-				}
-			}
-		}
+            
+            // We didn't find any project's that are currently open by the passed in ID. Let's see
+            // If a project exists in the current workspace by that ID. If it does, we'll open the project
+            // and return it.
+            IWorkspace space = getCurrentWorkspace();
+            if (space != null)
+            {
+                ETList<IWSElement> foundElements = space.getElementsByDataValue(projID);
+                if (foundElements != null)
+                {
+                    int count = foundElements.size();
+                    if (count > 0)
+                    {
+                        try
+                        {
+                            // There should only ever be one, so grab that one
+                            IWSElement wsElem = foundElements.get(0);
+                            String location = wsElem.getLocation();
+                            if (location.length() > 0)
+                            {
+                                IWSProject wsProj = space.openWSProjectByLocation(location);
+                                if (wsProj != null)
+                                {
+                                    retProj = openProjectFromWSProject(wsProj);
+                                    if (retProj != null)
+                                    {
+                                        String projName = retProj.getName();
+                                    }
+                                }
+                            }
+                        }
+                        catch (WorkspaceManagementException e)
+                        {
+                        }
+                    }
+                }
+            }
         }
         finally
         {
             blocker.releaseBlock();
         }
-		return retProj;
-	}
-
-	/**
-	 *
-	 * Creates a new Workspace file at the location specified.
-	 *
-	 * @param name[in] The absolute path to the resultant workspace file.
-	 * @param space[out] The new Workspace
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	public IWorkspace createWorkspace(String fileName, String name) 
-	{
-		IWorkspace retSpace = null;
-		try {
-			ICoreProduct prod = getProduct();
-			if (prod != null)
-			{
-				retSpace = prod.createWorkspace(fileName, name);
-			}
-		}
-		catch (InvalidArguments e)
-		{
-		}
-		catch (WorkspaceManagementException e)
-		{
-		}
-		return retSpace;
-	}
-
-	/**
-	 *
-	 * Opens a workspace file, returning the Workspace object that represents
-	 * the data in that file.
-	 *
-	 * @param location[in] The absolute path to the Workspace file.
-	 * @param space[out] The Workspace object
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	public IWorkspace openWorkspace(String location) 
-	{
-		IWorkspace retSpace = null;
-		try {
-			ICoreProduct prod = getProduct();
-			if (prod != null)
-			{
-				retSpace = prod.openWorkspace(location);
-			}
-		}
-		catch (InvalidArguments e)
-		{
-		}
-		catch (WorkspaceManagementException e)
-		{
-		}
-		return retSpace;
-	}
-
-	/**
-	 *
-	 * Closes the passed-in Workspace. All open Projects will also be closed.
-	 *
-	 * @param space[in] The Workspace to close
-	 * @param save[in] True to save the contents of the Workspace, else
-	 *                False to discard changes since the last close and save
-	 *                of the workspace.
-	 *
-	 * @return HRESULT
-	 */
-	public void closeWorkspace(IWorkspace space, String fileName, boolean save) 
-	{
-		try {
-			ICoreProduct prod = getProduct();
-			if (prod != null)
-			{
-				prod.closeWorkspace(space, fileName, save);
-			}
-		}
-		catch (InvalidArguments e)
-		{
-		}
-		catch (WorkspaceManagementException e)
-		{
-		}
-	}
-
-	/**
-	 *
-	 * Imports an external IProject into the passed-in Workspace.
-	 *
-	 * @param space[in] The Workspace to update with the external Project
-	 * @param project[in] The Project to import
-	 * @param wsProject[out] The resultant WSProject that the Project was
-	 *                       imported into.
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	public IWSProject importProject(IWorkspace space, IProject project) 
-	{
-		IWSProject retProj = null;
-
-		// Retrieve the name of the project
-		String projName = project.getName();
-		if (projName.length() > 0)
-		{
-			boolean proceed = dispatchPreProjectImportEvent(projName, space);
-			if (proceed)
-			{
-				String projLoc = project.getFileName();
-				IWSProject newWSProj = null;
-				
-				// Prevent all events during the CreateWSProject call, as we don't want
-				// anyone handling that event.
-				try
-				{
-					EventBlocker.startBlocking();
-
-					// Create the WSProject that will encapsulate all the files associated with
-					// the imported project
-					newWSProj = space.createWSProject(projLoc, projName);
-				}
-				catch (Exception e)
-				{}
-				finally
-				{
-					EventBlocker.stopBlocking(false);
-				}
-
-				if (newWSProj != null)
-				{
-					attachProject(project);
-					retProj = newWSProj;
-					addProjectToWSProject(newWSProj, project);
-					dispatchProjectImported(newWSProj);
-				}
-			}
-		}
-		return retProj;
-	}
-
-	/**
-	 *
-	 * Dispatches the WSProjectInserted event
-	 *
-	 * @param wsProject[in] The WSProject that was inserted.
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	private void dispatchProjectImported( IWSProject wsProject )
-	{
-		try {
-			IWSProjectEventDispatcher dispatcher = prepareWSProjectDispatcher();
-			if (dispatcher != null)
-			{
-				dispatcher.dispatchWSProjectInserted(wsProject);
-			}
-		}
-		catch (InvalidArguments e)
-		{
-		}
-	}
-
-	/**
-	 *
-	 * Prepares the WSProject event dispatcher
-	 *
-	 * @param disp[out] The dispatching object.
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	private IWSProjectEventDispatcher prepareWSProjectDispatcher()
-	{
-		IWSProjectEventDispatcher retDisp = new WSProjectEventDispatcher();
-		retDisp.setEventDispatcher(m_EventDispatcher);
-		return retDisp;
-	}
-
-	/**
-	 *
-	 * Dispatches the pre insert event.
-	 *
-	 * @param projName[in] The name of the WSProject being inserted
-	 * @param space[in] The Workspace being inserted into.
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	private boolean dispatchPreProjectImportEvent(String projName, IWorkspace space)
-	{
-		boolean proceed = true;
-		try {
-			if (space != null)
-			{
-				IWSProjectEventDispatcher dispatcher = prepareWSProjectDispatcher();
-				proceed = dispatcher.dispatchWSProjectPreInsert(space, projName);
-			}
-		}
-		catch (InvalidArguments e)
-		{
-		}
-		
-		return proceed;
-	}
-
-	/**
-	 *
-	 * Opens a Project by retrieving it from within the passed-in Workspace.
-	 *
-	 * @param space[in] The Workspace to pull the Project from
-	 * @param projName[in] Name of the Project to open
-	 * @param project[out] The found Project
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	public IProject openProject(IWorkspace space, String projName) 
-	{
-		IProject retProj = getProjectByName(space, projName);
-		try {
-			if (retProj == null)
-			{
-				IWSProject wsProj = space.openWSProjectByName(projName);
-				if (wsProj != null)
-				{
-					retProj = openProjectFromWSProject(wsProj);
-				}
-			}
-		}
-		catch (WorkspaceManagementException e)
-		{
-		}
-		return retProj;
-	}
-
-	/**
-	 *
-	 * Opens a Project by retrieving it from within the passed-in Workspace.
-	 *
-	 * @param space[in] The Workspace to pull the Project from
-	 * @param WSProject[in] The project we should open
-	 * @param project[out] The found Project
-	 *
-	 * @return HRESULT
-	 * 
-	 */
-	public IProject openProject(IWorkspace space, IWSProject workspaceProject) 
-	{
-		IProject retProj = null;
-		String projName = workspaceProject.getName();
-		retProj = openProject(space, projName);
-		return retProj;
-	}
-
-	/**
-	 *
-	 * Cleans up this Application
-	 */
-	public void destroy() 
-	{
-		if (!m_Destroyed)
-		{
-			m_Destroyed = true;
-			try
-			{
-				if (m_QueryManager != null) 
-				{
-					m_QueryManager.deinitialize();
-					m_QueryManager = null;	
-				}
-				closeAllProjects(false);
-				if( m_EventDispatcher != null)
-				{
-					m_EventDispatcher.revokeWSProjectSink(this);
-					revokeDispatchers();
-				}
-			}
-			catch(Exception e)
-			{
-			}
-		}
-	}
-
-	/**
-	 *
-	 * Revokes the dispatchers the Application is listening to.
-	 */
-	protected void revokeDispatchers()
-	{
-		IElementChangeEventDispatcher eceDispatcher =
-			(IElementChangeEventDispatcher) EventDispatchRetriever
-				.instance()
-				.getDispatcher(
-				EventDispatchNameKeeper.modifiedName());
-		if (eceDispatcher != null)
-			eceDispatcher.revokeExternalElementEventsSink(this);
-		ICoreProductEventDispatcher cpeDispatcher =
-			(ICoreProductEventDispatcher) EventDispatchRetriever.instance()
-				.getDispatcher(EventDispatchNameKeeper.coreProduct());
-		if (cpeDispatcher != null)
-			cpeDispatcher.revokeInitSink(this);
-	}
-
-	/**
-	 *
-	 * Returns the filename of the executing module
-	 *
-	 * @param sLocation[out] The Application's file name.
-	 */
-	public String getInstallLocation() 
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 *
-	 * Returns the number of closed projects
-	 *
-	 * @param nNumClosed The number of closed projects
-	 *
-	 * @return 
-	 *
-	 */
-	public int getNumClosedProjects() 
-	{
-		int numProjs = 0;
-		try
-		{
-			IWorkspace space = getCurrentWorkspace();
-			if (space != null)
-			{
-				ETList<IWSProject> wsProjs = space.getWSProjects();
-				if (wsProjs != null)
-				{
-					int count = wsProjs.size();
-					for (int i=0; i<count; i++)
-					{
-						IWSProject wsProj = wsProjs.get(i);
-						String projName = wsProj.getName();
-						boolean isOpen = wsProj.isOpen();
-						if (projName.length() > 0)
-						{
-							String fileName = wsProj.getLocation();
-							if (fileName.length() > 0)
-							{
-								if (!isOpen && StringUtilities.hasExtension(fileName, FileExtensions.MD_EXT))
-								{
-									numProjs++;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		catch (WorkspaceManagementException e)
-		{
-		}
-		return numProjs;
-	}
-
-	/**
-	 *
-	 * Are all the WSProjects owned by this element opened
-	 *
-	 * @param bAllOpened true if all the WSProjects are opened
-	 *
-	 * @return 
-	 *
-	 */
-	public int getNumOpenedProjects() 
-	{
-		int numProjs = 0;
-
-		// Get the number of open projects in a what that doesn't cause the project
-		// to up and down the refcount.  If we don't do this then detecting leaks can
-		// be a pain because this routine is called in the onidle of ADMFCGui.
-		if (m_Projects != null)
-		{
-			int count = m_Projects.size();
-			for (int i=0; i<count; i++)
-			{
-				// Look for ETD extensions
-				IProject proj = m_Projects.get(i);
-				String fileName = proj.getFileName();
-				if (fileName.length() > 0)
-				{
-					String ext = StringUtilities.getExtension(fileName);
-					if (ext != null && ext.equalsIgnoreCase(FileExtensions.MD_EXT_NODOT))
-					{
-						numProjs++;
-					}
-				}
-			}
-		}
-		
-		return numProjs;
-	}
-
-	/**
-	 *
-	 * Retrieves the QueryManager object associated with this Application
-	 *
-	 * @return The QueryManager
-	 */
-	public IQueryManager getQueryManager() 
-	{
-		return m_QueryManager;
-	}
-
-	/**
-	 *
-	 * Sets a new QueryManager object on this application
-	 *
-	 * @param The QueryManager
-	 */ 
-	public void setQueryManager(IQueryManager value) 
-	{
-		m_QueryManager = value;
-	}
-
+        return retProj;
+    }
+    
+    /**
+     *
+     * Creates a new Workspace file at the location specified.
+     *
+     * @param name[in] The absolute path to the resultant workspace file.
+     * @param space[out] The new Workspace
+     *
+     * @return HRESULT
+     *
+     */
+    public IWorkspace createWorkspace(String fileName, String name)
+    {
+        IWorkspace retSpace = null;
+        try
+        {
+            ICoreProduct prod = getProduct();
+            if (prod != null)
+            {
+                retSpace = prod.createWorkspace(fileName, name);
+            }
+        }
+        catch (InvalidArguments e)
+        {
+        }
+        catch (WorkspaceManagementException e)
+        {
+        }
+        return retSpace;
+    }
+    
+    /**
+     *
+     * Opens a workspace file, returning the Workspace object that represents
+     * the data in that file.
+     *
+     * @param location[in] The absolute path to the Workspace file.
+     * @param space[out] The Workspace object
+     *
+     * @return HRESULT
+     *
+     */
+    public IWorkspace openWorkspace(String location)
+    {
+        IWorkspace retSpace = null;
+        try
+        {
+            ICoreProduct prod = getProduct();
+            if (prod != null)
+            {
+                retSpace = prod.openWorkspace(location);
+            }
+        }
+        catch (InvalidArguments e)
+        {
+        }
+        catch (WorkspaceManagementException e)
+        {
+        }
+        return retSpace;
+    }
+    
+    /**
+     *
+     * Closes the passed-in Workspace. All open Projects will also be closed.
+     *
+     * @param space[in] The Workspace to close
+     * @param save[in] True to save the contents of the Workspace, else
+     *                False to discard changes since the last close and save
+     *                of the workspace.
+     *
+     * @return HRESULT
+     */
+    public void closeWorkspace(IWorkspace space, String fileName, boolean save)
+    {
+        try
+        {
+            ICoreProduct prod = getProduct();
+            if (prod != null)
+            {
+                prod.closeWorkspace(space, fileName, save);
+            }
+        }
+        catch (InvalidArguments e)
+        {
+        }
+        catch (WorkspaceManagementException e)
+        {
+        }
+    }
+    
+    /**
+     *
+     * Imports an external IProject into the passed-in Workspace.
+     *
+     * @param space[in] The Workspace to update with the external Project
+     * @param project[in] The Project to import
+     * @param wsProject[out] The resultant WSProject that the Project was
+     *                       imported into.
+     *
+     * @return HRESULT
+     *
+     */
+    public IWSProject importProject(IWorkspace space, IProject project)
+    {
+        IWSProject retProj = null;
+        
+        // Retrieve the name of the project
+        String projName = project.getName();
+        if (projName.length() > 0)
+        {
+            boolean proceed = dispatchPreProjectImportEvent(projName, space);
+            if (proceed)
+            {
+                String projLoc = project.getFileName();
+                IWSProject newWSProj = null;
+                
+                // Prevent all events during the CreateWSProject call, as we don't want
+                // anyone handling that event.
+                try
+                {
+                    EventBlocker.startBlocking();
+                    
+                    // Create the WSProject that will encapsulate all the files associated with
+                    // the imported project
+                    newWSProj = space.createWSProject(projLoc, projName);
+                }
+                catch (Exception e)
+                {}
+                finally
+                {
+                    EventBlocker.stopBlocking(false);
+                }
+                
+                if (newWSProj != null)
+                {
+                    attachProject(project);
+                    retProj = newWSProj;
+                    addProjectToWSProject(newWSProj, project);
+                    dispatchProjectImported(newWSProj);
+                }
+            }
+        }
+        return retProj;
+    }
+    
+    /**
+     *
+     * Dispatches the WSProjectInserted event
+     *
+     * @param wsProject[in] The WSProject that was inserted.
+     *
+     * @return HRESULT
+     *
+     */
+    private void dispatchProjectImported( IWSProject wsProject )
+    {
+        try
+        {
+            IWSProjectEventDispatcher dispatcher = prepareWSProjectDispatcher();
+            if (dispatcher != null)
+            {
+                dispatcher.dispatchWSProjectInserted(wsProject);
+            }
+        }
+        catch (InvalidArguments e)
+        {
+        }
+    }
+    
+    /**
+     *
+     * Prepares the WSProject event dispatcher
+     *
+     * @param disp[out] The dispatching object.
+     *
+     * @return HRESULT
+     *
+     */
+    private IWSProjectEventDispatcher prepareWSProjectDispatcher()
+    {
+        IWSProjectEventDispatcher retDisp = new WSProjectEventDispatcher();
+        retDisp.setEventDispatcher(m_EventDispatcher);
+        return retDisp;
+    }
+    
+    /**
+     *
+     * Dispatches the pre insert event.
+     *
+     * @param projName[in] The name of the WSProject being inserted
+     * @param space[in] The Workspace being inserted into.
+     *
+     * @return HRESULT
+     *
+     */
+    private boolean dispatchPreProjectImportEvent(String projName, IWorkspace space)
+    {
+        boolean proceed = true;
+        try
+        {
+            if (space != null)
+            {
+                IWSProjectEventDispatcher dispatcher = prepareWSProjectDispatcher();
+                proceed = dispatcher.dispatchWSProjectPreInsert(space, projName);
+            }
+        }
+        catch (InvalidArguments e)
+        {
+        }
+        
+        return proceed;
+    }
+    
+    /**
+     *
+     * Opens a Project by retrieving it from within the passed-in Workspace.
+     *
+     * @param space[in] The Workspace to pull the Project from
+     * @param projName[in] Name of the Project to open
+     * @param project[out] The found Project
+     *
+     * @return HRESULT
+     *
+     */
+    public IProject openProject(IWorkspace space, String projName)
+    {
+        IProject retProj = getProjectByName(space, projName);
+        try
+        {
+            if (retProj == null)
+            {
+                IWSProject wsProj = space.openWSProjectByName(projName);
+                if (wsProj != null)
+                {
+                    retProj = openProjectFromWSProject(wsProj);
+                }
+            }
+        }
+        catch (WorkspaceManagementException e)
+        {
+        }
+        return retProj;
+    }
+    
+    /**
+     *
+     * Opens a Project by retrieving it from within the passed-in Workspace.
+     *
+     * @param space[in] The Workspace to pull the Project from
+     * @param WSProject[in] The project we should open
+     * @param project[out] The found Project
+     *
+     * @return HRESULT
+     *
+     */
+    public IProject openProject(IWorkspace space, IWSProject workspaceProject)
+    {
+        IProject retProj = null;
+        String projName = workspaceProject.getName();
+        retProj = openProject(space, projName);
+        return retProj;
+    }
+    
+    /**
+     *
+     * Cleans up this Application
+     */
+    public void destroy()
+    {
+        if (!m_Destroyed)
+        {
+            m_Destroyed = true;
+            try
+            {
+                if (m_QueryManager != null)
+                {
+                    m_QueryManager.deinitialize();
+                    m_QueryManager = null;
+                }
+                closeAllProjects(false);
+                if( m_EventDispatcher != null)
+                {
+                    m_EventDispatcher.revokeWSProjectSink(this);
+                    revokeDispatchers();
+                }
+            }
+            catch(Exception e)
+            {
+            }
+        }
+    }
+    
+    /**
+     *
+     * Revokes the dispatchers the Application is listening to.
+     */
+    protected void revokeDispatchers()
+    {
+        IElementChangeEventDispatcher eceDispatcher =
+                (IElementChangeEventDispatcher) EventDispatchRetriever
+                .instance()
+                .getDispatcher(
+                EventDispatchNameKeeper.modifiedName());
+        if (eceDispatcher != null)
+            eceDispatcher.revokeExternalElementEventsSink(this);
+        ICoreProductEventDispatcher cpeDispatcher =
+                (ICoreProductEventDispatcher) EventDispatchRetriever.instance()
+                .getDispatcher(EventDispatchNameKeeper.coreProduct());
+        if (cpeDispatcher != null)
+            cpeDispatcher.revokeInitSink(this);
+    }
+    
+    /**
+     *
+     * Returns the filename of the executing module
+     *
+     * @param sLocation[out] The Application's file name.
+     */
+    public String getInstallLocation()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /**
+     *
+     * Returns the number of closed projects
+     *
+     * @param nNumClosed The number of closed projects
+     *
+     * @return
+     *
+     */
+    public int getNumClosedProjects()
+    {
+        int numProjs = 0;
+        try
+        {
+            IWorkspace space = getCurrentWorkspace();
+            if (space != null)
+            {
+                ETList<IWSProject> wsProjs = space.getWSProjects();
+                if (wsProjs != null)
+                {
+                    int count = wsProjs.size();
+                    for (int i=0; i<count; i++)
+                    {
+                        IWSProject wsProj = wsProjs.get(i);
+                        String projName = wsProj.getName();
+                        boolean isOpen = wsProj.isOpen();
+                        if (projName.length() > 0)
+                        {
+                            String fileName = wsProj.getLocation();
+                            if (fileName.length() > 0)
+                            {
+                                if (!isOpen && StringUtilities.hasExtension(fileName, FileExtensions.MD_EXT))
+                                {
+                                    numProjs++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (WorkspaceManagementException e)
+        {
+        }
+        return numProjs;
+    }
+    
+    /**
+     *
+     * Are all the WSProjects owned by this element opened
+     *
+     * @param bAllOpened true if all the WSProjects are opened
+     *
+     * @return
+     *
+     */
+    public int getNumOpenedProjects()
+    {
+        int numProjs = 0;
+        
+        // Get the number of open projects in a what that doesn't cause the project
+        // to up and down the refcount.  If we don't do this then detecting leaks can
+        // be a pain because this routine is called in the onidle of ADMFCGui.
+        if (m_Projects != null)
+        {
+            int count = m_Projects.size();
+            for (int i=0; i<count; i++)
+            {
+                // Look for ETD extensions
+                IProject proj = m_Projects.get(i);
+                String fileName = proj.getFileName();
+                if (fileName.length() > 0)
+                {
+                    String ext = StringUtilities.getExtension(fileName);
+                    if (ext != null && ext.equalsIgnoreCase(FileExtensions.MD_EXT_NODOT))
+                    {
+                        numProjs++;
+                    }
+                }
+            }
+        }
+        
+        return numProjs;
+    }
+    
+    /**
+     *
+     * Retrieves the QueryManager object associated with this Application
+     *
+     * @return The QueryManager
+     */
+    public IQueryManager getQueryManager()
+    {
+        return m_QueryManager;
+    }
+    
+    /**
+     *
+     * Sets a new QueryManager object on this application
+     *
+     * @param The QueryManager
+     */
+    public void setQueryManager(IQueryManager value)
+    {
+        m_QueryManager = value;
+    }
+    
     /////////////////////////////////////////////////////////////////////////////
     // Event handler functions from IWSProjectEventsSink.
     
@@ -1172,9 +1186,9 @@ public class Application implements IApplication,
      */
     public void onWSProjectPreCreate(IWorkspace space, String projectName, IResultCell cell)
     {
-    	//nothing to do
+        //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink#onWSProjectCreated(org.netbeans.modules.uml.core.workspacemanagement.IWSProject, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1203,7 +1217,7 @@ public class Application implements IApplication,
     }
     
     protected IProject openProjectFromWSProject(IWSProject wsproject)
-        throws WorkspaceManagementException
+            throws WorkspaceManagementException
     {
         if (wsproject == null)
             throw new IllegalArgumentException("null wsproject");
@@ -1218,38 +1232,38 @@ public class Application implements IApplication,
         else
         {
             // TODO:
-//            INFO_MESSAGE_ID( IDS_MESSAGINGFACILITY, IDS_NO_PROJECTS );
+            //            INFO_MESSAGE_ID( IDS_MESSAGINGFACILITY, IDS_NO_PROJECTS );
         }
         return null;
     }
     
-	/**
-	 *
-	 * Retrieves the IProject from the IWSProject
-	 *
-	 * @param wsProject[in] The IWSProject to pull from
-	 * @param project[out] The IProject
-	 *
-	 * @return HRESULT
-	 *
-	 */
-	protected IProject retrieveProjectFromWSProject( IWSProject wsProject)
-	{
-		IProject retProj = null;
-		if (wsProject != null)
-		{
-			IWSElement elem = wsProject.getElementByName("_MetaData__");
-			if (elem != null)
-			{
-				ITwoPhaseCommit commit = elem.getTwoPhaseCommit();
-				if (commit instanceof IProject)
-				{
-					retProj = (IProject)commit;
-				}
-			}
-		}
-		return retProj;
-	}
+    /**
+     *
+     * Retrieves the IProject from the IWSProject
+     *
+     * @param wsProject[in] The IWSProject to pull from
+     * @param project[out] The IProject
+     *
+     * @return HRESULT
+     *
+     */
+    protected IProject retrieveProjectFromWSProject( IWSProject wsProject)
+    {
+        IProject retProj = null;
+        if (wsProject != null)
+        {
+            IWSElement elem = wsProject.getElementByName("_MetaData__");
+            if (elem != null)
+            {
+                ITwoPhaseCommit commit = elem.getTwoPhaseCommit();
+                if (commit instanceof IProject)
+                {
+                    retProj = (IProject)commit;
+                }
+            }
+        }
+        return retProj;
+    }
     
     /**
      * Adds the given IProject to the IWSProject.
@@ -1262,14 +1276,14 @@ public class Application implements IApplication,
         String filename = proj.getFileName();
         if (filename == null || filename.length() == 0)
             proj.setFileName(
-                filename = deriveProjectFileName(wsproj, proj.getName()));
-        IWSElement element = wsproj.addElement(filename, "_MetaData__", 
-                                                proj.getXMIID());
+                    filename = deriveProjectFileName(wsproj, proj.getName()));
+        IWSElement element = wsproj.addElement(filename, "_MetaData__",
+                proj.getXMIID());
         establishTwoPhaseConnection(element, proj);
     }
     
-    protected void establishTwoPhaseConnection(IWSElement element, 
-                                               IProject project)
+    protected void establishTwoPhaseConnection(IWSElement element,
+            IProject project)
     {
         // Connect the IProject to the IWSElement via the ITwoPhaseCommit
         // interface so that the proper saving process can commence upon save
@@ -1294,10 +1308,10 @@ public class Application implements IApplication,
                 // structure.
                 XMLManip manip = XMLManip.instance();
                 Document doc = manip.getDOMDocument();
-            
+                
                 IProject project = new Project();
                 project.setDocument(doc);
-
+                
                 project.prepareNode();
                 project.setFileName(fileName);
                 attachProject(project);
@@ -1307,10 +1321,10 @@ public class Application implements IApplication,
                 
                 if (dispatcher != null)
                 {
-                    dispatcher.fireProjectCreated(project, 
-                        dispatcher.createPayload("ProjectCreated"));
+                    dispatcher.fireProjectCreated(project,
+                            dispatcher.createPayload("ProjectCreated"));
                 }
-                    
+                
                 return project;
             }
             catch (Throwable t)
@@ -1321,51 +1335,51 @@ public class Application implements IApplication,
         else
         {
             // TODO:
-//            INFO_MESSAGE_ID( IDS_MESSAGINGFACILITY, IDS_PROJECT_CREATE_CANCELLED );
+            //            INFO_MESSAGE_ID( IDS_MESSAGINGFACILITY, IDS_PROJECT_CREATE_CANCELLED );
         }
         return null;
     }
     
     /**
      * Fires the pre-create event to all interested listeners.
-     * 
+     *
      * @param dispatcher The event dispatcher to use.
      * @return <code>true</code> if all listeners agree that project creation
      *         can proceed.
      */
     protected boolean fireProjectPreCreate(IStructureEventDispatcher dispatcher)
     {
-    	boolean bProceed = true;
+        boolean bProceed = true;
         IWorkspace workspace = getCurrentWorkspace();
         if (workspace != null)
         {
-            IEventPayload payload = 
-                dispatcher.createPayload("ProjectPreCreate");
+            IEventPayload payload =
+                    dispatcher.createPayload("ProjectPreCreate");
             bProceed = dispatcher.fireProjectPreCreate(workspace, payload);
         }
         return bProceed;
     }
-
+    
     /**
      * Returns the project file name, given the IWSProject and the name of the
      * project. The project file will be placed relative to the IWSProject's
      * base directory, and the filename will be the supplied 'projectName' with
      * the project file extension.
-     * 
+     *
      * @param project     The IWSProject which supplies a base directory.
      * @param projectName The name of the project file. If <code>null</code>,
      *                    "_MetaData__" is assumed.
      * @return The filename for the project file.
      */
-    protected String deriveProjectFileName(IWSProject project, 
-                                           String projectName)
+    protected String deriveProjectFileName(IWSProject project,
+            String projectName)
     {
         if (project == null)
             throw new IllegalArgumentException("null project");
-
+        
         if (projectName == null || projectName.length() == 0)
             projectName = "_MetaData__";
-            
+        
         projectName += MD_EXT;
         
         String basedir = project.getBaseDirectory();
@@ -1373,14 +1387,14 @@ public class Application implements IApplication,
             basedir = getCurrentWorkspace().getBaseDirectory();
         return new File(basedir, projectName).toString();
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink#onWSProjectPreOpen(org.netbeans.modules.uml.core.workspacemanagement.IWorkspace, java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
     public void onWSProjectPreOpen(IWorkspace space, String projName, IResultCell cell)
     {
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink#onWSProjectOpened(org.netbeans.modules.uml.core.workspacemanagement.IWSProject, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1395,61 +1409,61 @@ public class Application implements IApplication,
             e.printStackTrace();
         }
     }
-
-	/**
-	 *
-	 * Fired right before a WSProject is removed from the Workspace.
-	 *
-	 * @param project [in] 
-	 * @param cell [in] IResultCell
-	 *
-	 * @return S_OK
-	 *
-	 */
+    
+    /**
+     *
+     * Fired right before a WSProject is removed from the Workspace.
+     *
+     * @param project [in]
+     * @param cell [in] IResultCell
+     *
+     * @return S_OK
+     *
+     */
     public void onWSProjectPreRemove(IWSProject project, IResultCell cell)
     {
         
     }
-
-	/**
-	 *
-	 * FIred after a WSProject is removed from the Workspace.
-	 *
-	 * @param project [in] 
-	 * @param cell [in] IResultCell
-	 *
-	 * @return S_OK
-	 *
-	 */
+    
+    /**
+     *
+     * FIred after a WSProject is removed from the Workspace.
+     *
+     * @param project [in]
+     * @param cell [in] IResultCell
+     *
+     * @return S_OK
+     *
+     */
     public void onWSProjectRemoved(IWSProject project, IResultCell cell)
     {
         boolean isOpen = project.isOpen();
         if (isOpen)
         {
-        	IProject proj = retrieveProjectFromWSProject(project);
-        	if (proj != null)
-        	{
-        		closeProject(proj, false);
-        	}
+            IProject proj = retrieveProjectFromWSProject(project);
+            if (proj != null)
+            {
+                closeProject(proj, false);
+            }
         }
     }
-
-	/**
-	 *
-	 * Fired right before a WSProject is inserted into a Workspace.
-	 *
-	 * @param project [in]
-	 * @param projectName [in]
-	 * @param cell [in] IResultCell
-	 *
-	 * @return S_OK
-	 *
-	 */
+    
+    /**
+     *
+     * Fired right before a WSProject is inserted into a Workspace.
+     *
+     * @param project [in]
+     * @param projectName [in]
+     * @param cell [in] IResultCell
+     *
+     * @return S_OK
+     *
+     */
     public void onWSProjectPreInsert(IWorkspace space, String projectName, IResultCell cell)
     {
         
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink#onWSProjectInserted(org.netbeans.modules.uml.core.workspacemanagement.IWSProject, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1457,23 +1471,23 @@ public class Application implements IApplication,
     {
         
     }
-
-	/**
-	 *
-	 * Fired right before a WSProject is renamed.
-	 *
-	 * @param project [in] 
-	 * @param newName [in]
-	 * @param cell [in] IResultCell
-	 *
-	 * @return S_OK
-	 *
-	 */
+    
+    /**
+     *
+     * Fired right before a WSProject is renamed.
+     *
+     * @param project [in]
+     * @param newName [in]
+     * @param cell [in] IResultCell
+     *
+     * @return S_OK
+     *
+     */
     public void onWSProjectPreRename(IWSProject project, String newName, IResultCell cell)
     {
         
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.workspacemanagement.IWSProjectEventsSink#onWSProjectRenamed(org.netbeans.modules.uml.core.workspacemanagement.IWSProject, java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1481,117 +1495,117 @@ public class Application implements IApplication,
     {
         
     }
-
-	/**
-	 *
-	 * Fired right before a WSProject is closed.
-	 *
-	 * @param project [in] 
-	 * @param cell [in] IResultCell
-	 *
-	 * @return S_OK
-	 *
-	 */
+    
+    /**
+     *
+     * Fired right before a WSProject is closed.
+     *
+     * @param project [in]
+     * @param cell [in] IResultCell
+     *
+     * @return S_OK
+     *
+     */
     public void onWSProjectPreClose(IWSProject project, IResultCell cell)
     {
         
     }
-
-	/**
-	 *
-	 * Fired as a result of the user or the programmatic closing of an existing WSProject.
-	 *
-	 * @param wsProject[in] The WSProject just closed
-	 * @param cell[in] Ignored
-	 *
-	 * @return HRESULT
-	 * 
-	 */
+    
+    /**
+     *
+     * Fired as a result of the user or the programmatic closing of an existing WSProject.
+     *
+     * @param wsProject[in] The WSProject just closed
+     * @param cell[in] Ignored
+     *
+     * @return HRESULT
+     *
+     */
     public void onWSProjectClosed(IWSProject project, IResultCell cell)
     {
         IProject proj = retrieveProjectFromWSProject(project);
         if (proj != null)
         {
-        	closeProject(proj, false);
+            closeProject(proj, false);
         }
     }
-
-	/**
-	 *
-	 * Fired right before a WSProject is saved.
-	 *
-	 * @param Project [in] 
-	 * @param cell [in] IResultCell
-	 *
-	 * @return HRESULT
-	 *
-	 */
+    
+    /**
+     *
+     * Fired right before a WSProject is saved.
+     *
+     * @param Project [in]
+     * @param cell [in] IResultCell
+     *
+     * @return HRESULT
+     *
+     */
     public void onWSProjectPreSave(IWSProject project, IResultCell cell)
     {
         
     }
-
-	/**
-	 *
-	 * Fired as a result of the user or the programmatic saving of an existing WSProject.
-	 *
-	 * @param wsProject[in] The WSProject just saved
-	 * @param cell[in] Ignored
-	 *
-	 * @return HRESULT
-	 * 
-	 */
+    
+    /**
+     *
+     * Fired as a result of the user or the programmatic saving of an existing WSProject.
+     *
+     * @param wsProject[in] The WSProject just saved
+     * @param cell[in] Ignored
+     *
+     * @return HRESULT
+     *
+     */
     public void onWSProjectSaved(IWSProject project, IResultCell cell)
     {
         IProject proj = retrieveProjectFromWSProject(project);
         if (proj != null)
         {
-        	saveProject(proj);
+            saveProject(proj);
         }
     }
-
+    
     //////////////////////////////////////////////////////////////////////////
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IExternalElementEventsSink#onExternalElementPreLoaded(java.lang.String, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
     public void onExternalElementPreLoaded(String uri, IResultCell cell)
     {
-		try
-		{
-			if (uri != null && uri.length() > 0)
-			{
-				URILocator.uriparts(uri);
-			}
-		}
-		catch(Exception e)
-		{
-		}
+        try
+        {
+            if (uri != null && uri.length() > 0)
+            {
+                URILocator.uriparts(uri);
+            }
+        }
+        catch(Exception e)
+        {
+        }
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IExternalElementEventsSink#onExternalElementLoaded(org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
     public void onExternalElementLoaded(IVersionableElement element, IResultCell cell)
     {
-    	//nothing to do
+        //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IExternalElementEventsSink#onPreInitialExtraction(java.lang.String, org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
     public void onPreInitialExtraction(String fileName, IVersionableElement element, IResultCell cell)
     {
-    	//nothing to do
+        //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IExternalElementEventsSink#onInitialExtraction(org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
     public void onInitialExtraction(IVersionableElement element, IResultCell cell)
     {
-    	//nothing to do
+        //nothing to do
     }
-
+    
     /////////////////////////////////////////////////////////////////////
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink#onCoreProductPreInit(org.netbeans.modules.uml.core.coreapplication.ICoreProduct, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
@@ -1600,7 +1614,7 @@ public class Application implements IApplication,
     {
         //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink#onCoreProductInitialized(org.netbeans.modules.uml.core.coreapplication.ICoreProduct, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1608,7 +1622,7 @@ public class Application implements IApplication,
     {
         //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink#onCoreProductPreQuit(org.netbeans.modules.uml.core.coreapplication.ICoreProduct, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1616,7 +1630,7 @@ public class Application implements IApplication,
     {
         //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink#onCoreProductPreSaved(org.netbeans.modules.uml.core.coreapplication.ICoreProduct, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1624,7 +1638,7 @@ public class Application implements IApplication,
     {
         //nothing to do
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.coreapplication.ICoreProductInitEventsSink#onCoreProductSaved(org.netbeans.modules.uml.core.coreapplication.ICoreProduct, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
@@ -1633,18 +1647,18 @@ public class Application implements IApplication,
         //nothing to do
     }
     
-	public String getApplicationVersion()
-	{
-		//To do implement
-      //for the time being we want to keep it same as C++ released version.
-		return "6.1.4.837";
-	}
+    public String getApplicationVersion()
+    {
+        //To do implement
+        //for the time being we want to keep it same as C++ released version.
+        return "6.1.4.837";
+    }
     
     private static final String MD_EXT = ".etd";
     private ArrayList<IProject> m_Projects = new ArrayList<IProject>();
     private IQueryManager       m_QueryManager;
     private IWorkspaceEventDispatcher m_EventDispatcher;
-	private boolean m_Destroyed = false;
-	public static final String MESSAGING_FACILITY = "UML"; 
+    private boolean m_Destroyed = false;
+    public static final String MESSAGING_FACILITY = "UML";
 }
 
