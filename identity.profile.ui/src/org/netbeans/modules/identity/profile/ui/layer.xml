@@ -30,10 +30,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <folder name="Templates">
         <folder name="Identity">
             <folder name="SunDD">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.profile.ui.support.Bundle"/>
                 <file name="sun-web.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-web.template"/>
                 <file name="sun-ejb-jar.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-ejb-jar.template"/>
                 <file name="sun-application-client.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-application-client.template"/>
             </folder>
         </folder>
     </folder>
+    
 </filesystem>
