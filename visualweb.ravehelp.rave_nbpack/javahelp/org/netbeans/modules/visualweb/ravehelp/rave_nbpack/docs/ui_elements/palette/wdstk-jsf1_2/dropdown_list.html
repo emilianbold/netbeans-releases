@@ -76,7 +76,7 @@ you can see the default object that populates the list, which has a name similar
         </ul>
       </li>
       <li><b>Configure Default Options.</b> Enables you to edit the default <code>dropDown#DefaultOptions</code> object and change the list items' display and values and pick the item that is selected by default when the drop-down list first displays. It is likely that you will instead bind the <code>items</code> property to a database or object that will set the list items, as described above under Bind to Data.</li>
-      <li><b>Property Bindings.</b> Bind the component's properties to an object or data provider. A typical property to bind is the <code>selected</code> property, which you can bind to an <code>Object</code> array, array of primitives, or <code>ArrayList</code>. You must have added the array to a managed bean, such as the <a href="../../project_nav/session_bean_node.html">session bean</a>, as a property. You can use this  bean property to evaluate what the user chose after the page is submitted.</li>
+      <li><b>Property Bindings.</b> Bind the component's properties to an object or data provider. A typical property to bind is the <code>selected</code> property, which you can bind to an <code>Object</code> array, array of primitives, or <code>ArrayList</code>. You must have added the array to a managed bean, such as the <a href="../../navigator_win/session_bean_node.html">session bean</a>, as a property. You can use this  bean property to evaluate what the user chose after the page is submitted.</li>
       <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>
     </ul>
   </li>
@@ -84,12 +84,12 @@ you can see the default object that populates the list, which has a name similar
 <h3>Default Display of Drop Down Items<a name="defaultdisplay"></a> </h3>
 <p>By default, a Drop Down List displays its list items by using an object of type <code>SingleSelectOptionsList</code> with a name based on the default component ID. For example, the first drop-down list you drop on a page is initially named <code>dropDown1</code> and has an associated <code>dropDown1DefaultOptions</code> array object associated with it that you can see in the  
   <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
-    <param name="content" value="../app_outline_win_graphic.html">
+		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../navigator_win/navigator_win_popup.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
     <param name="viewerSize" value="385,450">
-    <param name="text" value="Outline window.">
-  </object></p>
+    <param name="text" value="Navigator window."></object>  </object></p>
 <p>You can set the values of this array object by right-clicking the drop-down list component and choosing Configure Default Options to open the Options Customizer dialog box. In this dialog box you can add new items or delete existing ones, and for each item you can set the displayed value (Display) and the value of the item (Value), and you can select which item is displayed by default (Selected). The <code>dropDown#DefaultOptions</code> object is an array that stores its Display values in <code>label</code> fields and its Value values in <code>value</code> fields. </p>
 <p>The following code sample shows how you might use this object and the <code>select</code> property of the drop-down list to determine which item is currently selected, and then write its Display and Value values, its <code>label</code> and <code>value</code>, to two static text fields for display. If you add a drop-down list and two static text components to the page, and then put this code in the drop-down list's <code>processValueChange</code> method as described above and select Auto-submit on Change for the component, when the user selects an item in the list, its Display and Value values display in  the two static text fields.</p>
 <pre>   String myvalue = (String)dropDown1.getSelected();<br>   int numOptions = dropDown1DefaultOptions.getOptions().length;<br>   int i = 0;<br>   for (i = 0; i &lt; numOptions; i++) {<br>       if (myvalue.equals(dropDown1DefaultOptions.getOptions()[i].getValue()))<br>           break;<br>   }<br>   if (i &lt; numOptions) {<br>       staticText1.setText(dropDown1DefaultOptions.getOptions()[i].getLabel());<br>       staticText2.setText(dropDown1DefaultOptions.getOptions()[i].getValue());<br>   } else {<br>       staticText1.setText(&quot;not found&quot;);  // should not get here<br>   }</pre>

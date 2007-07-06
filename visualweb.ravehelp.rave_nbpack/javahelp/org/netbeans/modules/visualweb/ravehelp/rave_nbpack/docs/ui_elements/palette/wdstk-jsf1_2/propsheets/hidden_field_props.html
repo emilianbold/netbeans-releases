@@ -17,14 +17,13 @@
 
 <p>You see the Properties window for a  Hidden Field 
   component <img src="../../../../images/bh_hidden_field_icon.gif" alt="hidden field icon">&nbsp;when you select 
-the component in the 
-      <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
-        <param name="content" value="../../app_outline_win_graphic.html">
-        <param name="viewerActivator" value="javax.help.LinkLabel">
-        <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="385,450">
-    <param name="text" value="Outline window.">
-      </object>
+the component in the		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>&nbsp;
+      
 </p>
 <p>This JavaServer Faces 1.2 component has the following properties.</p>
 
@@ -39,7 +38,7 @@ the component in the
 	<li><b>converter.</b><code> Type: Converter</code><br>
 		A JavaServer Faces converter that produces the correct type of value for the <code>value</code> property. The component will pick the correct converter for the <code>value</code> property if one is available, making it unnecessary to set this property in most cases. If the <code>value</code> property is bound to a value whose type is not on the list of converters, you have to supply your own converter and set this property. </li>
     <li><b>text.</b><code> Type: Object </code><br>
-The data that is sent when the page is submitted. A typical use for the <code>text</code> property of a hidden field is to pass data between pages when a form has more than one page. To be able to pass data, this field must be bound to a property of one of the managed beans, such as the <a href="../../../navigator_win/request_bean_node.html">Request Bean</a> or the <a href="../../../project_nav/session_bean_node.html">Session Bean</a>. </li>
+The data that is sent when the page is submitted. A typical use for the <code>text</code> property of a hidden field is to pass data between pages when a form has more than one page. To be able to pass data, this field must be bound to a property of one of the managed beans, such as the <a href="../../../navigator_win/request_bean_node.html">Request Bean</a> or the <a href="../../../navigator_win/session_bean_node.html">Session Bean</a>. </li>
   <li><b>validatorExpression.</b><code> Type: MethodExpression</code><br>
 Indicates the JavaServer Faces validator expression that is used when the value is submitted. A validator  ensures
 that the correct value is entered by a user. If the conditions defined by the validator are not met, the validator sends a message that you can display in a <a href="../message.html">Message component</a>. 
@@ -66,12 +65,12 @@ A simpler way of getting this functionality is to associate the component with a
 </ul>
 <h3>Events</h3>
 <ul>
-  <li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component. If you want to code a validate method, right-click the component in the Outline window and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you.
+  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. You typically define this method in the page bean by right-clicking the component in the Outline window and choosing Edit valueChange Event Handler. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the <code>id</code> property.</li>
+<li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component. If you want to code a validate method, right-click the component in the Outline window and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you.
       <ul class="note">
         <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you could lose the connection to your validate method.</li>
       </ul>
   </li>
-  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. You typically define this method in the page bean by right-clicking the component in the Outline window and choosing Edit valueChange Event Handler. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the <code>id</code> property.</li>
 </ul>
 <dl>
 	<dt><a name="seealso">See Also</a></dt>

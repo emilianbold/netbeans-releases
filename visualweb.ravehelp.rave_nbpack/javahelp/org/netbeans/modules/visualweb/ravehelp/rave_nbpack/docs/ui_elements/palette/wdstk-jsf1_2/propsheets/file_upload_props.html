@@ -143,10 +143,20 @@ Use this property when the component does apply but must not be changed.
 	  If this property is selected, when the user activates the file upload, the code in the page bean is executed before the validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.
 A simpler way of getting this functionality is to associate the component with a <a href="../../../../components/aboutvirtualforms.html">virtual form</a>, and then right-click the component and choose Auto-submit on Change.    
 <p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user cancelled the current operation.</p></li>
+	<li><b>preservePath.</b><code> Type: boolean</code><br> 
+	  The default value, not selected (false), means that full path information is not preserved for the component, and the default browser behavior will prevail. 
+      <p> If <code>preservePath</code> is selected (true), the component preserves the literal value of the file input element  set by the user on the client. The reason this property is provided is that browsers handle the value of an HTML input element of type <code>file</code> differently. Some browsers submit the literal value of the input element in the multipart/form-data file portion of the request, and others submit only the file name portion and not the directory portion. If this property is selected, the literal value (typically the full path name either entered explicitly by the user or set by choosing from a file selection dialogue) will be stored and submitted in a hidden field. The <code>UploadRenderer</code> will preserve the full file path in the corresponding <code>UploadFilterFileItem</code> instance, encapsulated by the <code>UploadedFile</code> instance.</p>
+<ul style="warning">
+<li>It is not clear if it is a security risk to transmit the full file path in clear text to the server.</li>
+</ul>
+<p>You can retrieve this saved path by using the <code>UploadedFile.getClientFilePath()</code> method. For example, if your component is named fileUpload1, you could use the following Java code to get the path:</p>
+<p><code>javacode</code></p>
+  </li>
 	<li><b>rendered.</b><code> Type: boolean</code><br>
-		If selected, the file upload is to be rendered and processed on any subsequent page submission. If not selected, the file upload does not appear on the page at all, not even as a hidden component.
-		<p>You can bind this property to a JavaBeans property that determines when the file upload does get rendered. For example, an airline reservation form might show a file upload for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
-</li></ul>
+	    If selected, the file upload is to be rendered and processed on any subsequent page submission. If not selected, the file upload does not appear on the page at all, not even as a hidden component.
+        <p>You can bind this property to a JavaBeans property that determines when the file upload does get rendered. For example, an airline reservation form might show a file upload for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+  </li>
+</ul>
 		<h3>Events</h3>
 		<p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
 		<ul>
@@ -163,8 +173,8 @@ A simpler way of getting this functionality is to associate the component with a
           </li>
 	  </ul>
 		
-	</li>
-</ul>
+	
+
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
