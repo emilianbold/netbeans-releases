@@ -20,13 +20,12 @@
 package org.netbeans.modules.bpel.project;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -261,25 +260,32 @@ public class BpelproProjectGenerator {
     private static void initialiseNames(FileObject fileObject, String name, String namespace, String projectName) {
         String line;
         StringBuffer buffer = new StringBuffer();
+        String separator = System.getProperty("line.separator"); // NOI18N
 
         try {
-            InputStream inputStream = fileObject.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    fileObject.getInputStream(), "UTF-8")); //NOI18N
 
-            while((line = reader.readLine()) != null) {
-                line = line.replace("_PROCNAME_", name);
-                line = line.replace("_NS_", namespace);
-                line = line.replace("_PROJNAME_", projectName);
-                buffer.append(line);
-                buffer.append("\n");
+            try {
+                while((line = reader.readLine()) != null) {
+                    line = line.replace("_PROCNAME_", name);
+                    line = line.replace("_NS_", namespace);
+                    line = line.replace("_PROJNAME_", projectName);
+                    buffer.append(line);
+                    buffer.append(separator);
+                }
+            } finally {
+                reader.close();
             }
 
-            File file = FileUtil.toFile(fileObject);
-            OutputStream outputStream = new FileOutputStream(file);
-            PrintWriter writer = new PrintWriter(outputStream);
-            writer.write(buffer.toString());
-            writer.flush();
-            outputStream.close();
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    fileObject.getOutputStream(), "UTF-8")); //NOI18N
+            try {
+                writer.write(buffer.toString());
+            } finally {
+                writer.close();
+            }
+            
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

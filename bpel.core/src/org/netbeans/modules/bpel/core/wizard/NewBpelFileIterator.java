@@ -23,11 +23,11 @@ package org.netbeans.modules.bpel.core.wizard;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -47,7 +47,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.bpel.project.BpelproProject;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -243,25 +242,31 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
             String namespace, String url) {
         String line;
         StringBuffer buffer = new StringBuffer();
+        String separator = System.getProperty("line.separator"); // NOI18N
         
         try {
-            InputStream inputStream = fileObject.getInputStream();
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(inputStream, "UTF-8")); // NOI18N
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    fileObject.getInputStream(), "UTF-8")); // NOI18N
             
-            while((line = reader.readLine()) != null) {
-                line = line.replace("_PROCNAME_", name); // NOI18N
-                line = line.replace("_NS_", namespace); // NOI18N
-                line = line.replace("_URL_", url); // NOI18N
-                buffer.append(line);
-                buffer.append("\n"); // NOI18N
+            try {
+                while((line = reader.readLine()) != null) {
+                    line = line.replace("_PROCNAME_", name); // NOI18N
+                    line = line.replace("_NS_", namespace); // NOI18N
+                    line = line.replace("_URL_", url); // NOI18N
+                    buffer.append(line);
+                    buffer.append(separator);
+                }
+            } finally {
+                reader.close();
             }
             
-            File file = FileUtil.toFile(fileObject);
-            PrintWriter writer = new PrintWriter(file, "UTF-8"); // NOI18N
-            writer.write(buffer.toString());
-            writer.flush();
-            writer.close();
+            Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    fileObject.getOutputStream(), "UTF-8")); //NOI18N
+            try {
+                writer.write(buffer.toString());
+            } finally {
+                writer.close();
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
