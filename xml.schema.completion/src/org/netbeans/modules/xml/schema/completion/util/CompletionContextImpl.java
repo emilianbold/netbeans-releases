@@ -19,6 +19,7 @@
 package org.netbeans.modules.xml.schema.completion.util;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,6 +43,8 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -107,10 +110,23 @@ public class CompletionContextImpl extends CompletionContext {
 
     public List<URI> getSchemas() {
         List<URI> uris = new ArrayList<URI>();
-        if(schemaLocation != null)
+        if(schemaLocation != null) {
             CompletionUtil.loadSchemaURIs(schemaLocation, uris, false);
-        if(noNamespaceSchemaLocation != null)
-            CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);        
+            return uris;
+        }
+        if(noNamespaceSchemaLocation != null) {
+            CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);
+            return uris;
+        }
+        if("project".equals(primaryFile.getName()) && "xml".equals(primaryFile.getExt())) { //NOI18N
+            java.io.File file = FileUtil.toFile(primaryFile);
+            String[] schemas = CompletionUtil.getSchemaLocations(file);
+            for(String temp : schemas) {
+                try {
+                    uris.add(new java.net.URI(temp));
+                } catch (URISyntaxException ex) {}
+            }
+        }
         return uris;
     }
         
@@ -279,18 +295,16 @@ public class CompletionContextImpl extends CompletionContext {
     private List<QName> getPathFromRoot(SyntaxElement se) {
         if(se == null)
             return null;
-        Stack stack = new Stack();
+        Stack<Tag> stack = new Stack<Tag>();
         if(se instanceof EmptyTag)
-            stack.push(se);
+            stack.push((Tag)se);
         while( se != null) {
             if( (se instanceof EndTag) ||
                 (se instanceof StartTag && stack.isEmpty()) ) {
-                stack.push(se);
+                stack.push((Tag)se);
                 if( defaultNamespace == null &&
                     (se instanceof StartTag || se instanceof EmptyTag) ) {
-                    String tagName = (se instanceof StartTag)?
-                        ((StartTag)se).getTagName():((EmptyTag)se).getTagName();
-                    if(isRootInNoNSModels(tagName))
+                    if(isRootInNoNSModels((Tag)se))
                         break;
                 }
                 se = se.getPrevious();
@@ -305,11 +319,9 @@ public class CompletionContextImpl extends CompletionContext {
                     }
                 } else {
                     SyntaxElement e = (SyntaxElement)stack.peek();
-                    String tagAtTop = (e instanceof StartTag)?
-                        ((StartTag)e).getTagName():((EmptyTag)e).getTagName();
-                    if(isRoot(tagAtTop))
+                    if(isRoot((Tag)e))
                         break;
-                    stack.push(se);
+                    stack.push((Tag)se);
                 }
             }
             se = se.getPrevious();
@@ -318,25 +330,11 @@ public class CompletionContextImpl extends CompletionContext {
         return createPath(stack);
     }    
         
-    private boolean fromSameNamespace(StartTag current, StartTag previous) {
-        String prevPrefix = CompletionUtil.getPrefixFromTag(previous.getTagName());
-        String thisPrefix = CompletionUtil.getPrefixFromTag(current.getTagName());
-        String thisNS = (thisPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
-            declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+thisPrefix);
-        String prevNS = (prevPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
-            declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prevPrefix);
-        
-        return (thisNS == null && prevNS == null) ||
-               (thisNS != null && thisNS.equals(prevNS)) ||
-               (prevNS != null && prevNS.equals(thisNS));
-    }
-
-    private ArrayList<QName> createPath(Stack stack) {
+    private ArrayList<QName> createPath(Stack<Tag> stack) {
         ArrayList<QName> path = new ArrayList<QName>();
         while(!stack.isEmpty()) {
-            Object top = stack.pop();
-            String tagName = (top instanceof StartTag)?
-                ((StartTag)top).getTagName():((EmptyTag)top).getTagName();
+            Tag tag = stack.pop();
+            String tagName = tag.getTagName();
             String prefix = CompletionUtil.getPrefixFromTag(tagName);
             String lName = CompletionUtil.getLocalNameFromTag(tagName);
             if(fromNoNamespace) {
@@ -344,27 +342,41 @@ public class CompletionContextImpl extends CompletionContext {
                 continue;
             }
             
-            QName qname = (prefix == null)?
-                new QName(declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE), lName) :
-                new QName(declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N            
+            QName qname = null;
+            if(prefix == null) {
+                String ns = tag.getAttribute(XMLConstants.XMLNS_ATTRIBUTE);
+                if(ns == null)
+                    qname = new QName(defaultNamespace, lName);
+                else
+                    qname = new QName(ns, lName);                
+            } else {
+                qname = new QName(declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N
+            }
+                
             path.add(qname);
         }
         //CompletionUtil.printPath(path);
         return path;
     }
     
-    private boolean isRoot(String tag) {
+    private boolean isRoot(Tag tag) {
+        String tagName = tag.getTagName();
+        String namespace = tag.getAttribute(XMLConstants.XMLNS_ATTRIBUTE);
         //if no default namespace found, try the no namespace models
         if(defaultNamespace == null) {
             if(isRootInNoNSModels(tag))
                 return true;
         }
         //now try all models, including no NS models
-        String prefix = CompletionUtil.getPrefixFromTag(tag);
+        String prefix = CompletionUtil.getPrefixFromTag(tagName);
         if(prefix == null) {
-            //try default namespace first
+            if(namespace != null) {
+                CompletionModel cm = getCompletionModelMap().get(namespace);
+                if(CompletionUtil.isRoot(tagName, cm))
+                    return true;
+            }
             CompletionModel cm = getCompletionModelMap().get(getDefaultNamespace());
-            if(CompletionUtil.isRoot(tag, cm))
+            if(CompletionUtil.isRoot(tagName, cm))
                 return true;
             if(isRootInNoNSModels(tag))
                 return true;
@@ -373,12 +385,12 @@ public class CompletionContextImpl extends CompletionContext {
         String tns = getDeclaredNamespaces().
                 get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix);
         CompletionModel cm = getCompletionModelMap().get(tns);
-        return CompletionUtil.isRoot(tag, cm);
+        return CompletionUtil.isRoot(tagName, cm);
     }
     
-    private boolean isRootInNoNSModels(String tag) {
+    private boolean isRootInNoNSModels(Tag tag) {
         for(CompletionModel m : noNSModels) {
-            if(CompletionUtil.isRoot(tag, m)) {
+            if(CompletionUtil.isRoot(tag.getTagName(), m)) {
                 fromNoNamespace = true;
                 noNamespaceModel = m;
                 return true;
@@ -491,6 +503,19 @@ public class CompletionContextImpl extends CompletionContext {
         return null;
     }
         
+    private boolean fromSameNamespace(StartTag current, StartTag previous) {
+        String prevPrefix = CompletionUtil.getPrefixFromTag(previous.getTagName());
+        String thisPrefix = CompletionUtil.getPrefixFromTag(current.getTagName());
+        String thisNS = (thisPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
+            declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+thisPrefix);
+        String prevNS = (prevPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
+            declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prevPrefix);
+        
+        return (thisNS == null && prevNS == null) ||
+               (thisNS != null && thisNS.equals(prevNS)) ||
+               (prevNS != null && prevNS.equals(thisNS));
+    }
+    
     private int completionAtOffset = -1;
     private FileObject primaryFile;
     private String typedChars;

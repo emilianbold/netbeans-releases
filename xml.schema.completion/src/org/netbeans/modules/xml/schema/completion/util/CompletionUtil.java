@@ -20,10 +20,16 @@ package org.netbeans.modules.xml.schema.completion.util;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import org.xml.sax.Attributes;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -35,13 +41,16 @@ import org.netbeans.modules.xml.axi.AnyElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.schema.completion.*;
-import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  *
@@ -54,7 +63,7 @@ public class CompletionUtil {
      */
     private CompletionUtil() {
     }
-    
+        
     /**
      * Returns the StartTag corresponding to the root element.
      */
@@ -239,6 +248,9 @@ public class CompletionUtil {
         }
         //namespace aware items
         List<String> prefixes = getPrefixes(context, axi, cm);
+        if(prefixes.size() == 0) {
+           prefixes.add(null);
+        }
         for(String prefix: prefixes) {
             item = createResultItem(axi, prefix, context);
             if(typedChars == null) {
@@ -413,5 +425,98 @@ public class CompletionUtil {
             }
         }        
     }
+    
+    public static String[] getSchemaLocations(java.io.File file) {
+        String[] schemaLocations = null;
+        java.io.FileReader fileReader = null;
+        try {
+            fileReader = new java.io.FileReader(file);
+            InputSource inputSource = new org.xml.sax.InputSource(fileReader);        
+            UserCatalog catalog = UserCatalog.getDefault();
+            EntityResolver res = (catalog == null) ? null : catalog.getEntityResolver();
+            NsHandler nsHandler = getNamespaces(inputSource);
+            String[] namespaces = nsHandler.getNamespaces();
+            schemaLocations = new String[namespaces.length];
+            for (int i=0;i<namespaces.length;i++) {
+                String ns = namespaces[i];
+                try {
+                    javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(ns, null);
+                    schemaLocations[i] = src.getSystemId();                
+                } catch (Exception ex) {
+                    //continue with the next one
+                }
+            }
+        } catch (Exception ex) {
+        } finally {
+            try {
+                if(fileReader != null)
+                    fileReader.close();
+            } catch (Exception ex) {}
+        }        
+        return schemaLocations;
+    }
+    
+    private static NsHandler getNamespaces(InputSource is) {
+        NsHandler handler = new NsHandler();
+        try {
+            XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false, true);
+            xmlReader.setContentHandler(handler);
+            UserCatalog userCatalog = UserCatalog.getDefault();
+            if (userCatalog != null) {
+                EntityResolver resolver = userCatalog.getEntityResolver();
+                if (resolver != null) {
+                    xmlReader.setEntityResolver(resolver);
+                }
+            }
+            xmlReader.parse(is);
+        } catch (Exception ex) {
+            //
+        }
+        return handler;
+    }
+    
+    private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
+
+        Set<String> namespaces;
+        private Map<String, String> mapping;
+
+        NsHandler() {
+            namespaces = new HashSet<String>();
+            mapping = new HashMap<String, String>();
+        }
+
+        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
+            if (atts.getLength() > 0) {
+                //NOI18N
+// parse XMLSchema location attribute
+                String locations = atts.getValue("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation"); // NOI18N
+                if (locations != null) {
+                    StringTokenizer tokenizer = new StringTokenizer(locations);
+                    if ((tokenizer.countTokens() % 2) == 0) {
+                        while (tokenizer.hasMoreElements()) {
+                            String nsURI = tokenizer.nextToken();
+                            String nsLocation = tokenizer.nextToken();
+                            mapping.put(nsURI, nsLocation);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+            if ("http://www.w3.org/2001/XMLSchema-instance".equals(uri)) {
+                // NOIi8N
+return; // it's build in into parser
+            }
+            namespaces.add(uri);
+        }
+
+        String[] getNamespaces() {
+            String[] ns = new String[namespaces.size()];
+            namespaces.toArray(ns);
+            return ns;
+        }
+    }
+    
         
 }

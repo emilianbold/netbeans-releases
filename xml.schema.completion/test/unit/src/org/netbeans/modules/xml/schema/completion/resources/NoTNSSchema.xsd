@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:tns="http://xml.netbeans.org/schema/newXMLSchema"
     elementFormDefault="qualified">
     <xsd:element name="NNSRoot">
         <xsd:complexType>
@@ -10,7 +9,8 @@
                 <xsd:element name="NNSChild2"/>
             </xsd:sequence>
             <xsd:attribute name="NNSAttr1" type="xsd:string"/>
-            <xsd:attribute name="NNSAttr2" type="xsd:string"/>
+            <xsd:attribute ref="NNSAttr2"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:attribute name="NNSAttr2" type="xsd:string"/>
 </xsd:schema>

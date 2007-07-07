@@ -36,6 +36,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     
     public static Test suite() {
         TestSuite suite = new TestSuite();
+        suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter1"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter2"));
@@ -52,6 +53,22 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testChildren1"));
         suite.addTest(new BasicCompletionTest("testChildren2"));
         return suite;
+    }
+    
+    /**
+     * Queries elements.
+     */
+    public void testNoNamespaceCompletion() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<NNSRoot xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=63
+        buffer.append("  xsi:noNamespaceSchemaLocation=\"NoTNSSchema.xsd\">\n"); //offset=51
+        buffer.append("  <\n"); //offset=4
+        buffer.append("</NNSRoot>\n");
+        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(157);
+        String[] expectedResult = {"NNSChild1", "NNSChild2"};
+        assertResult(items, expectedResult);
     }
     
     /**
