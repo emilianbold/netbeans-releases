@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +46,7 @@ import org.jruby.ast.DVarNode;
 import org.jruby.ast.FCallNode;
 import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.GlobalVarNode;
+import org.jruby.ast.HashNode;
 import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
 import org.jruby.ast.ListNode;
@@ -52,6 +54,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
@@ -65,6 +68,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -87,9 +91,7 @@ import org.openide.util.Exceptions;
  *   for aliases!
  * @todo If you're looking for a local class, such as a Rails model, I should
  *   find those first!
- * @todo In RHTML files, handle render :partial to go to the partial file,
- *   render :action to jump to the action. Similarly, link_to with :controller
- *   should warp to the associated controller etc.
+ * 
  * @author Tor Norbye
  */
 public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder {
@@ -103,8 +105,17 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
     public DeclarationFinder() {
     }
 
-    public OffsetRange getReferenceSpan(Document doc, int lexOffset) {
-        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+    public OffsetRange getReferenceSpan(Document document, int lexOffset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        
+        BaseDocument doc = (BaseDocument)document;
+        if (RubyUtils.isRhtmlDocument(doc)) {
+            RailsTarget target = findRailsTarget(doc, th, lexOffset);
+            if (target != null) {
+                return target.range;
+            }
+        }
+        
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         if (ts == null) {
@@ -190,13 +201,20 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         // Is this a require-statement? If so, jump to the required file
         try {
             Document document = info.getDocument();
+            TokenHierarchy<Document> th = TokenHierarchy.get(document);
             BaseDocument doc = (BaseDocument)document;
 
-            // Determine the bias (if the caret is between two tokens, did we
-            // click on a link for the left or the right?
             int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
                 return DeclarationLocation.NONE;
+            }
+
+            if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+                DeclarationLocation loc = findRailsFile(info, doc, th, lexOffset, astOffset);
+
+                if (loc != DeclarationLocation.NONE) {
+                    return loc;
+                }
             }
 
             OffsetRange range = getReferenceSpan(doc, lexOffset);
@@ -205,6 +223,8 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 return DeclarationLocation.NONE;
             }
 
+            // Determine the bias (if the caret is between two tokens, did we
+            // click on a link for the left or the right?
             boolean leftSide = range.getEnd() <= lexOffset;
 
             Node root = AstUtilities.getRoot(info);
@@ -273,8 +293,6 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             }
 
             RubyIndex index = RubyIndex.get(info.getIndex());
-
-            TokenHierarchy<Document> th = TokenHierarchy.get(document);
 
             int tokenOffset = lexOffset;
 
@@ -553,7 +571,223 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         return DeclarationLocation.NONE;
     }
-// TODO - rewrite to use getInheritedMethods!
+    
+    private DeclarationLocation findRailsFile(CompilationInfo info, BaseDocument doc, TokenHierarchy<Document> th, int lexOffset, int astOffset) {
+        RailsTarget target = findRailsTarget(doc, th, lexOffset);
+        if (target != null) {
+            String type = target.type;
+            if (type.indexOf("partial") != -1) { // NOI18N
+                
+                String name = "_" + target.name; // NOI18N
+                
+                // Try to find the partial file
+                FileObject dir = info.getFileObject().getParent();
+                FileObject partial = dir.getFileObject(name + ".rhtml"); // NOI18N
+                if (partial == null) {
+                    // Handle some other file types for the partials
+                    for (FileObject child : dir.getChildren()) {
+                        if (child.isValid() && !child.isFolder() && child.getName().equals(name)) {
+                            partial = child;
+                            break;
+                        }
+                    }
+                }
+
+                if (partial != null) {
+                    return new DeclarationLocation(partial, 0);
+                }
+                
+            } else if (type.indexOf("controller") != -1 || type.indexOf("action") != -1) { // NOI18N
+                // Look for the controller file in the corresponding directory
+                FileObject file = info.getFileObject();
+                file = file.getParent();
+                //FileObject dir = file.getParent();
+
+                String action = null;
+                String fileName = file.getName();
+                boolean isController = type.indexOf("controller") != -1; // NOI18N
+                String path = ""; // NOI18N
+                if (isController) {
+                    path = target.name;
+                } else {
+                    if (!fileName.startsWith("_")) { // NOI18N
+                                                     // For partials like "_foo", just use the surrounding view
+                        path = fileName;
+                        action = info.getFileObject().getName();
+                    }
+                }
+                
+                // The hyperlink has either the controller or the action, but I should
+                // look at the AST to find the other such that the navigation works
+                // better. E.g. if you click on :controller=>'foo', and the statement
+                // also has an :action=>'bar', we not only jump to FooController we go to
+                // the "def bar" in it as well (and vice versa if you click on just :action=>'bar';
+                // this normally assumes its the controller associated with the RHTML file unless
+                // a different controller is specified
+                int delta = target.range.getStart() - lexOffset;
+                String[] controllerAction = findControllerAction(info, lexOffset+delta, astOffset+delta);
+                if (controllerAction[0] != null) {
+                    path = controllerAction[0];
+                }
+                if (controllerAction[1] != null) {
+                    action = controllerAction[1];
+                }
+
+                // Find app dir, and build up a relative path to the view file in the process
+                FileObject app = file.getParent();
+
+                while (app != null) {
+                    if (app.getName().equals("views") && // NOI18N
+                            ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
+                        app = app.getParent();
+
+                        break;
+                    }
+
+                    path = app.getNameExt() + "/" + path; // NOI18N
+                    app = app.getParent();
+                }
+
+                if (app != null) {
+                    FileObject controllerFile = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
+                    if (controllerFile != null) {
+                        int offset = 0;
+                        if (action != null) {
+                            offset = AstUtilities.findOffset(controllerFile, action);
+                            if (offset < 0) {
+                                offset = 0;
+                            }
+                        }
+                        
+                        return new DeclarationLocation(controllerFile, offset);
+                    }
+                }
+            }
+        }
+        
+        return DeclarationLocation.NONE;
+    }
+    
+    /** Locate the :action and :controller strings in the hash list that is under the
+     * given offsets
+     * @return A string[2] where string[0] is the controller or null, and string[1] is the
+     *   action or null
+     */
+    @SuppressWarnings("unchecked")
+    private String[] findControllerAction(CompilationInfo info, int lexOffset, int astOffset) {
+        String[] result = new String[2];
+        
+        Node root = AstUtilities.getRoot(info);
+        AstPath path = new AstPath(root, astOffset);
+        Iterator<Node> it = path.leafToRoot();
+        Node prev = null;
+        while (it.hasNext()) {
+            Node n = it.next();
+            
+            if (n instanceof HashNode) {
+                if (prev instanceof ListNode) {
+                    List<Node> hashItems = (List<Node>)prev.childNodes();
+
+                    Iterator<Node> hi = hashItems.iterator();
+                    while (hi.hasNext()) {
+                        String from = null;
+                        String to = null;
+                        
+                        Node f = hi.next();
+                        if (f instanceof SymbolNode) {
+                            from = ((SymbolNode)f).getName();
+                        }
+                        
+                        if (hi.hasNext()) {
+                            Node t = hi.next();
+                            if (t instanceof StrNode) {
+                                to = ((StrNode)t).getValue().toString();
+                            }
+                        }
+                        
+                        if ("controller".equals(from)) { // NOI18N
+                            result[0] = to;
+                        } else if ("action".equals(from)) { // NOI18N
+                            result[1] = to;
+                        }
+                    }
+                    
+                    break;
+                }
+            }
+            
+            prev = n;
+        }
+        return result;
+    }
+
+    /** A result from findRailsTarget which computes sections that have special
+     * hyperlink semantics - like link_to, render :partial, render :action, :controller etc.
+     */
+    private class RailsTarget {
+        RailsTarget(String type, String name, OffsetRange range) {
+            this.type = type;
+            this.range = range;
+            this.name = name;
+        }
+        
+        @Override
+        public String toString() {
+            return "RailsTarget(" + type + ", " + name + ", " + range + ")";
+        }
+
+        String name;
+        OffsetRange range;
+        String type;
+    }
+
+    private RailsTarget findRailsTarget(BaseDocument doc, TokenHierarchy<Document> th, int lexOffset) {
+        try {
+            // TODO - limit this to RHTML files only?
+            int begin = Utilities.getRowStart(doc, lexOffset);
+            if (begin != -1) {
+                int end = Utilities.getRowEnd(doc, lexOffset);
+                String s = doc.getText(begin, end-begin); // TODO - limit to a narrower region around the caret?
+                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => " }; // NOI18N
+                for (String target : targets) {
+                    int index = s.indexOf(target);
+                    if (index != -1) {
+                        // Find string
+                        int nameOffset = begin+index+target.length();
+                        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, nameOffset);
+                        ts.move(nameOffset);
+
+                        StringBuilder sb = new StringBuilder();
+                        while (ts.moveNext() && ts.offset() < end) {
+                            Token<?extends TokenId> token = ts.token();
+                            TokenId id = token.id();
+                            if (id == RubyTokenId.STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_LITERAL) {
+                                sb.append(token.text().toString());
+                            }
+
+                            if (!"string".equals(id.primaryCategory())) {
+                                break;
+                            }
+                        }
+                        int rangeEnd = ts.offset();
+
+                        String name = sb.toString();
+
+                        if (lexOffset <= rangeEnd && lexOffset >= begin+index) {
+                            OffsetRange range = new OffsetRange(begin+index, rangeEnd);
+                            return new RailsTarget(target, name, range);
+                        }
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+
+        return null;
+    }
+    
+    // TODO - rewrite to use getInheritedMethods!
     private DeclarationLocation findMethod(String name, String possibleFqn, String type,
         CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
         Set<IndexedMethod> methods = Collections.emptySet();

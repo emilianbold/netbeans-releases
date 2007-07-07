@@ -16,8 +16,10 @@
  */
 package org.netbeans.modules.ruby;
 
+import javax.swing.text.Document;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -38,6 +40,15 @@ public class RubyUtils {
 
     public static boolean isRhtmlFile(FileObject f) {
         return RubyInstallation.RHTML_MIME_TYPE.equals(f.getMIMEType());
+    }
+    
+    public static boolean isRhtmlDocument(Document doc) {
+        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+        if (dobj != null) {
+            return isRhtmlFile(dobj.getPrimaryFile());
+        }
+        
+        return false;
     }
     
     public static boolean isRubyOrRhtmlFile(FileObject f) {
