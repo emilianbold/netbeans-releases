@@ -59,6 +59,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
+import org.netbeans.modules.xml.retriever.impl.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.EditorCookie;
@@ -108,6 +109,16 @@ public class CatalogModelImpl implements CatalogModel {
                 CatalogWriteModel.CATALOG_FILE_EXTENSION;
         this.catalogFileObject = FileUtil.createData(fo, fileName);
     }
+    
+    private boolean fetchSynchronous = false;
+    public synchronized ModelSource getModelSourceSynchronous(URI locationURI,
+        ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
+        fetchSynchronous = true;
+        ModelSource ms = getModelSource(locationURI, modelSourceOfSourceDocument);
+        fetchSynchronous = false;
+        return ms;
+    }
+
     
     public synchronized ModelSource getModelSource(URI locationURI,
             ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
@@ -328,7 +339,7 @@ public class CatalogModelImpl implements CatalogModel {
             //do not attempt this for a test environment.
             boolean res = false;
             try{
-                res = Utilities.retrieveAndCache(locationURI, sourceFileObject);
+                res = Util.retrieveAndCache(locationURI, sourceFileObject,!fetchSynchronous);
             }catch (Exception e){//ignore all exceptions
             }
             if(res){

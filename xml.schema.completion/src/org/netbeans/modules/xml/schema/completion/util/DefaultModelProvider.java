@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.retriever.catalog.impl.CatalogModelImpl;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
-import org.netbeans.modules.xml.schema.completion.util.CatalogModelProvider;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -82,8 +82,10 @@ public class DefaultModelProvider extends CompletionModelProvider {
                 modelSource = catalogModelProvider.getModelSource(context.getPrimaryFile(), true);
                 catalogModel = catalogModelProvider.getCatalogModel();
             }
-            ModelSource schemaModelSource;
-            schemaModelSource = catalogModel.getModelSource(schemaURI, modelSource);
+            ModelSource schemaModelSource = null;
+            if(catalogModel instanceof CatalogModelImpl) {
+                schemaModelSource = ((CatalogModelImpl)catalogModel).getModelSourceSynchronous(schemaURI, modelSource);
+            }
             SchemaModel sm = null;
             if(schemaModelSource.getLookup().lookup(FileObject.class) == null) {
                 sm = SchemaModelFactory.getDefault().createFreshModel(schemaModelSource);

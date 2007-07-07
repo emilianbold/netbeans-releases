@@ -28,14 +28,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,21 +50,18 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.retriever.Retriever;
-import org.netbeans.modules.xml.retriever.impl.RetrieverImpl;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.impl.*;
 import org.netbeans.modules.xml.retriever.catalog.impl.XAMCatalogWriteModelImpl;
+import org.netbeans.modules.xml.retriever.impl.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
-import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -732,149 +727,7 @@ public class Utilities {
     
     
     public static boolean retrieveAndCache(URI locationURI, FileObject sourceFileObject) {
-        URI privateCatalogURI = null;
-        URI privateCacheURI = null;
-        
-        Project prj = FileOwnerQuery.getOwner(sourceFileObject);
-        if(prj == null)
-            return false;
-        
-        FileObject prjrtfo = prj.getProjectDirectory();
-        File prjrt = FileUtil.toFile(prjrtfo);
-        if(prjrt == null)
-            return false;
-        
-        //determine the cache dir
-        CacheDirectoryProvider cdp = (CacheDirectoryProvider) prj.getLookup().
-                lookup(CacheDirectoryProvider.class);
-        String catalogstr = DEFAULT_PRIVATE_CATALOG_URI_STR;
-        String cachestr = DEFAULT_PRIVATE_CAHCE_URI_STR;
-        try{
-            if( (cdp != null) && (cdp.getCacheDirectory() != null) ){
-                URI prjrturi = prjrt.toURI();
-                URI cpduri = FileUtil.toFile(cdp.getCacheDirectory()).toURI();
-                String cachedirstr = Utilities.relativize(prjrturi, cpduri);
-                catalogstr = cachedirstr+"/"+PRIVATE_CATALOG_URI_STR;
-                cachestr = cachedirstr+"/"+PRIVATE_CAHCE_URI_STR;
-            }
-            privateCatalogURI = new URI(catalogstr);
-            privateCacheURI = new URI(cachestr);
-        }catch(Exception e){
-            return false;
-        }
-        
-        //retrieve
-        URI cacheURI = prjrt.toURI().resolve(privateCacheURI);
-        File cacheFile = new File(cacheURI);
-        if(!cacheFile.isDirectory())
-            cacheFile.mkdirs();
-        FileObject cacheFO = FileUtil.toFileObject(FileUtil.normalizeFile(cacheFile));
-        if(cacheFO == null)
-            return false;
-        Retriever ret = Retriever.getDefault();
-        FileObject result;
-        try {
-            ((RetrieverImpl) ret).startNewThread = true;
-            result = ret.retrieveResource(cacheFO, privateCatalogURI, locationURI);
-        } catch (UnknownHostException ex) {
-            result = null;
-        } catch (IOException ex) {
-            result = null;
-        } catch (URISyntaxException ex) {
-            result = null;
-        }
-        
-        /*if(result == null)
-            return false;*/
-        
-        //add private catalog as next catalog file to the public and peer catalog
-        XMLCatalogProvider catProv = (XMLCatalogProvider) prj.getLookup().
-                lookup(XMLCatalogProvider.class);
-        FileObject publicCatFO = null;
-        FileObject peerCatFO = null;
-        if(catProv != null){
-            
-            //get public catalog
-            URI publicCatURI = catProv.getProjectWideCatalog();
-            if(publicCatURI != null){
-
-                URI pubcatURI = prjrt.toURI().resolve(publicCatURI);
-                if(pubcatURI != null){
-
-                    File pubcatFile = new File(pubcatURI);
-                    if(!pubcatFile.isFile())
-                        try {
-                            pubcatFile.createNewFile();
-                        } catch (IOException ex) {
-                        }
-                    publicCatFO = FileUtil.toFileObject(FileUtil.
-                            normalizeFile(pubcatFile));
-                }
-            }
-            
-            //get peer catalog
-            URI peerCatURI = catProv.getCatalog(sourceFileObject);
-            if(peerCatURI != null){
-                URI peercatURI = prjrt.toURI().resolve(peerCatURI);
-                if(peercatURI != null){
-                    File peercatFile = new File(peercatURI);
-                    if(!peercatFile.isFile())
-                        try {
-                            peercatFile.createNewFile();
-                        } catch (IOException ex) {
-                        }
-                    peerCatFO = FileUtil.toFileObject(FileUtil.
-                            normalizeFile(peercatFile));
-                }
-            }
-        }
-        //get the catalog write model
-        //add next cat entry to public catalog
-        URI cacheCatFullURI = FileUtil.toFile(prjrtfo).toURI().resolve(privateCatalogURI);
-        CatalogWriteModel catWriter = null;
-        try {
-            if(publicCatFO == null){
-                //get the public catalog legacy way
-                catWriter = CatalogWriteModelFactory.getInstance().
-                        getCatalogWriteModelForProject(sourceFileObject);
-            } else{
-                catWriter = CatalogWriteModelFactory.getInstance().
-                        getCatalogWriteModelForCatalogFile(publicCatFO);
-            }
-        } catch (CatalogModelException ex) {}
-        if(catWriter == null){
-            //return true. May be public cat had the priv cat entry already
-            return true;
-        }
-        try {
-            catWriter.addNextCatalog(cacheCatFullURI, true);
-        } catch (IOException ex) {
-        }
-        
-        //add the next cat entry to peer catalog
-        if(publicCatFO != peerCatFO){
-            //get the catalog write model
-            catWriter = null;
-            try {
-                if(peerCatFO == null){
-                    //get the public catalog legacy way
-                    catWriter = CatalogWriteModelFactory.getInstance().
-                            getCatalogWriteModelForProject(sourceFileObject);
-                } else{
-                    catWriter = CatalogWriteModelFactory.getInstance().
-                            getCatalogWriteModelForCatalogFile(peerCatFO);
-                }
-            } catch (CatalogModelException ex) {}
-            if(catWriter == null){
-                //return true. May be public cat had the priv cat entry already
-                return true;
-            }
-            try {
-                catWriter.addNextCatalog(cacheCatFullURI, true);
-            } catch (IOException ex) {
-            }
-        }
-        return true;
+        return Util.retrieveAndCache(locationURI, sourceFileObject, true);
     }
     
     public enum DocumentTypesEnum {
