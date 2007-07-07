@@ -43,6 +43,9 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
+ * This class provides property editor for common text properties such as label,
+ * text, etc. This is also an example how to use PropertyEditorUserCode API
+ * with one PropertyEditorElement.
  *
  * @author Karol Harezlak
  * @author Anton Chechel
@@ -59,6 +62,17 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private String comment;
     private long componentID;
 
+    /**
+    * Creates instance of PropertyEditorString.
+    *
+    * @param String comment to be displayed underneath of text area in custom
+    * property editor. Can be null.
+    * @param int dependence of particular DesignComponent type. Possible values
+    * are DEPENDENCE_NONE, DEPENDENCE_TEXT_BOX, DEPENDENCE_TEXT_FIELD. This value
+    * will affect for that components after property value will be changed. For
+    * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
+    * this property will be automatically increased to be equal of text length.
+    */
     public PropertyEditorString(String comment, int dependence) {
         this.comment = comment;
         this.dependence = dependence;
@@ -69,14 +83,25 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         initElements(elements);
     }
 
+    /**
+    * Creates instance of PropertyEditorString without dependences.
+    */
     public static final PropertyEditorString createInstance() {
         return new PropertyEditorString(null, DEPENDENCE_NONE);
     }
 
+    /**
+    * Creates instance of PropertyEditorString with particular dependences.
+    * @param int dependence
+    * @see PropertyEditorString(String comment, int dependence)
+    */
     public static final PropertyEditorString createInstance(int dependence) {
         return new PropertyEditorString(null, dependence);
     }
 
+    /**
+    * Creates instance of PropertyEditorString which can not change PropertyValue.
+    */
     public static final PropertyEditorString createInstanceReadOnly() {
         return new PropertyEditorString(null, DEPENDENCE_NONE) {
             @Override
@@ -92,28 +117,46 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         customEditor = new CustomEditor(comment);
     }
 
+    /*
+    * Give attention of invoking super.init(component)
+    */
     @Override
     public void init(DesignComponent component) {
         super.init(component);
         this.componentID = component.getComponentID();
     }
 
+    /*
+    * Custom editor
+    */
     public JComponent getCustomEditorComponent() {
         return customEditor.getComponent();
     }
 
+    /*
+    * Radio button
+    */
     public JRadioButton getRadioButton() {
         return radioButton;
     }
 
+    /*
+    * This element should be selected by default
+    */
     public boolean isInitiallySelected() {
         return true;
     }
 
+    /*
+    * This element should be vertically resizable
+    */
     public boolean isVerticallyResizable() {
         return true;
     }
 
+    /*
+    * Returns text from PropertyValue to be displayed in the inplace editor
+    */
     @Override
     public String getAsText() {
         String superText = super.getAsText();
@@ -125,14 +168,26 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return (String) value.getPrimitiveValue();
     }
 
-    public void setTextForPropertyValue (String text) {
+    /*
+    * Sets PropertyValue according to given text. This method invoked when user
+    * sets new value in the inplace editor.
+    */
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
 
-    public String getTextForPropertyValue () {
+    /*
+    * This method used when PropertyEditorUserCode has more than one element
+    * incapsulated. In that case particular element returns text to be saved
+    * to PropertyValue.
+    */
+    public String getTextForPropertyValue() {
         return null;
     }
 
+    /*
+    * This method updates state of custom property editor.
+    */
     public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setText(null);
@@ -177,6 +232,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
     }
 
+    /*
+    * Saves PropertyValue
+    */
     @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
@@ -184,6 +242,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
     }
 
+    /*
+    * Custom property editor. JEditorPane plus possible JLabels with comments.
+    */
     private class CustomEditor {
 
         private JPanel panel;
