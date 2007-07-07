@@ -19,21 +19,26 @@
 
 set -x -e
 
-if [ -z "$1" ] || [ -z "$2" ] ; then
-    echo "usage: $0 srcdir dmgname"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "usage: $0 srcdir dmgname tmpdir"
     exit 1
 fi
 
 srcdir=$1
 dmg=$2
+tmpdir=$3
+
 volname="NetBeans 6.0"
 
-rm -f /tmp/template.sparseimage
-bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > /tmp/template.sparseimage
-hdiutil mount /tmp/template.sparseimage
-rsync -a "$srcdir/" --exclude .DS_Store /Volumes/template
-diskutil rename /Volumes/template "$volname"
-hdiutil unmount "/Volumes/$volname"
+rm -f $tmpdir/template.sparseimage
+bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseimage
+rm -f $tmpdir/mountpoint
+mkdir $tmpdir/mountpoint
+hdiutil mount -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
+rsync -a "$srcdir/" --exclude .DS_Store $tmpdir/mountpoint/
+diskutil rename $tmpdir/mountpoint "$volname"
+hdiutil unmount $tmpdir/mountpoint
 rm -f "$dmg"
-hdiutil create -srcdevice /tmp/template.sparseimage "$dmg"
-rm -f /tmp/template.sparseimage
+hdiutil create -srcdevice $tmpdir/template.sparseimage "$dmg"
+rm -f $tmpdir/template.sparseimage
+rmdir $tmpdir/mountpoint

@@ -99,9 +99,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="build-dmg" depends="build-pkg">
     <mkdir dir="dist"/>
+    <mkdir dir="build/dmg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="sh dmg/createdmg.sh build/pkg dist/${dmgname}"/>
+      <arg value="sh dmg/createdmg.sh build/pkg dist/${dmgname} build/dmg"/>
     </exec>
   </target>
 
