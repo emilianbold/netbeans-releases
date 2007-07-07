@@ -279,7 +279,6 @@
 	<mapID target="projrave_ui_elements_editors_qe_grid_pane" url="ui_elements/editors/qe_grid_pane.html"/>
 	<mapID target="projrave_ui_elements_editors_qe_results_pane" url="ui_elements/editors/qe_results_pane.html"/>
 	<mapID target="projrave_ui_elements_editors_qe_sql_pane" url="ui_elements/editors/qe_sql_pane.html"/>
-	<mapID target="projrave_ui_elements_options_options_data_source_dnd" url="ui_elements/options/options_data_source_dnd.html"/>
 	<mapID target="projrave_ui_elements_options_visual_editor" url="ui_elements/options/visual_editor.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_add_remove_list" url="ui_elements/palette/bh/add_remove_list.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_alert" url="ui_elements/palette/bh/alert.html"/>

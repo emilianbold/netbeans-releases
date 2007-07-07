@@ -529,8 +529,8 @@
 				<tocitem text="Add Database Connection" target="projrave_ui_elements_dialogs_add_database_conn_db" />
 			</tocitem>
 			<tocitem text="Options Window" expand="false">
-				<tocitem text="Advanced Options">
-					<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_options_data_source_dnd" />
+				<tocitem text="Visual Web Tab">
+					<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
 					<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
 				</tocitem>
 			</tocitem>
@@ -543,7 +543,7 @@
 				<tocitem text="Query Editor Keyboard Shortcuts" target="projrave_a11y_query_editor_shortcuts" />
 			</tocitem>
 			<tocitem text="Setting Up">
-				<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_options_data_source_dnd" />
+				<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
 				<tocitem text=" Tooltips" target="projrave_config_setup_tooltip_setting" />
 				<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
 			</tocitem>
