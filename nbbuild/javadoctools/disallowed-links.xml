@@ -61,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     <filter pattern="http://www\.netbeans\.org/ns/.*" accept="true"/>
     <!-- allow Project Design document -->
     <filter pattern="http://projects\.netbeans\.org/buildsys/design\.html" accept="true"/>
-    
+    <filter pattern="http://platform\.netbeans\.org/articles/.*" accept="true"/>
+    <filter pattern="http://ui\.netbeans\.org/docs/ui/themes/themes\.html" accept="true"/>
     <!-- forbid the rest of NetBeans sites -->
     <filter pattern="http://.*netbeans\.org/.*" accept="false"/>
