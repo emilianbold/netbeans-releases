@@ -20,6 +20,53 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
+    <!-- register templates -->
+    <folder name="Templates">
+        <folder name="XML">
+            <file name="XmlSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/XMLSchema.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
+		<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/XMLSchema.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.schema.wizard.SchemaWizardIterator"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+            <file name="retrieveWSDLResource">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+		<attr name="templateCategory" stringvalue="XML"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveWSDLResource.html"/>
+            </file>
+	    <file name="retrieveSchemaResource">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+		<attr name="templateCategory" stringvalue="XML"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveSchemaResource.html"/>
+            </file>
+            <file name="PurchaseOrder.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/PurchaseOrder.xsd">
+                <attr name="position" intvalue="700"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/PurchaseOrder.html"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+            <file name="LoanApplication.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/LoanApplication.xsd">
+                <attr name="position" intvalue="800"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/LoanApplication.html"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+        </folder> <!-- XML -->
+    </folder> <!-- Templates -->
+    
+    
     <folder name="Services">
         <folder name="JavaHelp">
             <file name="org-netbeans-modules-xml-schema-resources-helpset.xml" url="helpset.xml">
@@ -58,29 +105,13 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      - All files in this section are directly mapped to UI (templates, settings,
      - menus, ...). It often requires "magical" order handling etc.
-     -->
-
-    <!-- register templates -->
-    <folder name="Templates">
-        <folder name="XML">
-            <file name="XMLSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.xml">
-                <attr name="position" intvalue="500"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html"/>
-                <attr name="templateCategory" stringvalue="XML"/>
-            </file>
-            </folder> <!-- XML -->
-    </folder> <!-- Templates -->
-               
+     -->               
 
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       - Following files represents system registrations (Lookup or some pool).
       - Content is not presented directly to user.
       -->    
     
-
     <!-- register services with Lookup -->
     <folder name="Services">
         <folder name="MIMEResolver">
