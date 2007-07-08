@@ -717,7 +717,109 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
-  <defaultanswer generate='here' />
+  <defaultanswer generate='none' />
+  <ul>
+            <li><api type='import' group='java' category='private' name='org.jdesktop.layout'  >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.4
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='deprecated' name='org.netbeans.modules.editor.lib' url='@org-netbeans-modules-editor-lib@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.14
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='devel' name='org.netbeans.modules.editor.lib2' url='@org-netbeans-modules-editor-lib2@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.3
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.editor.mimelookup' url='@org-netbeans-modules-editor-mimelookup@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.6
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.editor.settings' url='@org-netbeans-modules-editor-settings@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.9
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.editor.util' url='@org-netbeans-modules-editor-util@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.17
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.18
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='official' name='org.openide.dialogs' url='@org-openide-dialogs@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                7.4
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='official' name='org.openide.modules' url='@org-openide-modules@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                7.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='official' name='org.openide.util' url='@org-openide-util@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                7.9
+                is required.
+            </api>
+</li>            
+  </ul>
  </answer>
 
 
