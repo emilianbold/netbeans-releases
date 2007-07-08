@@ -43,6 +43,7 @@ public class AutoupdateSettings {
     private static final String PROP_IDE_IDENTITY = "ideIdentity"; // NOI18N
     private static final String PROP_PERIOD = "period"; // NOI18N
     private static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N
+    private static final String PROP_OPEN_CONNECTION_TIMEOUT = "plugin.manager.connection.timeout"; // NOI18N
     
     public static final int EVERY_STARTUP = 0;
     public static final int EVERY_DAY = 1;
@@ -50,6 +51,8 @@ public class AutoupdateSettings {
     public static final int EVERY_2WEEKS = 3;
     public static final int EVERY_MONTH = 4;
     public static final int EVERY_NEVER = 5;
+    
+    public static final int DEFAULT_OPEN_CONNECTION_TIMEOUT = 30000;
     
     private AutoupdateSettings () {
     }
@@ -147,5 +150,9 @@ public class AutoupdateSettings {
 
     private static String generateNewId () {
         return "0" + UUID.randomUUID ().toString ();
+    }
+    
+    public static int getOpenConnectionTimeout () {
+        return getPreferences ().getInt (PROP_OPEN_CONNECTION_TIMEOUT, DEFAULT_OPEN_CONNECTION_TIMEOUT);
     }
 }

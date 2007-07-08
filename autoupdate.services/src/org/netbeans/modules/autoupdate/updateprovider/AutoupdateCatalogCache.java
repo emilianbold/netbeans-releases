@@ -19,16 +19,16 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
+import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
@@ -37,9 +37,9 @@ import org.openide.filesystems.Repository;
  * @author Jiri Rechtacek
  */
 public class AutoupdateCatalogCache {
-    private static String GZIP_EXTENSION = ".gz"; // NOI18N
-    
     private File cacheDir;
+    private Exception storedException;
+    
     private static AutoupdateCatalogCache INSTANCE;
     
     private Logger err = Logger.getLogger (this.getClass ().getName ());
@@ -52,7 +52,7 @@ public class AutoupdateCatalogCache {
         return INSTANCE;
     }
     
-    public synchronized File getCatalogCache () {
+    private synchronized File getCatalogCache () {
         assert cacheDir != null && cacheDir.exists ();
         return cacheDir;
     }
@@ -109,58 +109,81 @@ public class AutoupdateCatalogCache {
         }
     }
     
-    private void copy (URL sourceUrl, File dest) throws IOException {
+    private void copy (final URL sourceUrl, final File cache) throws IOException {
+        // -- create NetworkListener
+        // -- request stream
+        // -- report success or IOException
+        // -- if success then do copy
+        
         err.log(Level.INFO, "Processing URL: " + sourceUrl); // NOI18N
-        boolean rename = false;
-        File cache = dest;
+        
         String prefix = "";
-        while(prefix.length() < 3) {prefix += cache.getName();}
-        dest = File.createTempFile(prefix, null, cache.getParentFile());//NOI18N
-        dest.deleteOnExit();
-
-        URL urlToGZip = null;
-        BufferedInputStream is = null;
-        long connectionTimeout = 0;
-        try {
-            
-            String gzipFile = sourceUrl.getPath () + GZIP_EXTENSION;
-            String query = sourceUrl.getQuery ();
-            if (query != null && query.trim ().length () > 0) {
-                gzipFile = gzipFile + '?' + query; // NOI18N
-            }
-            urlToGZip = new URL (sourceUrl.getProtocol (), sourceUrl.getHost (), sourceUrl.getPort (), gzipFile);
-            connectionTimeout = System.currentTimeMillis();
-            is = new BufferedInputStream (new GZIPInputStream (urlToGZip.openStream ()));            
-            err.log(Level.FINE, "Successfully read URL " + urlToGZip); // NOI18N
-            
-        } catch (IOException ioe) {
-            connectionTimeout = System.currentTimeMillis() - connectionTimeout;
-            if (connectionTimeout > 30000) {                
-                throw ioe;
-            }
-            try {
-                err.log(Level.FINE,
-                        "Reading GZIP URL " + urlToGZip + " failed (" + ioe +
-                        "). Try read XML directly " + sourceUrl);
-                is = new BufferedInputStream (sourceUrl.openStream ());
-                err.log(Level.FINE, "Successfully read URI " + sourceUrl);
-            } catch (IOException ex) {
-                err.log(Level.FINE,
-                        "Reading URL " + sourceUrl + " failed (" + ioe +
-                        ")");
-                throw ex;
-            }
+        while (prefix.length () < 3) {
+            prefix += cache.getName();
         }
+        final File temp = File.createTempFile (prefix, null, cache.getParentFile ()); //NOI18N
+        temp.deleteOnExit();
+        storeException (null);
+
+        NetworkAccess.NetworkListener nwl = new NetworkAccess.NetworkListener () {
+
+            public void streamOpened (InputStream stream) {
+                err.log (Level.FINE, "Successfully read URI " + sourceUrl);
+                doCopy (sourceUrl, stream, cache, temp);
+            }
+
+            public void accessCanceled () {
+                err.log (Level.FINE, "Processing " + sourceUrl + " was cancelled.");
+                storeException (new IOException ("Processing " + sourceUrl + " was cancelled."));
+            }
+
+            public void accessTimeOut () {
+                err.log (Level.FINE, "Timeout when processing " + sourceUrl);
+                storeException (new IOException ("Timeout when processing " + sourceUrl));
+            }
+
+            public void notifyException (Exception x){
+                err.log (Level.INFO,
+                            "Reading URL " + sourceUrl + " failed (" + x +
+                            ")");
+                storeException (x);
+            }
+            
+        };
+        
+        NetworkAccess.Task task = NetworkAccess.createNetworkAcessTask (sourceUrl, AutoupdateSettings.getOpenConnectionTimeout (), nwl);
+        task.waitFinished ();
+        notifyException ();
+    }
+    
+    private void notifyException () throws IOException {
+        if (isExceptionStored ()) {
+            throw new IOException (getStoredException ().getLocalizedMessage ());
+        }
+    }
+    
+    private boolean isExceptionStored () {
+        return storedException != null;
+    }
+    
+    private void storeException (Exception x) {
+        storedException = x;
+    }
+    
+    private Exception getStoredException () {
+        return storedException;
+    }
+    
+    private void doCopy (URL sourceUrl, InputStream is, File cache, File temp) {
         
         FileOutputStream os = null;
         int read = 0;
         
         try {
-            os = new FileOutputStream (dest);
+            os = new FileOutputStream (temp);
             while ((read = is.read ()) != -1) {
                 os.write (read);
             }   
-            rename = true;
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
         } finally {
@@ -168,17 +191,17 @@ public class AutoupdateCatalogCache {
                 if (is != null) is.close ();
                 if (os != null) os.flush ();
                 if (os != null) os.close ();
-                if (rename) {
-                    synchronized(this) {
-                        cache.delete();
-                        if (!dest.renameTo(cache)) {
-                            throw new IOException();
-                        }
-                    }                    
-                }
+                synchronized (this) {
+                    cache.delete ();
+                    if (! temp.renameTo (cache)) {
+                        throw new IOException ("Cannot move temp " + temp + " to cache " + cache);
+                    }
+                }                    
             } catch (IOException ioe) {
                 err.log (Level.INFO, "Closing streams failed.", ioe);
             }
         }
+        
     }
+    
 }

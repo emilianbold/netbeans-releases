@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -71,11 +70,12 @@ public class AutoupdateCatalogParser {
     private static final String TIME_STAMP_FORMAT = "ss/mm/hh/dd/MM/yyyy"; // NOI18N
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogParser");
+    private static String GZIP_EXTENSION = ".gz"; // NOI18N
     
     public static Map<String, UpdateItem> getUpdateItems (URL url, URL providerUrl) {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
         Map<String, String> licenses = getLicenses (url, providerUrl);
-        Date d = getAutoupdateCatalogDate (url);
+        Date d = getAutoupdateCatalogDate (url, providerUrl);
         String catalogDate = null;
         if (d != null) {
             catalogDate = Utilities.DATE_FORMAT.format (d);
@@ -96,7 +96,7 @@ public class AutoupdateCatalogParser {
             ERR.log (Level.INFO, ex.getMessage (), ex);
         } catch (SAXException ex) {
             ERR.log (Level.INFO, ex.getMessage (), ex);
-        };
+        }
         
         return items;
     }
@@ -116,7 +116,7 @@ public class AutoupdateCatalogParser {
             ERR.log (Level.INFO, ex.getMessage (), ex);
         } catch (SAXException ex) {
             ERR.log (Level.INFO, ex.getMessage (), ex);
-        };
+        }
         
         return res;
     }
@@ -158,13 +158,20 @@ public class AutoupdateCatalogParser {
             ERR.log (Level.INFO, ex.getMessage (), ex);
         } catch (SAXException ex) {
             ERR.log (Level.INFO, ex.getMessage (), ex);
-        };
+        }
         
         return notification;
     }
     
     static Document getDocument (URL url, URL providerUrl) throws IOException, SAXException {
-        Document doc = XMLUtil.parse (new InputSource (url.toString ()), false, false, null /* logger */, createAUResolver ());
+        InputStream is = null;
+        Document doc = null;
+        try {
+            is = getInputStream (url, isGZIP (providerUrl));
+            doc = XMLUtil.parse (new InputSource (is), false, false, null /* logger */, createAUResolver ());
+        } finally {
+            if (is != null) is.close ();
+        }
         if (providerUrl != null) {
             try {
                 doc.setDocumentURI (providerUrl.toURI ().toString ());
@@ -175,14 +182,40 @@ public class AutoupdateCatalogParser {
         return doc;
     }
     
-    private static Date getAutoupdateCatalogDate (URL url) {
+    private static boolean isGZIP (URL url) {
+        boolean res = false;
+        if (url != null) {
+            res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+        }
+        ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
+        return res;
+    }
+    
+    private static InputStream getInputStream (URL url, boolean isGZIP) {
+        InputStream is = null;
+        if (isGZIP) {
+            try {
+                is = new BufferedInputStream (new GZIPInputStream (url.openStream ()));
+            } catch (IOException ioe) {
+                ERR.log (Level.INFO, "IOException " + ioe.getMessage () + " while reading GZIP stream " + url, ioe);
+            }
+        }
+        if (is == null) {
+            try {
+                is = new BufferedInputStream (url.openStream ());
+            } catch (IOException ioe) {
+                ERR.log (Level.INFO, "IOException " + ioe.getMessage () + " while reading stream " + url, ioe);
+            }
+        }
+        return is;
+    }
+    
+    private static Date getAutoupdateCatalogDate (URL url, URL providerUrl) {
         Date timeStamp = null;
         InputStream is = null;
         try {
             ERR.log (Level.FINER, "Inspect Autoupdate Catalog " + url);
-            URLConnection conn = url.openConnection ();
-            is = conn.getInputStream ();
-            Reader r = new InputStreamReader (is);
+            is = getInputStream (url, isGZIP (providerUrl));
             StringBuffer sb = new StringBuffer (1024);
 
             int c;
