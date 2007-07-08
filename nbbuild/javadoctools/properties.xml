@@ -128,3 +128,5 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-core-startup" value="${javadoc.web.root}/org-netbeans-core-startup"/>
 <property name="javadoc.docs.org-netbeans-modules-xml-xdm" value="${javadoc.web.root}/org-netbeans-modules-xml-xdm"/>
 <property name="javadoc.docs.org-netbeans-modules-xml-xam" value="${javadoc.web.root}/org-netbeans-modules-xml-xam"/>
+<property name="javadoc.docs.org-netbeans-insane" value="${javadoc.web.root}/org-netbeans-insane"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-bracesmatching" value="${javadoc.web.root}/org-netbeans-modules-editor-bracesmatching"/>
