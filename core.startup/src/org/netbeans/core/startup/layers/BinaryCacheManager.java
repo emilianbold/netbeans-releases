@@ -213,7 +213,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
     private void writeAttribute(BinaryWriter bw, MemAttr attr) throws IOException {
         bw.writeString(attr.name);
         int i = 0;
-        for(; i<ATTR_TYPES.length; i++) {
+        for(; i < ATTR_TYPES.length; i++) {
             if(ATTR_TYPES[i].equals(attr.type)) break;
         }
         bw.writeByte((byte)i); // XXX - may write wrong value if unknown type!

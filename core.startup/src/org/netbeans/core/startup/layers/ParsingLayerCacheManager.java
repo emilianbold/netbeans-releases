@@ -462,7 +462,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         }
     }
     
-    /** Struct for <attr>.
+    /** Struct for &lt;attr&gt;.
      */
     protected static final class MemAttr {
         public String name;
