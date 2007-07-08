@@ -53,9 +53,8 @@ public class SchemaNode extends SchemaComponentNode<Schema>
 		Children children)
     {
         super(context,reference,children);
-
 		setIconBaseWithExtension(
-			"org/netbeans/modules/xml/schema/core/resources/"+
+			"org/netbeans/modules/xml/schema/resources/"+
 			"Schema_File.png");
     }
 
