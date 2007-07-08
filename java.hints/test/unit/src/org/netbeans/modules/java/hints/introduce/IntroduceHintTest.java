@@ -101,6 +101,13 @@ public class IntroduceHintTest extends NbTestCase {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {int y = (int)Math.round(1.2);}}", 111 - 49, 114 - 49, false);
     }
     
+    public void testCorrectSelection9() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {long y = Math.round(1.2);}}", 111 - 49, 126 - 49, true);
+    }
+    
+    public void testCorrectSelection10() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {String s = \"\"; int y = s.length();}}", 125 - 49, 135 - 49, true);
+    }
     public void testFix1() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9;}}",
                        72, 77,
@@ -611,7 +618,7 @@ public class IntroduceHintTest extends NbTestCase {
     private void performConstantAccessTest(String code, int start, int end, boolean awaited) throws Exception {
         prepareTest(code);
         
-        assertEquals(awaited, IntroduceHint.checkConstantExpression(info, IntroduceHint.validateSelection(info, start, end).resolve(info)));
+        assertEquals(awaited, IntroduceHint.checkConstantExpression(info, IntroduceHint.validateSelection(info, start, end)));
     }
     
     private void performFixTest(String code, int start, int end, String golden, DialogDisplayer dd) throws Exception {

@@ -158,11 +158,7 @@ public class CopyFinderTest extends NbTestCase {
         
         prepareTest(code);
         
-        TreePathHandle pathHandle = IntroduceHint.validateSelection(info, start, end);
-        
-        assertNotNull(pathHandle);
-        
-        TreePath       path       = pathHandle.resolve(info);
+        TreePath path = IntroduceHint.validateSelection(info, start, end);
         
         assertNotNull(path);
 

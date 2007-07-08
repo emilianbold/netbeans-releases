@@ -128,7 +128,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return new int[] {start, end};
     }
     
-    static TreePathHandle validateSelection(CompilationInfo ci, int start, int end) {
+    static TreePath validateSelection(CompilationInfo ci, int start, int end) {
         TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
         
         for ( ; tp != null; tp = tp.getParentPath()) {
@@ -155,7 +155,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (tp.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT)
                 continue;
             
-            return TreePathHandle.create(tp, ci);
+            return tp;
         }
         
         return null;
@@ -257,10 +257,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
     static List<ErrorDescription> computeError(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage) {
         List<ErrorDescription> hints = new LinkedList<ErrorDescription>();
         List<Fix> fixes = new LinkedList<Fix>();
-        TreePathHandle h = validateSelection(info, start, end);
+        TreePath resolved = validateSelection(info, start, end);
         
-        if (h != null) {
-            TreePath resolved = h.resolve(info);
+        if (resolved != null) {
+            TreePathHandle h = TreePathHandle.create(resolved, info);
             TreePath method   = findMethod(resolved);
             boolean isConstant = checkConstantExpression(info, resolved);
             boolean isVariable = findStatement(resolved) != null && method != null;
