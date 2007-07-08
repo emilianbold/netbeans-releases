@@ -53,7 +53,7 @@ import org.xml.sax.XMLReader;
  * Usage: see implementation of {@link ModuleInstaller#refineDependencies}.
  * @author Jesse Glick, with help from NB XML module
  * @see "#30161"
- * @see <a href="module-auto-deps-1_0.dtd"><samp>-//NetBeans//DTD Module Automatic Dependencies 1.0//EN</samp></a>
+ * @see <a href="http://www.netbeans.org/dtds/module-auto-deps-1_0.dtd"><samp>-//NetBeans//DTD Module Automatic Dependencies 1.0//EN</samp></a>
  * @since org.netbeans.core/1 1.12
  */
 public final class AutomaticDependencies {
