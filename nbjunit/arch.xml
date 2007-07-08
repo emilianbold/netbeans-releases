@@ -248,7 +248,11 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
-  <defaultanswer generate='here' />
+  <defaultanswer generate='none' />
+<api type='import' group='java' category='devel' name='org.netbeans.insane' >
+  The only module that this one is using is the insane library to find leaked
+  objects after unsuccessful <code>assertGC</code> calls.
+</api>
  </answer>
 
 
