@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:element name="target">
                 <xsl:attribute name="name">xjc-typedef-target</xsl:attribute>
                 <xsl:attribute name="depends">-init-project</xsl:attribute>
-                <typedef classname="com.sun.tools.xjc.XJC2Task" name="xjc">
+                <typedef classname="com.sun.tools.xjc.XJCTask" name="xjc">
                     <classpath path="${{libs.jaxb20.classpath}}"/>
                 </typedef>
             </xsl:element> 
