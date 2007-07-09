@@ -26,6 +26,7 @@ import java.io.IOException;
 import junit.framework.*;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import projects.apitest.Utilities;
 
@@ -54,20 +55,20 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName1; // NOI18N
         File projectDir = new File(getWorkDir(), projName1);
         projectDir.mkdir();
-        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
+        AntProjectHelper project = J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
         assertNotNull(Utilities.openProject(projectDir));
     }
     
-    public void testCloseProject_API_1() throws Exception {
-        assertTrue(Utilities.closeProject(projName1));
-    }
-    
+//    public void testCloseProject_API_1() throws Exception {
+//        assertTrue(Utilities.closeProject(projName1));
+//    }
+//    
    
      public void testReopenAndCloseProject_API_1() throws Exception {
         String mainClass = "MyMain" + projName1; // NOI18N
         File projectDir = new File(getWorkDir(), projName1);
         projectDir.mkdir();
-        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
+        AntProjectHelper project = J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
         Utilities.openProject(projectDir);
         assertNotNull(Utilities.closeProject(projName1));
     }
