@@ -138,7 +138,7 @@ public class SceneElementComparator implements Comparator<SceneElement> {
             if (mySelectedSceneElement != null) {
                 if (sortedElements.contains(mySelectedSceneElement)) {
                     int index = sortedElements.indexOf(mySelectedSceneElement);
-                    System.out.println("Index: " + index + " Selected Element: " + mySelectedSceneElement.element);
+                    /*System.out.println("Index: " + index + " Selected Element: " + mySelectedSceneElement.element);*/
                     if (sortedElements.size() > index + 1) {
                         nextElement = sortedElements.get(index + 1).element;
                     }

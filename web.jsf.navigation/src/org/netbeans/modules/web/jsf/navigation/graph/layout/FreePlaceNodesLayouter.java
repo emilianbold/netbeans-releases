@@ -182,11 +182,9 @@ public final class FreePlaceNodesLayouter {
         }
         
         public void sceneRepaint() {
-            System.out.println("");
         }
         
         public void sceneValidating() {
-            System.out.println("Testing");
         }
         
         public void sceneValidated() {
