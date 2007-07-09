@@ -1079,7 +1079,7 @@ public class AstUtilities {
 
         //int newStart = pos.getStartOffset() + 6; // 6: "alias ".length()
         // BUG: AliasNode currently seems to have wrong offsets; in particular, it starts after the keyword
-        int newStart = pos.getStartOffset() + 1;
+        int newStart = pos.getStartOffset() + 6;
 
         return new OffsetRange(newStart, newStart + node.getNewName().length());
     }
@@ -1097,9 +1097,7 @@ public class AstUtilities {
         // spaces are - between alias and the first word or between old and new. XXX.
         ISourcePosition pos = node.getPosition();
 
-        //int oldStart = pos.getStartOffset() + 6 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
-        // BUG: AliasNode currently seems to have wrong offsets; in particular, it starts after the keyword
-        int oldStart = pos.getStartOffset() + 1 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
+        int oldStart = pos.getStartOffset() + 6 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
 
         return new OffsetRange(oldStart, oldStart + node.getOldName().length());
     }
