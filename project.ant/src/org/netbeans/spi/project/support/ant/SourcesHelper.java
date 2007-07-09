@@ -151,7 +151,7 @@ public final class SourcesHelper {
                 }
                 String path = FileUtil.getRelativePath(loc, file);
                 if (path == null) {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException(file + " is not inside " + loc);
                 }
                 if (file.isFolder()) {
                     path += "/"; // NOI18N
