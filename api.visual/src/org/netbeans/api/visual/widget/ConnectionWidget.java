@@ -370,7 +370,7 @@ public class ConnectionWidget extends Widget {
      * @return the point; null if the control point does not exist
      */
     public Point getControlPoint (int index) {
-        if (index < 0  &&  index >= controlPoints.size ())
+        if (index < 0  ||  index >= controlPoints.size ())
             return null;
         return new Point (controlPoints.get(index));
     }
