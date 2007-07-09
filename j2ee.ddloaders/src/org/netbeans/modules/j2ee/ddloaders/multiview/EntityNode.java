@@ -35,11 +35,6 @@ public class EntityNode extends EjbNode {
         entityHelper = dataObject.getEntityHelper(entity);
         addChild(new EntityOverviewNode(sectionNodeView, entity, entityHelper));
         addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, entity, entityHelper));
-        if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
-            addChild(new CmpFieldsNode(sectionNodeView, entityHelper.cmpFields));
-            addChild(new FinderMethodsNode(sectionNodeView, entityHelper.queries));
-            addChild(new SelectMethodsNode(sectionNodeView, entityHelper.queries));
-        }
         addChild(new BeanEnvironmentNode(sectionNodeView, entity));
         addChild(new BeanDetailNode(sectionNodeView, entity));
         addChild(new EjbSecurityNode(sectionNodeView, entity));
