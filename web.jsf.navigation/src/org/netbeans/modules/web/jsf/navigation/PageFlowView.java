@@ -290,7 +290,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         scene.addPin(pageNode, new Pin(pageNode));
 
         setupPinsInNode(pageNode);
-
+        /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
+        scene.updateNodeWidgetActions(widget);
         return widget;
     }
 

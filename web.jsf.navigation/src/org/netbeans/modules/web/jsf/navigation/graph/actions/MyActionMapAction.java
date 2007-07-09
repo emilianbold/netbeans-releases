@@ -19,9 +19,7 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;

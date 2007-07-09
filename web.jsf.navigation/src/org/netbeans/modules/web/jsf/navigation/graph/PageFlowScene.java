@@ -46,7 +46,6 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +59,6 @@ import javax.swing.border.Border;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
-import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
@@ -164,7 +162,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        //        actions.addAction(CYCLE_FOCUS_OBJECT_SCENE);
         actions.addAction(popupGraphAction);
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
@@ -175,7 +172,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //Temporary workaround  ISSUE# 107506
         actions.addAction(new MyActionMapAction(inputMap, actionMap));
         MyActionMapAction action = new MyActionMapAction(null, null);
-//        actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
     }
 
@@ -185,11 +181,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
         ActionMap actionMap = tc.getActionMap();
         CallbackSystemAction a = (CallbackSystemAction) SystemAction.get(DeleteAction.class);
-        //        Action action = new PageFlowDeleteAction(this);
         actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));
 
         //Temporary workaround  ISSUE# 107506
-//        return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
         return new MyActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
     }
 
@@ -239,10 +233,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      * @param node the node
      * @return the widget attached to the node, will return null if
      */
-    protected Widget attachNodeWidget(Page node) {
-        assert node != null;
+    protected Widget attachNodeWidget(Page page) {
+        assert page != null;
         VMDNodeWidget nodeWidget = new VMDNodeWidget(this, scheme);
-        String displayName = node.getDisplayName();
+        String displayName = page.getDisplayName();
         nodeWidget.setNodeName(displayName);
 
         Widget header = nodeWidget.getHeader();
@@ -257,10 +251,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         lblWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageNodeTextFieldInplaceEditor(nodeWidget)));
 
         mainLayer.addChild(nodeWidget);
-        WidgetAction actionMapAction = createActionMapAction(node);
-        if (actionMapAction != null) {
-            nodeWidget.getActions().addAction(actionMapAction);
-        }
+        //updateNodeActions(nodeWidget);
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
@@ -272,6 +263,17 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
          */
 
         return nodeWidget;
+    }
+    private WidgetAction actionMapAction = null;
+    public final void updateNodeWidgetActions(VMDNodeWidget nodeWidget) {
+        Page page = (Page) this.findObject(nodeWidget);
+        if( actionMapAction != null ) {
+            nodeWidget.getActions().removeAction(moveAction);
+        }
+        actionMapAction = createActionMapAction(page);
+        if (actionMapAction != null) {
+            nodeWidget.getActions().addAction(actionMapAction);
+        }
     }
 
     private WidgetAction createActionMapAction(Page page) {
