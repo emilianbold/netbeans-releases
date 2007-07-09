@@ -955,6 +955,14 @@ public final class SystemUtils {
         return getCurrentPlatform().isCompatibleWith(Platform.MACOSX);
     }
     
+    public static boolean isLinux() {
+        return getCurrentPlatform().isCompatibleWith(Platform.LINUX);
+    }
+    
+    public static boolean isSolaris() {
+        return getCurrentPlatform().isCompatibleWith(Platform.SOLARIS);
+    }
+    
     // miscellanea //////////////////////////////////////////////////////////////////
     public static boolean intersects(
             final List<? extends Object> list1,

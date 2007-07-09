@@ -110,6 +110,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileUtils.modifyFile(new File(directory, DERBY_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, SAMPLES_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, BLUEPRINTS_SUBDIR), map);
+            FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
+            FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
+            
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.replace.tokens"), // NOI18N
@@ -436,6 +439,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "javadb"; // NOI18N
     public static final String UC_INSTALL_HOME_SUBDIR =
             "updatecenter"; //NOI18N
+    public static final String UC_BIN_SUBDIR =
+            "updatecenter/bin"; //NOI18N
+    public static final String UC_CONFIG_SUBDIR =
+            "updatecenter/config"; //NOI18N
     public static final String BIN_SUBDIR =
             "bin"; // NOI18N
     public static final String DOCS_SUBDIR =

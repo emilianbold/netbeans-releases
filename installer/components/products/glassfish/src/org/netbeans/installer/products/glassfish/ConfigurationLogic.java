@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -37,6 +37,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
@@ -63,7 +64,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     // configuration logic implementation ///////////////////////////////////////////
     public void install(final Progress progress)
-            throws InstallationException {
+    throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
         final String username = getProperty(GlassFishPanel.USERNAME_PROPERTY);
@@ -133,6 +134,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 list.add(FileUtils.copyFile(
                         new File(directory, WSDEPLOY_BAT_TEMPLATE),
                         new File(directory, WSDEPLOY_BAT)));
+                list.add(FileUtils.copyFile(
+                        new File(directory, UPDATETOOL_BAT_TEMPLATE),
+                        new File(directory, UPDATETOOL_BAT)));
             } else {
                 list.add(FileUtils.copyFile(
                         new File(directory, ASENV_CONF_TEMPLATE),
@@ -188,6 +192,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 list.add(FileUtils.copyFile(
                         new File(directory, WSDEPLOY_TEMPLATE),
                         new File(directory, WSDEPLOY)));
+                list.add(FileUtils.copyFile(
+                        new File(directory, UPDATETOOL_TEMPLATE),
+                        new File(directory, UPDATETOOL)));
             }
         } catch (IOException e) {
             throw new InstallationException(
@@ -222,8 +229,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(DEF_DOMAINS_PATH_TOKEN, new File(directory, DOMAINS_SUBDIR));
             map.put(ACC_CONFIG_TOKEN, new File(directory, ACC_CONFIG));
             map.put(DERBY_HOME_TOKEN, new File(directory, DERBY_SUBDIR));
-            map.put(UC_INSTALL_HOME_TOKEN,new File(directory, UC_INSTALL_HOME_SUBDIR));
-            map.put(UC_EXT_LIB_TOKEN,new File(directory, UC_EXT_LIB));
             map.put("localhost", SystemUtils.getHostName());
             map.put("user=admin","user=" + username);
             map.put(HTTP_PORT_TOKEN,httpPort);
@@ -234,6 +239,43 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             FileUtils.modifyFile(new File(directory, BIN_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR), map);
+            
+            map.put(UC_INSTALL_HOME_TOKEN,new File(directory, UC_INSTALL_HOME_SUBDIR));
+            map.put(UC_EXT_LIB_TOKEN,new File(directory, UC_EXT_LIB));
+            map.put(UC_AS_HOME_TOKEN, directory);
+            
+            if(SystemUtils.isWindows()) {
+                map.put(JDIC_LIB_TOKEN, 
+                        new File(directory, JDIC_LIB_WINDOWS));
+                map.put(JDIC_STUB_LIB_TOKEN, 
+                        new File(directory, JDIC_STUB_LIB_WINDOWS));
+            } else if(SystemUtils.isLinux()) {
+                map.put(JDIC_LIB_TOKEN, 
+                        new File(directory, JDIC_LIB_LINUX));
+                map.put(JDIC_STUB_LIB_TOKEN,
+                        new File(directory, JDIC_STUB_LIB_LINUX));
+            } else if(SystemUtils.isMacOS()) {
+                map.put(JDIC_LIB_TOKEN,
+                        new File(directory, JDIC_LIB_MACOSX));
+                map.put(JDIC_STUB_LIB_TOKEN,
+                        new File(directory, JDIC_STUB_LIB_MACOSX));
+            } else if(SystemUtils.isSolaris()) {
+                if(SystemUtils.getCurrentPlatform().
+                        isCompatibleWith(Platform.SOLARIS_SPARC)) {
+                    map.put(JDIC_LIB_TOKEN,
+                            new File(directory, JDIC_LIB_SOLARIS_SPARC));
+                } else if(SystemUtils.getCurrentPlatform().
+                        isCompatibleWith(Platform.SOLARIS_X86)) {
+                    map.put(JDIC_LIB_TOKEN,
+                            new File(directory, JDIC_LIB_SOLARIS_X86));
+                }
+                map.put(JDIC_STUB_LIB_TOKEN,
+                        new File(directory, JDIC_STUB_LIB_SOLARIS));
+            }
+            
+            FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
+            FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
+        
             
             final String javaHomeString = javaHome.getAbsolutePath();
             final String imqVarHomeString = new File(
@@ -257,7 +299,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         //try {
         //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
-        //    
+        //
         //    SystemUtils.removeIrrelevantFiles(directory);
         //} catch (IOException e) {
         //    throw new InstallationException(
@@ -290,41 +332,41 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     adminPort);
         } catch (IOException e) {
             final InstallationException firstException = new InstallationException(
-                        getString("CL.install.error.create.domain"), // NOI18N
-                        e);
-                        
+                    getString("CL.install.error.create.domain"), // NOI18N
+                    e);
+            
             final File asadminpass = new File(
-                    SystemUtils.getUserHomeDirectory(), 
+                    SystemUtils.getUserHomeDirectory(),
                     ".asadminpass");;
-            final File asadmintruststore = new File(
-                    SystemUtils.getUserHomeDirectory(), 
-                    ".asadmintruststore");
-            if (asadminpass.exists() || asadmintruststore.exists()) {
-                LogManager.log("either .asadminpass or .asadmintruststore " +
-                        "files exist -- deleting them");
-                
-                getProduct().addInstallationWarning(firstException);
-                
-                try {
-                    FileUtils.deleteFile(asadminpass);
-                    FileUtils.deleteFile(asadmintruststore);
-                    
-                    GlassFishUtils.createDomain(
-                            directory,
-                            DOMAIN_NAME,
-                            username,
-                            password,
-                            httpPort,
-                            httpsPort,
-                            adminPort);
-                } catch (IOException ex) {
-                    throw new InstallationException(
-                            getString("CL.install.error.create.domain"), // NOI18N
-                            ex);
-                }
-            } else {
-                throw firstException;
-            }
+                    final File asadmintruststore = new File(
+                            SystemUtils.getUserHomeDirectory(),
+                            ".asadmintruststore");
+                    if (asadminpass.exists() || asadmintruststore.exists()) {
+                        LogManager.log("either .asadminpass or .asadmintruststore " +
+                                "files exist -- deleting them");
+                        
+                        getProduct().addInstallationWarning(firstException);
+                        
+                        try {
+                            FileUtils.deleteFile(asadminpass);
+                            FileUtils.deleteFile(asadmintruststore);
+                            
+                            GlassFishUtils.createDomain(
+                                    directory,
+                                    DOMAIN_NAME,
+                                    username,
+                                    password,
+                                    httpPort,
+                                    httpsPort,
+                                    adminPort);
+                        } catch (IOException ex) {
+                            throw new InstallationException(
+                                    getString("CL.install.error.create.domain"), // NOI18N
+                                    ex);
+                        }
+                    } else {
+                        throw firstException;
+                    }
         }
         
         /////////////////////////////////////////////////////////////////////////////
@@ -377,7 +419,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public void uninstall(final Progress progress)
-            throws UninstallationException {
+    throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
         
         /////////////////////////////////////////////////////////////////////////////
@@ -395,7 +437,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 nbLocation,
                                 JVM_OPTION_NAME);
                         
-                        if ((value != null) && 
+                        if ((value != null) &&
                                 (value.equals(directory.getAbsolutePath()))) {
                             NetBeansUtils.removeJvmOption(
                                     nbLocation,
@@ -569,6 +611,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WSDEPLOY_BAT =
             "bin/wsdeploy.bat"; // NOI18N
     
+    public static final String UPDATETOOL_BAT_TEMPLATE =
+            "updatecenter/lib/install/templates/updatetool.bat.template";//NOI18N
+    public static final String UPDATETOOL_BAT =
+            "/updatecenter/bin/updatetool.bat";//NOI18N
+    
+    
     public static final String ASENV_CONF_TEMPLATE =
             "lib/install/templates/asenv.conf.template"; // NOI18N
     public static final String ASENV_CONF =
@@ -659,6 +707,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WSDEPLOY =
             "bin/wsdeploy"; // NOI18N
     
+    public static final String UPDATETOOL_TEMPLATE =
+            "updatecenter/lib/install/templates/updatetool.template";//NOI18N
+    public static final String UPDATETOOL =
+            "/updatecenter/bin/updatetool";//NOI18N
+    
+    
     public static final String CONFIG_HOME_TOKEN =
             "%CONFIG_HOME%"; // NOI18N
     public static final String INSTALL_HOME_TOKEN =
@@ -713,9 +767,37 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "%AS_ADMIN_SECURE%"; //NOI18N
     
     public static final String UC_INSTALL_HOME_TOKEN =
-            "@INSTALL_HOME@";
+            "@INSTALL_HOME@"; //NOI18N
     public static final String UC_EXT_LIB_TOKEN =
-            "@EXT_LIB@";
+            "@EXT_LIB@";       //NOI18N
+    public static final String UC_AS_HOME_TOKEN =
+            "%appserver_home%"; //NOI18N
+    public static final String JDIC_LIB_TOKEN =
+            "@JDIC_LIB@"; //NOI18N
+    public static final String JDIC_STUB_LIB_TOKEN =
+            "@JDIC_STUB_LIB@"; //NOI18N
+    
+    public static final String JDIC_LIB_WINDOWS =
+            "updatecenter/lib/jdic/windows/x86";//NOI18N
+    public static final String JDIC_LIB_LINUX =
+            "updatecenter/lib/jdic/linux/x86";//NOI18N
+    public static final String JDIC_LIB_SOLARIS_X86 =
+            "updatecenter/lib/jdic/sunos/x86";//NOI18N
+    public static final String JDIC_LIB_SOLARIS_SPARC =
+            "updatecenter/lib/jdic/sunos/sparc";//NOI18N
+    public static final String JDIC_LIB_MACOSX =
+            "updatecenter/lib/jdic/mac/ppc";//NOI18N
+    
+    public static final String JDIC_STUB_LIB_WINDOWS =
+            "updatecenter/lib/jdic/windows";//NOI18N
+    public static final String JDIC_STUB_LIB_LINUX =
+            "updatecenter/lib/jdic/linux";//NOI18N
+    public static final String JDIC_STUB_LIB_SOLARIS =
+            "updatecenter/lib/jdic/sunos";//NOI18N
+    public static final String JDIC_STUB_LIB_MACOSX =
+            "updatecenter/lib/jdic/mac";//NOI18N
+    
+    
     
     public static final String CONFIG_SUBDIR =
             "config"; // NOI18N
@@ -737,8 +819,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "javadb"; // NOI18N
     public static final String UC_INSTALL_HOME_SUBDIR =
             "updatecenter"; //NOI18N
+    public static final String UC_BIN_SUBDIR =
+            "updatecenter/bin"; //NOI18N
+    public static final String UC_CONFIG_SUBDIR =
+            "updatecenter/config"; //NOI18N
+    
     public static final String UC_EXT_LIB =
-            "lib/appserv-admin.jar"; //NOI18N
+            "updatecenter/lib/schema2beans.jar"; //NOI18N
+    
     public static final String AS_ADMIN_PROFILE =
             "developer"; //NOI18N
     public static final String AS_ADMIN_SECURE =
