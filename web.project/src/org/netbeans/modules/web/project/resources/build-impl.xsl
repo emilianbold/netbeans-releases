@@ -202,6 +202,15 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="source.encoding" value="${{file.encoding}}"/>
+                <condition property="javadoc.encoding.used" value="${{javadoc.encoding}}">
+                    <and>
+                        <isset property="javadoc.encoding"/>
+                        <not>
+                            <equals arg1="${{javadoc.encoding}}" arg2=""/>
+                        </not>
+                    </and>
+                </condition>
+                <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
             </target>
             
             <target name="-post-init">
@@ -1385,6 +1394,7 @@ introduced by support for multiple source roots. -jglick
                     <xsl:attribute name="additionalparam">${javadoc.additionalparam}</xsl:attribute>
                     <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                     <xsl:attribute name="useexternalfile">true</xsl:attribute> <!-- #57375, requires Ant >=1.6.5 -->
+                    <xsl:attribute name="encoding">${javadoc.encoding.used}</xsl:attribute>
                     <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                         <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
                     </xsl:if>

@@ -650,7 +650,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(WebProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
+        ep.setProperty(WebProjectProperties.JAVADOC_ENCODING, "${" + WebProjectProperties.SOURCE_ENCODING + "}"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         
