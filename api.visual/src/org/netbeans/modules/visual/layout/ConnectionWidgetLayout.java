@@ -158,7 +158,7 @@ public final class ConnectionWidgetLayout implements Layout {
             return;
         }
         Rectangle preferredBounds = childWidget.getPreferredBounds ();
-        Point referencePoint = getReferencePoint (alignments.get (childWidget), preferredBounds);
+        Point referencePoint = getReferencePoint (alignments != null ? alignments.get (childWidget) : null, preferredBounds);
         Point location = childWidget.getPreferredLocation ();
         if (location != null)
             referencePoint.translate (- location.x, - location.y);
