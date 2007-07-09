@@ -250,9 +250,10 @@ public class JbiActionProvider implements ActionProvider {
         final JbiBuildListener jbiBuildListener = getBuildListener(command);
 
         try {
-            final ExecutorTask executorTask = ActionUtils.runTarget(findBuildXml(), targetNames, p);
-            if (jbiBuildListener != null) {
-                
+            final ExecutorTask executorTask = 
+                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+            
+            if (jbiBuildListener != null) {                
                 JbiBuildTask buildTask = new JbiBuildTask() {
                     public boolean isFinished() {
                         return executorTask.isFinished();
@@ -267,9 +268,20 @@ public class JbiActionProvider implements ActionProvider {
                     public void taskFinished(Task task) {
                         jbiBuildListener.buildCompleted(executorTask.result() == 0);
                     }
-                });
-                
+                });                
             }
+            
+            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
+                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
+                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
+                    command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
+                executorTask.addTaskListener(new TaskListener() {
+                    public void taskFinished(Task task) {
+                        CasaHelper.registerCasaFileListener(project);
+                    }
+                });
+            }
+
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -331,23 +343,11 @@ public class JbiActionProvider implements ActionProvider {
     }
     
     private void saveCasaChanges(JbiProject project) {
-        // Save casa
-        File casaFile = new File(OpenEditorAction.getCasaFileName(project));
-        if (casaFile.exists()) {
-            try {
-                FileObject fileObject = FileUtil.toFileObject(casaFile);
-                DataObject dataObject = DataObject.find(fileObject);
-                SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
-                if (saveCookie != null) {
-                    saveCookie.save();
-                }
-            } catch (Exception ex) {
-                // failed to load casa...
-            }
-        }
-        
+        // Save casa   
+        CasaHelper.saveCasa(project);
+
         // Save casa wsdl
-        FileObject casaWsdlFO = getCasaWsdlFile(project);
+        FileObject casaWsdlFO = CasaHelper.getCompAppWSDLFileObject(project);
         if (casaWsdlFO != null) {
             try {
                 DataObject dataObject = DataObject.find(casaWsdlFO);
@@ -359,13 +359,10 @@ public class JbiActionProvider implements ActionProvider {
                 // failed to load casa...
             }
         }
+        
+        // TODO: save other wsdls in compapp
     }
     
-    private FileObject getCasaWsdlFile(JbiProject project) {
-        String projName = JbiProjectHelper.getJbiProjectName(project);
-        FileObject srcDirFO = project.getSourceDirectory();
-        return srcDirFO == null ? null : srcDirFO.getFileObject(projName + ".wsdl"); // NOI18N
-    }
     
     private void setupTests() {
         try {

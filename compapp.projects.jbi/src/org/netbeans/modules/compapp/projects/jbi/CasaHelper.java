@@ -19,46 +19,145 @@
 
 package org.netbeans.modules.compapp.projects.jbi;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
- *
+ * A helper class to handle CASA related functions.
+ * 
  * @author jqian
  */
 public class CasaHelper {
+    public static String CASA_DIR_NAME = "/src/conf/";  // NOI18N for now..
+    public static String CASA_EXT = ".casa";  // NOI18N for now..
+    
+    public static String getCasaFileName(Project project) {
+        ProjectInformation projInfo = 
+                project.getLookup().lookup(ProjectInformation.class);    
+        String projName = projInfo.getName();
+                            
+        File pf = FileUtil.toFile(project.getProjectDirectory());
+        return pf.getPath() + CASA_DIR_NAME + projName + CASA_EXT;
+    }
+    
+    public static FileObject getCasaFileObject(Project project, boolean create) {
+        ProjectInformation projInfo = 
+                project.getLookup().lookup(ProjectInformation.class);
+        assert projInfo != null;
         
-    public static FileObject getCasaFileObject(Project jbiProject, boolean create) {
-        ProjectInformation projInfo = (ProjectInformation) jbiProject.getLookup().
-                lookup(ProjectInformation.class);
-        String jbiProjName = projInfo.getName();
-        FileObject confFO = jbiProject.getProjectDirectory().getFileObject("src/conf"); // NO18N
-        FileObject casaFO = confFO.getFileObject(jbiProjName + ".casa");   // NO18N
+        String projName = projInfo.getName();
+        
+        FileObject confFO = project.getProjectDirectory().getFileObject(CASA_DIR_NAME); // "src/conf"
+        if (confFO == null) {
+            // This could happen during compapp rename with directory name change.
+            return null;
+        }
+        
+        FileObject casaFO = confFO.getFileObject(projName + CASA_EXT);   
         
         if (casaFO == null && create) {
-            try {
-                casaFO = FileUtil.copyFile(
-                        Repository.getDefault().getDefaultFileSystem().findResource(
-                        "org-netbeans-modules-compapp-projects-jbi/project.casa"), // NOI18N
-                        confFO, 
-                        jbiProjName);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            casaFO = createDefaultCasaFileObject(project);
+        }
+        
+        return casaFO;
+    }    
+    
+    public static FileObject createDefaultCasaFileObject(Project project) {
+        ProjectInformation projInfo = 
+                project.getLookup().lookup(ProjectInformation.class);
+        assert projInfo != null;        
+        String projName = projInfo.getName();        
+        FileObject confFO = project.getProjectDirectory().getFileObject(CASA_DIR_NAME); // "src/conf"
+        
+        FileObject casaFO = null;        
+        try {
+            casaFO = FileUtil.copyFile(
+                    Repository.getDefault().getDefaultFileSystem().findResource(
+                    "org-netbeans-modules-compapp-projects-jbi/project.casa" // NOI18N
+                    ), confFO, projName
+                    );
+            registerCasaFileListener(project);
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
         
         return casaFO;
     }
+    
+    public static FileObject getCompAppWSDLFileObject(Project project) {
+        ProjectInformation projInfo = 
+                project.getLookup().lookup(ProjectInformation.class);
+        String projName = projInfo.getName();
+        FileObject srcDirFO = ((JbiProject)project).getSourceDirectory();
+        return srcDirFO == null ? null : srcDirFO.getFileObject(projName + ".wsdl"); // NOI18N
+    }
+    
+    public static boolean containsWSDLPort(Project project) {
+        FileObject casaFO = getCasaFileObject(project, false);
+        if (casaFO != null) {
+            InputStream is = null;
+            try {
+                DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = builderFactory.newDocumentBuilder();
+                
+                is = casaFO.getInputStream();
+                Document doc = builder.parse(is);
+                NodeList portNodeList = doc.getElementsByTagName("port"); // NOI18N
+                for (int i = 0; i < portNodeList.getLength(); i++) {
+                    Node portNode = portNodeList.item(i);
+                    NamedNodeMap attrMap = portNode.getAttributes();
+                    Node stateNode = attrMap.getNamedItem("state"); // NOI18N
+                    if (stateNode == null || 
+                            ! ("deleted".equals(stateNode.getNodeValue()))) { // NOI18N
+                        return true;
+                    }
+                }
+                is.close();
+            } catch (Exception e) {
+                System.out.println("Error parsing XML: " + e);
+            } finally {
+                if (is != null) {
+                    try {
+                         is.close();
+                    } catch (Exception ignore) {
+                        ;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    public static void registerCasaFileListener(Project project) {        
+        FileObject casaFO = CasaHelper.getCasaFileObject(project, false);
+        if (casaFO != null) {
+            FileChangeListener listener =
+                    project.getLookup().lookup(FileChangeListener.class);
+            if (listener != null) {
+                casaFO.removeFileChangeListener(listener);
+                casaFO.addFileChangeListener(listener);
+            }
+        }
+    }
         
-    public static void saveCasa(Project jbiProject) {
-        FileObject casaFO = getCasaFileObject(jbiProject, false);
+    public static void saveCasa(Project project) {
+        FileObject casaFO = getCasaFileObject(project, false);
         if (casaFO != null) {
             try {
                 DataObject casaDO = DataObject.find(casaFO);

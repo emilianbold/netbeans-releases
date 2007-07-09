@@ -230,13 +230,13 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                     }
                 }
                 
-                FileObject casaWsdlDir = project.getSourceDirectory();
-                FileObject oldCasaWsdlFO = casaWsdlDir.getFileObject(oldName + ".wsdl"); // NOI18N
-                if (oldCasaWsdlFO != null) {
+                FileObject srcDirFO = project.getSourceDirectory();
+                FileObject oldCompAppWsdlFO = srcDirFO.getFileObject(oldName + ".wsdl"); // NOI18N
+                if (oldCompAppWsdlFO != null) {
                     // Fix casa wsdl target namespace:
                     //     "http://enterprise.netbeans.org/casa/SynchronousSampleApplication"
                     try {
-                        MyFileUtil.replaceAll(oldCasaWsdlFO,
+                        MyFileUtil.replaceAll(oldCompAppWsdlFO,
                                 "\"http://enterprise.netbeans.org/casa/" + oldName + "\"",  // NOI18N
                                 "\"http://enterprise.netbeans.org/casa/" + newName + "\"",  // NOI18N
                                 false);
@@ -244,18 +244,19 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
                         e.printStackTrace();
                     }
                     
-                    // Rename compapp wsdl (<Proj>.wsdl)
+                    // Rename <compapp>.wsdl
                     try {
-                        FileUtil.moveFile(oldCasaWsdlFO, casaWsdlDir, newName);
+                        FileUtil.moveFile(oldCompAppWsdlFO, srcDirFO, newName);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
                 
                 // Rename <Proj>.casa
-                if (oldCasaFO != null) {
+                if (oldCasaFO != null) { 
                     try {
                         FileUtil.moveFile(oldCasaFO, casaDir, newName);
+                        CasaHelper.registerCasaFileListener(project); // FIXME: need the new project.
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }

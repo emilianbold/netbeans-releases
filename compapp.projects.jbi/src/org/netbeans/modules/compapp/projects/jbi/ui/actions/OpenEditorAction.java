@@ -19,28 +19,20 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.actions;
 
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.cookies.OpenCookie;
 import org.openide.cookies.EditCookie;
 
-import java.util.Vector;
-import java.io.File;
+import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 
 /**
  * Open the casa editor.
  *
  * To change this template use File | Settings | File Templates.
  */
-public class OpenEditorAction implements ProjectActionPerformer {
-    public static String CASA_DIR_NAME = "/src/conf/";  // NOI18N for now..
-    public static String CASA_EXT = ".casa";  // NOI18N for now..
-
-    private Vector comboValues = new Vector();
+public class OpenEditorAction implements ProjectActionPerformer {    
 
     /**
      * Creates a new instance of ProjectLevelAddAction
@@ -65,14 +57,10 @@ public class OpenEditorAction implements ProjectActionPerformer {
      * @param p DOCUMENT ME!
      */
     public void perform(Project p) {
-        //File pf = FileUtil.toFile(p.getProjectDirectory());
-        //String projPath = pf.getPath() + File.separator;
-
         try {
-            File jbiFile = new File(getCasaFileName(p)); 
-            FileObject fobj = FileUtil.toFileObject(jbiFile);
+            FileObject fobj = CasaHelper.getCasaFileObject(p, false);
             DataObject dobj = DataObject.find(fobj);
-            EditCookie ec = (EditCookie) dobj.getCookie(EditCookie.class);
+            EditCookie ec = dobj.getCookie(EditCookie.class);
             if (ec != null) {
                 ec.edit();
             }
@@ -80,21 +68,5 @@ public class OpenEditorAction implements ProjectActionPerformer {
             // failed to open casa...
             // ex.printStackTrace();
         }
-
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param p DOCUMENT ME!
-     */
-    public static String getCasaFileName(Project p) { 
-        ProjectInformation projInfo = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);                    
-        assert projInfo != null;
-        String projName = projInfo.getName();
-                            
-        File pf = FileUtil.toFile(p.getProjectDirectory());
-        return (pf.getPath() + CASA_DIR_NAME + projName + CASA_EXT);
-    }
-
 }

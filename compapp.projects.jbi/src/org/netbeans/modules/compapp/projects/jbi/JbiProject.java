@@ -48,8 +48,11 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 
 import org.openide.modules.InstalledFileLocator;
 
@@ -73,8 +76,11 @@ import java.util.*;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -109,21 +115,23 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      */
     public static final String MODULE_INSTALL_DIR = "module.install.dir"; // NOI18N
     
-    /** Last time in ms when the Broken References alert was shown. */
-    private static long brokenAlertLastTime = 0;
+//    /** Last time in ms when the Broken References alert was shown. */
+//    private static long brokenAlertLastTime = 0;
+//    
+//    /** Is Broken References alert shown now? */
+//    private static boolean brokenAlertShown = false;
+//    
+//    /** Timeout within which request to show alert will be ignored. */
+//    private static int BROKEN_ALERT_TIMEOUT = 1000;
     
-    /** Is Broken References alert shown now? */
-    private static boolean brokenAlertShown = false;
-    
-    /** Timeout within which request to show alert will be ignored. */
-    private static int BROKEN_ALERT_TIMEOUT = 1000;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private AntBasedProjectType abpt;
-    private JbiLogicalViewProvider lvp;
+    private JbiLogicalViewProvider lvp;    
+    private FileChangeListener casaFileListener;
     
     
     /**
@@ -145,6 +153,13 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {     
+                JbiProject.this.lvp.refreshRootNode();
+                CasaHelper.registerCasaFileListener(JbiProject.this);
+            }
+        });
     }
     
     /**
@@ -247,18 +262,34 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         }
         );
         
-        return Lookups.fixed(
-                new Object[] {
-            new Info(), aux, helper.createCacheDirectoryProvider(),
-            helper, spp,
+        casaFileListener = new FileChangeAdapter() {
+            public void fileChanged(FileEvent fe) {
+                JbiProject.this.lvp.refreshRootNode();
+            }
+            public void fileDeleted(FileEvent fe) {
+                JbiProject.this.lvp.refreshRootNode();
+            }
+        };
+        
+        return Lookups.fixed(new Object[] {
+            new Info(),
+            aux,
+            helper.createCacheDirectoryProvider(),
+            helper,
+            spp,
             new JbiActionProvider(this, helper, refHelper),
             lvp = new JbiLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
             new JbiCustomizerProvider(this, helper, refHelper),
-            new AntArtifactProviderImpl(), new ProjectXmlSavedHookImpl(),
+            new AntArtifactProviderImpl(), 
+            new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new JbiProjectOperations(this),
             new HashSet<TopComponent>(),
-            fileBuilt, new RecommendedTemplatesImpl(), refHelper, sourcesHelper.createSources(),
+            fileBuilt,
+            new RecommendedTemplatesImpl(),
+            refHelper,
+            sourcesHelper.createSources(),
+            casaFileListener,
             helper.createSharabilityQuery(
                     evaluator(), new String[] {"${" + JbiProjectProperties.SOURCE_ROOT + "}"}, // NOI18N
                     new String[] {
@@ -292,9 +323,6 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      * @param ev DOCUMENT ME!
      */
     public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored
-        //TODO: should not be ignored!
-        
         if (lvp != null) {
             lvp.refreshRootNode();
         }

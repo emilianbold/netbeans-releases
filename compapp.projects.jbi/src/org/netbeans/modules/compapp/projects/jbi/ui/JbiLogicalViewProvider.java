@@ -68,6 +68,7 @@ import java.util.List;
 import java.io.File;
 
 import javax.swing.*;
+import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 
 /**
  * Support for creating logical views.
@@ -129,7 +130,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             mEmptyIcon = Utilities.mergeImages(mIcon, mEmpty, 8, 0);
         }
         
-        isEmpty = isProjectEmpty();
+//        isEmpty = isProjectEmpty();
     }
     
     /**
@@ -159,8 +160,6 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
      *
      */
     public void refreshRootNode() {
-        
-        // 04/30/06 update icon...
         boolean newEmpty = isProjectEmpty();
         if (newEmpty != isEmpty) {
             isEmpty = newEmpty;
@@ -175,7 +174,11 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 JbiProjectProperties.JBI_CONTENT_ADDITIONAL
                 );
         
-        return ((comps == null) || (comps.trim().length() < 1));
+        if (comps != null && comps.trim().length() > 0) {
+            return false;
+        } else {
+            return ! CasaHelper.containsWSDLPort(project);
+        }
     }
     
     
@@ -332,7 +335,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions(boolean context) {
             ResourceBundle bundle = NbBundle.getBundle(JbiLogicalViewProvider.class);
             
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             
             actions.add(ProjectSensitiveActions.projectSensitiveAction(
                     new AddProjectAction(), bundle.getString("LBL_AddProjectAction_Name"), null
@@ -340,8 +343,8 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             
             // add this only if the casa editor is installed, and <proj>.casa exists..
             File pf = FileUtil.toFile(project.getProjectDirectory());
-            File casaFile = new File(OpenEditorAction.getCasaFileName(project));
-            if (casaFile.exists()) {
+            File casaFile = new File(CasaHelper.getCasaFileName(project));
+            if (casaFile.exists()) { // TODO: create CASA on demand
                 actions.add(null);
                 actions.add(ProjectSensitiveActions.projectSensitiveAction(
                         new OpenEditorAction(), bundle.getString("LBL_EditAction_Name"), null
@@ -418,7 +421,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
-                            actions.add(next);
+                            actions.add((Action)next);
                         } else if (next instanceof JSeparator) {
                             actions.add(null);
                         }
@@ -436,55 +439,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
                         
-            return (Action[]) actions.toArray(new Action[actions.size()]);
-            
-            /*
-            return new Action[] {
-                // disable new action at the top...
-                ProjectSensitiveActions.projectSensitiveAction(
-                    new AddProjectAction(), bundle.getString("LBL_AddProjectAction_Name"), null
-                ), // NOI18N
-                // ProjectSensitiveActions.projectSensitiveAction(new AsaBuildAction(), bundle.getString("LBL_AsaBuildAction_Name"), null),
-                null,
-                ProjectSensitiveActions.projectCommandAction(
-                    ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null
-                ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_JBIBUILD,
-                    bundle.getString("LBL_JbiBuildAction_Name"), null
-                ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_JBICLEANBUILD,
-                    bundle.getString("LBL_JbiCleanBuildAction_Name"), null
-                ), // NOI18N
-                null,
-             
-                // ProjectSensitiveActions.projectCommandAction( JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, bundle.getString( "LBL_ValidatePortmaps_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_DEPLOY, bundle.getString("LBL_DeployAction_Name"),
-                    null
-                ), // NOI18N
-                // Start Test Framework
-                null,
-                ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"),
-                    null
-                ), // NOI18N
-                // End Test Framework
-                null, CommonProjectActions.setAsMainProjectAction(),
-                CommonProjectActions.openSubprojectsAction(),
-                CommonProjectActions.closeProjectAction(), null,
-                SystemAction.get(org.openide.actions.FindAction.class),
-                null,
-                // SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class), null,
-                CommonProjectActions.renameProjectAction(),
-                CommonProjectActions.moveProjectAction(),
-                CommonProjectActions.copyProjectAction(),
-                CommonProjectActions.deleteProjectAction(),
-                null,
-                brokenLinksAction, CommonProjectActions.customizeProjectAction(),
-            };
-             */
+            return (Action[]) actions.toArray(new Action[actions.size()]);            
         }
         
         /**
@@ -554,84 +509,6 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                 fireIconChange();
                 fireOpenedIconChange();
                 fireDisplayNameChange(null, null);
-            }
-        }
-    }
-    
-    /**
-     * Factory for project actions.<BR> XXX This class is a candidate for move to
-     * org.netbeans.spi.project.ui.support
-     */
-    public static class Actions {
-        private Actions() {
-        } // This is a factory
-        
-        /**
-         * DOCUMENT ME!
-         *
-         * @param key DOCUMENT ME!
-         * @param name DOCUMENT ME!
-         * @param global DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
-        public static Action createAction(String key, String name, boolean global) {
-            return new ActionImpl(key, name, global ? Utilities.actionsGlobalContext() : null);
-        }
-        
-        private static class ActionImpl extends AbstractAction implements ContextAwareAction {
-            /**
-             * DOCUMENT ME!
-             */
-            Lookup context;
-            
-            /**
-             * DOCUMENT ME!
-             */
-            String name;
-            
-            /**
-             * DOCUMENT ME!
-             */
-            String command;
-            
-            /**
-             * Creates a new ActionImpl object.
-             *
-             * @param command DOCUMENT ME!
-             * @param name DOCUMENT ME!
-             * @param context DOCUMENT ME!
-             */
-            public ActionImpl(String command, String name, Lookup context) {
-                super(name);
-                this.context = context;
-                this.command = command;
-                this.name = name;
-            }
-            
-            /**
-             * DOCUMENT ME!
-             *
-             * @param e DOCUMENT ME!
-             */
-            public void actionPerformed(ActionEvent e) {
-                Project project = (Project) context.lookup(Project.class);
-                ActionProvider ap = (ActionProvider) project.getLookup().lookup(
-                        ActionProvider.class
-                        );
-                
-                ap.invokeAction(command, context);
-            }
-            
-            /**
-             * DOCUMENT ME!
-             *
-             * @param lookup DOCUMENT ME!
-             *
-             * @return DOCUMENT ME!
-             */
-            public Action createContextAwareInstance(Lookup lookup) {
-                return new ActionImpl(command, name, lookup);
             }
         }
     }
