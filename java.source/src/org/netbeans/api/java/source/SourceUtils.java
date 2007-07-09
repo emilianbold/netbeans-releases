@@ -777,9 +777,6 @@ out:                for (URL e : roots) {
                             return false;
                         }                    
                         Set<Modifier> modifiers = ((TypeElement)element).getModifiers();
-                        if (!modifiers.contains(Modifier.PUBLIC)) {
-                            return false;
-                        }
                         Element parent = element.getEnclosingElement();
                         if (parent.getKind() != ElementKind.PACKAGE && !modifiers.contains(Modifier.STATIC)) {
                             return false;
