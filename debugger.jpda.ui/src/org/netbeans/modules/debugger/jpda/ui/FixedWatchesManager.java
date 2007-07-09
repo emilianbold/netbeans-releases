@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.util.*;
@@ -31,6 +33,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * Manages lifecycle and presentation of fixed watches. Should be
@@ -40,10 +43,10 @@ import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
  * @author Jan Jancura, Maros Sandor
  */
 public class FixedWatchesManager implements TreeModelFilter, 
-NodeActionsProviderFilter, NodeModelFilter {
+NodeActionsProviderFilter, ExtendedNodeModelFilter {
             
     public static final String FIXED_WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
+        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch.gif";
     private final Action DELETE_ACTION = Models.createAction (
         NbBundle.getBundle (FixedWatchesManager.class).getString 
             ("CTL_DeleteFixedWatch_Label"),
@@ -226,8 +229,6 @@ NodeActionsProviderFilter, NodeModelFilter {
     
     public String getIconBase (NodeModel original, Object node) 
     throws UnknownTypeException {
-        if (fixedWatches.containsKey (node))
-            return FIXED_WATCH;
         return original.getIconBase (node);
     }
     
@@ -286,5 +287,39 @@ NodeActionsProviderFilter, NodeModelFilter {
             listener.modelChanged(event);
         }
     }
-    
+
+    public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.canRename(node);
+    }
+
+    public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.canCopy(node);
+    }
+
+    public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.canCut(node);
+    }
+
+    public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        return original.clipboardCopy(node);
+    }
+
+    public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        return original.clipboardCut(node);
+    }
+
+    public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
+        return original.getPasteTypes(node, t);
+    }
+
+    public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+        original.setName(node, name);
+    }
+
+    public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        if (fixedWatches.containsKey (node))
+            return FIXED_WATCH;
+        return original.getIconBaseWithExtension (node);
+    }
+
 }
