@@ -121,7 +121,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         if (descriptor.getPwd() != null) {
             debugDesc.setBaseDirectory(descriptor.getPwd());
         }
-        if (jrubySet) {
+        if (jrubySet && descriptor.getClassPath() != null) {
             debugDesc.setEnvironment(Collections.singletonMap("CLASSPATH", descriptor.getClassPath())); // NOI18N
         }
         RubyDebuggerProxy proxy;
