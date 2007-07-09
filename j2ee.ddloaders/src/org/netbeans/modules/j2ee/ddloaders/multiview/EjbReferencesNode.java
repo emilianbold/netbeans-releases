@@ -37,7 +37,8 @@ public class EjbReferencesNode extends EjbSectionNode {
         SectionNodeView sectionNodeView = getSectionNodeView();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(sectionNodeView,
                 new EjbReferencesTableModel(sectionNodeView.getDataObject(), ejb));
-        innerTablePanel.getEditButton().setVisible(true);
+        innerTablePanel.getAddButton().setVisible(false);
+        innerTablePanel.getEditButton().setVisible(false);
         innerTablePanel.getRemoveButton().setVisible(true);
         return innerTablePanel;
     }
