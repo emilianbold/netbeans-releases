@@ -24,6 +24,7 @@ import gui.window.MIDletEditorOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
@@ -36,6 +37,8 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
     private Node openNode;
     private String targetProject;
     private String midletName;
+    private ProjectsTabOperator pto;
+    
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
     /**
      * Creates a new instance of OpenMIDletEditor
@@ -63,13 +66,24 @@ public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.Pe
     }
     public void initialize() {
         log(":: initialize");
-        EditorOperator.closeDiscardAll();        
+        EditorOperator.closeDiscardAll();
+        pto = ProjectsTabOperator.invoke();        
     } 
     
     public void prepare() {
         log(":: prepare");
         String documentPath = MPUtilities.SOURCE_PACKAGES+"|"+"allComponents"+"|"+midletName;
-        openNode = new Node(new ProjectsTabOperator().getProjectRootNode(targetProject), documentPath);
+        
+        long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        
+        try {
+            openNode = new Node(pto.getProjectRootNode(targetProject), documentPath);
+        } catch (TimeoutExpiredException ex) {
+            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
+            throw new Error("Cannot find expected node because of Timeout");            
+        }
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
         
         if (this.openNode == null) {
             throw new Error("Cannot find expected node ");
