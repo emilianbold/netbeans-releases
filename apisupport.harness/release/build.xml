@@ -189,7 +189,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="javadoc" depends="build-init,-javadoc-init">
         <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
-        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}">
+        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}" encoding="UTF-8">
             <classpath refid="cp"/>
             <sourcepath location="${src.dir}"/>
             <doctitle>${javadoc.title}</doctitle>
