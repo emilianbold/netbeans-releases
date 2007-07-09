@@ -58,16 +58,16 @@ public class SwitchToDesignView  extends org.netbeans.performance.test.utilities
         
     public void prepare() {
         log(":: prepare");
-        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaFileName);
+        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getSchemaButton().pushNoBlock();
     }
     
     public ComponentOperator open() {
         log(":: open");
-        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaFileName);
+        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getDesignButton().push();
         
-        return new XMLSchemaComponentOperator(testSchemaFileName);
+        return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
     }
     
     public void close() {

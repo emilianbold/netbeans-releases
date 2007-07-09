@@ -114,8 +114,8 @@ public class SchemaViewSwitchTest extends org.netbeans.performance.test.utilitie
         log(":: prepare");
         String schemaDocPath = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.bpel.project.ui.Bundle", "LBL_Node_Sources")+"|"+testSchemaName+".xsd";
         Node schemaNode = new Node(new ProjectsTabOperator().getProjectRootNode(testProjectName),schemaDocPath);        
-        schemaNode.performPopupActionNoBlock("Open");
-        schema = new XMLSchemaComponentOperator(testSchemaName+".xsd");        
+        schemaNode.performPopupActionNoBlock("Open");      
+        schema = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaName+".xsd");
     }
 
     public ComponentOperator open() {

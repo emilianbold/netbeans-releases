@@ -58,13 +58,13 @@ public class SwitchToSchemaView  extends org.netbeans.performance.test.utilities
         
     public void prepare() {
         log(":: prepare");
-        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaFileName);
+        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getDesignButton().pushNoBlock();
     }
     
     public ComponentOperator open() {
         log(":: open");
-        schemaComponentOperator = new XMLSchemaComponentOperator(testSchemaFileName);
+        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getSchemaButton().push();
         
         return new XMLSchemaComponentOperator(testSchemaFileName);

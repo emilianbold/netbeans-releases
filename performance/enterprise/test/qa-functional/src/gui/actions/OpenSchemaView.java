@@ -73,7 +73,7 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
         log("::open");
         Node schemaNode = new Node(EPUtilities.getProcessFilesNode(projectName),schemaName+".xsd");
         new OpenAction().performPopup(schemaNode);
-        return new XMLSchemaComponentOperator(schemaName+".xsd");
+        return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(schemaName+".xsd");
     }
     
     public void close(){
