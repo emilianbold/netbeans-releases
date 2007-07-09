@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.editor.options;
 
-import org.openide.loaders.XMLDataObject;
-
 /** XML Processor for Key Bindings settings
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
+ * 
+ * @deprecated Use Editor Settings Storage API instead.
  */
 public class KeyBindingsMIMEProcessor extends MIMEProcessor{
 

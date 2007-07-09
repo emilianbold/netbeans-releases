@@ -22,12 +22,15 @@ package org.netbeans.modules.editor.options;
 import java.beans.*;
 import java.awt.Image;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
 import org.netbeans.editor.BaseCaret;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /** BeanInfo for base options
 *
@@ -208,13 +211,15 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     }
 
     protected boolean usesNewOptions() {
-
-        boolean usesNewOptions = false;
-        BaseOptions base = (BaseOptions) SharedClassObject.findObject(getBeanClass());
-        if (base != null){
-            usesNewOptions = base.usesNewOptionsDialog();
+        Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
+        for(ModuleInfo mi : infos) {
+            if (mi.getCodeNameBase().startsWith("org.netbeans.modules.options.editor") && //NOI18N
+                mi.isEnabled()
+            ) {
+                return true;
+            }
         }
-        return usesNewOptions;
+        return false;
     }
 
     protected Class getBeanClass() {

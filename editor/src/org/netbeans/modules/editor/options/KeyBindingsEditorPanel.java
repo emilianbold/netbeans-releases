@@ -36,6 +36,7 @@ import org.openide.util.Lookup;
 
 /**
  * @author  Petr Nejedly
+ * @deprecated Without any replacement.
  */
 public class KeyBindingsEditorPanel extends javax.swing.JPanel {
 

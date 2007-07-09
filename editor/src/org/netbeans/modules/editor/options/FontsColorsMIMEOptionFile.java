@@ -21,14 +21,12 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.openide.xml.XMLUtil;
@@ -44,6 +42,7 @@ import org.w3c.dom.NodeList;
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
+ * @deprecated Use Editor Settings Storage API instead.
  */
 public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
     
@@ -76,10 +75,11 @@ public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
     protected void loadSettings(boolean propagate){
+        assert false : "FontsColorsMIMEOptionFile should not be used anymore. " + //NOI18N
+            "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
+            "for editor/settings and attach this stacktrace to it."; //NOI18N
+        
         synchronized (Settings.class) {
-            if (base.usesNewOptionsDialog()){
-                return;
-            }
             Document doc = dom;
             Element rootElement = doc.getDocumentElement();
             
@@ -238,6 +238,10 @@ public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected void updateSettings(Map changedProp){
+        assert false : "FontsColorsMIMEOptionFile should not be used anymore. " + //NOI18N
+            "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
+            "for editor/settings and attach this stacktrace to it."; //NOI18N
+        
         synchronized (Settings.class) {
             // put changed properties to local map
             properties.putAll(changedProp);

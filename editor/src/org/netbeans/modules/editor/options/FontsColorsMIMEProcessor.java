@@ -19,12 +19,11 @@
 
 package org.netbeans.modules.editor.options;
 
-import org.openide.loaders.XMLDataObject;
-
 /** XML Processor for Fonts and Colors settings
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
+ * @deprecated Use Editor Settings Storage API instead.
  */
 public class FontsColorsMIMEProcessor extends MIMEProcessor{
 

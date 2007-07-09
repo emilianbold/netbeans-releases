@@ -259,26 +259,26 @@ public class BaseOptions extends OptionSupport {
 //        new Throwable("BaseOptions: " + getClass() + "; kitClass=" + kitClass + "; typeName=" + typeName).printStackTrace();
     }
     
-    public boolean usesNewOptionsDialog() {
-        if (usingNewOptions == null) {
-            boolean b = false;
-            if (!BASE.equals(getTypeName())) {
-                String mime = getCTImpl();
-                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
-                FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
-                if (fcs != null){
-                    AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
-                    if (as !=null) {
-                        b = true;
-                    }
-                }
-            }
-            
-            usingNewOptions = b ? Boolean.TRUE : Boolean.FALSE;
-        }
-        
-        return usingNewOptions.booleanValue();
-    }
+//    public boolean usesNewOptionsDialog() {
+//        if (usingNewOptions == null) {
+//            boolean b = false;
+//            if (!BASE.equals(getTypeName())) {
+//                String mime = getCTImpl();
+//                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
+//                FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+//                if (fcs != null){
+//                    AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
+//                    if (as !=null) {
+//                        b = true;
+//                    }
+//                }
+//            }
+//            
+//            usingNewOptions = b ? Boolean.TRUE : Boolean.FALSE;
+//        }
+//        
+//        return usingNewOptions.booleanValue();
+//    }
 
     protected String getContentType(){
         BaseKit kit = BaseKit.getKit(getKitClass());
@@ -595,16 +595,11 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings API instead.
      */
     public Map<String, String> getAbbrevMap() {
-        MimePath mimePath = MimePath.parse(getCTImpl());
-        CodeTemplateSettings cts = MimeLookup.getLookup(mimePath).lookup(CodeTemplateSettings.class);
-        Map<String, String> map = new HashMap<String, String>();
-        
-        if (cts != null) {
-            for(CodeTemplateDescription ctd : cts.getCodeTemplateDescriptions()) {
-                map.put(ctd.getAbbreviation(), ctd.getParametrizedText());
-            }
-        }
-        
+        // Use Settings so that registered initializer, filters and evaluators
+        // still stand a chance.
+        @SuppressWarnings("unchecked")
+        Map<String, String> map = (Map<String, String>) Settings.getValue(
+            getKitClass(), SettingsNames.ABBREV_MAP, true);
         return map;
     }
     
@@ -785,177 +780,101 @@ public class BaseOptions extends OptionSupport {
         SCROLL_FIND_INSETS_PROP);
     }
     
-    /** Gets Map of default KeyBindings as they are stored in
-     *  MIMEFolder/Defaults/keybindings.xml */
-    public Map getDefaultKeyBindingsMap(){
-        loadDefaultKeyBindings();
-        return defaultKeyBindingsMap;
+    /** 
+     * @return The same keybindings as <code>getKeyBindingList</code>, but stored
+     *   in a map.
+     * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
+     */
+    public Map<String, MultiKeyBinding> getDefaultKeyBindingsMap(){
+        return OptionUtilities.makeKeyBindingsMap(getKBList());
     }
     
-    /** Loads default abbreviations from MIMEFolder/Defaults/keybindings.xml and
-     *  stores them to defaultKeyBindingsMap */
-    private void loadDefaultKeyBindings(){
-        if (defaultKeyBindingsMap!=null) return;
-        MIMEOptionFolder mof;
-        MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-        if (mimeFolder == null) return;
-        mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
-        if (mof == null) {
-            return;
-        }
-        MIMEOptionFile file = mof.getFile(KeyBindingsMIMEProcessor.class, false);
-        if ((file!=null) && (!file.isLoaded())) {
-            file.loadSettings(false);
-            defaultKeyBindingsMap = new HashMap(file.getAllProperties());
-        }
-        //#68762 - Basic keybinding broken for old editor kits
-        if (!usesNewOptionsDialog() && !BASE.equals(getTypeName())){
-                super.setSettingValue(SettingsNames.KEY_BINDING_LIST,
-                        new ArrayList(defaultKeyBindingsMap.values()),
-                        KEY_BINDING_LIST_PROP);        
-        }
+    private List<? extends MultiKeyBinding> getKBList() {
+        // Use Settings so that registered initializer, filters and evaluators
+        // still stand a chance.
+        @SuppressWarnings("unchecked")
+        List<? extends MultiKeyBinding> list = (List<? extends MultiKeyBinding>) Settings.getValue(
+            getKitClass(), SettingsNames.KEY_BINDING_LIST, true);
+        return list;
     }
     
-    private List getKBList(){
-        if (!keybindingsInitialized) {
-            keybindingsInitialized = true;
-            if (usesNewOptionsDialog()){
-                updateKeybindingsFromNewOptionsDialogAttributes();
-            } else {
-                loadDefaultKeyBindings();
-                loadSettings(KeyBindingsMIMEProcessor.class);
-            } 
-        }
-        
-        Class kitClass = getKitClass();
-        Settings.KitAndValue[] kav = getSettingValueHierarchy(SettingsNames.KEY_BINDING_LIST);
-        List kbList = null;
-        for (int i = 0; i < kav.length; i++) {
-            if (kav[i].kitClass == kitClass) {
-                kbList = (List)kav[i].value;
-            }
-        }
-        if (kbList == null) {
-            kbList = new ArrayList();
-        }
-        
-        // must convert all members to serializable MultiKeyBinding
-        int cnt = kbList.size();
-        for (int i = 0; i < cnt; i++) {
-            Object o = kbList.get(i);
-            if (!(o instanceof MultiKeyBinding) && o != null) {
-                JTextComponent.KeyBinding b = (JTextComponent.KeyBinding)o;
-                kbList.set(i, new MultiKeyBinding(b.key, b.actionName));
-            }
-        }
-        return new ArrayList( kbList );
-    }
-    
+    /** 
+     * @return The list of <code>MultiKeyBindings</code> available for this mime type.
+     *   The first element in the list is the name of the kit class (ie. <code>String</code>).
+     * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
+     */
     public List getKeyBindingList() {
-        List kb2 = new ArrayList( getKBList() );
-        kb2.add( 0, getKitClass().getName() ); //insert kit class name
+        List kb2 = new ArrayList(getKBList());
+        kb2.add(0, getKitClass().getName()); //insert kit class name
         return kb2;
     }
     
-    /** Sets new keybindings map and save the diff-ed changes to XML file*/
+    /** 
+     * Sets new keybindings map and save the diff-ed changes to XML file. Calls
+     * <code>setKeyBindingList(list, true)</code>.
+     * 
+     * @param list The list with <code>MultiKeyBinding</code>s.
+     * 
+     * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
+     */
     public void setKeyBindingList(List list) {
         setKeyBindingList(list, true);
     }
     
     
-    /** Saves keybindings settings to XML file. 
-     *  (This is used especially for record macro action.)*/
-    public void setKeyBindingsDiffMap(Map diffMap){
-        if ((diffMap != null) && (diffMap.size()>0)){
-            updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
-        }
+    /** 
+     * Saves keybindings settings to XML file. 
+     * (This is used especially for record macro action.)
+     * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
+     */
+    public void setKeyBindingsDiffMap(Map<String, MultiKeyBinding> diffMap) {
+// XXX: try harder to preseve backwards compatibility of this method
+//        if ((diffMap != null) && (diffMap.size()>0)){
+//            updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
+//        }
     }
     
     
-    /** Sets new keybindings list to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file. */
+    /** 
+     * Sets new keybindings list to initializer map and if saveToXML is true,
+     * then new settings will be saved to XML file.
+     * 
+     * @param list The list with <code>MultiKeyBinding</code>s.
+     * @param saveToXML Ignored.
+     * 
+     * @deprecated Use Editor Settings and Editor Settings Storage APIs instead.
+     */
     public void setKeyBindingList(List list, boolean saveToXML) {
-        if( list.size() > 0 &&
-        ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
-        ) {
-            list.remove( 0 ); //remove kit class name
-        }
-        
-        Map diffMap = null;
-        if (saveToXML){
-            // we are going to save the diff-ed changes to XML, all default
-            // properties have to be available
-            loadDefaultKeyBindings();
-            List kbMap = getKeyBindingList();
-            if( kbMap.size() > 0 &&
-            ( kbMap.get( 0 ) instanceof Class || kbMap.get( 0 ) instanceof String )
-            ) {
-                kbMap.remove( 0 ); //remove kit class name
-            }
-            
-            diffMap = OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(kbMap),
-            OptionUtilities.makeKeyBindingsMap(list),true);
-            if (diffMap.size()>0){
-                // settings has changed, write changed settings to XML file
-                updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
-            }
-        }
-        
-        super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
+// XXX: try harder to preseve backwards compatibility of this method
+//        if( list.size() > 0 &&
+//        ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
+//        ) {
+//            list.remove( 0 ); //remove kit class name
+//        }
+//        
+//        Map diffMap = null;
+//        if (saveToXML){
+//            // we are going to save the diff-ed changes to XML, all default
+//            // properties have to be available
+//            loadDefaultKeyBindings();
+//            List kbMap = getKeyBindingList();
+//            if( kbMap.size() > 0 &&
+//            ( kbMap.get( 0 ) instanceof Class || kbMap.get( 0 ) instanceof String )
+//            ) {
+//                kbMap.remove( 0 ); //remove kit class name
+//            }
+//            
+//            diffMap = OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(kbMap),
+//            OptionUtilities.makeKeyBindingsMap(list),true);
+//            if (diffMap.size()>0){
+//                // settings has changed, write changed settings to XML file
+//                updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
+//            }
+//        }
+//        
+//        super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
     }
     
-    private void updateKeybindingsFromNewOptionsDialogAttributes(){
-        KeyBindingSettings kbs = getKeybindingSettings();
-        if (kbs == null){
-            return;
-        }
-        List newKeybs = new ArrayList();
-        List newOptionDialogKeybs = kbs.getKeyBindings();
-        // convert to editor's MultiKeyBinding
-        for (int i=0; i<newOptionDialogKeybs.size(); i++){
-            org.netbeans.api.editor.settings.MultiKeyBinding mkb = 
-            (org.netbeans.api.editor.settings.MultiKeyBinding) newOptionDialogKeybs.get(i);
-            List lst = mkb.getKeyStrokeList();
-            KeyStroke keys[] = new KeyStroke[lst.size()];
-            lst.toArray(keys);
-            MultiKeyBinding editorMkb = new MultiKeyBinding(keys, mkb.getActionName());
-            newKeybs.add(editorMkb);
-        }
-        super.setSettingValue(SettingsNames.KEY_BINDING_LIST, newKeybs, KEY_BINDING_LIST_PROP);
-    }
-
-    private KeyBindingSettings getKeybindingSettings() {
-        synchronized (Settings.class) {
-            if (keyBindingsSettings == null){
-                String mime = getCTImpl();
-                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
-                resultKB = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
-                Collection inst = resultKB.allInstances();
-                lookupListenerKB = new LookupListener(){
-                    public void resultChanged(LookupEvent ev){
-                        Lookup.Result result = ((Lookup.Result)ev.getSource());
-                        // refresh keyBindingsSettings
-                        Collection newInstances = result.allInstances();
-                        if (newInstances.size() > 0){
-                            keyBindingsSettings = (KeyBindingSettings)newInstances.iterator().next();
-                        }
-
-                        updateKeybindingsFromNewOptionsDialogAttributes();
-                    }
-                };
-
-                weakLookupListenerKB = (LookupListener) WeakListeners.create(
-                        LookupListener.class, lookupListenerKB, resultKB);
-
-                resultKB.addLookupListener(weakLookupListenerKB);            
-                if (inst.size() > 0){
-                    keyBindingsSettings = (KeyBindingSettings)inst.iterator().next();
-                }
-            }
-            return keyBindingsSettings;
-        }
-    }
-
     /**
      * Tries to gather all colorings defined for the mime type of this instance.
      * 
@@ -1119,53 +1038,55 @@ public class BaseOptions extends OptionSupport {
         }
     }
 
-    /** removes keybindings from deleted macros, or if macro deletion was cancelled
-     *  it restores old keybinding value */
-    private void processMacroKeyBindings(Map diff, List oldKB){
-        List deletedKB = new ArrayList();
-        List addedKB = new ArrayList();
-        List newKB = getKBList();        
-
-        for( Iterator i = diff.keySet().iterator(); i.hasNext(); ) {
-            String key = (String)i.next();
-            if (!(diff.get(key) instanceof String)) continue;
-            String action = (String) diff.get(key);
-            String kbActionName = BaseKit.macroActionPrefix+key;
-
-            if (action.length()!=0){
-                // process restored macros
-                for (int j = 0; j < oldKB.size(); j++){
-                    if(oldKB.get(j) instanceof MultiKeyBinding){
-                        MultiKeyBinding mkb = (MultiKeyBinding) oldKB.get(j);
-                        if (!kbActionName.equals(mkb.actionName)) continue;
-                        addedKB.add(mkb);
-                        break;
-                    }
-                }
-                continue;
-            }
-            
-            for (int j = 0; j < newKB.size(); j++){
-                // process deleted macros
-                if(newKB.get(j) instanceof MultiKeyBinding){
-                    MultiKeyBinding mkb = (MultiKeyBinding) newKB.get(j);
-                    if (!kbActionName.equals(mkb.actionName)) continue;
-                    deletedKB.add(mkb);
-                    break;
-                }
-            }
-        }
-        
-        if ((deletedKB.size()>0) || (addedKB.size()>0)){
-            newKB.removeAll(deletedKB);
-            newKB.addAll(addedKB);
-            // save changed keybindings to XML file
-            setKeyBindingsDiffMap(OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(getKBList()), 
-                OptionUtilities.makeKeyBindingsMap(newKB), true));
-            // set new keybindings
-            Settings.setValue( getKitClass(), SettingsNames.KEY_BINDING_LIST, newKB);
-        }
-    }
+// XXX:  not needed in netbeans, but we may want to put it back to keep setMacroMap
+//       backwards compatible
+//    /** removes keybindings from deleted macros, or if macro deletion was cancelled
+//     *  it restores old keybinding value */
+//    private void processMacroKeyBindings(Map diff, List oldKB){
+//        List deletedKB = new ArrayList();
+//        List addedKB = new ArrayList();
+//        List newKB = getKBList();        
+//
+//        for( Iterator i = diff.keySet().iterator(); i.hasNext(); ) {
+//            String key = (String)i.next();
+//            if (!(diff.get(key) instanceof String)) continue;
+//            String action = (String) diff.get(key);
+//            String kbActionName = BaseKit.macroActionPrefix+key;
+//
+//            if (action.length()!=0){
+//                // process restored macros
+//                for (int j = 0; j < oldKB.size(); j++){
+//                    if(oldKB.get(j) instanceof MultiKeyBinding){
+//                        MultiKeyBinding mkb = (MultiKeyBinding) oldKB.get(j);
+//                        if (!kbActionName.equals(mkb.actionName)) continue;
+//                        addedKB.add(mkb);
+//                        break;
+//                    }
+//                }
+//                continue;
+//            }
+//            
+//            for (int j = 0; j < newKB.size(); j++){
+//                // process deleted macros
+//                if(newKB.get(j) instanceof MultiKeyBinding){
+//                    MultiKeyBinding mkb = (MultiKeyBinding) newKB.get(j);
+//                    if (!kbActionName.equals(mkb.actionName)) continue;
+//                    deletedKB.add(mkb);
+//                    break;
+//                }
+//            }
+//        }
+//        
+//        if ((deletedKB.size()>0) || (addedKB.size()>0)){
+//            newKB.removeAll(deletedKB);
+//            newKB.addAll(addedKB);
+//            // save changed keybindings to XML file
+//            setKeyBindingsDiffMap(OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(getKBList()), 
+//                OptionUtilities.makeKeyBindingsMap(newKB), true));
+//            // set new keybindings
+//            Settings.setValue( getKitClass(), SettingsNames.KEY_BINDING_LIST, newKB);
+//        }
+//    }
     
     /** Gets Macro Map */
     public Map getMacroMap() {
@@ -1185,8 +1106,13 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-    /** Sets new macro map to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file. */
+    /** 
+     * Sets new macro map to initializer map and if saveToXML is true,
+     * then new settings will be saved to XML file.
+     * 
+     * <p>WARNING: This method no longer saves macro shortcuts. Use Editor Settings
+     * Storage API to update shortcuts for your macros.
+     */
     public void setMacroMap(Map map, boolean saveToXML) {
         Map diffMap = null;
         List kb = new ArrayList();
@@ -1202,7 +1128,8 @@ public class BaseOptions extends OptionSupport {
             if (diffMap.containsKey(null)) diffMap.remove(null);
             if (diffMap.size()>0){
                 // settings has changed, write changed settings to XML file
-                processMacroKeyBindings(diffMap,kb);
+// XXX: does not work
+//                processMacroKeyBindings(diffMap,kb);
                 updateSettings(MacrosMIMEProcessor.class, diffMap);
             }
         }
@@ -1210,7 +1137,10 @@ public class BaseOptions extends OptionSupport {
         super.setSettingValue(SettingsNames.MACRO_MAP, map);
     }
     
-    /** Sets new macros map and save the diff-ed changes to XML file*/
+    /** 
+     * Sets new macros map and save the diff-ed changes to XML file. Calls
+     * <code>setMacroMap(map, true)</code>.
+     */
     public void setMacroMap(Map map) {
         setMacroMap(map, true);
     }
@@ -1687,12 +1617,13 @@ public class BaseOptions extends OptionSupport {
      *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
      */
     private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
-        if (usesNewOptionsDialog() && (
-            processor == FontsColorsMIMEProcessor.class ||
-            processor == KeyBindingsMIMEProcessor.class
-        )) {
+        if (processor == FontsColorsMIMEProcessor.class ||
+            processor == KeyBindingsMIMEProcessor.class ||
+            processor == AbbrevsMIMEProcessor.class
+        ) {
             return;
         }
+        
         MIMEOptionFile fileX;
         MIMEOptionFolder mimeFolder;
         if (BASE.equals(getTypeName())){
@@ -1708,7 +1639,7 @@ public class BaseOptions extends OptionSupport {
         final MIMEOptionFile file = fileX;
         if (file!=null){
             if (useRequestProcessorForSaving){
-                RequestProcessor.postRequest(new Runnable(){
+                RequestProcessor.getDefault().post(new Runnable(){
                     public void run(){
                         file.updateSettings(finalSettings);
                     }
@@ -1774,8 +1705,6 @@ public class BaseOptions extends OptionSupport {
                 LOG.fine("Loading " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
             }
 
-            getKeyBindingList();
-            getAbbrevMap();
             getMacroMap();
             loadSettings(PropertiesMIMEProcessor.class);
 
@@ -1805,7 +1734,7 @@ public class BaseOptions extends OptionSupport {
 
     /** Saves the keystroke of code tamplate expansion into properties.xml file under Editors/text/base */
     public static void setCodeTemplateExpandKey(KeyStroke ks){
-        String s = OptionUtilities.keyToString(ks);
+        String s = Utilities.keyToString(ks);
         BaseOptions base = getOptions(BaseKit.class);
         Map map = new HashMap();
         map.put(CODE_TEMPLATE_EXPAND_KEY, s);
@@ -1824,7 +1753,7 @@ public class BaseOptions extends OptionSupport {
                 Map properties = file.getAllProperties();
                 String s = (String) properties.get(CODE_TEMPLATE_EXPAND_KEY);
                 if (s != null){
-                    return OptionUtilities.stringToKey(s);
+                    return Utilities.stringToKey(s);
                 }
             }
         }

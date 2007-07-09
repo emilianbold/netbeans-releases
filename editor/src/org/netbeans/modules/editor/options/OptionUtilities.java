@@ -138,7 +138,10 @@ public class OptionUtilities {
     }
     
 
-    /** Creates textual representation of KeyStroke[]. */
+    /** 
+     * Creates textual representation of KeyStroke[].
+     * @deprecated Without any replacement.
+     */
     public static String keysToString(KeyStroke[] stroke){
         if (stroke == null) return "NULL"; // NOI18N
         StringBuffer sb = new StringBuffer();
@@ -151,20 +154,29 @@ public class OptionUtilities {
         return sb.toString();
     }
 
-    /** Creates textual representation of KeyStroke. */    
+    /** 
+     * Creates textual representation of KeyStroke.
+     * @deprecated Use <code>org.openide.util.Utilities.keyToString(KeyStroke)</code>.
+     */
     public static String keyToString(KeyStroke stroke){
         if (stroke == null) return "NULL"; // NOI18N
         return org.openide.util.Utilities.keyToString(stroke);
     }
     
-    /** Converts textual representatin of Keystroke */    
+    /** 
+     * Converts textual representatin of Keystroke
+     * @deprecated Use <code>org.openide.util.Utilities.stringToKey(String)</code>.
+     */
     public static KeyStroke stringToKey(String s){
         if (s.equals("NULL")) return null; // NOI18N
         return org.openide.util.Utilities.stringToKey(s);
     }
 
-    /** Converts textual representatin of Keystroke[] */        
-    public static KeyStroke[] stringToKeys(String s){
+    /**
+     * Converts textual representatin of Keystroke[]
+     * @deprecated Without any replacement.
+     */
+    public static KeyStroke[] stringToKeys(String s) {
         if (s.equals("NULL")) return null; // NOI18N
         
         StringTokenizer st = new StringTokenizer(s.toUpperCase(), "$"); // NOI18N
@@ -172,7 +184,7 @@ public class OptionUtilities {
         
         while (st.hasMoreElements()) {
             s = st.nextToken();
-            KeyStroke k = stringToKey(s);
+            KeyStroke k = org.openide.util.Utilities.stringToKey(s);
             if (k == null) return null;
             arr.add(k);
         }
@@ -180,7 +192,8 @@ public class OptionUtilities {
         return (KeyStroke[])arr.toArray(new KeyStroke[arr.size()]);
     }
     
-    public static void printDefaultAbbrevs(Map map){
+    /** @deprecated Without any replacement. */
+    public static void printDefaultAbbrevs(Map map) {
         System.out.println("-----------------------------------------------------------"); // NOI18N
         System.out.println("<?xml version=\"1.0\"?>"); // NOI18N
         System.out.println("<!DOCTYPE catalog PUBLIC \""+AbbrevsMIMEProcessor.PUBLIC_ID+"\""); // NOI18N
@@ -196,7 +209,10 @@ public class OptionUtilities {
         System.out.println("</"+AbbrevsMIMEOptionFile.TAG_ROOT+">"); // NOI18N
     }
     
-    /** Prints given Abbreviations Map to XML file with given FO */
+    /** 
+     * Prints given Abbreviations Map to XML file with given FO.
+     * @deprecated Without any replacement.
+     */
     public static void printDefaultAbbrevs(Map map, FileObject file){
         Document doc = XMLUtil.createDocument(AbbrevsMIMEOptionFile.TAG_ROOT, null, AbbrevsMIMEProcessor.PUBLIC_ID, AbbrevsMIMEProcessor.SYSTEM_ID);
         org.w3c.dom.Element rootElem = doc.getDocumentElement();
@@ -268,7 +284,10 @@ public class OptionUtilities {
         }
     }
 
-    /** Prints given KeyBindings List to XML file with given FO */    
+    /** 
+     * Prints given KeyBindings List to XML file with given FO
+     * @deprecated Without any replacement.
+     */
     public static void printDefaultKeyBindings(List list, FileObject file){
         Map map  = makeKeyBindingsMap(list);
         Document doc = XMLUtil.createDocument(KeyBindingsMIMEOptionFile.TAG_ROOT, null, KeyBindingsMIMEProcessor.PUBLIC_ID, KeyBindingsMIMEProcessor.SYSTEM_ID);
@@ -372,10 +391,13 @@ public class OptionUtilities {
     }
     
     
-    /** Converts KeyBings List to KeyBindings Map 
-     *  Map.key is the textual representation of keystroke(s) */
-    public static Map makeKeyBindingsMap(List propList){
-        Map ret = new HashMap();
+    /** 
+     * Converts KeyBings List to KeyBindings Map 
+     * Map.key is the textual representation of keystroke(s) 
+     * @deprecated Without any replacement.
+     */
+    public static Map<String, MultiKeyBinding> makeKeyBindingsMap(List propList){
+        Map<String, MultiKeyBinding> ret = new HashMap<String, MultiKeyBinding>();
 
         boolean output = true;
         for (int i=0; i<propList.size(); i++){

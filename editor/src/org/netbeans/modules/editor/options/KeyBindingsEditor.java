@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.awt.Component;
 import java.beans.*;
 import java.util.*;
 import javax.swing.event.*;
@@ -33,6 +32,7 @@ import org.openide.util.NbBundle;
  * First item in List (with index 0) is used for transferring kitClass.
  *
  * @author  Petr Nejedly
+ * @deprecated Without any replacement.
  */
 
 public class KeyBindingsEditor extends PropertyEditorSupport {
