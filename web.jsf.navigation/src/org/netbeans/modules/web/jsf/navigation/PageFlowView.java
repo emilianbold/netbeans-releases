@@ -39,7 +39,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
-import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;

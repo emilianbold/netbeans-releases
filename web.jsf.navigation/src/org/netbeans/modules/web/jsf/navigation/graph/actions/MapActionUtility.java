@@ -55,24 +55,25 @@ import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.SceneElementComparator;
 import org.openide.cookies.OpenCookie;
+
 /**
  *
  * @author joelle
  */
 public class MapActionUtility {
-    
+
     /** Creates a new instance of MapActionUtility */
     public MapActionUtility() {
     }
-    
-    
+
+
     public static ActionMap initActionMap() {
         ActionMap actionMap = new ActionMap();
         // Install the actions
         actionMap.put("handleTab", handleTab);
         actionMap.put("handleCtrlTab", handleCtrlTab);
         actionMap.put("handleEscape", handleEscape);
-        
+
         actionMap.put("handleLinkStart", handleLinkStart);
         actionMap.put("handleLinkEnd", handleLinkEnd);
         //
@@ -85,45 +86,45 @@ public class MapActionUtility {
         actionMap.put("handleLeftArrowKey", handleCtrlTab);
         actionMap.put("handleRightArrowKey", handleTab);
         actionMap.put("handleUpArrowKey", handleUpArrow);
-        actionMap.put("handleDownArrowKey", handleDownArrow );
+        actionMap.put("handleDownArrowKey", handleDownArrow);
         return actionMap;
     }
-    
+
     public static InputMap initInputMap() {
         InputMap inputMap = new InputMap();
         // Tab Key
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB,0), "handleTab");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "handleTab");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK), "handleCtrlTab");
         // Esc Key
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "handleEscape");
         //
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK), "handleNewWebForm");
         //
         //Lower Case s,e,z,u
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,0), "handleZoomPage");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,0), "handleUnZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, 0), "handleLinkStart");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "handleLinkEnd");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, 0), "handleZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, 0), "handleUnZoomPage");
         //
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0), "handleOpenPage");
-        
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "handleOpenPage");
+
         // Upper Case S,E,Z,U
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.SHIFT_MASK), "handleLinkStart");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,InputEvent.SHIFT_MASK), "handleLinkEnd");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,InputEvent.SHIFT_MASK), "handleZoomPage");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,InputEvent.SHIFT_MASK), "handleUnZoomPage");
-        
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.SHIFT_MASK), "handleLinkStart");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.SHIFT_MASK), "handleLinkEnd");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.SHIFT_MASK), "handleZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.SHIFT_MASK), "handleUnZoomPage");
+
         //        // Non Numeric Key Pad arrow keys
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0), "handleLeftArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0), "handleRightArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP,0), "handleUpArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,0), "handleDownArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "handleLeftArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "handleRightArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "handleUpArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "handleDownArrowKey");
         //
         // Numeric Key Pad arrow keys
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT,0), "handleLeftArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT,0), "handleRightArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP,0), "handleUpArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN,0), "handleDownArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0), "handleLeftArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0), "handleRightArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0), "handleUpArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0), "handleDownArrowKey");
         //
         //        // SHIFT + F10
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,InputEvent.SHIFT_MASK), "handlePopupMenu");
@@ -131,69 +132,66 @@ public class MapActionUtility {
         //
         //        //Add File
         //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_A, 0, false), "handleNewWebForm");
-        
         //        //DELETE
         //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
         return inputMap;
     }
-    
+
     // Handle Escape - cancels the link action
     public static Action handleEscape = new AbstractAction() {
+
         public void actionPerformed(ActionEvent e) {
             /* Cancel A11y Linking */
             Object sourceObj = e.getSource();
-            if( !(sourceObj instanceof PageFlowScene) ){
+            if (!(sourceObj instanceof PageFlowScene)) {
                 return;
             }
-            PageFlowScene scene = (PageFlowScene)sourceObj;
-            if( CONNECT_WIDGET != null ){
+            PageFlowScene scene = (PageFlowScene) sourceObj;
+            if (CONNECT_WIDGET != null) {
                 CONNECT_WIDGET.removeFromParent();
-                CONNECT_WIDGET=null;
+                CONNECT_WIDGET = null;
             }
         }
     };
-    
+
     public static final Action handleTab = new AbstractAction() {
-        
+
         public void actionPerformed(ActionEvent e) {
             Object sourceObj = e.getSource();
-            if( !(sourceObj instanceof PageFlowScene) ){
+            if (!(sourceObj instanceof PageFlowScene)) {
                 return;
             }
-            PageFlowScene scene = (PageFlowScene)sourceObj;
+            PageFlowScene scene = (PageFlowScene) sourceObj;
             boolean reverse = false;
             handleTab(scene, reverse);
         }
-        
     };
     public static final Action handleCtrlTab = new AbstractAction() {
-        
+
         public void actionPerformed(ActionEvent e) {
             Object sourceObj = e.getSource();
-            if( !(sourceObj instanceof PageFlowScene) ){
+            if (!(sourceObj instanceof PageFlowScene)) {
                 return;
             }
-            PageFlowScene scene = (PageFlowScene)sourceObj;
+            PageFlowScene scene = (PageFlowScene) sourceObj;
             boolean reverse = true;
             handleTab(scene, reverse);
         }
-        
     };
-    
-    private static final void handleTab( PageFlowScene scene, boolean reverse){
+
+    private static final void handleTab(PageFlowScene scene, boolean reverse) {
         PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, reverse, true, true, false);
-        if( nextElement != null ){
-            if( CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)){
+        if (nextElement != null) {
+            if (CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)) {
                 Anchor targetAnchor = null;
-                if( nextElement instanceof Page ){
+                if (nextElement instanceof Page) {
                     assert CONNECT_DECORATOR_DEFAULT != null;
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
-                } else if ( nextElement instanceof Pin ){
+                } else if (nextElement instanceof Pin) {
                     Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
-                    
                 }
-                if( targetAnchor != null ){
+                if (targetAnchor != null) {
                     CONNECT_WIDGET.setTargetAnchor(targetAnchor);
                     scene.validate();
                 }
@@ -201,38 +199,36 @@ public class MapActionUtility {
             Set<PageFlowSceneElement> set = new HashSet<PageFlowSceneElement>();
             set.add(nextElement);
             scene.setSelectedObjects(set);
-            
         }
     }
-    
+
     public static final Action handleDownArrow = new AbstractAction() {
-        
+
         public void actionPerformed(ActionEvent e) {
             Object sourceObj = e.getSource();
-            if( !(sourceObj instanceof PageFlowScene) ){
+            if (!(sourceObj instanceof PageFlowScene)) {
                 return;
             }
-            PageFlowScene scene = (PageFlowScene)sourceObj;
+            PageFlowScene scene = (PageFlowScene) sourceObj;
             boolean reverse = false;
             handleArrow(scene, reverse);
         }
     };
-    
-    
-    private final static void handleArrow( PageFlowScene scene, boolean reverse ){
+
+
+    private static final void handleArrow(PageFlowScene scene, boolean reverse) {
         PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, reverse, false, false, true);
-        if( nextElement != null ){
-            if( CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)){
+        if (nextElement != null) {
+            if (CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)) {
                 Anchor targetAnchor = null;
-                if( nextElement instanceof Page ){
+                if (nextElement instanceof Page) {
                     assert CONNECT_DECORATOR_DEFAULT != null;
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
-                } else if ( nextElement instanceof Pin ){
+                } else if (nextElement instanceof Pin) {
                     Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
-                    
                 }
-                if( targetAnchor != null ){
+                if (targetAnchor != null) {
                     CONNECT_WIDGET.setTargetAnchor(targetAnchor);
                     scene.validate();
                 }
@@ -240,47 +236,51 @@ public class MapActionUtility {
             Set<PageFlowSceneElement> set = new HashSet<PageFlowSceneElement>();
             set.add(nextElement);
             scene.setSelectedObjects(set);
-            
         }
     }
-    
+
     public static final Action handleUpArrow = new AbstractAction() {
-        
+
         public void actionPerformed(ActionEvent e) {
             Object sourceObj = e.getSource();
-            if( !(sourceObj instanceof PageFlowScene) ){
+            if (!(sourceObj instanceof PageFlowScene)) {
                 return;
             }
-            PageFlowScene scene = (PageFlowScene)sourceObj;
+            PageFlowScene scene = (PageFlowScene) sourceObj;
             boolean reverse = true;
-            handleArrow( scene, reverse );
+            handleArrow(scene, reverse);
         }
-        
     };
-    
+
     private static ConnectDecorator CONNECT_DECORATOR_DEFAULT = null;
     private static ConnectionWidget CONNECT_WIDGET = null;
     // Handle Link Start Key Stroke
     public static Action handleLinkStart = new AbstractAction() {
+
         public void actionPerformed(ActionEvent e) {
             Object sourceObj = e.getSource();
-            if( sourceObj instanceof PageFlowScene ){
-                PageFlowScene scene = (PageFlowScene)sourceObj;
+            if (sourceObj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) sourceObj;
                 List<Object> elements = new ArrayList<Object>(scene.getSelectedObjects());
-                if( elements.size() > 0 ) {
-                    PageFlowSceneElement selElement = (PageFlowSceneElement)elements.get(0);
-                    Pin selPin = null;
-                    if( selElement instanceof Page ){
-                        selPin = scene.getDefaultPin((Page)selElement);
-                    } else if ( selElement instanceof Pin ){
-                        selPin = (Pin)selElement;
+                if (elements.size() > 0) {
+                    PageFlowSceneElement selElement = (PageFlowSceneElement) elements.get(0);
+                    Widget selWidget = null;
+                    if (selElement instanceof Page) {
+                        selWidget = scene.findWidget(selElement);
+                        //Pin selPin = scene.getDefaultPin((Page) selElement);
+                    } else if (selElement instanceof Pin) {
+                        //Pin selPin = (Pin) selElement;
+                        selWidget = scene.findWidget((Pin)selElement);
                     }
-                    if( selPin != null ){
+                    if (selWidget != null) {
                         CONNECT_DECORATOR_DEFAULT = ActionFactory.createDefaultConnectDecorator();
-                        CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(selPin));
+                        CONNECT_DECORATOR_DEFAULT.createTargetAnchor(selWidget);
                         CONNECT_WIDGET = CONNECT_DECORATOR_DEFAULT.createConnectionWidget(scene);
-                        CONNECT_WIDGET.setSourceAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(scene.findWidget(selPin)));
-                        CONNECT_WIDGET.setTargetAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(scene.findWidget(selPin)));
+                        System.out.println("Connection Widget: " + CONNECT_WIDGET);
+                        CONNECT_WIDGET.setSourceAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(selWidget));
+                        System.out.println("Source Anchor: " + CONNECT_WIDGET.getSourceAnchor());
+                        CONNECT_WIDGET.setTargetAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(selWidget));
+                        System.out.println("Target Anchor: " + CONNECT_WIDGET.getTargetAnchor());
                         scene.getConnectionLayer().addChild(CONNECT_WIDGET);
                         scene.validate();
                     }
@@ -288,61 +288,67 @@ public class MapActionUtility {
             }
         }
     };
-    
+
     // Handle Escape - cancels the link action
     public static Action handleLinkEnd = new AbstractAction() {
+
         public void actionPerformed(ActionEvent e) {
             /* Cancel A11y Linking */
             Object sourceObj = e.getSource();
-            if( !(sourceObj instanceof PageFlowScene) ){
+            if (!(sourceObj instanceof PageFlowScene)) {
                 return;
             }
-            PageFlowScene scene = (PageFlowScene)sourceObj;
-            if( CONNECT_WIDGET != null ){
-                
-                /* Figure out source */
-                Object sourceObject = scene.findObject(CONNECT_WIDGET.getSourceAnchor().getRelatedWidget());
-                Page sourcePage = null;
-                Pin sourcePin = null;
-                if ( scene.isPin(sourceObject)){
-                    sourcePin = (Pin)sourceObject;
-                    sourcePage = (sourcePin).getPageFlowNode();
+            PageFlowScene scene = (PageFlowScene) sourceObj;
+            if (CONNECT_WIDGET != null) {
+
+                Anchor sourceAnchor = CONNECT_WIDGET.getSourceAnchor();
+                Anchor targetAnchor = CONNECT_WIDGET.getTargetAnchor();
+                if (sourceAnchor != null && targetAnchor != null) {
+                    /* Figure out source */
+                    Object sourceObject = scene.findObject(CONNECT_WIDGET.getSourceAnchor().getRelatedWidget());
+                    Page sourcePage = null;
+                    Pin sourcePin = null;
+                    if (scene.isPin(sourceObject)) {
+                        sourcePin = (Pin) sourceObject;
+                        sourcePage = (sourcePin).getPageFlowNode();
+                    }
+                    if (scene.isNode(sourceObject)) {
+                        sourcePage = (Page) sourceObject;
+                    }
+
+                    /* Figure out target */
+                    Object targetObject = scene.findObject(CONNECT_WIDGET.getTargetAnchor().getRelatedWidget());
+                    Page targetPage = null;
+                    if (scene.isPin(targetObject)) {
+                        targetPage = ((Pin) targetObject).getPageFlowNode();
+                    }
+                    if (scene.isNode(targetObject)) {
+                        targetPage = (Page) targetObject;
+                    }
+
+                    if (sourcePage != null && targetPage != null) {
+                        scene.getPageFlowView().getPageFlowController().createLink(sourcePage, targetPage, sourcePin);
+                    }
+                    CONNECT_WIDGET.removeFromParent();
+                    CONNECT_WIDGET = null;
+                    scene.validate();
                 }
-                if ( scene.isNode(sourceObject)){
-                    sourcePage = (Page)sourceObject;
-                }
-                
-                /* Figure out target */
-                Object targetObject = scene.findObject(CONNECT_WIDGET.getTargetAnchor().getRelatedWidget());
-                Page targetPage = null;
-                if ( scene.isPin(targetObject)){
-                    targetPage = ((Pin)targetObject).getPageFlowNode();
-                }
-                if ( scene.isNode(targetObject)){
-                    targetPage = (Page)targetObject;
-                }
-                
-                if( sourcePage != null && targetPage != null ){
-                    scene.getPageFlowView().getPageFlowController().createLink(sourcePage, targetPage, sourcePin);
-                }
-                CONNECT_WIDGET.removeFromParent();
-                CONNECT_WIDGET=null;
-                scene.validate();
             }
         }
     };
-    
+
     public static final Action handleOpenPage = new AbstractAction() {
+
         public void actionPerformed(ActionEvent e) {
             Object sourceObj = e.getSource();
-            if( sourceObj instanceof PageFlowScene ){
-                PageFlowScene scene = (PageFlowScene)sourceObj;
+            if (sourceObj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) sourceObj;
                 Set<Object> selectedObjs = new HashSet<Object>(scene.getSelectedObjects());
-                
-                for( Object obj : selectedObjs ){
-                    if( obj instanceof PageFlowSceneElement ){
-                        OpenCookie openCookie = ((PageFlowSceneElement)obj).getNode().getCookie(OpenCookie.class);
-                        if(openCookie != null ){
+
+                for (Object obj : selectedObjs) {
+                    if (obj instanceof PageFlowSceneElement) {
+                        OpenCookie openCookie = ((PageFlowSceneElement) obj).getNode().getCookie(OpenCookie.class);
+                        if (openCookie != null) {
                             openCookie.open();
                         }
                     }
@@ -350,78 +356,75 @@ public class MapActionUtility {
             }
         }
     };
-    
-    
+
+
     public static Action handleNewWebForm = new AbstractAction() {
         PageFlowScene scene;
+
         public void actionPerformed(ActionEvent e) {
             //            This would work if we wanted to use the wizard.
             //            Action newFileAction = CommonProjectActions.newFileAction();
-            
-            
+
             //            JOptionPane.showMessageDialog(null, "Source: " + e.getSource());
             Object obj = e.getSource();
-            if ( obj instanceof PageFlowScene ){
-                try             {
+            if (obj instanceof PageFlowScene) {
+                try {
                     scene = (PageFlowScene) obj;
                     PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
-                    
+
                     FileObject webFileObject = pfc.getWebFolder();
-                    
+
                     String name = FileUtil.findFreeFileName(webFileObject, "page", "jsp");
                     name = JOptionPane.showInputDialog("Select Page Name", name);
-                    
+
                     createIndexJSP(webFileObject, name);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                
             }
         }
-        
+
         /**
          * Creates a JSP in the
          * @param name
          * @throws java.io.IOException
          */
-        private void createIndexJSP(FileObject targetFolder, String name ) throws IOException {
+        private void createIndexJSP(FileObject targetFolder, String name) throws IOException {
             //            FileOwnerQuery.getOwner(webFolder)
             //            FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
             //            FileObject parentFolder = project.getProjectDirectory();
             //            FileObject webFileObject = parentFolder.getFileObject("web");
-            
-            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
-            
-            if (jspTemplate == null)
+            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource("Templates/JSP_Servlet/JSP.jsp"); // NOI18N
+            if (jspTemplate == null) {
                 return; // Don't know the template
-            
-            
+            }
+
             DataObject mt = DataObject.find(jspTemplate);
             DataFolder webDf = DataFolder.findFolder(targetFolder);
             mt.createFromTemplate(webDf, name); // NOI18N
         }
-        
-        
+
+
         private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
-        
     };
-    
+
     // Handle Zoom Key Stroke
     public static final Action handleZoomPage = new AbstractAction() {
+
         public void actionPerformed(ActionEvent e) {
             Object obj = e.getSource();
-            if ( !(obj instanceof PageFlowScene) ){
+            if (!(obj instanceof PageFlowScene)) {
                 return;
             }
             PageFlowScene scene = (PageFlowScene) obj;
-            for( Object selObj : scene.getSelectedObjects()){
-                if( selObj instanceof Page ){
-                    Page selPage = (Page)selObj;
-                    if( scene.isNode(selPage) ){
+            for (Object selObj : scene.getSelectedObjects()) {
+                if (selObj instanceof Page) {
+                    Page selPage = (Page) selObj;
+                    if (scene.isNode(selPage)) {
                         VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(selPage);
-                        if( pageWidget.isMinimized()) {
+                        if (pageWidget.isMinimized()) {
                             pageWidget.expandWidget();
-                        } else{
+                        } else {
                             pageWidget.collapseWidget();
                         }
                     }
@@ -429,9 +432,10 @@ public class MapActionUtility {
             }
         }
     };
-    
+
     // Handle UnZoom Key Stroke
     public static final Action handleUnZoomPage = new AbstractAction() {
+
         public void actionPerformed(ActionEvent e) {
             //            GraphEvent selectedEvent  = graphDocument.getSelectedComponents();
             //            IGraphNode[] selectedNodes = selectedEvent.getNodes();
@@ -442,6 +446,4 @@ public class MapActionUtility {
             //            }
         }
     };
-    
 }
-
