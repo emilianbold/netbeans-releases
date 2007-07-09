@@ -92,8 +92,11 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
+        
         setDefaultValues();
         clearWorkDir();
+        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
         serverInstanceID = TestUtil.registerSunAppServer(
                 this, new Object[] { new SilentDialogDisplayer(), new SimplePlatformProvider() });
         assertTrue("wrong dialog displayer", DialogDisplayer.getDefault() instanceof SilentDialogDisplayer);

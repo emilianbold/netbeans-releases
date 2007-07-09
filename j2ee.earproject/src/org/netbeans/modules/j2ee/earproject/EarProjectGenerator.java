@@ -368,6 +368,8 @@ public final class EarProjectGenerator {
         createData.setBuildfile("build.xml"); //NOI18N
         createData.setJavaPlatformName(platformName);
         createData.setSourceLevel(sourceLevel);
+        // # 109128, BluePrints structure
+        createData.setWebInfFolder(subprojectRoot.getFileObject("web/WEB-INF"));
         return WebProjectUtilities.importProject(createData);
     }
     
