@@ -74,12 +74,13 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         return icons.get (resourceName);
     }
 
-    private String      text;
-    private String      description;
-    private String      rightText;
-    private String      icon;
-    private int         priority;
-
+    private String        text;
+    private String        description;
+    private String        rightText;
+    private String        icon;
+    private int           priority;
+    private int           processKeyEventOffset;
+    private String        confirmChars;
 
     CompletionSupport (CompletionItem item) {
         text = item.getText ();
@@ -197,6 +198,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                     ((NbEditorDocument) doc).readUnlock ();
             }
             doc.insertString (offset, t, null);
+            processKeyEventOffset = offset + t.length();
         } catch (BadLocationException ex) {
             ErrorManager.getDefault ().notify (ex);
         } catch (LanguageDefinitionNotFoundException ex) {
@@ -206,6 +208,28 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
     }
 
     public void processKeyEvent (KeyEvent evt) {
+        if (evt.getID() == KeyEvent.KEY_TYPED) {
+            char c = evt.getKeyChar();
+            JTextComponent component = (JTextComponent)evt.getSource();
+            if (confirmChars == null) {
+                confirmChars = getConfirmChars(component);
+            }
+            if (confirmChars.indexOf(c) != -1) {
+                if (c != '.') {
+                    Completion.get().hideDocumentation();
+                    Completion.get().hideCompletion();
+                }
+                NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
+                try {
+                    defaultAction(component);
+                    doc.insertString(processKeyEventOffset, Character.toString(c), null);
+                } catch (BadLocationException e) {
+                }
+                if (c == '.')
+                    Completion.get().showCompletion();
+                evt.consume();
+            } // if
+        } // if
     }
 
     public int getPreferredWidth (Graphics g, Font defaultFont) {
@@ -257,6 +281,49 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
 
     public CharSequence getInsertPrefix () {
         return text;
+    }
+    
+    private String getConfirmChars (JTextComponent component) {
+        NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
+        StringBuffer buf = new StringBuffer();
+        int offset = component.getCaret ().getDot ();
+        try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            if (doc instanceof NbEditorDocument) {
+                ((NbEditorDocument) doc).readLock ();
+            }
+            try {
+                TokenSequence sequence = tokenHierarchy.tokenSequence ();
+
+                //find most embedded token sequence on the specified offset
+                while(true) {
+                    sequence.move (offset - 1);
+                    sequence.moveNext ();
+                    TokenSequence embedded = sequence.embedded ();
+                    if (embedded == null) break;
+                    sequence = embedded;
+                }
+                Token token = sequence.token ();
+                String tokenType = token.id ().name ();
+                String mimeType = sequence.language ().mimeType ();
+                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+                List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
+                Iterator<Feature> it = features.iterator ();
+                while (it.hasNext ()) {
+                    Feature feature =  it.next ();
+                    String confirmChars = (String) feature.getValue("confirmChars"); // NOI18N
+                    if (confirmChars != null) {
+                        buf.append(confirmChars);
+                    }
+                }
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
+            }
+        } catch (LanguageDefinitionNotFoundException ex) {
+            ErrorManager.getDefault ().notify (ex);
+        }
+        return buf.toString();
     }
     
     private static String getCompletionType (Feature feature, String tokenType) {
