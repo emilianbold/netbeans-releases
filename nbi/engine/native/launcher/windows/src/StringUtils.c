@@ -82,7 +82,7 @@ void freeI18NMessages(LauncherProperties * props) {
         }        
         FREE(props->i18nMessages->properties);        
         FREE(props->i18nMessages->strings);        
-        free(props->i18nMessages);
+        FREE(props->i18nMessages);
     }
 }
 
@@ -192,7 +192,7 @@ char *  appendStringN(char *  initial, DWORD initialLength, const char * addStri
             for(i=0;i<initialLength;i++) {
                 tmp[i]=initial[i];
             }
-            free(initial);
+            FREE(initial);
         }
         for(i=0;i<addStringLength;i++) {
             tmp[i+initialLength] = addString[i];
@@ -222,7 +222,7 @@ WCHAR *  appendStringNW(WCHAR *  initial, DWORD initialLength, const WCHAR * add
             for(i=0;i<initialLength;i++) {
                 tmp[i]=initial[i];
             }
-            free(initial);
+            FREE(initial);
         }
         
         for(i=0;i<addStringLength;i++) {
@@ -242,13 +242,13 @@ WCHAR * appendStringW(WCHAR *  initial, const WCHAR * addString) {
 }
 
 char * DWORDtoCHAR(DWORD dw) {
-    char * str = (char*) malloc(sizeof(char)*17);
+    char * str = (char*) LocalAlloc(LPTR, sizeof(char)*17);
     sprintf(str, "%ld", dw);
     return str;
 }
 
 WCHAR * DWORDtoWCHAR(DWORD dw) {
-    WCHAR * str = (WCHAR*) malloc(sizeof(WCHAR)*17);
+    WCHAR * str = (WCHAR*) LocalAlloc(LPTR,sizeof(WCHAR)*17);
     wsprintfW(str, L"%ld", dw);
     return str;
 }
@@ -305,7 +305,7 @@ DWORD inList(StringListEntry * top, WCHAR * str) {
 }
 
 StringListEntry * addStringToList(StringListEntry * top, WCHAR * str) {
-    StringListEntry * ss = (StringListEntry*) malloc(sizeof(StringListEntry));    
+    StringListEntry * ss = (StringListEntry*) LocalAlloc(LPTR,sizeof(StringListEntry));    
     ss->string = appendStringW(NULL, str);
     ss->next   = top;
     return ss;
@@ -408,7 +408,7 @@ WCHAR * toWCHAR( char *string) {
 }
 
 SizedString * createSizedString() {
-    SizedString * s = (SizedString*)malloc(sizeof(SizedString));
+    SizedString * s = (SizedString*)LocalAlloc(LPTR,sizeof(SizedString));
     s->bytes = NULL;
     s->length = 0;
     return s;
@@ -439,23 +439,23 @@ WCHAR * getLocaleName() {
 }
 
 WCHAR * newpWCHAR(DWORD length) {
-    WCHAR * res = (WCHAR*) malloc(sizeof(WCHAR) * length);
-    memset(res, 0, length * sizeof(WCHAR));
+    WCHAR * res = (WCHAR*) LocalAlloc(LPTR,sizeof(WCHAR) * length);
+    ZERO(res, length * sizeof(WCHAR));
     return res;
 }
 WCHAR ** newppWCHAR(DWORD length) {
-    return (WCHAR**) malloc(sizeof(WCHAR *) * length);
+    return (WCHAR**) LocalAlloc(LPTR,sizeof(WCHAR *) * length);
 }
 
 
 char * newpChar(DWORD length) {
-    char * res = (char*) malloc(sizeof(char) * length);
-    memset(res, 0, length * sizeof(char));
+    char * res = (char*) LocalAlloc(LPTR,sizeof(char) * length);
+    ZERO(res, length * sizeof(char));
     return res;
 }
 
 char ** newppChar(DWORD length) {
-    return (char**) malloc(sizeof(char*) * length);
+    return (char**) LocalAlloc(LPTR,sizeof(char*) * length);
 }
 
 int compare(int64t * size, DWORD value) {
@@ -490,7 +490,7 @@ void minus(int64t * size, DWORD value) {
         }}
 }
 int64t * newint64_t(DWORD low, DWORD high) {
-    int64t * res = (int64t *) malloc(sizeof(int64t));
+    int64t * res = (int64t *) LocalAlloc(LPTR,sizeof(int64t));
     res->Low = low;
     res->High = high;
     return res;
@@ -505,7 +505,7 @@ WCHAR * getErrorDescription(DWORD dw) {
     lpDisplayBuf = newpWCHAR(getLengthW(lpMsgBuf) + 40);
     wsprintfW(lpDisplayBuf, L"Error code (%ld): %s", dw, lpMsgBuf);
     
-    LocalFree(lpMsgBuf);
+    FREE(lpMsgBuf);
     
     return lpDisplayBuf;
     

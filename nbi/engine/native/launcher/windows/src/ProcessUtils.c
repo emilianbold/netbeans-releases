@@ -32,18 +32,18 @@ DWORD readBuf(HANDLE hRead, WCHAR * buf, DWORD * bytesRead, HANDLE hWrite) {
         DWORD bytesWritten = 0;
         WriteFile(hWrite, buf, (*bytesRead), &bytesWritten, 0);
     }
-    memset(buf, 0, sizeof(buf));
+    ZERO(buf, sizeof(buf));
     return 0;
 }
 
 DWORD readNextData(HANDLE hRead, WCHAR * buf, HANDLE hWrite) {
     DWORD bytesRead;
     DWORD bytesAvailable;
-    memset(buf, 0, sizeof(buf));
+    ZERO(buf, sizeof(buf));
     
     PeekNamedPipe(hRead, buf, STREAM_BUF_LENGTH - 1, &bytesRead, &bytesAvailable, NULL);
     if (bytesRead != 0) {
-        memset(buf, 0, sizeof(buf));
+        ZERO(buf, sizeof(buf));
         if (bytesAvailable >= STREAM_BUF_LENGTH) {
             while (bytesRead >= STREAM_BUF_LENGTH-1) {
                 readBuf(hRead, buf, &bytesRead, hWrite);

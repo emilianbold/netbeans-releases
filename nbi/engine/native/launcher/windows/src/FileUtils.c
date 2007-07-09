@@ -39,10 +39,13 @@ void writeTimeStamp(HANDLE hd, DWORD need) {
     DWORD written;
     if(need==1) {
         SYSTEMTIME t;
-        GetLocalTime(&t);
+		DWORD i=0;
+        GetLocalTime(&t);		
         sprintf(TIME_STRING, "[%02u-%02u-%02u %02u:%02u:%02u.%03u]> ", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
         WriteFile(hd, TIME_STRING, sizeof(char) * getLengthA(TIME_STRING), & written, NULL);
-        memset(TIME_STRING, ' ', getLengthA(TIME_STRING));
+	for(i=0;i<getLengthA(TIME_STRING);i++) {
+		TIME_STRING[i]=' ';
+	}
     }
 }
 
@@ -123,7 +126,7 @@ void checkFreeSpace(LauncherProperties * props, WCHAR * tmpDir, int64t * size) {
         DWORD   result = 0;
         result = ((space->High > size->High) ||
                 (space->High == size->High && space->Low >= size->Low));
-        free(space);
+        FREE(space);
         if(!result) {
             props->status = ERROR_FREESPACE;
         }
@@ -213,7 +216,7 @@ void createDirectory(LauncherProperties * props, WCHAR * directory) {
                 writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, directory, 1);
                 
                 checkFreeSpace(props, parent, minSize);
-                free(minSize);
+                FREE(minSize);
                 
                 if(isOK(props)) {
                     props->status = (CreateDirectoryExW(parent, directory, &secattr)) ? ERROR_OK : ERROR_INPUTOUPUT;
@@ -257,7 +260,7 @@ void createTempDirectory(LauncherProperties * props, WCHAR * argTempDir, DWORD c
             randString[i]=newRandDigit();
         }
         nbiTmp = appendStringW(appendStringW(nbiTmp, randString), L".tmp");
-        free(randString);
+        FREE(randString);
     }
     
     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Using temp directory for extracting data : ", 0);
@@ -327,7 +330,7 @@ void deleteDirectory(LauncherProperties * props, WCHAR * dir) {
                         lstrcmpW(FindFileData.cFileName, L"..")!=0 ) {
                     WCHAR * child = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), FindFileData.cFileName);
                     deleteDirectory(props, child);
-                    free(child);
+                    FREE(child);
                 }
             }
             
@@ -340,7 +343,7 @@ void deleteDirectory(LauncherProperties * props, WCHAR * dir) {
         
         // 20 tries in 2 seconds to delete the directory
         while(!RemoveDirectoryW(dir) && count++ < 20) Sleep(100);
-        free(DirSpec);
+        FREE(DirSpec);
     }
     else {
         // 20 tries in 2 seconds to delete the file
@@ -369,9 +372,9 @@ WCHAR * getSystemTemporaryDirectory() {
                 expanded = appendStringW(expanded, L"\\Local Settings\\Temp");
             } else{
                 WCHAR * curdir = getCurrentDirectory();
-                memset(expanded, 0, sizeof(WCHAR) * MAX_PATH);
+                ZERO(expanded, sizeof(WCHAR) * MAX_PATH);
                 lstrcpynW(expanded, curdir, MAX_PATH);
-                free(curdir);
+                FREE(curdir);
             }
         }
     }
@@ -423,7 +426,7 @@ WCHAR * getCurrentDirectory() {
     if(GetCurrentDirectoryW(MAX_PATH, buf)!=0) {
         return buf;
     } else {
-        free(buf);
+        FREE(buf);
         return NULL;
     }
 }

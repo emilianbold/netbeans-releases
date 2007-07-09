@@ -129,12 +129,12 @@ JavaVersion * getJavaVersionFromString(char * string, DWORD * result) {
                     char *p = string + 3;
                     long minor = c - '0';
                     *result = ERROR_OK;
-                    vers = (JavaVersion*) malloc(sizeof(JavaVersion));
+                    vers = (JavaVersion*) LocalAlloc(LPTR,sizeof(JavaVersion));
                     vers->major  = major;
                     vers->minor  = minor;
                     vers->micro  = 0;
                     vers->update = 0;
-                    memset(vers->build, 0, 128);
+                    ZERO(vers->build, 128);
                     if(p!=NULL) {
                         if(p[0]=='.') { // micro...
                             p++;
@@ -236,7 +236,7 @@ DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaPro
         vers = getJavaVersionFromString(string, & result);
         if(javaProps != NULL) {
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... some java there", 1);
-            * javaProps = (JavaProperties *) malloc(sizeof(JavaProperties));
+            * javaProps = (JavaProperties *) LocalAlloc(LPTR,sizeof(JavaProperties));
             (*javaProps)->version = vers;
             (*javaProps)->vendor   = javaVendor;
             (*javaProps)->osName   = osName;
@@ -294,7 +294,7 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
             // java verification process finished by time out
             props->status = ERROR_INPUTOUPUT;
         }
-        free(command);
+        FREE(command);
         CloseHandle(hWrite);
         CloseHandle(hRead);
     } else {
@@ -328,7 +328,7 @@ char * getJavaVersionFormatted(const JavaProperties * javaProps) {
 
 
 JavaCompatible * newJavaCompatible() {
-    JavaCompatible * props = (JavaCompatible *) malloc(sizeof(JavaCompatible));
+    JavaCompatible * props = (JavaCompatible *) LocalAlloc(LPTR,sizeof(JavaCompatible));
     props->minVersion = NULL;
     props->maxVersion = NULL;
     props->vendor = NULL;
@@ -387,7 +387,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
                     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "] = ", 0);
                     writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaHome, 1);
                     
-                    free(value);
+                    FREE(value);
                     trySetCompatibleJava(javaHome, props);
                     FREE(javaHome);
                     if(props->java!=NULL) {

@@ -59,7 +59,21 @@ extern const char * EXIT_BUTTON_PROP;
 extern const char * MAIN_WINDOW_TITLE;    
 
     
-#define FREE(x) { if((x)!=NULL) {free(x); (x)=NULL;}}
+#define FREE(x) { \
+	if((x)!=NULL) {\
+	LocalFree(x); \
+	(x)=NULL;\
+	}\
+}
+
+
+#ifdef _MSC_VER
+#define ZERO(x,y) SecureZeroMemory((x),(y));
+#else
+#define ZERO(x,y) ZeroMemory((x),(y));
+#endif
+
+
     
 
     

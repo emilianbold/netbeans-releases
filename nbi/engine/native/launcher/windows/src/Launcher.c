@@ -607,7 +607,7 @@ void executeMainClass(LauncherProperties * props) {
             props->exitCode = props->status;
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... there is not enough space in tmp dir to execute main jar", 1);
         }
-        free(minSize);
+        FREE(minSize);
     }
 }
 
@@ -661,7 +661,7 @@ WCHARList * getCommandlineArguments() {
 
 
 LauncherProperties * createLauncherProperties() {
-    LauncherProperties *props = (LauncherProperties*)malloc(sizeof(LauncherProperties));
+    LauncherProperties *props = (LauncherProperties*)LocalAlloc(LPTR,sizeof(LauncherProperties));
     DWORD c = 0;
     props->launcherCommandArguments = newWCHARList(11);
     props->launcherCommandArguments->items[c++] = appendStringW(NULL, outputFileArg);

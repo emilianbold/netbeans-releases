@@ -50,7 +50,7 @@ void skipLauncherStub(LauncherProperties * props,  DWORD stubSize) {
                 break;
             }
         }
-        free(offsetbuf);
+        FREE(offsetbuf);
     }
 }
 
@@ -81,7 +81,7 @@ void modifyRestBytes(SizedString* rest, DWORD start) {
             restBytesNew[i-start] = (rest->bytes) [i];
         }
     }
-    free(rest->bytes);
+    FREE(rest->bytes);
     rest->bytes = restBytesNew;
     rest->length = len;
 }
@@ -138,7 +138,7 @@ void readString(LauncherProperties * props, SizedString * result, DWORD isUnicod
             //we have find \0 character
             break;
         }
-        memset(buf, 0, sizeof(char) * bufferSize);
+        ZERO(buf, sizeof(char) * bufferSize);
         if(read==0) { // we have nothing to read.. smth wrong
             *status = ERROR_INTEGRITY;
             break;
@@ -338,7 +338,7 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
                 if((compare(size, bufsize)<0) && (compare(size, 0)>0) ) {
                     bufsize = size->Low;
                 }
-                memset(buf, 0, sizeof(char) * bufferSize);
+                ZERO(buf, sizeof(char) * bufferSize);
                 if(compare(size, 0)==0) {
                     break;
                 }
@@ -374,7 +374,7 @@ void extractFileToDir(LauncherProperties * props, WCHAR *dir, WCHAR ** resultFil
     
     if(fileName!=NULL) {
         WCHAR * output = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), fileName);
-        free(fileName);
+        FREE(fileName);
         
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... extract to directory = ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  dir, 1);
@@ -390,7 +390,7 @@ void extractFileToDir(LauncherProperties * props, WCHAR *dir, WCHAR ** resultFil
         *resultFile = NULL;
         props -> status = ERROR_INTEGRITY;
     }
-    free(fileLength);
+    FREE(fileLength);
     return;
 }
 
@@ -418,7 +418,7 @@ void loadI18NStrings(LauncherProperties * props) {
         return ;
     }
     
-    props->i18nMessages = (I18NStrings * ) malloc(sizeof(I18NStrings) * numberOfProperties);
+    props->i18nMessages = (I18NStrings * ) LocalAlloc(LPTR,sizeof(I18NStrings) * numberOfProperties);
     
     props->I18N_PROPERTIES_NUMBER = numberOfProperties;
     props->i18nMessages->properties = newppChar(props->I18N_PROPERTIES_NUMBER);
@@ -433,7 +433,7 @@ void loadI18NStrings(LauncherProperties * props) {
         
         sprintf(propName, "property name %2ld", i);
         readStringWithDebugA(props, & (props->i18nMessages->properties[i]), propName);
-        free(propName);
+        FREE(propName);
     }
     if(isOK(props)) {
         
@@ -485,14 +485,14 @@ void loadI18NStrings(LauncherProperties * props) {
 }
 
 LauncherResource * newLauncherResource() {
-    LauncherResource * file = (LauncherResource *) malloc(sizeof(LauncherResource));
+    LauncherResource * file = (LauncherResource *) LocalAlloc(LPTR,sizeof(LauncherResource));
     file->path=NULL;
     file->resolved=NULL;
     file->type=0;
     return file;
 }
 WCHARList * newWCHARList(DWORD number) {
-    WCHARList * list = (WCHARList*) malloc(sizeof(WCHARList));
+    WCHARList * list = (WCHARList*) LocalAlloc(LPTR,sizeof(WCHARList));
     list->size  = number;
     if(number>0) {
         DWORD i=0;
@@ -522,12 +522,12 @@ void freeWCHARList(WCHARList ** plist) {
 }
 
 LauncherResourceList * newLauncherResourceList(DWORD number) {
-    LauncherResourceList * list = (LauncherResourceList*) malloc(sizeof(LauncherResourceList));
+    LauncherResourceList * list = (LauncherResourceList*) LocalAlloc(LPTR,sizeof(LauncherResourceList));
     list->size  = number;
     if(number > 0) {
         DWORD i=0;
         
-        list->items = (LauncherResource**) malloc(sizeof(LauncherResource*) * number);
+        list->items = (LauncherResource**) LocalAlloc(LPTR,sizeof(LauncherResource*) * number);
         for(i=0;i<number;i++) {
             list->items[i] = NULL;
         }
@@ -552,7 +552,7 @@ void extractLauncherResource(LauncherProperties * props, WCHAR *outputdir, Launc
     
     readNumberWithDebug( props, & ((*file)->type) , typeStr);
     if(isOK(props)) {
-        free(typeStr);
+        FREE(typeStr);
         if((*file)->type==0) { //bundled
             extractFileToDir(props, outputdir, & ((*file)->path));
             if(!isOK(props)) {
@@ -572,7 +572,7 @@ void extractLauncherResource(LauncherProperties * props, WCHAR *outputdir, Launc
     }  else {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error reading ", 0);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, typeStr, 0);
-        free(typeStr);
+        FREE(typeStr);
     }
 }
 
@@ -638,7 +638,7 @@ void readLauncherProperties(LauncherProperties * props) {
     
     
     if ( props->compatibleJavaNumber > 0 ) {
-        props->compatibleJava = (JavaCompatible **) malloc(sizeof(JavaCompatible *) * props->compatibleJavaNumber);
+        props->compatibleJava = (JavaCompatible **) LocalAlloc(LPTR,sizeof(JavaCompatible *) * props->compatibleJavaNumber);
         for(i=0;i<props->compatibleJavaNumber;i++) {
             
             props->compatibleJava [i] = newJavaCompatible() ;

@@ -34,15 +34,15 @@ WCHAR * getStringValue(HKEY root, WCHAR *key, WCHAR *valueName) {
         
         if (RegQueryValueExW(hkey, valueName, NULL, &type, NULL, &size) == ERROR_SUCCESS) {
             
-            value = (byte*) malloc((size + 1) * sizeof(WCHAR));
-            memset(value, 0, sizeof(WCHAR) * (size + 1));
+            value = (byte*) LocalAlloc(LPTR,(size + 1) * sizeof(WCHAR));
+            ZERO(value, sizeof(WCHAR) * (size + 1));
             if (RegQueryValueExW(hkey, valueName, NULL, &type, value, &size) == ERROR_SUCCESS) {
                 if(type == REG_SZ) {
                     result = (WCHAR *)value;
                 }
             }
             if(result==NULL) {
-                free(value);
+                FREE(value);
             }            
         }
     }

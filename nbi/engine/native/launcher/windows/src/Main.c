@@ -239,7 +239,7 @@ void showErrorW(LauncherProperties * props, const char * error, const DWORD varA
     va_end(ap);
     
     if(!isSilent(props)) {
-        HANDLE * events = (HANDLE *) malloc(sizeof(HANDLE)*2);
+        HANDLE * events = (HANDLE *) LocalAlloc(LPTR,sizeof(HANDLE)*2);
         
         hide(props, hwndProgressTitle);
         hide(props, hwndPB);
@@ -519,7 +519,7 @@ void showMessageA(LauncherProperties * props, const char* message, const DWORD v
 
 
 DWORD WINAPI launcherThread(void * ptr) {
-    HANDLE * events = (HANDLE *) malloc(sizeof(HANDLE)*2);
+    HANDLE * events = (HANDLE *) LocalAlloc(LPTR,sizeof(HANDLE)*2);
     DWORD result;
     events[0] = initializationSuccess;
     events[1] = initializationFailed;
