@@ -171,7 +171,7 @@ public class EarProjectTest extends NbTestCase {
                 serverID, null, null, null, null, null, null);
         Project earProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         EarProjectTest.openProject((EarProject) earProject);
-        Node rootNode = (earProject.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
+        Node rootNode = earProject.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         rootNode.getChildren().getNodes(true); // ping
         Reference<Project> wr = new WeakReference<Project>(earProject);
         OpenProjects.getDefault().close(new Project[] { earProject });
