@@ -88,10 +88,10 @@ class AppProjectGenerator {
                 String fileName = entry.getName(); // full relative path to file
                 // replace strings in the file name
                 ByteArrayOutputStream baos = new ByteArrayOutputStream(fileName.length());
-                replacer.setOutput(baos, true);
+                replacer.setOutput(baos);
                 replacer.write(fileName.getBytes());
                 replacer.close();
-                fileName = baos.toString();
+                fileName = baos.toString("UTF-8"); // NOI18N
 //                String[] pathElements = fileName.split("/"); // NOI18N
 //                boolean anySubst = false;
 //
@@ -173,11 +173,11 @@ class AppProjectGenerator {
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(templFileName.length());
         ReplacingOutputStream replacer = new ReplacingOutputStream(templateNames, substNames);
-        replacer.setOutput(baos, true);
+        replacer.setOutput(baos);
         try {
             replacer.write(templFileName.getBytes());
             replacer.close();
-            templFileName = baos.toString();
+            templFileName = baos.toString("UTF-8"); // NOI18N
         }
         catch (IOException ex) {} // should not happen
         return projectFolder.getFileObject(templFileName);
@@ -228,10 +228,10 @@ class AppProjectGenerator {
             this.pendingChars = new StringBuilder(50);
         }
 
-        void setOutput(OutputStream output, boolean forcePathNames) {
+        void setOutput(OutputStream output) {
             this.output = output;
-            this.forcePathNames = forcePathNames;
-            this.encoding = null;
+            this.forcePathNames = true;
+            this.encoding = "UTF-8"; // NOI18N
             this.propertiesEncoding = false;
             matchCounts = new int[toReplace.length];
         }
