@@ -546,8 +546,7 @@ public final class IntrospectedInfo {
                 namedefs.put(kind, registry);
             }
             synchronized (this) {
-                Map<String,String> defaults = getDefaults().getDefs(kind);
-                if (defaults.get(name) == null) {
+                if (getDefaults().getDefs(kind).get(name) == null) {
                     changed |= !clazz.getName().equals(registry.put(name, clazz.getName()));
                 }
                 if (! getDefaults ().isKnown (clazz.getName ())) {
@@ -681,6 +680,10 @@ public final class IntrospectedInfo {
                         String v = node.get(k, null);
                         assert v != null : k;
                         String[] ss = k.split("\\.", 2);
+                        if (ss.length != 2) {
+                            LOG.log(Level.WARNING, "malformed key: {0}", k);
+                            continue;
+                        }
                         if (ss[0].equals("class")) {
                             Matcher m = p.matcher(ss[1]);
                             boolean match = m.matches();
