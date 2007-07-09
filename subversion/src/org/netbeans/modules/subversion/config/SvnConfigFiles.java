@@ -109,6 +109,14 @@ public class SvnConfigFiles {
      * @return the SvnConfigFiles instance
      */
     public static SvnConfigFiles getInstance() {
+        
+        //T9Y - singleton is not required - always create new instance of this class
+        String t9yUserConfigPath = System.getProperty("netbeans.t9y.svn.user.config.path");
+        if (t9yUserConfigPath != null && t9yUserConfigPath.length() > 0) {
+            //make sure that new instance will be created
+            instance = null;
+        }
+        
         if(instance==null) {
             instance = new SvnConfigFiles();                    
         }
@@ -298,6 +306,13 @@ public class SvnConfigFiles {
      *
      */ 
     public static String getUserConfigPath() {        
+        
+        //T9Y - user svn config files should be changable
+        String t9yUserConfigPath = System.getProperty("netbeans.t9y.svn.user.config.path");
+        if (t9yUserConfigPath != null && t9yUserConfigPath.length() > 0) {
+            return t9yUserConfigPath;
+        }
+        
         if(Utilities.isUnix()) {
             String path = System.getProperty("user.home") ;                     // NOI18N
             return path + "/" + UNIX_CONFIG_DIR;                                // NOI18N
@@ -308,13 +323,20 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Returns the path for the Sunbversion configuration dicectory used 
+     * Returns the path for the Sunbversion configuration directory used 
      * by the Netbeans Subversion module.
      *
      * @return the path
      *
      */ 
     public static String getNBConfigPath() {
+        
+        //T9Y - nb svn confing should be changable
+        String t9yNbConfigPath = System.getProperty("netbeans.t9y.svn.nb.config.path");
+        if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
+            return t9yNbConfigPath;
+        }
+        
         String nbHome = System.getProperty("netbeans.user");                    // NOI18N
         return nbHome + "/config/svn/config/";                                  // NOI18N
     }
