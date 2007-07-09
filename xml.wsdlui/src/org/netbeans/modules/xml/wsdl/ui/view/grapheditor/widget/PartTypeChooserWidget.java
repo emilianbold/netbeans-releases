@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,6 +108,8 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
                 
                 final ElementOrTypeChooserPanel panel = new ElementOrTypeChooserPanel(project, namespaceToPrefixMap, wsdlModel, comp);
                 final DialogDescriptor descriptor = new DialogDescriptor(panel , NbBundle.getMessage(ElementOrTypeChooserEditorPanel.class, "ElementOrTypeChooserEditorPanel.Dialog.title"), true, null);
+                descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypePropertyEditor"));
+                
                 final PropertyChangeListener pcl = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if(evt.getSource()== panel && evt.getPropertyName().
