@@ -65,7 +65,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_
     if(statMode(path, &currentMode)) {
         switch (jChange) {
             case MODE_CHANGE_SET:
-                currentMode |= ACCESSPERMS;
+                currentMode |= (S_IRWXU | S_IRWXG | S_IRWXO);
                 currentMode &= jMode;
                 break;
             case MODE_CHANGE_ADD:
@@ -95,7 +95,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_
     char* path = getChars(jEnv, jPath);
     int currentMode;
     if(statMode(path, &currentMode)) {
-        return currentMode & (ACCESSPERMS);
+        return currentMode & (S_IRWXU | S_IRWXG | S_IRWXO);
     } else {
         throwException(jEnv, "Can`t get file current permissions");
     }
