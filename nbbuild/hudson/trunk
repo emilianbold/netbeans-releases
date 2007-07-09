@@ -42,7 +42,7 @@ sh -x `dirname $0`/run-vw-sanity.sh
 # XXX results temporarily stored separately
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true -Dxtest.results=$PWD/xtest/instance/results/enterprise runtests
 # CND UI validation tests
-ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true
+ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true runtests
 # Do not halt if there were failures, but do collect results for Hudson:
 ant -f nbbuild/build.xml commit-validation-junit-format
 
