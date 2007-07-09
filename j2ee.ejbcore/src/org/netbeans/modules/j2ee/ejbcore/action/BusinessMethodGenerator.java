@@ -25,7 +25,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.openide.filesystems.FileObject;
 
@@ -43,11 +48,11 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
         return new BusinessMethodGenerator(ejbClass, ejbClassFileObject);
     }
     
-    public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
+    public void generate(final MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
         
         Map<String, String> interfaces = getInterfaces();
         String local = interfaces.get(EntityAndSession.LOCAL);
-        String remote = interfaces.get(EntityAndSession.REMOTE);
+        final String remote = interfaces.get(EntityAndSession.REMOTE);
 
         // local interface
         if (generateLocal && local != null) {
@@ -64,10 +69,27 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
         
         // remote interface, add RemoteException if it's not there
         if (generateRemote && remote != null) {
-            List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
-            if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) {
-                exceptions.add("java.rmi.RemoteException");
-            }
+            
+            final List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
+
+            JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
+            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(remote);
+                    TypeMirror remoteType = controller.getElements().getTypeElement("java.rmi.Remote").asType(); // NOI18N
+                    if (typeElement != null) {
+                        for (TypeMirror typeMirror : typeElement.getInterfaces()) {
+                            if (controller.getTypes().isSameType(remoteType, typeMirror)) {
+                                if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) { // NOI18N
+                                    exceptions.add("java.rmi.RemoteException"); // NOI18N
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true);
+            
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
                     methodModel.getReturnType(),
