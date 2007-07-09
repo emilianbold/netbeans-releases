@@ -353,15 +353,19 @@ public final class DesignDocument {
     private void updateDescriptorReferences () {
         transactionManager.writeAccess (new Runnable () {
             public void run () {
-                for (TimedWeakReference reference : uid2components.values ()) {
-                    DesignComponent component = reference.get ();
-                    if (component == null)
-                        continue;
-                    ComponentDescriptor descriptor = descriptorRegistry.getComponentDescriptor (component.getType ());
-                    component.setComponentDescriptor (descriptor, true);
-                }
+                updateDescriptorReferencesCore ();
             }
         });
+    }
+
+    private void updateDescriptorReferencesCore () {
+        for (TimedWeakReference reference : uid2components.values ()) {
+            DesignComponent component = reference.get ();
+            if (component == null)
+                continue;
+            ComponentDescriptor descriptor = descriptorRegistry.getComponentDescriptor (component.getType ());
+            component.setComponentDescriptor (descriptor, true);
+        }
     }
 
     private final class TimedWeakReference extends WeakReference<DesignComponent> implements Runnable {

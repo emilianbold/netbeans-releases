@@ -48,13 +48,13 @@ public final class DesignComponent {
     // TODO - children could be implemented as a DesignComponent[] and the undoableedit could held old and new array.
     // HINT - no undo/redo while setComponentDescriptor - requires to check writeProperty while doing PropertyChangedUndoableEdit
     
-    private DesignDocument document;
-    private long componentID;
-    private TypeID type;
+    private final DesignDocument document;
+    private final long componentID;
+    private final TypeID type;
     private DesignComponent parentComponent;
-    private ArrayList<DesignComponent> children;
-    private HashMap<String, PropertyValue> properties;
-    private HashMap<String, PropertyValue> defaultProperties;
+    private final ArrayList<DesignComponent> children;
+    private final HashMap<String, PropertyValue> properties;
+    private final HashMap<String, PropertyValue> defaultProperties;
     
     private ComponentDescriptor componentDescriptor;
     private Lookup presenters;
@@ -84,7 +84,7 @@ public final class DesignComponent {
     }
     
     void setComponentDescriptor(ComponentDescriptor componentDescriptor, boolean useUndo) {
-        assert Debug.isFriend(DesignDocument.class, "updateDescriptorReferences")  ||  Debug.isFriend(DesignComponent.class, "<init>"); // NOI18N
+        assert Debug.isFriend(DesignDocument.class, "updateDescriptorReferences")  ||  Debug.isFriend(DesignComponent.class, "<init>")  ||  Debug.isFriend (DesignDocument.class, "updateDescriptorReferencesCore"); // NOI18N
         if (this.componentDescriptor == componentDescriptor)
             return;
         
