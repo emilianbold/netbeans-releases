@@ -88,6 +88,10 @@ public class HttpMonitorSupport {
     
     public static boolean synchronizeMonitorWithFlag(SunDeploymentManagerInterface tm) throws IOException, SAXException {
         boolean monitorFlag = getMonitorFlag((DeploymentManager)tm);
+        return synchronizeMonitor(tm,monitorFlag);
+    }
+    
+    public static boolean synchronizeMonitor(SunDeploymentManagerInterface tm, boolean monitorFlag) throws IOException, SAXException {
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
         // find the web.xml file

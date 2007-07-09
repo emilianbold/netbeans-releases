@@ -359,6 +359,15 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             }
             
             
+            try{
+                if (cmd == CMD_STOP) {  // don't mess with this during a restart, since CMD_START will do the right thing.
+                    HttpMonitorSupport.synchronizeMonitor((SunDeploymentManagerInterface) dm, 
+                            false);
+                }
+            } catch (Exception eee){
+                Logger.getLogger(StartSunServer.class.getName()).log(Level.FINE,"",eee);
+            }
+
             String asadminCmd = installRoot + File.separator + "bin" +  File.separator + "asadmin";          //NOI18N            
             if ("\\".equals(File.separator)) {
                 asadminCmd = asadminCmd + ".bat"; //NOI18N
