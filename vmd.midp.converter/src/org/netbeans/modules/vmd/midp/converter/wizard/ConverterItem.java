@@ -37,6 +37,7 @@ class ConverterItem {
     private HashMap<String, ArrayList<String>> containerProperties;
     private boolean used;
     private DesignComponent component;
+    private boolean clazz;
 
     public ConverterItem (String uid, String id, String typeid) {
         this.uid = uid;
@@ -53,6 +54,14 @@ class ConverterItem {
     public void setUsed (DesignComponent component) {
         this.component = component;
         used = true;
+    }
+
+    public boolean isClass () {
+        return clazz;
+    }
+
+    public void setClass () {
+        this.clazz = true;
     }
 
     public DesignComponent getRelatedComponent () {

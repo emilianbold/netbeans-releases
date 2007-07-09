@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import static org.netbeans.modules.vmd.midp.converter.wizard.ConverterUtil.getBoolean;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -39,6 +40,8 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
+import javax.swing.text.StyledDocument;
+import javax.swing.text.BadLocationException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,12 +55,17 @@ public class Converter {
         final ArrayList<String> errors = new ArrayList<String> ();
         try {
             DataFolder folder = DataFolder.findFolder (inputJavaFile.getParent ());
+
+            DataObject input = DataObject.find (inputJavaFile);
+            EditorCookie editorCookie = input.getCookie (EditorCookie.class);
+            final StyledDocument styledDocument = editorCookie.openDocument ();
+
             final Node rootNode = XMLUtil.getRootNode (inputDesignFile);
             if (! "1.3".equals (XMLUtil.getAttributeValue (rootNode, "version"))) { // NOI18N
                 errors.add ("Unsupported version of the design file. The design has to saved in NetBeans 5.5 or newer.");
                 return errors;
             }
-            final List<ConverterItem> components = getConverterComponents (rootNode);
+            final List<ConverterItem> items = getConverterItems (rootNode);
 
             DataObject template = DataObject.find (Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates/MIDP/VisualMIDlet.java")); // NOI18N
             DataObject outputDesign = template.createFromTemplate (folder, outputFileName);
@@ -65,13 +73,31 @@ public class Converter {
             serializer.waitDocumentLoaded ();
             final DesignDocument document = serializer.getDocument ();
 
-            ConverterCustom.loadItemsToRegistry (components, document);
+            EditorCookie outputEditorCookie = outputDesign.getCookie (EditorCookie.class);
+            final StyledDocument outputStyledDocument = outputEditorCookie.openDocument ();
+
+            ConverterCustom.loadItemsToRegistry (items, document);
+
+            final HashMap<String,ConverterItem> id2item = new HashMap<String, ConverterItem> ();
+            for (ConverterItem item : items)
+                id2item.put (item.getID (), item);
 
             document.getTransactionManager ().writeAccess (new Runnable() {
                 public void run () {
-                    convert (errors, components, document);
+                    for (ConverterItem item : items)
+                        convert (id2item, item, document);
+
+                    try {
+                        ConverterCode.convertCode (items, styledDocument, outputStyledDocument, document);
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace (e);
+                    }
                 }
             });
+
+            for (ConverterItem item : items)
+                if (! item.isUsed ())
+                    Debug.warning ("Unrecognized component: " + item.getTypeID ()); // NOI18N
 
             IOSupport.forceUpdateCode (outputDesign);
             outputDesign.getLookup ().lookup (CloneableEditorSupport.class).saveDocument ();
@@ -81,7 +107,7 @@ public class Converter {
         return errors;
     }
 
-    private static List<ConverterItem> getConverterComponents (Node rootNode) {
+    private static List<ConverterItem> getConverterItems (Node rootNode) {
         ArrayList<ConverterItem> components = new ArrayList<ConverterItem> ();
         Node documentNode = XMLUtil.getChild (rootNode, "DesignDocument"); // NOI18N
         for (Node componentNode : XMLUtil.getChildren (documentNode, "DesignComponent")) { // NOI18N
@@ -137,20 +163,6 @@ public class Converter {
         return i >= 0 ? string.substring (i + 1) : string;
     }
 
-    private static void convert (ArrayList<String> errors, List<ConverterItem> items, DesignDocument document) {
-        HashMap<String,ConverterItem> id2item = new HashMap<String, ConverterItem> ();
-
-        for (ConverterItem item : items)
-            id2item.put (item.getID (), item);
-
-        for (ConverterItem item : items)
-            convert (id2item, item, document);
-
-        for (ConverterItem item : items)
-            if (! item.isUsed ())
-                Debug.warning ("Unrecognized component: " + item.getTypeID ()); // NOI18N
-    }
-    
     private static void convert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         if (item.isUsed ())
             return;
@@ -266,6 +278,7 @@ public class Converter {
     // Created: NO, Adds: NO
     static void convertClass (ConverterItem item, DesignComponent component) {
         convertObject (item, component);
+        item.setClass ();
         component.writeProperty (ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue (item.getID ()));
         Boolean lazy = getBoolean (item.getPropertyValue ("lazyInitialized")); // NOI18N
         component.writeProperty (ClassCD.PROP_LAZY_INIT, MidpTypes.createBooleanValue (lazy == null  ||  lazy));

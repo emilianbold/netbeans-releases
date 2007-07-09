@@ -50,7 +50,6 @@ public class ConverterActions {
 
             convertCommandActionHandler (id2item, commandActionItem, eventSource);
         }
-        // TODO - other command actions
         // HINT - SelectCommandAction is recognized by ConverterDisplayables.convertList
         // HINT - SelectCaseCommandAction is recognized by ConverterElements.convertListElement
         // HINT - InternalCommandAction is recognized by ConverterBuilt.convertSplashScreen, ConverterBuilt.convertWaitScreen, ConvertSVG.convertSplashScreen, ConvertSVG.convertWaitScreen
