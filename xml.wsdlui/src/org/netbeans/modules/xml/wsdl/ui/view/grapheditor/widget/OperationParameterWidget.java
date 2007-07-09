@@ -81,6 +81,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         implements DnDHandler {
 
     private LabelWidget mParameterMessage;
+    private LabelWidget mNameLabel;
     private OperationParameter mParameter;
     
 
@@ -182,25 +183,25 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             addChild(widget);
             
             mParameter = parameter;
-            LabelWidget mLabel = new LabelWidget (scene);
-            mLabel.setBackground (Color.WHITE);
+            mNameLabel = new LabelWidget (scene);
+            mNameLabel.setBackground (Color.WHITE);
             if (mParameter != null) {
-                mLabel.setLabel (mParameter.getName());
-                mLabel.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+                mNameLabel.setLabel (mParameter.getName());
+                mNameLabel.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
-                    public void setText(Widget widget, String text) {
+                    public void setText(Widget w, String text) {
                         if (getWSDLComponent() != null && !getWSDLComponent().getName().equals(text))
                             SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
                     }
 
-                    public boolean isEnabled(Widget widget) {
+                    public boolean isEnabled(Widget w) {
                         if (getWSDLComponent() != null) {
                             return !isImported() && XAMUtils.isWritable(getWSDLComponent().getModel());
                         }
                         return false;
                     }
 
-                    public String getText(Widget widget) {
+                    public String getText(Widget w) {
                         return mParameter.getName();
                     }
 
@@ -208,11 +209,11 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.LEFT, 
                         InplaceEditorProvider.ExpansionDirection.RIGHT)));
             }
-            mLabel.getActions().addAction(HoverActionProvider.getDefault(getScene()).getHoverAction());
+            mNameLabel.getActions().addAction(HoverActionProvider.getDefault(getScene()).getHoverAction());
             Font font = scene.getDefaultFont ().deriveFont (Font.BOLD);
-            mLabel.setFont (font);
-            mLabel.setAlignment(Alignment.CENTER);
-            widget.addChild (mLabel);
+            mNameLabel.setFont (font);
+            mNameLabel.setAlignment(Alignment.CENTER);
+            widget.addChild (mNameLabel);
             widget.addChild(mParameterMessage);
         } else {
             addChild(mParameterMessage);
@@ -285,6 +286,9 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         }
         if (msg != null && !msg.equals(getText())) {
             setText(msg);
+        }
+        if (mNameLabel != null && mParameter.getName() != null) {
+            mNameLabel.setLabel(mParameter.getName());
         }
     }
 
@@ -392,7 +396,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     }
 
     private void setMessage(MessageNode node) {
-        Message message = (Message) node.getWSDLComponent();
+        Message message = node.getWSDLComponent();
         if (getModel().startTransaction()) {
             try {
             getWSDLComponent().setMessage(getWSDLComponent().createReferenceTo(message, Message.class));
