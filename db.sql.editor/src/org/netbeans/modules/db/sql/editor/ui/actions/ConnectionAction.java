@@ -55,7 +55,9 @@ import org.openide.util.WeakListeners;
 public class ConnectionAction extends SQLExecutionBaseAction {
 
     protected String getDisplayName(SQLExecution sqlExecution) {
-        return null;
+        // not localized because not displayed in the UI, 
+        // just needed in order to satisfy issue 101775
+        return "ConnectionAction"; // NOI18N
     }
 
     protected void actionPerformed(SQLExecution sqlExecution) {
