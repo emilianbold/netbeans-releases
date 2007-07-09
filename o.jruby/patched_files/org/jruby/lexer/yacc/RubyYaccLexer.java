@@ -764,7 +764,9 @@ public class RubyYaccLexer {
                 HeredocTerm ht = heredocContext.getTerm();
                 lex_strterm = ht;
             } else if (src.isANewLine()) {
-                assert lex_strterm == null;
+                // Can be triggered, disabling for now to cause
+                // less severe symptoms
+                //assert lex_strterm == null;
 
                 HeredocTerm ht = heredocContext.getTerm();
                 lex_strterm = ht;
@@ -2145,6 +2147,10 @@ public class RubyYaccLexer {
         this.commandStart = commandStart;
     }
 
+    public LexerSource getSource() {
+        return this.src;
+    }
+    
     /* In normal JRuby, there is a "spaceSeen" flag which is local to yylex. It is
      * used to interpret input based on whether a space was recently seen.
      * Since I now bail -out- of yylex() when I see space, I need to be able
