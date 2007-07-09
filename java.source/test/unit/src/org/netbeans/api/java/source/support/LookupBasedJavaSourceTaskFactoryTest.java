@@ -13,19 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.support;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -53,10 +51,11 @@ public class LookupBasedJavaSourceTaskFactoryTest extends NbTestCase {
     private Node testFile1Node;
     private Node testFile2Node;
     
+    @Override
     protected void setUp() throws Exception {
         testDir = SourceUtilsTestUtil.makeScratchDir(this);
-        testFile1 = testDir.createData("test1.txt");
-        testFile2 = testDir.createData("test2.txt");
+        testFile1 = testDir.createData("test1.java");
+        testFile2 = testDir.createData("test2.java");
         testFile1DO = DataObject.find(testFile1);
         testFile2DO = DataObject.find(testFile2);
         testFile1Node = testFile1DO.getNodeDelegate();
@@ -94,7 +93,7 @@ public class LookupBasedJavaSourceTaskFactoryTest extends NbTestCase {
         
         assertEquals(5, changeCount[0]);
         assertEquals(2, factory.getFileObjects().size());
-        assertEquals(new HashSet(Arrays.asList(testFile1, testFile2)), new HashSet(factory.getFileObjects()));
+        assertEquals(new HashSet<FileObject>(Arrays.asList(testFile1, testFile2)), new HashSet<FileObject>(factory.getFileObjects()));
         
         lookup.setLookupsImpl(new Lookup[] {});
         
@@ -125,12 +124,19 @@ public class LookupBasedJavaSourceTaskFactoryTest extends NbTestCase {
         private int[] changeCount;
         
         public LookupBasedJavaSourceTaskFactoryImpl(int[] changeCount) {
-            super(null, null);
+            super(Phase.PARSED, Priority.MIN);
             this.changeCount = changeCount;
         }
         
         public CancellableTask<CompilationInfo> createTask(FileObject file) {
-            throw new IllegalStateException();
+            return new CancellableTask<CompilationInfo>() {
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public void run(CompilationInfo parameter) throws Exception {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
         }
         
         @Override
