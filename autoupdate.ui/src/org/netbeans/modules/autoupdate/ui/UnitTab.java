@@ -609,8 +609,8 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         private boolean maybeShowPopup (MouseEvent e) {
-            focusTable ();
-            if (e.isPopupTrigger ()) {
+            if (e.isPopupTrigger ()) {  
+                focusTable ();
                 showPopup (e.getPoint (), e.getComponent ());
                 return true;
             }
