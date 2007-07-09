@@ -5,7 +5,6 @@
           "http://www.netbeans.org/dtds/tc-group2_0.dtd">
 
 <tc-group version="2.0">
-    <module name="org.netbeans.modules.uml.documentation/1" spec="1.2.0"/>
-    <tc-id id="documentation" />
+    <tc-id id="properties" />
     <open-close-behavior open="true" close="true" />
 </tc-group>

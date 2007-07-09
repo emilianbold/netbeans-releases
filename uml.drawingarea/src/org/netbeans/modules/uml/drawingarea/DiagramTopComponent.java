@@ -660,6 +660,10 @@ public class DiagramTopComponent extends CloneableTopComponent
         if (group != null)
         {
             group.open();
+            TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
+            if (!Boolean.TRUE.equals(tc.getClientProperty("isSliding")))
+                tc.requestVisible();
+            
             // Jyothi: Fix for Bug#6252301 - overview window should listen
             // to diagram tab changes
             if (overviewOpen)
@@ -677,14 +681,14 @@ public class DiagramTopComponent extends CloneableTopComponent
                 }
             }
         }
-        else // workaround for #98334
+        else // workaround for #98334 then, should not happen now
         {
             TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
-            if (tc!=null && !tc.isOpened())
+            
+            if (tc != null && !tc.isOpened())
+            {
                 tc.open();
-            tc = WindowManager.getDefault().findTopComponent("properties");
-            if (tc!=null && !tc.isOpened())
-                tc.open();
+            }
         }
         
         selectedElements(getDrawingAreaControl().getDiagram(),
@@ -716,10 +720,10 @@ public class DiagramTopComponent extends CloneableTopComponent
             else
                 overviewOpen = false;
         }
-        else // workaround for #98334
+        else // workaround for #98334, should not happen now
         {
             TopComponent tc = WindowManager.getDefault().findTopComponent("documentation");
-            if (tc!=null)
+            if (tc!=null && tc.isOpened())
                 tc.close();
         }
         
