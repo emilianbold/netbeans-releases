@@ -18,7 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
  <antlib>
-        <typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.GenerateJBIDescriptor"/>
+        <typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/>
         <!-- typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/ -->
         <!-- typedef name="XsltProjectValidate" classname="org.netbeans.modules.xslt.project.anttasks.IDEValidateXSLTProject"/ -->
         
