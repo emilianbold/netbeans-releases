@@ -478,10 +478,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateComponentLayer(final boolean fireChange) {
+        if (!isOpened()) { // the form can be closed just after opened, before this gets called (#70439)
+            return;
+        }
+        if (getLayoutDesigner() == null) {
+            return;
+        }
+
         boolean firstLayout = this.firstLayout;
         this.firstLayout = false;
-        if (getLayoutDesigner() == null)
-            return;
 
         // Ensure that the components are laid out
         componentLayer.revalidate(); // Add componentLayer among components to validate
