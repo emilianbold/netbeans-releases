@@ -264,8 +264,8 @@
     <tocitem text="Setting JVM Arguments" target="run_jvm_args" />
   </tocitem>
 
-  <tocitem text="Debugging Java Applications">
-    <tocitem text="About Debugging Java Applications" target="debug.about"/>
+  <tocitem text="Debugging Applications">
+    <tocitem text="About Debugging Applications" target="debug.about"/>
     <tocitem text="About Debugging Free-Form Projects" target="proj_free_debug_about" />
     <tocitem text="Working with Debugging" target="debug.process"/>
     <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
