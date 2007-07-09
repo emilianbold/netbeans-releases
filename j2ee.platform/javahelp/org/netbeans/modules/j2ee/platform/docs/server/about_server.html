@@ -27,10 +27,10 @@
 </ul>
 <p>The IDE supports the following application servers:</p>
 <ul>
-  <li><b>Sun Java System Application Server. </b>The IDE provides the fullest 
+  <li><b>Sun Java System Application Server/GlassFish. </b>The IDE provides the fullest 
     support for the Sun Java System Application Server. You can stop and start 
-    the server, deploy applications to it, and view the deployed modules right 
-    from the Runtime window. There is a visual editor for server-specific deployment 
+    the server, deploy applications to it, and view the deployed modules directly
+    in the Services window. There is a visual editor for server-specific deployment 
     descriptors and the IDE updates the descriptors automatically as you write 
     your code. The IDE also automatically configures server resources like connection 
     pools and JavaMail resources for this application server.</li>
@@ -55,11 +55,8 @@
 <p>Before you can deploy an enterprise application, web application, JSP, servlet, 
   or EJB module, the server to which you are going to deploy needs to be <a href="server_register.html">registered</a> 
   with the IDE. When a server is registered with the IDE, its libraries are available 
-  for production, or deployment, or both. For versions of the IDE that are bundled 
-  only with the Tomcat Web Server, the Tomcat Web Server is automatically registered 
-  in the IDE. For versions of the IDE that are bundled with both the Tomcat Web 
-  Server and Sun Java System Application Server, both servers are automatically registered 
-  in the IDE. You must register all other servers yourself.</p>
+  for production, or deployment, or both. Servers that are installed during the IDE installation process
+  are automatically registered in the IDE. You must register all other servers yourself.</p>
 <ul class="note">
       <li>Only once you have registered a Java EE application server 
         can you begin developing <a href="../enterprise/general/about_ent_apps.html">enterprise 

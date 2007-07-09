@@ -13,43 +13,62 @@
 <h2>Server Manager Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Before you can deploy an enterprise application, web application, JSP file, servlet, or EJB module, the server 
-to which you are going to deploy needs to be registered with the IDE.
+to which you are going to deploy needs to be registered with the IDE.</p>
 
-<p>For versions 
-  of the IDE that are bundled only with the Tomcat Web Server, the Tomcat Web 
-  Server is automatically registered in the IDE. For versions of the IDE that 
-  are bundled with both the Tomcat Web Server and Sun Java System Application Server, both 
-  servers are automatically registered in the IDE. You must register all other servers yourself. 
+<p>You open the Server Manager by choosing Tools &gt; Servers from the main menu.</p>
 
-  <p>You can open the dialog box by choosing Tools &gt; Server Manager.
-
-  <p>Using the Server Manager, you can:
-
+<p>You can use the Server Manager to do the following:</p>
   <ul>
-	  <li>Register a new server.
-	  <li>View registered servers' classpaths.
-	  <li>Register source code for a server in the Sources tab.
-	  <li>Register Javadoc documentation for a server in the Javadoc tab.
+          <li>Register a new server.</li>
+	  <li>View registered servers' classpaths.</li>
+	  <li>Register source code for a server in the Sources tab.</li>
+	  <li>Register Javadoc documentation for a server in the Javadoc tab.</li>
+          <li>Specify deployment options (Sun Java System Application Server/GlassFish only)</li>
   </ul>
-
-  <p>The Server Manager provides additional functionality for certain servers. For example,
-   for the Tomcat Web Server, you can set port numbers in the Server Manager.
+  <p><b>Note:</b></p>
+  <ul class="note"><li>Any web servers that you chose to install when you installed the IDE 
+are automatically registered in the IDE. You must register all other servers manually.</li></ul>
   
-  <p>Once you have registered a server, you can configure a project to use that server for compilation, 
-  execution, and debugging. Right-click the project, choose Properties, select the Run node, and 
-  choose the appropriate server in the Server drop-down menu.
+<p>After you register a server, you can configure a project to use that server for compilation, 
+       execution, and debugging. To specify the server for your project, right-click the project in the Projects window
+       and choose Properties. In the Properties window, select the Run node, and 
+   choose the appropriate server in the Server drop-down menu.</p>
+   
+<p>The Server Manager provides additional tabs for configuring the following servers.</p> 
+
+<p><b>Tomcat Web Server</b><br>
+<ul>
+    <li><b>Connection</b> The Connection tab enables you to set the server port numbers and the username and password 
+    for the manager role. You can also enable the HTTP monitor in this tab. </li>
+    <li><b>Startup.</b> The Startup tab enables you to specify a custom Catalina script for startup and 
+    debugger transport options.</li>
+</ul>
+  
+<p><b>Sun Java System Application Server/GlassFish</b><br>
+<ul>
+    <li><b>Options.</b> The Options tab enables you to specify the following deployment options:
+        <ul>
+            <li>Startup Timeout. This option enables you to modify the number of seconds before the server
+        reports that startup has failed. The default is 288 seconds.</li>
+            <li>Deployment Timeout. This option enables you to modify the number of seconds before the server
+        reports that deployment has failed. The default is 144 seconds.</li>
+            <li>Directory Deployment Enabled. When selected, web, EJB and EAR projects are deployed to the server
+        from the build directory. This can reduce deployment time. This option is selected by default.</li>
+            <li>JDBC Driver Deployment Enabled. When selected, JDBC drivers are deployed to the server if required.
+        This option is selected by default.</li>
+        </ul>
+        <p>Changes in the options take effect immediately.</p>
+    </li>
+</ul>  
 
 
 <dl> 
 	<dt><a name="seealso">See Also</a></dt>
 <dd><a href="server_register.html">Registering a Server</a></dd>
   <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Registering a Sun Java System Application Server Instance</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_addinstall.html">Registering 
-    an External Tomcat Web Server</a></dd>
-  <dd><a href="jboss/registering_app_server_jboss.html">Registering a JBoss Application 
-    Server</a></dd>
-  <dd><a href="weblogic/registering_app_server_weblogic.html">Registering a BEA WebLogic 
-    Server</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_addinstall.html">Registering an External Tomcat Web Server</a></dd>
+  <dd><a href="jboss/registering_app_server_jboss.html">Registering a JBoss Application Server</a></dd>
+  <dd><a href="weblogic/registering_app_server_weblogic.html">Registering a BEA WebLogic Server</a></dd>
 </dl>
 
 <hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
