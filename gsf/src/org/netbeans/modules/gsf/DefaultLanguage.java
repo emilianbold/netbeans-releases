@@ -77,6 +77,28 @@ public class DefaultLanguage implements Language {
         this.mime = mime;
     }
 
+    /** For testing purposes only!*/
+    public DefaultLanguage(String displayName, String iconBase, String mime, List<String> extensions, List<Action> actions,
+            GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
+            DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketcompletion, Indexer indexer,
+            StructureScanner structure, PaletteController palette) {
+        this.displayName = displayName;
+        this.iconBase = iconBase;
+        this.mime = mime;
+        this.extensions = extensions;
+        this.actions = actions;
+        this.language = gsfLanguage;
+        this.parser = parser;
+        this.completionProvider = completionProvider;
+        this.renamer = renamer;
+        this.declarationFinder = declarationFinder;
+        this.formatter = formatter;
+        this.bracketCompletion = bracketCompletion;
+        this.indexer = indexer;
+        this.structure = structure;
+        this.palette = palette;
+    }
+
     public String getDisplayName() {
         return displayName;
     }

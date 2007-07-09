@@ -75,6 +75,15 @@ public class LanguageRegistry implements Iterable<Language> {
     public LanguageRegistry() {
         initialize();
     }
+    
+    /** For testing only! */
+    public void addLanguages(List<Language> newLanguages) {
+        if (languages != null && languages.size() > 0) {
+            throw new RuntimeException("This is for testing purposes only!!!");
+        }
+        
+        this.languages = newLanguages;
+    }
 
     public static synchronized LanguageRegistry getInstance() {
         if (instance == null) {

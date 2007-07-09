@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
+import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.ParseListener;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
@@ -190,4 +191,17 @@ public abstract class RubyTestBase extends NbTestCase {
              return null;
          }
      }
+     
+     public CompilationInfo getInfo(String file) throws Exception {
+        FileObject fileObject = getTestFile(file);
+        
+        String text = readFile(fileObject);
+        BaseDocument doc = getDocument(text);
+
+        CompilationInfo info = new TestCompilationInfo(fileObject, doc, text);
+        
+        return info;
+     }
+     
+     
 }
