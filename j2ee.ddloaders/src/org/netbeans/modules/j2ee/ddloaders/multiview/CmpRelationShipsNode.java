@@ -39,7 +39,8 @@ public class CmpRelationShipsNode extends EjbSectionNode {
         final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(dataObject);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             {
-                getAddButton().setEnabled(true);
+                getAddButton().setVisible(false);
+                getEditButton().setVisible(false);
             }
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 if (source == key) {
