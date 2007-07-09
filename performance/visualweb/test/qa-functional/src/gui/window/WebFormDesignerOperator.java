@@ -58,9 +58,8 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {
-            System.out.println("Timeout exceed "+tex.getMessage());
-            throw new JemmyException("Cannot find designer surface because of expired timeout");
-            
+            JemmyProperties.getCurrentOutput().getOutput().println("TimeoutExpired exception");
+            throw new JemmyException("Cannot find designer surface because of expired timeout");            
         }      
     }
     
@@ -221,7 +220,10 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     public static final class TopComponentSubchooser implements ComponentChooser {
 
         public boolean checkComponent(Component component) {
-            return component.getClass().getName().equals("org.netbeans.core.multiview.MultiViewCloneableTopComponent");
+            JemmyProperties.getCurrentOutput().getOutput().println(component.getClass().getName());
+            boolean result = component.getClass().getName().equals("org.netbeans.core.multiview.MultiViewCloneableTopComponent");
+            
+            return  result;
         }
 
         public String getDescription() {
