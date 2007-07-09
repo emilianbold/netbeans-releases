@@ -80,6 +80,10 @@ public class RepositoryPanel extends javax.swing.JPanel {
 
         tunnelHelpLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_svn_xxx")); // NOI18N
 
+        savePasswordCheckBox.setText("Save Password");
+        savePasswordCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        savePasswordCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -105,15 +109,23 @@ public class RepositoryPanel extends javax.swing.JPanel {
                             .add(org.jdesktop.layout.GroupLayout.LEADING, userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)))
+                        .addContainerGap())))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(123, 123, 123)
+                        .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(tunnelLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE))
+                .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(proxySettingsButton)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(tunnelLabel)
+                .add(savePasswordCheckBox)
                 .addContainerGap())
-            .add(tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -139,16 +151,17 @@ public class RepositoryPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(passwordLabel)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(savePasswordCheckBox)
+                .add(9, 9, 9)
                 .add(proxySettingsButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tunnelCommandLabel)
+                .add(18, 18, 18)
                 .add(tunnelLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(tunnelCommandLabel)
-                    .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tunnelHelpLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(tunnelHelpLabel))
         );
 
         titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
@@ -173,6 +186,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
     final javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
     final javax.swing.JButton proxySettingsButton = new javax.swing.JButton();
     final javax.swing.JButton removeButton = new javax.swing.JButton();
+    final javax.swing.JCheckBox savePasswordCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel tipLabel = new javax.swing.JLabel();
     final javax.swing.JLabel titleLabel = new javax.swing.JLabel();
     final javax.swing.JLabel tunnelCommandLabel = new javax.swing.JLabel();

@@ -38,23 +38,24 @@ public class RepositoryConnection {
     private String username;
     private String password;
     private String externalCommand;
-    
+    private boolean savePassword;
     private SVNUrl svnUrl;
     private SVNRevision svnRevision;
     
     public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.username, rc.password, rc.externalCommand);
+        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword);
     }
     
     public RepositoryConnection(String url) {
-        this(url, null, null, null);
+        this(url, null, null, null, false);
     }
             
-    public RepositoryConnection(String url, String username, String password, String externalCommand) {
+    public RepositoryConnection(String url, String username, String password, String externalCommand, boolean savePassword) {
         this.setUrl(url);
         this.setUsername(username);
         this.setPassword(password);
-        this.setExternalCommand(externalCommand);                
+        this.setExternalCommand(externalCommand);  
+        this.savePassword = savePassword;
     }
 
     public String getUrl() {
@@ -66,11 +67,15 @@ public class RepositoryConnection {
     }
 
     public String getPassword() {
-        return password == null ? "" : password ;
+        return password == null ? "" : password;
     }
 
     public String getExternalCommand() {
         return externalCommand == null ? "" : externalCommand;
+    }
+    
+    public boolean getSavePassword() {
+        return savePassword;
     }
     
     public SVNUrl getSvnUrl() throws MalformedURLException {
@@ -127,6 +132,10 @@ public class RepositoryConnection {
         this.externalCommand = externalCommand;
     }
 
+    void setSavePassword(boolean savePassword) {
+        this.savePassword = savePassword;
+    }
+    
     public String toString() {
         return url;
     }
@@ -196,12 +205,13 @@ public class RepositoryConnection {
         StringBuffer sb = new StringBuffer();        
         sb.append(url.toString());
         sb.append(RC_DELIMITER);
-        sb.append(rc.getUsername());
+        if(rc.getSavePassword()) sb.append(rc.getUsername());
         sb.append(RC_DELIMITER);
-        sb.append(Scrambler.getInstance().scramble(rc.getPassword()));
+        if(rc.getSavePassword()) sb.append(Scrambler.getInstance().scramble(rc.getPassword()));
         sb.append(RC_DELIMITER);
         sb.append(rc.getExternalCommand());
         sb.append(RC_DELIMITER);        
+        sb.append(rc.getSavePassword());
         sb.append(RC_DELIMITER);
         return sb.toString();
     }
@@ -213,7 +223,8 @@ public class RepositoryConnection {
         String username     = l > 1 && !fields[1].equals("") ? fields[1] : null;
         String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null;
         String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null;
-        return new RepositoryConnection(url, username, password, extCmd);        
+        boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
+        return new RepositoryConnection(url, username, password, extCmd, save);        
     }
     
 }

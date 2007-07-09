@@ -41,7 +41,8 @@ public class SvnModuleConfig {
     public static final String PROP_DEFAULT_VALUES          = "defaultValues";                              // NOI18N
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";                              // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
-            
+    public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
+    
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
 
@@ -51,6 +52,8 @@ public class SvnModuleConfig {
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
+        
+    private Map<String, String[]> urlCredentials;
     
     public static SvnModuleConfig getDefault() {
         return INSTANCE;
@@ -120,6 +123,14 @@ public class SvnModuleConfig {
         getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, bl);
     }
     
+    public boolean getSavePassword() {
+        return getPreferences().getBoolean(SAVE_PASSWORD, true);
+    }
+
+    public void setSavePassword(boolean bl) {
+        getPreferences().putBoolean(SAVE_PASSWORD, bl);
+    }
+    
     public RepositoryConnection getRepositoryConnection(String url) {
         List<RepositoryConnection> rcs = getRecentUrls();
         for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
@@ -141,7 +152,8 @@ public class SvnModuleConfig {
             if(rcOld.equals(rc)) {
                 Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
             }
-        }        
+        }
+        handleCredentials(rc);
         Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
     }    
 
@@ -152,6 +164,7 @@ public class SvnModuleConfig {
         for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
             idx++;
             RepositoryConnection rc = it.next();
+            handleCredentials(rc);            
             urls.add(RepositoryConnection.getString(rc));            
         }
         Preferences prefs = getPreferences();
@@ -164,6 +177,10 @@ public class SvnModuleConfig {
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
         for (Iterator<String> it = urls.iterator(); it.hasNext();) {
             RepositoryConnection rc = RepositoryConnection.parse(it.next());
+            if(getUrlCredentials().containsKey(rc.getUrl())) {
+                String[] creds = getUrlCredentials().get(rc.getUrl());                 
+                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword());
+            }
             ret.add(rc);
         }
         return ret;
@@ -265,4 +282,20 @@ public class SvnModuleConfig {
                         Pattern.compile(".*\\.ln"), // NOI18N
                     };
     }
+    
+    private void handleCredentials(RepositoryConnection rc) {
+        if(!rc.getSavePassword()) {
+            getUrlCredentials().put(rc.getUrl(), new String[]{rc.getUsername(), rc.getPassword()});
+        } else {
+            getUrlCredentials().remove(rc.getUrl());
+        }                      
+    }    
+    
+    private Map<String, String[]> getUrlCredentials() {
+        if(urlCredentials == null) {
+            urlCredentials =  new HashMap<String, String[]>();
+        }
+        return urlCredentials;
+    }    
+    
 }
