@@ -110,7 +110,7 @@ public class CodeResolver implements DesignDocumentAwareness {
                         for (CodeGenerator generator : result.allInstances ())
                             generator.validateModelForCodeGeneration (context, document);
 
-                    if (regenerateSourceCode  ||  switchedFromCodeToModel)
+                    if (switchedFromCodeToModel)
                         for (CodeGenerator generator : result.allInstances ())
                             generator.updateModelFromCode (context, document);
                 }
