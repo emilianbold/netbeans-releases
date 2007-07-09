@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -597,6 +597,8 @@ under Print Settings in the Options window)
 <mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog.html" />
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
+<!--CSH topic for Inspector window; also appears when pressing ? button in Properties window for Form component-->
+<mapID target="gui.component-inspector" url="pending.html" />
 
 <!-- Common palette ID-->
 <mapID target="CommonPalette" url="gui/csh/gui_palette_window.html" />
