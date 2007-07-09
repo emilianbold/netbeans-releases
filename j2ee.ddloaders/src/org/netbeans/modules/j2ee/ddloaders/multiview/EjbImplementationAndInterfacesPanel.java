@@ -19,22 +19,19 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.awt.Component;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
-import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import javax.swing.AbstractButton;
+import javax.swing.JTextField;
 
 /**
  * @author pfiala
@@ -87,8 +84,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         getLocalHomeTextField().setDocument(localHomeDocument);
         getRemoteComponentTextField().setDocument(remoteComponentDocument);
         getRemoteHomeTextField().setDocument(remoteHomeDocument);
-        final JButton moveClassButton = getMoveClassButton();
-        final JButton renameClassButton = getRenameClassButton();
 
         scheduleRefreshView();
 
@@ -97,78 +92,13 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 Component component = e.getComponent();
                 if (component instanceof JTextField) {
                     className = ((JTextField) component).getText().trim();
-                    boolean enabled = className.length() > 0;
-                    moveClassButton.setEnabled(enabled);
-                    renameClassButton.setEnabled(enabled);
-                } else {
-                    boolean isRefactorButton = component == moveClassButton || component == renameClassButton;
-                    if (moveClassButton.isEnabled()) {
-                        moveClassButton.setEnabled(isRefactorButton);
-                    }
-                    if (renameClassButton.isEnabled()) {
-                        renameClassButton.setEnabled(isRefactorButton);
-                    }
                 }
             }
         };
         addFocusListener(focusListener);
 
-        moveClassButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-//                Utils.activateMoveClassUI(className);
-                moveClassButton.setEnabled(false);
-                renameClassButton.setEnabled(false);
-            }
-        });
-        renameClassButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-//                Utils.activateRenameClassUI(className);
-                moveClassButton.setEnabled(false);
-                renameClassButton.setEnabled(false);
-            }
-        });
-
         XmlMultiViewDataSynchronizer synchronizer =
                 ((EjbJarMultiViewDataObject) sectionNodeView.getDataObject()).getModelSynchronizer();
-        addRefreshable(new ItemCheckBoxHelper(synchronizer, getLocalInterfaceCheckBox()) {
-            public boolean getItemValue() {
-                boolean value = helper.getLocal() != null;
-                getLocalComponentLinkButton().setVisible(value);
-                getLocalHomeLinkButton().setVisible(value);
-                return value;
-            }
-
-            public void setItemValue(boolean value) {
-                if (value != getItemValue()) {
-                    if (value) {
-                        addInterfaces(true);
-                    } else {
-                        removeInterfaces(true);
-                    }
-                    refresh();
-                }
-            }
-        });
-
-        addRefreshable(new ItemCheckBoxHelper(synchronizer, getRemoteInterfaceCheckBox()) {
-            public boolean getItemValue() {
-                boolean value = helper.getRemote() != null;
-                getRemoteComponentLinkButton().setVisible(value);
-                getRemoteHomeLinkButton().setVisible(value);
-                return value;
-            }
-
-            public void setItemValue(boolean value) {
-                if (value != getItemValue()) {
-                    if (value) {
-                        addInterfaces(false);
-                    } else {
-                        removeInterfaces(false);
-                    }
-                    refresh();
-                }
-            }
-        });
 
         initLinkButton(getBeanClassLinkButton(), LINK_BEAN);
         initLinkButton(getLocalComponentLinkButton(), LINK_LOCAL);
@@ -228,13 +158,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         localHomeDocument.init();
         remoteComponentDocument.init();
         remoteHomeDocument.init();
-
-        String localComponent = helper.getLocal();
-        boolean isLocal = localComponent != null;
-        getLocalInterfaceCheckBox().setSelected(isLocal);
-        String remoteComponent = helper.getRemote();
-        boolean isRemote = remoteComponent != null;
-        getRemoteInterfaceCheckBox().setSelected(isRemote);
     }
 
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
