@@ -13,18 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.tomcat5.customizer;
 
-import java.awt.Font;
-import javax.accessibility.AccessibleContext;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
+import org.openide.awt.Mnemonics;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
+import javax.swing.JTextField;
+import javax.swing.JSpinner;
+import javax.accessibility.AccessibleContext;
+import java.awt.Font;
 
 /**
  * Customizer general (connection) tab.
@@ -32,35 +34,33 @@ import org.openide.util.NbBundle;
  * @author  sherold
  */
 public class CustomizerGeneral extends javax.swing.JPanel {
-
-    private CustomizerDataSupport custData;
+    
+    private final CustomizerDataSupport custData;
+    private boolean passwordVisible;
+    private char originalEchoChar;
+    private Font originalFont;
 
     /** Creates new form CustomizerGeneral */
     public CustomizerGeneral(CustomizerDataSupport custData) {
-        this.custData = custData;
+        this.custData = custData;        
         initComponents();
-        
-        JTextField jSpinner1TextField = ((JSpinner.NumberEditor)jSpinner1.getEditor()).getTextField();
-        AccessibleContext ac = jSpinner1TextField.getAccessibleContext();
+
+        JTextField serverPortTextField = ((JSpinner.NumberEditor) serverPortSpinner.getEditor()).getTextField();
+        AccessibleContext ac = serverPortTextField.getAccessibleContext();
         ac.setAccessibleName(NbBundle.getMessage(CustomizerGeneral.class, "ASCN_ServerPort"));
         ac.setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ASCD_ServerPort"));
-        jLabel1.setLabelFor(jSpinner1TextField);
         
-        JTextField jSpinner2TextField = ((JSpinner.NumberEditor)jSpinner2.getEditor()).getTextField();
-        ac = jSpinner2TextField.getAccessibleContext();
+        JTextField shutdownPortTextField = ((JSpinner.NumberEditor) shutdownPortSpinner.getEditor()).getTextField();
+        ac = shutdownPortTextField.getAccessibleContext();
         ac.setAccessibleName(NbBundle.getMessage(CustomizerGeneral.class, "ASCN_ShutdownPort"));
         ac.setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ASCD_ShutdownPort"));
-        jLabel2.setLabelFor(jSpinner2TextField);
         
         // work-around for jspinner incorrect fonts
         Font font = usernameTextField.getFont();
-        jSpinner1TextField.setFont(font);
-        jSpinner2TextField.setFont(font);
-        
-        // mnemonics generated in the guarded block do not work
-        monitorCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNE_Monitor").charAt(0));
+        serverPortSpinner.setFont(font);
+        shutdownPortSpinner.setFont(font);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -68,217 +68,190 @@ public class CustomizerGeneral extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        homeTextField = new javax.swing.JTextField();
-        baseTextField = new javax.swing.JTextField();
         homeLabel = new javax.swing.JLabel();
+        homeTextField = new javax.swing.JTextField();
         baseLabel = new javax.swing.JLabel();
-        usernameTextField = new javax.swing.JTextField();
+        baseTextField = new javax.swing.JTextField();
+        credentialsLabel = new javax.swing.JLabel();
         usernameLabel = new javax.swing.JLabel();
+        usernameTextField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
-        monitorCheckBox = new javax.swing.JCheckBox();
         passwordField = new javax.swing.JPasswordField();
-        roleLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
-        jSpinner2 = new javax.swing.JSpinner();
+        showButton = new javax.swing.JButton();
+        serverPortLabel = new javax.swing.JLabel();
+        serverPortSpinner = new javax.swing.JSpinner();
+        shutdownPortLabel = new javax.swing.JLabel();
+        shutdownPortSpinner = new javax.swing.JSpinner();
+        monitorCheckBox = new javax.swing.JCheckBox();
+        NoteChangesLabel = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(homeLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.homeLabel.text")); // NOI18N
 
         homeTextField.setColumns(30);
         homeTextField.setDocument(custData.getCatalinaHomeModel());
         homeTextField.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
-        add(homeTextField, gridBagConstraints);
-        homeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_Home"));
-        homeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_Home"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(baseLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.baseLabel.text")); // NOI18N
 
         baseTextField.setColumns(30);
         baseTextField.setDocument(custData.getCatalinaBaseModel());
         baseTextField.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
-        add(baseTextField, gridBagConstraints);
-        baseTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_Base"));
-        baseTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_Base"));
 
-        homeLabel.setLabelFor(homeTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(homeLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Catalina_home"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(homeLabel, gridBagConstraints);
-        homeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_Home"));
-        homeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_Home"));
+        org.openide.awt.Mnemonics.setLocalizedText(credentialsLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.text")); // NOI18N
+        credentialsLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.toolTipText")); // NOI18N
 
-        baseLabel.setLabelFor(baseTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(baseLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Catalina_Base"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(baseLabel, gridBagConstraints);
-        baseLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_Base"));
-        baseLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_Base"));
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.usernameLabel.text")); // NOI18N
+        usernameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.usernameLabel.toolTipText")); // NOI18N
 
         usernameTextField.setColumns(15);
         usernameTextField.setDocument(custData.getUsernameModel());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(usernameTextField, gridBagConstraints);
-        usernameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Username"));
-        usernameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Username"));
 
-        usernameLabel.setLabelFor(usernameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Username"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
-        add(usernameLabel, gridBagConstraints);
-        usernameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Username"));
-        usernameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Username"));
-
-        passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Password"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(passwordLabel, gridBagConstraints);
-        passwordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Password"));
-        passwordLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Password"));
-
-        monitorCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNE_Monitor").charAt(0));
-        monitorCheckBox.setText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Monitor"));
-        monitorCheckBox.setModel(custData.getMonitorModel());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
-        add(monitorCheckBox, gridBagConstraints);
-        monitorCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_HttpMonitor"));
-        monitorCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_HttpMonitor"));
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.passwordLabel.text")); // NOI18N
+        passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.passwordLabel.toolTipText")); // NOI18N
 
         passwordField.setColumns(15);
         passwordField.setDocument(custData.getPasswordModel());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        add(passwordField, gridBagConstraints);
-        passwordField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Password"));
-        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Password"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(roleLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_ManagerRole"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 12);
-        add(roleLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(showButton, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.showButton.text")); // NOI18N
+        showButton.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.showButton.toolTipText")); // NOI18N
+        showButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showButtonActionPerformed(evt);
+            }
+        });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_ServerPort"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
-        add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_ServerPort"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_ServerPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(serverPortLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.serverPortLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_ShutdownPort"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_ShutdownPort"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_ShutdownPort"));
+        serverPortSpinner.setModel(custData.getServerPortModel());
+        serverPortSpinner.setEditor(new JSpinner.NumberEditor(serverPortSpinner, "#"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_NoteChangesTakeAffect"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 0);
-        add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCN_Note"));
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ASCD_Note"));
+        org.openide.awt.Mnemonics.setLocalizedText(shutdownPortLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.shutdownPortLabel.text")); // NOI18N
 
-        jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
-        jSpinner1.setModel(custData.getServerPortModel());
-        jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(jSpinner1, gridBagConstraints);
+        shutdownPortSpinner.setModel(custData.getShutdownPortModel());
+        shutdownPortSpinner.setEditor(new JSpinner.NumberEditor(shutdownPortSpinner, "#"));
 
-        jSpinner2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jSpinner2.setModel(custData.getShutdownPortModel());
-        jSpinner2.setEditor(new JSpinner.NumberEditor(jSpinner2, "#"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        add(jSpinner2, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(monitorCheckBox, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.monitorCheckBox.text")); // NOI18N
+        monitorCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        monitorCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        monitorCheckBox.setModel(custData.getMonitorModel());
 
+        org.openide.awt.Mnemonics.setLocalizedText(NoteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.NoteChangesLabel.text")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(homeLabel)
+                            .add(baseLabel)
+                            .add(serverPortLabel)
+                            .add(shutdownPortLabel)
+                            .add(usernameLabel)
+                            .add(passwordLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(shutdownPortSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(serverPortSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(baseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .add(homeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, usernameTextField, 0, 0, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(showButton)
+                                .add(59, 59, 59))))
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(credentialsLabel))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(monitorCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(NoteChangesLabel)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(homeLabel)
+                    .add(homeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(baseLabel)
+                    .add(baseTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(25, 25, 25)
+                .add(credentialsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(usernameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(usernameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(showButton)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(passwordLabel))
+                .add(14, 14, 14)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(serverPortLabel)
+                    .add(serverPortSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(shutdownPortLabel)
+                    .add(shutdownPortSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(15, 15, 15)
+                .add(monitorCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 31, Short.MAX_VALUE)
+                .add(NoteChangesLabel)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+private void showButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showButtonActionPerformed
+    if (!passwordVisible) {
+        passwordVisible = true;
+        originalFont = passwordField.getFont();
+        passwordField.setFont(usernameTextField.getFont());
+        originalEchoChar = passwordField.getEchoChar();
+        passwordField.setEchoChar((char) 0);
+        Mnemonics.setLocalizedText(showButton, NbBundle.getMessage(CustomizerGeneral.class, "LBL_ShowButtonHide"));
+        showButton.setToolTipText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_ShowButtonHide_ToolTip"));
+    } else {
+        passwordVisible = false;
+        passwordField.setFont(originalFont);
+        passwordField.setEchoChar(originalEchoChar);
+        Mnemonics.setLocalizedText(showButton, NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.showButton.text"));
+        showButton.setToolTipText(NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.showButton.toolTipText"));
+        
+    }
+}//GEN-LAST:event_showButtonActionPerformed
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel NoteChangesLabel;
     private javax.swing.JLabel baseLabel;
     private javax.swing.JTextField baseTextField;
+    private javax.swing.JLabel credentialsLabel;
     private javax.swing.JLabel homeLabel;
     private javax.swing.JTextField homeTextField;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JSpinner jSpinner2;
     private javax.swing.JCheckBox monitorCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JLabel roleLabel;
+    private javax.swing.JLabel serverPortLabel;
+    private javax.swing.JSpinner serverPortSpinner;
+    private javax.swing.JButton showButton;
+    private javax.swing.JLabel shutdownPortLabel;
+    private javax.swing.JSpinner shutdownPortSpinner;
     private javax.swing.JLabel usernameLabel;
     private javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
-    
+
 }

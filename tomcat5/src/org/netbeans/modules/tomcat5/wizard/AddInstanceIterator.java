@@ -28,8 +28,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
@@ -41,6 +43,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.tomcat5.ide.*;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.netbeans.modules.tomcat5.util.TomcatUsers;
 
 /**
  * Iterator for the add Tomcat server wizard.
@@ -55,7 +58,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
     private final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
     
     private final static String[] CONTENT_DATA = new String[] { 
-        NbBundle.getMessage(AddInstanceIterator.class, "LBL_InstanceProperties") };
+        NbBundle.getMessage(AddInstanceIterator.class, "LBL_InstallationAndLoginDetails") };
 
     private WizardDescriptor wizard;
     private InstallPanel panel;
@@ -99,8 +102,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
         String username = panel.getVisual().getUsername();
         String password = panel.getVisual().getPassword();
         try {
-            InstanceProperties ip = InstanceProperties.createInstanceProperties(
-                    url, username, password, displayName);
+            InstanceProperties ip = InstanceProperties.createInstanceProperties(url, username, password, displayName);
             Properties prop = panel.getVisual().getProperties ();
             Enumeration en = prop.propertyNames ();
             while (en.hasMoreElements ()) {
@@ -109,11 +111,38 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
             }
             ip.setProperty(TomcatProperties.PROP_RUNNING_CHECK_TIMEOUT,
                     Integer.toString(TomcatProperties.DEF_VALUE_RUNNING_CHECK_TIMEOUT));
-            
+
             result.add(ip);
             checkStartupScript(panel.getVisual().getHomeDir());
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
+
+            // TODO: refactor the ensureCatalinaBaseReady out of the TomcatManager class and let it throw exceptions 
+            //       when something goes wrong, so that we can provide reasonable feedback about failures to the user
+            TomcatManager manager = null;
+            try {
+                switch (panel.getVisual().getTomcatVersion()) {
+                    case TOMCAT_50:
+                        manager = (TomcatManager) TomcatFactory.create50().getDeploymentManager(url, username, password);
+                        break;
+                    case TOMCAT_55:
+                        manager = (TomcatManager) TomcatFactory.create55().getDeploymentManager(url, username, password);
+                        break;
+                    case TOMCAT_60:
+                    default:
+                        manager = (TomcatManager) TomcatFactory.create60().getDeploymentManager(url, username, password);
+                }
+            } catch (DeploymentManagerCreationException e) {
+                // this should never happen
+                Logger.getLogger(AddInstanceIterator.class.getName()).log(Level.SEVERE, null, e);
+                return result;
+            }
+            manager.ensureCatalinaBaseReady();
+            if (panel.getVisual().createUserEnabled()) {
+                File tomcatUsersXml = new File(manager.getTomcatProperties().getCatalinaDir(), "conf/tomcat-users.xml"); // NOI18N
+                TomcatUsers.createUser(tomcatUsersXml, username, password);
+            }
+        } catch (IOException e) {
+            // TODO: remove this catch as soon as the ensureCatalinaBaseReady method is refactored
+            Logger.getLogger(AddInstanceIterator.class.getName()).log(Level.WARNING, null, e);
         }
         return result;
     }
