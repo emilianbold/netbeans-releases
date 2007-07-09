@@ -1756,9 +1756,14 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                         // XXX Get rid of using source elements in the designer.
                         Element element = MarkupService.getSourceElementForElement(boxComponentRootElement);
 
-                        if ((element.getParentNode() != null) &&
-                                (element.getParentNode().getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) &&
-                                element.getParentNode().getNodeName().equals(HtmlTag.FSUBVIEW.name)) {
+                        if (element == null) {
+                            // XXX #109112 This box is not to move.
+                            continue;
+                        }
+                        
+                        if (element.getParentNode() != null
+                        && element.getParentNode().getNodeType() == org.w3c.dom.Node.ELEMENT_NODE
+                        && element.getParentNode().getNodeName().equals(HtmlTag.FSUBVIEW.name)) {
 //                            pb = parentBox;
                             parent = (Element)element.getParentNode();
 //                        } else if ((parentBox != null) && (parentBox.getDesignBean() != null)) {
