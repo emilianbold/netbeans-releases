@@ -122,14 +122,15 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
+                <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
+                <friend>org.netbeans.modules.websvc.editor.hints</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.jaxws.api</package>
