@@ -56,6 +56,12 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+                <dependency> <!-- Just a runtime dependency, because we're eager and have not much sense without JPDA Debugger UI. -->
+                    <code-name-base>org.netbeans.modules.debugger.jpda.ui</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.spi.viewmodel</code-name-base>
                     <build-prerequisite/>
