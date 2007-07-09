@@ -639,6 +639,14 @@ public final class SystemUtils {
         }
     }
     
+    public static void setPermissions(final File file, final int mode, final int change) throws IOException {
+        getNativeUtils().setPermissions(file, mode, change);
+    }
+    
+    public static int getPermissions(final File file) throws IOException {
+        return getNativeUtils().getPermissions(file);
+    }
+    
     public static Launcher createLauncher(LauncherProperties props, Progress progress) throws IOException {
         return createLauncher(props, getCurrentPlatform(), progress);
     }

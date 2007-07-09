@@ -152,7 +152,7 @@ public class FileEntry {
                     directory + StringUtils.LF +
                     empty + StringUtils.LF +
                     modified + StringUtils.LF +
-                    permissions + StringUtils.LF;
+                    Integer.toString(permissions, 8) + StringUtils.LF;
         } else {
             return
                     name + StringUtils.LF +
@@ -163,7 +163,7 @@ public class FileEntry {
                     packed + StringUtils.LF +
                     signed + StringUtils.LF +
                     modified + StringUtils.LF +
-                    permissions + StringUtils.LF;
+                    Integer.toString(permissions, 8) + StringUtils.LF;
         }
     }
     
@@ -173,7 +173,7 @@ public class FileEntry {
                     "type=\"directory\" " +
                     "empty=\"" + empty + "\" " +
                     "modified=\"" + modified + "\" " +
-                    "permissions=\"" + permissions + "\">" + name + "</entry>";
+                    "permissions=\"" + Integer.toString(permissions, 8) + "\">" + name + "</entry>";
         } else {
             return "<entry " +
                     "type=\"file\" " +
@@ -183,7 +183,7 @@ public class FileEntry {
                     "packed=\"" + packed + "\" " +
                     "signed=\"" + signed + "\" " +
                     "modified=\"" + modified + "\" " +
-                    "permissions=\"" + permissions + "\">" + name + "</entry>";
+                    "permissions=\"" + Integer.toString(permissions, 8) + "\">" + name + "</entry>";
         }
     }
     

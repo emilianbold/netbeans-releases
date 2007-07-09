@@ -357,6 +357,7 @@ public class WindowsNativeUtils extends NativeUtils {
             throw new NativeException("Can`t create URL shortcut", ex);
         }
     }
+    
     public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         File shortcutFile = getShortcutLocation(shortcut, locationType);
         
@@ -608,11 +609,23 @@ public class WindowsNativeUtils extends NativeUtils {
         // does nothing, as there is no such thing as execute permissions
     }
     
+    public void setPermissions(
+            final File file, 
+            final int mode, 
+            final int change) throws IOException {
+        // does nothing
+    }
+    
+    public int getPermissions(
+            final File file) throws IOException {
+        return 0;
+    }
+    
     public List<File> getFileSystemRoots() throws IOException {
         return Arrays.asList(File.listRoots());
     }
     
-// windows-specific operations //////////////////////////////////////////////////
+    // windows-specific operations //////////////////////////////////////////////////
     public WindowsRegistry getWindowsRegistry() {
         return registry;
     }
@@ -640,7 +653,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-// private //////////////////////////////////////////////////////////////////////
+    // private //////////////////////////////////////////////////////////////////////
     private String getVacantUninstallUid(final String baseUid) throws NativeException {
         String vacantUid = baseUid;
         
@@ -716,6 +729,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
         notifyAssociationChanged();
     }
+    
     public synchronized void removeFileAssociation(FileExtension ext, SystemApplication app, Properties props) throws NativeException {
         if (ext==null && isEmpty(ext.getName())) {
             return;
@@ -738,8 +752,6 @@ public class WindowsNativeUtils extends NativeUtils {
         }
         notifyAssociationChanged();
     }
-    
-    
     
     private void setExtensionDetails(FileExtensionKey ext, Properties props) throws NativeException {
         String name = ext.getDotName();
@@ -798,6 +810,7 @@ public class WindowsNativeUtils extends NativeUtils {
             setExtProperty(props, name, EXT_HKCU_FILEXT_PROPERTY, CREATED);
         }
     }
+    
     private void clearExtensionDetails(SystemApplicationKey app, FileExtensionKey fe, Properties props) throws NativeException {
         String name = fe.getDotName();
         String extKey = fe.getKey();
@@ -855,6 +868,7 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
     }
+    
     private void changeDefaultApplication(SystemApplicationKey app, FileExtensionKey fe, Properties props) throws NativeException {
         if(app.isUseByDefault()) {
             String name = fe.getDotName();
@@ -885,6 +899,7 @@ public class WindowsNativeUtils extends NativeUtils {
             
         }
     }
+    
     private void rollbackDefaultApplication(SystemApplicationKey app, FileExtensionKey fe, Properties props) throws NativeException {
         String property;
         if(app.isUseByDefault()) {
@@ -913,6 +928,7 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
     }
+    
     private void addToOpenWithList(SystemApplicationKey app, FileExtensionKey ext, Properties props) throws NativeException {
         String name = ext.getDotName();
         String extKey = ext.getKey();
@@ -934,6 +950,7 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
     }
+    
     private void removeFromOpenWithList(SystemApplicationKey app, FileExtensionKey ext, Properties props) throws NativeException {
         String property;
         String name = ext.getDotName();
@@ -995,6 +1012,7 @@ public class WindowsNativeUtils extends NativeUtils {
             }
         }
     }
+    
     private void addCurrentUserOpenWithList(String name, String extKey, String appName, Properties props) throws NativeException {
         boolean found = false;
         String freeValue = MRU_VALUES.substring(0,1);//=a
@@ -1088,6 +1106,7 @@ public class WindowsNativeUtils extends NativeUtils {
                     EMPTY_STRING, constructCommand(app));
         }
     }
+    
     private void unregisterApplication(SystemApplicationKey app, FileExtensionKey key, Properties props) throws NativeException {
         String name = key.getDotName();
         String property = getExtProperty(props, name, EXT_HKCR_APPLICATIONS_PROPERTY);
@@ -1206,20 +1225,24 @@ public class WindowsNativeUtils extends NativeUtils {
             return key;
         }
     }
+    
     private String getExtProperty(Properties props, String name) {
         return props.getProperty(EXTENSION_VALUE_NAME + name);
     }
+    
     private String getExtProperty(Properties props, String name, String prop) {
         return props.getProperty(EXTENSION_VALUE_NAME + name + DOT + prop);
     }
+    
     private void setExtProperty(Properties props, String name, String value) {
         props.setProperty(EXTENSION_VALUE_NAME + name, value);
     }
+    
     private void setExtProperty(Properties props, String name, String prop, String value) {
         props.setProperty(EXTENSION_VALUE_NAME + name + DOT + prop, value);
     }
     
-// native declarations //////////////////////////////////////////////////////////
+    // native declarations //////////////////////////////////////////////////////////
     private native boolean isCurrentUserAdmin0();
     
     private native long getFreeSpace0(String string);

@@ -55,6 +55,7 @@ import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.NativeUtils;
 
 /**
  *
@@ -1504,6 +1505,11 @@ public final class FileUtils {
                 }
                 
                 listEntryFile.setLastModified(listEntry.getLastModified());
+                
+                SystemUtils.setPermissions(
+                        listEntry.getFile(), 
+                        listEntry.getPermissions(), 
+                        NativeUtils.FA_MODE_SET);
             }
             
             newList.add(listEntry);

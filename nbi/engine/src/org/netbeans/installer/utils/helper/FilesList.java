@@ -298,7 +298,7 @@ public class FilesList implements Iterable<FileEntry> {
             if (directory) {
                 final boolean empty = Boolean.parseBoolean(reader.readLine());
                 final long modified = Long.parseLong(reader.readLine());
-                final int permissions = Integer.parseInt(reader.readLine());
+                final int permissions = Integer.parseInt(reader.readLine(), 8);
                 
                 return new FileEntry(
                         file,
@@ -312,7 +312,7 @@ public class FilesList implements Iterable<FileEntry> {
                 final boolean packed = Boolean.parseBoolean(reader.readLine());
                 final boolean signed = Boolean.parseBoolean(reader.readLine());
                 final long modified = Long.parseLong(reader.readLine());
-                final int permissions = Integer.parseInt(reader.readLine());
+                final int permissions = Integer.parseInt(reader.readLine(), 8);
                 
                 return new FileEntry(
                         file,
@@ -426,12 +426,12 @@ public class FilesList implements Iterable<FileEntry> {
                     }
                     
                     modified = Long.parseLong(attributes.getValue("modified"));
-                    permissions = 0;
+                    permissions = Integer.parseInt(attributes.getValue("permissions"), 8);
                 } else {
                     directory = true;
                     empty = Boolean.parseBoolean(attributes.getValue("empty"));
-                    modified = 0;
-                    permissions = 0;
+                    modified = Long.parseLong(attributes.getValue("modified"));
+                    permissions = Integer.parseInt(attributes.getValue("permissions"), 8);
                 }
             } else {
                 entryElement = false;

@@ -67,15 +67,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //}
         
         /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-            
-            SystemUtils.correctFilesPermissions(location);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.files.permissions"), // NOI18N
-                    e);
-        }
+//        try {
+//            progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
+//            
+//            SystemUtils.correctFilesPermissions(location);
+//        } catch (IOException e) {
+//            throw new InstallationException(
+//                    getString("CL.install.error.files.permissions"), // NOI18N
+//                    e);
+//        }
         
         /////////////////////////////////////////////////////////////////////////////
         // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration

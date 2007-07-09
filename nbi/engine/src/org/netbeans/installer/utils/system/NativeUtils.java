@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
@@ -151,6 +150,14 @@ public abstract class NativeUtils {
     
     public abstract void correctFilesPermissions(File parent) throws IOException;
     
+    public abstract void setPermissions(
+            final File file, 
+            final int mode, 
+            final int change) throws IOException;
+    
+    public abstract int getPermissions(
+            final File file) throws IOException;
+    
     public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         return true;
     }
@@ -235,4 +242,8 @@ public abstract class NativeUtils {
     public boolean isDeletingAllowed(File file) {
         return !(forbiddenDeletingFiles.contains(file));
     }
+    
+    public final  static int FA_MODE_SET = 1;
+    public final  static int FA_MODE_ADD = 2;
+    public final  static int FA_MODE_REMOVE = 4;        
 }

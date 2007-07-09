@@ -137,20 +137,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //}
         
         /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-            
-            SystemUtils.correctFilesPermissions(binSubdir);
-            SystemUtils.correctFilesPermissions(etcSubdir);
-            SystemUtils.correctFilesPermissions(platformCluster);
-            SystemUtils.correctFilesPermissions(nbCluster);
-            SystemUtils.correctFilesPermissions(ideCluster);
-            SystemUtils.correctFilesPermissions(xmlCluster);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.files.permissions"), // NOI18N
-                    e);
-        }
+        //try {
+        //    progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
+        //
+        //    SystemUtils.correctFilesPermissions(binSubdir);
+        //    SystemUtils.correctFilesPermissions(etcSubdir);
+        //    SystemUtils.correctFilesPermissions(platformCluster);
+        //    SystemUtils.correctFilesPermissions(nbCluster);
+        //    SystemUtils.correctFilesPermissions(ideCluster);
+        //    SystemUtils.correctFilesPermissions(xmlCluster);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.files.permissions"), // NOI18N
+        //            e);
+        //}
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.logIndent(

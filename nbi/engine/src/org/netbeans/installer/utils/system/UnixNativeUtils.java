@@ -381,8 +381,11 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public void setPermissions(File file, int mode, int change) throws IOException {
+        LogManager.log("setting permissions " + Integer.toString(mode, 8) + " on " + file);
+        
         setPermissions0(file.getAbsolutePath(), mode, change);
     }
+    
     public int getPermissions(File file) throws IOException {
         return getPermissions0(file.getAbsolutePath());
     }
@@ -584,40 +587,16 @@ public abstract class UnixNativeUtils extends NativeUtils {
             throw (IOException) ioException.initCause(e);
         }
     }
-    
-    public class FileAccessMode {
-        /** Read by user */
-        public static final int RU = 0400;
-        /** Write by user */
-        public static final int WU = 0200;
-        /** Execute by user */
-        public static final int EU = 0100;
-        
-        /** Read by group */
-        public static final int RG = 040;
-        /** Write by group */
-        public static final int WG = 020;
-        /** Execute by group */
-        public static final int EG = 010;
-        
-        /** Read by others */
-        public static final int RO = 04;
-        /** Write by others */
-        public static final int WO = 02;
-        /** Execute by others */
-        public static final int EO = 01;
-        
-    }
-    
-    public final  static int FA_MODE_SET = 1;
-    public final  static int FA_MODE_ADD = 2;
-    public final  static int FA_MODE_REMOVE = 4;        
      
     // native declarations //////////////////////////////////////////////////////////
     private native long getFreeSpace0(String s);
+    
     private native void setPermissions0(String path, int mode, int change);
+    
     private native int getPermissions0(String path);
     
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
     private class UnixProcessOnExitCleanerHandler extends ProcessOnExitCleanerHandler {
         public UnixProcessOnExitCleanerHandler(String cleanerFileName) {
             super(cleanerFileName);
@@ -638,6 +617,31 @@ public abstract class UnixNativeUtils extends NativeUtils {
             FileUtils.writeStringList(listFile, newList);
         }
     }
+    
+    public static class FileAccessMode {
+        /** Read by user */
+        public static final int RU = 0400;
+        /** Write by user */
+        public static final int WU = 0200;
+        /** Execute by user */
+        public static final int EU = 0100;
+        
+        /** Read by group */
+        public static final int RG = 040;
+        /** Write by group */
+        public static final int WG = 020;
+        /** Execute by group */
+        public static final int EG = 010;
+        
+        /** Read by others */
+        public static final int RO = 04;
+        /** Write by others */
+        public static final int WO = 02;
+        /** Execute by others */
+        public static final int EO = 01;
+    }
+    
+    @Override
     protected void initializeForbiddenFiles(String ... files) {
         super.initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_UNIX);
         super.initializeForbiddenFiles(files);

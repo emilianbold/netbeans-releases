@@ -249,7 +249,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         new File(directory, JDIC_LIB_WINDOWS));
                 map.put(JDIC_STUB_LIB_TOKEN, 
                         new File(directory, JDIC_STUB_LIB_WINDOWS));
-            } else if(SystemUtils.isLinux()) {
+            } else if (SystemUtils.isLinux()) {
                 map.put(JDIC_LIB_TOKEN, 
                         new File(directory, JDIC_LIB_LINUX));
                 map.put(JDIC_STUB_LIB_TOKEN,
@@ -259,7 +259,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         new File(directory, JDIC_LIB_MACOSX));
                 map.put(JDIC_STUB_LIB_TOKEN,
                         new File(directory, JDIC_STUB_LIB_MACOSX));
-            } else if(SystemUtils.isSolaris()) {
+            } else if (SystemUtils.isSolaris()) {
                 if(SystemUtils.getCurrentPlatform().
                         isCompatibleWith(Platform.SOLARIS_SPARC)) {
                     map.put(JDIC_LIB_TOKEN,
@@ -310,8 +310,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-            
-            SystemUtils.correctFilesPermissions(directory);
+        
+            SystemUtils.correctFilesPermissions(
+                    new File(directory, "bin"));
+            SystemUtils.correctFilesPermissions(
+                    new File(directory, "imq/bin"));
+            SystemUtils.correctFilesPermissions(
+                    new File(directory, "updatecenter/bin"));
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.files.permissions"), // NOI18N

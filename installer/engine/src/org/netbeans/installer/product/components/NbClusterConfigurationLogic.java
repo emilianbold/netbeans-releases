@@ -164,22 +164,22 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         //}
         
         // corrent permisions on executable files ///////////////////////////////////
-        for (String clusterName: clusterNames) {
-            final File cluster = new File(installLocation, clusterName);
-            
-            try {
-                progress.setDetail(ResourceUtils.getString(
-                        NbClusterConfigurationLogic.class,
-                        "NCCL.install.files.permissions")); // NOI18N
-                
-                SystemUtils.correctFilesPermissions(cluster);
-            } catch (IOException e) {
-                throw new InstallationException(ResourceUtils.getString(
-                        NbClusterConfigurationLogic.class,
-                        "NCCL.install.error.files.permissions"), // NOI18N
-                        e);
-            }
-        }
+        //for (String clusterName: clusterNames) {
+        //    final File cluster = new File(installLocation, clusterName);
+        //
+        //    try {
+        //        progress.setDetail(ResourceUtils.getString(
+        //                NbClusterConfigurationLogic.class,
+        //                "NCCL.install.files.permissions")); // NOI18N
+        //
+        //        SystemUtils.correctFilesPermissions(cluster);
+        //    } catch (IOException e) {
+        //        throw new InstallationException(ResourceUtils.getString(
+        //                NbClusterConfigurationLogic.class,
+        //                "NCCL.install.error.files.permissions"), // NOI18N
+        //                e);
+        //    }
+        //}
         
     }
     
