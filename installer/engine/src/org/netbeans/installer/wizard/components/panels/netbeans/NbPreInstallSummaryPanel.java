@@ -104,7 +104,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     
     @Override
     public void initialize() {
-        if (Registry.getInstance().getProductsToInstall().size() > 0) {
+        final List<Product> toInstall = 
+                Registry.getInstance().getProductsToInstall();
+        
+        if (toInstall.size() > 0) {
             setProperty(NEXT_BUTTON_TEXT_PROPERTY, DEFAULT_NEXT_BUTTON_TEXT);
             setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
         } else {

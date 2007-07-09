@@ -31,6 +31,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
 import org.netbeans.installer.wizard.components.actions.CreateNativeLauncherAction;
@@ -88,8 +89,8 @@ public class MainSequence extends WizardSequence {
     }
     
     public void executeForward() {
-        final Registry      registry    = Registry.getInstance();
-        final List<Product> toInstall   = registry.getProductsToInstall();
+        final Registry registry = Registry.getInstance();
+        final List<Product> toInstall = registry.getProductsToInstall();
         final List<Product> toUninstall = registry.getProductsToUninstall();
         
         // remove all current children (if there are any), as the components
@@ -130,6 +131,33 @@ public class MainSequence extends WizardSequence {
             }
             
             addChild(nbPostInstallSummaryPanel);
+            
+            StringBuilder list = new StringBuilder();
+            for (Product product: toInstall) {
+                list.append(product.getUid() + "," + product.getVersion() + ";");
+            }
+            System.setProperty(
+                    LIST_OF_PRODUCTS_TO_INSTALL_PROPERTY, 
+                    list.toString());
+            
+            list = new StringBuilder();
+            for (Product product: toUninstall) {
+                list.append(product.getUid() + "," + product.getVersion() + ";");
+            }
+            System.setProperty(
+                    LIST_OF_PRODUCTS_TO_UNINSTALL_PROPERTY, 
+                    list.toString());
+            
+            list = new StringBuilder();
+            for (Product product: toInstall) {
+                for (WizardComponent component: productSequences.get(product).getChildren()) {
+                    list.append(component.getClass().getName() + ";");
+                }
+            }
+            System.setProperty(
+                    PRODUCTS_PANEL_FLOW_PROPERTY, 
+                    list.toString());
+            
             break;
         case CREATE_BUNDLE:
             addChild(preCreateBundleSummaryPanel);
@@ -165,4 +193,13 @@ public class MainSequence extends WizardSequence {
             ResourceUtils.getString(
             MainSequence.class, 
             "MS.IA.description"); // NOI18N
+    
+    public static final String LIST_OF_PRODUCTS_TO_INSTALL_PROPERTY = 
+            "nbi.products.to.install"; // NOI18N
+    
+    public static final String LIST_OF_PRODUCTS_TO_UNINSTALL_PROPERTY = 
+            "nbi.products.to.uninstall"; // NOI18N
+    
+    public static final String PRODUCTS_PANEL_FLOW_PROPERTY = 
+            "nbi.products.panel.flow"; // NOI18N
 }
