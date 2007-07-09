@@ -84,7 +84,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </folder>
 -->
             <folder name="explorer">
-                <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref"/>
+                <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref">
+                <attr name="position" intvalue="2000"/>
+                </file>
             </folder>
         </folder>
 
