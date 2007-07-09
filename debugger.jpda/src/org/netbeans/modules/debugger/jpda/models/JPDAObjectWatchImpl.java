@@ -184,7 +184,7 @@ ObjectVariable {
     public JPDAObjectWatchImpl clone() {
         JPDAObjectWatchImpl clon;
         if (exceptionDescription == null) {
-            clon = new JPDAObjectWatchImpl(getDebugger(), watch, (ObjectReference) getJDIValue());
+            clon = new JPDAObjectWatchImpl(getDebugger(), watch, getJDIValue());
         } else {
             clon = new JPDAObjectWatchImpl(getDebugger(), watch, exceptionDescription);
         }
