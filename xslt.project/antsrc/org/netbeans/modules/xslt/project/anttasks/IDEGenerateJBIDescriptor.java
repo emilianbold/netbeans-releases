@@ -19,16 +19,8 @@
 package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -36,35 +28,12 @@ import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 
-import java.lang.reflect.Method;
 import java.util.StringTokenizer;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDescType;
 
 import org.netbeans.modules.xslt.project.XsltproConstants;
-import org.netbeans.modules.xslt.project.anttasks.jbi.ServiceEntry;
-import org.netbeans.modules.xslt.tmap.model.xsltmap.XmlUtil;
-import org.netbeans.modules.xslt.tmap.model.xsltmap.XsltMapConst;
-import org.netbeans.modules.xslt.tmap.util.Util;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import javax.xml.namespace.QName;
-import org.netbeans.modules.xslt.project.anttasks.PackageCatalogArtifacts;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
-import org.netbeans.modules.xslt.tmap.model.api.Service;
-import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
-import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 
 /**
@@ -158,38 +127,10 @@ public class IDEGenerateJBIDescriptor extends org.apache.tools.ant.Task {
         if(this.mSourceDirectory == null) {
             throw new BuildException("No directory is set for source files.");
         }
-
-        File sourceDirectory = new File(this.mSourceDirectory);
-
-        //read project classpath
-        //TODO: refactor this to use wsdl classpath
-        List<File> projectDirs = new ArrayList<File>();
-        if(this.mProjectClassPath != null
-                && !this.mProjectClassPath.trim().equals("")
-                && !this.mProjectClassPath.trim().equals("${javac.classpath}")) {
-            StringTokenizer st = new StringTokenizer(this.mProjectClassPath, ";");
-            while (st.hasMoreTokens()) {
-                String spath = st.nextToken();
-                try {
-
-                    File sFile =  new File(sourceDirectory.getParentFile().getCanonicalPath() + File.separator + spath);
-
-                    File srcFolder = new File(sFile.getParentFile().getParentFile().getCanonicalFile(), "src");
-                    projectDirs.add(srcFolder);
-                } catch(Exception ex) {
-                    throw new BuildException("Failed to create File object for dependent project path "+ spath);
-                }
-            }
-        }
-
-        //find the owner project
-        if(sourceDirectory != null) {
-            List<File> srcList = new ArrayList<File>();
-            srcList.add(sourceDirectory);
-            CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
-            IDEJBIGenerator generator = new IDEJBIGenerator(projectDirs, srcList, mSourceDirectory, mBuildDirectory);
-            generator.generate();
-        }
+        
+        CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        AbstractJBIGenerator generator = new IDEJBIGenerator(mSourceDirectory, mBuildDirectory);
+        generator.generate();
 
     }
     

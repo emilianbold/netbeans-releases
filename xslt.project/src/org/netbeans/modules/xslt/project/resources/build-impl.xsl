@@ -430,6 +430,8 @@ is divided into following sections:
                     </fileset>
                     
                     <fileset dir="${{build.dir}}/dependentProjectFiles">
+                        <include name="*.xslt" />
+                        <include name="*.xsl" />
                         <include name="*.wsdl" />
                         <include name="*.xsd" />
                     </fileset>
@@ -714,7 +716,7 @@ to simulate
                             <xsl:value-of select="$filetypes"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="'**/*.wsdl,**/*.xsd'"/>
+                            <xsl:value-of select="'**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd'"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>

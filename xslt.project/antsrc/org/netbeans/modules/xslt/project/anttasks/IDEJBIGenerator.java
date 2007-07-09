@@ -19,23 +19,34 @@
 package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
+import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 
 /**
  *
  * @author Vitaly Bychkov
  */
-public class IDEJBIGenerator extends JBIGenerator {
+public class IDEJBIGenerator extends AbstractJBIGenerator {
     private Logger logger = Logger.getLogger(IDEJBIGenerator.class.getName());    
 
-    public IDEJBIGenerator(List<File> depedentProjectDirs , List<File> sourceDirs, String srcDir, String buildDir) {
-        super(depedentProjectDirs, sourceDirs, srcDir, buildDir);
+    public IDEJBIGenerator(String srcDir, String buildDir) {
+        super(srcDir, buildDir);
     }
 
+    
+    @Override
+    protected <T extends ReferenceableWSDLComponent> T resolveReference(
+            NamedComponentReference<T> ref) 
+    {
+        if (ref == null) {
+            return null;
+        }
+        return ref.get();
+    }
     
     @Override
     protected TMapModel getTMapModel() {
