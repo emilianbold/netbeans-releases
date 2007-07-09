@@ -48,7 +48,7 @@ ObjectVariable {
     private String              exceptionDescription;
     
     
-    JPDAObjectWatchImpl (JPDADebuggerImpl debugger, Watch watch, ObjectReference v) {
+    JPDAObjectWatchImpl (JPDADebuggerImpl debugger, Watch watch, Value v) {
         super (
             debugger, 
             v, 

@@ -361,8 +361,8 @@ public class WatchesModel implements TreeModel {
                     JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, (PrimitiveValue) v, this);
                     jwi.addPropertyChangeListener(this);
                     jw = jwi;
-                } else {
-                    JPDAObjectWatchImpl jwi = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
+                } else { // ObjectReference or VoidValue
+                    JPDAObjectWatchImpl jwi = new JPDAObjectWatchImpl (debugger, w, v);
                     jwi.addPropertyChangeListener(this);
                     jw = jwi;
                 }
