@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -22,6 +22,7 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.SaveAsTemplateOperator.
@@ -98,6 +99,7 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
         String templatePath = Bundle.getString("org.netbeans.modules.java.project.Bundle", 
                                                "Templates/Classes")+
                               "|"+mainClass;
+        sato.setComparator(new DefaultStringComparator(true, true));
         sato.selectTemplate(templatePath);
         String selected = sato.tree().getSelectionPath().getLastPathComponent().toString();
         sato.close();
