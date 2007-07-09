@@ -27,14 +27,12 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.Random;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -48,8 +46,6 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -63,7 +59,7 @@ public class Utils {
     /** Default value for Sun App Server. If we test Tomcat, it is 
      * overridden in setTomcatProperties() method. */
     private static int socketPort = 9009;
-    public static final String SUN_APP_SERVER = "Sun";
+    public static final String SUN_APP_SERVER = "GlassFish";
     public static final String TOMCAT = "Tomcat";
     public static final String DEFAULT_SERVER = SUN_APP_SERVER;
     

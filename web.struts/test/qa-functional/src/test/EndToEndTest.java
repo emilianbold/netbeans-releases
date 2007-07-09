@@ -370,10 +370,10 @@ public class EndToEndTest extends JellyTestCase {
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
-            getLog("ServerLog").print(new OutputTabOperator("Sun").getText());
-            // stop Tomcat server
+            getLog("ServerLog").print(new OutputTabOperator("GlassFish").getText());
+            // stop server
             try {
-                J2eeServerNode serverNode = new J2eeServerNode("Sun");
+                J2eeServerNode serverNode = new J2eeServerNode("GlassFish");
                 serverNode.stop();
             } catch (JemmyException e) {
                 // ignore it
