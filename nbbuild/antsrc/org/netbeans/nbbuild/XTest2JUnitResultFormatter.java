@@ -106,7 +106,7 @@ public class XTest2JUnitResultFormatter extends Task {
             testcase.setAttribute("name", unitTestCase.getAttribute("name"));
             testcase.setAttribute("time", Float.toString(Float.valueOf(unitTestCase.getAttribute("time")) / 1000));
             String result = unitTestCase.getAttribute("result");
-            if (result.equals("fail") || result.equals("error")) {
+            if (result.equals("fail") || result.equals("error") || result.equals("unknown")) {
                 Element failure = (Element) testcase.appendChild(out.createElement(result.equals("fail") ? "failure" : "error"));
                 String message = unitTestCase.getAttribute("message");
                 if (message.length() > 0) {
@@ -123,8 +123,8 @@ public class XTest2JUnitResultFormatter extends Task {
                         failure.appendChild(out.createTextNode(stack));
                     }
                 }
-            } else {
-                assert result.equals("pass");
+            } else if (!result.equals("pass")) {
+                throw new IllegalArgumentException("Unexpected result attribute: '" + result + "'");
             }
         }
         // skip <system-out>, <system-err>, <properties>
