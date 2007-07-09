@@ -192,7 +192,6 @@ public class ServerChooserVisual extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -203,6 +202,7 @@ public class ServerChooserVisual extends javax.swing.JPanel {
         setName(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Name")); // NOI18N
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Server_mnem").charAt(0));
+        jLabel1.setLabelFor(serverListBox);
         jLabel1.setText(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Server")); // NOI18N
 
         jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_DisplayName_mnem").charAt(0));
@@ -222,6 +222,8 @@ public class ServerChooserVisual extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(serverListBox);
+        serverListBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServerChooserVisual.class, "A11Y_SCV_NAME_Server")); // NOI18N
+        serverListBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerChooserVisual.class, "A11Y_SCV_DESC_Server")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
