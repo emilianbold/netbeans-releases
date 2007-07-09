@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.lang.Object;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -39,8 +38,6 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import java.lang.*;
-import java.lang.Object;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.KeyStroke;
@@ -266,9 +263,9 @@ public class MapActionUtility {
             Object sourceObj = e.getSource();
             if( sourceObj instanceof PageFlowScene ){
                 PageFlowScene scene = (PageFlowScene)sourceObj;
-                List<PageFlowSceneElement> elements = new ArrayList(scene.getSelectedObjects());
+                List<Object> elements = new ArrayList<Object>(scene.getSelectedObjects());
                 if( elements.size() > 0 ) {
-                    PageFlowSceneElement selElement = elements.get(0);
+                    PageFlowSceneElement selElement = (PageFlowSceneElement)elements.get(0);
                     Pin selPin = null;
                     if( selElement instanceof Page ){
                         selPin = scene.getDefaultPin((Page)selElement);
@@ -337,7 +334,7 @@ public class MapActionUtility {
             Object sourceObj = e.getSource();
             if( sourceObj instanceof PageFlowScene ){
                 PageFlowScene scene = (PageFlowScene)sourceObj;
-                HashSet<? extends Object> selectedObjs = new HashSet(scene.getSelectedObjects());
+                Set<Object> selectedObjs = new HashSet<Object>(scene.getSelectedObjects());
                 
                 for( Object obj : selectedObjs ){
                     if( obj instanceof PageFlowSceneElement ){
