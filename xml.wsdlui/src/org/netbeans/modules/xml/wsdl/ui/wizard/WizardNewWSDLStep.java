@@ -20,25 +20,11 @@
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 import java.awt.Component;
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
-import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
-import org.netbeans.modules.xml.wsdl.ui.view.PortTypeConfigurationPanel;
 import org.openide.WizardDescriptor;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *

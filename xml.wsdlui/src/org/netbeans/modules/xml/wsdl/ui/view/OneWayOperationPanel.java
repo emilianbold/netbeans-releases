@@ -42,25 +42,27 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
  *
  * @author  radval
  */
-public class OneWayOperationPanel extends javax.swing.JPanel implements OperationConfigurationPanel.OperationConfiguration {
+public class OneWayOperationPanel extends javax.swing.JPanel implements OperationConfiguration {
     
     private Project mProject = null;
     private Document mCommonOperationTextFieldDocument;
     private Map<String, String> namespaceToPrefixMap = new HashMap<String, String>(); 
     private boolean mIsShowMessageComboBoxes = false;
     private WSDLModel mModel;
+    private boolean showPortType;
 
     /** Creates new form OperationConfigurationPanel 
      * @param project */
     public OneWayOperationPanel(Project project, 
                                 Document operationNameTextFieldDocument, 
                                 Map<String, String> namespaceToPrefixMap,
-                                boolean isShowMessageComboBoxes, WSDLModel model) {
+                                boolean isShowMessageComboBoxes, WSDLModel model, boolean showPortType) {
         this.mProject = project;
         this.mCommonOperationTextFieldDocument = operationNameTextFieldDocument;
         this.namespaceToPrefixMap = namespaceToPrefixMap;
         this.mIsShowMessageComboBoxes = isShowMessageComboBoxes;
         mModel = model;
+        this.showPortType = showPortType;
         initComponents();
         initGUI();
     }
@@ -80,6 +82,8 @@ public class OneWayOperationPanel extends javax.swing.JPanel implements Operatio
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        portTypeNameLabel = new javax.swing.JLabel();
+        portTypeNameTextField = new javax.swing.JTextField();
         OperationNameLabel = new javax.swing.JLabel();
         operationNameTextField = new javax.swing.JTextField();
         if(mCommonOperationTextFieldDocument != null) {
@@ -87,10 +91,14 @@ public class OneWayOperationPanel extends javax.swing.JPanel implements Operatio
         }
         operationTypeLabel = new javax.swing.JLabel();
         operationTypeComboBox = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
+        inputLabel = new javax.swing.JLabel();
+        inputPanel = new javax.swing.JPanel();
         inputMessagePartsConfigurationTable = new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap, mModel);
         inputMessageNameConfigurationPanel1 = new MessageNameConfigurationPanel(this.inputMessagePartsConfigurationTable);
+        inputMessagePartsConfigurationTable = inputMessagePartsConfigurationTable;
+
+        portTypeNameLabel.setLabelFor(portTypeNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(portTypeNameLabel, org.openide.util.NbBundle.getMessage(OneWayOperationPanel.class, "OneWayOperationPanel.portTypeNameLabel.text")); // NOI18N
 
         OperationNameLabel.setLabelFor(operationNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(OperationNameLabel, org.openide.util.NbBundle.getMessage(OneWayOperationPanel.class, "OneWayOperationPanel.OperationNameLabel.text")); // NOI18N
@@ -100,47 +108,39 @@ public class OneWayOperationPanel extends javax.swing.JPanel implements Operatio
 
         operationTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Request-Response Operation", "One-Way Operation" }));
 
-        jLabel1.setLabelFor(inputMessageNameConfigurationPanel1);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(OneWayOperationPanel.class, "OneWayOperationPanel.jLabel1.text")); // NOI18N
+        inputLabel.setLabelFor(inputMessageNameConfigurationPanel1);
+        org.openide.awt.Mnemonics.setLocalizedText(inputLabel, org.openide.util.NbBundle.getMessage(OneWayOperationPanel.class, "OneWayOperationPanel.inputLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(inputMessagePartsConfigurationTable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, Short.MAX_VALUE)
-            .add(inputMessageNameConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(inputMessageNameConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(inputMessagePartsConfigurationTable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(22, 22, 22))
-        );
+        inputPanel.setLayout(new javax.swing.BoxLayout(inputPanel, javax.swing.BoxLayout.Y_AXIS));
+        inputPanel.add(inputMessageNameConfigurationPanel1);
+        inputPanel.add(inputMessagePartsConfigurationTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(OperationNameLabel)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, operationTypeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(OperationNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(inputLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(operationTypeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(portTypeNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, operationTypeComboBox, 0, 344, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, operationNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(inputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                    .add(operationNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                    .add(operationTypeComboBox, 0, 404, Short.MAX_VALUE)
+                    .add(portTypeNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(portTypeNameLabel)
+                    .add(portTypeNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(OperationNameLabel)
                     .add(operationNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -148,14 +148,11 @@ public class OneWayOperationPanel extends javax.swing.JPanel implements Operatio
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(operationTypeLabel)
                     .add(operationTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(78, 78, 78))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addContainerGap())))
+                    .add(inputLabel)
+                    .add(inputPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -224,16 +221,32 @@ public class OneWayOperationPanel extends javax.swing.JPanel implements Operatio
         inputMessagePartsConfigurationTable.clearSelection();
         inputMessageNameConfigurationPanel1.setVisible(this.mIsShowMessageComboBoxes);
         if (mIsShowMessageComboBoxes) {
-            jLabel1.setLabelFor(inputMessageNameConfigurationPanel1);
+            inputLabel.setLabelFor(inputMessageNameConfigurationPanel1);
         } else {
-            jLabel1.setLabelFor(inputMessagePartsConfigurationTable);
+            inputLabel.setLabelFor(inputMessagePartsConfigurationTable);
         }
+        
+        portTypeNameLabel.setEnabled(showPortType);
+        portTypeNameTextField.setEnabled(showPortType);
+        portTypeNameLabel.setVisible(showPortType);
+        portTypeNameTextField.setVisible(showPortType);
     }
     
     public JTextField getOperationNameTextField() {
         return this.operationNameTextField;
     }
-        
+
+    public String getPortTypeName() {
+        return portTypeNameTextField.getText();
+    }
+
+    public JTextField getPortTypeNameTextField() {
+        return portTypeNameTextField;
+    }
+
+    public void setPortTypeName(String portTypeName) {
+        portTypeNameTextField.setText(portTypeName);
+    }
     
     public static void main(String[] args) {
         
@@ -252,13 +265,15 @@ public class OneWayOperationPanel extends javax.swing.JPanel implements Operatio
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel OperationNameLabel;
+    private javax.swing.JLabel inputLabel;
     private org.netbeans.modules.xml.wsdl.ui.view.MessageNameConfigurationPanel inputMessageNameConfigurationPanel1;
     private org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel inputMessagePartsConfigurationTable;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel inputPanel;
     private javax.swing.JTextField operationNameTextField;
     private javax.swing.JComboBox operationTypeComboBox;
     private javax.swing.JLabel operationTypeLabel;
+    private javax.swing.JLabel portTypeNameLabel;
+    private javax.swing.JTextField portTypeNameTextField;
     // End of variables declaration//GEN-END:variables
     
 }

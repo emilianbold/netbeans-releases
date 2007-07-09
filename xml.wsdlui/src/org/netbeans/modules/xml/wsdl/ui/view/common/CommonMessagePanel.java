@@ -26,7 +26,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.common;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Image;
 
 import javax.swing.ImageIcon;
@@ -48,7 +47,7 @@ public class CommonMessagePanel extends javax.swing.JPanel {
         if (nbErrorForeground == null) {
             nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
         }
-        nbWarningForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+        nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
         if (nbWarningForeground == null) {
             nbWarningForeground = new Color(51, 51, 51); // Label.foreground
         }
@@ -66,63 +65,75 @@ public class CommonMessagePanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        m_lblMessage = new javax.swing.JLabel();
 
-        m_lblMessage.setLabelFor(this);
-        m_lblMessage.setToolTipText(org.openide.util.NbBundle.getMessage(CommonMessagePanel.class, "CommonMessagePanel.m_lblMessage.toolTipText")); // NOI18N
-        m_lblMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommonMessagePanel.class, "CommonMessagePanel.m_lblMessage.AccessibleContext.accessibleName")); // NOI18N
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea2 = new javax.swing.JTextArea();
+
+        jScrollPane2.setBorder(null);
+
+        jTextArea2.setEditable(false);
+        jTextArea2.setFont(getFont());
+        jTextArea2.setLineWrap(true);
+        jTextArea2.setRows(2);
+        jTextArea2.setWrapStyleWord(true);
+        jTextArea2.setFocusable(false);
+        jTextArea2.setOpaque(false);
+        jScrollPane2.setViewportView(jTextArea2);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(m_lblMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(m_lblMessage)
+            .add(jLabel1)
+            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
+   
     public void setErrorMessage(String errorMsg) {
-        m_lblMessage.setText(errorMsg);
-        m_lblMessage.setForeground (nbErrorForeground);
-        m_lblMessage.repaint();
-        m_lblMessage.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif")));
+        jTextArea2.setText(errorMsg);
+        jTextArea2.setToolTipText(errorMsg);
+        jTextArea2.setForeground (nbErrorForeground);
+        jTextArea2.repaint();
+        jLabel1.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/common/resources/error.gif")));
+        jLabel1.setToolTipText(errorMsg);
         mValidState = false;
     }
     
     public void setWarningMessage(String warningMsg) {
-        m_lblMessage.setText(warningMsg);
-        m_lblMessage.setForeground (nbWarningForeground);
-        m_lblMessage.repaint();
+        jTextArea2.setText(warningMsg);
+        jTextArea2.setToolTipText(warningMsg);
+        jLabel1.setToolTipText(warningMsg);
+        jTextArea2.setForeground (nbWarningForeground);
+        jTextArea2.repaint();
         Image image = Utilities.loadImage ("org/netbeans/modules/xml/wsdl/ui/view/common/resources/warning.gif");
-        if (image == null) {
-            
-        }
-        m_lblMessage.setIcon(new ImageIcon (image));
+        jLabel1.setIcon(new ImageIcon (image));
         mValidState = true;
     }
     
     public void setMessage(String msg) {
-        m_lblMessage.setText(msg);
-        m_lblMessage.setIcon(null);
+        jTextArea2.setText(msg);
+        jTextArea2.setToolTipText(msg);
+        jLabel1.setIcon(null);
+        jLabel1.setToolTipText(msg);
         mValidState = true;
     }
     
     public boolean isStateValid() {
     	return mValidState;
     }
-    public void paint(Graphics g) {
-        super.paint(g);
-        //Graphics2D g2d = (Graphics2D)g;
-        
-        //g2d.drawLine(0, this.getHeight()-1, this.getWidth(), this.getHeight()-1);
-    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel m_lblMessage;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea jTextArea2;
     // End of variables declaration//GEN-END:variables
     
 }

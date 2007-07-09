@@ -203,6 +203,7 @@ public class AttributePanel extends javax.swing.JPanel {
             this.firePropertyChange(STATE_CHANGED,
                     false, true);
         }
+        
         return valid;
     }
     

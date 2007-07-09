@@ -42,7 +42,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
  *
  * @author  radval
  */
-public class NotificationOperationPanel extends javax.swing.JPanel implements OperationConfigurationPanel.OperationConfiguration {
+public class NotificationOperationPanel extends javax.swing.JPanel implements OperationConfiguration {
     
     private Project mProject = null;
     private Document mCommonOperationTextFieldDocument;
@@ -262,5 +262,20 @@ public class NotificationOperationPanel extends javax.swing.JPanel implements Op
     private org.netbeans.modules.xml.wsdl.ui.view.MessageNameConfigurationPanel outputMessageNameConfigurationPanel1;
     private org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel outputMessagePartsConfigurationTable;
     // End of variables declaration//GEN-END:variables
+
+    public String getPortTypeName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public JTextField getPortTypeNameTextField() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setPortTypeName(String portTypeName) {
+        // TODO Auto-generated method stub
+        
+    }
     
 }

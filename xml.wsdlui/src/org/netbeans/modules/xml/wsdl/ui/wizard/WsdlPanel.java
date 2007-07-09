@@ -39,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -125,7 +126,14 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     public boolean isValid() {
         if(templateWizard != null) {
-            templateWizard.putProperty ("WizardPanel_errorMessage", this.mErrorMessage); // NOI18N
+/*            String errorMessage = null;
+            //This should be good enough to disable html code.
+            // If not try to use the StringEscapeUtils.escapeHtml from common lang.
+            if (mErrorMessage != null) {
+                errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
+            }*/
+            
+            templateWizard.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
         }
         return this.mErrorMessage == null;
         

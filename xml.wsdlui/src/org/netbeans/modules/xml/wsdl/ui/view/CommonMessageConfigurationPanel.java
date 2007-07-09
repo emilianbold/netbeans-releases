@@ -298,7 +298,7 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
     class PanelFocusListener implements FocusListener {
         public void focusGained(FocusEvent e) {
             org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.addButton.text"));
-            org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.removeButton.text"));
+                org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.removeButton.text"));
         }
         
         public void focusLost(FocusEvent e) {

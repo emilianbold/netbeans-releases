@@ -1,26 +1,7 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
  * OperationConfigurationPanel.java
  *
- * Created on August 25, 2006, 1:15 PM
+ * Created on July 3, 2007, 10:33 AM
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view;
@@ -29,15 +10,12 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
@@ -46,30 +24,38 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.util.NbBundle;
 
-
 /**
  *
- * @author  radval
+ * @author  skini
  */
 public class OperationConfigurationPanel extends javax.swing.JPanel {
-    
+
     private Project mProject;
-    
+
     private Document mCommonOperationTextFieldDocument = new JTextField().getDocument();
     private Map<String, String> namespaceToPrefixMap;
     private WSDLModel mModel;
-    
-    
+    private final boolean showPortType;
+
     private boolean mIsShowMessageComboBoxes = false;
+
+    public OperationConfigurationPanel() {
+        showPortType = false;
+        initComponents();
+    }
+    
+    public OperationConfigurationPanel(Project project) {
+        this(project, false, null, true);
+    }
     
     /** Creates new form OperationConfigurationPanel */
-    public OperationConfigurationPanel(Project project, boolean isShowMessageComboBoxes, WSDLModel model) {
+    public OperationConfigurationPanel(Project project, boolean isShowMessageComboBoxes, WSDLModel model, boolean showPortType) {
         mProject = project;
         this.mIsShowMessageComboBoxes = isShowMessageComboBoxes;
         if (model != null) {
             mModel = model;
             namespaceToPrefixMap = new HashMap<String, String>();
-            Map<String, String> prefixes = ((AbstractDocumentComponent)model.getDefinitions()).getPrefixes();
+            Map<String, String> prefixes = ((AbstractDocumentComponent) model.getDefinitions()).getPrefixes();
             if (prefixes != null) {
                 for (String prefix : prefixes.keySet()) {
                     namespaceToPrefixMap.put(prefixes.get(prefix), prefix);
@@ -81,17 +67,11 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
                 namespaceToPrefixMap.put("http://www.w3.org/2001/XMLSchema", "xsd");
             }
         }
+        this.showPortType = showPortType;
         initComponents();
         initGUI();
     }
-    
-    /** Mattise require default constructor otherwise will not load in design view of mattise
-     **/
-    public OperationConfigurationPanel() {
-        initComponents();
-        initGUI();
-    }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -99,48 +79,93 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        notificationOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap,  mIsShowMessageComboBoxes, mModel);
-        solicitResponseOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);
-        contentPanel = new javax.swing.JPanel();
-        requestReplyOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);
-        oneWayOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel);
 
-        contentPanel.setLayout(new java.awt.CardLayout());
+        requestReplyOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel, showPortType);
+        oneWayOperationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel, showPortType);
 
-        contentPanel.setFocusable(false);
-        requestReplyOperationPanel1.setFocusable(false);
-        contentPanel.add(requestReplyOperationPanel1, "OPERATION_REQUEST_REPLY");
-
-        contentPanel.add(oneWayOperationPanel1, "OPERATION_ONE_WAY");
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 510, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-        );
+        setLayout(new java.awt.CardLayout());
+        add(requestReplyOperationPanel1, "OPERATION_REQUEST_REPLY");
+        add(oneWayOperationPanel1, "OPERATION_ONE_WAY");
     }// </editor-fold>//GEN-END:initComponents
+
+    private void initGUI() {
+        OperationType op1 = new OperationType(OperationType.OPERATION_REQUEST_REPLY,
+                NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.REQUEST_RESPONSE"));
+        OperationType op2 = new OperationType(OperationType.OPERATION_ONE_WAY,
+                NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.ONE_WAY"));
+        
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new OperationType[] {op1, op2});
+        
+        requestReplyOperationPanel1.getOperationTypeComboBox().setModel(model);
+        oneWayOperationPanel1.getOperationTypeComboBox().setModel(model);
+        
+        ActionListener al = new ActionListener() {
+        
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() instanceof JComboBox) {
+                    JComboBox jcb = (JComboBox) e.getSource();
+                    OperationType ot = (OperationType) jcb.getSelectedItem();
+                    String operationName = selectedOperationConfiguration.getOperationName();
+                    String portTypeName = selectedOperationConfiguration.getPortTypeName();
+                    
+                    CardLayout operationCardLayout = (CardLayout) getLayout();
+
+                    operationCardLayout.show(OperationConfigurationPanel.this, ot.getOperationType());
+                    selectedOperationConfiguration = findVisibleConfiguration();
+                    revalidate();
+                    selectedOperationConfiguration.setPortTypeName(portTypeName);
+                    selectedOperationConfiguration.setOperationName(operationName);
+                    selectedOperationType = ot;
+                    selectedOperationConfiguration.getOperationTypeComboBox().requestFocus();
+                }
+            }
+        };
+        
+        requestReplyOperationPanel1.getOperationTypeComboBox().addActionListener(al);
+        oneWayOperationPanel1.getOperationTypeComboBox().addActionListener(al);
+        
+        this.selectedOperationType = op1;
+        selectedOperationConfiguration = requestReplyOperationPanel1;
+    }
+    
+    private OperationConfiguration findVisibleConfiguration() {
+        OperationConfiguration conf = null;
+        
+        Component[] comps = getComponents();
+        for(int i = 0; i < comps.length; i++) {
+            if(comps[i].isVisible()) {
+                conf = (OperationConfiguration) comps[i];
+                break;
+            }
+        }
+        
+        return conf;
+    }
+   
+    public String getPortTypeName() {
+        return this.selectedOperationConfiguration.getPortTypeName();
+    }
+    
+    public void setPortTypeName(String portTypeName) {
+        this.selectedOperationConfiguration.setPortTypeName(portTypeName);
+    }
     
     
+    public JTextField getPortTypeNameTextField() {
+        return this.selectedOperationConfiguration.getPortTypeNameTextField();
+    }
+
     public void setInputMessages(String[] existingMessages, String newMessageName, javax.swing.event.DocumentListener msgNameDocumentListener) {
         this.requestReplyOperationPanel1.setInputMessages(existingMessages, newMessageName, msgNameDocumentListener);
         this.oneWayOperationPanel1.setInputMessages(existingMessages, newMessageName, msgNameDocumentListener);
-        this.solicitResponseOperationPanel1.setInputMessages(existingMessages, newMessageName, msgNameDocumentListener);
     }
     
     public void setOutputMessages(String[] existingMessages, String newMessageName, javax.swing.event.DocumentListener msgNameDocumentListener) {
         this.requestReplyOperationPanel1.setOutputMessages(existingMessages, newMessageName, msgNameDocumentListener);
-        this.notificationOperationPanel1.setOutputMessages(existingMessages, newMessageName, msgNameDocumentListener);
-        this.solicitResponseOperationPanel1.setOutputMessages(existingMessages, newMessageName, msgNameDocumentListener);
     }
     
     public void setFaultMessages(String[] existingMessages, String newMessageName, javax.swing.event.DocumentListener msgNameDocumentListener) {
         this.requestReplyOperationPanel1.setFaultMessages(existingMessages, newMessageName, msgNameDocumentListener);
-        this.solicitResponseOperationPanel1.setFaultMessages(existingMessages, newMessageName, msgNameDocumentListener);
     }
     
     public boolean isNewOutputMessage() {
@@ -204,155 +229,13 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
     public JTextField getOperationNameTextField() {
         return selectedOperationConfiguration.getOperationNameTextField();
     }
-    
-    private void initGUI() {
-        OperationType op1 = new OperationType(OperationType.OPERATION_REQUEST_REPLY,
-                NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.REQUEST_RESPONSE"));
-        OperationType op2 = new OperationType(OperationType.OPERATION_ONE_WAY,
-                NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.ONE_WAY"));
-        OperationType op3 = new OperationType(OperationType.OPERATION_SOLICIT_RESPONSE,
-                NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.SOLICIT_RESPONSE"));
-        OperationType op4 = new OperationType(OperationType.OPERATION_NOTIFICATION,
-                NbBundle.getMessage(OperationConfigurationPanel.class, "OperationConfigurationPanel.NOTIFICATION"));
-        
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new OperationType[] {op1, op2/*, op3, op4*/});
-        
-//        operationTypeComboBox.setModel(model);
-        
-        requestReplyOperationPanel1.getOperationTypeComboBox().setModel(model);
-        oneWayOperationPanel1.getOperationTypeComboBox().setModel(model);
-        solicitResponseOperationPanel1.getOperationTypeComboBox().setModel(model);
-        notificationOperationPanel1.getOperationTypeComboBox().setModel(model);
-        
-//        OperationTypeItemListener l = new OperationTypeItemListener();
 
-//        requestReplyOperationPanel1.getOperationTypeComboBox().addItemListener(l);
-//        oneWayOperationPanel1.getOperationTypeComboBox().addItemListener(l);
-//        solicitResponseOperationPanel1.getOperationTypeComboBox().addItemListener(l);
-//        notificationOperationPanel1.getOperationTypeComboBox().addItemListener(l);
-        
-        OperationTypeActionListener al = new OperationTypeActionListener();
-        requestReplyOperationPanel1.getOperationTypeComboBox().addActionListener(al);
-        oneWayOperationPanel1.getOperationTypeComboBox().addActionListener(al);
-        solicitResponseOperationPanel1.getOperationTypeComboBox().addActionListener(al);
-        notificationOperationPanel1.getOperationTypeComboBox().addActionListener(al);
-        
-        this.selectedOperationType = op1;
-        selectedOperationConfiguration = requestReplyOperationPanel1;
-    }
-    
-    
-    private OperationConfiguration findVisibleConfiguration() {
-        OperationConfiguration conf = null;
-        
-        Component[] comps = contentPanel.getComponents();
-        for(int i = 0; i < comps.length; i++) {
-            if(comps[i].isVisible()) {
-                conf = (OperationConfiguration) comps[i];
-                break;
-            }
-        }
-        
-        return conf;
-    }
-    
-    class OperationTypeItemListener implements ItemListener {
-        public void itemStateChanged(ItemEvent evt) {
-            OperationType ot = (OperationType) evt.getItem();
-            
-            String operationName = selectedOperationConfiguration.getOperationName();
-            CardLayout operationCardLayout = (CardLayout) contentPanel.getLayout();
-            
-            operationCardLayout.show(contentPanel, ot.getOperationType());
-            selectedOperationConfiguration = (OperationConfiguration) findVisibleConfiguration();
-            contentPanel.revalidate();
-            selectedOperationConfiguration.setOperationName(operationName);
-            selectedOperationType = ot;
-        }
-        
-    }
-    
-    class OperationTypeActionListener implements ActionListener {
-        
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() instanceof JComboBox) {
-                JComboBox jcb = (JComboBox) e.getSource();
-                OperationType ot = (OperationType) jcb.getSelectedItem();
-                String operationName = selectedOperationConfiguration.getOperationName();
-                CardLayout operationCardLayout = (CardLayout) contentPanel.getLayout();
-                
-                operationCardLayout.show(contentPanel, ot.getOperationType());
-                selectedOperationConfiguration = (OperationConfiguration) findVisibleConfiguration();
-                contentPanel.revalidate();
-                selectedOperationConfiguration.setOperationName(operationName);
-                selectedOperationType = ot;
-                selectedOperationConfiguration.getOperationTypeComboBox().requestFocus();
-            }
-        }
-        
-    }
-    
-    public interface OperationConfiguration {
-        
-        public static final String PROP_ERROR_MESSAGE = "PROP_ERROR_MESSAGE";
-        
-        public String getOperationName();
-        
-        public void setOperationName(String operationName);
-        
-        public OperationType getOperationType();
-        
-        public List<PartAndElementOrTypeTableModel.PartAndElementOrType> getInputMessageParts();
-        
-        public List<PartAndElementOrTypeTableModel.PartAndElementOrType> getOutputMessageParts();
-        
-        public List<PartAndElementOrTypeTableModel.PartAndElementOrType> getFaultMessageParts();
-        
-        public JTextField getOperationNameTextField();
-        
-        public JComboBox getOperationTypeComboBox();
-        
-        public boolean isNewOutputMessage();
-        
-        
-        public boolean isNewInputMessage();
-        
-        
-        public boolean isNewFaultMessage();
-        
-        public String getOutputMessageName();
-        
-        
-        public String getInputMessageName();
-        
-        
-        public String getFaultMessageName();
-        
-    }
-    
-    public static void main(String[] args) {
-        
-//        JFrame frame = new JFrame();
-//        frame.getContentPane().setLayout(new BorderLayout());
-//        OperationConfigurationPanel p = new OperationConfigurationPanel();
-//        frame.getContentPane().add(p, BorderLayout.CENTER);
-//        frame.setSize(200, 200);
-//        frame.setVisible(true);
-        
-        
-    }
-    
     private OperationConfiguration selectedOperationConfiguration;
     
     private  OperationType selectedOperationType;
-    private JPanel operationCardPanel;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel contentPanel;
-    private org.netbeans.modules.xml.wsdl.ui.view.NotificationOperationPanel notificationOperationPanel1;
     private org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel oneWayOperationPanel1;
     private org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel requestReplyOperationPanel1;
-    private org.netbeans.modules.xml.wsdl.ui.view.SolicitResponseOperationPanel solicitResponseOperationPanel1;
     // End of variables declaration//GEN-END:variables
-    
 }

@@ -29,7 +29,6 @@
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 import java.awt.Component;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,9 +50,10 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
-import org.netbeans.modules.xml.wsdl.ui.view.PortTypeConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
@@ -96,7 +96,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     public static final String IS_FROM_WIZARD = "IS_FROM_WIZARD";
     
     
-    private PortTypeConfigurationPanel mPanel;
+    private OperationConfigurationPanel mPanel;
     
     private Project project;
     
@@ -116,8 +116,6 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     
     private Collection<Import> mImports = null;
     
-    private File tempWSDLFile = null;
-    
     /** Creates a new instance of WizardPortTypeConfigurationStep */
     public WizardPortTypeConfigurationStep(Project project) {
         this.project = project;
@@ -134,7 +132,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
 
     public Component getComponent() {
         if (mPanel == null) {
-            this.mPanel = new PortTypeConfigurationPanel(project);
+            this.mPanel = new OperationConfigurationPanel(project);
             this.mPanel.setName(NbBundle.getMessage(WizardPortTypeConfigurationStep.class, "LBL_WizardPortTypeConfigurationStep"));
             TextChangeListener listener  = new TextChangeListener();
             
@@ -149,7 +147,14 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     }
 
     public boolean isValid() {
-        wiz.putProperty ("WizardPanel_errorMessage", this.mErrorMessage); // NOI18N
+/*        String errorMessage = null;
+        //This should be good enough to disable html code.
+        // If not try to use the StringEscapeUtils.escapeHtml from common lang.
+        if (mErrorMessage != null) {
+            errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
+        }*/
+        
+        wiz.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
         return this.mErrorMessage == null;
         
     }

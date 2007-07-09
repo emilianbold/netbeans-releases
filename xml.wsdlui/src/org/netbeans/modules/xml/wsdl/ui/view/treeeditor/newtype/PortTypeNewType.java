@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
-import java.awt.Dimension;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
-import org.netbeans.modules.xml.wsdl.ui.view.PortTypeConfigurationPanel;
+import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.wizard.PortTypeGenerator;
 import org.netbeans.modules.xml.wsdl.ui.wizard.WizardPortTypeConfigurationStep;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -82,7 +81,7 @@ public class PortTypeNewType extends NewType {
                 panel.setDialogDescriptor(dd);
                 
                 if(DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
-                    PortTypeConfigurationPanel ptPanel = panel.getPortTypeConfiguration();
+                    OperationConfigurationPanel ptPanel = panel.getPortTypeConfiguration();
                     Map configurationMap = new HashMap();
                     
                     String portTypeName = ptPanel.getPortTypeName();
@@ -93,9 +92,9 @@ public class PortTypeNewType extends NewType {
                     configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_NAME, operationName);
                     configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_TYPE, ot);
                     
-                    String inputMessageName = ptPanel.getNewInputMessageName();
-                    String outputMessageName = ptPanel.getNewOutputMessageName();
-                    String faultMessageName = ptPanel.getNewFaultMessageName();
+                    String inputMessageName = ptPanel.getInputMessageName();
+                    String outputMessageName = ptPanel.getOutputMessageName();
+                    String faultMessageName = ptPanel.getFaultMessageName();
                           
                     configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_INPUT_MESSAGE, inputMessageName);
                     configurationMap.put(WizardPortTypeConfigurationStep.OPERATION_OUTPUT_MESSAGE, outputMessageName);

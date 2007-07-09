@@ -26,23 +26,16 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyUtil;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -85,7 +78,7 @@ public class OperationPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        operationConfigurationPanel1 = new OperationConfigurationPanel(this.mProject, true, mModel);
+        operationConfigurationPanel1 = new OperationConfigurationPanel(this.mProject, true, mModel, false);
         commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -107,7 +100,7 @@ public class OperationPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(operationConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(17, 17, 17)
-                .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(60, 60, 60))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -119,7 +112,7 @@ public class OperationPanel extends javax.swing.JPanel {
     private void initGUI() {
         
         ModelSource modelSource = this.mModel.getModelSource();
-        FileObject wsdlFile = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+        FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
         if(wsdlFile != null) {
             String fileName = wsdlFile.getName();
             
@@ -258,6 +251,7 @@ public class OperationPanel extends javax.swing.JPanel {
                 this.mDD.setValid(true);
             }
         }
+        
     }
     
     

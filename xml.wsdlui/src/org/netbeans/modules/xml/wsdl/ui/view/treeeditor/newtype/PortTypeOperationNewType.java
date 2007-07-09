@@ -29,7 +29,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
 
-import java.awt.Dimension;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +78,7 @@ public class PortTypeOperationNewType extends NewType {
         
 
         ModelSource modelSource = model.getModelSource();
-        FileObject wsdlFile = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+        FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
         if(wsdlFile != null) {
             Project project = FileOwnerQuery.getOwner(wsdlFile);
             if(project != null) {

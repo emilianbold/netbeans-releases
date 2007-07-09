@@ -37,6 +37,7 @@ import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
+import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,7 +48,6 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     
     private String mErrorMessage = null;
     
-    public static final String APPLY_CHANGE = "APPLY_CHANGE";
     /** Creates new form BindingConfigurationDialogPanel */
     public BindingConfigurationDialogPanel(WSDLModel model) {
         mModel = model;
@@ -62,6 +62,7 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         bindingConfigurationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel();
         commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
 
@@ -69,18 +70,18 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(bindingConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 301, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(10, 10, 10))
+            .add(bindingConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(bindingConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(bindingConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 228, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(58, 58, 58)
+                .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -131,6 +132,9 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
         return bindingConfigurationPanel1.getServicePortName();
     }
     
+    public void setDialogDescriptor(DialogDescriptor dd) {
+        this.mDD = dd;
+    }
     
     private boolean isValidName(String text) {
         try {
@@ -224,29 +228,18 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     private void updateMessagePanel() {
         if(this.mErrorMessage != null) {
             commonMessagePanel1.setErrorMessage(mErrorMessage);
-            firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
+            if(this.mDD != null) {
+                mDD.setValid(false);
+            }
+            //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
         } else {
             commonMessagePanel1.setMessage("");
-            firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
-        }
-    }
-    
-    private void isValidName(DocumentEvent e) {
-        Document doc = e.getDocument();
-        try {
-            String text = doc.getText(0, doc.getLength());
-            boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
-            if(!isValid) {
-                commonMessagePanel1.setErrorMessage(NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text));
-            } else {
-                commonMessagePanel1.setMessage("");
+            if (mDD != null) {
+                mDD.setValid(true);
             }
-            firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
-        }  catch(Exception ex) {
-            ex.printStackTrace();
+            //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
         }
     }
-    
 
     class BindingNameChangeListener implements DocumentListener {
         
@@ -296,6 +289,7 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel1;
     // End of variables declaration//GEN-END:variables
     private WSDLModel mModel;
+    private DialogDescriptor mDD;
     
 //    public void doesBindingExist() {
 //        boolean exists = NameGenerator.getInstance().isBindingExists(getBindingName(), mModel);

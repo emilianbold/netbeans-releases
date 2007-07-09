@@ -593,5 +593,21 @@ public class Utility {
             }
         }
     }
+
+    /**
+     * Does basic escaping of html characters. and is not complete.
+     * replaces & => &amp;
+     *          < => &lt;
+     *          > => &gt;
+     *          and all spaces with &nbsp;
+     *          
+     * The best solution is probably to use commons lang, StringEscapeUtils.escapeHtml();
+     * @param str
+     * @return the escaped string.
+     */
+    public static String escapeHtml(String str) {
+        if (str == null || str.length() == 0) return str;
+        return str.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\\s", "&nbsp;");
+    }
         
 }

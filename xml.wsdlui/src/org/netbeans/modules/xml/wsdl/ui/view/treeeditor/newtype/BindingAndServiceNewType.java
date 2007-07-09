@@ -19,11 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -66,9 +61,20 @@ public class BindingAndServiceNewType extends NewType {
     
     @Override
     public void create() throws IOException {
-        final WSDLModel model = mPortType.getModel();
-        FileObject fo = (FileObject) model.getModelSource().getLookup().lookup(FileObject.class);
-        final BindingConfigurationDialogPanel panel = new BindingConfigurationDialogPanel(model);
+        WSDLModel model = mPortType.getModel();
+        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
+        BindingConfigurationDialogPanel panel = new BindingConfigurationDialogPanel(model);
+        final DialogDescriptor descriptor = new DialogDescriptor(panel,
+                NbBundle.getMessage(BindingAndServiceNewType.class, "LBL_Generate_Binding_and_ServicePort"),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(BindingAndServiceNewType.class),
+                null);
+        panel.setDialogDescriptor(descriptor);
+        
+        
         String bindingName = mPortType.getName() + "Binding";
         NameGenerator nameGen = NameGenerator.getInstance();
         if (nameGen.isBindingExists(bindingName, model)) {
@@ -96,74 +102,41 @@ public class BindingAndServiceNewType extends NewType {
         panel.setServicePortName(portName);
         
         
-        final DialogDescriptor descriptor = new DialogDescriptor(panel,
-                NbBundle.getMessage(BindingAndServiceNewType.class, "LBL_Generate_Binding_and_ServicePort"),
-                true,
-                DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(BindingAndServiceNewType.class),
-                null);
-        final PropertyChangeListener pcl = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getSource()== panel && evt.getPropertyName().equals(BindingConfigurationDialogPanel.APPLY_CHANGE)) {
-                    descriptor.setValid(((Boolean) evt.getNewValue()).booleanValue());
-                }
+        if (DialogDisplayer.getDefault().notify(descriptor) == DialogDescriptor.OK_OPTION) {
+            String bindName = panel.getBindingName();
+            LocalizedTemplateGroup bindingType = panel.getBindingType();
+            //this could be null for a binding which does not have a sub type
+            LocalizedTemplate bindingSubType = panel.getBindingSubType();
+            String serviceName = panel.getServiceName();
+            String servicePortName = panel.getServicePortName();
+            Map configurationMap = new HashMap();
+
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindName);
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
+
+
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
+
+            //service and port
+            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
+            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
+            model.startTransaction();
+            BindingGenerator generator = new BindingGenerator(model, mPortType, configurationMap);
+            generator.execute();
+            Binding binding = generator.getBinding();
+            Port port = generator.getPort();
+
+            String targetNamespace = model.getDefinitions().getTargetNamespace();
+            if (binding != null) {
+                bindingSubType.getMProvider().postProcess(targetNamespace, binding);
             }
-        };
-        panel.addPropertyChangeListener(pcl);
-        // dialog's action listener
-        ActionListener al = new ActionListener() {
-            @SuppressWarnings("unchecked")
-            public void actionPerformed(ActionEvent evt) {
-                if (evt.getSource().equals(DialogDescriptor.OK_OPTION) ||
-                        evt.getSource().equals(DialogDescriptor.CANCEL_OPTION) ||
-                        evt.getSource().equals(DialogDescriptor.CLOSED_OPTION)) {
-                    panel.removePropertyChangeListener(pcl);
-                }
-                if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                    String bindName = panel.getBindingName();
-                    LocalizedTemplateGroup bindingType = panel.getBindingType();
-                    //this could be null for a binding which does not have a sub type
-                    LocalizedTemplate bindingSubType = panel.getBindingSubType();
-                    String serviceName = panel.getServiceName();
-                    String servicePortName = panel.getServicePortName();
-                    Map configurationMap = new HashMap();
-                    
-                    configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindName);
-                    configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
-                    
-                    
-                    configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
-                    
-                    //service and port
-                    
-                    configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
-                    configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
-                    model.startTransaction();
-                    BindingGenerator generator = new BindingGenerator(model, mPortType, configurationMap);
-                    generator.execute();
-                    Binding binding = generator.getBinding();
-                    Port port = generator.getPort();
-                    
-                    String targetNamespace = model.getDefinitions().getTargetNamespace(); 
-                    if(binding != null) {
-                        bindingSubType.getMProvider().postProcess(targetNamespace, binding);
-                    }
-                    if(port != null) {
-                        bindingSubType.getMProvider().postProcess(targetNamespace, port);
-                    }
-                    
-                    model.endTransaction();
-                    ActionHelper.selectNode(binding);
-                }
+            if (port != null) {
+                bindingSubType.getMProvider().postProcess(targetNamespace, port);
             }
-        };
-        descriptor.setButtonListener(al);
-        descriptor.setValid(true);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.setVisible(true);
-        dialog.toFront();
+
+            model.endTransaction();
+            ActionHelper.selectNode(binding);
+        }
     }
     
 }

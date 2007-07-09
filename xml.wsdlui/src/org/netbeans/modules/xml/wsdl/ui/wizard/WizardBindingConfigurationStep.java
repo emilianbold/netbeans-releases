@@ -51,6 +51,7 @@ import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.WizardDescriptor;
@@ -137,7 +138,14 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     }
 
     public boolean isValid() {
-       wiz.putProperty ("WizardPanel_errorMessage", this.mErrorMessage); // NOI18N
+/*        String errorMessage = null;
+        //This should be good enough to disable html code.
+        // If not try to use the StringEscapeUtils.escapeHtml from common lang.
+        if (mErrorMessage != null) {
+            errorMessage = "<html>" + Utility.escapeHtml(mErrorMessage) + "</html>";
+        }*/
+        
+        wiz.putProperty ("WizardPanel_errorMessage", mErrorMessage); // NOI18N
         return this.mErrorMessage == null;
 
     }
