@@ -111,6 +111,12 @@ public class MyFileUtil {
             String old, String nu, boolean isRegex)
             throws FileNotFoundException, IOException {
         
+        assert old != null && nu != null;
+        
+        if (old.equals(nu)) {
+            return;
+        }
+        
         String fileName = file.getName();
         BufferedReader reader = new BufferedReader(new FileReader(file));
         

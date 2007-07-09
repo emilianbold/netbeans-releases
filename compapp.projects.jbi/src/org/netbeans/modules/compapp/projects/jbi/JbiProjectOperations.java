@@ -181,8 +181,16 @@ public class JbiProjectOperations implements DeleteOperationImplementation, Copy
         fixOtherNameReferences(originalPath, oldName, newName);
     }
     
+    // TODO: extends RefrenceHelper?
     private void fixOtherNameReferences(final File originalPath, 
             final String oldName, final String newName) {
+        
+        assert oldName != null && newName != null;
+        
+        if (oldName.equals(newName)) {
+            return;
+        }
+        
         final File projectDir = FileUtil.toFile(project.getProjectDirectory());
         
         ProjectManager.mutex().writeAccess(new Runnable() {
