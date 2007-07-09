@@ -31,7 +31,7 @@ import org.openide.util.datatransfer.PasteType;
  * @author   Martin Entlicher
  * @since 1.12
  */
-public interface ExtendedNodeModelFilter extends NodeModel {
+public interface ExtendedNodeModelFilter extends NodeModelFilter {
     
     /**
      * Test whether this node permits renaming.
