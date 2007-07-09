@@ -28,7 +28,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import projects.apitest.Utilities;
 
 public class CreateProjectTest extends JellyTestCase {
     private String projName1 = "TestAppAPI_1"; // NOI18N
@@ -47,6 +46,7 @@ public class CreateProjectTest extends JellyTestCase {
         return suite;
     }
     
+    @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######"); // NOI18N
     }
