@@ -328,9 +328,7 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                 int aliasPos = an.getPosition().getStartOffset();
                 String name = null;
 
-                // BUG: AliasNode currently seems to have wrong offsets; in particular, it starts after the keyword
-                //if (caretPosition > (aliasPos + 6)) { // 6: "alias ".length()
-                if (caretPosition > (aliasPos + 1)) { // 1: " ".length()
+                if (caretPosition > (aliasPos + 6)) { // 6: "alias ".length()
 
                     if (caretPosition > (aliasPos + 6 + newLength)) {
                         OffsetRange range = AstUtilities.getAliasOldRange(an);

@@ -484,9 +484,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 int newLength = newName.length();
                 int aliasPos = an.getPosition().getStartOffset();
 
-                // BUG: AliasNode currently seems to have wrong offsets; in particular, it starts after the keyword
-                //if (caretOffset > aliasPos+6) { // 6: "alias ".length()
-                if (astOffset > (aliasPos + 1)) { // 1: " ".length()
+                if (astOffset > aliasPos+6) { // 6: "alias ".length()
 
                     if (astOffset > (aliasPos + 6 + newLength)) {
                         // It's over the old word: this counts as a usage.
