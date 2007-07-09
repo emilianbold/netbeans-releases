@@ -251,7 +251,7 @@ public class LexUtilities {
     }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(TokenSequence<?extends GsfTokenId> ts, TokenId up,
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
@@ -274,7 +274,7 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(TokenSequence<?extends GsfTokenId> ts, TokenId up,
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
@@ -301,14 +301,15 @@ public class LexUtilities {
      * It does not use indentation for clues since this could be wrong and be
      * precisely the reason why the user is using pair matching to see what's wrong.
      */
-    public static OffsetRange findBegin(TokenSequence<?extends GsfTokenId> ts) {
+    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
         int balance = 0;
 
         while (ts.movePrevious()) {
             Token<?extends GsfTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (isBeginToken(id)) {
+            if (isBeginToken(id, doc, ts)) {
+                // No matching dot for "do" used in conditionals etc.)) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
@@ -322,14 +323,14 @@ public class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static OffsetRange findEnd(TokenSequence<?extends GsfTokenId> ts) {
+    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
         int balance = 0;
 
         while (ts.moveNext()) {
             Token<?extends GsfTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (isBeginToken(id)) {
+            if (isBeginToken(id, doc, ts)) {
                 balance--;
             } else if (id == RubyTokenId.END) {
                 if (balance == 0) {
@@ -341,6 +342,42 @@ public class LexUtilities {
         }
 
         return OffsetRange.NONE;
+    }
+    
+    /** Determine whether "do" is an indent-token (e.g. matches an end) or if
+     * it's simply a separator in while,until,for expressions)
+     */
+    public static boolean isEndmatchingDo(BaseDocument doc, int offset) {
+        // In the following case, do is dominant:
+        //     expression.do 
+        //        whatever
+        //     end
+        //
+        // However, not here:
+        //     while true do
+        //        whatever
+        //     end
+        //
+        // In the second case, the end matches the while, but in the first case
+        // the end matches the do
+        
+        // Look at the first token of the current line
+        try {
+            int first = Utilities.getRowFirstNonWhite(doc, offset);
+            if (first != -1) {
+                Token<? extends GsfTokenId> token = getToken(doc, first);
+                if (token != null) {
+                    TokenId id = token.id();
+                    if (id == RubyTokenId.WHILE || id == RubyTokenId.UNTIL || id == RubyTokenId.FOR) {
+                        return false;
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+        
+        return true;
     }
 
     /**
@@ -348,10 +385,25 @@ public class LexUtilities {
      * with a corresponding "end" token, such as "begin", "def", "module",
      * etc.
      */
-    public static boolean isBeginToken(TokenId id) {
+    public static boolean isBeginToken(TokenId id, BaseDocument doc, int offset) {
+        if (id == RubyTokenId.DO) {
+            return isEndmatchingDo(doc, offset);
+        }
         return END_PAIRS.contains(id);
     }
 
+    /**
+     * Return true iff the given token is a token that should be matched
+     * with a corresponding "end" token, such as "begin", "def", "module",
+     * etc.
+     */
+    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+        if (id == RubyTokenId.DO) {
+            return isEndmatchingDo(doc, ts.offset());
+        }
+        return END_PAIRS.contains(id);
+    }
+    
     /**
      * Return true iff the given token is a token that indents its content,
      * such as the various begin tokens as well as "else", "when", etc.
@@ -383,7 +435,7 @@ public class LexUtilities {
                 Token<?extends GsfTokenId> token = ts.token();
                 TokenId id = token.id();
 
-                if (isBeginToken(id)) {
+                if (isBeginToken(id, doc, ts)) {
                     balance++;
                 } else if (id == RubyTokenId.END) {
                     balance--;

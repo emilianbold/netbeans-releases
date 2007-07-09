@@ -414,9 +414,14 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         case Tokens.kUNTIL:
             return RubyTokenId.UNTIL;
 
+        case Tokens.kDO_BLOCK:
+        case Tokens.kDO_COND:
+            return RubyTokenId.ANY_KEYWORD;
+
         case Tokens.kDO:
             return RubyTokenId.DO;
-
+            
+            
         case Tokens.kCASE:
             return RubyTokenId.CASE;
 
@@ -450,8 +455,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
             return RubyTokenId.ANY_OPERATOR;
 
         case Tokens.kRESCUE_MOD:
-        case Tokens.kDO_COND:
-        case Tokens.kDO_BLOCK:
+            
         case Tokens.kUNDEF:
         case Tokens.kTHEN:
         case Tokens.kBREAK:

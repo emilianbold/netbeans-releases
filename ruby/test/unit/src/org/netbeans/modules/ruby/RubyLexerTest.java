@@ -52,7 +52,8 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_LITERAL, "foo");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_LITERAL, "#{");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "code");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_LITERAL, "}bar");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_LITERAL, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_LITERAL, "bar");
     }
 
     @SuppressWarnings("unchecked")
@@ -106,7 +107,8 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_BEGIN, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "\"");
+        //LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, GsfTokenId.ERROR, "\"");
 
         // Try related scenario for fields
         text = "\"foo#@\"";
@@ -235,7 +237,22 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOY\n");
         assertFalse(ts.moveNext());
     }
-
+    
+    public void testHeredocInput3() { // Boiled down failure from postgresql_adapter.rb
+        String text = "q(<<S,name)\nHELLO\nS\n";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "q");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<S");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "name");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "HELLO\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "S\n");
+        assertFalse(ts.moveNext());
+    }
 
     @SuppressWarnings("unchecked")
     public void testHeredocEmbedded() {
@@ -350,4 +367,98 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, GsfTokenId.TYPE_SYMBOL, "\"");
         assertFalse(ts.moveNext());
     }
+    
+    @SuppressWarnings("unchecked")
+    public void testQuotesInEmbeddedCode() {
+        // Simplified from sqlserver_adapter's add_limit_offset! method which failed miserably:
+        // total_rows = @connection.select_all("SELECT count(*) as TotalRows from (#{sql.gsub(/\bSELECT(\s+DISTINCT)?\b/i, "SELECT#{$1} TOP 1000000000")}) tally")[0][:TotalRows].to_i
+        // Quotes are allowed inside a string embedded
+        String text = "\"fo#{\"hello\"}\"";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "fo");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "#{");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "\"hello\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "\"");
+        assertFalse(ts.moveNext());
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testQuotesInEmbeddedCode2() {
+        // Simplified from sqlserver_adapter's add_limit_offset! method which failed miserably:
+        // total_rows = @connection.select_all("SELECT count(*) as TotalRows from (#{sql.gsub(/\bSELECT(\s+DISTINCT)?\b/i, "SELECT#{$1} TOP 1000000000")}) tally")[0][:TotalRows].to_i
+        // Quotes are allowed inside a string embedded
+        String text = "\"fo#{puts \"#notcomment\"}\"";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "fo");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "puts \"#notcomment\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "\"");
+        assertFalse(ts.moveNext());
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testNestedEmbeddedCode() {
+        // Simplified from sqlserver_adapter's add_limit_offset! method which failed miserably:
+        // total_rows = @connection.select_all("SELECT count(*) as TotalRows from (#{sql.gsub(/\bSELECT(\s+DISTINCT)?\b/i, "SELECT#{$1} TOP 1000000000")}) tally")[0][:TotalRows].to_i
+        String text = "x(%(#{y=#{z}}))";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_BEGIN, "%(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "y=#{z}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
+        assertFalse(ts.moveNext());
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testParensInEmbedded() {
+        // Simplified from activerecord-1.15.3/test/base_test.rb in test_array_to_xml_including_methods
+        //   assert xml.include?(%(<topic-id type="integer">#{topics(:first).topic_id}</topic-id>)), xml
+        String text = "x(%(#{y(1)}))";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_BEGIN, "%(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "y(1)");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
+        assertFalse(ts.moveNext());
+    }
+
+    // Not yet passing
+//    @SuppressWarnings("unchecked")
+//    public void testDefRegexp() {
+//        // /Users/tor/netbeans/work/nbbuild/netbeans/ruby1/jruby-1.0/lib/ruby/1.8/webrick/httputils.rb
+//        //     def _make_regex(str) /([#{Regexp.escape(str)}])/n end
+//        String text = "def f(s) /df/ end";
+//        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+//        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.DEF, "def");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "s");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_BEGIN, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_LITERAL, "df");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.REGEXP_END, "/");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, " ");
+//        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.END, "end");
+//        assertFalse(ts.moveNext());
+//    }
 }    

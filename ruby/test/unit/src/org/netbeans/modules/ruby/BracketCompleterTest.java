@@ -430,12 +430,6 @@ public class BracketCompleterTest extends RubyTestBase {
         deleteChar("xy^z", "x^z");
     }
     
-    public void testNoContComment2() throws Exception {
-        // No auto-# on new lines
-        insertBreak("foo # ^", "foo # \n^");
-    }
-    
-    // Not yet enabled
     public void testContComment() throws Exception {
         if (BracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("# ^", "# \n# ^");
@@ -444,6 +438,42 @@ public class BracketCompleterTest extends RubyTestBase {
         }
     }
     
+    public void testContComment2() throws Exception {
+        // No auto-# on new lines
+        if (BracketCompleter.CONTINUE_COMMENTS) {
+            insertBreak("   #  ^", "   #  \n   #  ^");
+        } else {
+            insertBreak("   #  ^", "   #  \n   ^");
+        }
+    }
+    
+    public void testContComment3() throws Exception {
+        // No auto-# on new lines
+        if (BracketCompleter.CONTINUE_COMMENTS) {
+            insertBreak("   #\t^", "   #\t\n   #\t^");
+        } else {
+            insertBreak("   #\t^", "   #\t\n   ^");
+        }
+    }
+    
+    public void testContComment4() throws Exception {
+        insertBreak("# foo\n^", "# foo\n\n^");
+    }
+
+    public void testContComment5() throws Exception {
+        // No auto-# on new lines
+        if (BracketCompleter.CONTINUE_COMMENTS) {
+            insertBreak("      # ^", "      # \n      # ^");
+        } else {
+            insertBreak("      # ^", "      # \n      ^");
+        }
+    }
+    
+    public void testNoContComment() throws Exception {
+        // No auto-# on new lines
+        insertBreak("foo # ^", "foo # \n^");
+    }
+
     public void testDeleteContComment() throws Exception {
         deleteChar("# ^", "^");
         deleteChar("\n# ^", "\n^");

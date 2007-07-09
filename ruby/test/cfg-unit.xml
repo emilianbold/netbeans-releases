@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/**Test.class"/>
-<exclude name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"/>
+<exclude name="org/netbeans/modules/ruby/RubyLexerTest.class/testDefRegexp"/>
 <exclude name="org/netbeans/modules/ruby/RubyLexerRandomTest.class"/>
 <exclude name="org/netbeans/modules/ruby/BracketCompleterTest.class/test108889"/>
             </patternset>
@@ -47,8 +47,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/**Test.class"/>
-<include name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"
-         expectedFail="due to failure in heredoc statements with extra line input"/>
 <include name="org/netbeans/modules/ruby/RubyLexerRandomTest.class/testRandom"
          expectedFail="problems in incremental lexing"/>
 <include name="org/netbeans/modules/ruby/RubyLexerTest.class/test93990"

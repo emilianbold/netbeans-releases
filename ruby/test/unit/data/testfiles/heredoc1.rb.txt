@@ -1,4 +1,4 @@
-.t.e.s.t. Comments
+.t.e.s.t. Heredocs
 # Simple swing-based application
 
 # Import Java packages

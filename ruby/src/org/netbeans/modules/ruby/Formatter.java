@@ -311,7 +311,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             Token<?extends GsfTokenId> token = ts.token();
             TokenId id = token.id();
 
-            if (LexUtilities.isBeginToken(id)) {
+            if (LexUtilities.isBeginToken(id, doc, ts)) {
                 balance++;
             } else if (id == RubyTokenId.END) {
                 balance--;
@@ -380,28 +380,28 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
             OffsetRange begin = OffsetRange.NONE;
-            if ((LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id)) || id == RubyTokenId.END) {
+            if ((LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id, doc, offset)) || id == RubyTokenId.END) {
                 TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
                 ts.move(lineBegin);
                 ts.movePrevious();
-                begin = LexUtilities.findBegin(ts);
+                begin = LexUtilities.findBegin(doc, ts);
             } else if ((id == RubyTokenId.RBRACE)) {
                 TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
                 ts.move(lineBegin);
                 ts.movePrevious();
-                begin = LexUtilities.findBwd(ts, 
+                begin = LexUtilities.findBwd(doc, ts, 
                         RubyTokenId.LBRACE, RubyTokenId.RBRACE);
             } else if (id == RubyTokenId.RBRACKET) {
                 TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
                 ts.move(lineBegin);
                 ts.movePrevious();
-                begin = LexUtilities.findBwd(ts, 
+                begin = LexUtilities.findBwd(doc, ts, 
                         RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
             } else if (id == RubyTokenId.RPAREN) {
                 TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
                 ts.move(lineBegin);
                 ts.movePrevious();
-                begin = LexUtilities.findBwd(ts, 
+                begin = LexUtilities.findBwd(doc, ts, 
                         RubyTokenId.LPAREN, RubyTokenId.RPAREN);
             }
             if (begin != OffsetRange.NONE) {
@@ -449,7 +449,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
     public void reindent(Document document, int startOffset, int endOffset, ParserResult result,
         FormattingPreferences preferences) {
-        
         try {
             BaseDocument doc = (BaseDocument)document;
 

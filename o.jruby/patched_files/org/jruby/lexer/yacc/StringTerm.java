@@ -95,11 +95,8 @@ public class StringTerm extends StrTerm {
         // BEGIN NETBEANS MODIFICATIONS
         if ((processingEmbedded == EMBEDDED_DEXPR) && (c == '}')) {
             processingEmbedded = LOOKING_FOR_EMBEDDED;
-            // I have to process this character outside of the parseStringIntoBuffer call
-            // since I don't want that code to see it as a possible String terminator.
-            buffer.append(c);
-            // Anticipate unread since we're done with }
-            c = src.read();
+            lexer.setValue(new Token("}", lexer.getPosition()));
+            return Tokens.tSTRING_CONTENT;
         }
         // END NETBEANS MODIFICATIONS
         
@@ -128,7 +125,16 @@ public class StringTerm extends StrTerm {
             buffer.append('#');
         }
         src.unread(c);
-        if (parseStringIntoBuffer(src, buffer) == 0) {
+        // BEGIN NETBEANS MODIFICATIONS
+        //if (parseStringIntoBuffer(src, buffer) == 0) {
+        int parsed;
+        if (processingEmbedded == EMBEDDED_DEXPR) {
+            parsed = parseDExprIntoBuffer(src, buffer);
+        } else {
+            parsed = parseStringIntoBuffer(src, buffer);
+        }
+        if (parsed == 0) {
+        // END NETBEANS MODIFICATIONS
             // BEGIN NETBEANS MODIFICATIONS
             // We've read to the end of input and haven't found a corresponding String
             // terminator. However, we don't always want to return the rest of the input as
@@ -217,7 +223,7 @@ public class StringTerm extends StrTerm {
         }
         return options | kcode;
     }
-
+    
     public char parseStringIntoBuffer(LexerSource src, ByteList buffer) throws java.io.IOException {
         char c;
 
@@ -296,6 +302,72 @@ public class StringTerm extends StrTerm {
         }
         return c;
     }
+
+    // BEGIN NETBEANS MODIFICATIONS
+    public char parseDExprIntoBuffer(LexerSource src, ByteList buffer) throws java.io.IOException {
+        char c;
+        
+        assert processingEmbedded == EMBEDDED_DEXPR;
+
+        while ((c = src.read()) != RubyYaccLexer.EOF) {
+            if (c == '{') {
+                nest++;
+            } else if (c == '}') {
+                if (nest == 0) {
+                    src.unread(c);
+                    break;
+                }
+                nest--;
+            } else if (c == '\\') {
+                c = src.read();
+                switch (c) {
+                case '\n':
+                    if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
+                        break;
+                    }
+                    if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
+                        continue;
+                    }
+                    buffer.append('\\');
+                    break;
+
+                case '\\':
+                    if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
+                        buffer.append(c);
+                    }
+                    break;
+
+                default:
+                    if ((func & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
+                        src.unread(c);
+                        parseEscapeIntoBuffer(src, buffer);
+                        continue;
+                    } else if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
+                        src.unread(c);
+                        if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
+                            buffer.append('\\');
+                        }
+                        c = src.readEscape();
+                    } else if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
+                            && Character.isWhitespace(c)) {
+                        /* ignore backslashed spaces in %w */
+                    } else if (c != term && !(paren != '\0' && c == paren)) {
+                        buffer.append('\\');
+                    }
+                }
+            } else if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
+                    && Character.isWhitespace(c)) {
+                src.unread(c);
+                break;
+            }
+            if (c == '\0' && (func & RubyYaccLexer.STR_FUNC_SYMBOL) != 0) {
+                throw new SyntaxException(src.getPosition(), "symbol cannot contain '\\0'");
+            }
+            buffer.append(c);
+        }
+        return c;
+    }
+    // END NETBEANS MODIFICATIONS
 
     // Was a goto in original ruby lexer
     private void escaped(LexerSource src, ByteList buffer) throws java.io.IOException {

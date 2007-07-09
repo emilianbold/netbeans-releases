@@ -579,8 +579,11 @@ public class CodeCompleter implements Completable {
         return null;
     }
 
-    private boolean completeKeywords(List<CompletionProposal> proposals, String prefix,
+    private boolean completeKeywords(List<CompletionProposal> proposals, CompletionRequest request,
         boolean isSymbol) {
+        
+        String prefix = request.prefix;
+        
         // Keywords
         if (prefix.equals("$")) {
             // Show dollar variable matches (global vars from the user's
@@ -589,7 +592,7 @@ public class CodeCompleter implements Completable {
                 String word = RUBY_DOLLAR_VARIABLES[i];
                 String desc = RUBY_DOLLAR_VARIABLES[i + 1];
 
-                KeywordItem item = new KeywordItem(word, desc, anchor);
+                KeywordItem item = new KeywordItem(word, desc, anchor, request);
 
                 if (isSymbol) {
                     item.setSymbol(true);
@@ -601,7 +604,7 @@ public class CodeCompleter implements Completable {
 
         for (String keyword : RUBY_BUILTIN_VARS) {
             if (startsWith(keyword, prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, anchor);
+                KeywordItem item = new KeywordItem(keyword, null, anchor, request);
 
                 if (isSymbol) {
                     item.setSymbol(true);
@@ -613,7 +616,7 @@ public class CodeCompleter implements Completable {
 
         for (String keyword : RubyUtils.RUBY_KEYWORDS) {
             if (startsWith(keyword, prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, anchor);
+                KeywordItem item = new KeywordItem(keyword, null, anchor, request);
 
                 if (isSymbol) {
                     item.setSymbol(true);
@@ -626,14 +629,16 @@ public class CodeCompleter implements Completable {
         return false;
     }
 
-    private boolean completeRegexps(List<CompletionProposal> proposals, String prefix) {
+    private boolean completeRegexps(List<CompletionProposal> proposals, CompletionRequest request) {
+        String prefix = request.prefix;
+
         // Regular expression matching.  {
         for (int i = 0, n = RUBY_REGEXP_WORDS.length; i < n; i += 2) {
             String word = RUBY_REGEXP_WORDS[i];
             String desc = RUBY_REGEXP_WORDS[i + 1];
 
             if (startsWith(word, prefix)) {
-                KeywordItem item = new KeywordItem(word, desc, anchor);
+                KeywordItem item = new KeywordItem(word, desc, anchor, request);
                 proposals.add(item);
             }
         }
@@ -641,13 +646,15 @@ public class CodeCompleter implements Completable {
         return true;
     }
 
-    private boolean completePercentWords(List<CompletionProposal> proposals, String prefix) {
+    private boolean completePercentWords(List<CompletionProposal> proposals, CompletionRequest request) {
+        String prefix = request.prefix;
+
         for (int i = 0, n = RUBY_PERCENT_WORDS.length; i < n; i += 2) {
             String word = RUBY_PERCENT_WORDS[i];
             String desc = RUBY_PERCENT_WORDS[i + 1];
 
             if (startsWith(word, prefix)) {
-                KeywordItem item = new KeywordItem(word, desc, anchor);
+                KeywordItem item = new KeywordItem(word, desc, anchor, request);
                 proposals.add(item);
             }
         }
@@ -655,12 +662,12 @@ public class CodeCompleter implements Completable {
         return true;
     }
 
-    private boolean completeStringBegins(List<CompletionProposal> proposals) {
+    private boolean completeStringBegins(List<CompletionProposal> proposals, CompletionRequest request) {
         for (int i = 0, n = RUBY_STRING_PAIRS.length; i < n; i += 2) {
             String word = RUBY_STRING_PAIRS[i];
             String desc = RUBY_STRING_PAIRS[i + 1];
 
-            KeywordItem item = new KeywordItem(word, desc, anchor);
+            KeywordItem item = new KeywordItem(word, desc, anchor, request);
             proposals.add(item);
         }
 
@@ -671,9 +678,13 @@ public class CodeCompleter implements Completable {
      * we'd show the inherited methods).
      * This needs to be enhanced to handle "Foo." prefixes, e.g. def self.foo
      */
-    private boolean completeDefMethod(List<CompletionProposal> proposals, RubyIndex index,
-        String prefix, int astOffset, int lexOffset, TokenHierarchy<Document> th, String fqn, NameKind kind,
-        QueryType queryType) {
+    private boolean completeDefMethod(List<CompletionProposal> proposals, CompletionRequest request, String fqn) {
+        RubyIndex index = request.index;
+        String prefix = request.prefix;
+        int lexOffset = request.lexOffset;
+        TokenHierarchy<Document> th = request.th;
+        NameKind kind = request.kind;
+        
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         if ((index != null) && (ts != null)) {
@@ -738,7 +749,7 @@ public class CodeCompleter implements Completable {
                         // If a method is an "initialize" method I should do something special so that
                         // it shows up as a "constructor" (in a new() statement) but not as a directly
                         // callable initialize method (it should already be culled because it's private)
-                        MethodItem item = new MethodItem(method, anchor);
+                        MethodItem item = new MethodItem(method, anchor, request);
                         // Exact matches
                         item.setSmart(method.isSmart());
                         proposals.add(item);
@@ -759,9 +770,20 @@ public class CodeCompleter implements Completable {
      *
      * @todo Look for self or this or super; these should be limited to inherited.
      */
-    private boolean completeObjectMethod(List<CompletionProposal> proposals, RubyIndex index,
-        String prefix, int astOffset, int lexOffset, BaseDocument doc, TokenHierarchy<Document> th, String fqn,
-        AstPath path, Node node, NameKind kind, QueryType queryType, Call call, FileObject fileObject) {
+    private boolean completeObjectMethod(List<CompletionProposal> proposals, CompletionRequest request, String fqn,
+        Call call) {
+        
+        RubyIndex index = request.index;
+        String prefix = request.prefix;
+        int astOffset = request.astOffset;
+        int lexOffset = request.lexOffset;
+        TokenHierarchy<Document> th = request.th;
+        BaseDocument doc = request.doc;
+        AstPath path = request.path;
+        NameKind kind = request.kind;
+        FileObject fileObject = request.fileObject;
+        Node node = request.node;
+
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         boolean done = true;
@@ -875,7 +897,7 @@ public class CodeCompleter implements Completable {
                 // it shows up as a "constructor" (in a new() statement) but not as a directly
                 // callable initialize method (it should already be culled because it's private)
                 //proposals.add(new DefaultCompletionProposal(method.getComObject(), anchor));
-                MethodItem methodItem = new MethodItem(method, anchor);
+                MethodItem methodItem = new MethodItem(method, anchor, request);
                 // Exact matches
                 methodItem.setSmart(method.isSmart());
                 proposals.add(methodItem);
@@ -889,9 +911,14 @@ public class CodeCompleter implements Completable {
 
     /** Determine if we're trying to complete the name for a "def" (in which case
      * we'd show the inherited methods) */
-    private boolean completeClasses(List<CompletionProposal> proposals, RubyIndex index,
-        String prefix, int astOffset, int lexOffset, NameKind kind, QueryType queryType, boolean showSymbols,
-        Call call) {
+    private boolean completeClasses(List<CompletionProposal> proposals, CompletionRequest request,
+        boolean showSymbols, Call call) {
+
+        RubyIndex index = request.index;
+        String prefix = request.prefix;
+        TokenHierarchy<Document> th = request.th;
+        NameKind kind = request.kind;
+        
         int classAnchor = anchor;
         int fqnIndex = prefix.lastIndexOf("::");
 
@@ -914,7 +941,7 @@ public class CodeCompleter implements Completable {
         }
 
         for (IndexedClass cls : index.getClasses(fullPrefix, kind, false, false, false)) {
-            ClassItem item = new ClassItem(cls, classAnchor);
+            ClassItem item = new ClassItem(cls, classAnchor, request);
             item.setSmart(true);
 
             if (showSymbols) {
@@ -928,8 +955,12 @@ public class CodeCompleter implements Completable {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean completeStrings(List<CompletionProposal> proposals, RubyIndex index,
-        String prefix, int astOffset, int lexOffset, TokenHierarchy<Document> th) {
+    private boolean completeStrings(List<CompletionProposal> proposals, CompletionRequest request) {
+        RubyIndex index = request.index;
+        String prefix = request.prefix;
+        int lexOffset = request.lexOffset;
+        TokenHierarchy<Document> th = request.th;
+        
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         if ((index != null) && (ts != null)) {
@@ -977,7 +1008,7 @@ public class CodeCompleter implements Completable {
 
                     if ((offset == (lexOffset - 1)) && (tokenText.length() > 0) &&
                             (tokenText.charAt(0) == '%')) {
-                        if (completePercentWords(proposals, prefix)) {
+                        if (completePercentWords(proposals, request)) {
                             return true;
                         }
                     }
@@ -988,7 +1019,7 @@ public class CodeCompleter implements Completable {
                         (id == RubyTokenId.REGEXP_BEGIN)) &&
                         ((token.length() == 3) && (lexOffset == (ts.offset() + 2)))) {
                     if (Character.isLetter(tokenText.charAt(1))) {
-                        completeStringBegins(proposals);
+                        completeStringBegins(proposals, request);
 
                         return true;
                     }
@@ -1017,7 +1048,7 @@ public class CodeCompleter implements Completable {
                 }
 
                 if (inRegexp) {
-                    if (completeRegexps(proposals, prefix)) {
+                    if (completeRegexps(proposals, request)) {
                         return true;
                     }
                 } else if (inString) {
@@ -1051,7 +1082,7 @@ public class CodeCompleter implements Completable {
                                     // it shows up as a "constructor" (in a new() statement) but not as a directly
                                     // callable initialize method (it should already be culled because it's private)
                                     KeywordItem item =
-                                        new KeywordItem(require[0], require[1], anchor);
+                                        new KeywordItem(require[0], require[1], anchor, request);
                                     proposals.add(item);
                                 }
 
@@ -1073,7 +1104,7 @@ public class CodeCompleter implements Completable {
                                 continue;
                             }
 
-                            KeywordItem item = new KeywordItem(word, desc, anchor);
+                            KeywordItem item = new KeywordItem(word, desc, anchor, request);
                             proposals.add(item);
                         }
 
@@ -1089,7 +1120,11 @@ public class CodeCompleter implements Completable {
         return false;
     }
     
-    private boolean addMembers(List<CompletionProposal> proposals, CompilationInfo info, AstPath path, int caretOffset) {
+    private boolean addMembers(List<CompletionProposal> proposals, CompletionRequest request) {
+        CompilationInfo info = request.info;
+        AstPath path = request.path;
+        int astOffset = request.astOffset;
+
         Iterator<Node> it = path.leafToRoot();
 
         Node call = null;
@@ -1103,7 +1138,7 @@ public class CodeCompleter implements Completable {
                 Node argsNode = ((CallNode)node).getArgsNode();
 
                 if (argsNode != null) {
-                    index = AstUtilities.findArgumentIndex(argsNode, caretOffset);
+                    index = AstUtilities.findArgumentIndex(argsNode, astOffset);
 
                     if (index != -1) {
                         call = node;
@@ -1116,7 +1151,7 @@ public class CodeCompleter implements Completable {
                 Node argsNode = ((FCallNode)node).getArgsNode();
 
                 if (argsNode != null) {
-                    index = AstUtilities.findArgumentIndex(argsNode, caretOffset);
+                    index = AstUtilities.findArgumentIndex(argsNode, astOffset);
 
                     if (index != -1) {
                         call = node;
@@ -1169,7 +1204,7 @@ public class CodeCompleter implements Completable {
                         if (startIndex != -1 && endIndex != -1) {
                             // TODO: Ensure that we have only symbol chars between startIndex and endIndex)...
                             String symbol = comment.substring(startIndex+4, endIndex);
-                            SymbolHashItem item = new SymbolHashItem(method, name, symbol, anchor);
+                            SymbolHashItem item = new SymbolHashItem(method, name, symbol, anchor, request);
 
                             //item.setSmart(method.isSmart());
                             item.setSmart(true);
@@ -1226,11 +1261,27 @@ public class CodeCompleter implements Completable {
         // Discover whether we're in a require statement, and if so, use special completion
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         BaseDocument doc = (BaseDocument)document;
+        FileObject fileObject = info.getFileObject();
 
+        // Carry completion context around since this logic is split across lots of methods
+        // and I don't want to pass dozens of parameters from method to method; just pass
+        // a request context with supporting info needed by the various completion helpers i
+        CompletionRequest request = new CompletionRequest();
+        request.lexOffset = lexOffset;
+        request.astOffset = astOffset;
+        request.index = index;
+        request.doc = doc;
+        request.info = info;
+        request.prefix = prefix;
+        request.th = th;
+        request.kind = kind;
+        request.queryType = queryType;
+        request.fileObject = fileObject;
+        
         // See if we're inside a string or regular expression and if so,
         // do completions applicable to strings - require-completion,
         // escape codes for quoted strings and regular expressions, etc.
-        if (completeStrings(proposals, index, prefix, astOffset, lexOffset, th)) {
+        if (completeStrings(proposals, request)) {
             return proposals;
         }
 
@@ -1270,7 +1321,7 @@ public class CodeCompleter implements Completable {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
-            completeKeywords(proposals, prefix, showSymbols);
+            completeKeywords(proposals, request, showSymbols);
 
             return proposals;
         }
@@ -1288,6 +1339,7 @@ public class CodeCompleter implements Completable {
         }
 
         AstPath path = new AstPath(root, astOffset);
+        request.path = path;
 
         Map<String, Node> variables = new HashMap<String, Node>();
         Map<String, Node> fields = new HashMap<String, Node>();
@@ -1295,6 +1347,7 @@ public class CodeCompleter implements Completable {
         Map<String, Node> constants = new HashMap<String, Node>();
 
         Node closest = path.leaf();
+        request.node = closest;
 
         Call call = LexUtilities.getCallType(doc, th, lexOffset);
 
@@ -1350,7 +1403,7 @@ public class CodeCompleter implements Completable {
         
         // If we're in a call, add in some info and help for the code completion call
         // NOT YET ENABLED 
-        //addMembers(proposals, info, path, caretOffset);
+        //addMembers(proposals, request);
 
         // Code completion from the index.
         if (index != null) {
@@ -1362,8 +1415,7 @@ public class CodeCompleter implements Completable {
                 }
 
                 if ((fqn != null) &&
-                        completeDefMethod(proposals, index, prefix, astOffset, lexOffset, th, fqn, kind,
-                            queryType)) {
+                        completeDefMethod(proposals, request, fqn)) {
                     if (queryType == QueryType.DOCUMENTATION) {
                         proposals = filterDocumentation(proposals, root, doc, info, astOffset, lexOffset,
                                 prefix, path, index);
@@ -1372,10 +1424,8 @@ public class CodeCompleter implements Completable {
                     return proposals;
                 }
 
-                FileObject fileObject = info.getFileObject();
                 if ((fqn != null) &&
-                        completeObjectMethod(proposals, index, prefix, astOffset, lexOffset, doc, th, fqn,
-                            path, closest, kind, queryType, call, fileObject)) {
+                        completeObjectMethod(proposals, request, fqn, call)) {
                     return proposals;
                 }
 
@@ -1401,7 +1451,7 @@ public class CodeCompleter implements Completable {
                         // If a method is an "initialize" method I should do something special so that
                         // it shows up as a "constructor" (in a new() statement) but not as a directly
                         // callable initialize method (it should already be culled because it's private)
-                        MethodItem item = new MethodItem(method, anchor);
+                        MethodItem item = new MethodItem(method, anchor, request);
 
                         item.setSmart(method.isSmart());
 
@@ -1415,8 +1465,7 @@ public class CodeCompleter implements Completable {
             }
 
             if (showUpper || showSymbols) {
-                completeClasses(proposals, index, prefix, astOffset, lexOffset, kind, queryType,
-                    showSymbols, call);
+                completeClasses(proposals, request, showSymbols, call);
             }
         }
         assert (kind == NameKind.PREFIX) || (kind == NameKind.CASE_INSENSITIVE_PREFIX) ||
@@ -1431,7 +1480,7 @@ public class CodeCompleter implements Completable {
 
                 if (!overlapsLine(node, astLineBegin, astLineEnd)) {
                     AstVariableElement co = new AstVariableElement(node, variable);
-                    PlainItem item = new PlainItem(co, anchor);
+                    PlainItem item = new PlainItem(co, anchor, request);
                     item.setSmart(true);
 
                     if (showSymbols) {
@@ -1453,7 +1502,7 @@ public class CodeCompleter implements Completable {
                 }
 
                 Element co = new AstFieldElement(node);
-                FieldItem item = new FieldItem(co, anchor);
+                FieldItem item = new FieldItem(co, anchor, request);
                 item.setSmart(true);
 
                 if (showSymbols) {
@@ -1476,7 +1525,7 @@ public class CodeCompleter implements Completable {
                 }
 
                 AstElement co = new AstVariableElement(node, variable);
-                PlainItem item = new PlainItem(co, anchor);
+                PlainItem item = new PlainItem(co, anchor, request);
                 item.setSmart(true);
 
                 if (showSymbols) {
@@ -1508,7 +1557,7 @@ public class CodeCompleter implements Completable {
                 //                    co = new DefaultComVariable(variable, false, -1, -1);
                 //                    ((DefaultComVariable)co).setNode(node);
                 AstElement co = new AstVariableElement(node, variable);
-                PlainItem item = new PlainItem(co, anchor);
+                PlainItem item = new PlainItem(co, anchor, request);
                 item.setSmart(true);
 
                 if (showSymbols) {
@@ -1519,7 +1568,7 @@ public class CodeCompleter implements Completable {
             }
         }
 
-        if (completeKeywords(proposals, prefix, showSymbols)) {
+        if (completeKeywords(proposals, request, showSymbols)) {
             return proposals;
         }
 
@@ -2450,16 +2499,33 @@ public class CodeCompleter implements Completable {
 
         return ParameterInfo.NONE;
     }
+    
+    private class CompletionRequest {
+        private TokenHierarchy<Document> th;
+        private CompilationInfo info;
+        private AstPath path;
+        private Node node;
+        private int lexOffset;
+        private int astOffset;
+        private BaseDocument doc;
+        private String prefix;
+        private RubyIndex index;
+        private NameKind kind;
+        private QueryType queryType;
+        private FileObject fileObject;
+    }
 
     private abstract class RubyCompletionItem implements CompletionProposal {
+        protected CompletionRequest request;
         protected Element element;
         protected int anchorOffset;
         protected boolean symbol;
         protected boolean smart;
 
-        private RubyCompletionItem(Element element, int anchorOffset) {
+        private RubyCompletionItem(Element element, int anchorOffset, CompletionRequest request) {
             this.element = element;
             this.anchorOffset = anchorOffset;
+            this.request = request;
         }
 
         public int getAnchorOffset() {
@@ -2539,8 +2605,8 @@ public class CodeCompleter implements Completable {
     private class MethodItem extends RubyCompletionItem {
         protected boolean smart;
 
-        MethodItem(Element element, int anchorOffset) {
-            super(element, anchorOffset);
+        MethodItem(Element element, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
         }
 
         public String getLhsHtml() {
@@ -2605,6 +2671,41 @@ public class CodeCompleter implements Completable {
             if (getName().equals("require") && "Kernel".equals(element.getIn())) { // NOI18N
                 return new String[] { " '", "'" };
             }
+            
+            if (forceCompletionSpaces()) {
+                // Can't have "" as the second arg because a bug causes pressing
+                // return to complete editing the last field (at he end of a buffer)
+                // such that the caret ends up BEFORE the last char instead of at the
+                // end of it
+                boolean ambiguous = false;
+                
+                AstPath path = request.path;
+                if (path != null) {
+                    Iterator<Node> it = path.leafToRoot();
+
+                    while (it.hasNext()) {
+                        Node node = it.next();
+
+                        if (AstUtilities.isCall(node)) {
+                            // We're in a call; see if it has parens
+                            // TODO - no problem with ambiguity if it's on a separate line, correct?
+                            
+                            // Is this the method we're trying to complete?
+                            if (node != request.node) {
+                                // See if the outer call has parentheses!
+                                ambiguous = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (ambiguous) {
+                    return new String[] { "(", ")" }; // NOI18N
+                } else {
+                    return new String[] { " ", " " }; // NOI18N
+                }
+            }
 
             if (element instanceof IndexedElement) {
                 List<String> comments = getComments(null, element);
@@ -2649,6 +2750,8 @@ public class CodeCompleter implements Completable {
                     }
                 }
                 
+                // Take a look at the method definition itself and look for parens there
+                
             }
 
             // Default - (,)
@@ -2669,8 +2772,8 @@ public class CodeCompleter implements Completable {
         private String keyword;
         private String description;
 
-        KeywordItem(String keyword, String description, int anchorOffset) {
-            super(null, anchorOffset);
+        KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
             this.keyword = keyword;
             this.description = description;
         }
@@ -2709,8 +2812,8 @@ public class CodeCompleter implements Completable {
     }
 
     private class ClassItem extends RubyCompletionItem {
-        ClassItem(Element element, int anchorOffset) {
-            super(element, anchorOffset);
+        ClassItem(Element element, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
         }
 
         public String getRhsHtml() {
@@ -2729,8 +2832,8 @@ public class CodeCompleter implements Completable {
     }
 
     private class PlainItem extends RubyCompletionItem {
-        PlainItem(Element element, int anchorOffset) {
-            super(element, anchorOffset);
+        PlainItem(Element element, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
         }
 
         public String getRhsHtml() {
@@ -2739,8 +2842,8 @@ public class CodeCompleter implements Completable {
     }
 
     private class FieldItem extends RubyCompletionItem {
-        FieldItem(Element element, int anchorOffset) {
-            super(element, anchorOffset);
+        FieldItem(Element element, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
         }
 
         public String getRhsHtml() {
@@ -2765,8 +2868,8 @@ public class CodeCompleter implements Completable {
         private String name;
         private String symbol;
         
-        SymbolHashItem(Element element, String name, String symbol, int anchorOffset) {
-            super(element, anchorOffset);
+        SymbolHashItem(Element element, String name, String symbol, int anchorOffset, CompletionRequest request) {
+            super(element, anchorOffset, request);
             this.name = name;
             this.symbol = symbol;
         }
@@ -2811,4 +2914,18 @@ public class CodeCompleter implements Completable {
 
     }
 
+    /** Return true if we always want to use parentheses
+     * @todo Make into a user-configurable option
+     * @todo Avoid doing this if there's possible ambiguity (e.g. nested method calls
+     *   without spaces
+     */
+    
+    private static boolean forceCompletionSpaces() {
+        return FORCE_COMPLETION_SPACES;
+    }
+    
+    private static final boolean FORCE_COMPLETION_SPACES = Boolean.getBoolean("ruby.complete.spaces"); // NOI18N
+    
+
+    
 }

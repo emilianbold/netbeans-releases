@@ -1695,6 +1695,10 @@ public class RubyYaccLexer {
                 break;
             }
     
+            // BEGIN NETBEANS MODIFICATIONS
+            // Need to undo newline status after reading too far
+            boolean wasNewline = src.wasBeginOfLine();
+            // END NETBEANS MODIFICATIONS
             do {
                 tokenBuffer.append(c);
                 /* no special multibyte character handling is needed in Java
@@ -1706,10 +1710,14 @@ public class RubyYaccLexer {
                         tokenBuffer.append(c);
                     }
                 }*/
+                // BEGIN NETBEANS MODIFICATIONS
+                wasNewline = src.wasBeginOfLine();
+                // END NETBEANS MODIFICATIONS
                 c = src.read();
             } while (isIdentifierChar(c));
             
             char peek = src.read();
+            
             if ((c == '!' || c == '?') && 
                 isIdentifierChar(tokenBuffer.charAt(0)) && peek != '=') {
                 src.unread(peek);
@@ -1718,6 +1726,9 @@ public class RubyYaccLexer {
             	src.unread(peek);
             	src.unread(c);
             }
+            // BEGIN NETBEANS MODIFICATIONS
+            src.setIsANewLine(wasNewline);
+            // END NETBEANS MODIFICATIONS
             
             int result = 0;
 

@@ -50,4 +50,13 @@ public class RubyTokenDumpTest extends NbTestCase {
                 RubyTokenId.language());
     }
     
+    public void testEmbeddedCode() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/embeddedcode.rb.txt",
+                RubyTokenId.language());
+    }    
+
+    public void testScenario2() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/postgresql_adapter.rb.txt",
+                RubyTokenId.language());
+    }    
 }

@@ -1,0 +1,58 @@
+.t.e.s.t. complicated1 - was total_rows = @connection.select_all("SELECT count(*) as TotalRows from (#{sql.gsub(/\bSELECT(\s+DISTINCT)?\b/i, "SELECT#{$1} TOP 1000000000")}) tally")[0][:TotalRows].to_i
+GSF_IDENTIFIER  "total_rows", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+NONUNARY_OP     "=", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+GSF_INSTANCE    "@connection", la=2, st=1
+DOT             ".", la=1, st=7
+GSF_IDENTIFIER  "select_all", la=2, st=2
+GSF_LPAREN      "(", la=1, st=RubyLexerState[32,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "SELECT count(*) as TotalRows from (", la=2, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "#{", st=RubyLexerState[12,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+EMBEDDED_RUBY   "sql.gsub(/\\bSELECT(\\s+DISTINCT)?\\b/i, "SELECT#{$1} TOP 1000000000")", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+QUOTED_STRING_LITERAL  "}", st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  ") tally", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_RPAREN      ")", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_LBRACKET    "[", st=RubyLexerState[8,null,EXPR_BEG,null,null]
+GSF_INT_LITERAL  "0", la=1, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_RBRACKET    "]", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_LBRACKET    "[", st=RubyLexerState[8,null,EXPR_BEG,null,null]
+GSF_TYPESYMBOL  ":", la=1, st=RubyLexerState[10,null,EXPR_FNAME,null,null]
+GSF_TYPESYMBOL  "TotalRows", la=2, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_RBRACKET    "]", la=1, st=RubyLexerState[8,null,EXPR_END,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "to_i", la=1, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+----- EOF -----
+
+.t.e.s.t. complicated2 - was quoted_value = "'#{quoted_value[1..-2].gsub(/\'/, "\\\\'")}'" if quoted_value.include?("\\\'") # (for ruby mode) " 
+GSF_IDENTIFIER  "quoted_value", la=2, st=3
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_CMDARG,null,null]
+NONUNARY_OP     "=", la=1, st=0
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[16,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "'", la=2, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+GSF_STRING_LITERAL  "#{", st=RubyLexerState[12,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+EMBEDDED_RUBY   "quoted_value[1..-2].gsub(/\\'/, "\\\\\\\\'")", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,2],EXPR_BEG,StringTermState[0,2],null]
+QUOTED_STRING_LITERAL  "}", st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "'", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_END,null,null]
+GSF_ANY_KEYWORD  "if", la=2, st=RubyLexerState[8,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "quoted_value", la=2, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[8,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "include?", la=1, st=RubyLexerState[8,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", st=RubyLexerState[40,null,EXPR_BEG,null,null]
+QUOTED_STRING_BEGIN  """, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_LITERAL  "\\\\\\'", la=1, st=RubyLexerState[8,StringTerm[2,",0,0,1],EXPR_BEG,StringTermState[0,1],null]
+QUOTED_STRING_END  """, st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_RPAREN      ")", st=RubyLexerState[8,null,EXPR_END,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[24,null,EXPR_END,null,null]
+GSF_LINE_COMMENT  "# (for ruby mode) " ", la=1, st=RubyLexerState[56,null,EXPR_BEG,null,null]
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

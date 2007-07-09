@@ -121,9 +121,15 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
         
-        // Look for an unterminated heredoc string
         int lineBegin = Utilities.getRowStart(doc,offset);
         int lineEnd = Utilities.getRowEnd(doc,offset);
+        
+        if (lineBegin == offset && lineEnd == offset) {
+            // Pressed return on a blank newline - do nothing
+            return -1;
+        }
+        
+        // Look for an unterminated heredoc string
         if (lineBegin != -1 && lineEnd != -1) {
             TokenSequence<?extends GsfTokenId> lineTs = LexUtilities.getRubyTokenSequence(doc, offset);
             if (lineTs != null) {
@@ -282,8 +288,19 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 // Line comments should continue
                 int indent = LexUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                sb.append("# ");  // NOI18N
                 LexUtilities.indent(sb, indent);
+                sb.append("#"); // NOI18N
+                // Copy existing indentation
+                int afterHash = begin+1;
+                String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash)-afterHash);
+                for (int i = 0; i < line.length(); i++) {
+                    char c = line.charAt(i);
+                    if (c == ' ' || c == '\t') {
+                        sb.append(c);
+                    } else {
+                        break;
+                    }
+                }
 
                 int insertOffset = offset; // offset < length ? offset+1 : offset;
                 doc.insertString(insertOffset, sb.toString(), null);
@@ -377,7 +394,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                                 LexUtilities.getToken(doc, lineBegin);
 
                             if ((token != null) && LexUtilities.isIndentToken(token.id()) &&
-                                    !LexUtilities.isBeginToken(token.id())) {
+                                    !LexUtilities.isBeginToken(token.id(), doc, lineBegin)) {
                                 insertEnd = false;
                             }
                         }
@@ -694,11 +711,11 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 OffsetRange begin;
 
                 if (id == RubyTokenId.RBRACE) {
-                    begin = LexUtilities.findBwd(ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
+                    begin = LexUtilities.findBwd(doc, ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
                 } else if (id == RubyTokenId.RBRACKET) {
-                    begin = LexUtilities.findBwd(ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
+                    begin = LexUtilities.findBwd(doc, ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
                 } else {
-                    begin = LexUtilities.findBegin(ts);
+                    begin = LexUtilities.findBegin(doc, ts);
                 }
 
                 if (begin != OffsetRange.NONE) {
@@ -750,7 +767,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 if (token.text().toString().startsWith("<<")) {
                     return LexUtilities.findHeredocEnd(ts, token);
                 }
-                return LexUtilities.findFwd(ts, RubyTokenId.QUOTED_STRING_BEGIN,
+                return LexUtilities.findFwd(doc, ts, RubyTokenId.QUOTED_STRING_BEGIN,
                     RubyTokenId.QUOTED_STRING_END);
             } else if (id == RubyTokenId.QUOTED_STRING_END) {
                 String s = token.text().toString();
@@ -760,14 +777,14 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                         return r;
                     }
                 }
-                return LexUtilities.findBwd(ts, RubyTokenId.QUOTED_STRING_BEGIN,
+                return LexUtilities.findBwd(doc, ts, RubyTokenId.QUOTED_STRING_BEGIN,
                     RubyTokenId.QUOTED_STRING_END);
             } else if (id == RubyTokenId.STRING_BEGIN) {
                 // Heredocs should be treated specially
                 if (token.text().toString().startsWith("<<")) {
                     return LexUtilities.findHeredocEnd(ts, token);
                 }
-                return LexUtilities.findFwd(ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
+                return LexUtilities.findFwd(doc, ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
             } else if (id == RubyTokenId.STRING_END) {
                 String s = token.text().toString();
                 if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
@@ -776,29 +793,32 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                         return r;
                     }
                 }
-                return LexUtilities.findBwd(ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
+                return LexUtilities.findBwd(doc, ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
             } else if (id == RubyTokenId.REGEXP_BEGIN) {
-                return LexUtilities.findFwd(ts, RubyTokenId.REGEXP_BEGIN, RubyTokenId.REGEXP_END);
+                return LexUtilities.findFwd(doc, ts, RubyTokenId.REGEXP_BEGIN, RubyTokenId.REGEXP_END);
             } else if (id == RubyTokenId.REGEXP_END) {
-                return LexUtilities.findBwd(ts, RubyTokenId.REGEXP_BEGIN, RubyTokenId.REGEXP_END);
+                return LexUtilities.findBwd(doc, ts, RubyTokenId.REGEXP_BEGIN, RubyTokenId.REGEXP_END);
             } else if (id == RubyTokenId.LPAREN) {
-                return LexUtilities.findFwd(ts, RubyTokenId.LPAREN, RubyTokenId.RPAREN);
+                return LexUtilities.findFwd(doc, ts, RubyTokenId.LPAREN, RubyTokenId.RPAREN);
             } else if (id == RubyTokenId.RPAREN) {
-                return LexUtilities.findBwd(ts, RubyTokenId.LPAREN, RubyTokenId.RPAREN);
+                return LexUtilities.findBwd(doc, ts, RubyTokenId.LPAREN, RubyTokenId.RPAREN);
             } else if (id == RubyTokenId.LBRACE) {
-                return LexUtilities.findFwd(ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
+                return LexUtilities.findFwd(doc, ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
             } else if (id == RubyTokenId.RBRACE) {
-                return LexUtilities.findBwd(ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
+                return LexUtilities.findBwd(doc, ts, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
             } else if (id == RubyTokenId.LBRACKET) {
-                return LexUtilities.findFwd(ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
+                return LexUtilities.findFwd(doc, ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
+            } else if (id == RubyTokenId.DO && !LexUtilities.isEndmatchingDo(doc, ts.offset())) {
+                // No matching dot for "do" used in conditionals etc.
+                return OffsetRange.NONE;
             } else if (id == RubyTokenId.RBRACKET) {
-                return LexUtilities.findBwd(ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
+                return LexUtilities.findBwd(doc, ts, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
             } else if (id.primaryCategory().equals("keyword")) {
-                if (LexUtilities.isBeginToken(id)) {
-                    return LexUtilities.findEnd(ts);
+                if (LexUtilities.isBeginToken(id, doc, ts)) {
+                    return LexUtilities.findEnd(doc, ts);
                 } else if ((id == RubyTokenId.END) || LexUtilities.isIndentToken(id)) { // Find matching block
 
-                    return LexUtilities.findBegin(ts);
+                    return LexUtilities.findBegin(doc, ts);
                 }
             }
         }
