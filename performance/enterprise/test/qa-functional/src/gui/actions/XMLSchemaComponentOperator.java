@@ -20,6 +20,7 @@
 package gui.actions;
 
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
@@ -39,6 +40,16 @@ public class XMLSchemaComponentOperator extends TopComponentOperator {
         super(topComponentName,Index);
     }
     
+    public static XMLSchemaComponentOperator findXMLSchemaComponentOperator(String topComponentName) {
+        XMLSchemaComponentOperator schema = null;
+        
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",120000);        
+            schema = new XMLSchemaComponentOperator(topComponentName);
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);        
+        return schema;
+        
+    }
     private JToggleButtonOperator getViewButton(String viewName) {
         return new JToggleButtonOperator(this,viewName);
     }
