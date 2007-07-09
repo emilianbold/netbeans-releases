@@ -153,15 +153,20 @@ public final class ConnectionWidgetLayout implements Layout {
     }
 
     private void layoutChildAt (Widget childWidget, Point linePoint) {
-        if (! childWidget.isVisible ()) {
+        if (!childWidget.isVisible ()) {
             childWidget.resolveBounds (new Point (linePoint.x, linePoint.y), new Rectangle ());
             return;
         }
         Rectangle preferredBounds = childWidget.getPreferredBounds ();
-        Point referencePoint = getReferencePoint (alignments != null ? alignments.get (childWidget) : null, preferredBounds);
+        LayoutFactory.ConnectionWidgetLayoutAlignment alignment = null;
+        if (alignments != null)
+            alignment = alignments.get (childWidget);
+        if (alignment == null)
+            alignment = LayoutFactory.ConnectionWidgetLayoutAlignment.NONE;
+        Point referencePoint = getReferencePoint (alignment, preferredBounds);
         Point location = childWidget.getPreferredLocation ();
         if (location != null)
-            referencePoint.translate (- location.x, - location.y);
+            referencePoint.translate (-location.x, -location.y);
         childWidget.resolveBounds (new Point (linePoint.x - referencePoint.x, linePoint.y - referencePoint.y), preferredBounds);
     }
 
