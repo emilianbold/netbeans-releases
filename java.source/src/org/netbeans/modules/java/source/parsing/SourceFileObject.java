@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,7 +141,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         else {
             final Document doc = getDocument(isOpened());
             if (doc == null) {
-                Reader r = new InputStreamReader (this.file.getInputStream(),FileEncodingQuery.getEncoding(file));
+                Reader r = new InputStreamReader (new BufferedInputStream (this.file.getInputStream()),FileEncodingQuery.getEncoding(file));
                 if (filter != null) {
                     r = filter.filterReader(r);
                 }

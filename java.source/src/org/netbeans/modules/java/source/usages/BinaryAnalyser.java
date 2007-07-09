@@ -267,7 +267,7 @@ public class BinaryAnalyser implements LowMemoryListener {
         while(e.hasMoreElements()) {
             ZipEntry ze = (ZipEntry)e.nextElement();
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
-                InputStream in = zipFile.getInputStream( ze );
+                InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
                 try {                                        
                     analyse(in);
                 } catch (InvalidClassFormatException icf) {

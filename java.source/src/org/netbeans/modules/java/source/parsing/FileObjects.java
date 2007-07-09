@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -556,7 +557,7 @@ public class FileObjects {
 	}               
 
         public InputStream openInputStream() throws IOException {
-	    return new FileInputStream(f);
+	    return new BufferedInputStream (new FileInputStream(f));
 	}
 
 	public Reader openReader (boolean b) throws IOException {
@@ -856,7 +857,7 @@ public class FileObjects {
             // long time = System.currentTimeMillis();
             ZipFile zf = new ZipFile (archiveFile);
             // System.out.println("ZF OPEN " + archiveFile.getPath() + " took: " + (System.currentTimeMillis() - time )+ "ms." );
-            return new ZipInputStream (zf);
+            return new BufferedInputStream (new ZipInputStream (zf));
 	}
         
         public URI getArchiveURI () {
@@ -886,7 +887,7 @@ public class FileObjects {
         @Override
         public InputStream openInputStream () throws IOException {
             try {
-                return FastJar.getInputStream(archiveFile, offset);
+                return new BufferedInputStream (FastJar.getInputStream(archiveFile, offset));
             } catch (IOException e) {
                 return super.openInputStream();
             }
@@ -923,7 +924,7 @@ public class FileObjects {
 	}
         
         public InputStream openInputStream() throws IOException {
-            return this.zipFile.getInputStream(new ZipEntry (this.resName));
+            return new BufferedInputStream (this.zipFile.getInputStream(new ZipEntry (this.resName)));
 	}
         
         public URI getArchiveURI () {
