@@ -35,12 +35,12 @@
   module or application, there are two deployment descriptors:</p>
 <ul>
   <li>A general deployment descriptor that configures deployment settings on any 
-    J2EE-compliant implementation. The general deployment descriptor is named 
+    Java EE-compliant implementation. The general deployment descriptor is named 
     <tt><i>moduleType</i>.xml</tt> (for example, <tt>ejb-jar.xml</tt> for EJB 
     modules and <tt>web.xml</tt> for web application modules.)</li>
   <li>A server-specific deployment descriptor that configures deployment settings 
     for a specific server implementation. For example, the deployment descriptors 
-    for the Sun Java System Application Server are named <tt>sun-<i>moduleType</i>.xml</tt>. 
+    for the Sun Java System Application Server/GlassFish are named <tt>sun-<i>moduleType</i>.xml</tt>. 
     The deployment descriptor for the Tomcat Web Server is named <tt>context.xml</tt>.</li>
 </ul>
 <h3>Deployment Descriptors in the IDE</h3>
@@ -55,7 +55,7 @@
   bean or adding a web application module to an enterprise application. </p>
 <p>The IDE also automatically updates your server-specific deployment descriptors 
   if the target server is the Tomcat Web Server or the Sun Java System Application 
-  Server. For all other application servers, you have to write the deployment 
+  Server/GlassFish. For all other application servers, you have to write the deployment 
   descriptors yourself.</p>
 <p>You can open a graphical editor for a deployment descriptor by double-clicking 
   its node in the Projects window. You can edit the deployment descriptor's XML 
@@ -63,8 +63,8 @@
 <p>The IDE also automatically registers the DTDs and schemas for all the Java EE 
   deployment descriptors, as well as the Sun Java System Application Server DTDs. 
   You can therefore check and validate the XML in your deployment descriptors 
-  according to the DTDs and schemas. You can view the DTDs by going to the Runtime 
-  window and expanding the DTD and XML Schema Catalogs node.</p>
+  according to the DTDs and schemas. You can view the DTDs by choosing Tools &gt; DTDs and XML Schemas
+  from the main menu.</p>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

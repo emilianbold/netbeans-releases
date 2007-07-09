@@ -28,52 +28,46 @@
       <li>If you want to generate entity beans from an existing database connection, 
         make sure the database is running and you have 
 		<a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">registered a connection</a> 
-        to it in the Runtime window.</li>
+        to it in the Services window.</li>
       <li>If you want to use a database schema, make sure the database schema 
         file exists in your project's <tt>conf</tt> folder.</li>
     </ul>
   </li>
   <li>Right-click the EJB module project node in the Projects window and choose 
-    New &gt; Entity 
-    Beans from Database.</li>
+    New &gt; Entity Beans from Database.</li>
   <li>Select the database source: 
     <ul>
-      <li><b>JDBC Connection.</b> The combo box lists all your registered database 
+      <li><b>JDBC Connection.</b> The drop-down list displays all your registered database 
         connections. You can add a database connection by choosing Add Connection 
-        from the combo box.</li>
-      <li><b>Database Schema.</b> The combo box lists all of the database schema 
+        from the drop-down list.</li>
+      <li><b>Database Schema.</b> The drop-down list displays all of the database schema 
         files in your project's <tt>conf</tt> folder. If your project does not 
         contain any database schema files, this option is disabled.</li>
     </ul>
   </li>
-  <li>In the Location combo box, select the source root to which you want to add 
-    the enterprise beans .</li>
-  <li>In the Package combo box, select an existing package or type a new package 
-    name.</li>
+  <li>In the Location drop-down list, select the source root to which you want to add the enterprise beans .</li>
+  <li>In the Package drop-down list, select an existing package or type a new package name.</li>
   <li>Specify whether to generate finder methods for all CMP fields. </li>
-  <li>Specify whether to add the CMP Fields and CMR fields to the local interfaces. 
-    </li>
+  <li>Specify whether to add the CMP Fields and CMR fields to the local interfaces.</li>
   <li>Click Next.</li>
-  <li>Select any table in from the list on the left and click Add. Then click 
-    Finish. </li>
+  <li>Select any table from the list on the left and click Add. Then click Finish. </li>
 </ol>
-<p>When you generate entity beans from a database, the IDE does the following: 
-</p>
+<p>When you generate entity beans from a database, the IDE does the following:</p>
 <ul>
   <li>If creating the entity beans from a database connection, grabs the database 
     structure and stores it in a database schema file in your project's <tt>conf</tt> 
     folder.</li>
-  <li>Creates an entity bean each of the selected tables and any tables the selected 
+  <li>Creates an entity bean for each of the selected tables and any tables the selected 
     tables reference. A node for each entity bean is displayed in the project's 
     Enterprise Beans node. By default, the generated entity beans only have local 
     interfaces. Each entity bean contains a CMP field for each column in the table 
     and a CMR field for any column that references another table. </li>
   <li>Configures any container-managed relationships in the EJB module's <tt>ejb-jar.xml</tt> 
-    deployment descriptor. You can view and edit relationships by expanding the 
+    deployment descriptor. <!-- TODO: Editing CMP relationships now only works in EJB3.0 -- You can view and edit relationships by expanding the 
     project's Configuration Files node, double-clicking <tt>ejb-jar.xml</tt>, 
-    and clicking CMP Relationships in the top of the visual editor.</li>
+    and clicking CMP Relationships in the top of the visual editor.--></li>
 </ul>
-<p>If your project's target server is the Sun Java System Application Server, the IDE also 
+<p>If your project's target server is the Sun Java System Application Server/GlassFish, the IDE also 
   does the following:</p>
 <ul>
   <li>Creates a <tt>sun-cmp-mappings.xml</tt> file in your configuration files 
@@ -92,16 +86,13 @@
     server resources yourself.</li>
 </ul>
 <dl>
-    <dt><a name="seealso">See Also</a></dt>
+  <dt><a name="seealso">See Also</a></dt>
   <dd><a href="create_ejb_project.html">Creating an EJB Module Project</a></dd>
-  <dd><a href="../../enterprise/general/ent_app_creating.html">Creating an Enterprise 
-    Application Project</a></dd>
-  <dd><a href="../../web/create/about/about_create_webapps.html">About Creating 
-    Web Applications</a></dd>
+  <dd><a href="../../enterprise/general/ent_app_creating.html">Creating an Enterprise Application Project</a></dd>
+  <dd><a href="../../web/create/about/about_create_webapps.html">About Creating Web Applications</a></dd>
   <dd><a href="call_ejb.html">Creating an Enterprise Bean</a> </dd>
   <dd><a href="../general/about_entity_beans.html">About Entity Beans</a> </dd>
-  <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Creating 
-    a Database Schema</a> </dd>
+  <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Creating a Database Schema</a> </dd>
 </dl>
 
 <hr>
