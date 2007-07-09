@@ -147,4 +147,22 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
         });
         assertSame(expectedResult, result);
     }
+
+    public void testStaticFieldsIgnoredIssue108993() throws Exception {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Employee.java",
+                "package foo;" +
+                "import javax.persistence.*;" +
+                "@Entity()" +
+                "public class Employee {" +
+                "   public static String ID = \"id\";" +
+                "   @Id()" +
+                "   private int id;" +
+                "}");
+        createModel().runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+            public Void run(EntityMappingsMetadata metadata) {
+                assertEquals(0, metadata.getRoot().getEntity()[0].getAttributes().getBasic().length);
+                return null;
+            }
+        });
+    }
 }

@@ -23,6 +23,7 @@ import java.lang.String;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 
@@ -68,6 +69,9 @@ public final class AttributesHelper {
     }
 
     private void handleProperty(Element element) {
+        if (element.getModifiers().contains(Modifier.STATIC)) {
+            return;
+        }
         String propertyName = element.getSimpleName().toString();
         if (ElementKind.METHOD.equals(element.getKind())) {
             propertyName = EntityMappingsUtilities.getterNameToPropertyName(propertyName);
