@@ -39,7 +39,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Pavel Flaska
  */
-public class AnnotationOnLocVarTest extends GeneratorTest {
+public class AnnotationOnLocVarTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of AnnotationAttributeValueTest */
     public AnnotationOnLocVarTest(String name) {
@@ -131,8 +131,6 @@ public class AnnotationOnLocVarTest extends GeneratorTest {
         System.err.println(res);
         File g = getFile(getGoldenDir(), getGoldenPckg() + "testAddLocVarWithAnn_AnnotationOnLocVarTest.pass");
         String gold = TestUtilities.copyFileToString(g);
-        System.err.println("-----");
-        System.err.println(gold);
         assertEquals(res, gold);
     }
     
