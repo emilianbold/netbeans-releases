@@ -73,25 +73,27 @@ public final class KitsTracker {
         }
             
         synchronized (mimeType2kitClass) {
-            // Stop listening
-            if (eventSources != null) {
-                for(FileObject fo : eventSources) {
-                    fo.removeFileChangeListener(fcl);
+            if (reload) {
+                // Stop listening
+                if (eventSources != null) {
+                    for(FileObject fo : eventSources) {
+                        fo.removeFileChangeListener(fcl);
+                    }
                 }
+
+                // Update the cache
+                mimeType2kitClass.clear();
+                mimeType2kitClass.putAll(reloadedMap);
+
+                // Start listening again
+                eventSources = newEventSources;
+                for(FileObject fo : eventSources) {
+                    fo.addFileChangeListener(fcl);
+                }
+
+                // Set the flag
+                needsReloading = false;
             }
-            
-            // Update the cache
-            mimeType2kitClass.clear();
-            mimeType2kitClass.putAll(reloadedMap);
-            
-            // Start listening again
-            eventSources = newEventSources;
-            for(FileObject fo : eventSources) {
-                fo.addFileChangeListener(fcl);
-            }
-            
-            // Set the flag
-            needsReloading = false;
             
             // Compute the list
             ArrayList<String> list = new ArrayList<String>();
