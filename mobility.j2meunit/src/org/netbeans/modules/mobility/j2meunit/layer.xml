@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
                 <attr name="MIDP" boolvalue="true"/>
+                <attr name="position" intvalue="590"/>
             </file>
         </folder>
     </folder>
