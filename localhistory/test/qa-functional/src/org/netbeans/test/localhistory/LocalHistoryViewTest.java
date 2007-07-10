@@ -126,7 +126,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         
         Thread.sleep(100);
         versions=slho.getVersionCount();
-        assertEquals("2. Wrong number of versions!", 2, versions);
+        assertEquals("3. Wrong number of versions!", 2, versions);
         slho.close();
         
         TestKit.createNewPackage(PROJECT_NAME, "NewPackage");
@@ -142,7 +142,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         slho = ShowLocalHistoryOperator.invoke(node);
         Thread.sleep(100);
         versions = slho.getVersionCount();
-        assertEquals("3. Wrong number of versions!", 1, versions);
+        assertEquals("4. Wrong number of versions!", 1, versions);
         slho.close();
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
         node.performPopupActionNoBlock("Delete");
@@ -155,7 +155,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         slho = ShowLocalHistoryOperator.invoke(node);        
         Thread.sleep(100);        
         versions = slho.getVersionCount();
-        assertEquals("3. Wrong number of versions!", 2, versions);
+        assertEquals("5. Wrong number of versions!", 2, versions);
         node.performPopupAction("Open");
         eo = new EditorOperator("NewClass.java");
         assertEquals("Content of file differs after revert!", fileContent, eo.getText());
@@ -164,7 +164,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         eo.save();        
         Thread.sleep(100);
         versions=slho.getVersionCount();
-        assertEquals("4. Wrong number of versions!", 3, versions);
+        assertEquals("6. Wrong number of versions!", 3, versions);
         
     }
 }
