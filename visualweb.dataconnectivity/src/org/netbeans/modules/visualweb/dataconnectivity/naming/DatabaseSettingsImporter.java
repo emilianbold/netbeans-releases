@@ -287,7 +287,7 @@ public class DatabaseSettingsImporter {
                     
                     // To register a Derby connection, no need to check to see if Java DB driver had been registered
                     if (dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET)) {
-                        if (!dsInfo.getName().equals("Travel")) {
+                        if (!dsInfo.getName().equals("Travel") && !dsInfo.getName().equals("JumpStartCycles")) { 
                             drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
                             dbconn = DatabaseConnection.create(drvsArray[0], dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
                             ConnectionManager.getDefault().addConnection(dbconn);
