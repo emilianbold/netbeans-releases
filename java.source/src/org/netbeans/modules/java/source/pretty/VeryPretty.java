@@ -1141,9 +1141,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	if ((fromOffset < 0 || toOffset < 0) && tree.sym instanceof Symbol.ClassSymbol)
 	    print(null, tree.type);
 	else {
-	    Name n = tree.sym==null ? tree.name : tree.sym.name;
-	    if(n==names.init) print(tree.name);
-	    else print(n);
+	    print(tree.name);
 	}
     }
 
