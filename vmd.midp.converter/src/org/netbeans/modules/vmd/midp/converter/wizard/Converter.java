@@ -67,8 +67,8 @@ public class Converter {
             }
             final List<ConverterItem> items = getConverterItems (rootNode);
 
-            DataObject template = DataObject.find (Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates/MIDP/VisualMIDlet.java")); // NOI18N
-            DataObject outputDesign = template.createFromTemplate (folder, outputFileName);
+            DataObject template = DataObject.find (Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates/MIDP/ConverterVisualMIDlet.java")); // NOI18N
+            final DataObject outputDesign = template.createFromTemplate (folder, outputFileName);
             DocumentSerializer serializer = IOSupport.getDocumentSerializer (outputDesign);
             serializer.waitDocumentLoaded ();
             final DesignDocument document = serializer.getDocument ();
@@ -88,7 +88,7 @@ public class Converter {
                         convert (id2item, item, document);
 
                     try {
-                        ConverterCode.convertCode (items, styledDocument, outputStyledDocument, document);
+                        ConverterCode.convertCode (items, styledDocument, outputStyledDocument, document, inputJavaFile.getName (), outputDesign.getPrimaryFile ().getName ());
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace (e);
                     }

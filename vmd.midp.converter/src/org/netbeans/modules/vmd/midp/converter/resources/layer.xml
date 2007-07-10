@@ -15,4 +15,19 @@
             </file>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="MIDP">
+            <file name="ConverterVisualMIDlet.java" url="templates/convertervisualmidlet_java.template">
+                <attr name="position" intvalue="710"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP-hidden"/>
+                <attr name="simple" boolvalue="false"/>
+            </file>
+            <file name="ConverterVisualMIDlet.vmd" url="templates/convertervisualmidlet_vmd.template">
+                <attr name="template" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
