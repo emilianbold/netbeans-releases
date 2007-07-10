@@ -20,12 +20,15 @@
 package org.netbeans.modules.websvc.design.configuration;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 
 /**
  *
  * @author Ajit Bhate
  */
 public interface WSConfiguration {
+    
+    public static String PROPERTY="value";
     
     /**
      * Returns the user interface component for this WSConfiguration.
@@ -72,4 +75,14 @@ public interface WSConfiguration {
      */ 
     boolean isSet();
 
+    /**
+     * Allows to register for changes on the client.
+     */ 
+    public void registerListener(PropertyChangeListener listener);
+
+    /**
+     * Required to unregister the listeners when not needed.
+     */ 
+    public void unregisterListener(PropertyChangeListener listener);
+        
 }

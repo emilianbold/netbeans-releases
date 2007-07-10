@@ -21,6 +21,9 @@ package org.netbeans.modules.websvc.wsitconf.design;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -36,6 +39,8 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -53,6 +58,11 @@ public class SecurityConfiguration implements WSConfiguration {
     private ServiceModel serviceModel;
     private ServiceChangeListener scl;
     private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
+
+    private ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    private Binding binding;
+    
+    private ComponentListener cl;
     
     /** Creates a new instance of WSITWsConfiguration */
 
@@ -61,6 +71,28 @@ public class SecurityConfiguration implements WSConfiguration {
         this.implementationFile = implementationFile;
         this.project = FileOwnerQuery.getOwner(implementationFile);
         this.serviceModel = ServiceModel.getServiceModel(implementationFile);
+        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+        this.cl = new ComponentListener() {
+            private void update() {
+                boolean enabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
+                for (PropertyChangeListener pcl : listeners) {
+                    PropertyChangeEvent pce = new PropertyChangeEvent(this, WSConfiguration.PROPERTY, null, enabled);
+                    pcl.propertyChange(pce);
+                }
+            }
+            public void valueChanged(ComponentEvent evt) {
+                update();
+            }
+            public void childrenAdded(ComponentEvent evt) {
+                update();
+            }
+            public void childrenDeleted(ComponentEvent evt) {
+                update();
+            }
+        };
+        if (binding != null) {
+            binding.getModel().addComponentListener(cl);
+        }
     }
 
     public Component getComponent() {
@@ -81,7 +113,6 @@ public class SecurityConfiguration implements WSConfiguration {
   
     public boolean isSet() {
         boolean set = false;
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding != null) {
             set = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         }
@@ -93,7 +124,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
         
     public void set() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
+        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
         
         if (binding == null) return;
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
@@ -123,18 +154,11 @@ public class SecurityConfiguration implements WSConfiguration {
         }
     }
 
-    public void finalize() {
-        if (scl != null) {
-            serviceModel.removeServiceChangeListener(scl);
-        }
-    }
-    
     public void unset() {
         if (scl != null) {
             serviceModel.removeServiceChangeListener(scl);
         }
         
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding == null) return;
         if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
             SecurityPolicyModelHelper.disableSecurity(binding, true);
@@ -142,5 +166,22 @@ public class SecurityConfiguration implements WSConfiguration {
         }
     }
 
+    public void registerListener(PropertyChangeListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void unregisterListener(PropertyChangeListener listener) {
+        listeners.remove(listener);
+    }
+    
+    @Override
+    public void finalize() {
+        if (scl != null) {
+            serviceModel.removeServiceChangeListener(scl);
+        }
+        if (binding != null) {
+            binding.getModel().removeComponentListener(cl);
+        }
+    }
+    
 }
-

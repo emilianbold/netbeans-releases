@@ -21,6 +21,9 @@ package org.netbeans.modules.websvc.wsitconf.design;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -30,6 +33,8 @@ import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -38,13 +43,18 @@ import org.openide.util.Utilities;
  *
  * @author Martin Grebac
  */
-public class RMConfiguration  implements WSConfiguration {
+public class RMConfiguration implements WSConfiguration {
   
     private Service service;
     private FileObject implementationFile;
     private Project project;
     
+    private ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    
     private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
+    private Binding binding;
+    
+    private ComponentListener cl;
     
     /** Creates a new instance of WSITWsConfiguration */
 
@@ -52,6 +62,28 @@ public class RMConfiguration  implements WSConfiguration {
         this.service = service;
         this.implementationFile = implementationFile;
         this.project = FileOwnerQuery.getOwner(implementationFile);
+        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+        this.cl = new ComponentListener() {
+            private void update() {
+                boolean enabled = RMModelHelper.isRMEnabled(binding);
+                for (PropertyChangeListener pcl : listeners) {
+                    PropertyChangeEvent pce = new PropertyChangeEvent(this, WSConfiguration.PROPERTY, null, enabled);
+                    pcl.propertyChange(pce);
+                }
+            }
+            public void valueChanged(ComponentEvent evt) {
+                update();
+            }
+            public void childrenAdded(ComponentEvent evt) {
+                update();
+            }
+            public void childrenDeleted(ComponentEvent evt) {
+                update();
+            }
+        };
+        if (binding != null) {
+            binding.getModel().addComponentListener(cl);
+        }
     }
     
     public Component getComponent() {
@@ -61,7 +93,7 @@ public class RMConfiguration  implements WSConfiguration {
     public String getDescription() {
         return NbBundle.getMessage(RMConfiguration.class, "DesignConfigPanel.rmCB.text");
     }
-
+    
     public Image getIcon() {
         return Utilities.loadImage("org/netbeans/modules/websvc/wsitconf/resources/designer-rm.gif");
     }
@@ -71,7 +103,6 @@ public class RMConfiguration  implements WSConfiguration {
     }
   
     public boolean isSet() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding != null) {
             return RMModelHelper.isRMEnabled(binding);
         }
@@ -79,8 +110,9 @@ public class RMConfiguration  implements WSConfiguration {
     }
         
     public void set() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
+        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
         if (binding == null) return;
+        binding.getModel().addComponentListener(cl);
         if (!(RMModelHelper.isRMEnabled(binding))) {
             RMModelHelper.enableRM(binding);
             WSITModelSupport.save(binding);            
@@ -88,11 +120,26 @@ public class RMConfiguration  implements WSConfiguration {
     }
 
     public void unset() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding == null) return;
         if (RMModelHelper.isRMEnabled(binding)) {
             RMModelHelper.disableRM(binding);
             WSITModelSupport.save(binding);
         }
     }
+
+    public void registerListener(PropertyChangeListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void unregisterListener(PropertyChangeListener listener) {
+        listeners.remove(listener);
+    }   
+    
+    @Override
+    public void finalize() {
+        if (binding != null) {
+            binding.getModel().removeComponentListener(cl);
+        }
+    }
+    
 }

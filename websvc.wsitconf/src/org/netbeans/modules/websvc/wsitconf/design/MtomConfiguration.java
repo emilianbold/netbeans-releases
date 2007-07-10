@@ -21,6 +21,9 @@ package org.netbeans.modules.websvc.wsitconf.design;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -30,6 +33,8 @@ import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -42,8 +47,15 @@ public class MtomConfiguration  implements WSConfiguration{
   
     private Service service;
     private FileObject implementationFile;
+
+    private ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    
     private Project project;
 
+    private Binding binding;
+    
+    private ComponentListener cl;
+    
     private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
     
     /** Creates a new instance of WSITWsConfiguration */
@@ -52,6 +64,28 @@ public class MtomConfiguration  implements WSConfiguration{
         this.service = service;
         this.implementationFile = implementationFile;
         this.project = FileOwnerQuery.getOwner(implementationFile);
+        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+        this.cl = new ComponentListener() {
+            private void update() {
+                boolean enabled = TransportModelHelper.isMtomEnabled(binding);
+                for (PropertyChangeListener pcl : listeners) {
+                    PropertyChangeEvent pce = new PropertyChangeEvent(this, WSConfiguration.PROPERTY, null, enabled);
+                    pcl.propertyChange(pce);
+                }
+            }
+            public void valueChanged(ComponentEvent evt) {
+                update();
+            }
+            public void childrenAdded(ComponentEvent evt) {
+                update();
+            }
+            public void childrenDeleted(ComponentEvent evt) {
+                update();
+            }
+        };
+        if (binding != null) {
+            binding.getModel().addComponentListener(cl);
+        }
     }
     
     public Component getComponent() {
@@ -72,7 +106,6 @@ public class MtomConfiguration  implements WSConfiguration{
     }
   
     public boolean isSet() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding != null) {
             return TransportModelHelper.isMtomEnabled(binding);
         }
@@ -80,8 +113,9 @@ public class MtomConfiguration  implements WSConfiguration{
     }
     
     public void set() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
+        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
         if (binding == null) return;
+        binding.getModel().addComponentListener(cl);
         if (!(TransportModelHelper.isMtomEnabled(binding))) {
             TransportModelHelper.enableMtom(binding);
             WSITModelSupport.save(binding);
@@ -89,11 +123,26 @@ public class MtomConfiguration  implements WSConfiguration{
     }
 
     public void unset() {
-        Binding binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
         if (binding == null) return;
         if (TransportModelHelper.isMtomEnabled(binding)) {
             TransportModelHelper.disableMtom(binding);
             WSITModelSupport.save(binding);
         }
     }
+
+    public void registerListener(PropertyChangeListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void unregisterListener(PropertyChangeListener listener) {
+        listeners.remove(listener);
+    }
+    
+    @Override
+    public void finalize() {
+        if (binding != null) {
+            binding.getModel().removeComponentListener(cl);
+        }
+    }
+    
 }
