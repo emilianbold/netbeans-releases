@@ -25,7 +25,7 @@ cd $NB_ALL/nbbuild
 
 #Pack the distrubutions
 find netbeans | egrep -v "netbeans/(extra|testtools|cnd)" | zip -q $DIST/zip/$BASENAME-full.zip -@
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@
+find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|cnd|soa|identity)" | zip -q $DIST/zip/$BASENAME-basic.zip -@
 find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@
 
 mkdir $DIST/zip/moduleclusters
@@ -68,6 +68,9 @@ rm -rf enterprise*
 
 pack_component $DIST/zip/moduleclusters $BASENAME soa "soa*"
 rm -rf soa*
+
+pack_component $DIST/zip/moduleclusters $BASENAME soa "identity*"
+rm -rf identity*
 
 pack_component $DIST/zip/moduleclusters $BASENAME apisupport "apisupport*"
 rm -rf apisupport*
