@@ -114,9 +114,9 @@ public class TreeLoader extends LazyTreeLoader {
                     classes.mkdirs();
             }
             File outputFile = new File(classes, name + '.' + FileObjects.SIG);
-            if (!outputFile.exists())
-                outputFile.createNewFile();
-            writer = new PrintWriter(outputFile);
+            if (outputFile.exists())
+                return ;//no point in dumping again already existing sig file
+            writer = new PrintWriter(outputFile, "UTF-8");
             SymbolDumper.dump(writer, Types.instance(context), clazz, clazz.owner.kind != Kinds.PCK ? clazz.owner : null);
         } finally {
             if (writer != null)
