@@ -13,29 +13,27 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.VariableTree;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import com.sun.source.tree.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Modifier;
-import org.netbeans.modules.java.source.transform.Transformer;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -53,6 +51,7 @@ public class AnnotationOnLocVarTest extends GeneratorTest {
         return suite;
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "AnnOnLocalVar.java");
@@ -60,72 +59,81 @@ public class AnnotationOnLocVarTest extends GeneratorTest {
 
     public void testAddAnnToLocVar() throws IOException {
         System.err.println("testAddAnnToLocVar");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("<init>".contentEquals(node.getName())) {
-                        BlockTree body = node.getBody();
-                        List<? extends StatementTree> statements = body.getStatements();
-                        VariableTree statement = (VariableTree) statements.get(1);
-                        // mods will be replaced by a new one
-                        ModifiersTree mods = statement.getModifiers();
-                        List<AnnotationTree> anns = new ArrayList<AnnotationTree>(1);
-                        List<AssignmentTree> attribs = new ArrayList<AssignmentTree>(4);
-                        attribs.add(make.Assignment(make.Identifier("id"), make.Literal(Integer.valueOf(666))));
-                        attribs.add(make.Assignment(make.Identifier("synopsis"), make.Literal("fat")));
-                        attribs.add(make.Assignment(make.Identifier("engineer"), make.Literal("PaF")));
-                        attribs.add(make.Assignment(make.Identifier("date"), make.Literal("2005")));
-                        anns.add(make.Annotation(make.Identifier("AnnotationType"), attribs));
-                        model.setElement(statement, model.getElement(statement));
-                        model.setType(statement, model.getType(statement));
-                        changes.rewrite(mods, make.Modifiers(mods.getFlags(), anns));
-                    }
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = method.getBody();
+                List<? extends StatementTree> statements = body.getStatements();
+                VariableTree statement = (VariableTree) statements.get(1);
+                // mods will be replaced by a new one
+                ModifiersTree mods = statement.getModifiers();
+                List<AnnotationTree> anns = new ArrayList<AnnotationTree>(1);
+                List<AssignmentTree> attribs = new ArrayList<AssignmentTree>(4);
+                attribs.add(make.Assignment(make.Identifier("id"), make.Literal(Integer.valueOf(666))));
+                attribs.add(make.Assignment(make.Identifier("synopsis"), make.Literal("fat")));
+                attribs.add(make.Assignment(make.Identifier("engineer"), make.Literal("PaF")));
+                attribs.add(make.Assignment(make.Identifier("date"), make.Literal("2005")));
+                anns.add(make.Annotation(make.Identifier("AnnotationType"), attribs));
+                workingCopy.rewrite(mods, make.Modifiers(mods.getFlags(), anns));
             }
-        );
-        assertFiles("testAddAnnToLocVar_AnnotationOnLocVarTest.pass");
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        File g = getFile(getGoldenDir(), getGoldenPckg() + "testAddAnnToLocVar_AnnotationOnLocVarTest.pass");
+        String gold = TestUtilities.copyFileToString(g);
+        assertEquals(res, gold);
     }
 
     public void testAddLocVarWithAnn() throws java.io.IOException, FileStateInvalidException {
         System.err.println("testAddLocVarWithAnn");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("<init>".contentEquals(node.getName())) {
-                        BlockTree bt = node.getBody();
-                        List<StatementTree> statements = new ArrayList<StatementTree>(bt.getStatements());
-                        statements.remove(0); // remove super(), which is in class file, but not present in source
-                        List<AnnotationTree> anns = new ArrayList<AnnotationTree>(1);
-                        List<AssignmentTree> attribs = new ArrayList<AssignmentTree>(4);
-                        attribs.add(make.Assignment(make.Identifier("id"), make.Literal(Integer.valueOf(777))));
-                        attribs.add(make.Assignment(make.Identifier("synopsis"), make.Literal("thin")));
-                        attribs.add(make.Assignment(make.Identifier("engineer"), make.Literal("Snoopy")));
-                        attribs.add(make.Assignment(make.Identifier("date"), make.Literal("2001")));
-                        anns.add(make.Annotation(make.Identifier("AnnotationType"), attribs));
-                        statements.add(0, make.Variable(
-                            make.Modifiers(Collections.singleton(Modifier.FINAL), anns),
-                            "testVar",
-                            make.Identifier("java.util.List"),
-                            make.NewClass(
-                                null,
-                                Collections.EMPTY_LIST,
-                                make.Identifier("java.util.ArrayList"),
-                                Collections.singletonList(make.Literal(Integer.valueOf(3))),
-                                null
-                            )
-                        ));
-                        BlockTree njuBlock = make.Block(statements, false);
-                        model.setPos(njuBlock, model.getPos(bt));
-                        changes.rewrite(bt, njuBlock);
-                    }
-                    return null;
-                }
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                BlockTree bt = method.getBody();
+                List<StatementTree> statements = new ArrayList<StatementTree>(bt.getStatements());
+                statements.remove(0); // remove super(), which is in class file, but not present in source
+                List<AnnotationTree> anns = new ArrayList<AnnotationTree>(1);
+                List<AssignmentTree> attribs = new ArrayList<AssignmentTree>(4);
+                attribs.add(make.Assignment(make.Identifier("id"), make.Literal(Integer.valueOf(777))));
+                attribs.add(make.Assignment(make.Identifier("synopsis"), make.Literal("thin")));
+                attribs.add(make.Assignment(make.Identifier("engineer"), make.Literal("Snoopy")));
+                attribs.add(make.Assignment(make.Identifier("date"), make.Literal("2001")));
+                anns.add(make.Annotation(make.Identifier("AnnotationType"), attribs));
+                statements.add(0, make.Variable(
+                    make.Modifiers(Collections.singleton(Modifier.FINAL), anns),
+                    "testVar",
+                    make.Identifier("java.util.List"),
+                    make.NewClass(
+                        null,
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Identifier("java.util.ArrayList"),
+                        Collections.singletonList(make.Literal(Integer.valueOf(3))),
+                        null
+                    )
+                ));
+                BlockTree njuBlock = make.Block(statements, false);
+                workingCopy.rewrite(bt, njuBlock);
             }
-        );
-        assertFiles("testAddLocVarWithAnn_AnnotationOnLocVarTest.pass");
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        File g = getFile(getGoldenDir(), getGoldenPckg() + "testAddLocVarWithAnn_AnnotationOnLocVarTest.pass");
+        String gold = TestUtilities.copyFileToString(g);
+        System.err.println("-----");
+        System.err.println(gold);
+        assertEquals(res, gold);
     }
     
     String getSourcePckg() {
