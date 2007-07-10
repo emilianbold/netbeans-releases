@@ -99,7 +99,7 @@ public class UIUtilities {
             if (subPath==null) {
                 for (Node n : children) {
                     CategoryNode cNode = (CategoryNode) n.getCookie(CategoryNode.class);
-                    if (cNode != null && cNode.getChildType()==categoryType) {
+                    if (cNode != null && categoryType != null && cNode.getChildType().isAssignableFrom(categoryType)) {
                         Node[] nChildren = n.getChildren().getNodes();
                         if (nChildren != null && nChildren.length > 0) {
                             for (Node nChild : nChildren) {
@@ -122,7 +122,7 @@ public class UIUtilities {
                             }
                         }
                         break;
-                    }
+                    } 
                 }
             }
             if (subPath==null) {
