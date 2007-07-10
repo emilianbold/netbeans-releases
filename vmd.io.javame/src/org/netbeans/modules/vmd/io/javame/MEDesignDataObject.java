@@ -18,11 +18,8 @@
  */
 package org.netbeans.modules.vmd.io.javame;
 
-import org.netbeans.modules.java.JavaNode;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
-import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
-import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -56,11 +53,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     }
 
     public Node createNodeDelegate () {
-        JavaNode javaNode = new JavaNode (this, true);
-        String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (this));
-        String iconResource = ProjectTypeInfo.getProjectTypeInfoFor (projectType).getIconResource ();
-        javaNode.setIconBaseWithExtension (iconResource);
-        return new MEDesignNode (javaNode);
+        return new MEDesignNode (this);
     }
 
 //    public void addSaveCookie (SaveCookie save) {

@@ -18,8 +18,12 @@
  */
 package org.netbeans.modules.vmd.io.javame;
 
+import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.openide.actions.EditAction;
 import org.openide.actions.OpenAction;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
@@ -33,6 +37,13 @@ public final class MEDesignNode extends FilterNode {
 
     public MEDesignNode (Node originalNode) {
         super (originalNode);
+    }
+
+    public MEDesignNode (MEDesignDataObject dataObject) {
+        super (JavaDataSupport.createJavaNode (dataObject.getPrimaryFile ()));
+        String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
+        String iconResource = ProjectTypeInfo.getProjectTypeInfoFor (projectType).getIconResource ();
+        ((AbstractNode) getOriginal ()).setIconBaseWithExtension (iconResource);
     }
 
     @Override
