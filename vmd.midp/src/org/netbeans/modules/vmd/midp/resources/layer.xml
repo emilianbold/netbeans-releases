@@ -62,9 +62,8 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="isMIDletTemplate" boolvalue="true"/>
-                <attr name="MIDP" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="MIDP"/>
-		<attr name="hidden" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP-hidden"/>
+                <attr name="simple" boolvalue="false"/>
             </file>
             <file name="HelloMIDlet.vmd" url="templates/hellovisualmidlet_vmd.template">
                 <attr name="template" boolvalue="true"/>
