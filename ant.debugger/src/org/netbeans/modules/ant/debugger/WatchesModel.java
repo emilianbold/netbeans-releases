@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,6 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -42,7 +41,7 @@ import org.openide.text.Line;
  *
  * @author   Jan Jancura
  */
-public class WatchesModel implements TreeModel, NodeModel, TableModel {
+public class WatchesModel implements NodeModel, TableModel {
 
     public static final String WATCH =
     "org/netbeans/modules/debugger/resources/watchesView/Watch";
@@ -54,77 +53,6 @@ public class WatchesModel implements TreeModel, NodeModel, TableModel {
     public WatchesModel (ContextProvider contextProvider) {
         debugger = (AntDebugger) contextProvider.lookupFirst 
             (null, AntDebugger.class);
-    }
-    
-    
-    // TreeModel implementation ................................................
-    
-    /** 
-     * Returns the root node of the tree or null, if the tree is empty.
-     *
-     * @return the root node of the tree or null
-     */
-    public Object getRoot () {
-        return ROOT;
-    }
-    
-    /** 
-     * Returns children for given parent on given indexes.
-     *
-     * @param   parent a parent of returned nodes
-     * @param   from a start index
-     * @param   to a end index
-     *
-     * @throws  NoInformationException if the set of children can not be 
-     *          resolved
-     * @throws  ComputingException if the children resolving process 
-     *          is time consuming, and will be performed off-line 
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve children for given node type
-     *
-     * @return  children for given parent on given indexes
-     */
-    public Object[] getChildren (Object parent, int from, int to) 
-        throws UnknownTypeException {
-        if (parent == ROOT) {
-            return DebuggerManager.getDebuggerManager ().getWatches();
-        }
-        throw new UnknownTypeException (parent);
-    }
-    
-    /**
-     * Returns true if node is leaf.
-     * 
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve dchildren for given node type
-     * @return  true if node is leaf
-     */
-    public boolean isLeaf (Object node) throws UnknownTypeException {
-        if (node == ROOT)
-            return false;
-        if (node instanceof Watch)
-            return true;
-        throw new UnknownTypeException (node);
-    }
-    
-    /**
-     * Returns number of children for given node.
-     * 
-     * @param   node the parent node
-     * @throws  NoInformationException if the set of children can not be 
-     *          resolved
-     * @throws  ComputingException if the children resolving process 
-     *          is time consuming, and will be performed off-line 
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve children for given node type
-     *
-     * @return  true if node is leaf
-     * @since 1.1
-     */
-    public int getChildrenCount (Object node) throws UnknownTypeException {
-        if (node == ROOT)
-            return DebuggerManager.getDebuggerManager ().getWatches ().length;
-        throw new UnknownTypeException (node);
     }
     
     
