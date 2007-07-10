@@ -30,7 +30,9 @@ import java.util.Set;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -123,7 +125,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     
     private void initialize() {
         registerListeners();
-        setupAddButton();
+        setupProjectDestinationsOption();
+        setupMessageDrivenOption();
         setupErrorLabel();
         setupServiceLocatorPanel();
         handleComboBoxes();
@@ -169,6 +172,23 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
             }
         });
     }
+    
+    private void setupProjectDestinationsOption() {
+        if (J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType())) {
+            projectDestinationsRadio.setEnabled(true);
+            setupAddButton();
+            projectDestinationsRadio.setSelected(true);
+        } else {
+            projectDestinationsRadio.setEnabled(false);
+            addButton.setEnabled(false);
+            serverDestinationsRadio.setSelected(true);
+        }
+    }
+    
+    private void setupMessageDrivenOption() {
+        mdbRadio.setEnabled(J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType()) || Utils.isPartOfJ2eeApp(provider));
+    }
+    
     private void setupAddButton() {
         if (!isDestinationCreationSupportedByServerPlugin) {
             // missing server?
