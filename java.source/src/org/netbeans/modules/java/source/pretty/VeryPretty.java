@@ -43,7 +43,6 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import java.io.*;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
@@ -51,9 +50,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.query.Query;
-import org.netbeans.modules.java.source.save.PositionEstimator;
-import org.netbeans.modules.java.source.save.PositionEstimator.Direction;
 
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /** Prints out a tree as an indented Java source program.
  */
@@ -1501,13 +1499,6 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
     
-    static final EnumSet<JavaTokenId> nonRelevant = EnumSet.of(
-            JavaTokenId.LINE_COMMENT,
-            JavaTokenId.BLOCK_COMMENT,
-            JavaTokenId.JAVADOC_COMMENT,
-            JavaTokenId.WHITESPACE
-        );
-    
     private void printStat(JCTree tree) {
 	if(tree==null) print(';');
 	else {
@@ -1663,10 +1654,10 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 tokens.move(startPos);
-                if (PositionEstimator.moveToSrcRelevant(tokens, Direction.BACKWARD) == null)
+                if (moveToSrcRelevant(tokens, Direction.BACKWARD) == null)
                     tokens.moveStart();
                 int indent = Query.NOPOS;
-                while (tokens.moveNext() && PositionEstimator.nonRelevant.contains(tokens.token().id())) {
+                while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
                     if (tokens.index() > lastReadCommentIdx) {
                         switch (tokens.token().id()) {
                             case LINE_COMMENT:
@@ -1716,7 +1707,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 boolean afterNewline = false;
                 int indent = Query.NOPOS;
                 outer:
-                while (tokens.moveNext() && (PositionEstimator.nonRelevant.contains(tokens.token().id()) || PositionEstimator.isSeparator(tokens.token().id()))) {
+                while (tokens.moveNext() && (nonRelevant.contains(tokens.token().id()) || isSeparator(tokens.token().id()))) {
                     if (tokens.index() > lastReadCommentIdx) {
                         switch (tokens.token().id()) {
                             case LINE_COMMENT:
@@ -1778,9 +1769,9 @@ public final class VeryPretty extends JCTree.Visitor {
             if (pos >= 0) {
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 tokens.move(pos);
-                PositionEstimator.moveToSrcRelevant(tokens, Direction.BACKWARD);
+                moveToSrcRelevant(tokens, Direction.BACKWARD);
                 int indent = Query.NOPOS;
-                while (tokens.moveNext() && PositionEstimator.nonRelevant.contains(tokens.token().id())) {
+                while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
                     if (tokens.index() > lastReadCommentIdx) {
                         switch (tokens.token().id()) {
                             case LINE_COMMENT:
