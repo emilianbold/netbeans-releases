@@ -34,7 +34,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -66,7 +65,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.netbeans.api.queries.FileEncodingQuery;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
@@ -164,7 +162,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
-            this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
+            this.originalEncoding = Charset.defaultCharset().name();
         }
         
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
@@ -480,7 +478,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 }
             }
             if (defEnc == null) {
-                defEnc = FileEncodingQuery.getDefaultEncoding();
+                defEnc = Charset.defaultCharset();
             }
             setSelectedItem(defEnc);
         }

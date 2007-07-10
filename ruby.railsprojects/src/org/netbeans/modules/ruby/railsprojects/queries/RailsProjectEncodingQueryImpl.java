@@ -23,7 +23,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -57,7 +56,10 @@ public class RailsProjectEncodingQueryImpl extends FileEncodingQueryImplementati
         synchronized (this) {
             if (cache == null) {
                 try {
-                    cache = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+                    //From discussion with K. Frank the project returns Charset.defaultCharset ()
+                    //for older projects (no encoding property). The old project used system encoding => Charset.defaultCharset ()
+                    //should work for most users.
+                    cache = enc == null ? Charset.defaultCharset() : Charset.forName(enc);
                 } catch (IllegalCharsetNameException exception) {
                     return null;
                 }
