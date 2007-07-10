@@ -61,7 +61,7 @@ public class FlowViewController implements DesignDocumentAwareness {
         separator.setOrientation(JSeparator.VERTICAL);
         toolbar.add (separator);
 
-        addToolbarButton ("layout", "Overview", new ActionListener() {
+        addToolbarButton ("layout", "Layout", new ActionListener() {
             public void actionPerformed (ActionEvent e) {
                 layout ();
             }
