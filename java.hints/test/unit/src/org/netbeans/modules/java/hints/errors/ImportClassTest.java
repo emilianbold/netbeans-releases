@@ -60,6 +60,10 @@ public class ImportClassTest extends HintsTestBase {
         performTestDoNotPerform("ImportHintDoNotPropose", 11, 24);
     }
     
+    public void testImportHint86932() throws Exception {
+        performTestDoNotPerform("ImportTest86932", 6, 25);
+    }
+    
     @Override
     protected String testDataExtension() {
         return "org/netbeans/test/java/hints/ImportClassEnablerTest/";
