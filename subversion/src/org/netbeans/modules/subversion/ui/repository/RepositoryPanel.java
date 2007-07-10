@@ -53,10 +53,10 @@ public class RepositoryPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006")); // NOI18N
         proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_ProxyDialog")); // NOI18N
 
-        tipLabel.setText(" ");
+        tipLabel.setText(bundle.getString("BK0007")); // NOI18N
         tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
 
-        removeButton.setText("Remove from History");
+        removeButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0008")); // NOI18N
 
         userPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
         userPasswordField.setPreferredSize(new java.awt.Dimension(11, 22));
@@ -74,13 +74,13 @@ public class RepositoryPanel extends javax.swing.JPanel {
 
         leaveBlankLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0005")); // NOI18N
 
-        tunnelLabel.setText("Use External Tunnel");
+        tunnelLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0010")); // NOI18N
 
-        tunnelCommandLabel.setText("Tunnel Command");
+        tunnelCommandLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0009")); // NOI18N
 
         tunnelHelpLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_svn_xxx")); // NOI18N
 
-        savePasswordCheckBox.setText("Save Username and Password");
+        savePasswordCheckBox.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0007")); // NOI18N
         savePasswordCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         savePasswordCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -90,34 +90,23 @@ public class RepositoryPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(titleLabel)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(123, 123, 123)
-                        .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(tunnelLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
                 .add(proxySettingsButton)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel2)
                     .add(userLabel)
-                    .add(passwordLabel)
-                    .add(tunnelCommandLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(passwordLabel))
+                .add(38, 38, 38)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(savePasswordCheckBox)
                         .addContainerGap())
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(tipLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                        .add(tipLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(urlComboBox, 0, 344, Short.MAX_VALUE)
+                            .add(urlComboBox, 0, 331, Short.MAX_VALUE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(removeButton))
                         .add(layout.createSequentialGroup()
@@ -125,8 +114,19 @@ public class RepositoryPanel extends javax.swing.JPanel {
                                 .add(org.jdesktop.layout.GroupLayout.LEADING, userPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(org.jdesktop.layout.GroupLayout.LEADING, userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                            .add(leaveBlankLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                             .addContainerGap()))))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tunnelHelpLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(tunnelLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(tunnelCommandLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -157,12 +157,13 @@ public class RepositoryPanel extends javax.swing.JPanel {
                 .add(proxySettingsButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(tunnelCommandLabel)
-                .add(18, 18, 18)
-                .add(tunnelLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(tunnelLabel)
+                    .add(tunnelCommandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tunnelHelpLabel))
+                .add(tunnelHelpLabel)
+                .addContainerGap())
         );
 
         titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
