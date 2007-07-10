@@ -13,21 +13,55 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.ProxySelector;
-import java.net.URI;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
-import org.ini4j.Ini;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.subversion.util.ProxySettings;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.netbeans.modules.subversion.TestKit;
 
 /**
  *
  * @author Peter Pis
+ * 
+ * Test of creation and merging "config" and "servers" subversion administrative files. 
+ * 
+ * - svn1..X - represents subversion configuration directory for user 
+ * - golden1..x - represents expected results of generated content of subversion config directory by IDE according to appropriate svn1..x directory
+ * - each loop generates subversion config directory into: "/tmp" + File.separator + "svn" + File.separator + "config" + System.currentTimeMillis();
+ * 
+ * svn1: 
+ *   config: standart content with basic [tunnels] content
+ *   servers: standart content with [groups] enabled. Nb Proxy has always right of way.
+ * 
+ * svn2:
+ *   config: standart content with [helpers] content    
+ *   servers: standart content with [groups] enabled. Copy non-related proxy settings from [global] section
+ * 
+ * svn3:
+ *   config: standart content with [miscellany] and [auto-props] content    
+ *   servers: standart content with [groups] enabled. Copy non-related proxy settings from [global] and specific GROUP section
+ * 
+ * svn4:
+ *   config: empty file ... generate default content 
+ *   servers: empty file ... generate default content
+ * 
+ * svn5:
+ *   config: standard content with not-used section by subversion. This section should be merged into the generated file too.
+ *   servers: standard content with not-used key/value that should be merged into the generated file.
+ * 
+ * svn6:
+ *   config: without commented lines.
+ *   servers: group with wildcard - *.czech.sun.com
+ * 
+ * svn7:
+ *   config: without commented lines.
+ *   servers: group with wildcard - peterp.*.sun.com
+ * 
+ * svn8:
+ *   config: without commented lines.
+ *   servers: group with wildcard - peterp.*
+ 
+ * 
  */
 public class SvnConfigFilesTest extends NbTestCase {
 
@@ -60,9 +94,10 @@ public class SvnConfigFilesTest extends NbTestCase {
     public void testSubversionConfig() {
         String[] wordsActual = {""};
         String[] wordsExpected = {""};
-        String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", ""};
+        String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", "", "my.proxy", "my.proxy", "my.proxy"};
         int result = -1;
         
+        //for (int i = 1; i < proxy.length + 1; i++) {
         for (int i = 1; i < proxy.length + 1; i++) {
             //changeSvnConfigLocation("svn" + i, "golden" + i, "my.proxy", "8080");
             changeSvnConfigLocation("svn" + i, "golden" + i, proxy[i-1], "8080");
@@ -80,7 +115,7 @@ public class SvnConfigFilesTest extends NbTestCase {
             //printArray(wordsExpected);
             result = org.netbeans.modules.subversion.TestKit.compareThem(wordsExpected, wordsActual, false);
             assertEquals(wordsExpected.length, result);
-            System.out.println("Config ok!");
+            System.out.println("Config " + i + ". ok !");
 
             //servers file
             wordsActual = p.split(generatedServers);
@@ -89,7 +124,7 @@ public class SvnConfigFilesTest extends NbTestCase {
             //printArray(wordsExpected);
             result = org.netbeans.modules.subversion.TestKit.compareThem(wordsExpected, wordsActual, false);
             assertEquals(wordsExpected.length, result);
-            System.out.println("Servers ok!");            
+            System.out.println("Servers " + i + ". ok !");            
         } 
     } /* Test of getNBConfigPath method, of class SvnConfigFiles. */
 
