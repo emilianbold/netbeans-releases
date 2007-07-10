@@ -127,7 +127,7 @@ public class FileDescription {
         if ( fileObject == null ) {
             fileObject = FileUtil.toFileObject(file);
         }
-        boolean visible = VisibilityQuery.getDefault().isVisible(fileObject);
+        boolean visible = fileObject == null ? false : VisibilityQuery.getDefault().isVisible(fileObject);
         if ( !visible ) {
             addTime( t ); 
             return false;
