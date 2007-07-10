@@ -322,6 +322,12 @@ private static class TransformationUseCasesFactory {
             if (invokes != null) {
                 tMapOp.addInvokes(invokes);
             }
+            if (foTransform != null) {
+                String result = getTMapVarRef(invokes.getInputVariable());
+                if (result != null) {
+                    foTransform.setResult(result);
+                }
+            }
             
         } finally {
           tMapModel.endTransaction();
