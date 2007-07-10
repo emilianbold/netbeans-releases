@@ -49,6 +49,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
     private char originChar;
     private char matchingChar;
     private boolean backward;
+    private List<TokenSequence<? extends TokenId>> sequences;
     
     public JavaBracesMatcher() {
         this(null);
@@ -75,6 +76,24 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             originChar = PAIRS[origin[1]];
             matchingChar = PAIRS[origin[1] + origin[2]];
             backward = origin[2] < 0;
+            
+            // Filter out block and line comments
+            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+            sequences = getEmbeddedTokenSequences(th, originOffset, backward, JavaTokenId.language());
+
+            if (!sequences.isEmpty()) {
+                // Check special tokens
+                TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                seq.move(originOffset);
+                if (seq.moveNext()) {
+                    if (seq.token().id() == JavaTokenId.BLOCK_COMMENT ||
+                        seq.token().id() == JavaTokenId.LINE_COMMENT
+                    ) {
+                        return null;
+                    }
+                }
+            }
+            
             return new int [] { originOffset, originOffset + 1 };
         } else {
             return null;
@@ -82,19 +101,13 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
-        TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<? extends TokenId>> sequences = getEmbeddedTokenSequences(
-            th, originOffset, backward, JavaTokenId.language());
 
         if (!sequences.isEmpty()) {
             // Check special tokens
             TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
             seq.move(originOffset);
             if (seq.moveNext()) {
-                if (seq.token().id() == JavaTokenId.STRING_LITERAL ||
-                    seq.token().id() == JavaTokenId.BLOCK_COMMENT ||
-                    seq.token().id() == JavaTokenId.LINE_COMMENT
-                ) {
+                if (seq.token().id() == JavaTokenId.STRING_LITERAL) {
                     int offset = BracesMatcherSupport.matchChar(
                         context.getDocument(), 
                         backward ? originOffset : originOffset + 1, 
@@ -111,6 +124,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             
             // We are in plain java
             
+            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
             List<TokenSequence<? extends TokenId>> list;
             if (backward) {
                 list = th.tokenSequenceList(seq.languagePath(), 0, originOffset);
