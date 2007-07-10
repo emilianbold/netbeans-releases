@@ -65,16 +65,20 @@ public class GotoActionView extends AbstractAction {
             // TODO - Look up project and complain if it's not a Rails project
 
             // See if it's a controller:
-            if (fo.getName().endsWith("_controller")) {
-                gotoView(target, fo, "_controller", "controllers");
-            } else if (fo.getName().endsWith("_helper")) {
-                gotoView(target, fo, "_helper", "helpers");
-            } else if (RubyUtils.isRhtmlFile(fo) || fo.getExt().equalsIgnoreCase("mab") || fo.getExt().equalsIgnoreCase("rjs")) { // NOI18N
-                // It's a view
-                gotoAction(target, fo);
+            if (fo.getName().endsWith("_controller")) { // NOI18N
+                gotoView(target, fo, "_controller", "controllers"); // NOI18N
+            } else if (fo.getName().endsWith("_helper")) { // NOI18N
+                gotoView(target, fo, "_helper", "helpers"); // NOI18N
             } else {
-                Utilities.setStatusBoldText(target,
-                    "This action only applies to Controllers and Views in Ruby On Rails projects");
+                String ext = fo.getExt();
+                if (RubyUtils.isRhtmlFile(fo) || ext.equalsIgnoreCase("mab") || // NOI18N
+                        ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("haml")) { // NOI18N
+                    // It's a view
+                    gotoAction(target, fo);
+                } else {
+                    Utilities.setStatusBoldText(target,
+                        "This action only applies to Controllers and Views in Ruby On Rails projects");
+                }
             }
 
             return;
@@ -141,7 +145,7 @@ public class GotoActionView extends AbstractAction {
             }
 
             if (methodName != null) {
-                String[] exts = { "rhtml", "html.erb", "erb", "rjs", "mab" }; // NOI18N
+                String[] exts = { "rhtml", "html.erb", "erb", "rjs", "mab", "haml" }; // NOI18N
                 for (String ext : exts) {
                     viewFile = viewsFolder.getFileObject(methodName, ext);
                     if (viewFile != null) {
@@ -158,7 +162,8 @@ public class GotoActionView extends AbstractAction {
                 if (viewFile == null) {
                     for (FileObject child : viewsFolder.getChildren()) {
                         String ext = child.getExt();
-                        if (RubyUtils.isRhtmlFile(child) || ext.equalsIgnoreCase("mab") || ext.equalsIgnoreCase("rjs")) { // NOI18N
+                        if (RubyUtils.isRhtmlFile(child) || ext.equalsIgnoreCase("mab") || // NOI18N
+                                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("haml")) { // NOI18N
                             viewFile = child;
 
                             break;
@@ -186,7 +191,8 @@ public class GotoActionView extends AbstractAction {
     private void gotoAction(JTextComponent target, FileObject file) {
         // This should be a view.
         String ext = file.getExt();
-        if (!RubyUtils.isRhtmlFile(file) && !ext.equalsIgnoreCase("mab") && !ext.equalsIgnoreCase("rjs")) { // NOI18N
+        if (!RubyUtils.isRhtmlFile(file) && !ext.equalsIgnoreCase("mab") && // NOI18N
+                !ext.equalsIgnoreCase("rjs") && !ext.equalsIgnoreCase("haml")) { // NOI18N
             Utilities.setStatusBoldText(target, "This action only applies to Views");
 
             return;
