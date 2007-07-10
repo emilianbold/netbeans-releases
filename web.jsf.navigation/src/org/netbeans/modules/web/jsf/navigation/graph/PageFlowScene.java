@@ -265,9 +265,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         return nodeWidget;
     }
     private WidgetAction actionMapAction = null;
+
     public final void updateNodeWidgetActions(VMDNodeWidget nodeWidget) {
         Page page = (Page) this.findObject(nodeWidget);
-        if( actionMapAction != null ) {
+        if (actionMapAction != null) {
             nodeWidget.getActions().removeAction(moveAction);
         }
         actionMapAction = createActionMapAction(page);
@@ -417,11 +418,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         connectionWidget.getActions().addAction(createObjectHoverAction());
         connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
-        
-        connectionWidget.setLayout( new ConnectionWrapperLayout(connectionWidget, label));
+
+        connectionWidget.setLayout(new ConnectionWrapperLayout(connectionWidget, label));
         connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
         connectionWidget.addChild(label);
-        
+
 
         //        connectionWidget.getActions().addAction(createActionMap());
         return connectionWidget;
@@ -509,32 +510,29 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             }
         }
     }
+
 /*
     public void createConnectionLabel(NavigationCaseEdge edge, VMDConnectionWidget connectionWidget) {
-
-        LabelWidget label = new LabelWidget(this, edge.getName());
-        label.setOpaque(true);
-        label.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageFlowScene.CaseNodeTextFieldInplaceEditor()));
-
-        Anchor anchor = connectionWidget.getSourceAnchor();
-
-        Anchor.Result sourceResult = anchor.compute(connectionWidget.getSourceAnchorEntry());
-        EnumSet<Anchor.Direction> directions = sourceResult.getDirections();
-
-        if (directions.contains(Anchor.Direction.TOP)) {
-            label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-        } else if (directions.contains(Anchor.Direction.BOTTOM)) {
-            label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
-        } else if (directions.contains(Anchor.Direction.RIGHT)) {
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-        } else {
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
-        }
-        connectionWidget.addChild(label);
+    LabelWidget label = new LabelWidget(this, edge.getName());
+    label.setOpaque(true);
+    label.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageFlowScene.CaseNodeTextFieldInplaceEditor()));
+    Anchor anchor = connectionWidget.getSourceAnchor();
+    Anchor.Result sourceResult = anchor.compute(connectionWidget.getSourceAnchorEntry());
+    EnumSet<Anchor.Direction> directions = sourceResult.getDirections();
+    if (directions.contains(Anchor.Direction.TOP)) {
+    label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+    } else if (directions.contains(Anchor.Direction.BOTTOM)) {
+    label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
+    } else if (directions.contains(Anchor.Direction.RIGHT)) {
+    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+    } else {
+    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
     }
- **/
+    connectionWidget.addChild(label);
+    }
+     **/
 
 
     public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
@@ -566,7 +564,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     }
 
 
-    private final class PageNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
+    public final class PageNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
 
         private VMDNodeWidget nodeWidget;
 
@@ -598,7 +596,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
                 //                if( oldName != newName ) {
                 //                    renamePin(pageNode, oldName + "pin", newName + "pin");
                 //                }
-                ((LabelWidget) widget).setLabel(newName);
+                if (widget instanceof LabelWidget) {
+                    ((LabelWidget) widget).setLabel(newName);
+                } else if ( widget instanceof VMDNodeWidget ){
+                    ((VMDNodeWidget)widget).getNodeNameWidget().setLabel(newName);
+                }
                 validate();
             }
         }

@@ -46,10 +46,17 @@ import java.util.List;
 import javax.swing.KeyStroke;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectDecorator;
+import org.netbeans.api.visual.action.InplaceEditorProvider;
+import org.netbeans.api.visual.action.InplaceEditorProvider.EditorController;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
@@ -87,6 +94,9 @@ public class MapActionUtility {
         actionMap.put("handleRightArrowKey", handleTab);
         actionMap.put("handleUpArrowKey", handleUpArrow);
         actionMap.put("handleDownArrowKey", handleDownArrow);
+
+
+        actionMap.put("handleRename", handleRename);
         return actionMap;
     }
 
@@ -113,6 +123,9 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.SHIFT_MASK), "handleLinkEnd");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.SHIFT_MASK), "handleZoomPage");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.SHIFT_MASK), "handleUnZoomPage");
+
+        // Upper and Lower Case R (rename)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK), "handleRename");
 
         //        // Non Numeric Key Pad arrow keys
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "handleLeftArrowKey");
@@ -151,6 +164,54 @@ public class MapActionUtility {
                 CONNECT_WIDGET.removeFromParent();
                 CONNECT_WIDGET = null;
             }
+        }
+    };
+
+    // Handle Rename
+    public static Action handleRename = new AbstractAction() {
+
+        public void actionPerformed(ActionEvent e) {
+            /* Cancel A11y Linking */
+            Object sourceObj = e.getSource();
+            if (!(sourceObj instanceof PageFlowScene)) {
+                return;
+            }
+            PageFlowScene scene = (PageFlowScene) sourceObj;
+            Set selectedObjects = scene.getSelectedObjects();
+            if (selectedObjects.size() > 0) {
+                PageFlowSceneElement selectedObj = (PageFlowSceneElement) selectedObjects.toArray()[0];
+                Widget widget = scene.findWidget(selectedObj);
+                assert widget != null;
+                EditorController controller = null;
+                if( widget instanceof VMDNodeWidget ){
+                    LabelWidget labelWidget = ((VMDNodeWidget)widget).getNodeNameWidget();
+                    controller = findEditorController(labelWidget.getActions().getActions());
+                    if( controller != null ) {
+                        controller.openEditor(labelWidget);
+                    }
+                } else if ( widget instanceof VMDConnectionWidget ){
+                    List<Widget> childWidgets = widget.getChildren();
+                    for( Widget childWidget : childWidgets){
+                        if( childWidget instanceof LabelWidget ){
+                            controller = findEditorController(childWidget.getActions().getActions());
+                            if( controller != null ){
+                                controller.openEditor(childWidget);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public EditorController findEditorController(List<WidgetAction> actionList) {
+            for (WidgetAction action : actionList) {
+                if (action instanceof InplaceEditorProvider.EditorController) {
+                    EditorController controller = ActionFactory.getInplaceEditorController(action);
+                    return controller;
+                }
+            }
+            return null;
         }
     };
 
@@ -254,7 +315,7 @@ public class MapActionUtility {
 
     private static ConnectDecorator CONNECT_DECORATOR_DEFAULT = null;
     private static ConnectionWidget CONNECT_WIDGET = null;
-    // Handle Link Start Key Stroke
+// Handle Link Start Key Stroke
     public static Action handleLinkStart = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -270,7 +331,7 @@ public class MapActionUtility {
                         //Pin selPin = scene.getDefaultPin((Page) selElement);
                     } else if (selElement instanceof Pin) {
                         //Pin selPin = (Pin) selElement;
-                        selWidget = scene.findWidget((Pin)selElement);
+                        selWidget = scene.findWidget((Pin) selElement);
                     }
                     if (selWidget != null) {
                         CONNECT_DECORATOR_DEFAULT = ActionFactory.createDefaultConnectDecorator();
@@ -289,7 +350,7 @@ public class MapActionUtility {
         }
     };
 
-    // Handle Escape - cancels the link action
+// Handle Escape - cancels the link action
     public static Action handleLinkEnd = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -364,7 +425,6 @@ public class MapActionUtility {
         public void actionPerformed(ActionEvent e) {
             //            This would work if we wanted to use the wizard.
             //            Action newFileAction = CommonProjectActions.newFileAction();
-
             //            JOptionPane.showMessageDialog(null, "Source: " + e.getSource());
             Object obj = e.getSource();
             if (obj instanceof PageFlowScene) {
@@ -374,7 +434,7 @@ public class MapActionUtility {
 
                     FileObject webFileObject = pfc.getWebFolder();
 
-                    String name = FileUtil.findFreeFileName(webFileObject, "page", "jsp");
+                    String name = FileUtil.findFreeFileName(webFileObject, "Templates/JSP_Servlet/JSP.jsp", "jsp");
                     name = JOptionPane.showInputDialog("Select Page Name", name);
 
                     createIndexJSP(webFileObject, name);
@@ -408,7 +468,7 @@ public class MapActionUtility {
         private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
     };
 
-    // Handle Zoom Key Stroke
+// Handle Zoom Key Stroke
     public static final Action handleZoomPage = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -433,7 +493,7 @@ public class MapActionUtility {
         }
     };
 
-    // Handle UnZoom Key Stroke
+// Handle UnZoom Key Stroke
     public static final Action handleUnZoomPage = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {

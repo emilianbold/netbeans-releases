@@ -99,16 +99,8 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             
             FileObject fileObj = ((DataNode)original).getDataObject().getPrimaryFile();
             assert fileObj != null;
-//            String oldNodeDisplayName = nodeDisplayName;
             nodeDisplayName = getFolderDisplayName(pc.getWebFolder(), fileObj );
-            
-            //            if( !nodeDisplayName.equals(oldNodeDisplayName) ){
-            //DISPLAYNAME:
-            //                pc.replacePageName2Node(this, nodeDisplayName, oldNodeDisplayName );
-            //                pc.removePageName2Node(nodeDisplayName);
-            //                pc.putPageName2Node(nodeDisplayName, this);
-            //            }
-            
+
         }
        if( !nodeDisplayName.equals(oldDisplayName)) {
             if  (oldDisplayName != null ) { 
@@ -126,8 +118,9 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     /* We may want this to notify listeners of changes.*/
     public void replaceWrappedNode(Node newNode ){
         //        pc.pageName2Node.remove(getDisplayName());
-        pc.removePageName2Page(getDisplayName(), false);
+        //pc.removePageName2Page(getDisplayName(), false);
         setNode(newNode);
+        pc.putPageName2Page(getDisplayName(), this);
         //        pc.putPageName2Node(getDisplayName(), this);
     }
     
