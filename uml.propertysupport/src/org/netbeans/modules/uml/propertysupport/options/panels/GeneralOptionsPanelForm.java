@@ -88,33 +88,54 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
     public void load() {
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
         
-        if (prefs.getBoolean("UML_Show_Aliases", false)) {
+        if (prefs.getBoolean("UML_Show_Aliases", false)) 
             showAlias.setSelected(true);
-        }
+         else 
+            showAlias.setSelected(true);
         
-        if (prefs.getBoolean("UML_Prompt_to_Save_Project", false)) {
+        
+        if (prefs.getBoolean("UML_Prompt_to_Save_Project", false)) 
             promptToSaveCB.setSelected(true);
-        }
+        else 
+            promptToSaveCB.setSelected(true);
         
-        if (prefs.getBoolean("UML_Open_Project_Diagrams", true)) {
+        
+        if (prefs.getBoolean("UML_Open_Project_Diagrams", true)) 
             openProjectDiagramsCB.setSelected(true);
-        }
+        else 
+            openProjectDiagramsCB.setSelected(true);
+        
         
         if (prefs.getBoolean("UML_Display_Empty_Lists", true))
             displayEmpty.setSelected(true);
+        else 
+            displayEmpty.setSelected(true);
+        
         
         if (prefs.getBoolean("UML_Gradient_Background", true))
             gradient.setSelected(true);
+        else 
+            gradient.setSelected(true);
+        
         
         if (prefs.getBoolean("UML_Reconnect_to_Presentation_Boundary", true))
             reconnect.setSelected(true);
+        else 
+            reconnect.setSelected(true);
+        
         
         if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", false))
             resizeCB.setSelected(true);
+        else 
+            resizeCB.setSelected(true);
+        
         
         
         if (prefs.getBoolean("UML_Show_Stereotype_Icons", true))
             showStereotype.setSelected(true);
+        else 
+            showStereotype.setSelected(true);
+        
         
         if (prefs.getBoolean("UML_Ask_Before_Layout", true))
             askLayoutCB.setSelected(true);
