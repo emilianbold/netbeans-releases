@@ -112,6 +112,7 @@ public final class VeryPretty extends JCTree.Visitor {
         out = new CharBuffer(cs.getRightMargin());
     }
 
+    @Override
     public String toString() {
 	return out.toString();
     }
@@ -290,6 +291,7 @@ public final class VeryPretty extends JCTree.Visitor {
      * Visitor methods
      *************************************************************************/
 
+    @Override
     public void visitTopLevel(JCCompilationUnit tree) {
         printPackage(tree.pid);
         boolean hasImports = false;
@@ -312,6 +314,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitImport(JCImport tree) {
         print("import ");
         if (tree.staticImport)
@@ -320,6 +323,7 @@ public final class VeryPretty extends JCTree.Visitor {
         print(';');
     }
 
+    @Override
     public void visitClassDef(JCClassDecl tree) {
 	Name enclClassNamePrev = enclClassName;
 	enclClassName = tree.name;
@@ -446,6 +450,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	enclClassName = enclClassNamePrev;
     }
     
+    @Override
     public void visitMethodDef(JCMethodDecl tree) {
 	if ((tree.mods.flags & Flags.SYNTHETIC)==0 && 
 		tree.name != names.init || 
@@ -503,6 +508,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitVarDef(JCVariableDecl tree) {
  	if ((tree.mods.flags & ENUM) != 0)
 	    print(tree.name);
@@ -542,20 +548,23 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
                 printNoParenExpr(tree.init);
             }
-            if (prec == treeinfo.notExpression)
+            if (prec == TreeInfo.notExpression)
                 print(';');
 	}
     }
 
+    @Override
     public void visitSkip(JCSkip tree) {
 	print(';');
     }
 
+    @Override
     public void visitBlock(JCBlock tree) {
 	printFlags(tree.flags, false);
 	printBlock(tree, tree.stats, cs.getOtherBracePlacement(), (tree.flags & Flags.STATIC) != 0 ? cs.spaceBeforeStaticInitLeftBrace() : false);
     }
 
+    @Override
     public void visitDoLoop(JCDoWhileLoop tree) {
 	print("do");
         if (cs.spaceBeforeDoLeftBrace())
@@ -576,6 +585,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(cs.spaceWithinWhileParens()? " );" : ");");
     }
 
+    @Override
     public void visitWhileLoop(JCWhileLoop tree) {
 	print("while");
         print(cs.spaceBeforeWhileParen() ? " (" : "(");
@@ -586,6 +596,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	printIndentedStat(tree.body, cs.redundantWhileBraces(), cs.spaceBeforeWhileLeftBrace(), cs.wrapWhileStatement());
     }
 
+    @Override
     public void visitForLoop(JCForLoop tree) {
 	print("for");
         print(cs.spaceBeforeForParen() ? " (" : "(");
@@ -649,6 +660,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	printIndentedStat(tree.body, cs.redundantForBraces(), cs.spaceBeforeForLeftBrace(), cs.wrapForStatement());
     }
 
+    @Override
     public void visitLabelled(JCLabeledStatement tree) {
         toColExactly(cs.absoluteLabelIndent() ? 0 : out.leftMargin);
 	print(tree.label);
@@ -695,6 +707,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print('}');
     }
 
+    @Override
     public void visitCase(JCCase tree) {
         int old = cs.indentCasesFromSwitch() ? indent() : out.leftMargin; 
         toLeftMargin();
@@ -711,6 +724,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	undent(old);
     }
 
+    @Override
     public void visitSynchronized(JCSynchronized tree) {
 	print("synchronized");
         print(cs.spaceBeforeSynchronizedParen() ? " (" : "(");
@@ -721,6 +735,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceBeforeSynchronizedLeftBrace());
     }
 
+    @Override
     public void visitTry(JCTry tree) {
 	print("try");
 	printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceBeforeTryLeftBrace());
@@ -738,6 +753,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitCatch(JCCatch tree) {
         if (cs.placeCatchOnNewLine()) {
             newline();
@@ -754,8 +770,9 @@ public final class VeryPretty extends JCTree.Visitor {
 	printBlock(tree.body, cs.getOtherBracePlacement(), cs.spaceBeforeCatchLeftBrace());
     }
 
+    @Override
     public void visitConditional(JCConditional tree) {
-        printExpr(tree.cond, treeinfo.condPrec - 1);
+        printExpr(tree.cond, TreeInfo.condPrec - 1);
         switch(cs.wrapTernaryOps()) {
         case WRAP_IF_LONG:
             int rm = cs.getRightMargin();
@@ -773,7 +790,7 @@ public final class VeryPretty extends JCTree.Visitor {
             break;
         }
         print(cs.spaceAroundTernaryOps() ? "? " : "?"); 
-        printExpr(tree.truepart, treeinfo.condPrec);
+        printExpr(tree.truepart, TreeInfo.condPrec);
         switch(cs.wrapTernaryOps()) {
         case WRAP_IF_LONG:
             int rm = cs.getRightMargin();
@@ -791,9 +808,10 @@ public final class VeryPretty extends JCTree.Visitor {
             break;
         }
         print(cs.spaceAroundTernaryOps() ? ": " : ":"); 
-        printExpr(tree.falsepart, treeinfo.condPrec);
+        printExpr(tree.falsepart, TreeInfo.condPrec);
     }
 
+    @Override
     public void visitIf(JCIf tree) {
 	print("if");
         print(cs.spaceBeforeIfParen() ? " (" : "(");
@@ -823,12 +841,14 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitExec(JCExpressionStatement tree) {
 	printNoParenExpr(tree.expr);
-	if (prec == treeinfo.notExpression)
+	if (prec == TreeInfo.notExpression)
 	    print(';');
     }
 
+    @Override
     public void visitBreak(JCBreak tree) {
 	print("break");
 	if (tree.label != null) {
@@ -838,6 +858,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(';');
     }
 
+    @Override
     public void visitContinue(JCContinue tree) {
 	print("continue");
 	if (tree.label != null) {
@@ -847,6 +868,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(';');
     }
 
+    @Override
     public void visitReturn(JCReturn tree) {
 	print("return");
 	if (tree.expr != null) {
@@ -856,12 +878,14 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(';');
     }
 
+    @Override
     public void visitThrow(JCThrow tree) {
 	print("throw ");
 	printNoParenExpr(tree.expr);
 	print(';');
     }
 
+    @Override
     public void visitAssert(JCAssert tree) {
 	print("assert ");
 	printExpr(tree.cond);
@@ -888,9 +912,10 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(';');
     }
     
+    @Override
     public void visitApply(JCMethodInvocation tree) {
         int prevPrec = this.prec;
-        this.prec = treeinfo.postfixPrec;
+        this.prec = TreeInfo.postfixPrec;
         if (tree.meth.tag == JCTree.SELECT) {
             JCFieldAccess left = (JCFieldAccess)tree.meth;
             printExpr(left.selected);
@@ -927,6 +952,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(cs.spaceWithinMethodCallParens() ? " )" : ")");
     }
 
+    @Override
     public void visitNewClass(JCNewClass tree) {
 	if (tree.encl != null) {
 	    printExpr(tree.encl);
@@ -953,11 +979,12 @@ public final class VeryPretty extends JCTree.Visitor {
 	if (tree.def != null) {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = null;
-	    printBlock(null, ((JCClassDecl) tree.def).defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace());
+	    printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace());
 	    enclClassName = enclClassNamePrev;
 	}
     }
 
+    @Override
     public void visitNewArray(JCNewArray tree) {
 	if (tree.elemtype != null) {
 	    print("new ");
@@ -989,6 +1016,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitParens(JCParens tree) {
 	print('(');
         if (cs.spaceWithinParens())
@@ -997,9 +1025,10 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(cs.spaceWithinParens() ? " )" : ")");
     }
 
+    @Override
     public void visitAssign(JCAssign tree) {
         int col = out.col;
-	printExpr(tree.lhs, treeinfo.assignPrec + 1);
+	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
 	if (cs.spaceAroundAssignOps())
             print(' ');
 	print('=');
@@ -1019,12 +1048,13 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(' ');
             break;
         }
-	printExpr(tree.rhs, treeinfo.assignPrec);
+	printExpr(tree.rhs, TreeInfo.assignPrec);
     }
 
+    @Override
     public void visitAssignop(JCAssignOp tree) {
         int col = out.col;
-	printExpr(tree.lhs, treeinfo.assignopPrec + 1);
+	printExpr(tree.lhs, TreeInfo.assignopPrec + 1);
 	if (cs.spaceAroundAssignOps())
             print(' ');
 	print(treeinfo.operatorName(tree.tag - JCTree.ASGOffset));
@@ -1045,11 +1075,12 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(' ');
             break;
         }
-	printExpr(tree.rhs, treeinfo.assignopPrec);
+	printExpr(tree.rhs, TreeInfo.assignopPrec);
     }
 
+    @Override
     public void visitUnary(JCUnary tree) {
-	int ownprec = treeinfo.opPrec(tree.tag);
+	int ownprec = TreeInfo.opPrec(tree.tag);
 	Name opname = treeinfo.operatorName(tree.tag);
 	if (tree.tag <= JCTree.PREDEC) {
             if (cs.spaceAroundUnaryOps()) {
@@ -1072,8 +1103,9 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitBinary(JCBinary tree) {
-	int ownprec = treeinfo.opPrec(tree.tag);
+	int ownprec = TreeInfo.opPrec(tree.tag);
 	Name opname = treeinfo.operatorName(tree.tag);
         int col = out.col;
 	printExpr(tree.lhs, ownprec);
@@ -1099,6 +1131,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	printExpr(tree.rhs, ownprec + 1);
     }
 
+    @Override
     public void visitTypeCast(JCTypeCast tree) {
 	print(cs.spaceWithinTypeCastParens() ? "( " : "(");
 	print(tree.clazz, tree.clazz.type);
@@ -1111,32 +1144,36 @@ public final class VeryPretty extends JCTree.Visitor {
             print(cInfo.getText().substring(a, b));
             return;
         }
-	printExpr(tree.expr, treeinfo.prefixPrec);
+	printExpr(tree.expr, TreeInfo.prefixPrec);
     }
 
+    @Override
     public void visitTypeTest(JCInstanceOf tree) {
-	printExpr(tree.expr, treeinfo.ordPrec);
+	printExpr(tree.expr, TreeInfo.ordPrec);
 	print(" instanceof ");
 	print(tree.clazz, tree.clazz.type);
     }
 
+    @Override
     public void visitIndexed(JCArrayAccess tree) {
-	printExpr(tree.indexed, treeinfo.postfixPrec);
+	printExpr(tree.indexed, TreeInfo.postfixPrec);
 	print('[');
 	printExpr(tree.index);
 	print(']');
     }
 
+    @Override
     public void visitSelect(JCFieldAccess tree) {
 	if ((fromOffset < 0 || toOffset < 0) && tree.sym instanceof Symbol.ClassSymbol) {
 	    print(null, tree.type);
 	} else {
-	    printExpr(tree.selected, treeinfo.postfixPrec);
+	    printExpr(tree.selected, TreeInfo.postfixPrec);
 	    print('.');
 	    print(tree.name);
 	}
     }
 
+    @Override
     public void visitIdent(JCIdent tree) {
 	if ((fromOffset < 0 || toOffset < 0) && tree.sym instanceof Symbol.ClassSymbol)
 	    print(null, tree.type);
@@ -1145,6 +1182,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitLiteral(JCLiteral tree) {
 	switch (tree.typetag) {
 	  case INT:
@@ -1179,15 +1217,18 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    @Override
     public void visitTypeIdent(JCPrimitiveTypeTree tree) {
 	print(symbols.typeOfTag[tree.typetag].tsym.name);
     }
 
+    @Override
     public void visitTypeArray(JCArrayTypeTree tree) {
 	printExpr(tree.elemtype);
 	print("[]");
     }
 
+    @Override
     public void visitTypeApply(JCTypeApply tree) {
 	printExpr(tree.clazz);
 	print('<');
@@ -1195,6 +1236,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print('>');
     }
 
+    @Override
     public void visitTypeParameter(JCTypeParameter tree) {
 	print(tree.name);
 	if (tree.bounds.nonEmpty()) {
@@ -1203,17 +1245,20 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
     
+    @Override
     public void visitWildcard(JCWildcard tree) {
 	print("" + tree.kind);
 	if (tree.kind != BoundKind.UNBOUND)
 	    printExpr(tree.inner);
     }
     
+    @Override
     public void visitModifiers(JCModifiers tree) {
 	printAnnotations(tree.annotations);
 	printFlags(tree.flags);
     }
     
+    @Override
     public void visitAnnotation(JCAnnotation tree) {
 	print("@");
 	printExpr(tree.annotationType);
@@ -1226,6 +1271,7 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
+    @Override
     public void visitForeachLoop(JCEnhancedForLoop tree) {
 	print("for");
         print(cs.spaceBeforeForParen() ? " (" : "(");
@@ -1239,15 +1285,18 @@ public final class VeryPretty extends JCTree.Visitor {
 	printIndentedStat(tree.getStatement(), cs.redundantForBraces(), cs.spaceBeforeForLeftBrace(), cs.wrapForStatement());
     }
     
+    @Override
     public void visitLetExpr(LetExpr tree) {
 	print("(let " + tree.defs + " in " + tree.expr + ")");
     }
 
+    @Override
     public void visitErroneous(JCErroneous tree) {
 	print("(ERROR)");
         containsError = true;
     }
 
+    @Override
     public void visitTree(JCTree tree) {
 	print("(UNKNOWN: " + tree + ")");
 	newline();
@@ -1383,7 +1432,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
     
     public void printFlags(long flags, boolean addSpace) {
-	print(treeinfo.flagNames(flags));
+	print(TreeInfo.flagNames(flags));
         if ((flags & StandardFlags) != 0) {
             if (cs.placeNewLineAfterModifiers())
                 toColExactly(out.leftMargin);
@@ -1417,13 +1466,13 @@ public final class VeryPretty extends JCTree.Visitor {
     
 
     private void printExpr(JCTree tree) {
-	printExpr(tree, treeinfo.noPrec);
+	printExpr(tree, TreeInfo.noPrec);
     }
 
     private void printNoParenExpr(JCTree tree) {
 	while (tree instanceof JCParens)
 	    tree = ((JCParens) tree).expr;
-	printExpr(tree, treeinfo.noPrec);
+	printExpr(tree, TreeInfo.noPrec);
     }
 
     private void printExpr(JCTree tree, int prec) {
@@ -1464,7 +1513,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	else {
             blankLines(tree, true);
 	    printPrecedingComments(tree);
-            printExpr(tree, treeinfo.notExpression);
+            printExpr(tree, TreeInfo.notExpression);
 	    int tag = tree.tag;
 	    if(JCTree.APPLY<=tag && tag<=JCTree.MOD_ASG) print(';');
             printTrailingComments(tree);
