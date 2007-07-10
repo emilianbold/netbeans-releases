@@ -135,7 +135,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
         
         panel.setBackground(new Color(230,230,230));
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 8.7f));
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 10f));
         panel.add(label, BorderLayout.CENTER);
         
         return panel;
