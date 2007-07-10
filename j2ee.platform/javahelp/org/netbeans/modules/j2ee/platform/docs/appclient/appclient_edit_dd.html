@@ -17,56 +17,42 @@
 <p>Deployment descriptors are XML-based text files whose elements describe how 
   to assemble and deploy a module to a specific environment. The elements also 
   contain behavioral information about components that is not included directly in code.</p>
-<p>An application client has the following deployment descriptors:</p>
+<p>An application client generally has the following deployment descriptors:</p>
     <ul>
-        <li><tt>application.xml</tt>. The general Java EE deployment descriptor that 
+        <li><tt>application-client.xml</tt>. The general Java EE deployment descriptor that 
         configures deployment settings on any Java EE compliant implementation.</li>
         <li>The server-specific deployment descriptor that configures deployment 
-        settings for the application server to which you are deploying. For the Sun 
-        Java System Application Server, the IDE provides a graphical deployment 
-        descriptor editor and automatically updates the deployment descriptor as you 
-        edit your files. For other application servers, you have to write the 
-        server-specific deployment descriptors yourself.</li>
+        settings for the application server to which you are deploying.
+        For application clients deployed to the Sun 
+        Java System Application Server/GlassFish, the file is named <tt>sun-application-client.xml</tt>.
+        The IDE provides a graphical deployment 
+        descriptor editor for <tt>sun-application-client.xml</tt> and automatically updates the deployment descriptor as you 
+        edit your files. 
+        For other application servers, you have to write the 
+        server-specific deployment descriptors yourself. </li>
     </ul>
+    
 <p>The deployment descriptors for an application client are located in the project's
 <tt>src/conf</tt> folder. You can access the deployment descriptors from the 
 project's Configuration Files node.</p>
+
 <p><b>To edit <tt>application-client.xml</tt>:</b></p>
 <ol>
-  <li>In the Projects window, expand the Configuration Files node for your application 
-    client project.</li>
+  <li>In the Projects window, expand the Configuration Files node for your application client project.</li>
   <li>Double-click <tt>application-client.xml</tt> to open it in the Source Editor.
-  You have to edit the XML code by hand using the IDE's XML code completion and validation. There is no graphical editor for 
-  <tt>application-client.xml</tt>.</li>
+  You have to edit the XML code by hand using the IDE's XML code completion and validation. 
+  There is no graphical editor for <tt>application-client.xml</tt>.</li>
 </ol>
+
 <p><b>To edit <tt>sun-application-client.xml</tt>:</b></p>
 <ol>
-  <li>Double-click <tt>sun-application-client.xml</tt> to open it in the graphical editor. 
-    <br>
-    The graphical editor opens in a Source Editor tab. The editor contains a tree 
-    view of the module's contents on the left and property editors for each item 
-    on the right. </li>
-  <li>Edit the deployment descriptor as necessary. See the following topics for 
-    more information: 
-    <ul>
-      <!-- TODO link to correct CSH pages
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/sunconfig.html"><tt>sun-application-client.xml</tt> 
-        Visual Editor: Sun Configuration</a></li>
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/sessionbean.html"><tt>sun-application-client.xml</tt> 
-        Visual Editor: Session Bean</a></li>
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/entitybean.html"><tt>sun-application-client.xml</tt> 
-        Visual Editor: Entity Bean</a></li>
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/messagebean.html"><tt>sun-application-client.xml</tt> 
-        Visual Editor: Message Bean</a></li>-->
-    </ul>
-  </li>
-  <li>Right-click <tt>sun-application-client.xml</tt> and choose Edit to edit the deployment 
-    descriptor's XML source. You can only open in this mode if the file is not 
-    already open in the visual editor. The Source Editor provides code completion 
-    and validation for all XML files.</li>
+  <li>Double-click <tt>sun-application-client.xml</tt> to open it in the graphical editor.<br>
+    The graphical editor opens in a Source Editor tab.</li>
+  <li>Edit the deployment descriptor as necessary.</li>
+  <li>Click XML to edit the XML source for <tt>sun-application-client.xml</tt>. 
+  The Source Editor provides code completion and validation for all XML files.</li>
 </ol>
-<p>To edit the server-specific deployment descriptor for any other application 
-  server:</p>
+<p>To edit the server-specific deployment descriptor for any other application server:</p>
 <ol>
   <li>Double-click the deployment descriptor node.<br>
     The IDE opens the XML source of the deployment descriptor in the Source Editor.</li>

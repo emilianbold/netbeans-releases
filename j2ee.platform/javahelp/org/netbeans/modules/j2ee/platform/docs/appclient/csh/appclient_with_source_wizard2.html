@@ -2,7 +2,7 @@
 <html>
 
 <!--
-  *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+  *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
   *     Use is subject to license terms.
 -->
 <head>
@@ -17,38 +17,36 @@
 <h2>New Enterprise Application Client with Existing Sources Wizard: Existing Sources and Libraries</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>This wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,220">
-    <param name="text" value="standard project">
-    <param name="textFontSize" value="medium">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object>&nbsp; containing an enterprise application client. You open the wizard by opening the 
-  <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New 
-  Project wizard</a> and selecting the Enterprise Application Client with Existing Sources template 
-  from the Enterprise category. 
+        <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard project">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+    </object>&nbsp; containing an enterprise application client. You open the wizard by opening the 
+    <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New 
+    Project wizard</a> and selecting the Enterprise Application Client with Existing Sources template 
+from the Enterprise category. </p>
 <p>Your existing application client source does not have to adhere to any particular directory 
-  structure. You specify the locations of the configuration files, libraries, 
-  and source roots. The only requirement is that the module contain a valid <tt>application-client.xml</tt> 
-  deployment descriptor. 
-<p>In the Existing Sources and Libraries page, you specify the following properties: 
+    structure. You specify the locations of the configuration files, libraries, 
+    and source roots. The only requirement is that the module contain a valid <tt>application-client.xml</tt> 
+deployment descriptor. </p>
+<p>In the Existing Sources and Libraries page, you specify the following properties: </p>
 <ul>
   <li><b>Configuration Files Folder. </b>Specifies the location of your deployment 
     descriptors and other configuration files. You must have at least a valid 
     <tt>application-client.xml</tt> deployment descriptor to complete the wizard. 
     <ul class="note">
       <li>The IDE does not convert deployment descriptors for unsupported application 
-        servers to Sun Java System Application Server deployment descriptors. There are external 
-        tools you can use for this purpose. 
-        <!--TODO add link to tool-->
-      </li>
+        servers to Sun Java System Application Server deployment descriptors. You must use an external 
+        tool for this purpose.</li>
     </ul>
   </li>
-  <li><b>Libraries Folder.</b> Specifies the location of the class libraries that 
+  <li><b>Libraries Folder.</b> Specifies the location of the class libraries  
     on which the application client depends. All JAR files in this folder are added to the 
     enterprise application project's classpath and packaged with the module for deployment. 
     <ul class="note">
@@ -60,8 +58,8 @@
   </li>
 </ul>
 <p>You can also specify each of the project's source package folders (containing 
-  source packages) and test package folders (containing JUnit tests). You can 
-  have multiple source roots in a standard project, with the following exceptions: 
+    source packages) and test package folders (containing JUnit tests). You can 
+have multiple source roots in a standard project, with the following exceptions: </p>
 <ul>
   <li>The source root cannot already exist in another IDE project. </li>
   <li>The source root cannot already be added to another compilation unit of the 
