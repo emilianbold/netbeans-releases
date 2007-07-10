@@ -18,6 +18,7 @@ package org.netbeans.modules.java.hints.introduce;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
@@ -71,7 +72,7 @@ public final class IntroduceAction extends HintAction {
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
-                    IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages);
+                    IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages, new AtomicBoolean());
                 }
             }, true);
             

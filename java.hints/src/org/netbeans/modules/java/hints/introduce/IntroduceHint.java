@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -94,6 +95,8 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class IntroduceHint implements CancellableTask<CompilationInfo> {
+    
+    private AtomicBoolean cancel = new AtomicBoolean();
 
     public IntroduceHint() {
     }
@@ -216,6 +219,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) {
+        cancel.set(false);
+        
         FileObject file = info.getFileObject();
         int[] selection = SelectionAwareJavaSourceTaskFactory.getLastSelection(file);
         
@@ -223,12 +228,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             //nothing to do....
             HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), Collections.<ErrorDescription>emptyList());
         } else {
-            HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), computeError(info, selection[0], selection[1], null, new EnumMap<IntroduceKind, String>(IntroduceKind.class)));
+            HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), computeError(info, selection[0], selection[1], null, new EnumMap<IntroduceKind, String>(IntroduceKind.class), cancel));
         }
     }
     
     public void cancel() {
-        //XXX
+        cancel.set(true);
     }
     
     private static boolean isConstructor(CompilationInfo info, TreePath path) {
@@ -254,7 +259,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return result;
     }
     
-    static List<ErrorDescription> computeError(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage) {
+    static List<ErrorDescription> computeError(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
         List<ErrorDescription> hints = new LinkedList<ErrorDescription>();
         List<Fix> fixes = new LinkedList<Fix>();
         TreePath resolved = validateSelection(info, start, end);
@@ -264,8 +269,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             TreePath method   = findMethod(resolved);
             boolean isConstant = checkConstantExpression(info, resolved);
             boolean isVariable = findStatement(resolved) != null && method != null;
-            List<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method) : null;
-            List<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()));// : null;
+            List<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method, cancel) : null;
+            List<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
             Scope scope = info.getTrees().getScope(resolved);
             boolean statik = scope != null ? info.getTreeUtilities().isStaticContext(scope) : false;
             String guessedName = Utilities.guessName(info, resolved);
@@ -311,7 +316,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             }
         }
         
-        Fix introduceMethod = computeIntroduceMethod(info, start, end, fixesMap, errorMessage);
+        Fix introduceMethod = computeIntroduceMethod(info, start, end, fixesMap, errorMessage, cancel);
         
         if (introduceMethod != null) {
             fixes.add(introduceMethod);
@@ -330,7 +335,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return hints;
     }
     
-    static Fix computeIntroduceMethod(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage) {
+    static Fix computeIntroduceMethod(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
         int[] statements = new int[2];
         
         TreePathHandle h = validateSelectionForIntroduceMethod(info, start, end, statements);
@@ -345,7 +350,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         Element methodEl = info.getTrees().getElement(method);
         BlockTree bt = (BlockTree) block.getLeaf();
         List<? extends StatementTree> statementsToWrap = bt.getStatements().subList(statements[0], statements[1] + 1);
-        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1));
+        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), cancel);
         Set<TypeMirror> exceptions = new HashSet<TypeMirror>();
         int index = 0;
         TypeMirror methodReturnType = info.getTypes().getNoType(TypeKind.VOID);
@@ -661,11 +666,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private boolean hasReturns = false;
         private boolean hasBreaks = false;
         private boolean hasContinues = false;
+        private AtomicBoolean cancel;
 
-        public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection) {
+        public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, AtomicBoolean cancel) {
             this.info = info;
             this.firstInSelection = firstInSelection;
             this.lastInSelection = lastInSelection;
+            this.cancel = cancel;
         }
 
         @Override
@@ -813,7 +820,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             returnValueComputed = true;
                         } else {
                             if (returnValue != null && currentReturnValue != null) {
-                                List<TreePath> candidates = CopyFinder.computeDuplicates(info, returnValue, currentReturnValue);
+                                List<TreePath> candidates = CopyFinder.computeDuplicates(info, returnValue, currentReturnValue, cancel);
                                 
                                 if (candidates.size() != 1 || candidates.get(0).getLeaf() != rt.getExpression()) {
                                     return "ERR_Different_Return_Values"; // NOI18N
@@ -978,7 +985,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
                             
                             if (replaceAll) {
-                                for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()))) {
+                                for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
                                     parameter.rewrite(p.getLeaf(), make.Identifier(name));
                                 }
                             }
@@ -994,7 +1001,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             int       index;
                             
                             if (replaceAll) {
-                                List<TreePath> candidates = CopyFinder.computeDuplicates(parameter, resolved, method);
+                                List<TreePath> candidates = CopyFinder.computeDuplicates(parameter, resolved, method, new AtomicBoolean());
                                 for (TreePath p : candidates) {
                                     Tree leaf = p.getLeaf();
                                     
@@ -1122,7 +1129,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     ModifiersTree modsTree = make.Modifiers(mods);
                     
                     if (replaceAll) {
-                        for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()))) {
+                        for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
                             parameter.rewrite(p.getLeaf(), make.Identifier(name));
                         }
                     }

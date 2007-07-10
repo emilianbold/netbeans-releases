@@ -38,6 +38,9 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CompilationInfo;
 
@@ -50,14 +53,17 @@ public class CopyFinder extends TreePathScanner<Boolean, TreePath> {
     private final TreePath searchingFor;
     private final CompilationInfo info;
     private final List<TreePath> result = new LinkedList<TreePath>();
+    private boolean allowGoDeeper = true;
+    private AtomicBoolean cancel;
 
-    private CopyFinder(TreePath searchingFor, CompilationInfo info) {
+    private CopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel) {
         this.searchingFor = searchingFor;
         this.info = info;
+        this.cancel = cancel;
     }
     
-    public static List<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope) {
-        CopyFinder f = new CopyFinder(searchingFor, info);
+    public static List<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
+        CopyFinder f = new CopyFinder(searchingFor, info, cancel);
         
         f.scan(scope, null);
         
@@ -66,6 +72,10 @@ public class CopyFinder extends TreePathScanner<Boolean, TreePath> {
 
     @Override
     public Boolean scan(Tree node, TreePath p) {
+        if (cancel.get()) {
+            return false;
+        }
+        
         if (node == null)
             return p == null;
         
@@ -82,12 +92,19 @@ public class CopyFinder extends TreePathScanner<Boolean, TreePath> {
             }
         }
         
+        if (!allowGoDeeper)
+            return false;
+        
         if ((p != null && p.getLeaf() == searchingFor.getLeaf()) || node.getKind() != searchingFor.getLeaf().getKind()) {
             super.scan(node, null);
             return false;
         } else {
             //maybe equivalent:
+            allowGoDeeper = false;
+            
             boolean result = super.scan(node, searchingFor) == Boolean.TRUE ? true : false;
+            
+            allowGoDeeper = true;
             
             if (result) {
                 if (node != searchingFor.getLeaf()) {

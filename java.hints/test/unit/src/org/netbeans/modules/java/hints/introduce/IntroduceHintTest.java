@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -631,7 +632,7 @@ public class IntroduceHintTest extends NbTestCase {
         prepareTest(code);
         
         Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
-        List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, errorMessages);
+        List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, errorMessages, new AtomicBoolean());
         
         if (golden == null) {
             assertEquals(errors.toString(), 0, errors.size());
@@ -657,7 +658,7 @@ public class IntroduceHintTest extends NbTestCase {
         prepareTest(code);
         
         Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
-        List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, errorMessages);
+        List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, errorMessages, new AtomicBoolean());
         
         assertEquals(errors.toString(), 0, errors.size());
         assertEquals(golden, errorMessages.get(kind));
@@ -668,7 +669,7 @@ public class IntroduceHintTest extends NbTestCase {
         
         prepareTest(code);
         
-        List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, new EnumMap<IntroduceKind, String>(IntroduceKind.class));
+        List<ErrorDescription> errors = IntroduceHint.computeError(info, start, end, null, new EnumMap<IntroduceKind, String>(IntroduceKind.class), new AtomicBoolean());
         
         assertEquals(errors.toString(), 1, errors.size());
         

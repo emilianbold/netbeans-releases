@@ -19,6 +19,7 @@ package org.netbeans.modules.java.hints.introduce;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -113,6 +114,10 @@ public class CopyFinderTest extends NbTestCase {
         performTest("package test; public class Test {public void test(int i) {int y = \"\".length(); test(\"\".length());} }", 88 - 22, 99 - 22, 106 - 22, 117 - 22);
     }
     
+    public void testSimple17() throws Exception {
+        performTest("package test; public class Test {public void test2() {int a = test(test(test(1))); a = test(test(test(1))); a = test(test(test(1)));} public int test(int i) {return 0;} }", 94 - 22, 101 - 22, 119 - 22, 126 - 22, 144 - 22, 151 - 22);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
@@ -162,7 +167,7 @@ public class CopyFinderTest extends NbTestCase {
         
         assertNotNull(path);
 
-        List<TreePath> result = CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()));
+        List<TreePath> result = CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean());
 
         //        assertEquals(f.result.toString(), duplicates.length / 2, f.result.size());
         
