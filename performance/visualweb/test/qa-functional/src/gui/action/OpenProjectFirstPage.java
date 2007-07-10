@@ -46,14 +46,14 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     /** Creates a new instance of OpenProjectFirstPage */
     public OpenProjectFirstPage(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
     /** Creates a new instance of OpenProjectFirstPage */
     public OpenProjectFirstPage(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
+        expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
     
