@@ -33,10 +33,8 @@ public class HtmlCommandLinkDesignInfo extends HtmlDesignInfoBase implements Des
     }
 
     public Result beanCreatedSetup(DesignBean bean) {
-        try {
-            DesignBean output = bean.getDesignContext().createBean(HtmlOutputText.class.getName(), bean, null);
-            output.setInstanceName(bean.getInstanceName() + "Text", true);  //NOI18N
-            output.getProperty("value").setValue(bundle.getMessage("LinkAction"));  //NOI18N
+        try {           
+            bean.getProperty("value").setValue(bundle.getMessage("LinkAction"));  //NOI18N
         }
         catch (Exception e) {
             e.printStackTrace();

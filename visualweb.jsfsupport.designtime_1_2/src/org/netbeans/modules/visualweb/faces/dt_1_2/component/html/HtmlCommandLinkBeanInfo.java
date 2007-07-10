@@ -83,6 +83,8 @@ public class HtmlCommandLinkBeanInfo extends UICommandBeanInfoBase {
         beanDescriptor.setValue(Constants.BeanDescriptor.TAG_NAME,"commandLink");
         beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_PREFIX,"h");
         beanDescriptor.setValue(Constants.BeanDescriptor.TAGLIB_URI,"http://java.sun.com/jsf/html");
+        beanDescriptor.setValue(Constants.BeanDescriptor.INLINE_EDITABLE_PROPERTIES,
+	        new String[] { "*value://a" }); // NOI18N        
 
         return beanDescriptor;
 
