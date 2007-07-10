@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -100,9 +98,12 @@ public class UnitDetails extends DetailsPanel{
                     if (c.canBeAdded (u.updateUnit, elem)) {
                         List<UpdateElement> elems = Utilities.getRequiredElements(u.updateUnit, elem, c);
                         if (elems.size() > 0) {
-                            String pom = "";
+                            StringBuffer pom = new StringBuffer();
                             for (UpdateElement updateElement : elems) {
-                                pom += updateElement.getDisplayName() + ", ";
+                                if (pom.length() > 0) {
+                                    pom.append(", ");
+                                }
+                                pom.append(updateElement.getDisplayName());
                             }
                             
                             if (isEnabled) {
