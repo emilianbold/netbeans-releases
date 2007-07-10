@@ -48,6 +48,7 @@ import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Defines actions available on a suite.
@@ -65,6 +66,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug"), null));
+        addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
         actions.add(null);
         actions.add(ProjectSensitiveActions.projectCommandAction("build-zip", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_zip"), null));
         actions.add(null);
@@ -104,6 +106,17 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
+    }
+    
+    private static void addFromLayers(List<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof JSeparator) {
+                actions.add(null);
+            }
+        }
     }
     
     private final SuiteProject project;

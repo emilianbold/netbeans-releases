@@ -63,6 +63,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider {
     
@@ -83,6 +84,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(createSimpleAction(project, new String[] {"run"}, NbBundle.getMessage(ModuleActions.class, "ACTION_run")));
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
+        addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
         actions.add(null);
         if (project.supportsUnitTests()) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
@@ -125,6 +127,17 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
+    }
+    
+    private static void addFromLayers(List<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof JSeparator) {
+                actions.add(null);
+            }
+        }
     }
     
     private final NbModuleProject project;
