@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
@@ -48,7 +49,6 @@ public class AntSettings {
     private static final String PROP_PROPERTIES = "properties"; // NOI18N
     private static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
     private static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
-    private static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
     public static final String PROP_ANT_HOME = "antHome"; // NOI18N
     public static final String PROP_EXTRA_CLASSPATH = "extraClasspath"; // NOI18N
     public static final String PROP_AUTOMATIC_EXTRA_CLASSPATH = "automaticExtraClasspath"; // NOI18N
@@ -74,6 +74,10 @@ public class AntSettings {
         // Enable hyperlinking for Jikes by default:
         for (String pair : prefs().get(PROP_PROPERTIES, "build.compiler.emacs=true").split("\n")) { // NOI18N
             String[] nameval = pair.split("=", 2); // NOI18N
+            if (nameval.length != 2) {
+                Logger.getLogger(AntSettings.class.getName()).warning("Unexpected name=value pair: '" + pair + "'");
+                continue;
+            }
             p.put(nameval[0], nameval[1]);
         }
         return p;
