@@ -82,6 +82,8 @@ public final class NavigatorTC extends TopComponent {
         // special title for sliding mode
         // XXX - please rewrite to regular API when available - see issue #55955
         putClientProperty("SlidingName", getName());
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(NavigatorTC.class, "ACC_DESC_NavigatorTC")); //NOI18N
         
         notAvailLbl.setHorizontalAlignment(SwingConstants.CENTER);
         notAvailLbl.setEnabled(false);
