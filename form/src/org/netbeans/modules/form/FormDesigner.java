@@ -417,7 +417,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         String id = replicator.getClonedComponentId(comp);
         return id != null ? formModel.getMetaComponent(id) : null;
     }
-
+    
 //    public RADComponent getMetaComponent(String componentId) {
 //        return formModel.getMetaComponent(componentId);
 //    }
@@ -478,7 +478,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateComponentLayer(final boolean fireChange) {
-        if (!isOpened()) { // the form can be closed just after opened, before this gets called (#70439)
+        if (formModel == null) { // the form can be closed just after opened, before this gets called (#70439)
             return;
         }
         if (getLayoutDesigner() == null) {
@@ -1691,7 +1691,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentClosed() {
         super.componentClosed();
-        formDesignerOpened = false;
         if (formModel != null) {
             if (formModelListener != null)
                 formModel.removeFormModelListener(formModelListener);
@@ -1725,7 +1724,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentOpened() {
         super.componentOpened();
-        formDesignerOpened = true;
         if ((formEditor == null) && (multiViewObserver != null)) { // Issue 67879
             multiViewObserver.getTopComponent().close();
             EventQueue.invokeLater(new Runnable() {
@@ -1734,11 +1732,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
             });
         }
-    }
-
-    private boolean formDesignerOpened;
-    public boolean isClosed() {
-        return !formDesignerOpened;
     }
 
     public CloseOperationState canCloseElement() {
