@@ -133,9 +133,11 @@ public class WebServicesHintsProvider {
     private void initServiceMetadata(TypeElement javaClass) {
         if (service == null) {
             Project owner = FileOwnerQuery.getOwner(file);
-            JaxWsModel jaxwsModel = owner.getLookup().lookup(JaxWsModel.class);
-            if (jaxwsModel != null) {
-                service = jaxwsModel.findServiceByImplementationClass(javaClass.getQualifiedName().toString());
+            if(owner!=null) {
+                JaxWsModel jaxwsModel = owner.getLookup().lookup(JaxWsModel.class);
+                if (jaxwsModel != null) {
+                    service = jaxwsModel.findServiceByImplementationClass(javaClass.getQualifiedName().toString());
+                }
             }
         }
         if (service != null && service.getLocalWsdlFile()!=null) {
