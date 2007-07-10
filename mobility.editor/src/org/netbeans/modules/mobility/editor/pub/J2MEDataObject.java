@@ -197,7 +197,7 @@ public class J2MEDataObject extends MultiDataObject {
                 Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
                 pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
             }
-            if (!pch.isPreprocessorOn()) {
+            if (pch == null || !pch.isPreprocessorOn()) {
                 saveFromKitToStreamHook(doc, kit, stream);
                 return;
             }
@@ -247,7 +247,7 @@ public class J2MEDataObject extends MultiDataObject {
                 Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
                 pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
             }
-            if (!pch.isPreprocessorOn()) {
+            if (pch == null || !pch.isPreprocessorOn()) {
                 loadFromStreamToKitHook(doc, stream, kit);
                 return;
             }
