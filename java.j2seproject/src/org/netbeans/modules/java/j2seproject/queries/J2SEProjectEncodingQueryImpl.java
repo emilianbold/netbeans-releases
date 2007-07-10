@@ -24,7 +24,6 @@ import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -58,7 +57,10 @@ public class J2SEProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
         synchronized (this) {
             if (cache == null) {
                 try {
-                    cache = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+                    //From discussion with K. Frank the project returns Charset.defaultCharset ()
+                    //for old j2se projects. The old project used system encoding => Charset.defaultCharset ()
+                    //should work for most users.
+                    cache = enc == null ? Charset.defaultCharset() : Charset.forName(enc);
                 } catch (IllegalCharsetNameException exception) {
                     return null;
                 }

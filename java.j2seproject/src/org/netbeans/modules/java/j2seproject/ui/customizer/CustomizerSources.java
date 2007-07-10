@@ -117,7 +117,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         enableSourceLevel ();
         this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
-            this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
+            this.originalEncoding = Charset.defaultCharset().name();
         }
         
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
@@ -251,7 +251,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 }
             }
             if (defEnc == null) {
-                defEnc = FileEncodingQuery.getDefaultEncoding();
+                defEnc = Charset.defaultCharset();
             }
             setSelectedItem(defEnc);
         }
