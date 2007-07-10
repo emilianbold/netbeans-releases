@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+   All functionality mentioned in the Javadoc should be covered by unit tests.
   </p>
  </answer>
 
@@ -236,7 +236,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   This API does not deprecate any existing public APIs.
   </p>
  </answer>
 
@@ -254,7 +254,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   No I18N messages.
   </p>
  </answer>
 
@@ -268,7 +268,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   No.
   </p>
  </answer>
 
@@ -290,7 +290,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+   No settings defined by this module.
   </p>
  </answer>
 
@@ -308,7 +308,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   1.5+.
   </p>
  </answer>
 
@@ -321,7 +321,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JRE only.
   </p>
  </answer>
 
@@ -374,7 +374,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   None.
   </p>
  </answer>
 
@@ -402,7 +402,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   No known platform dependencies.
   </p>
  </answer>
 
@@ -426,7 +426,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+   Nothing.
   </p>
  </answer>
 
@@ -454,7 +454,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   JAR only.
   </p>
  </answer>
 
@@ -470,7 +470,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Yes.
   </p>
  </answer>
 
@@ -491,7 +491,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Only official API and SPI packages are exported.
   </p>
  </answer>
 
@@ -509,7 +509,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   Anywhere.
   </p>
  </answer>
 
@@ -529,7 +529,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   No.
   </p>
  </answer>
 
@@ -545,7 +545,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   No.
   </p>
  </answer>
 
@@ -568,7 +568,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   No.
   </p>
  </answer>
 
@@ -588,7 +588,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   No.
   </p>
  </answer>
 
@@ -606,7 +606,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   No.
   </p>
  </answer>
 
@@ -624,7 +624,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   No.
   </p>
  </answer>
 
@@ -652,7 +652,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   No.
   </p>
  </answer>
 
@@ -670,7 +670,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   No.
   </p>
  </answer>
 
@@ -702,7 +702,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   The API defines the contracts to be supported by the implementations, but does not enforce 
+   them in any way. The API is thread-safe if implementations support the contracts correctly.
   </p>
  </answer>
 
@@ -721,7 +722,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   None.
   </p>
  </answer>
 
@@ -739,7 +740,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   None.
   </p>
  </answer>
 
@@ -770,7 +771,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+   None.
   </p>
  </answer>
 
@@ -802,7 +803,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+   No.
   </p>
  </answer>
 
@@ -819,7 +820,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+   No.
   </p>
  </answer>
 
@@ -836,7 +837,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   No.
   </p>
  </answer>
 
@@ -849,7 +850,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   No.
   </p>
  </answer>
 
@@ -863,7 +864,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   No.
   </p>
  </answer>
 
@@ -890,7 +891,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   No.
   </p>
  </answer>
 
@@ -904,7 +905,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   The module only contains an API delegating to a SPI, so the memory consumption is very low.
   </p>
  </answer>
 
@@ -926,7 +927,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   No.
   </p>
  </answer>
 
@@ -950,7 +951,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   No, but implementations might. The API clients are encouraged 
+   not to call long-running methods in the AWT thread.
   </p>
  </answer>
 
@@ -969,7 +971,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   The API performance is constant, but the performance of the implementations
+   might scale linearly in the number of files in a project.
   </p>
  </answer>
 
@@ -987,7 +990,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   Implementations are expected to operate quickly. Clients are advised that some
+   operations might run for a long time.
   </p>
  </answer>
 
@@ -1000,7 +1004,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   No.
   </p>
  </answer>
 
@@ -1014,7 +1018,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -1035,7 +1039,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   No.
   </p>
  </answer>
 
@@ -1058,7 +1062,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   No.
   </p>
  </answer>
 
@@ -1079,7 +1083,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   No.
   </p>
  </answer>
 
@@ -1104,7 +1108,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   No.
   </p>
  </answer>
 
@@ -1124,7 +1128,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+   No.
   </p>
  </answer>
 
@@ -1142,7 +1146,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -1159,7 +1163,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 
