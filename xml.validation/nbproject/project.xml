@@ -103,11 +103,12 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
-                <friend>org.netbeans.modules.xslt.core</friend>
-                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.script.core</friend>
+                <friend>org.netbeans.modules.worklist.editor</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
+                <friend>org.netbeans.modules.xslt.core</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <package>org.netbeans.modules.xml.validation</package>
                 <package>org.netbeans.modules.xml.validation.ui</package>
             </friend-packages>
