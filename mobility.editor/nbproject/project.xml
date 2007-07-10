@@ -244,8 +244,8 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
-                <friend>org.netbeans.modules.mvd</friend>
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
+                <friend>org.netbeans.modules.vmd.midp.converter</friend>
                 <package>org.netbeans.modules.mobility.editor.pub</package>
             </friend-packages>
         </data>

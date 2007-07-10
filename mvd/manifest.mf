@@ -1,13 +1,4 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.mvd
+OpenIDE-Module: org.netbeans.modules.mvd/2
 OpenIDE-Module-Specification-Version: 1.1.0
-OpenIDE-Module-Layer: org/netbeans/modules/mvd/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mvd/resources/Bundle.properties
-OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
-
-Name: org/netbeans/modules/mvd/io/DesignDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.mobility.editor.pub.J2MEDataObject
-
-Name: org/netbeans/modules/mvd/model/registry/ComponentInfoDataObject$ComponentInfoDataLoader.class
-OpenIDE-Module-Class: Loader

@@ -19,29 +19,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="mobility/designer">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    <target name="pre-clean">
-        <ant dir="graphlib/" antfile="build.xml" target="clean" inheritAll="false"/>
-    </target>
-
-    <target name="clean" depends="pre-clean,projectized-common.clean"/>
-
-    <target name="pre-compile" depends="init">
-        <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
-        <ant dir="graphlib/" antfile="build.xml" inheritAll="false">
-            <property name="openide.jar" location="${openide/util.dir}/lib/org-openide-util.jar"/>
-            <property name="graph.dist.dir" location="lib/"/>
-        </ant>
-    </target>
-    <target name="compile" depends="pre-compile,projectized-common.compile"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="lib">
-                <include name="graphlib.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="netbeans-extra" depends="release"/>
 </project>
