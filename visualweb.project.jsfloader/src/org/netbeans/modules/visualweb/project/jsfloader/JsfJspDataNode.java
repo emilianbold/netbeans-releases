@@ -174,7 +174,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
                 }
 	   
                 if (JsfProjectUtils.isStartPage(getDataObject().getPrimaryFile())) {
-                    Image startPageBadge = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/startpagebadge.gif"); // NOI18N
+                    Image startPageBadge = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/startpagebadge.png"); // NOI18N
                     returnImage = Utilities.mergeImages(returnImage, startPageBadge, returnImage.getWidth(null),
                             returnImage.getHeight(null) - startPageBadge.getHeight(null) + 1 );
                 }
