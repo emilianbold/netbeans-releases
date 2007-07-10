@@ -354,7 +354,7 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
                 if (i < 0)
                     return false;
                 name = name.substring(i).toLowerCase();
-                return ".ks".equals(name)  ||  ".keystore".equals(name)  ||  ".p12".equals(name)  ||  ".pkcs12".equals(name); // NOI18N
+                return ".ks".equals(name)  ||  ".keystore".equals(name)  ||  ".p12".equals(name)  ||  ".pkcs12".equals(name) || ".jks".equals(name); // NOI18N
             }
             
             public String getDescription() {
