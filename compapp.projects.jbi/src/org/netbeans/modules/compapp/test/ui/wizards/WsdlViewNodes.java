@@ -367,10 +367,11 @@ public class WsdlViewNodes {
     
     private static boolean isAcceptableFile(FileObject fo) {
         if(fo.getExt().equalsIgnoreCase("wsdl")) { // NOI18N
+            InputStream inputStream = null;
             try {
                 // Make sure the wsdl contains service definitions.
                 // This masks out empty portmap.wsdl.
-                InputStream inputStream = fo.getInputStream();
+                inputStream = fo.getInputStream();
                 DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 Document document = builder.parse(inputStream);
                 
@@ -385,6 +386,14 @@ public class WsdlViewNodes {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
+            } finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (Exception e) {
+                    ;
+                }
             }
         }
         

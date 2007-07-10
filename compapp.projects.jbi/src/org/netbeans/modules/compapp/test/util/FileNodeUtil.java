@@ -27,11 +27,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,10 +47,10 @@ public class FileNodeUtil {
     
     public static void overwriteFile(Node srcNode, Node destNode) throws IOException {
         
-        DataObject srcDO = (DataObject) srcNode.getLookup().lookup(DataObject.class);
+        DataObject srcDO = srcNode.getLookup().lookup(DataObject.class);
         FileObject srcFO = srcDO.getPrimaryFile();
         
-        DataObject destDO = (DataObject) destNode.getLookup().lookup(DataObject.class);
+        DataObject destDO = destNode.getLookup().lookup(DataObject.class);
         FileObject destFO = destDO.getPrimaryFile();
         
         
@@ -64,8 +61,7 @@ public class FileNodeUtil {
                     NbBundle.getMessage(FileNodeUtil.class, "TTL_SaveModifiedSource"), // NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-                EditorCookie srcEditorCookie =
-                        (EditorCookie) srcDO.getCookie(EditorCookie.class);
+                EditorCookie srcEditorCookie = srcDO.getCookie(EditorCookie.class);
                 srcEditorCookie.saveDocument();
             }
         }
@@ -93,11 +89,11 @@ public class FileNodeUtil {
                 return;
             }
             
-            EditorCookie destEditorCookie =
-                    (EditorCookie) destDO.getCookie(EditorCookie.class);
+            EditorCookie destEditorCookie = destDO.getCookie(EditorCookie.class);
             
+            InputStream inputStream = null;
             try {
-                InputStream inputStream = srcFO.getInputStream();
+                inputStream = srcFO.getInputStream();
                 String srcText = getInputStreamContents(inputStream);
                 
                 Document outputDocument = destEditorCookie.getDocument();
@@ -118,14 +114,38 @@ public class FileNodeUtil {
             } catch (BadLocationException e) {
                 e.printStackTrace();
                 throw new IOException(e.getMessage());
+            } finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (Exception e) {
+                    ;
+                }
             }
         } else {
             FileLock lock = destFO.lock();
-            OutputStream outputStream = destFO.getOutputStream(lock);
-            InputStream inputStream = srcFO.getInputStream();
-            FileUtil.copy(inputStream, outputStream);
-            outputStream.close();
-            lock.releaseLock();
+            InputStream inputStream = null;
+            OutputStream outputStream = null;
+            
+            try {
+                outputStream = destFO.getOutputStream(lock);
+                inputStream = srcFO.getInputStream();
+                FileUtil.copy(inputStream, outputStream);
+            } finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
+                    
+                    lock.releaseLock();
+                } catch (Exception e) {
+                    ;
+                }
+            }
         }
     }
     
@@ -161,7 +181,17 @@ public class FileNodeUtil {
      */
     private static String getFileObjectContents(FileObject fileObject) throws IOException {
         InputStream inputStream = fileObject.getInputStream();
-        return getInputStreamContents(inputStream);
+        try {
+            return getInputStreamContents(inputStream);
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (Exception e) {
+                ;
+            }
+        }
     }
     
     /**
@@ -169,7 +199,9 @@ public class FileNodeUtil {
      */
     private static String getInputStreamContents(InputStream inputStream) throws IOException {
         int chunksize = 512;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));  //?  // NOI18N
+        BufferedReader reader = 
+                new BufferedReader(
+                new InputStreamReader(inputStream, "UTF-8"));  //?  // NOI18N
         StringBuffer output = new StringBuffer();
         char[] buff = new char[chunksize];
         int len = reader.read(buff);

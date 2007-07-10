@@ -128,7 +128,6 @@ public class CasaHelper {
                         return true;
                     }
                 }
-                is.close();
             } catch (Exception e) {
                 System.out.println("Error parsing XML: " + e);
             } finally {
