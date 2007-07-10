@@ -162,7 +162,7 @@ public class DomUtil {
         parent.appendChild(object.writeXML(parent.getOwnerDocument()));
     }
     
-    public static void addElemet(Element parent, String elemName, String elemText) {
+    public static void addElement(Element parent, String elemName, String elemText) {
         final Element child = parent.getOwnerDocument().createElement(elemName);
         child.setTextContent(elemText);
         parent.appendChild(child);

@@ -21,7 +21,6 @@
 package org.netbeans.installer.downloader.connector;
 
 import java.net.Proxy;
-import java.net.Proxy.Type;
 
 /**
  *
@@ -29,10 +28,10 @@ import java.net.Proxy.Type;
  */
 
 public enum MyProxyType {
-   DIRECT(Type.DIRECT),
-   HTTP(Type.HTTP),
-   SOCKS(Type.SOCKS),
-   FTP(Type.SOCKS);
+   DIRECT(Proxy.Type.DIRECT),
+   HTTP(Proxy.Type.HTTP),
+   SOCKS(Proxy.Type.SOCKS),
+   FTP(Proxy.Type.SOCKS);
    
    private Proxy.Type type;
    

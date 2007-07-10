@@ -82,7 +82,7 @@ public class ProxySettingsDialog extends NbiDialog {
     }
     
     private void initComponents() {
-        Proxy proxy = connector.getPorxy(MyProxyType.HTTP);
+        Proxy proxy = connector.getProxy(MyProxyType.HTTP);
         InetSocketAddress address = proxy != null ?
             (InetSocketAddress) proxy.address() : null;
         

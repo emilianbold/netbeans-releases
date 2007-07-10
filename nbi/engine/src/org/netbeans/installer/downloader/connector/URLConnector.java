@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -26,7 +26,10 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.downloader.DownloadManager;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.xml.DomUtil;
@@ -41,222 +44,299 @@ import org.w3c.dom.Element;
  */
 
 public class URLConnector {
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    
-    public static final int SECOND = 1000;
-    public static final int MINUTE = 60 * SECOND;
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static URLConnector instance;//Singleton
-    
-    public static URLConnector getConnector() {
-        if (instance != null) return instance;
-        return instance = new URLConnector(new File(DownloadManager.instance.getWd(),"settings.xml"));
+    private static URLConnector instance; //Singleton
+
+    public static synchronized URLConnector getConnector() {
+        if (instance != null) {
+            return instance;
+        }
+        
+        return instance = new URLConnector(new File(
+                DownloadManager.instance.getWd(), 
+                SETTINGS_FILE_NAME));
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    
     final MyProxySelector proxySelector = new MyProxySelector();
+    
     int readTimeout = MINUTE / 3;
     int connectTimeout = MINUTE / 3;
     boolean doInput = true;
     boolean doOutput = false;
     boolean useCaches = false;
-    
+
     boolean useProxy = false;
-    
+
     private File settingFile;
-    
+
     private void addSystemProxies() {
-        addProxyFrom("http.proxyHost", "http.proxyPort", MyProxyType.HTTP);
-        addProxyFrom("ftp.proxyHost", "ftp.proxyPort", MyProxyType.FTP);
-        addProxyFrom("socksProxyHost", "socksProxyPort", MyProxyType.SOCKS);
+        addProxyFrom(HTTP_PROXY_HOST_PROPERTY, 
+                HTTPS_PROXY_PORT_PROPERTY, 
+                MyProxyType.HTTP);
+        addProxyFrom(FTP_PROXY_HOST_PROPERTY, 
+                FTP_PROXY_PORT_PROPERTY, 
+                MyProxyType.FTP);
+        addProxyFrom(SOCKS_PROXY_HOST_PROPERTY, 
+                SOCKS_PROXY_PORT_PROPERTY, 
+                MyProxyType.SOCKS);
     }
-    
+
     private void addDeploymentProxies() {
-        addProxyFrom("deployment.proxy.http.host", "deployment.proxy.http.port", MyProxyType.HTTP);
-        addProxyFrom("deployment.proxy.ftp.host", "deployment.proxy.ftp.port", MyProxyType.FTP);
-        addProxyFrom("deployment.proxy.socks.host", "deployment.proxy.socks.port", MyProxyType.SOCKS);
-        if ("direct".equalsIgnoreCase(System.getProperty("javaplugin.proxy.config.type")))
+        addProxyFrom(DEPLOYMENT_PROXY_HTTP_HOST, 
+                DEPLOYMENT_PROXY_HTTP_PORT, 
+                MyProxyType.HTTP);
+        addProxyFrom(DEPLOYMENT_PROXY_FTP_HOST, 
+                DEPLOYMENT_PROXY_FTP_PORT, 
+                MyProxyType.FTP);
+        addProxyFrom(DEPLOYMENT_PROXY_SOCKS_HOST, 
+                DEPLOYMENT_PROXY_SOCKS_PORT, 
+                MyProxyType.SOCKS);
+        
+        if (DIRECT_CONNECTION_VALUE.equalsIgnoreCase(
+                System.getProperty(DIRECT_CONNECTION_PROPERTY))) {
             useProxy = false;
+        }
     }
-    
+
     private void configureByPassList() {
-        addByPassHostsFrom("deployment.proxy.bypass.list");
+        addByPassHostsFrom(DEPLOYMENT_PROXY_BYPASS_LIST);
     }
-    
-    private void addProxyFrom(String hostProp, String portProp, MyProxyType type) {
+
+    private void addProxyFrom(
+            final String hostProp, 
+            final String portProp, 
+            final MyProxyType type) {
         final String host = System.getProperty(hostProp);
         final String stringPort = System.getProperty(portProp);
-        final int port = stringPort != null ? Integer.parseInt(stringPort): -1;
+        final int port = stringPort != null ? Integer.parseInt(stringPort) : -1;
+        
         if (host != null && port != -1) {
-            final Proxy socksProxy = new Proxy(type.getType(), new InetSocketAddress(host, port));
+            final Proxy socksProxy = new Proxy(
+                    type.getType(), 
+                    new InetSocketAddress(host, port));
             proxySelector.add(new MyProxy(socksProxy, type));
             useProxy = true;
         }
     }
-    
-    private void addByPassHostsFrom(String byPassProp) {
+
+    private void addByPassHostsFrom(final String byPassProp) {
         final String byPassList = System.getProperty(byPassProp);
-        if (byPassList == null) return;
-        for (String host : byPassList.split(",|;")) {
+        if (byPassList == null) {
+            return;
+        }
+        for (String host : byPassList.split(PROXY_BYPASS_LIST_SEPARATOR)) {
             host = host.trim();
-            if (!"".equals(host)) proxySelector.addByPassHost(host);
+            if (!StringUtils.EMPTY_STRING.equals(host)) {
+                proxySelector.addByPassHost(host);
+            }
         }
     }
-    
-    public URLConnector(File settingFile) {
+
+    public URLConnector(final File settingFile) {
         addSystemProxies();
         addDeploymentProxies();
         configureByPassList();
         this.settingFile = settingFile;
+        
         if (settingFile.exists()) {
             load();
-            LogManager.log("configuration was load from file: " + settingFile);
-        } else LogManager.log("file not exist, default configuration was set!");
+            LogManager.log(
+                    "loaded configuration from file: " + settingFile); // NOI18N
+        } else {
+            LogManager.log("" + settingFile + // NOI18N
+                    " not exist, default configuration was set"); // NOI18N
+        }
     }
-    
+
     private void load() {
         try {
             Document settings = DomUtil.parseXmlFile(settingFile);
             final DomVisitor visitor = new RecursiveDomVisitor() {
+                @Override
                 public void visit(Element elemet) {
-                    if ("readTimeout".equals(elemet.getNodeName())) {
-                        readTimeout = Integer.parseInt(elemet.getTextContent().trim());
-                    } else if ("connectTimeout".equals(elemet.getNodeName())) {
-                        connectTimeout = Integer.parseInt(elemet.getTextContent().trim());
-                    } else if ("useProxy".equals(elemet.getNodeName())) {
-                        useProxy = Boolean.valueOf(elemet.getTextContent().trim());
-                    } else if ("proxy".equals(elemet.getNodeName())) {
+                    if (READ_TIMEOUT_TAG.equals(elemet.getNodeName())) {
+                        readTimeout = 
+                                Integer.parseInt(elemet.getTextContent().trim());
+                    } else if (CONNECT_TIMEOUT_TAG.equals(elemet.getNodeName())) {
+                        connectTimeout = 
+                                Integer.parseInt(elemet.getTextContent().trim());
+                    } else if (USE_PROXY_TAG.equals(elemet.getNodeName())) {
+                        useProxy = 
+                                Boolean.valueOf(elemet.getTextContent().trim());
+                    } else if (PROXY_TAG.equals(elemet.getNodeName())) {
                         final MyProxy proxy = new MyProxy();
                         proxy.readXML(elemet);
                         proxySelector.add(proxy);
-                    } else super.visit(elemet);
+                    } else {
+                        super.visit(elemet);
+                    }
                 }
             };
+            
             visitor.visit(settings);
-        } catch (IOException ex) {
-            LogManager.log("I/O error during loading. Default configuration was set!");
-        } catch(ParseException ex) {
-            LogManager.log("fail load connector settings: corrupted unparsable xml. Defualt configuration set.");
+        } catch (IOException e) {
+            ErrorManager.notifyDebug("I/O error during connector " + // NOI18N
+                    "setting loading. Default configuration was set.", e); // NOI18N
+        } catch (ParseException e) {
+            ErrorManager.notifyDebug("Failed to load settings: " + // NOI18N
+                    "corrupted xml. Default configuration set.", e); // NOI18N
         }
     }
-    
+
     public synchronized void dump() {
         try {
-            final Document document = DomUtil.parseXmlFile("<connectSettings/>");
+            final Document document = DomUtil.parseXmlFile(DEFAULT_SETTINGS_TEXT);
             final Element root = document.getDocumentElement();
-            DomUtil.addElemet(root, "readTimeout", String.valueOf(readTimeout));
-            DomUtil.addElemet(root, "connectTimeout", String.valueOf(connectTimeout));
-            DomUtil.addElemet(root, "useProxy", String.valueOf(useProxy));
-            DomUtil.addChild(root, proxySelector);
+            
+            DomUtil.addElement(
+                    root, 
+                    READ_TIMEOUT_TAG, 
+                    String.valueOf(readTimeout));
+            DomUtil.addElement(
+                    root, 
+                    CONNECT_TIMEOUT_TAG, 
+                    String.valueOf(connectTimeout));
+            DomUtil.addElement(
+                    root, 
+                    USE_PROXY_TAG, 
+                    String.valueOf(useProxy));
+            DomUtil.addChild(
+                    root, 
+                    proxySelector);
+            
             DomUtil.writeXmlFile(document, settingFile);
-        } catch(IOException ex) {
-            LogManager.log("I/O error. Can't dump configuration");
-        }  catch(ParseException wontHappend) {
-            LogManager.log("fatal error can't parse <connectSettings/>");
+        } catch (IOException e) {
+            ErrorManager.notifyDebug("I/O error. Can't " + // NOI18N
+                    "dump configuration", e);
+        } catch (ParseException e) {
+            ErrorManager.notifyDebug("fatal error can't parse " + // NOI18N
+                    "<connectSettings/>", e); // NOI18N
         }
     }
-    
-    public void addProxy(MyProxy proxy) {
+
+    public void addProxy(final MyProxy proxy) {
         proxySelector.add(proxy);
         dump();
     }
-    
-    public void removeProxy(MyProxyType type) {
+
+    public void removeProxy(final MyProxyType type) {
         proxySelector.remove(type);
         dump();
     }
-    
-    public void addByPassHost(String host) {
+
+    public void addByPassHost(final String host) {
         proxySelector.addByPassHost(host);
     }
-    
+
     public void clearByPassList() {
         proxySelector.clearByPassList();
     }
-    
+
     public String[] getByPassHosts() {
         return proxySelector.getByPass();
     }
-    
-    public void setReadTimeout(int readTimeout) {
-        if (readTimeout < 0) throw new IllegalArgumentException();
+
+    public void setReadTimeout(final int readTimeout) {
+        if (readTimeout < 0) {
+            throw new IllegalArgumentException();
+        }
         this.readTimeout = readTimeout;
         dump();
     }
-    
-    public void setConnectTimeout(int connectTimeout) {
-        if (connectTimeout < 0) throw new IllegalArgumentException();
+
+    public void setConnectTimeout(final int connectTimeout) {
+        if (connectTimeout < 0) {
+            throw new IllegalArgumentException();
+        }
         this.connectTimeout = connectTimeout;
         dump();
     }
-    
-    public void setUseProxy(boolean useProxy) {
+
+    public void setUseProxy(final boolean useProxy) {
         this.useProxy = useProxy;
+        
         dump();
     }
-    
+
     public int getReadTimeout() {
         return readTimeout;
     }
-    
+
     public int getConnectTimeout() {
         return connectTimeout;
     }
-    
+
     public boolean getUseProxy() {
         return useProxy;
     }
-    
-    public Proxy getPorxy(MyProxyType type) {
+
+    public Proxy getProxy(final MyProxyType type) {
         final MyProxy proxy = proxySelector.getForType(type);
-        return (proxy != null) ? proxy.getProxy(): null;
+        
+        return (proxy != null) ? proxy.getProxy() : null;
     }
-    
-    public URLConnection establishConnection(URL url) throws IOException {
+
+    public URLConnection establishConnection(
+            final URL url) throws IOException {
         return establishConnection(url, new ArrayList<Pair<String, String>>(0));
     }
-    
-    public URLConnection establishConnection(URL url, List<Pair<String, String>> headerFields) throws IOException {
+
+    public URLConnection establishConnection(
+            final URL url, 
+            final List<Pair<String, String>> headerFields) throws IOException {
         Proxy proxy = null;
         URI uri = null;
         try {
-            proxy = useProxy ? proxySelector.select(uri = url.toURI()).get(0): Proxy.NO_PROXY;
+            proxy = useProxy ? proxySelector.select(uri = url.toURI()).get(0) : Proxy.NO_PROXY;
             final URLConnection connection = getConnectionThroughProxy(url, proxy);
             configure(connection, headerFields);
             connection.connect();
             return connection;
-        } catch (URISyntaxException ex) {
-            LogManager.log(url + " not complies with RFC 2396 can't be converted to URI");
+        } catch (URISyntaxException e) {
+            ErrorManager.notifyDebug(url + " does not comply " + // NOI18N
+                    "with RFC 2396 and cannot be converted to URI", e); // NOI18N
+            
             return url.openConnection(Proxy.NO_PROXY);
-        } catch(IOException ex) {
-            LogManager.log("failed to connect throw proxy: " + proxy + " to url: " + url
-                    + " " + ex.getClass().getName()+ ": " + ex.getMessage());
-            proxySelector.connectFailed(uri, proxy.address(), ex);
-            throw new IOException("failed to connect throw proxy: " + proxy + " to url: " + url
-                    + " " + ex.getClass().getName()+ ": " + ex.getMessage());
+        } catch (IOException e) {
+            proxySelector.connectFailed(uri, proxy.address(), e);
+            
+            throw (IOException) new IOException(ResourceUtils.getString(
+                    URLConnector.class, 
+                    ERROR_FAILED_PROXY_KEY, 
+                    proxy, 
+                    url)).initCause(e);
         }
     }
-    
-    private URLConnection getConnectionThroughProxy(URL url, Proxy proxy) throws IOException {
+
+    private URLConnection getConnectionThroughProxy(
+            final URL url, 
+            final Proxy proxy) throws IOException {
         try {
             return url.openConnection(proxy);
-        }catch (SecurityException ex) {
-            LogManager.log("no permission to connect to proxy: " + proxy);
-        }catch (IllegalArgumentException ex) {
-            LogManager.log(" proxy: " + proxy + "has wrong type!");
-        } catch (UnsupportedOperationException ex) {
-            LogManager.log(url.getProtocol() + " handler don't support openConnection throw proxy!");
+        } catch (SecurityException e) {
+            ErrorManager.notifyDebug("No permission to connect to " + // NOI18N
+                    "proxy: " + proxy, e); // NOI18N
+        } catch (IllegalArgumentException e) {
+            ErrorManager.notifyDebug("Proxy: " + proxy + "has wrong " + // NOI18N
+                    "type.", e); // NOI18N
+        } catch (UnsupportedOperationException e) {
+            ErrorManager.notifyDebug(url.getProtocol() + " handler does " + // NOI18N
+                    "not support openConnection through proxy.", e); // NOI18N
         }
-        throw new IOException("fail to configure proxy:" + proxy + " to url: " + url);
+        
+        throw new IOException(ResourceUtils.getString(
+                URLConnector.class, 
+                ERROR_FAILED_PROXY_KEY, 
+                proxy, 
+                url));
     }
-    
-    private void configure(URLConnection connection, List<Pair<String, String>> headerFields) {
+
+    private void configure(
+            final URLConnection connection, 
+            final List<Pair<String, String>> headerFields) {
         connection.setConnectTimeout(connectTimeout);
         connection.setReadTimeout(readTimeout);
         connection.setDoInput(doInput);
@@ -266,4 +346,85 @@ public class URLConnector {
             connection.setRequestProperty(pair.getFirst(), pair.getSecond());
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final int SECOND = 1000;
+    
+    public static final int MINUTE = 60 * SECOND;
+    
+    public static final String SETTINGS_FILE_NAME = 
+            "settings.xml"; // NOI18N
+    
+    public static final String HTTP_PROXY_HOST_PROPERTY = 
+            "http.proxyHost"; // NOI18N
+    
+    public static final String HTTP_PROXY_PORT_PROPERTY = 
+            "http.proxyPort"; // NOI18N
+    
+    public static final String FTP_PROXY_HOST_PROPERTY = 
+            "ftp.proxyHost"; // NOI18N
+    
+    public static final String FTP_PROXY_PORT_PROPERTY = 
+            "ftp.proxyPort"; // NOI18N
+    
+    public static final String HTTPS_PROXY_HOST_PROPERTY = 
+            "https.proxyHost"; // NOI18N
+    
+    public static final String HTTPS_PROXY_PORT_PROPERTY = 
+            "https.proxyPort"; // NOI18N
+    
+    public static final String SOCKS_PROXY_HOST_PROPERTY = 
+            "socksProxyHost"; // NOI18N
+    
+    public static final String SOCKS_PROXY_PORT_PROPERTY = 
+            "socksProxyPort"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_HTTP_HOST = 
+            "deployment.proxy.http.host"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_HTTP_PORT = 
+            "deployment.proxy.http.port"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_FTP_HOST = 
+            "deployment.proxy.ftp.host"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_FTP_PORT = 
+            "deployment.proxy.ftp.port"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_SOCKS_HOST = 
+            "deployment.proxy.socks.host"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_SOCKS_PORT = 
+            "deployment.proxy.socks.port"; // NOI18N
+    
+    public static final String DEPLOYMENT_PROXY_BYPASS_LIST = 
+            "deployment.proxy.bypass.list"; // NOI18N
+    
+    public static final String DIRECT_CONNECTION_PROPERTY = 
+            "javaplugin.proxy.config.type"; // NOI18N
+    
+    public static final String DIRECT_CONNECTION_VALUE = 
+            "direct"; // NOI18N
+    
+    public static final String PROXY_BYPASS_LIST_SEPARATOR = 
+            ",|;"; // NOI18N
+    
+    public static final String PROXY_TAG = 
+            "proxy"; // NOI18N
+    
+    public static final String USE_PROXY_TAG = 
+            "useProxy"; // NOI18N
+    
+    public static final String CONNECT_TIMEOUT_TAG = 
+            "connectTimeout"; // NOI18N
+    
+    public static final String READ_TIMEOUT_TAG = 
+            "readTimeout"; // NOI18N
+    
+    public static final String DEFAULT_SETTINGS_TEXT = 
+            "<connectSettings/>"; // NOI18N
+    
+    public static final String ERROR_FAILED_PROXY_KEY = 
+            "UC.error.failed.proxy"; // NOI18N
 }

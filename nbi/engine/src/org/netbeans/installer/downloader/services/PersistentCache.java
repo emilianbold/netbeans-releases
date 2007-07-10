@@ -160,8 +160,8 @@ public class PersistentCache {
         
         public Element writeXML(Document document) {
             final Element root = document.createElement("cacheEntry");
-            DomUtil.addElemet(root, "file", file.getAbsolutePath());
-            DomUtil.addElemet(root, "url", url.toString());
+            DomUtil.addElement(root, "file", file.getAbsolutePath());
+            DomUtil.addElement(root, "url", url.toString());
             return root;
         }
     }

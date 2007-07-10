@@ -111,9 +111,9 @@ public class SectionImpl implements Section, DomExternalizable {
   
   public Element writeXML(Document document) {
     final Element root = document.createElement("section");
-    DomUtil.addElemet(root, "start", String.valueOf(start));
-    DomUtil.addElemet(root, "length", String.valueOf(length));
-    DomUtil.addElemet(root, "offset", String.valueOf(offset));
+    DomUtil.addElement(root, "start", String.valueOf(start));
+    DomUtil.addElement(root, "length", String.valueOf(length));
+    DomUtil.addElement(root, "offset", String.valueOf(offset));
     return root;
   }
 }

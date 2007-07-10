@@ -173,14 +173,14 @@ public class PumpingImpl implements Pumping, DomExternalizable {
     
     public Element writeXML(Document document) {
         final Element root = document.createElement("pumping");
-        DomUtil.addElemet(root, "url", url.toString());
-        DomUtil.addElemet(root, "realUrl", realUrl != null ? realUrl.toString() : null);
-        DomUtil.addElemet(root, "length", String.valueOf(length));
-        DomUtil.addElemet(root, "lastModif", String.valueOf(lastModif.getTime()));
-        DomUtil.addElemet(root, "acceptBytes", String.valueOf(acceptBytes));
-        DomUtil.addElemet(root, "state", state.toString());
-        DomUtil.addElemet(root, "file", file != null ? file.getAbsolutePath() : null);
-        DomUtil.addElemet(root, "folder", folder.getAbsolutePath());
+        DomUtil.addElement(root, "url", url.toString());
+        DomUtil.addElement(root, "realUrl", realUrl != null ? realUrl.toString() : null);
+        DomUtil.addElement(root, "length", String.valueOf(length));
+        DomUtil.addElement(root, "lastModif", String.valueOf(lastModif.getTime()));
+        DomUtil.addElement(root, "acceptBytes", String.valueOf(acceptBytes));
+        DomUtil.addElement(root, "state", state.toString());
+        DomUtil.addElement(root, "file", file != null ? file.getAbsolutePath() : null);
+        DomUtil.addElement(root, "folder", folder.getAbsolutePath());
         for (SectionImpl section : sections) {
             DomUtil.addChild(root, section);
         }
