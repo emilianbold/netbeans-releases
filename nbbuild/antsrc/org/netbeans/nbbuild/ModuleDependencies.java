@@ -19,12 +19,9 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -602,6 +599,8 @@ public class ModuleDependencies extends Task {
     
     private void generateGroupDependencies (File output, boolean implementationOnly) throws BuildException, IOException {
         PrintWriter w = new PrintWriter (new FileWriter (output));
+
+        Map<Dependency,Set<ModuleInfo>> referrers = new HashMap<Dependency,Set<ModuleInfo>>();
         
         TreeMap<String, Set<Dependency>> groups = new TreeMap<String, Set<Dependency>>();
         for (ModuleInfo m : modules) {
@@ -614,6 +613,14 @@ public class ModuleDependencies extends Task {
                 groups.put(m.group, l);
             }
             l.addAll(m.depends);
+            for (Dependency d : m.depends) {
+                Set<ModuleInfo> r = referrers.get(d);
+                if (r == null) {
+                    r = new HashSet<ModuleInfo>();
+                    referrers.put(d, r);
+                }
+                r.add(m);
+            }
         }
 
         for (Map.Entry<String,Set<Dependency>> e : groups.entrySet()) {
@@ -636,7 +643,8 @@ public class ModuleDependencies extends Task {
                     continue;
                 }
                 // dependencies within one group are not important
-                ModuleInfo ref = findModuleInfo(d, null);
+                Set<ModuleInfo> r = referrers.get(d);
+                ModuleInfo ref = findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null);
                 if (groupName.equals (ref.group)) {
                     continue;
                 }
