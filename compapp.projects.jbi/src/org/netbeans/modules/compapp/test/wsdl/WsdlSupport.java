@@ -82,10 +82,6 @@ public class WsdlSupport {
             }
             wsdlSupportErrStr += msg;
             mLog.log(Level.SEVERE, msg, e); // NOI18N
-            
-//            NotifyDescriptor d =
-//                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-//            DialogDisplayer.getDefault().notify(d);
         }
     }
     
@@ -280,8 +276,9 @@ public class WsdlSupport {
                 ModelSource modelSource = 
                         model.getModelSource(new URI(url), modelSourceOfSourceDocument);
                 FileObject targetFO = modelSource.getLookup().lookup(FileObject.class);
-                System.out.println(targetFO);
-                return "file:" + targetFO.getPath();
+                // On *nix, fileObject.getPath() is missing the preceding "/".
+                // System.out.println(targetFO);
+                return "file:" + FileUtil.toFile(targetFO).getAbsolutePath();
             } catch (Exception e) {
                 e.printStackTrace();
             }
