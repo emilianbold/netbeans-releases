@@ -1498,6 +1498,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <include name="${nb.cluster.soa.dir}/**/*.jar"/>
         </jars>
       </input>
+      <input name="identity">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.identity.dir}/**/*.jar"/>
+        </jars>
+      </input>
       <input name="uml">
         <jars dir="${netbeans.dest.dir}">
           <include name="${nb.cluster.uml.dir}/**/*.jar"/>
@@ -1555,6 +1560,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="ruby*/"/>
         <include name="mobility*/"/>
         <include name="soa*/"/>
+        <include name="identity*/"/>
         <include name="xml*/"/>
         <include name="cnd*/"/>
         <exclude name="*.built"/>
