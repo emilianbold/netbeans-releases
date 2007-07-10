@@ -222,6 +222,7 @@ public class Braces extends AbstractHint {
              elseSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              elseSt.getKind() != Tree.Kind.BLOCK &&
              elseSt.getKind() != Tree.Kind.ERRONEOUS &&
+             elseSt.getKind() != Tree.Kind.IF &&
              !isErroneousExpression( elseSt )) {
             fixElse = true;
         }
