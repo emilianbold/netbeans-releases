@@ -137,7 +137,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      * @param fo a new file
      */
     public void createSuccess(FileObject fo) {
-        DelegatingInterceptor dic = getInterceptor(new FileEvent(fo));
+        DelegatingInterceptor dic = getInterceptor(new FileEvent(fo), false);
         if (dic.beforeCreate()) {
             try {
                 dic.doCreate();
@@ -145,6 +145,23 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
                 // ignore errors, the file is already created anyway
             }
         }
+    }
+    
+    // HOTFIX #109216 - the new createSucces implementation causes that when creating a new file 
+    // the delegated events come in the following order
+    // 1.) beforeChange()
+    // 2.) afterCreate()
+    // 3.) beforeCreate()
+    // this unfortunately breaks the LocalHistory which relies on the fact 
+    // that in our universe before happens before after and not after before before :)
+    public void beforeCreate(FileObject parent, String name, boolean isFolder) {
+        File file = FileUtil.toFile(parent);
+        if (file == null) return;
+        file = new File(file, name); 
+        
+        VersioningSystem lhvs = master.getLocalHistory(file);
+        if(lhvs == null) return;
+        lhvs.getVCSInterceptor().beforeCreate(file, isFolder);                
     }
 
     public void fileFolderCreated(FileEvent fe) {
@@ -191,12 +208,16 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }
 
     private DelegatingInterceptor getInterceptor(FileEvent fe) {
+        return getInterceptor(fe, true);
+    }
+    
+    private DelegatingInterceptor getInterceptor(FileEvent fe, boolean dispatchLH) {
         FileObject fo = fe.getFile();
         if (fo == null) return nullDelegatingInterceptor;
         File file = FileUtil.toFile(fo);
         if (file == null) return nullDelegatingInterceptor;
 
-        VersioningSystem lh = master.getLocalHistory(file);
+        VersioningSystem lh = dispatchLH ? master.getLocalHistory(file) : null;
         VersioningSystem vs = master.getOwner(file);
 
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : null;
