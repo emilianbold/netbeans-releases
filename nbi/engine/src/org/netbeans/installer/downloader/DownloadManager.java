@@ -53,13 +53,13 @@ public class DownloadManager {
     }
     
     public void init() {
-        defaultFolder = new File(localDirectory, "downloads");
+        defaultFolder = new File(localDirectory, DOWNLOADS_DIR_NAME);
         defaultFolder.mkdirs();
         
-        wd = new File(localDirectory, "wd");
+        wd = new File(localDirectory, WD_DIR_NAME);
         wd.mkdirs();
         
-        queue = new DispatchedQueue(new File(wd, "state.xml"));
+        queue = new DispatchedQueue(new File(wd, STATE_FILE_NAME));
         queue.reset();
     }
     
@@ -106,4 +106,15 @@ public class DownloadManager {
     public void setFinishHandler(final FinishHandler finishHandler) {
         this.finishHandler = finishHandler;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DOWNLOADS_DIR_NAME = 
+            "downloads"; // NOI18N
+    
+    public static final String WD_DIR_NAME = 
+            "wd"; // NOI18N
+    
+    public static final String STATE_FILE_NAME = 
+            "state.xml"; // NOI18N
 }

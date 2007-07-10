@@ -24,6 +24,7 @@ import java.net.URL;
 import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.downloader.Pumping.Section;
+import org.netbeans.installer.utils.ResourceUtils;
 
 /**
  *
@@ -45,7 +46,11 @@ public class DownloadProgress implements DownloadListener{
             return;
         }
         
-        progress.setDetail("Downloading from " + pumping.declaredURL());
+        progress.setDetail(ResourceUtils.getString(
+                DownloadProgress.class, 
+                PUMPING_UPDATED_KEY, 
+                pumping.declaredURL()));
+        
         if (pumping.length() > 0) {
             final long length = pumping.length();
             long per = 0;
@@ -59,11 +64,15 @@ public class DownloadProgress implements DownloadListener{
     }
     
     public void pumpingStateChange(String id) {
-        final Pumping pumping = DownloadManager.instance.queue().getById(id);
         if (progress == null) return;
-        progress.setDetail(pumping.state().toString().toLowerCase() +": "
-                + pumping.declaredURL());
         
+        final Pumping pumping = DownloadManager.instance.queue().getById(id);
+        
+        progress.setDetail(ResourceUtils.getString(
+                DownloadProgress.class, 
+                PUMPING_STATE_CHANGED_KEY, 
+                pumping.state().toString().toLowerCase(), 
+                pumping.declaredURL()));
     }
     
     public void pumpingAdd(String id) {
@@ -77,11 +86,17 @@ public class DownloadProgress implements DownloadListener{
     
     public void pumpsInvoke() {
         if (progress == null) return;
-        progress.setDetail("downloader invoked.");
     }
     
     public void pumpsTerminate() {
         if (progress == null) return;
-        progress.setDetail("ups downloader was switched off.");
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String PUMPING_UPDATED_KEY = 
+            "DP.pumping.updated"; // NOI18N
+    
+    public static final String PUMPING_STATE_CHANGED_KEY = 
+            "DP.pumping.state.changed"; // NOI18N
 }
