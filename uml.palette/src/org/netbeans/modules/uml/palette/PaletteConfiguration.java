@@ -69,8 +69,10 @@ public class PaletteConfiguration {
         load();
     }
     
-    public static ModelingPaletteNodeDescriptor getPaletteElement(FileObject fo) {
-        String imageResPath = "org/netbeans/modules/uml/palette/ui/images/"; // NOI18N
+    public static ModelingPaletteNodeDescriptor getPaletteElement(FileObject fo) 
+    {
+//        String imageResPath = "org/netbeans/modules/uml/palette/ui/images/"; // NOI18N
+        String imageResPath = "org/netbeans/modules/uml/resources/images/"; // NOI18N
         
         if(document == null)
             load();       
