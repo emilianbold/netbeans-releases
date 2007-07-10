@@ -297,7 +297,12 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         
         public synchronized void run() {
             datasources = BrokenDatasourceSupport.getBrokenDatasources(project);
-            fireContentsChanged(this, 0, datasources.size());
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    fireContentsChanged(this, 0, datasources.size());
+                }
+            });
+            
             if (datasources.isEmpty()) {
                 removeConnectionListener();
             }
