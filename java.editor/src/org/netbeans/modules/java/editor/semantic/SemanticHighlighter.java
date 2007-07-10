@@ -618,10 +618,10 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         @Override
         public Void visitCompilationUnit(CompilationUnitTree tree, EnumSet<UseTypes> d) {
-	    scan(tree.getPackageAnnotations(), d);
 	    //ignore package X.Y.Z;:
 	    //scan(tree.getPackageDecl(), p);
 	    scan(tree.getImports(), d);
+	    scan(tree.getPackageAnnotations(), d);
 	    scan(tree.getTypeDecls(), d);
 	    return null;
         }
