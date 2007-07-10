@@ -53,6 +53,12 @@ import org.w3c.dom.NodeList;
  * @author Jiri Rechtacek
  */
 public class ProjectUtilitiesTest extends NbTestCase {
+
+    /* XXX for some reason this makes tests fail, not sure why:
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+    */
     
     private static final String NAVIGATOR_MODE = "navigator";
     
@@ -166,7 +172,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
     
     private void modifyDO(DataObject toModify) throws BadLocationException, IOException {
         System.err.println("toModify = " + toModify );
-        EditorCookie ec = (EditorCookie) toModify.getCookie(EditorCookie.class);
+        EditorCookie ec = toModify.getCookie(EditorCookie.class);
         
         ec.openDocument().insertString(0, "test", null);
     }
