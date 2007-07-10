@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -35,6 +34,7 @@ import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemFinder;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
+import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
@@ -76,7 +76,7 @@ public class BMnotPartOfRBIandLBI extends EJBVerificationRule {
                             localMethod.getSimpleName().toString());
                     
                     if (sameNameRemoteMethod != null){
-                        if (isMethodSignatureSame(ctx.getComplilationInfo(),
+                        if (JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
                                 localMethod, sameNameRemoteMethod)){
                             ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
                                     NbBundle.getMessage(BMnotPartOfRBIandLBI.class, "MSG_BMnotPartOfRBIandLBI"),
@@ -109,25 +109,5 @@ public class BMnotPartOfRBIandLBI extends EJBVerificationRule {
         }
         
         return methods;
-    }
-    
-    private boolean isMethodSignatureSame(CompilationInfo cinfo,
-            ExecutableElement method1, ExecutableElement method2){
-        int paramCount = method1.getParameters().size();
-        
-        if (paramCount != method2.getParameters().size()){
-            return false;
-        }
-        
-        for (int i = 0; i < paramCount; i ++){
-            TypeMirror param1 = method1.getParameters().get(i).asType();
-            TypeMirror param2 = method2.getParameters().get(i).asType();
-            
-            if (!cinfo.getTypes().isSameType(param1, param2)){
-                return false;
-            }
-        }
-        
-        return true;
     }
 }

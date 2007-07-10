@@ -26,6 +26,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationInfo;
 
 /**
  *
@@ -81,5 +82,25 @@ public class JavaUtils {
     
     public static String getShortClassName(String qualifiedClassName){
         return qualifiedClassName.substring(qualifiedClassName.lastIndexOf(".") + 1); //NOI18N
+    }
+    
+    public static boolean isMethodSignatureSame(CompilationInfo cinfo,
+            ExecutableElement method1, ExecutableElement method2){
+        int paramCount = method1.getParameters().size();
+        
+        if (paramCount != method2.getParameters().size()){
+            return false;
+        }
+        
+        for (int i = 0; i < paramCount; i ++){
+            TypeMirror param1 = method1.getParameters().get(i).asType();
+            TypeMirror param2 = method2.getParameters().get(i).asType();
+            
+            if (!cinfo.getTypes().isSameType(param1, param2)){
+                return false;
+            }
+        }
+        
+        return true;
     }
 }

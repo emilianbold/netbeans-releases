@@ -317,9 +317,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="9520"/>
                     </file>
                 </folder>
-                <folder name="Hints">                   
-                    <file name="org-netbeans-modules-j2ee-ejbcore-hints-EjbHintsProvider.instance"/>
-                </folder>
             </folder>
         </folder>
     </folder> 
