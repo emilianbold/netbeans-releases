@@ -71,43 +71,43 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         final Product openesbProduct = sources.get(0);
         final File openesbLocation = openesbProduct.getInstallationLocation();
         
-        // get the list of suitable access manager installations
-        dependencies = 
-                getProduct().getDependencyByUid(AM_UID);
-        sources = 
-                Registry.getInstance().getProducts(dependencies.get(0));
-        
-        // pick the first one and integrate with it
-        final Product amProduct = sources.get(0);
-        final File amLocation = amProduct.getInstallationLocation();
-        
-        // get the list of suitable glassfish installations
-        dependencies = 
-                amProduct.getDependencyByUid(GLASSFISH_UID);
-        sources = 
-                Registry.getInstance().getProducts(dependencies.get(0));
-        
-        // pick the first one and integrate with it
-        final Product glassfishProduct = sources.get(0);
-        final File glassfishLocation = glassfishProduct.getInstallationLocation();
-        
-        final File amConfigFile = new File(GlassFishUtils.getDomainConfig(
-                glassfishLocation, GlassFishUtils.DEFAULT_DOMAIN), AM_CONFIG_FILE);
-        
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.netbeans.conf.am")); // NOI18N
-            
-            NetBeansUtils.setJvmOption(
-                    nbLocation, 
-                    JVM_OPTION_AM_CONFIG, 
-                    amConfigFile.getAbsolutePath(), 
-                    true);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.netbeans.conf.am"), // NOI18N
-                    e);
-        }
+        //// get the list of suitable access manager installations
+        //dependencies = 
+        //        getProduct().getDependencyByUid(AM_UID);
+        //sources = 
+        //        Registry.getInstance().getProducts(dependencies.get(0));
+        //
+        //// pick the first one and integrate with it
+        //final Product amProduct = sources.get(0);
+        //final File amLocation = amProduct.getInstallationLocation();
+        //
+        //// get the list of suitable glassfish installations
+        //dependencies = 
+        //        amProduct.getDependencyByUid(GLASSFISH_UID);
+        //sources = 
+        //        Registry.getInstance().getProducts(dependencies.get(0));
+        //
+        //// pick the first one and integrate with it
+        //final Product glassfishProduct = sources.get(0);
+        //final File glassfishLocation = glassfishProduct.getInstallationLocation();
+        //
+        //final File amConfigFile = new File(GlassFishUtils.getDomainConfig(
+        //        glassfishLocation, GlassFishUtils.DEFAULT_DOMAIN), AM_CONFIG_FILE);
+        //
+        ///////////////////////////////////////////////////////////////////////////////
+        //try {
+        //    progress.setDetail(getString("CL.install.netbeans.conf.am")); // NOI18N
+        //
+        //    NetBeansUtils.setJvmOption(
+        //            nbLocation, 
+        //            JVM_OPTION_AM_CONFIG, 
+        //            amConfigFile.getAbsolutePath(), 
+        //            true);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.netbeans.conf.am"), // NOI18N
+        //            e);
+        //}
     }
     
     @Override
