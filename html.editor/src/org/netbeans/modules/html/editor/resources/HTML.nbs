@@ -28,7 +28,7 @@ SKIP:DECLARATION
 S = tags;
 tags = ( tag | etext )*;
 
-etext = <TEXT> | <CHARACTER>;
+etext = <TEXT> | <CHARACTER> | <SCRIPT>;
 
 tag = <TAG_OPEN_SYMBOL> ( startTag | endTag );
 startTag = <TAG_OPEN> (attribute)* <TAG_CLOSE_SYMBOL>;
