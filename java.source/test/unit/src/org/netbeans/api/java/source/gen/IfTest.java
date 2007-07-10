@@ -18,11 +18,15 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import java.io.File;
 import java.io.IOException;
@@ -46,8 +50,10 @@ public class IfTest extends GeneratorTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new IfTest("testEmptyThenBlock"));
-        suite.addTest(new IfTest("testEmptyElseBlock"));
+        suite.addTestSuite(IfTest.class);
+//        suite.addTest(new IfTest("testEmptyThenBlock"));
+//        suite.addTest(new IfTest("testEmptyElseBlock"));
+//        suite.addTest(new IfTest("testReplaceCondition"));
         return suite;
     }
 
@@ -137,6 +143,52 @@ public class IfTest extends GeneratorTest {
                 BlockTree block = make.Block(Collections.<StatementTree>emptyList(), false);
                 StatementTree oldElse = oldIf.getElseStatement();
                 workingCopy.rewrite(oldElse, block);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testReplaceCondition() throws Exception {
+        testFile = new File(getWorkDir(), "IfTest.java");        
+        TestUtilities.copyStringToFile(testFile, 
+            "package foo.bar;\n" +
+            "\n" +
+            "public class IfTest {\n" +
+            "    public void test(boolean b) {\n" +
+            "        if (prec == treeinfo.notExpression)\n" +
+            "            print(';');\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package foo.bar;\n" +
+            "\n" +
+            "public class IfTest {\n" +
+            "    public void test(boolean b) {\n" +
+            "        if (prec == TreeInfo.notExpression)\n" +
+            "            print(';');\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                IfTree oldIf = (IfTree) method.getBody().getStatements().get(0);
+                BinaryTree zatvorka = (BinaryTree) ((ParenthesizedTree) oldIf.getCondition()).getExpression();
+                MemberSelectTree mst = (MemberSelectTree) zatvorka.getRightOperand();
+                workingCopy.rewrite(mst.getExpression(), make.Identifier("TreeInfo"));
             }
 
             public void cancel() {
