@@ -315,8 +315,9 @@ public class WatchesModel implements TreeModel {
         }
 
         public String getToStringValue() throws InvalidExpressionException {
+            JPDAWatch evaluatedWatch;
             synchronized (this) {
-                JPDAWatch evaluatedWatch = this.evaluatedWatch;
+                evaluatedWatch = this.evaluatedWatch;
             }
             if (evaluatedWatch == null) {
                 getValue();
@@ -325,8 +326,9 @@ public class WatchesModel implements TreeModel {
         }
 
         public String getType() {
+            JPDAWatch evaluatedWatch;
             synchronized (this) {
-                JPDAWatch evaluatedWatch = this.evaluatedWatch;
+                evaluatedWatch = this.evaluatedWatch;
             }
             if (evaluatedWatch == null) {
                 getValue(); // To init the evaluatedWatch
