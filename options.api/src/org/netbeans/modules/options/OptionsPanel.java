@@ -20,7 +20,6 @@
 package org.netbeans.modules.options;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -29,12 +28,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -45,8 +41,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.FocusManager;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -64,6 +58,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 
 public class OptionsPanel extends JPanel {
@@ -139,10 +134,10 @@ public class OptionsPanel extends JPanel {
     private void setCurrentCategory (final CategoryModel.Category category) {
         CategoryModel.Category oldCategory = model.getCurrent();
         if (oldCategory != null) {
-            ((CategoryButton) buttons.get (oldCategory.getID())).setNormal ();
+            (buttons.get(oldCategory.getID())).setNormal ();
         }
         if (category != null) {
-            ((CategoryButton) buttons.get (category.getID())).setSelected ();
+            (buttons.get(category.getID())).setSelected ();
         }
         
         model.setCurrent(category);                
@@ -321,8 +316,12 @@ public class OptionsPanel extends JPanel {
     
     void storeUserSize() {
         Dimension d = pOptions.getSize();
-        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsWidth",d.width);//NOI18N
-        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsHeight",d.height);//NOI18N
+        //#108865 Scrollbars appear on Options dialog - preferredSize mustn't exceed screenBounds.? - 100 
+        //else NbPresenter will show up scrollbars
+        final Rectangle screenBounds = Utilities.getUsableScreenBounds();
+            
+        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsWidth",Math.min(d.width, screenBounds.width - 101));//NOI18N
+        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsHeight",Math.min(d.height, screenBounds.height - 101));//NOI18N
         pOptions.setPreferredSize(d);
     }
     
