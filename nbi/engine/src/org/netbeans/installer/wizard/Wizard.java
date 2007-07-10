@@ -626,6 +626,10 @@ public class Wizard {
                         UiMode.getCurrentUiMode()));
             }
             
+            System.setProperty(
+                    CURRENT_COMPONENT_CLASSNAME_PROPERTY, 
+                    component.getClass().getName());
+            
             component.executeForward();
         } else if (parent != null) {
             parent.next();
@@ -672,6 +676,10 @@ public class Wizard {
                         RESOURCE_UNKNOWN_UI_MODE,
                         UiMode.getCurrentUiMode()));
             }
+            
+            System.setProperty(
+                    CURRENT_COMPONENT_CLASSNAME_PROPERTY, 
+                    component.getClass().getName());
             
             component.executeBackward();
         } else if (parent != null) {
@@ -985,6 +993,13 @@ public class Wizard {
      */
     public static final String ATTRIBUTE_CLASS =
             "class"; // NOI18N
+    
+    /**
+     * Name of the system property which will be set when a component executes. Its
+     * value will be the fully qualified class name of the component.
+     */
+    public static final String CURRENT_COMPONENT_CLASSNAME_PROPERTY = 
+            "nbi.wizard.current.component.classname"; // NOI18N
     
     // private //////////////////////////////////////////////////////////////////////
     /**
