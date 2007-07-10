@@ -138,13 +138,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
                     }
                 }
             });
-        }
-    
-//        try {
-//            ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
-//        } catch (NamingException ne) {
-//            ;
-//        }
+        }    
                 
         // Mark node as broken if the legacy project hasn't been modeled
         if (ImportDataSource.isLegacyProject(nbProject)) {            
