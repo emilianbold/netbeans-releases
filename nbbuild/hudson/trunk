@@ -37,7 +37,7 @@ ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
 # standard NetBeans unit and UI validation tests
 ant -f nbbuild/build.xml commit-validation
 # visualweb UI validation tests
-sh -x `dirname $0`/run-vw-sanity.sh
+# sh -x `dirname $0`/run-vw-sanity.sh
 # SOA (BPEL, XSLT) and XML UI validation tests
 # XXX results temporarily stored separately
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true -Dxtest.results=$PWD/xtest/instance/results/enterprise runtests
