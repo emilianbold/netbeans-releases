@@ -358,6 +358,21 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     // contain newlines. Leave it as is.
                     return true;
                 }
+                
+                if (id == RubyTokenId.STRING_END) {
+                    // Possibly a heredoc
+                    TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
+                    ts.move(pos);
+                    OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
+                    if (range != OffsetRange.NONE) {
+                        String text = doc.getText(range.getStart(), range.getLength());
+                        if (text.startsWith("<<-")) { // NOI18N
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
             }
         }
 
