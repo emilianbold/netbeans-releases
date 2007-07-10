@@ -42,7 +42,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
         return suite;
     }
 
-    public void testReplaceStmtWithBlock() throws Exception {
+    public void testReplaceStmtWithBlock1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -64,7 +64,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
             "public class Test<E> {\n" +
             "    public void taragui() {\n" +
             "        for (int i = 0; i < 10; i++) {\n" +
-            "            java.lang.System.err.println(\"taragui() method\");\n" + 
+            "            System.err.println(\"taragui() method\");\n" + 
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -115,7 +115,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
             "public class Test<E> {\n" +
             "    public void taragui() {\n" +
             "        while (true) {\n" +
-            "            java.lang.System.err.println(\"taragui() method\");\n" + 
+            "            System.err.println(\"taragui() method\");\n" + 
             "        }\n" +
             "    }\n" +
             "}\n";

@@ -1162,22 +1162,14 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitSelect(JCFieldAccess tree) {
-	if ((fromOffset < 0 || toOffset < 0) && tree.sym instanceof Symbol.ClassSymbol) {
-	    print(null, tree.type);
-	} else {
-	    printExpr(tree.selected, TreeInfo.postfixPrec);
-	    print('.');
-	    print(tree.name);
-	}
+        printExpr(tree.selected, TreeInfo.postfixPrec);
+        print('.');
+        print(tree.name);
     }
 
     @Override
     public void visitIdent(JCIdent tree) {
-	if ((fromOffset < 0 || toOffset < 0) && tree.sym instanceof Symbol.ClassSymbol)
-	    print(null, tree.type);
-	else {
-	    print(tree.name);
-	}
+        print(tree.name);
     }
 
     @Override
@@ -1379,7 +1371,7 @@ public final class VeryPretty extends JCTree.Visitor {
 		ty = ((Type.ArrayType) ty).elemtype;
 		arrCnt++;
 	    }
-	    printQualified(ty.tsym);
+	    print(t);
 	    if (ty instanceof Type.ClassType) {
 		List < Type > typarams = ((Type.ClassType) ty).typarams_field;
 		if (typarams != null && typarams.nonEmpty()) {
