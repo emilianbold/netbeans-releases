@@ -465,15 +465,10 @@ public class ProjectUtilities {
         
         Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
         if (openFiles == null) {
-            ERR.log(Level.WARNING, "No " + OPEN_FILES_ELEMENT + " in private.xml for {0}", p);
             return;
         }
 
         NodeList list = openFiles.getElementsByTagName (FILE_ELEMENT);
-        if (list == null) {
-            ERR.log(Level.WARNING, "No " + FILE_ELEMENT + " in " + OPEN_FILES_ELEMENT + " for {0}", p);
-            return ;
-        }
         
         for (int i = 0; i < list.getLength (); i++) {
             String url = list.item (i).getChildNodes ().item (0).getNodeValue ();
