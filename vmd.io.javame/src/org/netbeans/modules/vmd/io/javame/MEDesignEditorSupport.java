@@ -250,6 +250,8 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
 
     protected static class Env extends J2MEEditorSupport.Environment {
 
+        private static final long serialVersionUID = -1;
+
         public Env (J2MEDataObject obj) {
             super (obj);
         }
