@@ -1,6 +1,6 @@
 [groups]
 group1 = *.collab.net
-peterp = peter.*.sun.com
+peterp = peterp.*.sun.com
 
 [peterp]
 http-timeout = 60
