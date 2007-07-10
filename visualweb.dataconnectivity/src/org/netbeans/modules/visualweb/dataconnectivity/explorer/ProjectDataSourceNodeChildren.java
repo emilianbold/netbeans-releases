@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 
-import org.netbeans.modules.visualweb.dataconnectivity.actions.RemoveProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.Action;
 import org.netbeans.api.project.Project;
 
 import org.openide.nodes.AbstractNode;
@@ -34,11 +32,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceListener;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceChangeEvent;
-import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import java.awt.Image;
 import java.io.CharConversionException;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.BrokenDataSourceSupport;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -135,16 +132,20 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
                 
                 String dispName = super.getDisplayName();
                 try {
-                    dispName = XMLUtil.toElementContent(dispName);
+                     if (BrokenDataSourceSupport.isBroken(nbProject)) {
+                        dispName = "<font color=\"#A40000\">" + dispName + "</font>"; //NOI18N;
+                    } else {
+                        dispName = XMLUtil.toElementContent(dispName);
+                    }
                 } catch (CharConversionException ex) {
                     // ignore
                 }
                 
-                if (DataSourceResolver.getInstance().isDataSourceMissing(nbProject, dispName)){
+                if (BrokenDataSourceSupport.isBroken(nbProject)) {
                     return brokenBadgedImage;
-                } else{
+                } else {
                     return datasourceImage;
-                }
+                }                
             }
             
             public Image getOpenedIcon(int type){

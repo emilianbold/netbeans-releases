@@ -131,18 +131,20 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (!firstTimeShowAlert) {
-                        ImportDataSource.showAlert();
+                        if (!ProjectDataSourceTracker.isProjectModeled(nbProject) || BrokenDataSourceSupport.isBroken(nbProject) ) {
+                            ImportDataSource.showAlert();
+                        }                                                  
                         firstTimeShowAlert = true;                        
                     }
                 }
             });
         }
     
-        try {
-            ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
-        } catch (NamingException ne) {
-            ;
-        }
+//        try {
+//            ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
+//        } catch (NamingException ne) {
+//            ;
+//        }
                 
         // Mark node as broken if the legacy project hasn't been modeled
         if (ImportDataSource.isLegacyProject(nbProject)) {            
@@ -150,9 +152,15 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
-        if (this.getChildren().getNodes().length > 0)
-            if (BrokenDataSourceSupport.isBroken(nbProject))
+        if (this.getChildren().getNodes().length > 0) {
+            if (BrokenDataSourceSupport.isBroken(nbProject)) {
                 isBroken = true;
+            } else {
+                isBroken = false;
+            }
+        } else {
+            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
+        }
         
         if (isBroken){
             Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
@@ -163,6 +171,11 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     }
     
     public Image getOpenedIcon(int type){
+         try {
+            ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
+        } catch (NamingException ne) {
+            ;
+        }
         return getIcon(type);
     }            
     
@@ -183,9 +196,15 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
-        if (this.getChildren().getNodes().length > 0)
-            if (BrokenDataSourceSupport.isBroken(nbProject))
-                isBroken = true;        
+        if (this.getChildren().getNodes().length > 0) {
+            if (BrokenDataSourceSupport.isBroken(nbProject)) {
+                isBroken = true;
+            } else {
+                isBroken = false;
+            }
+        } else {
+            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
+        }
        
         return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
     }
@@ -193,15 +212,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     public void dataSourcesChange(ProjectDataSourcesChangeEvent evt) {
         fireIconChange(); 
         fireDisplayNameChange(null, null);
-    }     
-    
-    private void modelProjectForDataSources() {                           
-        if (!isModeled) {
-            ModelSet.addModelSetsListener(modelingListener);
-            FacesModelSet.startModeling(nbProject);
-            isModeled = true;
-        }                     
-    }
+    }         
 
     public void connectionsChanged() {
         fireIconChange(); 
