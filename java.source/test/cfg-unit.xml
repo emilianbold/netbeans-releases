@@ -34,7 +34,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/modules/java/source/parsing/PerfJavacIntefaceGCTest.class" />
                 <exclude name="org/netbeans/modules/java/source/parsing/PerfResolveTest.class" />
                 <exclude name="org/netbeans/modules/java/source/parsing/PerfBatchCompilationTest.class" />
-                <exclude name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest2.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest3.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest4.class" />
@@ -74,6 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/PackageTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodParametersTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodTypeParametersTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/MethodBodyTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodBodyTextTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodThrowsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ImportsTest.class"/>
@@ -89,6 +89,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/AddCastTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/BodyStatementTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/TwoModificationsTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class" />
                 <include name="org/netbeans/api/java/source/gen/ModifiersTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/TryTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/TypeParameterTest.class"/>
