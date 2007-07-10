@@ -100,7 +100,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         TestKit.closeProject(PROJECT_NAME);
         
         new File(TMP_PATH).mkdirs();
-        projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+        projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
         ProjectSupport.waitScanFinished();
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");    
         
