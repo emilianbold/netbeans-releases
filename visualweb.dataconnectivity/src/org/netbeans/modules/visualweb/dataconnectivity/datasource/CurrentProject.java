@@ -35,6 +35,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeEvent;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeListener;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -136,6 +137,7 @@ public class CurrentProject {
                     // Project has been closed; null the project; reset to the previous project
                     if (_instance.project == project) {
                         _instance.project = null;
+                        ProjectContextManager.getInstance().removeEntry(project);
                         OpenProjects.getDefault().removePropertyChangeListener(this);
                     }
                      
