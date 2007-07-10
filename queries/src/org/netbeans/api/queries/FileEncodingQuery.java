@@ -61,9 +61,10 @@ public class FileEncodingQuery {
      * Returns encoding of given file.
      * @param file to find an encoding for
      * @return encoding which should be used for given file, never returns null.
+     * @throws IllegalArgumentException if file parameter is null.
      */
     public static Charset getEncoding (FileObject file) {
-        assert file != null;
+        if (file == null) throw new IllegalArgumentException();
         Charset encoding;
         List<Charset> delegates = new ArrayList<Charset>();
         for (FileEncodingQueryImplementation impl : Lookup.getDefault().lookupAll(FileEncodingQueryImplementation.class)) {
@@ -103,10 +104,11 @@ public class FileEncodingQuery {
      * user sets a new encoding the customizer code should update the defaul
      * encoding by this method.
      * @param encoding the new default encoding
+     * @throws IllegalArgumentException if encoding parameter is null.
      * 
      */
     public static void setDefaultEncoding (final Charset encoding) {
-        assert encoding != null;
+        if (encoding == null) throw new IllegalArgumentException();
         Preferences prefs = NbPreferences.forModule(FileEncodingQuery.class);
         prefs.put(DEFAULT_ENCODING, encoding.name());
     }
