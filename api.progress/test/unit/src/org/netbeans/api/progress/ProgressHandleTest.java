@@ -19,6 +19,7 @@
 
 package org.netbeans.api.progress;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -357,7 +358,7 @@ public class ProgressHandleTest extends NbTestCase {
 /**
  * test switching in non-status bar component
  */
-    public void testSwitch() {
+    public void testSwitch() throws Exception {
         final int WAIT = 1500;
 
 class MyFrame extends JFrame implements Runnable {
@@ -382,7 +383,7 @@ class MyFrame extends JFrame implements Runnable {
         
         handle.start();
         
-        MyFrame frm = new MyFrame(component);
+        final MyFrame frm = new MyFrame(component);
         SwingUtilities.invokeLater(frm);
         
         try {
@@ -409,8 +410,12 @@ class MyFrame extends JFrame implements Runnable {
             fail();
         }
         handle.finish();
-        frm.setVisible(false);
-        frm.dispose();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                frm.setVisible(false);
+                frm.dispose();
+            }
+        });
     }    
 
     protected boolean runInEQ() {
