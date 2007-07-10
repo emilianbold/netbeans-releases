@@ -707,6 +707,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISA_SLASH:
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
+            case ISI_TAG_SLASH:
                 lexerState = INIT;
                 return token(HTMLTokenId.TEXT);
                 
