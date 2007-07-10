@@ -93,11 +93,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <fileset dir="${src.images.dir}/resources/toolbar_images" casesensitive="yes"/>
         </copy>
         
+        <!-- copy new core images to javahelp resources/images dir -->
+        <mkdir dir="${dest.images.dir}/resources/images"/>
+     
+        <copy todir="${dest.images.dir}/resources/images" overwrite="true">
+            <fileset dir="${src.images.dir}/resources/images" casesensitive="yes"/>
+        </copy>
+        
         <!-- copy toolbar images from palette module to core javahelp toolbar_images dir -->
+        <!--
         <property name="src.palette.images.dir" value="${basedir}/../modelingpalette/src/org/netbeans/modules/uml/palette/ui/images/toolbar_images"/>
         <copy todir="${dest.images.dir}/resources/toolbar_images" overwrite="true">
             <fileset dir="${src.palette.images.dir}" casesensitive="yes"/>
         </copy>
+        -->
     </target>
     
     <target name="clean-javahelp-images">
