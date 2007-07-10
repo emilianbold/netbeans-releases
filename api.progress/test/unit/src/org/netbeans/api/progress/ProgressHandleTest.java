@@ -166,7 +166,7 @@ public class ProgressHandleTest extends NbTestCase {
     /**
      * Test of custom placed labels of class org.netbeans.progress.api.ProgressHandle.
      */
-    public void testCustomPlacedLabels() {
+    public void testCustomPlacedLabels() throws Exception {
         assertFalse(handle.isCustomPlaced());
         JComponent comp = ProgressHandleFactory.createProgressComponent(proghandle);
         JLabel main = ProgressHandleFactory.createMainLabelComponent(proghandle);
@@ -174,7 +174,19 @@ public class ProgressHandleTest extends NbTestCase {
         proghandle.start();
         proghandle.setDisplayName("test1");
         proghandle.progress("message1");
-        waitForTimerFinish();
+        // kind of bad to have the wait here to overcome the scheduling..
+        // cannot use the TestController here.. the custom placed stuff has own controller.
+        try {
+            Thread.sleep(600);
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    //oh well, anything that posts to other threads is not really testable
+                    //this could help in corner cases when sleep alone doesn't help
+                }
+            });
+        } catch (InterruptedException exc) {
+            System.out.println("interrupted");
+        }
         assertEquals("test1", main.getText());
         assertEquals("message1", detail.getText());
     }
