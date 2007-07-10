@@ -27,12 +27,12 @@ import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontFace;
 import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontSize;
 import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontStyle;
 import org.netbeans.modules.vmd.api.screen.display.DeviceTheme.FontType;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.filesystems.FileObject;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -46,10 +46,37 @@ import java.util.Map;
  * @version 1.0
  */
 public final class ScreenSupport {
-    
+
     private ScreenSupport() {
     }
-    
+
+    public static Font getFont(DesignComponent fontComponent) {
+        if (fontComponent == null) {
+            return null;
+        }
+        return getFont(getDeviceInfo(fontComponent.getDocument()), fontComponent);
+    }
+
+    // TODO Should this method be in VMD Screen Designer module?
+    private static ScreenDeviceInfo getDeviceInfo(final DesignDocument document) {
+        final ScreenDeviceInfo[] screenDevice = new ScreenDeviceInfo[1];
+        if (document == null) {
+            return null;
+        }
+        document.getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                DesignComponent rootComponent = document.getRootComponent();
+                ScreenDeviceInfoPresenter presenter = rootComponent.getPresenter(ScreenDeviceInfoPresenter.class);
+                if (presenter == null) {
+                    throw new IllegalStateException("No ScreenDevice attached to the root component"); //NOI18N
+                }
+                screenDevice[0] = presenter.getScreenDeviceInfo();
+            }
+        });
+        return screenDevice[0];
+    }
+
     /**
      * Returns AWT font according to kind, face, style and size
      *
@@ -58,8 +85,10 @@ public final class ScreenSupport {
      * @return font
      */
     public static Font getFont(ScreenDeviceInfo deviceInfo, DesignComponent fontComponent) {
-        if (fontComponent == null)
+        if (fontComponent == null) {
             return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
+        }
+        
         int kindCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FONT_KIND));
         if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
             return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
@@ -68,7 +97,7 @@ public final class ScreenSupport {
         } else if (kindCode == FontCD.VALUE_KIND_INPUT) {
             return deviceInfo.getDeviceTheme().getFont(FontType.INPUT_TEXT);
         }
-        
+
         int faceCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FACE));
         FontFace face = FontFace.SYSTEM;
         if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {
@@ -76,7 +105,7 @@ public final class ScreenSupport {
         } else if (faceCode == FontCD.VALUE_FACE_PROPORTIONAL) {
             face = FontFace.PROPORTIONAL;
         }
-        
+
         int styleCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_STYLE));
         FontStyle style = FontStyle.PLAIN;
         if (styleCode == FontCD.VALUE_STYLE_BOLD) {
@@ -86,7 +115,7 @@ public final class ScreenSupport {
         } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
             style = FontStyle.UNDERLINED;
         }
-        
+
         int sizeCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_SIZE));
         FontSize size = FontSize.MEDIUM;
         if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
@@ -94,10 +123,10 @@ public final class ScreenSupport {
         } else if (sizeCode == FontCD.VALUE_SIZE_LARGE) {
             size = FontSize.LARGE;
         }
-        
+
         return deviceInfo.getDeviceTheme().getFont(face, style, size);
     }
-    
+
     /**
      * Loads icon using resourcePath property from given image design component
      *
@@ -105,17 +134,20 @@ public final class ScreenSupport {
      * @return icon
      */
     public static Icon getIconFromImageComponent(DesignComponent imageComponent) {
-        if (imageComponent == null)
+        if (imageComponent == null) {
             return null;
+        }
         String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
-        
-        if (imagePath == null)
+
+        if (imagePath == null) {
             return null;
+        }
         DesignDocument document = imageComponent.getDocument();
-        
+
         Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
-        if (fileMap ==  null || fileMap.keySet().iterator().hasNext() == false)
+        if (fileMap == null || fileMap.keySet().iterator().hasNext() == false) {
             return null;
+        }
         FileObject imageFileObject = fileMap.keySet().iterator().next();
         if (imageFileObject != null) {
             return resolveImageForRoot(imageFileObject, imagePath);
@@ -123,19 +155,22 @@ public final class ScreenSupport {
         Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
         return null;
     }
-    
-     public static FileObject getFileObjectFromImageComponent(DesignComponent imageComponent) {
-        if (imageComponent == null)
+
+    public static FileObject getFileObjectFromImageComponent(DesignComponent imageComponent) {
+        if (imageComponent == null) {
             return null;
+        }
         String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
-        
-        if (imagePath == null)
+
+        if (imagePath == null) {
             return null;
+        }
         DesignDocument document = imageComponent.getDocument();
-        
+
         Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
-        if (fileMap ==  null || fileMap.keySet().iterator().hasNext() == false)
+        if (fileMap == null || fileMap.keySet().iterator().hasNext() == false) {
             return null;
+        }
         FileObject imageFileObject = fileMap.keySet().iterator().next();
         if (imageFileObject != null) {
             return imageFileObject;
@@ -143,22 +178,22 @@ public final class ScreenSupport {
         Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
         return null;
     }
-    
+
     public static int getFontHeight(Graphics g, Font f) {
         assert (g != null) && (f != null);
         FontMetrics fm = g.getFontMetrics(f);
         return fm.getHeight();
     }
-    
+
     private static Icon resolveImageForRoot(FileObject file, String relPath) {
         try {
             BufferedImage img = ImageIO.read(file.getInputStream());
-            if (img != null)
+            if (img != null) {
                 return new ImageIcon(img);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
-    
 }
