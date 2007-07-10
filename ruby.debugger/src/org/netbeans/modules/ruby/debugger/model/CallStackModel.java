@@ -49,11 +49,13 @@ public class CallStackModel implements TreeModel, NodeModel,
     public static final String CURRENT_CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
     
+    private final ContextProviderWrapper contextProvider;
     private final RubySession rubySession;
     private final List<ModelListener> listeners;
     
     public CallStackModel(final ContextProvider contextProvider) {
-        rubySession = new ContextProviderWrapper(contextProvider).getRubySession();
+        this.contextProvider = new ContextProviderWrapper(contextProvider);
+        rubySession = this.contextProvider.getRubySession();
         listeners = new CopyOnWriteArrayList<ModelListener>();
     }
     
@@ -150,6 +152,9 @@ public class CallStackModel implements TreeModel, NodeModel,
             EditorUtil.showLine(
                     EditorUtil.getLine(rubySession.resolveAbsolutePath(frame.getFile()),
                     frame.getLine() - 1));
+            rubySession.selectFrame(frame);
+            contextProvider.getVariablesModel().fireChanges();
+            contextProvider.getWatchesModel().fireChanges();
         } else {
             throw new UnknownTypeException(node);
         }

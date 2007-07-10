@@ -59,6 +59,7 @@ public final class RubySession {
     private final RubyDebuggerProxy proxy;
     private final FileLocator fileLocator;
     private RubyThread activeThread;
+    private RubyFrame selectedFrame;
     private final DebuggerManagerListener sessionListener;
 
     public RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
@@ -70,12 +71,14 @@ public final class RubySession {
     }
     
     public void resume() {
+        selectFrame(null);
         activeThread.resume();
         EditorUtil.unmarkCurrent();
     }
-    
+
     public void stepInto() {
         try {
+            selectFrame(null);
             if (!activeThread.canStepInto()) {
                 return;
             }
@@ -87,6 +90,7 @@ public final class RubySession {
     
     public void stepOver() {
         try {
+            selectFrame(null);
             if (!activeThread.canStepOver()) {
                 return;
             }
@@ -98,6 +102,7 @@ public final class RubySession {
     
     public void stepReturn() {
         try {
+            selectFrame(null);
             activeThread.stepReturn();
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step return", e); // NOI18N
@@ -105,6 +110,7 @@ public final class RubySession {
     }
     
     public void runToCursor() {
+        selectFrame(null);
         Line line = EditorUtil.getCurrentLine();
         if (line == null) { return; }
         FileObject fo = line.getLookup().lookup(FileObject.class);
@@ -127,7 +133,7 @@ public final class RubySession {
             proxy.finish();
         }
     }
-    
+
     public String getName() {
         return "localhost:" + proxy.getDebugTarged().getPort(); // NOI18N
     }
@@ -166,6 +172,18 @@ public final class RubySession {
         return isSessionSuspended() ? activeThread.getTopFrame() : null;
     }
     
+    /**
+     * Selected frame is used for evaluating variables in Local Variables view
+     * or expressions in Watches view.
+     */
+    public void selectFrame(final RubyFrame frame) {
+        this.selectedFrame = frame;
+    }
+
+    private RubyFrame getSelectedFrame() throws RubyDebuggerException {
+        return selectedFrame == null ? getTopFrame() : selectedFrame;
+    }
+    
     public RubyVariable[] getGlobalVariables() {
         try {
             return isSessionSuspended() ? proxy.readGlobalVariables() : EMPTY_VARIABLES;
@@ -180,7 +198,7 @@ public final class RubySession {
      */
     public RubyVariable[] getVariables() {
         try {
-            RubyFrame frame = getTopFrame();
+            RubyFrame frame = getSelectedFrame();
             return frame == null ? EMPTY_VARIABLES : frame.getVariables();
         } catch (RubyDebuggerException e) {
             Util.LOGGER.log(Level.INFO, "Cannot read variables information", e); // NOI18N
@@ -200,7 +218,7 @@ public final class RubySession {
     
     public RubyVariable inspectExpression(final String expression) {
         try {
-            RubyFrame frame = getTopFrame();
+            RubyFrame frame = getSelectedFrame();
             return frame == null ? null : frame.inspectExpression(expression);
         } catch (RubyDebuggerException e) {
             Util.finest("Unable to inspect expression [" + expression + ']'); // NOI18N
@@ -313,4 +331,5 @@ public final class RubySession {
             }
         }
     }
+    
 }
