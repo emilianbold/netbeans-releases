@@ -141,7 +141,8 @@ public class FindDialogUI extends JCenterDialog
         if (fontsize > 17 ) multiplyer =3;
         width  = width  + Math.round(width*(multiplyer*fontsize/100f));
         height = height + Math.round(height*(multiplyer*fontsize/100f));
-        setSize(width,height);
+        
+        //setSize(width,height);
         // CBeckham - end of add
         
         
@@ -515,7 +516,7 @@ public class FindDialogUI extends JCenterDialog
         
         getContentPane().add(jPanel2, java.awt.BorderLayout.EAST);
         
-//			pack();
+			pack();
         Dimension buttonSize = getMaxButtonWidth();
         m_FindButton.setMaximumSize(buttonSize);
         m_FindButton.setPreferredSize(buttonSize);
