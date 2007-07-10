@@ -27,6 +27,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -68,7 +69,7 @@ public class GotoActionView extends AbstractAction {
                 gotoView(target, fo, "_controller", "controllers");
             } else if (fo.getName().endsWith("_helper")) {
                 gotoView(target, fo, "_helper", "helpers");
-            } else if (fo.getExt().contains("rhtml") || fo.getExt().equals("erb")) { // Why "contains" for rhtml?
+            } else if (RubyUtils.isRhtmlFile(fo) || fo.getExt().equalsIgnoreCase("mab") || fo.getExt().equalsIgnoreCase("rjs")) { // NOI18N
                 // It's a view
                 gotoAction(target, fo);
             } else {
@@ -140,7 +141,7 @@ public class GotoActionView extends AbstractAction {
             }
 
             if (methodName != null) {
-                String[] exts = { "rhtml", "html.erb", "erb" }; // NOI18N
+                String[] exts = { "rhtml", "html.erb", "erb", "rjs", "mab" }; // NOI18N
                 for (String ext : exts) {
                     viewFile = viewsFolder.getFileObject(methodName, ext);
                     if (viewFile != null) {
@@ -157,7 +158,7 @@ public class GotoActionView extends AbstractAction {
                 if (viewFile == null) {
                     for (FileObject child : viewsFolder.getChildren()) {
                         String ext = child.getExt();
-                        if ("rhtml".equals(ext) || "erb".equals(ext)) { // NOI18N
+                        if (RubyUtils.isRhtmlFile(child) || ext.equalsIgnoreCase("mab") || ext.equalsIgnoreCase("rjs")) { // NOI18N
                             viewFile = child;
 
                             break;
@@ -184,7 +185,8 @@ public class GotoActionView extends AbstractAction {
     //  app/controllers/credit_card_controller.rb#debit()
     private void gotoAction(JTextComponent target, FileObject file) {
         // This should be a view.
-        if (!file.getExt().equals("rhtml") && !file.getExt().equals("erb")) { // NOI18N
+        String ext = file.getExt();
+        if (!RubyUtils.isRhtmlFile(file) && !ext.equalsIgnoreCase("mab") && !ext.equalsIgnoreCase("rjs")) { // NOI18N
             Utilities.setStatusBoldText(target, "This action only applies to Views");
 
             return;
