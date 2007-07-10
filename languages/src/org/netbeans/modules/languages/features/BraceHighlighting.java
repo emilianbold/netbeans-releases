@@ -38,6 +38,7 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
+import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
 /**
  *
@@ -70,7 +71,7 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         if (language == null || th == null) {
             // ?? no lexer for the language, all Schliemann languages should have
             // a lexer
-            return null;
+            return defaultFindOrigin(context);
         }
         
         int caretOffset = context.getSearchOffset();
@@ -103,7 +104,7 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         
         Map<String, String>[] pairsMap = getPairsMap(language);
         if (pairsMap == null) {
-            return null;
+            return defaultFindOrigin(context);
         }
 
         seq.move(caretOffset);
@@ -135,6 +136,12 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
+        // Use the default matcher if no better was available
+        if (defaultMatcher != null) {
+            return defaultMatcher.findMatches();
+        }
+        
+        // Proper matching using the pairs supplied by the language definition
         assert seq != null : "No token sequence"; //NOI18N
         
         int depth = 1;
@@ -223,6 +230,11 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         return false;
     }
     
+    private int [] defaultFindOrigin(MatcherContext context) throws InterruptedException, BadLocationException {
+        defaultMatcher = BracesMatcherSupport.defaultMatcher(context, -1, -1);
+        return defaultMatcher.findOrigin();
+    }
+    
     private final MatcherContext context;
     private final String topLevelMimeType;
     
@@ -232,5 +244,6 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
     private String originText;
     private String matchingText;
     private boolean backwards;
+    private BracesMatcher defaultMatcher;
     
 }
