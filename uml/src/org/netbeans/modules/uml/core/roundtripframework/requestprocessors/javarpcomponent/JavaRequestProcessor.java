@@ -24,6 +24,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import java.util.Locale;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.IBatchEventContext;
@@ -1319,9 +1320,8 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                 
                 else
                 {
-                    
-                    String str = 
-                            NbPreferences.forModule (DummyCorePreference.class).get ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK") ;
+                    Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
+                    String str = prefs.get ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK") ;
                     
                     if (str != null && str.equals("PSK_NEVER"))
                     {
@@ -1420,6 +1420,14 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                                 }
                             }
                         }
+                        
+                        String showMePref = prefs.get ("UML_ShowMe_Transform_When_Elements_May_Be_Lost", "PSK_ASK") ;
+                        if (showMePref.equals ("PSK_NEVER")) {
+                            cell.setContinue(false);
+                            checkWithUser = false;
+                        } else if (showMePref.equals ("PSK_ALWAYS")) {
+                            checkWithUser = false;
+                        } 
                         
                         if ( checkWithUser )
                         {

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
+import java.util.Hashtable;
 import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
 import org.netbeans.modules.uml.util.DummyCorePreference;
@@ -36,6 +37,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     public ShowMeDialogsListPanel() {
         initComponents();
         
+        for (int i = 0; i < mappedChoices.length; i ++)
+            menuItemsTable.put (mappedChoices[i], displayChoices[i]) ;
     }
     
     /**
@@ -48,34 +51,34 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
        
         s = prefs.get("UML_ShowMe_Allow_Lengthy_Searches", PSK_ASK);
-        allowLengthySearchesCB.setSelectedItem(s);
+        allowLengthySearchesCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Automatically_Create_Classifiers", PSK_ASK);
-        autoCreateCB.setSelectedItem(s);
+        autoCreateCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Delete_Combined_Fragment_Messages", PSK_ASK);
-        deleteCombFragCB.setSelectedItem(s);
+        deleteCombFragCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Delete_Connector_Messages", PSK_ASK);
-        deleteConnectorCB.setSelectedItem(s);
+        deleteConnectorCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Delete_File_when_Deleting_Artifacts", PSK_ASK);
-        deleteFileCB.setSelectedItem(s);
+        deleteFileCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", PSK_ASK);
-        filterWarningCB.setSelectedItem(s);
+        filterWarningCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Modify_Redefined_Operations", PSK_ASK);
-        modifyCB.setSelectedItem(s);
+        modifyCB.setSelectedItem(menuItemsTable.get(s));
                 
         s = prefs.get("UML_ShowMe_Move_Invoked_Operation", PSK_ASK);
-        moveInvokedCB.setSelectedItem(s);
+        moveInvokedCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Overwrite_Existing_Participants", PSK_ASK);
-        overwriteCB.setSelectedItem(s);
+        overwriteCB.setSelectedItem(menuItemsTable.get(s));
         
         s = prefs.get("UML_ShowMe_Transform_When_Elements_May_Be_Lost", PSK_ASK);
-        transformCB.setSelectedItem(s);
+        transformCB.setSelectedItem(menuItemsTable.get(s));
         
         
     }
@@ -279,6 +282,8 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     
     private String[] displayChoices = {ASK, ALWAYS, NEVER} ;
     private String[] mappedChoices = {PSK_ASK, PSK_ALWAYS, PSK_NEVER} ;
+    
+    private Hashtable menuItemsTable = new Hashtable();
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox allowLengthySearchesCB;
