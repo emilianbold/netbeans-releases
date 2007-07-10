@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Attr;
@@ -54,6 +56,8 @@ import org.openide.util.Lookup;
  */
 public class CompletionContextImpl extends CompletionContext {
         
+    private static final Logger logger = Logger.getLogger(CompletionContextImpl.class.getName());
+    
     /**
      * Creates a new instance of CompletionQueryHelper
      */
@@ -71,6 +75,7 @@ public class CompletionContextImpl extends CompletionContext {
         } catch(Exception ex) {
             //in the worst case, there will not be
             //any code completion help.
+            logger.log(Level.SEVERE, ex.getMessage());
         }
     }
     
@@ -118,15 +123,20 @@ public class CompletionContextImpl extends CompletionContext {
             CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);
             return uris;
         }
-        if("project".equals(primaryFile.getName()) && "xml".equals(primaryFile.getExt())) { //NOI18N
-            java.io.File file = FileUtil.toFile(primaryFile);
-            String[] schemas = CompletionUtil.getSchemaLocations(file);
-            for(String temp : schemas) {
-                try {
-                    uris.add(new java.net.URI(temp));
-                } catch (URISyntaxException ex) {}
+                
+        //instance documents with no schemaLocationAttribute
+        java.io.File file = FileUtil.toFile(primaryFile);
+        String[] schemas = CompletionUtil.getDeclaredNamespaces(file);
+        for(String temp : schemas) {
+            try {
+                uris.add(new java.net.URI(temp));
+            } catch (URISyntaxException ex) {
+                logger.log(Level.WARNING, ex.getMessage());
+                //continue with the next one.
+                continue;
             }
         }
+        
         return uris;
     }
         

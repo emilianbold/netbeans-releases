@@ -40,6 +40,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.ls.LSInput;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -59,17 +60,21 @@ public class RuntimeCatalogModel implements CatalogModel{
     
     public ModelSource getModelSource(URI locationURI,
             ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
-        InputSource isrc;
+        InputStream inputStream = null;
         try {
-            isrc = UserCatalog.getDefault().getEntityResolver().
-                    resolveEntity(null, locationURI.toString());
-            if(isrc == null)
-                return null;
-            InputStream is = new URL(isrc.getSystemId()).openStream();
-            if(is != null)
-                return createModelSource(is);
+            EntityResolver resolver = UserCatalog.getDefault().getEntityResolver();
+            InputSource src = resolver.resolveEntity(locationURI.toString(), locationURI.toString());
+            if(src != null) {
+                inputStream = new URL(src.getSystemId()).openStream();
+            } else {
+                javax.xml.transform.Source isrc = ((javax.xml.transform.URIResolver)resolver).
+                        resolve(locationURI.toString(), null);
+                if(isrc != null)
+                    inputStream = new URL(isrc.getSystemId()).openStream();
+            }
+            if(inputStream != null)
+                return createModelSource(inputStream);
         } catch (Exception ex) {
-            //ex.printStackTrace();
             throw new CatalogModelException(ex);
         }
         

@@ -76,11 +76,31 @@ public abstract class AbstractTestCase extends TestCase {
                 String resultItem = item.getReplacementText();
                 if(item instanceof AttributeResultItem)
                     resultItem = resultItem.substring(0, resultItem.indexOf("="));
-                if(resultItem.equals(expectedResult[i]))
+                if(resultItem.equals(expectedResult[i])) {
                     found = true;
+                    break;
+                }
             }            
             assert(found);
         }
     }
     
+    protected void assertResult(String[] result,
+            String[] expectedResult) {
+        if(result == null && expectedResult == null) {
+            assert(true);
+            return;
+        }
+        assert(result.length == expectedResult.length);
+        for(int i=0; i<expectedResult.length; i++) {
+            boolean found = false;
+            for(String item : result) {
+                if(item.equals(expectedResult[i])) {
+                    found = true;
+                    break;
+                }
+            }            
+            assert(found);
+        }
+    }
 }

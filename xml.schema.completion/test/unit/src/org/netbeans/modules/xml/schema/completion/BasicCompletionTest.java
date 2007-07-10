@@ -18,8 +18,11 @@
  */
 package org.netbeans.modules.xml.schema.completion;
 
+import java.util.Arrays;
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -29,6 +32,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     
     static final String PO_INSTANCE_DOCUMENT = "resources/PO.xml";
     static final String TEST_INSTANCE_DOCUMENT = "resources/Test.xml";
+    static final String PROJECT_INSTANCE_DOCUMENT = "resources/project.xml";
     
     public BasicCompletionTest(String testName) {
         super(testName);
@@ -52,6 +56,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testWildcard4"));
         suite.addTest(new BasicCompletionTest("testChildren1"));
         suite.addTest(new BasicCompletionTest("testChildren2"));
+        suite.addTest(new BasicCompletionTest("testReadNamespace"));
         return suite;
     }
     
@@ -320,4 +325,15 @@ public class BasicCompletionTest extends AbstractTestCase {
         String[] expectedResult = {"ns0:installList","ns0:uninstallList"};
         assertResult(items, expectedResult);
     }
+    
+    /**
+     * Reads the namespaces specified in an instance document like project.xml.
+     */
+    public void testReadNamespace() throws Exception {
+        setupCompletion(PROJECT_INSTANCE_DOCUMENT, null);
+        String[] results = CompletionUtil.getDeclaredNamespaces(FileUtil.toFile(instanceFileObject));
+        String[] expectedResult = {"http://www.netbeans.org/ns/project/1","http://www.netbeans.org/ns/nb-module-project/3"};
+        assertResult(results, expectedResult);
+    }
+    
 }
