@@ -57,7 +57,7 @@ public class EjbJarProjectEncodingQueryImpl extends FileEncodingQueryImplementat
         synchronized (this) {
             if (cache == null) {
                 try {
-                    cache = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+                    cache = enc == null ? Charset.defaultCharset() : Charset.forName(enc);
                 } catch (IllegalCharsetNameException exception) {
                     return null;
                 }

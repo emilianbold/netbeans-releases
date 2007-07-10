@@ -23,7 +23,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -57,7 +56,7 @@ public class AppClientProjectEncodingQueryImpl extends FileEncodingQueryImplemen
         synchronized (this) {
             if (cache == null) {
                 try {
-                    cache = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+                    cache = enc == null ? Charset.defaultCharset() : Charset.forName(enc);
                 } catch (IllegalCharsetNameException exception) {
                     return null;
                 }

@@ -36,7 +36,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -107,7 +106,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         enableSourceLevel();
         this.originalEncoding = ((EjbJarProject)uiProperties.getProject()).evaluator().getProperty(EjbJarProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
-            this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
+            this.originalEncoding = Charset.defaultCharset().name();
         }
         
         this.encoding.setModel(new EncodingModel(this.originalEncoding));
@@ -598,7 +597,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 }
             }
             if (defEnc == null) {
-                defEnc = FileEncodingQuery.getDefaultEncoding();
+                defEnc = Charset.defaultCharset();
             }
             setSelectedItem(defEnc);
         }
