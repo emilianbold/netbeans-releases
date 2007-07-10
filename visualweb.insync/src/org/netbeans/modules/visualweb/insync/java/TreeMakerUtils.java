@@ -211,7 +211,16 @@ public class TreeMakerUtils {
      * Note that import for type is handled by make.QualIdent()
      */ 
     public static Tree createType(WorkingCopy wc, String typeName) {
+        if(typeName == null) {
+            return null;
+        }
+        
         TreeMaker make = wc.getTreeMaker();
+        if (typeName.endsWith("[]")) { // NOI18N
+            String elementTypeName = typeName.substring(0, typeName.length()-2);
+            return make.ArrayType(createType(wc, elementTypeName));
+        }
+        
         TypeKind primitiveTypeKind = null;
         if ("boolean".equals(typeName)) {           // NOI18N
             primitiveTypeKind = TypeKind.BOOLEAN;
