@@ -70,7 +70,7 @@ public class MethodBodyTest extends GeneratorTest {
             "\n" +
             "public class Test {\n" +
             "    public Object method() {\n" +
-            "System.out.println(\"test\");\n" +
+            "        System.out.println(\"test\");\n" +
             "    }\n" +
             "}\n";
                  
@@ -126,7 +126,7 @@ public class MethodBodyTest extends GeneratorTest {
             "\n" +
             "public class Test {\n" +
             "    public Object method() {\n" +
-            "java.lang.System.out.println(\"test\");\n" +
+            "        System.out.println(\"test\");\n" +
             "    }\n" +
             "}\n";
                  
