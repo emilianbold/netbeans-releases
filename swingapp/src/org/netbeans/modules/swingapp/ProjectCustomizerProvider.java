@@ -135,14 +135,19 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         private static void storeValue(String key, String value, DesignResourceMap resMap) {
             ResourceValueImpl resValue = resMap.getResourceValue(key, String.class);
             if (resValue != null) {
-                resValue.setValue(value);
-                resValue.setStringValue(value);
-            } else {
+                if (value != null) {
+                    resValue.setValue(value);
+                    resValue.setStringValue(value);
+                    resMap.addResourceValue(resValue);
+                } else {
+                    resMap.removeResourceValue(resValue);
+                }
+            } else if (value != null) {
                 resValue = new ResourceValueImpl(key, String.class,
                         value, null, value,
                         false, DesignResourceMap.APP_LEVEL, null);
+                resMap.addResourceValue(resValue);
             }
-            resMap.addResourceValue(resValue);
         }
     }
 }
