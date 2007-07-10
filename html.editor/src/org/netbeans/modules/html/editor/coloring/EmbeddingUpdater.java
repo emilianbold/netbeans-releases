@@ -161,33 +161,38 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     //I need to specially handle the case where the javascript block contains
     //html comments.
     private void createJavascriptEmbedding(SyntaxElement.Named sel, int from, int to) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence ts = tokenSequence(th, from);
-        if(ts == null) {
-            //no html token sequence there - weird
-            return ;
-        }
-        
-        ts.move(from);
-        if(!ts.moveNext() && !ts.movePrevious()) {
-            return ; //no token
-        }
-        
-        int jsStart = from; int jsStartSkipLength = 0;
-        int jsEnd = to; int jsEndSkipLength = 0;
-        while(ts.moveNext() && (ts.token().offset(th) <= to)) {
-            Token t = ts.token();
-            if(t.id() == HTMLTokenId.BLOCK_COMMENT) {
-                if(t.text().toString().startsWith("<!--")) { //NOI18N
-                    jsStart = t.offset(th);
-                    jsStartSkipLength = "<!--".length(); //NOI18N
-                } else if(t.text().toString().endsWith("-->")) { //NOI18N
-                    jsEnd = t.offset(th) + t.length();
-                    jsEndSkipLength = "-->".length(); //NOI18N
+        ((BaseDocument)doc).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            TokenSequence ts = tokenSequence(th, from);
+            if(ts == null) {
+                //no html token sequence there - weird
+                return ;
+            }
+
+            ts.move(from);
+            if(!ts.moveNext() && !ts.movePrevious()) {
+                return ; //no token
+            }
+
+            int jsStart = from; int jsStartSkipLength = 0;
+            int jsEnd = to; int jsEndSkipLength = 0;
+            while(ts.moveNext() && (ts.token().offset(th) <= to)) {
+                Token t = ts.token();
+                if(t.id() == HTMLTokenId.BLOCK_COMMENT) {
+                    if(t.text().toString().startsWith("<!--")) { //NOI18N
+                        jsStart = t.offset(th);
+                        jsStartSkipLength = "<!--".length(); //NOI18N
+                    } else if(t.text().toString().endsWith("-->")) { //NOI18N
+                        jsEnd = t.offset(th) + t.length();
+                        jsEndSkipLength = "-->".length(); //NOI18N
+                    }
                 }
             }
+            createEmbedding(JAVASCRIPT_MIMETYPE, jsStart, jsEnd, jsStartSkipLength, jsEndSkipLength);
+        } finally {
+            ((BaseDocument)doc).readUnlock();
         }
-        createEmbedding(JAVASCRIPT_MIMETYPE, jsStart, jsEnd, jsStartSkipLength, jsEndSkipLength);
     }
     
     private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
