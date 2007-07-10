@@ -59,31 +59,37 @@ public class Index {
 
     
     public static Map<FileObject,List<DatabaseDefinition>> getGlobalItems (
-        FileObject fo
-    ) {
+        FileObject fo, 
+        boolean parse
+    ) throws FileNotParsedException {
         Map<FileObject,List<DatabaseDefinition>> result = new HashMap<FileObject,List<DatabaseDefinition>> ();
         Project project = FileOwnerQuery.getOwner (fo);
         if (project == null) return result;
-        getProjectCache (project).add (result, null);
+        getProjectCache (project, parse).add (result, null);
         return result;
     }
     
     public static Map<FileObject,List<DatabaseDefinition>> getGlobalItem (
         FileObject  fo,
-        String      name
-    ) {
+        String      name,
+        boolean     parse
+    ) throws FileNotParsedException {
         Map<FileObject,List<DatabaseDefinition>> result = new HashMap<FileObject,List<DatabaseDefinition>> ();
         Project project = FileOwnerQuery.getOwner (fo);
         if (project == null) return result;
-        getProjectCache (project).add (result, name);
+        getProjectCache (project, parse).add (result, name);
         return result;
     }
     
-    private static ProjectCache getProjectCache (Project project) {
+    private static ProjectCache getProjectCache (
+        Project project, 
+        boolean parse
+    ) throws FileNotParsedException {
         ProjectCache cache = projectToCache.get (project);
         if (cache == null)
             cache = readProjectCache (project);
         if (cache == null) {
+            if (!parse) throw new FileNotParsedException ();
             cache = new ProjectCache (project);
             projectToCache.put (project, cache);
         }
@@ -108,6 +114,7 @@ public class Index {
         File cacheFolder = getCacheFolder ();
         if (roots != null) {
             int i = roots.indexOf (projectDir);
+            if (i < 0) return null;
             return new File (cacheFolder, "s" + (i + 1));
         }
         roots = new ArrayList<FileObject> ();
@@ -287,7 +294,7 @@ public class Index {
 
         private void add (
             Map<FileObject,List<DatabaseDefinition>>    result,
-            String                                  name
+            String                                      name
         ) {
             if (definitions == null) {
                 definitions = new ArrayList<DatabaseDefinition> ();

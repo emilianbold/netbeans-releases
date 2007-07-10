@@ -397,21 +397,25 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if (definition.getName ().startsWith (start))
                     resultSet.addItem (cs);
             }
-            Map<FileObject,List<DatabaseDefinition>> globals = Index.getGlobalItems (fileObject);
-            Iterator<FileObject> it1 = globals.keySet ().iterator ();
-            while (it1.hasNext()) {
-                FileObject fileObject =  it1.next();
-                List<DatabaseDefinition> l = globals.get (fileObject);
-                Iterator<DatabaseDefinition> it2 = l.iterator ();
-                while (it2.hasNext()) {
-                    DatabaseDefinition definition =  it2.next();
-                    if (names.contains (definition.getName ())) continue;
-                    CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt ());
-                    items.add (cs);
-                    if (definition.getName ().startsWith (start))
-                        resultSet.addItem (cs);
-                }
+            try {
+                Map<FileObject,List<DatabaseDefinition>> globals = Index.getGlobalItems (fileObject, true);
+                Iterator<FileObject> it1 = globals.keySet ().iterator ();
+                while (it1.hasNext()) {
+                    FileObject fileObject =  it1.next();
+                    List<DatabaseDefinition> l = globals.get (fileObject);
+                    Iterator<DatabaseDefinition> it2 = l.iterator ();
+                    while (it2.hasNext()) {
+                        DatabaseDefinition definition =  it2.next();
+                        if (names.contains (definition.getName ())) continue;
+                        CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt ());
+                        items.add (cs);
+                        if (definition.getName ().startsWith (start))
+                            resultSet.addItem (cs);
+                    }
 
+                }
+            } catch (FileNotParsedException ex) {
+                ex.printStackTrace ();
             }
         }
         

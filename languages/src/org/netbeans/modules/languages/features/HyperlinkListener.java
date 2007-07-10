@@ -182,31 +182,34 @@ MouseListener {
                     ASTItem leaf = path.getLeaf ();
                     if (!(leaf instanceof ASTToken)) return;
                     String name = ((ASTToken) leaf).getIdentifier ();
-                    Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name);
-                    if (!map.isEmpty ()) {
-                        final FileObject fo = map.keySet ().iterator ().next ();
-                        final DatabaseDefinition definition = map.get (fo).iterator ().next ();
-                        highlight = Highlighting.getHighlighting (doc).highlight (
-                            path.getLeaf (),
-                            getHyperlinkAS ()
-                        );
-                        runnable = new Runnable () {
-                            public void run () {
-                                int definitionOffset = definition.getOffset ();
-                                try {
-                                    DataObject dobj = DataObject.find (fo);
-                                    EditorCookie ec = (EditorCookie) dobj.getCookie (EditorCookie.class);
-                                    StyledDocument doc2 = ec.openDocument ();
-                                    LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
-                                    Line.Set lineSet = lc.getLineSet ();
-                                    Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
-                                    int column = NbDocument.findLineColumn (doc2, definitionOffset);
-                                    line.show (Line.SHOW_GOTO, column);
-                                } catch (IOException ex) {
-                                    ex.printStackTrace ();
+                    try {
+                        Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name, false);
+                        if (!map.isEmpty ()) {
+                            final FileObject fo = map.keySet ().iterator ().next ();
+                            final DatabaseDefinition definition = map.get (fo).iterator ().next ();
+                            highlight = Highlighting.getHighlighting (doc).highlight (
+                                path.getLeaf (),
+                                getHyperlinkAS ()
+                            );
+                            runnable = new Runnable () {
+                                public void run () {
+                                    int definitionOffset = definition.getOffset ();
+                                    try {
+                                        DataObject dobj = DataObject.find (fo);
+                                        EditorCookie ec = (EditorCookie) dobj.getCookie (EditorCookie.class);
+                                        StyledDocument doc2 = ec.openDocument ();
+                                        LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
+                                        Line.Set lineSet = lc.getLineSet ();
+                                        Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
+                                        int column = NbDocument.findLineColumn (doc2, definitionOffset);
+                                        line.show (Line.SHOW_GOTO, column);
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace ();
+                                    }
                                 }
-                            }
-                        };
+                            };
+                        }
+                    } catch (FileNotParsedException ex) {
                     }
                 }
             }
