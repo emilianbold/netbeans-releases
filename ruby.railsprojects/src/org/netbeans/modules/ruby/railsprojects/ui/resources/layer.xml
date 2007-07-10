@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -113,18 +113,18 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.railsprojects.Bundle"/>
-                        <attr name="position" intvalue="900"/>
+                        <attr name="position" intvalue="500"/>
                         <file name="org-netbeans-modules-ruby-railsprojects-GotoActionView.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-ruby-railsprojects-GotoActionView.instance"/>
                             <attr name="position" intvalue="100"/>
                         </file>
-                        </folder>
+                    </folder>
+                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

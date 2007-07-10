@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.gsf;
@@ -21,14 +21,12 @@ package org.netbeans.modules.gsf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.api.gsf.annotations.NonNull;
 
-//import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -40,15 +38,14 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 
-
 /**
  * Registry which locates and provides information about languages supported
  * by various plugins.
  *
- *
  * @author Tor Norbye
  */
 public class LanguageRegistry implements Iterable<Language> {
+    
     private static LanguageRegistry instance;
     private static final String DISPLAY_NAME = "displayName";
     private static final String ICON_BASE = "iconBase";
@@ -501,12 +498,12 @@ public class LanguageRegistry implements Iterable<Language> {
 
         if (ref == null) {
             try {
-                popup.createData("in-place-refactoring").setAttribute("position", /* pick something... */ 1000);
+                popup.createData("in-place-refactoring").setAttribute("position", 680);
                 //popup.createData("generate-goto-popup");
                 FileObject gotoF = popup.getFileObject("goto");
                 if (gotoF == null) {
                     gotoF = popup.createFolder("goto");
-                    gotoF.setAttribute("position", 1100);
+                    gotoF.setAttribute("position", 500);
                 }
                 gotoF.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.gsf.Bundle");
                 gotoF.createData("goto-declaration").setAttribute("position", 500);
@@ -521,14 +518,14 @@ public class LanguageRegistry implements Iterable<Language> {
                 // Should be before org-netbeans-modules-editor-NbSelectInPopupAction.instance & org-openide-actions-CutAction.instance:
                 sep.setAttribute("position", 1200);
         }
-                FileObject sep2 = popup.createData("SeparatorBeforeFormat.instance");
-                sep2.setAttribute("instanceClass", "javax.swing.JSeparator");
-                // Should be between org-openide-actions-PasteAction.instance and format
-                sep2.setAttribute("position", 2000);
         // Temporary - userdir upgrade
         if (popup.getFileObject("format") == null) {
-                popup.createData("format").setAttribute("position", 2100);
+                popup.createData("format").setAttribute("position", 750);
         }
+        FileObject sep2 = popup.createData("SeparatorAfterFormat.instance");
+        sep2.setAttribute("instanceClass", "javax.swing.JSeparator");
+        // Should be between org-openide-actions-PasteAction.instance and format
+        sep2.setAttribute("position", 780);
         // Temporary - userdir upgrade
         if (popup.getFileObject("pretty-print") == null) {
                 popup.createData("pretty-print").setAttribute("position", 2200);

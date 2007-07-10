@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -214,16 +214,16 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-ruby"> 
                 <folder name="Popup">
+                    <folder name="goto">
+                        <attr name="position" intvalue="500"/>
+                        <file name="ruby-goto-test">
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                    </folder>
                     <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                         <attr name="position" intvalue="800"/>
                     </file>
-                    <folder name="goto">
-                        <attr name="position" intvalue="900"/>
-                        <file name="ruby-goto-test">
-                            <attr name="position" intvalue="200"/>
-                        </file>
-                        </folder>
                     <!--
                     <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
