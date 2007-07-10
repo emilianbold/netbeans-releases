@@ -80,6 +80,7 @@ public class FormatingOptionsPanel extends JPanel implements ActionListener, Pro
     }
     
     void load() {
+        loaded = false;
         for (Category category : categories) {
             category.update();
         }

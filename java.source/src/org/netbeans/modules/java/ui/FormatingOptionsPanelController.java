@@ -33,6 +33,7 @@ final class FormatingOptionsPanelController extends OptionsPanelController {
     private boolean changed;
                     
     public void update() {
+        changed = false;
 	panel.load();
     }
     
