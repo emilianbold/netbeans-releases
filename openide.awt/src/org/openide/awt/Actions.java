@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -43,7 +44,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -182,7 +182,7 @@ public class Actions extends Object {
             if (menuActionCache == null) {
                 menuActionCache = new WeakHashMap<Action, Reference<JMenuItem>>();
 
-                Keymap map = (Keymap) Lookup.getDefault().lookup(Keymap.class);
+                Keymap map = Lookup.getDefault().lookup(Keymap.class);
 
                 if (map instanceof Observable) {
                     //HACK MAJOR - assuming we have the NbKeymap which is observable
@@ -399,9 +399,7 @@ public class Actions extends Object {
     }
 
     private static Icon createDisabledIcon(Image img) {
-        ImageProducer prod = new FilteredImageSource(img.getSource(), disabledButtonFilter());
-
-        return new ImageIcon(Toolkit.getDefaultToolkit().createImage(prod), "");
+        return new LazyDisabledIcon( img );
     }
 
     private static RGBImageFilter disabledButtonFilter() {
@@ -411,6 +409,38 @@ public class Actions extends Object {
 
         return DISABLED_BUTTON_FILTER;
     }
+    
+    private static class LazyDisabledIcon implements Icon {
+        private Image img;
+        private Icon disabledIcon;
+        
+        public LazyDisabledIcon( Image img ) {
+            assert null != img;
+            this.img = img;
+        }
+        
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            getDisabledIcon().paintIcon(c, g, x, y);
+        }
+
+        public int getIconWidth() {
+            return getDisabledIcon().getIconWidth();
+        }
+
+        public int getIconHeight() {
+            return getDisabledIcon().getIconHeight();
+        }
+        
+        private Icon getDisabledIcon() {
+            if( null == disabledIcon ) {
+                ImageProducer prod = new FilteredImageSource(img.getSource(), disabledButtonFilter());
+
+                disabledIcon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(prod), "");
+            }
+            return disabledIcon;
+        }
+    }
+            
 
     /** Interface for the creating Actions.SubMenu. It provides the methods for
     * all items in submenu: name shortcut and perform method. Also has methods
