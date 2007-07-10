@@ -182,6 +182,9 @@ public class JavaScript {
         if (nameNode != null)
             name = nameNode.getAsText ();
         ASTNode parametersNode = n.getNode ("FormalParameterList");
+        if (parametersNode == null) {
+            parametersNode = n.getNode ("Parameter");
+        }
         if (name != null) {
             return name + " (" + getParametersAsText(parametersNode) + ")";
         }
@@ -506,6 +509,15 @@ public class JavaScript {
         if (params == null) return "";
         StringBuffer buf = new StringBuffer();
         for (ASTItem item : params.getChildren()) {
+            if (item instanceof ASTNode) {
+                String nt = ((ASTNode) item).getNT();
+                if ("Parameter".equals(nt)) {
+                     Iterator<ASTItem> iter = ((ASTNode) item).getChildren().iterator();
+                     if (iter.hasNext()) {
+                         item = iter.next();
+                     }
+                }
+            }
             if (!(item instanceof ASTToken)) {
                 continue;
             }
