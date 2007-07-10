@@ -65,7 +65,7 @@ find netbeans | egrep -v "netbeans/(extra|testtools|cnd)" | zip -q $DIST/zip/$BA
 
 find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identiy|cnd)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
 
 cd netbeans
 expat='^extra/|^testtools/'
