@@ -27,11 +27,8 @@ import junit.framework.*;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 public class CreateProjectTest extends JellyTestCase {
-    private String projName1 = "TestAppAPI_1"; // NOI18N
-    private String projName2 = "TestAppAPI_2"; // NOI18N
     
     public CreateProjectTest(java.lang.String testName) {
         super(testName);
@@ -52,10 +49,11 @@ public class CreateProjectTest extends JellyTestCase {
     }
     
     public void testCreateAndOpenProject_API_1() throws Exception {
-        String mainClass = "MyMain" + projName1; // NOI18N
-        File projectDir = new File(getWorkDir(), projName1);
+        String projName = "testCreateAndOpenProject_API_1";
+        String mainClass = "MyMain" + projName; // NOI18N
+        File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        AntProjectHelper project = J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null);
         assertNotNull(Utilities.openProject(projectDir));
     }
     
@@ -65,12 +63,13 @@ public class CreateProjectTest extends JellyTestCase {
 //    
    
      public void testReopenAndCloseProject_API_1() throws Exception {
-        String mainClass = "MyMain" + projName1; // NOI18N
-        File projectDir = new File(getWorkDir(), projName1);
+        String projName = "testCreateAndOpenProject_API_1";
+        String mainClass = "MyMain" + projName; // NOI18N
+        File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        AntProjectHelper project = J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null);
         Utilities.openProject(projectDir);
-        assertNotNull(Utilities.closeProject(projName1));
+        assertNotNull(Utilities.closeProject(projName));
     }
      
 //     public void testReopenAndDeleteProjectFolder_API_1() throws Exception {
@@ -85,7 +84,7 @@ public class CreateProjectTest extends JellyTestCase {
  
      
     public void testCreateAndOpenProject_API_2() throws Exception {
-        File  projectDir = createProject(projName2);
+        File  projectDir = createProject("testCreateAndOpenProject_API_2");
         assertNotNull(Utilities.openProject(projectDir));
     }
   
@@ -108,18 +107,21 @@ public class CreateProjectTest extends JellyTestCase {
         test2.mkdirs();
         testFolders[0] = test1;
         testFolders[1] = test2;
-        org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
+        J2SEProjectGenerator.createProject(projectDir,prjName, sourceFolders, testFolders, null);
         return projectDir;
     }
     public void testCloseProject_API_2() throws Exception {
-        File f = createProject(projName2);
+        String prjName = "testCloseProject_API_2";
+        File f = createProject(prjName);
         assertTrue("File is folder",f.isDirectory());
         Utilities.openProject(f);
-        assertTrue(Utilities.closeProject(projName2));
+        
+        assertTrue(Utilities.closeProject(prjName));
     }
 
     public void testReopenAndCloseProject_API_2() throws Exception {
-            File projectDir = new File(getWorkDir(), projName2);
+        String prjName =  "testReopenAndCloseProject_API_2";
+        File projectDir = new File(getWorkDir(), prjName);
         projectDir.mkdir();
         
         File[] sourceFolders = new File[2];
@@ -138,9 +140,9 @@ public class CreateProjectTest extends JellyTestCase {
         testFolders[0] = test1;
         testFolders[1] = test2;
         
-        AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
+        J2SEProjectGenerator.createProject(projectDir, prjName, sourceFolders, testFolders, null);
         Utilities.openProject(projectDir);
-        assertTrue(Utilities.closeProject(projName2));
+        assertTrue(Utilities.closeProject(prjName));
 
     }
 //    public void testReopenAndDeleteProjectFolder_API_2() throws Exception {
