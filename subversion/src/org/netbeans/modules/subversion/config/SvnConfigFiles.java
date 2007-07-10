@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
@@ -403,21 +405,10 @@ public class SvnConfigFiles {
      * @return true if the host name or IP address matches with the values String, otherwise false.
      */
     private boolean matchSegments(String value, String host) {
-        String[] valueSegments = value.split(".");                              // NOI18N
-        String[] hostSegments = host.split(".");                                // NOI18N
-
-        int idx = 0;
-        for (int i = 0; i < hostSegments.length; i++) {
-            if( !valueSegments[idx].equals("*") &&                              // NOI18N
-                !valueSegments[idx].equals(hostSegments[i]) )
-            {
-                return false;
-            }
-            if( !valueSegments[idx].equals("*") ) {                             // NOI18N
-                idx++;
-            }
-        }
-        return false;
+        value = value.replace(".", "\\.");
+        value = value.replace("*", ".*");
+        Matcher m = Pattern.compile(value).matcher(host);
+        return m.matches();
     }
 
     /**
