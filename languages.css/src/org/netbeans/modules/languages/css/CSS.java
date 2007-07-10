@@ -37,25 +37,6 @@ import org.openide.windows.TopComponent;
  */
 public class CSS {
 
-    public static String tooltip (Context context) {
-        if (!(context instanceof SyntaxContext)) return null;
-        SyntaxContext syntaxContext = (SyntaxContext) context;
-        ASTPath path = syntaxContext.getASTPath ();
-        StringBuilder sb = new StringBuilder ();
-        sb.append ("<html>");
-        sb.append ("<p style=\"");
-        ASTNode ruleset = (ASTNode) path.get (path.size () - 2);
-        ASTNode body = ruleset.getNode ("body");
-        ASTNode declarations = body.getNode ("declarations");
-        if (declarations == null) return null;
-        String s = declarations.getAsText ();
-        s = s.replaceAll ("\"", "");
-        sb.append (s);
-        sb.append ("\">Text Preview.</p>");
-        sb.append ("</html>");
-        return sb.toString ();
-    }
-
     public static String navigatorTooltip (Context context) {
         if (!(context instanceof SyntaxContext)) return null;
         ASTNode n = (ASTNode) ((SyntaxContext) context).getASTPath ().getLeaf ();
