@@ -757,6 +757,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
         
         <echo message="BUILDING SJSAM ============================================"/>
+        <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsam" target="release-all">
             <property 
                 name="basedir" 
@@ -779,6 +780,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+        -->
         
         <echo message="BUILDING SWDP ============================================="/>
         <!--
@@ -1048,7 +1050,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+            -->
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -1063,7 +1067,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+            -->
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
@@ -1077,7 +1083,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+            -->
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
@@ -1091,7 +1099,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+            -->
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
@@ -1105,7 +1115,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+            -->
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
@@ -1119,7 +1131,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+            -->
         </create-bundle>
         
         <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz" 
