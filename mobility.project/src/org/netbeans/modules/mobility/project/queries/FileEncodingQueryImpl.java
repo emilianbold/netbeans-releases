@@ -49,7 +49,7 @@ public class FileEncodingQueryImpl extends FileEncodingQueryImplementation imple
         Charset c = ch;
         if (c == null) try {
             String enc = J2MEProjectUtils.evaluateProperty(hlp, DefaultPropertiesDescriptor.JAVAC_ENCODING);
-            ch = c = enc == null ? FileEncodingQuery.getDefaultEncoding() : Charset.forName(enc);
+            ch = c = enc == null ? Charset.defaultCharset() : Charset.forName(enc);
         } catch (IllegalCharsetNameException exception) {
             return null;
         }

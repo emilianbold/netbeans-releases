@@ -21,10 +21,10 @@ package org.netbeans.modules.mobility.project;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.mobility.project.PropertyDescriptor;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 
@@ -150,7 +150,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(JAVAC_DEPRECATION, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(JAVAC_SOURCE, true, DefaultPropertyParsers.STRING_PARSER, "1.3")); //NOI18N
             set.add(new PropertyDescriptor(JAVAC_TARGET, true, DefaultPropertyParsers.STRING_PARSER, "1.1")); //NOI18N
-            set.add(new PropertyDescriptor(JAVAC_ENCODING, true, DefaultPropertyParsers.STRING_PARSER, FileEncodingQuery.getDefaultEncoding().name())); 
+            set.add(new PropertyDescriptor(JAVAC_ENCODING, true, DefaultPropertyParsers.STRING_PARSER, Charset.defaultCharset().name())); 
             set.add(new PropertyDescriptor(OBFUSCATION_LEVEL, true, DefaultPropertyParsers.INTEGER_PARSER, "0")); //NOI18N
             set.add(new PropertyDescriptor(OBFUSCATION_CUSTOM, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
             set.add(new PropertyDescriptor(USE_EMPTYAPIS, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
