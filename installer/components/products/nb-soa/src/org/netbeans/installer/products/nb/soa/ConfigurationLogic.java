@@ -126,17 +126,16 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         final Product nbProduct = sources.get(0);
         final File nbLocation = nbProduct.getInstallationLocation();
         
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.uninstall.netbeans.conf.am")); // NOI18N
-            
-            NetBeansUtils.removeJvmOption(nbLocation, JVM_OPTION_AM_CONFIG);
-        } catch (IOException e) {
-            throw new UninstallationException(
-                    getString("CL.uninstall.error.netbeans.conf.am"), // NOI18N
-                    e);
-        }
-                
+        ///////////////////////////////////////////////////////////////////////////////
+        //try {
+        //    progress.setDetail(getString("CL.uninstall.netbeans.conf.am")); // NOI18N
+        //
+        //    NetBeansUtils.removeJvmOption(nbLocation, JVM_OPTION_AM_CONFIG);
+        //} catch (IOException e) {
+        //    throw new UninstallationException(
+        //            getString("CL.uninstall.error.netbeans.conf.am"), // NOI18N
+        //            e);
+        //}
     }
     
     /////////////////////////////////////////////////////////////////////////////////
