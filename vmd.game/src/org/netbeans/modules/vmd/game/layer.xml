@@ -40,6 +40,7 @@
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="position" intvalue="550"/>
             </file>
             <file name="GameDesign.vmd" url="integration/res/emptygame_vmd.template">
                 <attr name="template" boolvalue="true"/>
