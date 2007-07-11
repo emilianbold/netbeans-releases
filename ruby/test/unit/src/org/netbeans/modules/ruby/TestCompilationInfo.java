@@ -44,6 +44,7 @@ class TestCompilationInfo extends CompilationInfo {
     private String text;
     private Document doc;
     private Source source;
+    private ParserResult result;
     
     public TestCompilationInfo(FileObject fileObject, BaseDocument doc, String text) throws IOException {
         super(fileObject);
@@ -74,6 +75,9 @@ class TestCompilationInfo extends CompilationInfo {
     @Override
     public ParserResult getParserResult() {
         ParserResult r = super.getParserResult();
+        if (r == null) {
+            r = result;
+        }
         if (r == null) {
             final ParserResult[] resultHolder = new ParserResult[1];
 
@@ -116,7 +120,7 @@ class TestCompilationInfo extends CompilationInfo {
             
             getParser().parseFiles(sourceFiles, listener, reader);
             
-            r = resultHolder[0];
+            r = result = resultHolder[0];
         }
         
         return r;

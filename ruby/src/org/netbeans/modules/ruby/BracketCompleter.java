@@ -617,6 +617,18 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
         //dumpTokens(doc, dotPos);
         switch (ch) {
+        case '#': {
+            // Automatically insert #{^} when typing "#" in a quoted string
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            TokenId id = token.id();
+
+            if (id == RubyTokenId.QUOTED_STRING_LITERAL) {
+                document.insertString(dotPos+1, "{}", null);
+                // Skip the "{" to place the caret between { and }
+                caret.setDot(dotPos+2);
+            }
+            break;
+        }
         case '}':
         case '{':
         case ')':

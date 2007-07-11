@@ -26,7 +26,6 @@ import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.gsf.GsfDataLoader;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.gsf.DefaultParseListener;
 import org.netbeans.spi.gsf.DefaultParserFile;
@@ -46,6 +45,7 @@ public abstract class RubyTestBase extends NbTestCase {
     
     public RubyTestBase(String testName) {
         super(testName);
+        System.setProperty("ruby.interpreter", FileUtil.toFile(findJRuby().getFileObject("bin/jruby")).getAbsolutePath());
     }
     
     protected ParserResult parse(FileObject fileObject) {

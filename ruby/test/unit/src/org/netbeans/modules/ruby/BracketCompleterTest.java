@@ -27,10 +27,12 @@ public class BracketCompleterTest extends RubyTestBase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -493,6 +495,31 @@ public class BracketCompleterTest extends RubyTestBase {
     public void testFindMatching7() throws Exception {
         // Test heredocs
         match("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
+    }
+
+//    public void testFreakOutEditor1() throws Exception {
+//        String before = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp/^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
+//        String  after = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
+//        deleteChar(before, after);
+//    }
+//    
+
+    public void testInsertPercentInString() throws Exception {
+        insertChar("x = \"foo ^\"", '#', "x = \"foo #{^}\"");
+    }
+
+    // Triggers test108889!
+//    public void testInsertPercentInString2() throws Exception {
+//        // Make sure type-through works
+//        insertChar("x = \"foo #{^}\"", '}', "x = \"foo #{}^\"");
+//    }
+
+    public void testNoInsertPercentInString() throws Exception {
+        insertChar("x = 'foo ^'", '#', "x = 'foo #^'");
+    }
+
+    public void testNoInsertPercentElsewhere() throws Exception {
+        insertChar("x = ^", '#', "x = #^");
     }
 
     // TODO: Test
