@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
      version of this DTD. Attribute is used to perform simple versioning
      without the need to use time-consuming xml validation using this DTD.
 -->
-<!ELEMENT mode (module?, name, kind, state, constraints?, (bounds | relative-bounds)?, frame?, active-tc?, empty-behavior?) >
+<!ELEMENT mode (module?, name, kind, slidingSide?, state, constraints?, (bounds | relative-bounds)?, frame?, active-tc?, empty-behavior?) >
 <!ATTLIST mode
     version CDATA #REQUIRED
 >
