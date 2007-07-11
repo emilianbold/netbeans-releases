@@ -665,6 +665,7 @@ public class JsfProjectUtils {
             return null;
         }
 
+        // Search the ${src.dir} Source Package Folder first, use the first source group if failed.
         Sources src = ProjectUtils.getSources(project);
         SourceGroup[] grp = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < grp.length; i++) {
@@ -672,21 +673,11 @@ public class JsfProjectUtils {
                 return grp[i].getRootFolder();
             }
         }
-        
-        FileObject rootDir = project.getProjectDirectory();
-        try {
-            FileObject srcDir = rootDir.getFileObject("src/java"); // NOI18N
-            if (srcDir != null) {
-                return srcDir;
-            }
-            srcDir = rootDir.getFileObject("src"); // NOI18N
-            if (srcDir != null) {
-                return srcDir;
-            }
-            return FileUtil.createFolder(rootDir, "src"); // NOI18N
-        } catch (IOException e) {
-            return rootDir;
+        if (grp.length != 0) {
+            return grp[0].getRootFolder();
         }
+
+        return null;
     }
     
     /**
