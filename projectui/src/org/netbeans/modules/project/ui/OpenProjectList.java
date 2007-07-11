@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -472,7 +472,7 @@ public final class OpenProjectList {
     }
     
     public void setMainProject( Project mainProject ) {
-        LOGGER.finer("Setting main project: " + mainProject.toString()); // NOI18N
+        LOGGER.finer("Setting main project: " + mainProject); // NOI18N
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
@@ -1112,7 +1112,7 @@ public final class OpenProjectList {
         
         public ProjectDeletionListener() {}
 
-        public void fileDeleted(FileEvent fe) {
+        public @Override void fileDeleted(FileEvent fe) {
             synchronized (OpenProjectList.this) {
                 Project toRemove = null;
                 for (Project prj : openProjects) {
