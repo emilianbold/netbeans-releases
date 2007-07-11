@@ -812,7 +812,9 @@ public final class ParseProjectXml extends Task {
         }
         // Also look for <class-path-extension>s for myself and put them in my own classpath.
         ModuleListParser.Entry entry = modules.findByCodeNameBase(myCnb);
-        assert entry != null;
+        if (entry == null) {
+            throw new IllegalStateException("Cannot find myself as " + myCnb);
+        }
         for (File f : entry.getClassPathExtensions()) {
             cp.append(':');
             cp.append(f.getAbsolutePath());
