@@ -5,10 +5,6 @@
 #
 # Documentation: William Webber <william@williamwebber.com>
 #
-#--
-# $Id$
-#++
-#
 # == Overview
 #
 # This file provides two classes for working with
