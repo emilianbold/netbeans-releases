@@ -140,6 +140,7 @@ public class SelectOneDomainPanel extends PropertyPanelBase {
 
         setLayout(new java.awt.GridBagLayout());
 
+        listLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("SelectOneDomainPanel.list.label.mnemonic").charAt(0));
         listLabel.setLabelFor(domainList);
         listLabel.setText(listLabelString);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -154,8 +155,8 @@ public class SelectOneDomainPanel extends PropertyPanelBase {
         domainList.setMinimumSize(new java.awt.Dimension(64, 64));
         domainList.setVisibleRowCount(getLabelRowCount());
         domainScrollPane.setViewportView(domainList);
-        domainList.getAccessibleContext().setAccessibleName(bundle.getString("SelectOneDomainPanel.list.accessibleName"));
-        domainList.getAccessibleContext().setAccessibleDescription(bundle.getString("SelectOneDomainPanel.list.accessibleDescription"));
+        domainList.getAccessibleContext().setAccessibleName(bundle.getString("SelectOneDomainPanel.list.accessibleName")); // NOI18N
+        domainList.getAccessibleContext().setAccessibleDescription(bundle.getString("SelectOneDomainPanel.list.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -169,44 +170,42 @@ public class SelectOneDomainPanel extends PropertyPanelBase {
 
         buttonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 5));
 
-        newButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.new.mnemonic").charAt(0));
-        newButton.setText(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.new"));
+        newButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("SelectOneDomainPanel.button.new.mnemonic").charAt(0));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle"); // NOI18N
+        newButton.setText(bundle.getString("SelectOneDomainPanel.button.new")); // NOI18N
         newButton.setActionCommand("new");
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 handleButtonAction(evt);
             }
         });
-
         buttonPanel.add(newButton);
-        newButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.new.accessibleName"));
-        newButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.new.accessibleDescription"));
+        newButton.getAccessibleContext().setAccessibleName(bundle.getString("SelectOneDomainPanel.button.new.accessibleName")); // NOI18N
+        newButton.getAccessibleContext().setAccessibleDescription(bundle.getString("SelectOneDomainPanel.button.new.accessibleDescription")); // NOI18N
 
-        editButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.edit.mnemonic").charAt(0));
-        editButton.setText(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.edit"));
+        editButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("SelectOneDomainPanel.button.edit.mnemonic").charAt(0));
+        editButton.setText(bundle.getString("SelectOneDomainPanel.button.edit")); // NOI18N
         editButton.setActionCommand("edit");
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 handleButtonAction(evt);
             }
         });
-
         buttonPanel.add(editButton);
-        editButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.edit.accessibleName"));
-        editButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.edit.accessibleDescription"));
+        editButton.getAccessibleContext().setAccessibleName(bundle.getString("SelectOneDomainPanel.button.edit.accessibleName")); // NOI18N
+        editButton.getAccessibleContext().setAccessibleDescription(bundle.getString("SelectOneDomainPanel.button.edit.accessibleDescription")); // NOI18N
 
-        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.delete.mnemonic").charAt(0));
-        deleteButton.setText(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.delete"));
+        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("SelectOneDomainPanel.button.delete.mnemonic").charAt(0));
+        deleteButton.setText(bundle.getString("SelectOneDomainPanel.button.delete")); // NOI18N
         deleteButton.setActionCommand("delete");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 handleButtonAction(evt);
             }
         });
-
         buttonPanel.add(deleteButton);
-        deleteButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.delete.accessibleName"));
-        deleteButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("SelectOneDomainPanel.button.delete.accessibleDescription"));
+        deleteButton.getAccessibleContext().setAccessibleName(bundle.getString("SelectOneDomainPanel.button.delete.accessibleName")); // NOI18N
+        deleteButton.getAccessibleContext().setAccessibleDescription(bundle.getString("SelectOneDomainPanel.button.delete.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -214,7 +213,6 @@ public class SelectOneDomainPanel extends PropertyPanelBase {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 5, 0, 0);
         add(buttonPanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void handleButtonAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_handleButtonAction
