@@ -82,7 +82,7 @@ public class GoToPanel extends javax.swing.JPanel {
         messageLabel.setText(NbBundle.getMessage(GoToPanel.class, "TXT_NoTypesFound")); // NOI18N
         messageLabel.setFont(matchesList.getFont());
         
-        matchesList.setBackground( bgColorBrighter );
+        // matchesList.setBackground( bgColorBrighter );
         // matchesScrollPane1.setBackground( bgColorBrighter );
         matchesList.setCellRenderer( contentProvider.getListCellRenderer( matchesList ) );
         contentProvider.setListModel( this, null );
