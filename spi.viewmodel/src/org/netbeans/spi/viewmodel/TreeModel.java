@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,7 +43,15 @@ public interface TreeModel extends Model {
     public abstract Object getRoot ();
     
     /** 
-     * Returns children for given parent on given indexes.
+     * Returns children for given parent on given indexes.<p>
+     * This method works in pair with {@link #getChildrenCount}, the <code>to</code>
+     * parameter is up to the value that is returned from {@link #getChildrenCount}.
+     * If the list of children varies over time, the implementation code
+     * needs to pay attention to bounds and check the <code>from</code> and
+     * <code>to</code> parameters, especially if {@link #getChildrenCount}
+     * returns <code>Integer.MAX_VALUE</code>. Caching of the children between
+     * {@link #getChildrenCount} and {@link #getChildren} can be used as well,
+     * if necessary.
      *
      * @param   parent a parent of returned nodes
      * @param   from a start index
@@ -53,6 +61,7 @@ public interface TreeModel extends Model {
      *          able to resolve children for given node type
      *
      * @return  children for given parent on given indexes
+     * @see #getChildrenCount
      */
     public abstract Object[] getChildren (Object parent, int from, int to) 
         throws UnknownTypeException;
@@ -67,7 +76,12 @@ public interface TreeModel extends Model {
     public abstract boolean isLeaf (Object node) throws UnknownTypeException;
     
     /**
-     * Returns number of children for given node.
+     * Returns the number of children for given node.<p>
+     * This method works in pair with {@link #getChildren}, which gets
+     * this returned value (or less) as the <code>to</code> parameter. This method
+     * is always called before a call to {@link #getChildren}. This method can
+     * return e.g. <code>Integer.MAX_VALUE</code> when all children should be
+     * loaded.
      * 
      * @param   node the parent node
      * @throws  UnknownTypeException if this TreeModel implementation is not
@@ -75,6 +89,7 @@ public interface TreeModel extends Model {
      *
      * @return  the children count
      * @since 1.1
+     * @see #getChildren
      */
     public abstract int getChildrenCount (Object node) 
     throws UnknownTypeException;
