@@ -186,13 +186,13 @@ public class NavigatorTCTest extends NbTestCase {
         
         assertTrue("Expected selected provider #2, but got #1", selIdx == 1);
         
-        TestLookupHint prazskyHint2 = new TestLookupHint("prazsky/pepik");
+        TestLookupHint prazskyHint2 = new TestLookupHint("moravsky/honza");
         ic.add(prazskyHint2);
         
         // wait for selected node change to be applied, because changes are
         // reflected with little delay
         waitForChange();
-
+        
         panels = navTC.getPanels();
         assertTrue("Expected 3 provider panels, but got " + panels.size(), panels.size() == 3);
         
@@ -409,6 +409,24 @@ public class NavigatorTCTest extends NbTestCase {
         
         public String getDisplayName () {
             return "Prazsky Pepik";
+        }
+    
+        public String getDisplayHint () {
+            return null;
+        }
+        
+        public JComponent getComponent () {
+            // ensure call is counted by superclass
+            super.getComponent();
+            return new JLabel(getDisplayName());
+        }
+    
+    }
+    
+    public static final class MoravskyHonzaProvider extends CorrectCallsProvider {
+        
+        public String getDisplayName () {
+            return "Moravsky Honza";
         }
     
         public String getDisplayHint () {

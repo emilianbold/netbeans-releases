@@ -42,6 +42,17 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+
+    <!-- moravskej provider :-) -->            
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="moravsky">
+                <folder name="honza">
+                    <file name="org-netbeans-modules-navigator-NavigatorTCTest$MoravskyHonzaProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     
     <!-- provider for testing activated nodes setting through Lookup -->
     <folder name="Navigator">

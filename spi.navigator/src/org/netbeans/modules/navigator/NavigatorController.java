@@ -366,7 +366,10 @@ public final class NavigatorController implements LookupListener, ActionListener
                 if (result == null) {
                     result = new ArrayList<NavigatorPanel>(providers.size() * lkpHints.size());
                 }
-                result.addAll(providers);
+                for( NavigatorPanel np : providers ) {
+                    if( !result.contains( np ) )
+                        result.add( np );
+                }
             }
         }
         
@@ -393,7 +396,10 @@ public final class NavigatorController implements LookupListener, ActionListener
                         if (result == null) {
                             result = new ArrayList<NavigatorPanel>(providers.size());
                         }
-                        result.addAll(providers);
+                        for( NavigatorPanel np : providers ) {
+                            if( !result.contains( np ) )
+                                result.add( np );
+                        }
                     }
                 }
             }
