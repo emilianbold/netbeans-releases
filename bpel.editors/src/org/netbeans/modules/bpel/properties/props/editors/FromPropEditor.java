@@ -34,9 +34,14 @@ public class FromPropEditor extends StringPropEditor {
 
     public String getAsText() {
         Object value = super.getValue();
+        
+        if (value == null) {
+            return "";
+        }
+        
         assert value instanceof From;
         String result = CopyNode.serializeFrom((From)value);
-        return value == null ? "" : result;
+        return result;
     }
 
     public void setAsText(String text) throws IllegalArgumentException {

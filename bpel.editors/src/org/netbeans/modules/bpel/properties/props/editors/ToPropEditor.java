@@ -33,9 +33,13 @@ public class ToPropEditor extends StringPropEditor {
 
     public String getAsText() {
         Object value = super.getValue();
+        if (value == null) {
+            return "";
+        }
+        
         assert value instanceof To;
         String result = CopyNode.serializeTo((To)value);
-        return value == null ? "" : result;
+        return result;
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
