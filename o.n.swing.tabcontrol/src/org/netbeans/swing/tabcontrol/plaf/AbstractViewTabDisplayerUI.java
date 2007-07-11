@@ -119,7 +119,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         dataModel.addChangeListener( new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 showHidePinButton();
-                dataModel.removeChangeListener( this );
+                if( null != dataModel )
+                    dataModel.removeChangeListener( this );
             }
         });
     }
