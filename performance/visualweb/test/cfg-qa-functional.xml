@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/VWPMeasureActions.class"/>
+                <include name="gui/VWPMeasureActions.class/testCreateCSSTable" expectedFail="103971"/>
             </patternset>
         </testset>
     </testbag>
@@ -64,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/VWPMeasureActions.class"/>
+                <include name="gui/VWPMeasureActions.class/testCreateCSSTable" expectedFail="103971"/>                
             </patternset>
         </testset>
     </testbag>
@@ -90,6 +92,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/VWPMeasureActions.class"/>
+                <include name="gui/VWPMeasureActions.class/testCreateCSSTable" expectedFail="103971"/>                
             </patternset>
         </testset>
     </testbag>
