@@ -15,10 +15,6 @@ import javax.swing.JApplet;
  */
 public class ${name} extends JApplet {
 
-    /** Creates a new instance of ${name} */
-    public ${name}() {
-    }
-
     /**
      * Initialization method that will be called after the applet is loaded
      * into the browser.

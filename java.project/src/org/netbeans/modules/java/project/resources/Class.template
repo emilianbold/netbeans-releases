@@ -13,7 +13,4 @@ package ${package};
  */
 public class ${name} {
 
-    public ${name}() {
-    }
-
 }
