@@ -52,9 +52,9 @@ cleanup() {
 ###################################################################
 
 uninstall() {
-#    if [ -x $AS_HOME/bin/uninstall ]; then
-#        $AS_HOME/bin/uninstall -silent
-#    fi
+    if [ -x $AS_HOME/bin/uninstall ]; then
+        $AS_HOME/bin/uninstall -silent
+    fi
 
     # This is a temp hack as the "uninstall" command is broken
     if [ -d ${AS_HOME} ]; then
@@ -73,7 +73,7 @@ install() {
         fi
     fi
 
-    unistall
+    uninstall
 
     cd ${AS_ROOT}
 
