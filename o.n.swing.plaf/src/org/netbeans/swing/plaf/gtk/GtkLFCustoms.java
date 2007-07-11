@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.LookAndFeel;
 import javax.swing.UIDefaults;
@@ -128,6 +129,7 @@ public class GtkLFCustoms extends LFCustoms {
                     
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
             "winclassic_tab_sel_gradient", tabBg,
+            SCROLLPANE_BORDER, new JScrollPane().getViewportBorder(),
         };
         return result;
     }

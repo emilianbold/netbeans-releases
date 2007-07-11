@@ -500,7 +500,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.btv.setDefaultActionAllowed(false);
                 this.btv.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_CategoriesPanel")); // NOI18N
                 this.btv.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_CategoriesPanel")); // NOI18N
-                this.btv.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
+                Border b = (Border)UIManager.get("Nb.ScrollPane.border"); // NOI18N
+                if (b != null) {
+                    this.btv.setBorder(b); 
+                }
             }
             return this.btv;
         }
@@ -537,7 +540,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.list.setPopupAllowed(false);
                 this.list.getAccessibleContext ().setAccessibleName (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSN_TemplatesPanel")); // NOI18N
                 this.list.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (TemplatesPanelGUI.class, "ACSD_TemplatesPanel")); // NOI18N
-                this.list.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
+                Border b = (Border)UIManager.get("Nb.ScrollPane.border");
+                if (b != null) {
+                    this.list.setBorder(b); // NOI18N
+                }
             }
             
             return this.list;

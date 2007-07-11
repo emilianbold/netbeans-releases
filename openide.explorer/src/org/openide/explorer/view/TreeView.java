@@ -246,14 +246,6 @@ public abstract class TreeView extends JScrollPane {
         setBorder(BorderFactory.createEmptyBorder());
     }
 
-    public Border getBorder() {
-        if (isSynth) {
-            return BorderFactory.createEmptyBorder();
-        } else {
-            return super.getBorder();
-        }
-    }
-
     /** Initializes the tree & model.
      * [dafe] Horrible technique - overridable method called from constructor
      * may result in subclass code invoked when this object is not fully
