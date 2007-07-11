@@ -271,6 +271,10 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
     public void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
         PersistenceScope ps = PersistenceScope.getPersistenceScope(project.getProjectDirectory());
+        if (ps == null) {
+            return;
+        }
+        
         if (persistenceUnit == null) {
             persistenceUnit = EntitySelectionPanel.getPersistenceUnitName(settings, project);
         }
@@ -443,6 +447,11 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
     }
     
     public boolean valid(WizardDescriptor wizard) {
+        if (persistenceUnit == null || entitiesHelper == null) {
+            AbstractPanel.setErrorMessage(wizard, "ERR_NoPersistenceUnit");
+            return false;
+        }
+        
         if (entitiesHelper.isReady() && mappings != null && mappings.getEntity().length == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_NoEntities");
             return false;
