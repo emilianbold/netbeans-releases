@@ -1,0 +1,5 @@
+    |>MARK_OCCURRENCES:@@deb^ugging<| = args[:debug]
+      show_crumbs(crumb_key) if crumb_key && |>MARK_OCCURRENCES:@@debugging<|
+      show_crumbs(crumb_key) if crumb_key && |>MARK_OCCURRENCES:@@debugging<|
+      show_crumbs(crumb_key) if crumb_key && |>MARK_OCCURRENCES:@@debugging<|
+    puts "PROGRESS: #{message[1..-1]}" if |>MARK_OCCURRENCES:@@debugging<|

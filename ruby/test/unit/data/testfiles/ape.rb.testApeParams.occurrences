@@ -1,0 +1,4 @@
+  def initialize(|>MARK_OCCURRENCES:ar^gs<|)
+    @dialogs = (|>MARK_OCCURRENCES:args<|[:crumbs]) ? {} : []
+    output = |>MARK_OCCURRENCES:args<|[:output] || 'html'
+    @@debugging = |>MARK_OCCURRENCES:args<|[:debug]

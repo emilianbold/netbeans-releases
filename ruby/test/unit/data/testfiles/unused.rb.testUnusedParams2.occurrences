@@ -1,0 +1,2 @@
+def foo(unusedparam, unusedparam2, |>MARK_OCCURRENCES:us^edparam<|)
+  puts |>MARK_OCCURRENCES:usedparam<|

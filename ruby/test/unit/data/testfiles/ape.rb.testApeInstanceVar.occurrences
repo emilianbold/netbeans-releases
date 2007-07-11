@@ -1,0 +1,5 @@
+    |>MARK_OCCURRENCES:@steps<| = []
+    |>MARK_OCCURRENCES:@steps<| << message
+    |>MARK_OCCURRENCES:@st^eps<|[-1] << message
+          |>MARK_OCCURRENCES:@steps<|.each do |step|
+    |>MARK_OCCURRENCES:@steps<|.each do |step|

@@ -1,0 +1,1 @@
+def foo(|>MARK_OCCURRENCES:un^usedparam<|, unusedparam2, usedparam)

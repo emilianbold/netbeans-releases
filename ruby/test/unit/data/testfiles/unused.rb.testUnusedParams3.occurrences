@@ -1,0 +1,2 @@
+  x.each { |unusedblockvar1, |>MARK_OCCURRENCES:usedbl^ockvar2<||
+    puts |>MARK_OCCURRENCES:usedblockvar2<|
