@@ -277,8 +277,10 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 return doc.createPosition(offset);
             }
         } catch (BadLocationException e) {
-            LOG.log(Level.WARNING, "Can't create document position: offset = " + offset + //NOI18N
-                ", document.lenght = " + doc.getLength(), e); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Invalid document position: offset = " + offset + //NOI18N
+                    ", document.lenght = " + doc.getLength() + ", will not cache."); //NOI18N
+            }
             return null;
         }
     }
