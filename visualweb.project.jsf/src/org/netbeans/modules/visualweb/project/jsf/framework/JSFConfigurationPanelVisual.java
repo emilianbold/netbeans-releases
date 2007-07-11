@@ -35,7 +35,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-// import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 // import org.netbeans.modules.web.jsf.JSFUtils;
 import org.openide.WizardDescriptor;
@@ -593,7 +593,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         try {
             addJSF = false;
             File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
-            boolean isJSF = JSFUtils.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
+            boolean isJSF = Util.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
             if (isJSF)
                 rbNoneLibrary.setSelected(true);
             else if (webModule25Version) {

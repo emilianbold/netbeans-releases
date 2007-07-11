@@ -31,14 +31,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
-// <RAVE> copy from org.netbeans.modules.j2ee.common.Util
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import org.openide.util.Parameters;
-// </RAVE>
-
 /**
  *
  * @author Po-Ting Wu
@@ -154,46 +146,4 @@ public class JSFUtils {
         out.println("</library>");                          //NOI18N
     }
     
-    // <RAVE> copy from org.netbeans.modules.j2ee.common.Util
-    /**
-     * Returns true if the specified classpath contains a class of the given name,
-     * false otherwise.
-     * 
-     * @param classpath consists of jar files and folders containing classes
-     * @param className the name of the class
-     * 
-     * @return true if the specified classpath contains a class of the given name,
-     *         false otherwise.
-     * 
-     * @throws IOException if an I/O error has occurred
-     * 
-     * @since 1.15
-     */
-    public static boolean containsClass(Collection<File> classpath, String className) throws IOException {
-        Parameters.notNull("classpath", classpath); // NOI18N
-        Parameters.notNull("driverClassName", className); // NOI18N
-        String classFilePath = className.replace('.', '/') + ".class"; // NOI18N
-        for (File file : classpath) {
-            if (file.isFile()) {
-                JarFile jf = new JarFile(file);
-                try {
-                    Enumeration entries = jf.entries();
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = (JarEntry) entries.nextElement();
-                        if (classFilePath.equals(entry.getName())) {
-                            return true;
-                        }
-                    }
-                } finally {
-                    jf.close();
-                }
-            } else {
-                if (new File(file, classFilePath).exists()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    // </RAVE>
 }
