@@ -124,6 +124,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             return false;
         }
 
+        // Check to make sure there is valid Source Package Folder
+        if (JsfProjectUtils.getSourceRoot(project) == null) {
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NoSourceRoot")); // NOI18N
+            return false;
+        }
+
         // Extra checking that is dependent on the file type
         if (fileType.equals(PageIterator.FILETYPE_WEBFORM)) {
             return checkWebForm(targetName);
@@ -195,7 +201,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         if (javaPath.startsWith("/")) {
             javaPath = javaPath.substring(1);
         }
-        if (javaDir.getFileObject(javaPath) != null) { // NOI18N
+        if (javaDir.getFileObject(javaPath) != null) {
             wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_PageBeanNameConflict", javaName, jspName)); // NOI18N
             return false;
         }
@@ -399,11 +405,13 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
                 bean = bean.replace('.', '/');
                 FileObject rootFolder = gui.getTargetGroup().getRootFolder();
                 FileObject javaDir = JsfProjectUtils.getSourceRoot(project);
-                String srcPath = FileUtil.getRelativePath(rootFolder, javaDir).replace(File.separatorChar, '/');
-                String beanPath = srcPath + "/" + bean;
-                String folderName = gui.getTargetFolder();
-                if (folderName != null && !folderName.equals(beanPath) && !folderName.startsWith(beanPath+"/")) {
-                    gui.setTargetFolder(beanPath);
+                if (javaDir != null) {
+                    String srcPath = FileUtil.getRelativePath(rootFolder, javaDir).replace(File.separatorChar, '/');
+                    String beanPath = srcPath + "/" + bean;
+                    String folderName = gui.getTargetFolder();
+                    if (folderName != null && !folderName.equals(beanPath) && !folderName.startsWith(beanPath+"/")) {
+                        gui.setTargetFolder(beanPath);
+                    }
                 }
             }
         }

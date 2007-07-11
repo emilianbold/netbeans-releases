@@ -143,6 +143,10 @@ public class PageIterator implements TemplateWizard.Iterator {
         } else if (fileType.equals(FILETYPE_BEAN)) {
             // Always start with the bean package root or under
             FileObject javaDir = JsfProjectUtils.getPageBeanRoot(project);
+            if (javaDir == null) {
+                return;
+            }
+
             FileObject beanDir = Templates.getTargetFolder(wizard);
             String relativePath = (beanDir == null) ? null : FileUtil.getRelativePath(javaDir, beanDir);
             if (relativePath == null) {
