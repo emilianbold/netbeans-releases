@@ -176,7 +176,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
         descriptionTextArea.setEditable(false);
-        descriptionTextArea.setFont(new java.awt.Font("Dialog", 0, 10));
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
