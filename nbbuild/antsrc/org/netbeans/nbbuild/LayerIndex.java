@@ -206,7 +206,8 @@ public class LayerIndex extends Task {
     }
 
     private String shortenPath(String path) {
-        return path.replaceAll("/org-netbeans-", "/o-n-").replaceAll("/org-openide-", "/o-o-").replaceAll("-modules-", "-m-");
+        return path.replaceAll("(^|/)org-netbeans-", "$1o-n-").replaceAll("(^|/)org-openide-", "$1o-o-").replaceAll("-modules-", "-m-")
+                .replaceAll("(^|\\.)org\\.netbeans\\.", "$1o.n.").replaceAll("(^|\\.)org\\.openide\\.", "$1o.o.").replaceAll("\\.modules\\.", ".m.");
     }
 
     private void parse(InputStream is, final Map<String,String> files, final SortedMap<String,SortedMap<String,String>> labels,
