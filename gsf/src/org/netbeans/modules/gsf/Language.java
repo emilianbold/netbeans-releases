@@ -149,6 +149,12 @@ public interface Language {
     Indexer getIndexer();
     
     /**
+     * Get an associated hints provider, if any
+     */
+    @CheckForNull
+    HintsProvider getHintsProvider();
+
+    /**
      * Get a structure scanner which produces navigation/outline contents
      */
     @CheckForNull

@@ -60,6 +60,7 @@ public class LanguageRegistry implements Iterable<Language> {
     private static final String INDEXER = "indexer.instance";
     private static final String PALETTE = "palette.instance";
     private static final String STRUCTURE = "structure.instance";
+    private static final String HINTS = "hints.instance";
 
     /** Location in the system file system where languages are registered */
     private static final String FOLDER = "GsfPlugins";
@@ -351,6 +352,12 @@ public class LanguageRegistry implements Iterable<Language> {
 
                 if (structureFile != null) {
                     language.setStructureFile(structureFile);
+                }
+
+                FileObject hintsFile = mimeFile.getFileObject(HINTS, null);
+
+                if (hintsFile != null) {
+                    language.setHintsProviderFile(hintsFile);
                 }
 
                 FileObject paletteFile = mimeFile.getFileObject(PALETTE, null);

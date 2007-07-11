@@ -32,6 +32,7 @@ import org.netbeans.api.gsf.Indexer;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.api.gsf.Parser;
 import org.netbeans.api.gsf.GsfLanguage;
+import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.StructureScanner;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
@@ -59,6 +60,7 @@ public class DefaultLanguage implements Language {
     private BracketCompletion bracketCompletion;
     private Indexer indexer;
     private StructureScanner structure;
+    private HintsProvider hintsProvider;;
     private PaletteController palette;
     private FileObject parserFile;
     private FileObject languageFile;
@@ -70,6 +72,7 @@ public class DefaultLanguage implements Language {
     private FileObject bracketCompletionFile;
     private FileObject indexerFile;
     private FileObject structureFile;
+    private FileObject hintsProviderFile;
     private FileObject paletteFile;
     
     /** Creates a new instance of DefaultLanguage */
@@ -332,7 +335,20 @@ public class DefaultLanguage implements Language {
         this.structureFile = structureFile;
     }
 
+    public HintsProvider getHintsProvider() {
+        if (hintsProvider == null && hintsProviderFile != null) {
+            hintsProvider = (HintsProvider)createInstance(hintsProviderFile);
+            if (hintsProvider == null) {
+                // Don't keep trying
+                hintsProviderFile = null;
+            }
+        }
+        return hintsProvider;
+    }
 
+    public void setHintsProviderFile(FileObject hintsProviderFile) {
+        this.hintsProviderFile = hintsProviderFile;
+    }
     
     public PaletteController getPalette() {
         if (palette == null && paletteFile != null) {
