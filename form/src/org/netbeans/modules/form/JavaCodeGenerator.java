@@ -60,6 +60,7 @@ import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*; 
 import java.util.*;
+import org.netbeans.api.editor.guards.GuardedSection;
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -3057,18 +3058,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
-        final SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
-        Writer codeWriter = engine.createWriter(
-                        formEditorSupport.getDocument(),
-                        initComponentsSection.getEndPosition().getOffset(),
-                        buffer);
 
         try {
             if (sec == null) {
-                sec = formEditorSupport.getGuardedSectionManager().createInteriorSection(
-                          formEditorSupport.getDocument().createPosition(initComponentsSection.getEndPosition().getOffset() + 1),
-                          getEventSectionName(handlerName));
+                sec = insertEvendHandlerSection(handlerName);
             }
+            Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
+                                                    sec.getStartPosition().getOffset(),
+                                                    buffer);
             int i1, i2;
 
             generateListenerMethodHeader(handlerName, originalMethod, codeWriter);
@@ -3106,6 +3103,22 @@ class JavaCodeGenerator extends CodeGenerator {
         if (section == null || !initialized || !canGenerate)
             return false;
 
+        // if there is another guarded section right before or after without
+        // a gap, the neighbor sections could merge strangely - prevent this by
+        // inserting an empty line (#94165)
+        int startPos = section.getStartPosition().getOffset();
+        int endPos = section.getEndPosition().getOffset();
+        for (GuardedSection sec : formEditorSupport.getGuardedSectionManager().getGuardedSections()) {
+            if (sec.getEndPosition().getOffset()+1 == startPos) { // close section before
+                try {
+                    formEditorSupport.getDocument().insertString(startPos, "\n", null); // NOI18N
+                } catch (javax.swing.text.BadLocationException ex) {} // should not happen, ignore
+            } else if (sec.getStartPosition().getOffset() == endPos+1) { // close section after
+                try {
+                    formEditorSupport.getDocument().insertString(endPos+1, "\n", null); // NOI18N
+                } catch (javax.swing.text.BadLocationException ex) {} // should not happen, ignore
+            }
+        }
         section.deleteSection();
         clearUndo();
 
@@ -3197,8 +3210,32 @@ class JavaCodeGenerator extends CodeGenerator {
 
     // sections acquirement
 
-    private InteriorSection getEventHandlerSection(String eventName) {
-        return formEditorSupport.getGuardedSectionManager().findInteriorSection(getEventSectionName(eventName));
+    private InteriorSection getEventHandlerSection(String handlerName) {
+        return formEditorSupport.getGuardedSectionManager().findInteriorSection(getEventSectionName(handlerName));
+    }
+
+    private InteriorSection insertEvendHandlerSection(String handlerName) throws javax.swing.text.BadLocationException {
+        int endPos = formEditorSupport.getInitComponentSection().getEndPosition().getOffset();
+        // find last event handler
+        for (GuardedSection sec : formEditorSupport.getGuardedSectionManager().getGuardedSections()) {
+            if (sec instanceof InteriorSection) {
+                int pos = sec.getEndPosition().getOffset();
+                if (pos > endPos) {
+                    endPos = pos;
+                }
+            }
+        }
+        // if there is another guarded section following with no gap, insert empty line (#109242)
+        for (GuardedSection sec : formEditorSupport.getGuardedSectionManager().getGuardedSections()) {
+            if (sec.getStartPosition().getOffset() == endPos + 1) {
+                formEditorSupport.getDocument().insertString(endPos+1, "\n", null); // NOI18N
+                break;
+            }
+        }
+        // create the new guarded section
+        return formEditorSupport.getGuardedSectionManager().createInteriorSection(
+                formEditorSupport.getDocument().createPosition(endPos + 1),
+                getEventSectionName(handlerName));
     }
 
     // other
