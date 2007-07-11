@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<filesystem>
+    <folder name="org-netbeans-modules-ruby-hints">
+        <folder name="rules">
+            <folder name="hints">
+                <folder name="general">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-BlockVarReuse.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-ExpandSameLineDef.instance"/>
+                </folder>    
+                
+                <folder name="rails">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-RailsDeprecations.instance"/>
+                </folder>    
+            </folder>    
+        </folder>
+    </folder>
+    
+    <!-- TODO: Some of these hints, such as the ones to create classes and methods, 
+        should also add actions into the Actions folder such that they can be bound
+        to custom keyboard shortcuts; and also possibly registered into Menu/Refactoring -->
+    
+
+        
+    <!-- **Infrastructure, nothing hint-specific, below this point** -->
+    
+    <!-- TODO - put this in the -Ruby- options instead! -->
+    <!--
+    <folder name="org.netbeans.modules.java.source">
+        <folder name="options">
+            <file name="RubyHints.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.options.HintsAdvancedOption"/>
+            </file>
+        </folder>
+    </folder>
+    -->
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="RubyHints.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.options.HintsAdvancedOption"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="x-ruby">
+                <file name="hints.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.HintsProvider"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+</filesystem>
