@@ -6,11 +6,13 @@
 
 package org.netbeans.modules.visualweb.ejb.actions;
 
-import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.netbeans.modules.visualweb.ejb.nodes.EjbGroupNode;
 import org.netbeans.modules.visualweb.ejb.ui.ExportEjbDataSourceDialog;
-import java.util.*;
-import java.util.Set;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -44,7 +46,14 @@ public class ExportEjbDataSourceAction extends NodeAction {
         Collection grpNames = new ArrayList();
         for( int i = 0; i < activatedNodes.length; i ++ )
         {
-            grpNames.add( ((EjbGroupNode)activatedNodes[i]).getEjbGroup().getName() );
+            Node node;
+            if (activatedNodes[i] instanceof FilterNode) {
+                node = (Node) activatedNodes[i].getCookie(EjbGroupNode.class);
+            } else {
+                node = activatedNodes[i];
+            }
+
+            grpNames.add(((EjbGroupNode) node).getEjbGroup().getName());
         }
         
         ExportEjbDataSourceDialog exportDialog = new ExportEjbDataSourceDialog( grpNames );
