@@ -1003,6 +1003,9 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case ' ':
                         case '\t':
                             break;
+                        case '%':
+                            lexerState = ISA_ENDPC;
+                            break;
                         default:
                             //error
                             lexerState = ISI_DIR_ERROR;
