@@ -227,7 +227,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }
 
     boolean valid (WizardDescriptor settings) {
-        String sourceLocationPath = moduleLocationTextField.getText().trim();
+       String sourceLocationPath = moduleLocationTextField.getText().trim();
         if (sourceLocationPath.length() == 0) {
             setErrorMessage("MSG_ProvideExistingSourcesLocation"); //NOI18N
             return false;
@@ -306,7 +306,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 }
             }
         }
-
+        if (getSelectedServer() == null) {
+            String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoServer");
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            return false;
+        }
         setErrorMessage(null);
         return true;
     }
