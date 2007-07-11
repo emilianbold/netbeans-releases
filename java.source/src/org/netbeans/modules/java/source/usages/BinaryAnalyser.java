@@ -88,6 +88,12 @@ import org.openide.util.NbBundle;
  */
 public class BinaryAnalyser implements LowMemoryListener {
     
+    public enum Result {
+        FINISHED,
+        CANCELED,
+        CLOSED,
+    };
+    
     static final String OBJECT = Object.class.getName();                        
     
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
@@ -108,7 +114,7 @@ public class BinaryAnalyser implements LowMemoryListener {
      * @param URL the classpath root, either a folder or an archive file.
      *     
      */
-    public final boolean start (final URL root, final ProgressHandle handle, final AtomicBoolean cancel) throws IOException, IllegalArgumentException  {
+    public final Result start (final URL root, final ProgressHandle handle, final AtomicBoolean cancel, final AtomicBoolean closed) throws IOException, IllegalArgumentException  {
         assert root != null;        
         assert cont == null;
         LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
@@ -131,7 +137,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                             final ZipFile zipFile = new ZipFile(archive);
                             prebuildArgs(zipFile, root);
                             final Enumeration<? extends ZipEntry> e = zipFile.entries();        
-                            cont = new ZipContinuation (zipFile, e, cancel);
+                            cont = new ZipContinuation (zipFile, e, cancel, closed);
                             return cont.execute();                                        
                         }
                     }
@@ -148,7 +154,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                                 handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
                             }
                             Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                            cont = new FileObjectContinuation (todo,cancel);
+                            cont = new FileObjectContinuation (todo,cancel,closed);
                             return cont.execute();
                         }
                     }
@@ -172,7 +178,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                             todo.addAll(Arrays.asList(children));
                         }
                     }                    
-                    cont = new FolderContinuation (todo, path, cancel);
+                    cont = new FolderContinuation (todo, path, cancel,closed);
                     return cont.execute();
                 }
             }
@@ -184,17 +190,17 @@ public class BinaryAnalyser implements LowMemoryListener {
                     }
                     index.clear();
                     Enumeration<? extends FileObject> todo = rootFo.getData(true);
-                    cont = new FileObjectContinuation (todo,cancel);
+                    cont = new FileObjectContinuation (todo,cancel,closed);
                     return cont.execute();
                 }
             }
-            return true;
+            return Result.FINISHED;
         } finally {
             LowMemoryNotifier.getDefault().removeLowMemoryListener(BinaryAnalyser.this);
         }                
     }
     
-    public boolean resume () throws IOException {
+    public Result resume () throws IOException {
         assert cont != null;
         return cont.execute();
     }
@@ -208,6 +214,14 @@ public class BinaryAnalyser implements LowMemoryListener {
         store();
     }
     
+    public void clear () throws IOException {
+        if (cont != null) {
+            cont.finish();
+            cont = null;
+        }
+        index.clear();
+    }
+    
     
         /** Analyses a folder 
      *  @param folder to analyze
@@ -215,7 +229,7 @@ public class BinaryAnalyser implements LowMemoryListener {
      *  but the {@link URL#toExternalForm} from some strange reason does not cache result,
      *  the String type is faster.
      */
-    private boolean analyseFolder (final LinkedList<File>  todo, final String rootPath, final AtomicBoolean cancel) throws IOException {
+    private Result analyseFolder (final LinkedList<File>  todo, final String rootPath, final AtomicBoolean cancel, AtomicBoolean closed) throws IOException {
         while (!todo.isEmpty()) {
             File file = todo.removeFirst();
             if (file.isDirectory() && file.canRead()) {
@@ -255,15 +269,18 @@ public class BinaryAnalyser implements LowMemoryListener {
             }
             if (cancel.getAndSet(false)) {
                 this.store();
-                return false;
+                return Result.CANCELED;
+            }
+            if (closed.get()) {
+                return Result.CLOSED;
             }
         }
-        return true;
+        return Result.FINISHED;
     }
     
         //Private helper methods
     /** Analyses a zip file */
-    private boolean analyseArchive (final ZipFile zipFile, final Enumeration<? extends ZipEntry> e, AtomicBoolean cancel) throws IOException {
+    private Result analyseArchive (final ZipFile zipFile, final Enumeration<? extends ZipEntry> e, AtomicBoolean cancel, AtomicBoolean closed) throws IOException {
         while(e.hasMoreElements()) {
             ZipEntry ze = (ZipEntry)e.nextElement();
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
@@ -285,13 +302,16 @@ public class BinaryAnalyser implements LowMemoryListener {
             }
             if (cancel.getAndSet(false)) {
                 this.store();
-                return false;
+                return Result.CANCELED;
+            }
+            if (closed.get()) {
+                return Result.CLOSED;
             }
         }
-        return true;
+        return Result.FINISHED;
     }
     
-    private boolean analyseFileObjects (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel) throws IOException {
+    private Result analyseFileObjects (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel, final AtomicBoolean closed) throws IOException {
         while (todo.hasMoreElements()) {            
             FileObject fo = todo.nextElement();            
             if (this.accepts(fo.getName())) {
@@ -310,10 +330,13 @@ public class BinaryAnalyser implements LowMemoryListener {
             }
             if (cancel.getAndSet(false)) {
                 this.store();
-                return false;
+                return Result.CANCELED;
+            }
+            if (closed.get()) {
+                return Result.CLOSED;
             }
         }
-        return true;
+        return Result.FINISHED;
     }
     
     //Cleans up usages of deleted class
@@ -591,7 +614,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     
     
     private static interface Continuation {
-        public boolean execute () throws IOException;
+        public Result execute () throws IOException;
         
         public void finish () throws IOException;
     }
@@ -601,18 +624,20 @@ public class BinaryAnalyser implements LowMemoryListener {
         private final ZipFile zipFile;
         private final Enumeration<? extends ZipEntry> entries;
         private final AtomicBoolean cancel;
+        private final AtomicBoolean closed;
         
-        public ZipContinuation (final ZipFile zipFile, final Enumeration<? extends ZipEntry> entries, final AtomicBoolean cancel) {
+        public ZipContinuation (final ZipFile zipFile, final Enumeration<? extends ZipEntry> entries, final AtomicBoolean cancel, final AtomicBoolean closed) {
             assert zipFile != null;
             assert entries != null;
             assert cancel != null;
             this.zipFile = zipFile;
             this.entries = entries;
             this.cancel = cancel;
+            this.closed = closed;
         }
         
-        public boolean execute () throws IOException {
-            return analyseArchive(zipFile, entries, cancel);
+        public Result execute () throws IOException {
+            return analyseArchive(zipFile, entries, cancel, closed);
         }
         
         public void finish () throws IOException {
@@ -625,18 +650,20 @@ public class BinaryAnalyser implements LowMemoryListener {
         private final LinkedList<File> todo;
         private final String rootPath;
         private final AtomicBoolean cancel;
+        private final AtomicBoolean closed;
         
-        public FolderContinuation (final LinkedList<File> todo, final String rootPath, final AtomicBoolean cancel) {
+        public FolderContinuation (final LinkedList<File> todo, final String rootPath, final AtomicBoolean cancel, final AtomicBoolean closed) {
             assert todo != null;
             assert rootPath != null;
             assert cancel != null;
             this.todo = todo;
             this.rootPath = rootPath;
             this.cancel = cancel;
+            this.closed = closed;
         }
         
-        public boolean execute () throws IOException {            
-            return analyseFolder(todo, rootPath, cancel);
+        public Result execute () throws IOException {            
+            return analyseFolder(todo, rootPath, cancel, closed);
         }
         
         public void finish () throws IOException {                        
@@ -647,16 +674,18 @@ public class BinaryAnalyser implements LowMemoryListener {
         
         private final Enumeration<? extends FileObject> todo;
         private final AtomicBoolean cancel;
+        private final AtomicBoolean closed;
         
-        public FileObjectContinuation (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel) {
+        public FileObjectContinuation (final Enumeration<? extends FileObject> todo, final AtomicBoolean cancel, final AtomicBoolean closed) {
             assert todo != null;
             assert cancel != null;
             this.todo = todo;
             this.cancel = cancel;
+            this.closed = closed;
         }
         
-        public boolean execute () throws IOException {
-            return analyseFileObjects(todo, cancel);
+        public Result execute () throws IOException {
+            return analyseFileObjects(todo, cancel, closed);
         }
         
         public void finish () throws IOException {

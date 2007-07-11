@@ -162,6 +162,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private boolean dirty;
     private int noSubmited;
     private volatile boolean notInitialized;         //Transient state during IDE start
+    private final AtomicBoolean closed;
     private Map<ClassPath, URL> classPath2Root;
     
     //Preprocessor support
@@ -175,6 +176,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {        
         notInitialized = true;
+        this.closed = new AtomicBoolean (false);
         this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
         this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
         this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
@@ -215,6 +217,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     public void close () {
         try {
+            this.closed.set(true);
             this.cpImpl.setExcludesListener(null);       
             this.cp.removePropertyChangeListener(this);
             this.unregisterFileSystemListener();
@@ -911,6 +914,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                                 state = Utilities.topologicalSort(roots, depGraph);                                                                             
                                 for (java.util.ListIterator<URL> it = state.listIterator(state.size()); it.hasPrevious(); ) {                
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     final URL rootURL = it.previous();
                                     it.remove();
                                     updateFolder (rootURL,rootURL, mw.getForceClean(), handle);
@@ -945,6 +951,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                 for (ClassPath.Entry entry : entries) {
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     final URL rootURL = entry.getURL();
                                     findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                 }                                
@@ -964,12 +973,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             boolean completed = false;
                             try {
                                 if (activeBinaryAnalyzer != null) {
-                                    boolean baFinished = true;
+                                    BinaryAnalyser.Result baFinished = null;
                                     try {
                                         baFinished = activeBinaryAnalyzer.resume();
                                     } finally {
-                                        if (baFinished) {
+                                        if (baFinished == null || baFinished == BinaryAnalyser.Result.FINISHED) {
                                             activeBinaryAnalyzer.finish();
+                                            activeBinaryAnalyzer = null;
+                                        }
+                                        else if (baFinished == BinaryAnalyser.Result.CLOSED) {
+                                            activeBinaryAnalyzer.clear();
                                             activeBinaryAnalyzer = null;
                                         }
                                         else {
@@ -987,6 +1000,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     return null;
                                 }
                                 while (isDirty()) {
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     assert CompileWorker.this.state.isEmpty();                                    
                                     final List<ClassPath.Entry> entries = new LinkedList<ClassPath.Entry>();
                                     entries.addAll (cp.entries());
@@ -1004,6 +1020,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                     for (ClassPath.Entry entry : entries) {
+                                        if (closed.get()) {
+                                            return null;
+                                        }
                                         final URL rootURL = entry.getURL();
                                         findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                     }
@@ -1190,6 +1209,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
                 }
+                if (closed.get()) {
+                    return true;
+                }
                 final URL rootURL = it.next();
                 try {
                     it.remove();
@@ -1197,12 +1219,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     RepositoryUpdater.this.scannedBinaries.add (rootURL);                    
                     long startT = System.currentTimeMillis();
                     BinaryAnalyser ba = ci.getBinaryAnalyser();
-                    boolean finished = true;
+                    BinaryAnalyser.Result finished = null;
                     try {
-                        finished = ba.start(rootURL, handle, canceled);
+                        finished = ba.start(rootURL, handle, canceled, closed);
                     } finally {
-                        if (finished) {
-                            ba.finish();
+                        if (finished == null || finished == BinaryAnalyser.Result.FINISHED) {                            
+                                ba.finish();
+                        }
+                        else if (finished == BinaryAnalyser.Result.CLOSED) {
+                                ba.clear();                            
                         }
                         else {
                             activeBinaryAnalyzer = ba;
@@ -1232,6 +1257,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             for (java.util.ListIterator<URL> it = this.state.listIterator(this.state.size()); it.hasPrevious(); ) {
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
+                }
+                if (closed.get()) {
+                    return true;
                 }
                 try {
                     final URL rootURL = it.previous();
@@ -1388,7 +1416,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile"),rootFile.getAbsolutePath());
                     handle.setDisplayName(message);
                 }
-                errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles, compiledFiles, compiledFiles != null ? canceled : null, added));
+                errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
+                        compiledFiles, compiledFiles != null ? canceled : null, added,
+                        isInitialCompilation ? RepositoryUpdater.this.closed:null));
             }
             sa.store();
             synchronized (RepositoryUpdater.this) {
@@ -1407,7 +1437,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 
                 JavaTaskProvider.refresh(rootFo);
             }
-            if (added != null) {
+            if (added != null && !RepositoryUpdater.this.closed.get()) {
                 assert removed != null;
                 Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
                 Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
@@ -1684,8 +1714,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();            
             //todo: may also need interruption.
             try {
-                boolean finished = ba.start(root, handle, new AtomicBoolean(false));
-                while (!finished) {
+                BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
+                while (finished == BinaryAnalyser.Result.CANCELED) {
                     finished = ba.resume();
                 }
             } finally {
@@ -2080,7 +2110,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     static Callback CALLBACK = null;
     
-    public static Set<URL> batchCompile (final LinkedList<Pair> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa, final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added) throws IOException {
+    public static Set<URL> batchCompile (final LinkedList<Pair> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa,
+        final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added,
+        final AtomicBoolean ideClosed) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
@@ -2100,6 +2132,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
                 while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
                     if (canceled != null && canceled.getAndSet(false)) {
+                        return toRefresh;
+                    }
+                    if (ideClosed != null && ideClosed.get()) {
                         return toRefresh;
                     }
                     try {
