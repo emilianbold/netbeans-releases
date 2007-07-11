@@ -324,10 +324,24 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(hostLabel, gridBagConstraints);
         
+        DocumentListener updateListener = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                fireChangeEvent();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                fireChangeEvent();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                fireChangeEvent();
+            }
+        };
+        
         // add host field
         hostField.setColumns(20);
         hostField.setText(""); // NOI18N
-        hostField.addKeyListener(new KeyListener());
+        hostField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -350,7 +364,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         // add port field
         portField.setColumns(20);
         portField.setText(""); // NOI18N
-        portField.addKeyListener(new KeyListener());
+        portField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -374,7 +388,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         // add username field
         usernameField.setColumns(20);
         usernameField.setText(""); // NOI18N
-        usernameField.addKeyListener(new KeyListener());
+        usernameField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -396,7 +410,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add password field
         passwordField.setColumns(20);
-        passwordField.addKeyListener(new KeyListener());
+        passwordField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -679,30 +693,6 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         for (int i = 0; i < targetListeners.size(); i++) {
             ChangeListener listener = (ChangeListener) targetListeners.elementAt(i);
             listener.stateChanged(event);
-        }
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner classes
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     * Simple key listener that delegates the event to its parent's listeners
-     *
-     * @author Kirill Sorokin
-     */
-    private class KeyListener extends KeyAdapter {
-        /**
-         * This method is called when a user presses a key on the keyboard
-         */
-        public void keyTyped(KeyEvent event) {
-            fireChangeEvent();
-        }
-        
-        /**
-         * This method is called when a user releases a key on the keyboard
-         */
-        public void keyReleased(KeyEvent event) {
-            fireChangeEvent();
         }
     }
     
