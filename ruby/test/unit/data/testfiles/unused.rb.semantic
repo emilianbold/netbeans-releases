@@ -1,0 +1,14 @@
+def |>METHOD:foo<|(|>UNUSED:unusedparam<|, |>UNUSED:unusedparam2<|, |>PARAMETER:usedparam<|)
+  |>UNUSED:unusedparam2<| = 5 # Written but not read - still unused!
+  |>UNUSED:unusedlocal1<| = "foo"
+  usedlocal2 = "hello"
+  usedlocal3 = "world"
+  |>METHOD:puts<| |>PARAMETER:usedparam<|
+  x = []
+  x.each { ||>UNUSED:unusedblockvar1<|, usedblockvar2|
+    |>METHOD:puts<| usedblockvar2
+    |>METHOD:puts<| usedlocal2
+  } 
+  |>METHOD:puts<| usedlocal3
+end
+

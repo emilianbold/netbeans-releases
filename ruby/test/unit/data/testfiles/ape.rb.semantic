@@ -1,0 +1,925 @@
+#   Copyright © 2006 Sun Microsystems, Inc. All rights reserved
+#   Use is subject to license terms - see file "LICENSE"
+
+|>METHOD:require<| 'rexml/document'
+|>METHOD:require<| 'rubygems'
+|>METHOD:require<| 'builder'
+
+|>METHOD:require<| 'getter'
+|>METHOD:require<| 'service'
+|>METHOD:require<| 'samples'
+|>METHOD:require<| 'entry'
+|>METHOD:require<| 'poster'
+|>METHOD:require<| 'collection'
+|>METHOD:require<| 'deleter'
+|>METHOD:require<| 'putter'
+|>METHOD:require<| 'feed'
+|>METHOD:require<| 'html'
+|>METHOD:require<| 'crumbs'
+|>METHOD:require<| 'escaper' 
+|>METHOD:require<| 'categories'
+|>METHOD:require<| 'names'
+|>METHOD:require<| 'validator'
+|>METHOD:require<| 'authent'
+
+class Ape
+
+  def |>METHOD:initialize<|(|>PARAMETER:args<|)
+    @dialogs = (|>PARAMETER:args<|[:crumbs]) ? {} : []
+    output = |>PARAMETER:args<|[:output] || 'html'
+    if output == 'text' || output == 'html'
+      @output = output
+    else
+      |>METHOD:raise<| ArgumentError, "output must be 'text' or 'html'"
+    end
+
+    @diarefs = {}
+    @dianum = 1
+    @@debugging = |>PARAMETER:args<|[:debug]
+    @steps = []
+    @header = @footer = nil
+    @lnum = 1
+  end
+
+  # Args: APP URI, username/password, preferred entry/media collections
+  def |>METHOD:check<|(|>PARAMETER:uri<|, |>PARAMETER:username<|=nil<|, |>PARAMETER:password<|=nil<|,
+      |>PARAMETER:requested_e_coll<| = nil<|, |>PARAMETER:requested_m_coll<| = nil<|)
+
+    # Google athent weirdness
+    @authent = Authent.new(|>PARAMETER:username<|, |>PARAMETER:password<|)
+    |>METHOD:header<|(|>PARAMETER:uri<|)
+    begin
+      |>METHOD:might_fail<|(|>PARAMETER:uri<|, |>PARAMETER:requested_e_coll<|, |>PARAMETER:requested_m_coll<|)
+    rescue Exception
+      |>METHOD:error<| "Ouch! Ape fall down go boom; details: " +
+        "#{$!}\n#{$!.class}\n#{$!.backtrace}"
+    end
+  end
+
+  def |>METHOD:might_fail<|(|>PARAMETER:uri<|, |>PARAMETER:requested_e_coll<| = nil<|, |>PARAMETER:requested_m_coll<| = nil<|)
+
+    |>METHOD:info<| "TESTING: Service document and collections."
+    name = 'Retrieval of Service Document'
+    service = |>METHOD:check_resource<|(|>PARAMETER:uri<|, name, Names::AppMediaType)
+    return unless service
+
+    # * XML-parse the service doc
+    text = service.body
+    begin
+      service = REXML::Document.new(text, { :raw => nil })
+    rescue REXML::ParseException
+      prob = $!.to_s.gsub(/\n/, '<br/>')
+      |>METHOD:error<| "Service document not well-formed: #{prob}"
+      return
+    end
+
+    # RNC-validate the service doc
+    Validator.validate(Samples.service_RNC, text, 'Service doc', self)
+
+    # * Do we have collections we can post an entry and a picture to?
+    #   the requested_* arguments are the requested collection titles; if
+    #    provided, try to match them, otherwise just pick the first listed
+    #
+    begin
+      collections = Service.collections(service, |>PARAMETER:uri<|)
+    rescue Exception
+      |>METHOD:error<| "Couldn't read collections from service doc: #{$!}"
+      return
+    end
+    entry_coll = media_coll = nil
+    if collections.length > 0
+      |>METHOD:start_list<| "Found these collections"
+      collections.each do |collection|
+        |>METHOD:list_item<| "'#{collection.title}' " +
+          "accepts #{collection.accept.join(', ')}"
+        if (!entry_coll) && collection.accept.index(Names::AtomEntryMediaType)
+          if |>PARAMETER:requested_e_coll<|
+            if |>PARAMETER:requested_e_coll<| == collection.title
+              entry_coll = collection
+            end
+          else
+            entry_coll = collection
+          end
+        end
+
+        if !media_coll
+          image_jpeg_ok = false
+          collection.accept.each do |types|
+            types.split(/, */).each do |type|
+
+              if type == '*/*' || type == 'image/*' || type == 'image/jpeg'
+                image_jpeg_ok = true
+              end
+            end
+          end
+          if image_jpeg_ok
+            if |>PARAMETER:requested_m_coll<|
+              if |>PARAMETER:requested_m_coll<| == collection.title
+                media_coll = collection
+              end
+            else
+              media_coll = collection
+            end
+          end
+        end
+      end
+    end
+
+    |>METHOD:end_list<|
+
+    if entry_coll
+      |>METHOD:good<| "Will use collection '#{entry_coll.title}' for entry creation."
+      |>METHOD:test_entry_posts<| entry_coll
+      |>METHOD:test_sorting<| entry_coll
+    else
+      |>METHOD:warning<| "No collection for 'entry', won't test entry posting."
+    end
+
+    if media_coll
+      |>METHOD:good<| "Will use collection '#{media_coll.title}' for media creation."
+      |>METHOD:test_media_posts<| media_coll.href
+      |>METHOD:test_media_linkage<| media_coll
+    else
+      |>METHOD:warning<| "No collection for 'image/jpeg', won't test media posting."
+    end
+  end
+  
+  def |>METHOD:test_media_linkage<|(|>PARAMETER:coll<|)
+    |>METHOD:info<| "TESTING: Media collection re-ordering after PUT."
+    
+    # We'll post three mini entries to the collection
+    data = Samples.picture
+    poster = Poster.new(|>PARAMETER:coll<|.href, @authent)
+    ['One', 'Two', 'Three'].each do |num|
+      slug = "Picture {#num}"
+      poster.set_header('Slug', slug)
+      name = "Posting pic #{num}"
+      worked = poster.post('image/jpeg', data)
+      |>METHOD:save_dialog<|(name, poster)
+      if !worked
+        |>METHOD:error<|("Can't POST Picture #{num}: #{poster.last_error}", name)
+        return
+      end
+      |>METHOD:sleep<| 2
+    end
+    
+    # grab the collection to gather the MLE ids
+    entries = Feed.read(|>PARAMETER:coll<|.href, 'Pictures from multi-post', self, true)
+    ids = entries.map { |e| e.child_content('id)')}
+    
+    # let's update one of them; have to fetch it first to get the ETag
+    two_media = entries[1].content_src
+    two_resp = |>METHOD:check_resource<|(two_media, 'Fetch image to get ETag', 'image/jpeg', true)
+    etag = two_resp.header 'etag'
+        
+    putter = Putter.new(two_media, @authent)
+    putter.set_header('If-Match', etag)
+    
+    name = 'Updating one of three pix with PUT'
+    if putter.put('image/jpeg', data)
+      |>METHOD:good<| "Update one of newly posted pictures went OK."
+    else  
+      |>METHOD:save_dialog<|(name, putter)
+      |>METHOD:error<|("Can't update picture at #{two_media}", name)
+      return
+    end
+    
+    # now the order should have changed
+    wanted = [ ids[2], ids[0], ids[1] ]
+    entries = Feed.read(|>PARAMETER:coll<|.href, 'MLEs post-update', self, true)
+    entries.each do |from_feed|
+      want = wanted.pop
+      unless from_feed.child_content('id').eql?(want)
+        |>METHOD:error<| "Updating bits failed to re-order link entries in media collection."
+        return
+      end
+      
+      # next to godliness
+      link = from_feed.link('edit', self)      
+      Deleter.new(link, @authent).delete
+      
+      break if wanted.empty?
+    end
+    |>METHOD:good<| "Entries correctly ordered after update of multi-post."
+
+  end
+  
+  def |>METHOD:test_sorting<|(|>PARAMETER:coll<|)
+    
+    |>METHOD:info<| "TESTING: Collection re-ordering after PUT."
+    
+    # We'll post three mini entries to the collection
+    mini = Samples.mini_entry
+    poster = Poster.new(|>PARAMETER:coll<|.href, @authent)
+    ['One', 'Two', 'Three'].each do |num|
+      text = mini.gsub('Mini-1', "Mini #{num}")
+      name = "Posting Mini #{num}"
+      worked = poster.post(Names::AtomMediaType, text)
+      |>METHOD:save_dialog<|(name, poster)
+      if !worked
+        |>METHOD:error<|("Can't POST Mini #{name}: #{poster.last_error}", name)
+        return
+      end
+      |>METHOD:sleep<| 2
+    end
+
+    # now let's grab the collection & check the order
+    wanted = ['Mini One', 'Mini Two', 'Mini Three']
+    two = nil
+    entries = Feed.read(|>PARAMETER:coll<|.href, 'Entries with multi-post', self, true)
+    entries.each do |from_feed|
+      want = wanted.pop
+      unless from_feed.child_content('title').index(want)
+        |>METHOD:error<| "Entries feed out of order after multi-post."
+        return
+      end
+      two = from_feed if want == 'Mini Two'
+      break if wanted.empty?
+    end
+    |>METHOD:good<| "Entries correctly ordered after multi-post."
+    
+    # let's update one of them; have to fetch it first to get the ETag
+    link = two.link('edit', self)
+    two_resp = |>METHOD:check_resource<|(link, 'fetch two', Names::AtomMediaType, false)
+    etag = two_resp.header 'etag'
+        
+    putter = Putter.new(link, @authent)
+    putter.set_header('If-Match', etag)
+    
+    name = 'Updating mini-entry with PUT'
+    unless putter.put(Names::AtomMediaType, mini.gsub('Mini-1', 'Mini-4'))
+      |>METHOD:save_dialog<|(name, putter)
+      |>METHOD:error<|("Can't update mini-entry at #{link}", name)
+      return
+    end
+    
+    # now the order should have changed
+    wanted = ['Mini One', 'Mini Three', 'Mini-4']
+    entries = Feed.read(|>PARAMETER:coll<|.href, 'Entries post-update', self, true)
+    entries.each do |from_feed|
+      want = wanted.pop
+      unless from_feed.child_content('title').index(want)
+        |>METHOD:error<| "Entries feed out of order after update of multi-post."
+        return
+      end
+      
+      # next to godliness
+      link = from_feed.link('edit', self)      
+      Deleter.new(link, @authent).delete
+      
+      break if wanted.empty?
+    end
+    |>METHOD:good<| "Entries correctly ordered after update of multi-post."
+    
+    
+  end
+
+  def |>METHOD:test_entry_posts<|(|>PARAMETER:entry_collection<|)
+    
+    collection_uri = |>PARAMETER:entry_collection<|.href
+    entries = Feed.read(collection_uri, 'Entry collection', self)
+    
+    # * List the current entries, remember which IDs we've seen
+    |>METHOD:info<| "TESTING: Entry-posting basics."
+    ids = []
+    unless entries.empty?
+      |>METHOD:start_list<| "Now in the Entries feed"
+      entries.each do |entry|
+        |>METHOD:list_item<| entry.summarize
+        ids << entry.child_content('id')
+      end   
+      |>METHOD:end_list<|
+    end 
+    
+    # Setting up to post a new entry
+    poster = Poster.new(collection_uri, @authent)
+    if poster.last_error
+      |>METHOD:error<|("Unacceptable URI for '#{|>PARAMETER:entry_collection<|.title}' collection: " +
+          poster.last_error)
+      return
+    end
+
+    my_entry = Entry.new(Samples.basic_entry)
+
+    # ask it to use this in the URI
+    slug_num = |>METHOD:rand<|(100000)
+    slug = "ape-#{slug_num}"
+    slug_re = %r{ape.?#{slug_num}}
+    poster.set_header('Slug', slug)
+
+    # add some categories to the entry, and remember which
+    @cats = Categories.add_cats(my_entry, |>PARAMETER:entry_collection<|)
+
+    # * OK, post it
+    worked = poster.post(Names::AtomMediaType, my_entry.to_s)
+    name = 'Posting new entry'
+    |>METHOD:save_dialog<|(name, poster)
+    if !worked
+      |>METHOD:error<|("Can't POST new entry: #{poster.last_error}", name)
+      return
+    end
+
+    location = poster.header('Location')
+    unless location
+      |>METHOD:error<|("No Location header upon POST creation", name)
+      return
+    end
+    |>METHOD:good<|("Posting of new entry to the Entries collection " +
+        "reported success, Location: #{location}", name)
+
+    |>METHOD:info<| "Examining the new entry as returned in the POST response"
+    |>METHOD:check_new_entry<|(my_entry, poster.entry, "Returned entry") if poster.entry
+
+    # * See if the Location uri can be retrieved, and check its consistency
+    name = "Retrieval of newly created entry"
+    new_entry = |>METHOD:check_resource<|(location, name, Names::AtomMediaType)
+    return unless new_entry
+
+    # Grab its etag
+    etag = new_entry.header 'etag'
+
+    |>METHOD:info<| "Examining the new entry as retrieved using Location header in POST response:"
+
+    begin
+      new_entry = Entry.new(new_entry.body, location)
+    rescue REXML::ParseException
+      prob = $!.to_s.gsub(/\n/, '<br/>')
+      |>METHOD:error<| "New entry is not well-formed: #{prob}"
+      return
+    end
+
+    # * See if the slug was used
+    slug_used = false
+    new_entry.alt_links.each do |a|
+      href = a.attributes['href']
+      if href && href.index(slug_re)
+        slug_used = true
+      end
+    end
+    if slug_used
+      |>METHOD:good<| "Client-provided slug '#{slug}' was used in server-generated URI."
+    else
+      |>METHOD:warning<| "Client-provided slug '#{slug}' not used in server-generated URI."
+    end
+
+    |>METHOD:check_new_entry<|(my_entry, new_entry, "Retrieved entry")
+
+    entry_id = new_entry.child_content('id')
+
+    # * fetch the feed again and check that version
+    from_feed = |>METHOD:find_entry<|(collection_uri, "entry collection", entry_id)
+    if from_feed.class == String
+      |>METHOD:good<| "About to check #{collection_uri}"
+      Feed.read(collection_uri, "Can't find entry in collection", self)
+      |>METHOD:error<| "New entry didn't show up in the collections feed."
+      return
+    end
+
+    |>METHOD:info<| "Examining the new entry as it appears in the collection feed:"
+
+    # * Check the entry from the feed
+    |>METHOD:check_new_entry<|(my_entry, from_feed, "Entry from collection feed")
+
+    edit_uri = new_entry.link('edit', self)
+    if !edit_uri
+      |>METHOD:error<| "Entry from Location header has no edit link."
+      return
+    end
+
+    # * Update the entry, see if the update took
+    name = 'In-place update with put'
+    putter = Putter.new(edit_uri, @authent)
+
+    # Conditional PUT if an etag
+    putter.set_header('If-Match', etag) if etag
+
+    new_title = "Let's all do the Ape!"
+    new_text = Samples.retitled_entry(new_title, entry_id)
+    response = putter.put(Names::AtomMediaType, new_text)
+    |>METHOD:save_dialog<|(name, putter)
+
+    if response
+      |>METHOD:good<|("Update of new entry reported success.", name)
+      from_feed = |>METHOD:find_entry<|(collection_uri, "entry collection", entry_id)
+      if from_feed.class == String
+        |>METHOD:check_resource<|(collection_uri, "Check collection after lost update", nil, true)
+        |>METHOD:error<| "Updated entry ID #{entry_id} not found in entries collection."
+        return
+      end
+      if from_feed.child_content('title') == new_title
+        |>METHOD:good<| "Update reflected in new entry."
+      else
+        |>METHOD:warning<| "PUT apparently not reflected in the entry."
+      end
+    else
+      |>METHOD:warning<|("Can't update new entry with PUT: #{putter.last_error}", name)
+    end
+
+    # the edit-uri might have changed
+    edit_uri = from_feed.link('edit', self)
+    if !edit_uri
+      |>METHOD:error<| "Entry in feed has no edit link."
+      return
+    end
+
+    name = 'New Entry deletion'
+    deleter = Deleter.new(edit_uri, @authent)
+
+    worked = deleter.delete
+    |>METHOD:save_dialog<|(name, deleter)
+    if worked
+      |>METHOD:good<|("Entry deletion reported success.", name)
+    else
+      |>METHOD:error<|("Couldn't delete the entry that was posted: " + deleter.last_error,
+          name)
+      return
+    end
+
+    # See if it's gone from the feed
+    still_there = |>METHOD:find_entry<|(collection_uri, "entry collection", entry_id)
+    if still_there.class != String
+      |>METHOD:error<| "Entry is still in collection post-deletion."
+    else
+      |>METHOD:good<| "Entry not found in feed after deletion."
+    end
+
+  end
+
+  def |>METHOD:test_media_posts<| |>PARAMETER:media_collection<|
+    
+    |>METHOD:info<| "TESTING: Posting to media collection."
+    
+    # * Post a picture to the media collection
+    #
+    poster = Poster.new(|>PARAMETER:media_collection<|, @authent)
+    if poster.last_error
+      |>METHOD:error<|("Unacceptable URI for '#{|>METHOD:media_coll<|.title}' collection: " +
+          poster.last_error)
+      return
+    end
+
+    name = 'Post image to media collection'
+
+    # ask it to use this in the URI
+    slug_num = |>METHOD:rand<|(100000)
+    slug = "apix-#{slug_num}"
+    slug_re = %r{apix.?#{slug_num}}
+    poster.set_header('Slug', slug)
+
+    poster.set_header('Slug', slug)
+    worked = poster.post('image/jpeg', Samples.picture)
+    |>METHOD:save_dialog<|(name, poster)
+    if !worked
+      |>METHOD:error<|("Can't POST picture to media collection: #{poster.last_error}",
+          name)
+      return
+    end
+
+    |>METHOD:good<|("Post of image file reported success, media link location: " +
+        "#{poster.header('Location')}", name)
+    
+    # * Retrieve the media link entry
+    mle_uri = poster.header('Location')
+        
+    media_link_entry = |>METHOD:check_resource<|(mle_uri, 'Retrieval of media link entry', Names::AtomMediaType)
+    return unless media_link_entry
+
+    if media_link_entry.last_error
+      |>METHOD:error<| "Can't proceed with media-post testing."
+      return
+    end
+
+    # * See if the <content src= is there and usable
+    begin
+      media_link_entry = Entry.new(media_link_entry.body, mle_uri)
+    rescue REXML::ParseException
+      prob = $!.to_s.gsub(/\n/, '<br/>')
+      |>METHOD:error<| "Media link entry is not well-formed: #{prob}"
+      return
+    end
+    content_src = media_link_entry.content_src
+    if (!content_src) || (content_src == "")
+      |>METHOD:error<| "Media link entry has no content@src pointer to media resource."
+      return
+    end
+
+    # see if slug was used in media URI
+    if content_src =~ slug_re
+      |>METHOD:good<| "Client-provided slug '#{slug}' was used in Media Resource URI."
+    else
+      |>METHOD:warning<| "Client-provided slug '#{slug}' not used in Media Resource URI."
+    end
+    
+    media_link_id = media_link_entry.child_content('id')
+
+    name = 'Retrieval of media resource'
+    picture = |>METHOD:check_resource<|(content_src, name, 'image/jpeg')
+    return unless picture
+
+    if picture.body == Samples.picture
+      |>METHOD:good<| "Media resource was apparently stored and retrieved properly."
+    else
+      |>METHOD:warning<| "Media resource differs from posted picture"
+    end
+
+    # * Delete the media link entry
+    edit_uri = media_link_entry.link('edit')
+    if !edit_uri
+      |>METHOD:error<| "Media link entry has no edit link."
+      return
+    end
+
+    name = 'Deletion of media link entry'
+    deleter = Deleter.new(edit_uri, @authent)
+    worked = deleter.delete
+    |>METHOD:save_dialog<|(name, deleter)
+    if worked
+      |>METHOD:good<|("Media link entry deletion reported success.", name)
+    else
+      |>METHOD:error<|("Couldn't delete media link entry.", name)
+      return
+    end
+
+    # * media link entry still in feed?
+    still_there = |>METHOD:find_entry<|(|>PARAMETER:media_collection<|, "media collection", media_link_id)
+    if still_there.class != String
+      |>METHOD:error<| "Media link entry is still in collection post-deletion."
+    else
+      |>METHOD:good<| "Media link entry no longer in feed."
+    end
+    
+    # is the resource there any more?
+    name = 'Check Media Resource deletion'
+    if |>METHOD:check_resource<|(content_src, name, 'image/jpeg', false)
+      |>METHOD:error<| "Media resource still there after media link entry deletion."
+    else
+      |>METHOD:good<| "Media resource no longer fetchable."
+    end
+    
+  end
+
+  def |>METHOD:check_new_entry<|(|>PARAMETER:as_posted<|, |>PARAMETER:new_entry<|, |>PARAMETER:desc<|)
+
+    if |>METHOD:compare_entries<|(|>PARAMETER:as_posted<|, |>PARAMETER:new_entry<|, "entry as posted", |>PARAMETER:desc<|)
+      |>METHOD:good<| "#{|>PARAMETER:desc<|} is consistent with posted entry."
+    end
+
+    # * See if the categories we sent made it in
+    cat_probs = false
+    @cats.each do |cat|
+      if !|>PARAMETER:new_entry<|.has_cat(cat)
+        cat_probs = true
+        |>METHOD:warning<| "Provided category not in #{|>PARAMETER:desc<|}: #{cat}"
+      end
+    end
+    |>METHOD:good<| "Provided categories included in #{|>PARAMETER:desc<|}." unless cat_probs
+
+    # * See if the dc:subject survived
+    dc_subject = |>PARAMETER:new_entry<|.child_content(Samples.foreign_child, Samples.foreign_namespace)
+    if dc_subject
+      if dc_subject == Samples.foreign_child_content
+        |>METHOD:good<| "Server preserved foreign markup in #{|>PARAMETER:desc<|}."
+      else
+        |>METHOD:warning<| "Server altered content of foreign markup in #{|>PARAMETER:desc<|}."
+      end
+    else
+      |>METHOD:warning<| "Server discarded foreign markup in #{|>PARAMETER:desc<|}."
+    end
+  end
+
+  #
+  # End of tests; support functions from here down
+  #
+
+  # Fetch a feed and look up an entry by ID in it
+  def |>METHOD:find_entry<|(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, |>PARAMETER:id<|, |>PARAMETER:report<|=false<|)
+    entries = Feed.read(|>PARAMETER:feed_uri<|, |>PARAMETER:name<|, self, |>PARAMETER:report<|)
+    entries.each do |from_feed|
+      return from_feed if |>PARAMETER:id<| == from_feed.child_content('id')
+    end
+
+    return "Couldn't find id #{|>PARAMETER:id<|} in feed #{|>PARAMETER:feed_uri<|}"
+  end
+
+  # remember the dialogue that the get/put/post/delete actor recorded
+  def |>METHOD:save_dialog<|(|>PARAMETER:name<|, |>PARAMETER:actor<|)
+    @dialogs[|>PARAMETER:name<|] = |>PARAMETER:actor<|.crumbs if @dialogs
+  end
+
+  # Get a resource, optionally check its content-type
+  def |>METHOD:check_resource<|(|>PARAMETER:uri<|, |>PARAMETER:name<|, |>PARAMETER:content_type<|, |>PARAMETER:report<|=true<|)
+    resource = Getter.new(|>PARAMETER:uri<|, @authent)
+
+    # * Check the URI
+    if resource.last_error
+      |>METHOD:error<|("Unacceptable #{|>PARAMETER:name<|} URI: " + resource.last_error, |>PARAMETER:name<|) if |>PARAMETER:report<|
+      return nil
+    end
+
+    # * Get it, make sure it has the right content-type
+    worked = resource.get(|>PARAMETER:content_type<|)
+    @dialogs[|>PARAMETER:name<|] = resource.crumbs if @dialogs
+
+    if !worked
+      # oops, couldn't even get get it
+      |>METHOD:error<|("#{|>PARAMETER:name<|} failed: " + resource.last_error, |>PARAMETER:name<|) if |>PARAMETER:report<|
+      return nil
+
+    elsif resource.last_error
+      # oops, media-type problem
+      |>METHOD:error<|("#{|>PARAMETER:name<|}: #{resource.last_error}", |>PARAMETER:name<|) if |>PARAMETER:report<|
+
+    else
+      # resource fetched and is of right type
+      |>METHOD:good<|("#{|>PARAMETER:name<|}: it exists and is served properly.", |>PARAMETER:name<|) if |>PARAMETER:report<|
+    end
+
+    return resource
+  end
+
+  def |>METHOD:header<|(|>PARAMETER:uri<|)
+    @header = "APP Service doc: #{|>PARAMETER:uri<|}"
+  end
+
+  def |>METHOD:footer<|(|>PARAMETER:message<|)
+    @footer = |>PARAMETER:message<|
+  end
+
+  def |>METHOD:show_crumbs<| |>PARAMETER:key<|
+    @dialogs[|>PARAMETER:key<|].each do |d|
+      |>METHOD:puts<| "D: #{d}"
+    end
+  end
+
+  def |>METHOD:warning<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil<|)
+    if @dialogs
+      |>METHOD:step<| "D#{|>PARAMETER:crumb_key<|}" if |>PARAMETER:crumb_key<|
+      |>METHOD:show_crumbs<|(|>PARAMETER:crumb_key<|) if |>PARAMETER:crumb_key<| && @@debugging
+    end
+    |>METHOD:step<| "W" + |>PARAMETER:message<|
+  end
+
+  def |>METHOD:error<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil<|)
+    if @dialogs
+      |>METHOD:step<| "D#{|>PARAMETER:crumb_key<|}" if |>PARAMETER:crumb_key<|
+      |>METHOD:show_crumbs<|(|>PARAMETER:crumb_key<|) if |>PARAMETER:crumb_key<| && @@debugging
+    end
+    |>METHOD:step<| "E" + |>PARAMETER:message<|
+  end
+
+  def |>METHOD:good<|(|>PARAMETER:message<|, |>PARAMETER:crumb_key<|=nil<|)
+    if @dialogs
+      |>METHOD:step<| "D#{|>PARAMETER:crumb_key<|}" if |>PARAMETER:crumb_key<|
+      |>METHOD:show_crumbs<|(|>PARAMETER:crumb_key<|) if |>PARAMETER:crumb_key<| && @@debugging
+    end
+    |>METHOD:step<| "G" + |>PARAMETER:message<|
+  end
+
+  def |>METHOD:info<|(|>PARAMETER:message<|)
+    |>METHOD:step<| "I" + |>PARAMETER:message<|
+  end
+
+  def |>METHOD:step<|(|>PARAMETER:message<|)
+    |>METHOD:puts<| "PROGRESS: #{|>PARAMETER:message<|[1..-1]}" if @@debugging
+    @steps << |>PARAMETER:message<|
+  end
+
+  def |>METHOD:start_list<|(|>PARAMETER:message<|)
+    |>METHOD:step<| [ |>PARAMETER:message<| + ":" ]
+  end
+
+  def |>METHOD:list_item<|(|>PARAMETER:message<|)
+    @steps[-1] << |>PARAMETER:message<|
+  end
+
+  def |>METHOD:end_list<|
+  end
+
+  def |>METHOD:line<|
+    |>METHOD:printf<| "%2d. ", @lnum
+    @lnum += 1
+  end
+
+  def |>METHOD:report<|(|>PARAMETER:output<|=STDOUT)
+    if @output == 'text'
+      |>METHOD:report_text<| |>PARAMETER:output<|
+    else
+      |>METHOD:report_html<| |>PARAMETER:output<|
+    end
+  end
+
+
+
+  def |>METHOD:report_html<|(|>PARAMETER:output<|=STDOUT)
+    dialog = nil
+
+    if |>PARAMETER:output<| == STDOUT
+      |>PARAMETER:output<|.puts "Status: 200 OK\r"
+      |>PARAMETER:output<|.puts "Content-type: text/html; charset=utf-8\r"
+      |>PARAMETER:output<|.puts "\r"
+      |>PARAMETER:output<|.puts "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.1//EN' 'http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd'>"
+    end
+
+    @w = Builder::XmlMarkup.new(:target => |>PARAMETER:output<|)
+    @w.html do
+      @w.head do
+        @w.title { @w.text! 'Atom Protocol Exerciser Report' }
+        @w.text! "\n"
+        @w.link(:rel => 'stylesheet', :type => 'text/css',:href => '/ape/ape.css' )
+      end
+      @w.text! "\n"
+      @w.body do
+        @w.h2 { @w.text! 'The Ape says:' }
+        @w.text! "\n"
+        if @header
+          @w.p { @w.text! @header }
+          @w.text! "\n"
+        end
+        @w.ol do
+          @w.text! "\n"
+          @steps.each do |step|
+            if step.kind_of? Array
+              # it's a list; no dialog applies
+              @w.li do
+                @w.p do
+                  |>METHOD:write_mark<| :info
+                  @w.text! " #{step[0]}\n"
+                end
+                @w.ul do
+                  step[1 .. -1].each { |li| |>METHOD:report_li<|(nil, nil, li) }
+                end
+                @w.text! "\n"
+              end
+            else
+              body = step[1 .. -1]
+              opcode = step[0,1]
+              if opcode == "D"
+                dialog = body
+              else
+                case opcode
+                when "W" then |>METHOD:report_li<|(dialog, :question, body)
+                when "E" then |>METHOD:report_li<|(dialog, :exclamation, body)
+                when "G" then |>METHOD:report_li<|(dialog, :check, body)
+                when "I" then |>METHOD:report_li<|(dialog, :info, body)
+                else
+                  |>METHOD:line<|
+                  |>METHOD:puts<| "HUH? #{step}"
+                end
+                dialog = nil
+              end
+            end
+          end
+        end
+
+        @w.text! "\n"
+        if @footer then @w.p { @w.text! @footer } end
+        @w.text! "\n"
+
+        if @dialogs
+          @w.h2 { @w.text! 'Recorded client/server dialogs' }
+          @w.text! "\n"
+          @diarefs.each do |k, v|
+            dialog = @dialogs[k]
+            @w.h3(:id => "dia-#{v}") do
+              @w.text! k
+            end
+            @w.div(:class => 'dialog') do
+
+              @w.div(:class => 'dialab') do
+                @w.text! "\nTo server:\n"
+                dialog.grep(/^>/).each { |crumb| |>METHOD:show_message<|(crumb, :to) }
+              end
+              @w.div( :class => 'dialab' ) do
+                @w.text! "\nFrom Server:\n"
+                dialog.grep(/^</).each { |crumb| |>METHOD:show_message<|(crumb, :from) }
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def |>METHOD:report_li<|(|>PARAMETER:dialog<|, |>PARAMETER:marker<|, |>PARAMETER:text<|)
+    @w.li do
+      @w.p do
+        if |>PARAMETER:marker<|
+          |>METHOD:write_mark<| |>PARAMETER:marker<|
+          @w.text! ' '
+        end
+        # preserve line-breaks in output
+        lines = |>PARAMETER:text<|.split("\n")
+        lines[0 .. -2].each do |line|
+          @w.text! line
+          @w.br
+        end
+        @w.text! lines[-1]
+
+        if |>PARAMETER:dialog<|
+          @w.a(:class => 'diaref', :href => "#dia-#{@dianum}") do
+            @w.text! ' [Dialog]'
+          end
+          @diarefs[|>PARAMETER:dialog<|] = @dianum
+          @dianum += 1
+        end
+      end
+    end
+    @w.text! "\n"
+  end
+
+  def |>METHOD:show_message<|(|>PARAMETER:crumb<|, |>PARAMETER:tf<|)
+    message = |>PARAMETER:crumb<|[1 .. -1]
+    message.gsub!(/^\s*"/, '')
+    message.gsub!(/"\s*$/, '')
+    message.gsub!(/\\"/, '"')
+    message = Escaper.escape message
+    message.gsub!(/\\n/, "\n<br/>")
+    message.gsub!(/\\t/, '&nbsp;&nbsp;&nbsp;&nbsp;')
+    @w.div(:class => |>PARAMETER:tf<|) { @w.target! << message }
+  end
+
+  def |>METHOD:report_text<|
+    |>METHOD:puts<| @header if @header
+    @steps.each do |step|
+      if step.class == Crumbs
+        |>METHOD:puts<| "   Dialog:"
+        step.each { |crumb| |>METHOD:puts<| "     #{crumb}" }
+      else
+        body = step[1 .. -1]
+        case step[0,1]
+        when "W"
+          |>METHOD:line<|
+          |>METHOD:puts<| "WARNING: #{body}"
+        when "E"
+          |>METHOD:line<|
+          |>METHOD:puts<| "ERROR: #{body}"
+        when "G"
+          |>METHOD:line<|
+          |>METHOD:puts<| body
+        when "L"
+          |>METHOD:line<|
+          |>METHOD:puts<| body
+        when "e"
+          # no-op
+        when "I"
+          |>METHOD:puts<| "     #{body}"
+        when "D"
+          # later, dude
+        else
+          |>METHOD:line<|
+          |>METHOD:puts<| "HUH? #{body}"
+        end
+      end
+      |>METHOD:puts<| @footer if @footer
+    end
+  end
+
+  def |>METHOD:compare_entries<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|)
+    problems = 0
+    [ 'title', 'summary', 'content' ].each do |field|
+      problems += 1 if |>METHOD:compare1<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|, field)
+    end
+    return problems == 0
+  end
+
+  def |>METHOD:compare1<|(|>PARAMETER:e1<|, |>PARAMETER:e2<|, |>PARAMETER:e1Name<|, |>PARAMETER:e2Name<|, |>PARAMETER:field<|)
+    c1 = |>PARAMETER:e1<|.child_content(|>PARAMETER:field<|)
+    c2 = |>PARAMETER:e2<|.child_content(|>PARAMETER:field<|)
+    if c1 != c2
+      problem = true
+      if c1 == nil
+        |>METHOD:warning<| "'#{|>PARAMETER:field<|}' absent in #{|>PARAMETER:e1Name<|}."
+      elsif c2 == nil
+        |>METHOD:warning<| "'#{|>PARAMETER:field<|}' absent in #{|>PARAMETER:e2Name<|}."
+      else
+        t1 = |>PARAMETER:e1<|.child_type(|>PARAMETER:field<|)
+        t2 = |>PARAMETER:e2<|.child_type(|>PARAMETER:field<|)
+        if t1 != t2
+          |>METHOD:warning<| "'#{|>PARAMETER:field<|}' has type='#{t1}' " +
+            "in #{|>PARAMETER:e1Name<|}, type='#{t2}' in #{|>PARAMETER:e2Name<|}."
+        else
+          c1 = Escaper.escape(c1)
+          c2 = Escaper.escape(c2)
+          |>METHOD:warning<| "'#{|>PARAMETER:field<|}' in #{|>PARAMETER:e1Name<|} [#{c1}] " +
+            "differs from that in #{|>PARAMETER:e2Name<|} [#{c2}]."
+        end
+      end
+    end
+    return problem
+  end
+
+  def |>METHOD:write_mark<|(|>PARAMETER:mark<|)
+    case |>PARAMETER:mark<|
+    when :check
+      @w.span(:class => 'good') { @w.target << '&#x2713;' }
+    when :question
+      @w.span(:class => 'warning') { @w.text! '?' }
+    when :exclamation
+      @w.span(:class => 'error') { @w.text! '!' }
+    when :info
+      @w.img(:align => 'top', :src => '/ape/info.png')
+    end
+  end
+
+end
+

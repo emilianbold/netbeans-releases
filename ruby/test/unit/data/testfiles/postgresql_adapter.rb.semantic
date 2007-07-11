@@ -1,0 +1,29 @@
+# Boiled down code snippet from postgresql_adapter.rb which trips up the
+# lexer; the query call is not properly lexed
+module ActiveRecord
+  def |>METHOD:indexes<|(|>PARAMETER:table_name<|, |>PARAMETER:name<| = nil<|) #:nodoc:
+    |>UNUSED:result<| = |>METHOD:query<|(<<-SQL, name)
+      SELECT i.relname, d.indisunique, a.attname
+        FROM pg_class t, pg_class i, pg_index d, pg_attribute a
+       WHERE i.relkind = 'i'
+         AND d.indexrelid = i.oid
+         AND d.indisprimary = 'f'
+         AND t.oid = d.indrelid
+         AND t.relname = '#{|>PARAMETER:table_name<|}'
+         AND a.attrelid = t.oid
+         AND ( d.indkey[0]=a.attnum OR d.indkey[1]=a.attnum
+            OR d.indkey[2]=a.attnum OR d.indkey[3]=a.attnum
+            OR d.indkey[4]=a.attnum OR d.indkey[5]=a.attnum
+            OR d.indkey[6]=a.attnum OR d.indkey[7]=a.attnum
+            OR d.indkey[8]=a.attnum OR d.indkey[9]=a.attnum )
+      ORDER BY i.relname
+  |>PARAMETER:  SQ<|L
+  end
+
+  def |>METHOD:columns<|(|>PARAMETER:table_name<|, |>PARAMETER:name<| = nil<|) #:nodoc:
+    |>METHOD:column_definitions<|(|>PARAMETER:table_name<|).collect do ||>PARAMETER:name<|, type, default, notnull, |>UNUSED:typmod<||
+      # typmod now unused as limit, precision, scale all handled by superclass
+      Column.new(|>PARAMETER:name<|, |>METHOD:default_value<|(default), |>METHOD:translate_field_type<|(type), notnull == "f")
+    end
+  end
+end
