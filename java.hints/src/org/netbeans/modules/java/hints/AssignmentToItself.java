@@ -17,9 +17,12 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +34,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -46,6 +50,7 @@ import org.openide.util.NbBundle;
  */
 public class AssignmentToItself extends AbstractHint {
 
+    private CancellableTreePathScanner<Boolean, List<Element>> scanner;
     
     private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.ASSIGNMENT);
     
@@ -66,6 +71,10 @@ public class AssignmentToItself extends AbstractHint {
         }
         
         AssignmentTree tree = (AssignmentTree)node;
+        
+        if ( ignore( treePath, tree, info.getTrees() ) ) {
+            return null;
+        }
         
         TreePath tpVar = new TreePath( treePath, tree.getVariable() );
         TreePath tpExp = new TreePath( treePath, tree.getExpression() );
@@ -92,7 +101,10 @@ public class AssignmentToItself extends AbstractHint {
     }
 
     public void cancel() {
-        // Does nothing
+        if( scanner != null ) {
+            scanner.cancel();
+        }
+        
     }
 
     public String getId() {
@@ -106,6 +118,59 @@ public class AssignmentToItself extends AbstractHint {
     public String getDescription() {
         return NbBundle.getMessage(AssignmentToItself.class, "DSC_ATI"); // NOI18N
     }
+    
+   private boolean ignore(TreePath tp, AssignmentTree at, Trees trees ) {
+        
+        ExpressionTree var = at.getVariable();
+        ExpressionTree exp = at.getExpression();
+        
+        List<Element> varElements = new ArrayList<Element>();
+        List<Element> expElements = new ArrayList<Element>();
+        
+        // System.out.println(at);
+        scanner = new MethodCallScanner(trees);
+        Boolean varMI = scanner.scan(new TreePath( tp, var), varElements);
+        varMI = varMI == null ? false : varMI;
+        // System.out.println("  ------------");
+        scanner = new MethodCallScanner(trees);
+        Boolean expMI = scanner.scan(new TreePath( tp, exp), expElements);
+        expMI = expMI == null ? false : expMI;
+        // System.out.println("VE" + varMI + " " + expMI);
+        
+        if ( varMI || expMI ) {
+            return true;
+        } 
+        else {
+            return !varElements.equals(expElements);
+        }
+    }
+    
+    private static class MethodCallScanner extends CancellableTreePathScanner<Boolean, List<Element>> {
+
+        private Trees trees;
+        
+        public MethodCallScanner( Trees trees ) {
+            this.trees = trees;
+        }
+        
+        @Override
+        public Boolean scan(Tree tree, List<Element> l) {
+            // System.out.println("    -> tree " + tree);
+            if ( tree != null ) {
+                if ( tree.getKind() == Tree.Kind.METHOD_INVOCATION ) {
+                    return true;
+                }
+                else if ( tree.getKind() == Tree.Kind.MEMBER_SELECT ||
+                          tree.getKind() == Tree.Kind.IDENTIFIER ) {
+                    l.add( trees.getElement(getCurrentPath()));
+                    // System.out.println("   " + trees.getElement(getCurrentPath()) );
+                }
+            }
+            return super.scan(tree, l);
+        }
+               
+    }
+
 
     private static class ATIFix implements Fix, Task<WorkingCopy> {
 
@@ -184,4 +249,6 @@ public class AssignmentToItself extends AbstractHint {
         */
         }
     }
+
+    
 }
