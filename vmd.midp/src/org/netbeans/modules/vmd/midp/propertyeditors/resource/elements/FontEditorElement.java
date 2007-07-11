@@ -20,10 +20,11 @@ package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 import java.awt.Font;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
@@ -32,8 +33,9 @@ import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
  *
  * @author Anton Chechel
  */
-public class FontEditorElement extends JPanel implements PropertyEditorResourceElement {
+public class FontEditorElement extends PropertyEditorResourceElement {
 
+    private FontStub currentStub;
     private Font defaultFont;
 
     public FontEditorElement() {
@@ -50,7 +52,6 @@ public class FontEditorElement extends JPanel implements PropertyEditorResourceE
 
     private void attachListeners() {
         kindList.addListSelectionListener(new ListSelectionListener() {
-
             public void valueChanged(ListSelectionEvent e) {
                 Object selectedValue = kindList.getSelectedValue();
                 if (!FontCD.LABEL_KIND_CUSTOM.equals(selectedValue)) {
@@ -58,6 +59,46 @@ public class FontEditorElement extends JPanel implements PropertyEditorResourceE
                     setListsEnabledExceptKind(false);
                 } else {
                     setListsEnabledExceptKind(true);
+                }
+                
+                if (kindList.hasFocus()) {
+                    int kindCode = FontCD.getKindByValue(kindList.getSelectedValue());
+                    currentStub.setKind(kindCode);
+                    setState(currentStub);
+                    fireElementChanged(currentStub.getComponentID(), FontCD.PROP_FONT_KIND, MidpTypes.createIntegerValue(kindCode));
+                }
+            }
+        });
+        
+        faceList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (faceList.hasFocus()) {
+                    int faceCode = FontCD.getFaceByValue(faceList.getSelectedValue());
+                    currentStub.setFace(faceCode);
+                    setState(currentStub);
+                    fireElementChanged(currentStub.getComponentID(), FontCD.PROP_FACE, MidpTypes.createIntegerValue(faceCode));
+                }
+            }
+        });
+
+        styleList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (styleList.hasFocus()) {
+                    int styleCode = FontCD.getStyleByValue(styleList.getSelectedValue());
+                    currentStub.setStyle(styleCode);
+                    setState(currentStub);
+                    fireElementChanged(currentStub.getComponentID(), FontCD.PROP_STYLE, MidpTypes.createIntegerValue(styleCode));
+                }
+            }
+        });
+
+        sizeList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (sizeList.hasFocus()) {
+                    int sizeCode = FontCD.getSizeByValue(sizeList.getSelectedValue());
+                    currentStub.setSize(sizeCode);
+                    setState(currentStub);
+                    fireElementChanged(currentStub.getComponentID(), FontCD.PROP_SIZE, MidpTypes.createIntegerValue(sizeCode));
                 }
             }
         });
@@ -75,16 +116,16 @@ public class FontEditorElement extends JPanel implements PropertyEditorResourceE
         model.addElement(FontCD.LABEL_FACE_MONOSPACE);
         model.addElement(FontCD.LABEL_FACE_PROPORTIONAL);
 
-        model = (DefaultListModel) sizeList.getModel();
-        model.addElement(FontCD.LABEL_SIZE_SMALL);
-        model.addElement(FontCD.LABEL_SIZE_MEDIUM);
-        model.addElement(FontCD.LABEL_SIZE_LARGE);
-
         model = (DefaultListModel) styleList.getModel();
         model.addElement(FontCD.LABEL_STYLE_PLAIN);
         model.addElement(FontCD.LABEL_STYLE_BOLD);
         model.addElement(FontCD.LABEL_STYLE_ITALIC);
         model.addElement(FontCD.LABEL_STYLE_UNDERLINED);
+
+        model = (DefaultListModel) sizeList.getModel();
+        model.addElement(FontCD.LABEL_SIZE_SMALL);
+        model.addElement(FontCD.LABEL_SIZE_MEDIUM);
+        model.addElement(FontCD.LABEL_SIZE_LARGE);
     }
 
     private void setDefaultFont() {
@@ -104,69 +145,129 @@ public class FontEditorElement extends JPanel implements PropertyEditorResourceE
         kindList.setEnabled(isEnabled);
         setListsEnabledExceptKind(isEnabled);
     }
+    
+    private void setState(FontStub stub) {
+        int kindCode = stub.getKind();
+        kindList.setSelectedValue(FontCD.getKindByCode(kindCode), true);
 
-    public void setDesignComponent(final DesignComponent component) {
-        if (component == null) {
+        if (kindCode == FontCD.VALUE_KIND_CUSTOM) {
+            int faceCode = stub.getFace();
+            int styleCode = stub.getStyle();
+            int sizeCode = stub.getSize();
+
+            faceList.setSelectedValue(FontCD.getFaceByCode(faceCode), true);
+            styleList.setSelectedValue(FontCD.getStyleByCode(styleCode), true);
+            sizeList.setSelectedValue(FontCD.getSizeByCode(sizeCode), true);
+
+            DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+            if (document != null) {
+                sampleLabel.setFont(ScreenSupport.getFont(document, kindCode, faceCode, styleCode, sizeCode));
+            }
+        } else {
+            setListsEnabledExceptKind(false);
+        }
+    }
+
+    public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
+        if (wrapper == null) {
+            // UI stuff
             kindList.clearSelection();
             setDefaultFont();
             setListsEnabled(false);
             return;
         }
 
-        if (component.getType() != FontCD.TYPEID) {
-            throw new IllegalArgumentException("Passed component must have typeID " + FontCD.TYPEID + " instead passed " + component.getType()); // NOI18N
+        final DesignComponent component = wrapper.getComponent();
+        if (component != null) { // existing component
+            if (component.getType() != FontCD.TYPEID) {
+                throw new IllegalArgumentException("Passed component must have typeID " + FontCD.TYPEID + " instead passed " + component.getType()); // NOI18N
+            }
+
+            long componentID = component.getComponentID();
+            final int[] kindCode = new int[1];
+            final int[] faceCode = new int[1];
+            final int[] styleCode = new int[1];
+            final int[] sizeCode = new int[1];
+            component.getDocument().getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    kindCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
+                    faceCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FACE));
+                    styleCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_STYLE));
+                    sizeCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_SIZE));
+                }
+            });
+            currentStub = new FontStub(componentID, kindCode[0], faceCode[0], styleCode[0], sizeCode[0]);
+        
+            // UI stuff
+            setState(currentStub);
+            kindList.setEnabled(true);
+            if (kindCode[0] != FontCD.VALUE_KIND_CUSTOM) {
+                setListsEnabledExceptKind(false);
+            }
+        } else { // virtual component
+
+        }
+    }
+
+    private static class FontStub {
+        private long componentID;
+        private int kind;
+        private int face;
+        private int style;
+        private int size;
+        private boolean isChanged;
+
+        public FontStub(long componentID, int kind, int face, int style, int size) {
+            this.componentID = componentID;
+            this.kind = kind;
+            this.face = face;
+            this.style = style;
+            this.size = size;
         }
 
-        setListsEnabled(true);
+        public long getComponentID() {
+            return componentID;
+        }
 
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        public boolean isChanged() {
+            return isChanged;
+        }
 
-            public void run() {
-                int kindCode = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
-                if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
-                    kindList.setSelectedValue(FontCD.LABEL_KIND_DEFAULT, true);
-                } else if (kindCode == FontCD.VALUE_KIND_CUSTOM) {
-                    kindList.setSelectedValue(FontCD.LABEL_KIND_CUSTOM, true);
-                } else if (kindCode == FontCD.VALUE_KIND_STATIC) {
-                    kindList.setSelectedValue(FontCD.LABEL_KIND_STATIC, true);
-                } else if (kindCode == FontCD.VALUE_KIND_INPUT) {
-                    kindList.setSelectedValue(FontCD.LABEL_KIND_INPUT, true);
-                }
+        public void setWasChanged(boolean isChanged) {
+            this.isChanged = isChanged;
+        }
 
-                if (kindCode == FontCD.VALUE_KIND_CUSTOM) {
-                    int faceCode = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FACE));
-                    if (faceCode == FontCD.VALUE_FACE_SYSTEM) {
-                        faceList.setSelectedValue(FontCD.LABEL_FACE_SYSTEM, true);
-                    } else if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {
-                        faceList.setSelectedValue(FontCD.LABEL_FACE_MONOSPACE, true);
-                    } else if (faceCode == FontCD.VALUE_FACE_PROPORTIONAL) {
-                        faceList.setSelectedValue(FontCD.LABEL_FACE_PROPORTIONAL, true);
-                    }
+        public int getKind() {
+            return kind;
+        }
 
-                    int styleCode = MidpTypes.getInteger(component.readProperty(FontCD.PROP_STYLE));
-                    if (styleCode == FontCD.VALUE_STYLE_PLAIN) {
-                        styleList.setSelectedValue(FontCD.LABEL_STYLE_PLAIN, true);
-                    } else if (styleCode == FontCD.VALUE_STYLE_BOLD) {
-                        styleList.setSelectedValue(FontCD.LABEL_STYLE_BOLD, true);
-                    } else if (styleCode == FontCD.VALUE_STYLE_ITALIC) {
-                        styleList.setSelectedValue(FontCD.LABEL_STYLE_ITALIC, true);
-                    } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
-                        styleList.setSelectedValue(FontCD.LABEL_STYLE_UNDERLINED, true);
-                    }
+        public void setKind(int kind) {
+            this.kind = kind;
+        }
 
-                    int sizeCode = MidpTypes.getInteger(component.readProperty(FontCD.PROP_SIZE));
-                    if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
-                        sizeList.setSelectedValue(FontCD.LABEL_SIZE_SMALL, true);
-                    } else if (sizeCode == FontCD.VALUE_SIZE_MEDIUM) {
-                        sizeList.setSelectedValue(FontCD.LABEL_SIZE_MEDIUM, true);
-                    } else if (sizeCode == FontCD.VALUE_SIZE_LARGE) {
-                        sizeList.setSelectedValue(FontCD.LABEL_SIZE_LARGE, true);
-                    }
+        public int getFace() {
+            return face;
+        }
 
-                    sampleLabel.setFont(ScreenSupport.getFont(component));
-                }
-            }
-        });
+        public void setFace(int face) {
+            this.face = face;
+        }
+
+        public int getStyle() {
+            return style;
+        }
+
+        public void setStyle(int style) {
+            this.style = style;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
     }
 
     /** This method is called from within the constructor to
@@ -229,18 +330,17 @@ public class FontEditorElement extends JPanel implements PropertyEditorResourceE
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(sampleLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(sampleLabel)
+                    .add(jLabel1)))
         );
     }// </editor-fold>//GEN-END:initComponents
-        // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList faceList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;

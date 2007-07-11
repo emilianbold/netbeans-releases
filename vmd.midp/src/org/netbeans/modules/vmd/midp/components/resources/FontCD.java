@@ -169,6 +169,106 @@ public final class FontCD extends ComponentDescriptor {
         return styleTypes;
     }
 
+    public static String getKindByCode(int code) {
+        switch (code) {
+            case VALUE_KIND_DEFAULT:
+                return LABEL_KIND_DEFAULT;
+            case VALUE_KIND_CUSTOM:
+                return LABEL_KIND_CUSTOM;
+            case VALUE_KIND_STATIC:
+                return LABEL_KIND_STATIC;
+            case VALUE_KIND_INPUT:
+                return LABEL_KIND_INPUT;
+        }
+        return LABEL_KIND_DEFAULT;
+    }
+
+    public static String getFaceByCode(int code) {
+        switch (code) {
+            case VALUE_FACE_SYSTEM:
+                return LABEL_FACE_SYSTEM;
+            case VALUE_FACE_MONOSPACE:
+                return LABEL_FACE_MONOSPACE;
+            case VALUE_FACE_PROPORTIONAL:
+                return LABEL_FACE_PROPORTIONAL;
+        }
+        return LABEL_FACE_SYSTEM;
+    }
+
+    public static String getStyleByCode(int code) {
+        switch (code) {
+            case VALUE_STYLE_PLAIN:
+                return LABEL_STYLE_PLAIN;
+            case VALUE_STYLE_BOLD:
+                return LABEL_STYLE_BOLD;
+            case VALUE_STYLE_ITALIC:
+                return LABEL_STYLE_ITALIC;
+            case VALUE_STYLE_UNDERLINED:
+                return LABEL_STYLE_UNDERLINED;
+        }
+        return LABEL_STYLE_PLAIN;
+    }
+
+    public static String getSizeByCode(int code) {
+        switch (code) {
+            case VALUE_SIZE_SMALL:
+                return LABEL_SIZE_SMALL;
+            case VALUE_SIZE_MEDIUM:
+                return LABEL_SIZE_MEDIUM;
+            case VALUE_SIZE_LARGE:
+                return LABEL_SIZE_LARGE;
+        }
+        return LABEL_SIZE_MEDIUM;
+    }
+
+    public static int getKindByValue(Object value) {
+        if (value == LABEL_KIND_DEFAULT) {
+            return VALUE_KIND_DEFAULT;
+        } else if (value == LABEL_KIND_CUSTOM) {
+            return VALUE_KIND_CUSTOM;
+        } else if (value == LABEL_KIND_STATIC) {
+            return VALUE_KIND_STATIC;
+        } else if (value == LABEL_KIND_INPUT) {
+            return VALUE_KIND_INPUT;
+        }
+        return VALUE_KIND_DEFAULT;
+    }
+
+    public static int getFaceByValue(Object value) {
+        if (value == LABEL_FACE_SYSTEM) {
+            return VALUE_FACE_SYSTEM;
+        } else if (value == LABEL_FACE_MONOSPACE) {
+            return VALUE_FACE_MONOSPACE;
+        } else if (value == LABEL_FACE_PROPORTIONAL) {
+            return VALUE_FACE_PROPORTIONAL;
+        }
+        return VALUE_FACE_SYSTEM;
+    }
+
+    public static int getStyleByValue(Object value) {
+        if (value == LABEL_STYLE_PLAIN) {
+            return VALUE_STYLE_PLAIN;
+        } else if (value == LABEL_STYLE_BOLD) {
+            return VALUE_STYLE_BOLD;
+        } else if (value == LABEL_STYLE_ITALIC) {
+            return VALUE_STYLE_ITALIC;
+        } else if (value == LABEL_STYLE_UNDERLINED) {
+            return VALUE_STYLE_UNDERLINED;
+        }
+        return VALUE_STYLE_PLAIN;
+    }
+
+    public static int getSizeByValue(Object value) {
+        if (value == LABEL_SIZE_SMALL) {
+            return VALUE_SIZE_SMALL;
+        } else if (value == LABEL_SIZE_MEDIUM) {
+            return VALUE_SIZE_MEDIUM;
+        } else if (value == LABEL_SIZE_LARGE) {
+            return VALUE_SIZE_LARGE;
+        }
+        return VALUE_SIZE_MEDIUM;
+    }
+
     private static class FontSetter implements Setter {
 
         public boolean isConstructor () {

@@ -57,6 +57,43 @@ public final class ScreenSupport {
         return getFont(getDeviceInfo(fontComponent.getDocument()), fontComponent);
     }
 
+    public static Font getFont(DesignDocument document, int kindCode, int faceCode, int styleCode, int sizeCode) {
+        ScreenDeviceInfo deviceInfo = getDeviceInfo(document);
+        
+        if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
+            return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
+        } else if (kindCode == FontCD.VALUE_KIND_STATIC) {
+            return deviceInfo.getDeviceTheme().getFont(FontType.STATIC_TEXT);
+        } else if (kindCode == FontCD.VALUE_KIND_INPUT) {
+            return deviceInfo.getDeviceTheme().getFont(FontType.INPUT_TEXT);
+        }
+
+        FontFace face = FontFace.SYSTEM;
+        if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {
+            face = FontFace.MONOSPACE;
+        } else if (faceCode == FontCD.VALUE_FACE_PROPORTIONAL) {
+            face = FontFace.PROPORTIONAL;
+        }
+
+        FontStyle style = FontStyle.PLAIN;
+        if (styleCode == FontCD.VALUE_STYLE_BOLD) {
+            style = FontStyle.BOLD;
+        } else if (styleCode == FontCD.VALUE_STYLE_ITALIC) {
+            style = FontStyle.ITALIC;
+        } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
+            style = FontStyle.UNDERLINED;
+        }
+
+        FontSize size = FontSize.MEDIUM;
+        if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
+            size = FontSize.SMALL;
+        } else if (sizeCode == FontCD.VALUE_SIZE_LARGE) {
+            size = FontSize.LARGE;
+        }
+
+        return deviceInfo.getDeviceTheme().getFont(face, style, size);
+    }
+
     // TODO Should this method be in VMD Screen Designer module?
     private static ScreenDeviceInfo getDeviceInfo(final DesignDocument document) {
         final ScreenDeviceInfo[] screenDevice = new ScreenDeviceInfo[1];
@@ -90,41 +127,11 @@ public final class ScreenSupport {
         }
         
         int kindCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FONT_KIND));
-        if (kindCode == FontCD.VALUE_KIND_DEFAULT) {
-            return deviceInfo.getDeviceTheme().getFont(FontType.DEFAULT);
-        } else if (kindCode == FontCD.VALUE_KIND_STATIC) {
-            return deviceInfo.getDeviceTheme().getFont(FontType.STATIC_TEXT);
-        } else if (kindCode == FontCD.VALUE_KIND_INPUT) {
-            return deviceInfo.getDeviceTheme().getFont(FontType.INPUT_TEXT);
-        }
-
         int faceCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_FACE));
-        FontFace face = FontFace.SYSTEM;
-        if (faceCode == FontCD.VALUE_FACE_MONOSPACE) {
-            face = FontFace.MONOSPACE;
-        } else if (faceCode == FontCD.VALUE_FACE_PROPORTIONAL) {
-            face = FontFace.PROPORTIONAL;
-        }
-
         int styleCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_STYLE));
-        FontStyle style = FontStyle.PLAIN;
-        if (styleCode == FontCD.VALUE_STYLE_BOLD) {
-            style = FontStyle.BOLD;
-        } else if (styleCode == FontCD.VALUE_STYLE_ITALIC) {
-            style = FontStyle.ITALIC;
-        } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
-            style = FontStyle.UNDERLINED;
-        }
-
         int sizeCode = MidpTypes.getInteger(fontComponent.readProperty(FontCD.PROP_SIZE));
-        FontSize size = FontSize.MEDIUM;
-        if (sizeCode == FontCD.VALUE_SIZE_SMALL) {
-            size = FontSize.SMALL;
-        } else if (sizeCode == FontCD.VALUE_SIZE_LARGE) {
-            size = FontSize.LARGE;
-        }
 
-        return deviceInfo.getDeviceTheme().getFont(face, style, size);
+        return getFont(fontComponent.getDocument(), kindCode, faceCode, styleCode, sizeCode);
     }
 
     /**
