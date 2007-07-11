@@ -75,7 +75,7 @@ public final class ModificationResult {
     
     private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
-        EditorCookie ec = dObj != null ? (EditorCookie) dObj.getCookie(EditorCookie.class) : null;
+        EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
         // writer where he wants to see changes, commit the changes to 
         // found document.
@@ -259,6 +259,7 @@ public final class ModificationResult {
             excluded = b;
         }
 
+        @Override
         public String toString() {
             return kind + "<" + startPos.getOffset() + ", " + endPos.getOffset() + ">: " + oldText + " -> " + newText;
         }
