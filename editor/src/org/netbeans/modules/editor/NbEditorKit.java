@@ -74,6 +74,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -729,7 +730,13 @@ public class NbEditorKit extends ExtKit {
         }
         
         public LayerSubFolderMenu(JTextComponent target, FileObject folder) {
-            this(target, getLocalizedName(folder), ActionsList.convert(Arrays.asList(folder.getChildren())));
+            this(target, getLocalizedName(folder), ActionsList.convert(sort(folder.getChildren())));
+        }
+        
+        private static List<FileObject> sort( FileObject[] children ) {
+            List<FileObject> fos = Arrays.asList(children);
+            fos = FileUtil.getOrder(fos, true);
+            return fos;
         }
         
         private LayerSubFolderMenu(JTextComponent target, String text, List items) {
