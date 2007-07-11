@@ -44,9 +44,12 @@ public class ProjectChooser {
     /**
      * Sets the folder last used for creating a new project.
      * @param folder The folder to be set as last used. Must not be null
+     * @throws IllegalArgumentException if folder parameter is null or not a directory.
      */
     public static void setProjectsFolder (File folder) {
-        assert folder != null && folder.isDirectory(): "Parameter must be a valid folder."; //NOI18N
+        if (folder == null || !folder.isDirectory()) {
+            throw new IllegalArgumentException("Parameter must be a valid folder."); //NOI18N
+        }
         Utilities.getProjectChooserFactory().setProjectsFolder(folder);
     }
 
