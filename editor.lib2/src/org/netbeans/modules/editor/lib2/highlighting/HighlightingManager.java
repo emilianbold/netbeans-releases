@@ -65,8 +65,13 @@ public final class HighlightingManager {
         return instance;
     }
     
-    public HighlightsContainer getHighlights(JTextComponent pane, HighlightsLayerFilter filter) {
-        return getHighlighting(pane).getContainer(filter);
+    public synchronized HighlightsContainer getHighlights(JTextComponent pane, HighlightsLayerFilter filter) {
+        Highlighting h = (Highlighting) pane.getClientProperty(Highlighting.class);
+        if (h == null) {
+            h = new Highlighting(pane);
+            pane.putClientProperty(Highlighting.class, h);
+        }
+        return h.getContainer(filter);
     }
     
     // ----------------------------------------------------------------------
@@ -75,25 +80,8 @@ public final class HighlightingManager {
 
     private static HighlightingManager instance;
     
-    /* package */ final WeakHashMap<JTextComponent, WeakReference<Highlighting>> CACHE = 
-        new WeakHashMap<JTextComponent, WeakReference<Highlighting>>();
-    
     /** Creates a new instance of HighlightingManager */
     private HighlightingManager() {
-    }
-    
-    private Highlighting getHighlighting(JTextComponent pane) {
-        synchronized (CACHE) {
-            WeakReference<Highlighting> ref = CACHE.get(pane);
-            Highlighting h = ref == null ? null : ref.get();
-
-            if (h == null) {
-                h = new Highlighting(pane);
-                CACHE.put(pane, new WeakReference<Highlighting>(h));
-            }
-            
-            return h;
-        }
     }
     
     private static final class Highlighting implements PropertyChangeListener {
@@ -194,6 +182,13 @@ public final class HighlightingManager {
             if (!Utilities.compareObjects(lastKnownDocument, pane.getDocument()) ||
                 !Arrays.equals(lastKnownMimePaths, mimePaths)
             ) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("rebuildAll: lastKnownDocument = " + simpleToString(lastKnownDocument) + //NOI18N
+                            ", document = " + simpleToString(pane.getDocument()) + //NOI18N
+                            ", lastKnownMimePaths = " + mimePathsToString(lastKnownMimePaths) + //NOI18N
+                            ", mimePaths = " + mimePathsToString(mimePaths)); //NOI18N
+                }
+                
                 // Unregister listeners
                 if (factories != null) {
                     factories.removeLookupListener(factoriesTracker);
@@ -251,6 +246,11 @@ public final class HighlightingManager {
             
             inRebuildAllContainers = true;
             try {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("rebuildAllContainers: lastKnownDocument = " + simpleToString(lastKnownDocument) + //NOI18N
+                            ", lastKnownMimePaths = " + mimePathsToString(lastKnownMimePaths)); //NOI18N
+                }
+                
                 for(HighlightsLayerFilter filter : containers.keySet()) {
                     WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
                     CompoundHighlightsContainer container = ref == null ? null : ref.get();
@@ -314,8 +314,8 @@ public final class HighlightingManager {
                     hcs.add(layerAccessor.getContainer());
                 }
                 
-                if (LOG.isLoggable(Level.FINE)) {
-                    logLayers(doc, lastKnownMimePaths, sortedLayers);
+                if (LOG.isLoggable(Level.FINEST)) {
+                    logLayers(doc, lastKnownMimePaths, sortedLayers, Level.FINEST);
                 }
                 
                 container.setLayers(doc, hcs.toArray(new HighlightsContainer[hcs.size()]));
@@ -324,7 +324,7 @@ public final class HighlightingManager {
             }
         }
 
-        private static void logLayers(Document doc, MimePath [] mimePaths, List<? extends HighlightsLayer> layers) {
+        private static void logLayers(Document doc, MimePath [] mimePaths, List<? extends HighlightsLayer> layers, Level logLevel) {
             StringBuilder sb = new StringBuilder();
             
             sb.append("HighlighsLayers {\n"); //NOI18N
@@ -351,7 +351,7 @@ public final class HighlightingManager {
             
             sb.append("}\n"); //NOI18N
             
-            LOG.fine(sb.toString());
+            LOG.log(logLevel, sb.toString());
         }
         
     } // End of Highlighting class
@@ -434,4 +434,25 @@ public final class HighlightingManager {
             return patterns;
         }
     } // End of RegExpFilter class
+    
+    private static String simpleToString(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+    }
+    
+    private static String mimePathsToString(MimePath... mimePaths) {
+        if (mimePaths == null) {
+            return "null";
+        } else {
+            StringBuilder sb = new StringBuilder();
+            
+            sb.append('{'); //NOI18N
+            for(MimePath mp : mimePaths) {
+                sb.append('\'').append(mp.getPath()).append('\''); //NOI18N
+                sb.append(","); //NOI81N
+            }
+            sb.append('}'); //NOI18N
+            
+            return sb.toString();
+        }
+    }
 }

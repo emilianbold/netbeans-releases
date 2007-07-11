@@ -32,6 +32,7 @@ import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
@@ -592,10 +593,15 @@ public class HighlightingManagerTest extends NbTestCase {
 
     public void testCachedInstancesGCed() {
         MemoryMimeDataProvider.reset(null);
-        HighlightingManager hm = HighlightingManager.getInstance();
         
-        gc();
-        assertEquals("The CACHE should be empty", 0, hm.CACHE.size());
+        // Hold MimePath instance and lookup result; the highlighting container should still
+        // be GCed
+        final MimePath mimePath = MimePath.parse("text/plain");
+        final Lookup.Result<FontColorSettings> lookupResult = MimeLookup.getLookup(mimePath).lookupResult(FontColorSettings.class);
+        Collection<? extends FontColorSettings> fcs = lookupResult.allInstances();
+        assertTrue("There should be FontColorSettings for " + mimePath.getPath(), fcs.size() > 0);
+        
+        HighlightingManager hm = HighlightingManager.getInstance();
         
         JEditorPane pane = new JEditorPane();
         pane.setContentType("text/plain");
@@ -604,8 +610,6 @@ public class HighlightingManagerTest extends NbTestCase {
         HighlightsContainer hc = hm.getHighlights(pane, HighlightsLayerFilter.IDENTITY);
         assertNotNull("Can't get HighlightsContainer", hc);
 
-        assertEquals("Wrong number of highlights in the CACHE", 1, hm.CACHE.size());
-        
         WeakReference<JEditorPane> refPane = new WeakReference<JEditorPane>(pane);
         WeakReference<HighlightsContainer> refHc = new WeakReference<HighlightsContainer>(hc);
         
@@ -615,7 +619,6 @@ public class HighlightingManagerTest extends NbTestCase {
         
         assertGC("JEP has not been GCed", refPane);
         assertGC("HC has not been GCed", refHc);
-        assertEquals("The CACHE should be empty", 0, hm.CACHE.size());
     }
     
     private void assertAttribContains(String msg, AttributeSet as, String... keys) {

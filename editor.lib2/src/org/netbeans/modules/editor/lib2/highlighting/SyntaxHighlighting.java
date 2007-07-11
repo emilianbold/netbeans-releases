@@ -174,6 +174,10 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     }
 
     private static String attributeSet(AttributeSet as) {
+        if (as == null) {
+            return "AttributeSet is null"; //NOI18N
+        }
+        
         StringBuilder sb = new StringBuilder();
         
         for(Enumeration<? extends Object> keys = as.getAttributeNames(); keys.hasMoreElements(); ) {
@@ -426,9 +430,14 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
                 fcs = lookup.lookup(FontColorSettings.class);
                 fcsCache.put(mimePath, fcs);
+                
+                if (fcs == null && LOG.isLoggable(Level.WARNING)) {
+                    // Should not normally happen; see #106337
+                    LOG.warning("No FontColorSettings for '" + mimePath + "' mime path."); //NOI18N
+                }
             }
             
-            AttributeSet attribs = findFontAndColors(fcs, tokenId, innerLanguage);
+            AttributeSet attribs = fcs == null ? null : findFontAndColors(fcs, tokenId, innerLanguage);
             
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer(tokenId(tokenId, false) + " -> {" + attributeSet(attribs) + "}"); //NOI18N
