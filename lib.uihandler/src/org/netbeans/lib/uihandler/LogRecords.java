@@ -201,8 +201,8 @@ public final class LogRecords {
                         params = new ArrayList<String>();
                     }
                     params.add(v);
-                    if (params.size() > 500) {
-                        LOG.severe("Too long params when reading a record. Deleting few."); // NOI18N
+                    if (params.size() > 1500) {
+                        LOG.severe("Too long params when reading a record. Deleting few. Msg: " + Elem.MESSAGE.parse(values)); // NOI18N
                         for (String p : params) {
                             LOG.fine(p);
                         }

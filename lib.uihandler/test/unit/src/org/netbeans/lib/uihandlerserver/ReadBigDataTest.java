@@ -68,7 +68,7 @@ public class ReadBigDataTest extends NbTestCase {
                     first = record;
                 }
                 cnt++;
-                if (record.getParameters() != null && record.getParameters().length > 500) {
+                if (record.getParameters() != null && record.getParameters().length > 1500) {
                     fail("Too many parameters: " + record.getParameters().length);
                 }
             }
