@@ -1951,7 +1951,7 @@ public final class VeryPretty extends JCTree.Visitor {
     // consider usage of TreeUtilities.isSynthethic() - currently tree utilities
     // is not available in printing class and method is insufficient for our
     // needs.
-    private boolean isSynthetic(JCTree tree) {
+    private static boolean isSynthetic(JCTree tree) {
         // filter syntetic constructors
         if (Kind.METHOD == tree.getKind() && (((JCMethodDecl) tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
             return true;
@@ -1961,7 +1961,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
     
     /** Is the given tree an enumerator definition? */
-    private boolean isEnumerator(JCTree tree) {
+    private static boolean isEnumerator(JCTree tree) {
         return tree.tag == JCTree.VARDEF && (((JCVariableDecl) tree).mods.flags & ENUM) != 0;
     }
 
