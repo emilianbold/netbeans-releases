@@ -232,7 +232,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-javadoc" depends="build-nozip,init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <pathconvert property="modules.fullpath" >
           <path>
-              <dirset dir="${nb_all}" includes="${config.javadoc.all}" />
+              <dirset dir="${nb_all}" includes="${config.javadoc.netbeans}" />
           </path>
           <mapper type="identity" />
       </pathconvert>
