@@ -57,7 +57,7 @@ public class CreateViewAction extends DatabaseAction {
                 nfo.addView(dlg.getViewName());
             }
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("ERR_UnableToCreateView"), new String[] {exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
