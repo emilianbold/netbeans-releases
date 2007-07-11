@@ -320,7 +320,9 @@ public class WatchesModel implements TreeModel {
                 evaluatedWatch = this.evaluatedWatch;
             }
             if (evaluatedWatch == null) {
-                getValue();
+                JPDAWatch[] watchRef = new JPDAWatch[] { null };
+                getValue(watchRef); // To init the evaluatedWatch
+                evaluatedWatch = watchRef[0];
             }
             return evaluatedWatch.getToStringValue();
         }
@@ -331,12 +333,18 @@ public class WatchesModel implements TreeModel {
                 evaluatedWatch = this.evaluatedWatch;
             }
             if (evaluatedWatch == null) {
-                getValue(); // To init the evaluatedWatch
+                JPDAWatch[] watchRef = new JPDAWatch[] { null };
+                getValue(watchRef); // To init the evaluatedWatch
+                evaluatedWatch = watchRef[0];
             }
             return evaluatedWatch.getType();
         }
 
         public String getValue() {
+            return getValue((JPDAWatch[]) null);
+        }
+        
+        private String getValue(JPDAWatch[] watchRef) {
             synchronized (evaluating) {
                 if (evaluating[0]) {
                     try {
@@ -378,6 +386,7 @@ public class WatchesModel implements TreeModel {
                 jw = jwi;
             } finally {
                 setEvaluated(jw);
+                if (watchRef != null) watchRef[0] = jw;
                 synchronized (evaluating) {
                     evaluating[0] = false;
                     evaluating.notifyAll();
