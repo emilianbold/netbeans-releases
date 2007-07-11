@@ -26,6 +26,7 @@ import com.apple.eawt.ApplicationEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
@@ -749,7 +750,7 @@ public class Installer implements FinishHandler {
         LogManager.logIndent("creating lock file"); // NOI18N
         
         if (System.getProperty(IGNORE_LOCK_FILE_PROPERTY) == null) {
-            File lock = new File(localDirectory, LOCK_FILE_NAME);
+            final File lock = new File(localDirectory, LOCK_FILE_NAME);
             
             if (lock.exists()) {
                 LogManager.log("... lock file already exists"); // NOI18N
