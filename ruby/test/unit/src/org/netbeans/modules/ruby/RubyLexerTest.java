@@ -211,7 +211,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LINE_COMMENT, "# Comment\n");
        // LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "foo\n");
@@ -227,7 +227,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOY");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
@@ -238,6 +238,7 @@ public class RubyLexerTest extends TestCase {
         assertFalse(ts.moveNext());
     }
     
+    @SuppressWarnings("unchecked")
     public void testHeredocInput3() { // Boiled down failure from postgresql_adapter.rb
         String text = "q(<<S,name)\nHELLO\nS\n";
         TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
@@ -245,7 +246,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "q");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<S");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "name");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
@@ -262,7 +263,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOY");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
@@ -298,7 +299,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
-        //LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        //LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.ERROR, "\nfoo");
         assertFalse(ts.moveNext());
     }
@@ -322,7 +323,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<-EOT");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<-EOY");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
@@ -345,7 +346,7 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<-\"EOT\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.NONUNARY_OP, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<-\"EOY\"");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");

@@ -431,7 +431,7 @@ class Ape
       |>METHOD:good<|("Entry deletion reported success.", name)
     else
       |>METHOD:error<|("Couldn't delete the entry that was posted: " + deleter.last_error,
-          name)
+        name)
       return
     end
 
@@ -471,7 +471,7 @@ class Ape
     |>METHOD:save_dialog<|(name, poster)
     if !worked
       |>METHOD:error<|("Can't POST picture to media collection: #{poster.last_error}",
-          name)
+        name)
       return
     end
 

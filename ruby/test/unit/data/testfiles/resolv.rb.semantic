@@ -1124,18 +1124,18 @@ class Resolv
       def |>METHOD:encode<|
         return MessageEncoder.new {|msg|
           msg.put_pack('nnnnnn',
-              @id,
-              (@qr & 1) << 15 |
+            @id,
+            (@qr & 1) << 15 |
             (@opcode & 15) << 11 |
             (@aa & 1) << 10 |
             (@tc & 1) << 9 |
             (@rd & 1) << 8 |
             (@ra & 1) << 7 |
             (@rcode & 15),
-              @question.length,
-              @answer.length,
-              @authority.length,
-              @additional.length)
+            @question.length,
+            @answer.length,
+            @authority.length,
+            @additional.length)
           @question.each {|q|
             name, typeclass = q
             msg.put_name(name)

@@ -51,40 +51,40 @@ z
 
 
 .t.e.s.t. Heredocs
-#print <<EOF
-#The price is #{$Price}.
-#EOF
-#
-#  print <<"EOF"
-#The price is #{$Price}.
-#EOF
-#
-# print <<`EOC`
-#echo hi there
-#echo lo there
-#EOC
-#
-# This is broken; a bug is open on it (it occurs in assertions.rb)
-#  print <<"foo", <<"bar"        # you can stack them
-#I said foo.
-#foo
-#I said bar.
-#bar
-#
-#  myfunc(<<"THIS", 23, <<'THAT')
-#Here's a line
-#or two.
-#THIS
-#and here's another.
-#THAT
-#
-#  if need_define_foo
-#    eval <<-EOS                 # delimiters can be indented
-#      def foo
-#        print "foo\n"
-#      end
-#    EOS
-#  end
+print <<EOF
+The price is #{$Price}.
+EOF
+
+  print <<"EOF"
+The price is #{$Price}.
+EOF
+
+ print <<`EOC`
+echo hi there
+echo lo there
+EOC
+
+ This is broken; a bug is open on it (it occurs in assertions.rb)
+  print <<"foo", <<"bar"        # you can stack them
+I said foo.
+foo
+I said bar.
+bar
+
+  myfunc(<<"THIS", 23, <<'THAT')
+Here's a line
+or two.
+THIS
+and here's another.
+THAT
+
+  if need_define_foo
+    eval <<-EOS                 # delimiters can be indented
+      def foo
+        print "foo\n"
+      end
+    EOS
+  end
 .e.o.f.
 
 

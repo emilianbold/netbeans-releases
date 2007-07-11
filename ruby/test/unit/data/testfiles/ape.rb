@@ -431,7 +431,7 @@ class Ape
       good("Entry deletion reported success.", name)
     else
       error("Couldn't delete the entry that was posted: " + deleter.last_error,
-          name)
+        name)
       return
     end
 
@@ -471,7 +471,7 @@ class Ape
     save_dialog(name, poster)
     if !worked
       error("Can't POST picture to media collection: #{poster.last_error}",
-          name)
+        name)
       return
     end
 

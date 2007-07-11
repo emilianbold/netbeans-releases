@@ -11,7 +11,8 @@ import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
+ * Test the semantic analyzer / highlighter
+ * 
  * @author Tor Norbye
  */
 public class SemanticAnalyzerTest extends RubyTestBase {
@@ -60,7 +61,6 @@ public class SemanticAnalyzerTest extends RubyTestBase {
         if (!rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
         }
-        String rubySource = readFile(test, rubyFile);
 
         SemanticAnalysis analyzer = new SemanticAnalysis();
         CompilationInfo info = getInfo(relFilePath);

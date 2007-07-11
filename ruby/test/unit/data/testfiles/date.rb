@@ -851,7 +851,7 @@ class Date
   # Is this a leap year?
   def leap?
     self.class.jd_to_civil(self.class.civil_to_jd(year, 3, 1, ns?) - 1,
-        ns?)[-1] == 29
+      ns?)[-1] == 29
   end
 
   once :leap?
@@ -1200,7 +1200,7 @@ class DateTime < Date
     elem ||= {}
     y, m, d, h, min, s, fr, of =
       elem.values_at(:year, :mon, :mday,
-        :hour, :min, :sec, :sec_fraction, :offset)
+      :hour, :min, :sec, :sec_fraction, :offset)
     h   ||= 0
     min ||= 0
     s   ||= 0
@@ -1275,14 +1275,14 @@ end
 class Date
 
   [ %w(exist1?	valid_jd?),
-      %w(exist2?	valid_ordinal?),
-      %w(exist3?	valid_date?),
-      %w(exist?	valid_date?),
-      %w(existw?	valid_commercial?),
-      %w(new1	jd),
-      %w(new2	ordinal),
-      %w(new3	new),
-      %w(neww	commercial)
+    %w(exist2?	valid_ordinal?),
+    %w(exist3?	valid_date?),
+    %w(exist?	valid_date?),
+    %w(existw?	valid_commercial?),
+    %w(new1	jd),
+    %w(new2	ordinal),
+    %w(new3	new),
+    %w(neww	commercial)
   ].each do |old, new|
     module_eval <<-"end;"
       def self.#{old}(*args, &block)
@@ -1297,9 +1297,9 @@ class Date
   end
 
   [ %w(sg	start),
-      %w(newsg	new_start),
-      %w(of	offset),
-      %w(newof	new_offset)
+    %w(newsg	new_start),
+    %w(of	offset),
+    %w(newof	new_offset)
   ].each do |old, new|
     module_eval <<-"end;"
       def #{old}(*args, &block)

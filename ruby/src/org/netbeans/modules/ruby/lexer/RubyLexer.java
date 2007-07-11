@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.jruby.common.NullWarnings;
-import org.jruby.lexer.yacc.HeredocTerm;
 import org.jruby.lexer.yacc.LexState;
 import org.jruby.lexer.yacc.LexerSource;
 import org.jruby.lexer.yacc.LexerSource;
@@ -34,7 +33,6 @@ import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.Tokens;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -484,7 +482,11 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
             return RubyTokenId.ANY_KEYWORD;
             
         case '=':
-        case ',':
+        // Commas are most frequently used in argument lists and array declarations
+        // where treating "," as a continuation operator causes the first and 
+        // subsequent entries to be misaligned - see FormattingTest.testArrayDecl
+        // and testHashDecl    
+        //case ',':
         case Tokens.tPLUS:
         case Tokens.tMINUS:
         case Tokens.tDIVIDE:
@@ -545,6 +547,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
 
         /** Bit set when we need to set commandStart in RubyYaccLexer */
         private static final int SET_COMMAND_START = 32;
+
         private StrTerm strTerm;
         private int localState;
         private LexState lexState;
@@ -594,6 +597,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
             rubyLexer.lexer.isSetSpaceSeen();
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
@@ -633,6 +637,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
             return true;
         }
 
+        @Override
         public int hashCode() {
             int hash = 7;
 
@@ -645,8 +650,46 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
             return hash;
         }
 
+        private static String toStateString(int localState) {
+            StringBuilder sb = new StringBuilder();
+            if ((localState & IN_REGEXP) != 0) {
+                sb.append("regexp|");
+            }
+
+            if ((localState & IN_SYMBOL) != 0) {
+                sb.append("symbol|");
+            }
+
+            if ((localState & IN_EMBEDDED) != 0) {
+                sb.append("embedded|");
+            }
+
+            if ((localState & IN_SUBSTITUTING) != 0) {
+                sb.append("substituting|");
+            }
+
+            if ((localState & SET_COMMAND_START) != 0) {
+                sb.append("commandstart|");
+            }
+
+            if ((localState & SET_SPACE_SEEN) != 0) {
+                sb.append("spaceseen|");
+            }
+            
+            String s = sb.toString();
+
+            if (s.endsWith("|")) {
+                s = s.substring(0, s.length()-1);
+            } else if (s.length() == 0) {
+                s = "-";
+            }
+
+            return s;
+        }
+
+        @Override
         public String toString() {
-            return "RubyLexerState[" + localState + "," + strTerm + "," + lexState + "," +
+            return "RubyLexerState[" + toStateString(localState) + "," + strTerm + "," + lexState + "," +
             strTermState + "," + heredocContext + "]";
         }
 
