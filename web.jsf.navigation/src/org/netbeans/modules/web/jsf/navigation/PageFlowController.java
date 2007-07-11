@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -358,8 +359,13 @@ public class PageFlowController {
             aConfigModel.removePropertyChangeListener(otherFacesConfigListener);
         }
     }
+    
+    public int getPageCount(){
+        return webFiles.size();
+    }
 
     public boolean setupGraphNoSaveData() {
+        LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
         assert configModel != null;
         //        assert webFolder != null;
         assert webFiles != null;
@@ -415,6 +421,10 @@ public class PageFlowController {
         }
         createAllEdges(rules);
         view.validateGraph();
+        LOGGER.log(new LogRecord(Level.INFO, "PageFlowEditor # Rules: " + rules.size() +"\n" +
+                                             "               # WebPages: " + webFiles.size() + "\n" +
+                                             "               # TotalPages: " + pageName2Page.size()));    
+        LOGGER.exiting(PageFlowController.class.toString(), "setupGraphNoSaveData()");
 
         return true;
     }

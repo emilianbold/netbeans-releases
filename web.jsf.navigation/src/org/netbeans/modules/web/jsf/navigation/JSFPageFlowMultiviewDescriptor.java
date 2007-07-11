@@ -61,6 +61,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     
     
     private JSFConfigEditorContext context;
+    private static final String PAGEFLOW = NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "LBL_PageFlow");
     
     
     /**
@@ -82,7 +83,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     }
     
     public String getDisplayName() {
-        return "PageFlow";
+        return PAGEFLOW;
     }
     
     //    private static final Image PageFlowImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif");
@@ -97,7 +98,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     }
     
     public String preferredID() {
-        return "pageflow";
+        return PAGEFLOW;
     }
     
     public MultiViewElement createElement() {
@@ -167,6 +168,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
                 properties.open();
             }
             tc.registerListeners();
+            tc.startBackgroundProcess();
             LOG.finest("PageFlowEditor componentOpened");
         }
         

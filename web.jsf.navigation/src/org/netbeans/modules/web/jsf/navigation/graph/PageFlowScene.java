@@ -266,10 +266,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     }
     private WidgetAction actionMapAction = null;
 
-    public final void updateNodeWidgetActions(VMDNodeWidget nodeWidget) {
-        Page page = (Page) this.findObject(nodeWidget);
+    public final void updateNodeWidgetActions(Page page) {
+        Widget nodeWidget = findWidget(page);
         if (actionMapAction != null) {
-            nodeWidget.getActions().removeAction(moveAction);
+            nodeWidget.getActions().removeAction(actionMapAction);
         }
         actionMapAction = createActionMapAction(page);
         if (actionMapAction != null) {
