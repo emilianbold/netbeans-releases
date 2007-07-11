@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.xml.schema.completion;
 
-import java.util.Arrays;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;

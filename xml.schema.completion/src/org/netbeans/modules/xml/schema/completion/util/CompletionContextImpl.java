@@ -122,21 +122,7 @@ public class CompletionContextImpl extends CompletionContext {
         if(noNamespaceSchemaLocation != null) {
             CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);
             return uris;
-        }
-                
-        //instance documents with no schemaLocationAttribute
-        java.io.File file = FileUtil.toFile(primaryFile);
-        String[] schemas = CompletionUtil.getDeclaredNamespaces(file);
-        for(String temp : schemas) {
-            try {
-                uris.add(new java.net.URI(temp));
-            } catch (URISyntaxException ex) {
-                logger.log(Level.WARNING, ex.getMessage());
-                //continue with the next one.
-                continue;
-            }
-        }
-        
+        }                        
         return uris;
     }
         
@@ -451,23 +437,54 @@ public class CompletionContextImpl extends CompletionContext {
         Collection impls = result.allInstances();
         if(impls == null || impls.size() == 0)
             return false;
+        //first try all providers
         for(Object obj: impls) {
             CompletionModelProvider modelProvider = (CompletionModelProvider)obj;
             List<CompletionModel> models = modelProvider.getModels(this);
             if(models == null || models.size() == 0)
                 continue;
             for(CompletionModel m: models) {
-                String tns = m.getSchemaModel().getSchema().getTargetNamespace();
-                if(tns == null) {
-                    noNSModels.add(m); //no namespace models
-                    continue;
-                }
-                //models with namespaces
-                nsModelMap.put(tns, m);
+                populateModelMap(m);
             }
         }
         
+        //last resort: try special completion
+        if(nsModelMap.size() == 0 && noNSModels.size() == 0)
+            specialCompletion();
+        
         return !(nsModelMap.size() == 0 && noNSModels.size() == 0);
+    }
+    
+    private void populateModelMap(CompletionModel m) {
+        String tns = m.getSchemaModel().getSchema().getTargetNamespace();
+        if (tns == null) {
+            noNSModels.add(m); //no namespace models
+            return;
+        }
+        //models with namespaces
+        nsModelMap.put(tns, m);
+    }
+    
+    /**
+     *  Special completion comes into play when all register providers fail.
+     *  And we try to provide completion for docs like project.xml.
+     */
+    private void specialCompletion() {
+        //instance documents with neither schemaLocation nor
+        //noNamespaceSchemaLocation attribute, e.g. project.xml
+        java.io.File file = FileUtil.toFile(primaryFile);
+        String[] schemas = CompletionUtil.getDeclaredNamespaces(file);
+        for(String temp : schemas) {
+            try {
+                DefaultModelProvider provider = new DefaultModelProvider(this);
+                CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp));
+                populateModelMap(cm);
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, ex.getMessage());
+                //continue with the next one.
+                continue;
+            }
+        }        
     }
     
     /**

@@ -47,6 +47,10 @@ public class DefaultModelProvider extends CompletionModelProvider {
     public DefaultModelProvider() {        
     }
 
+    public DefaultModelProvider(CompletionContextImpl context) {
+        this.context = context;
+    }
+    
     /**
      * Returns a list of CompletionModel. Default implementation looks for
      * schemaLocation attribute in the document and if specified creates model
@@ -58,7 +62,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
         if(uris == null || uris.size() == 0)
             return null;
         List<CompletionModel> models = new ArrayList<CompletionModel>();
-        for(URI uri : this.context.getSchemas()) {
+        for(URI uri : uris) {
             CompletionModel model = getCompletionModel(uri);
             if(model != null)
                 models.add(model);
@@ -67,7 +71,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
         return models;
     }
     
-    private CompletionModel getCompletionModel(URI schemaURI) {
+    CompletionModel getCompletionModel(URI schemaURI) {
         CompletionModel model = null;
         try {
             ModelSource modelSource = null;
