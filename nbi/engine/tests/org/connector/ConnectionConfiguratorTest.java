@@ -68,9 +68,9 @@ public class ConnectionConfiguratorTest extends MyTestCase {
   
   public void testSystemProxyCatched() {
     URLConnector connector = new URLConnector(MyTestCase.testWD);
-    assertEquals(deploymentProxy, connector.getPorxy(MyProxyType.HTTP));
-    assertEquals(ftpPro, connector.getPorxy(MyProxyType.FTP));
-    assertEquals(socksPro, connector.getPorxy(MyProxyType.SOCKS));
+    assertEquals(deploymentProxy, connector.getProxy(MyProxyType.HTTP));
+    assertEquals(ftpPro, connector.getProxy(MyProxyType.FTP));
+    assertEquals(socksPro, connector.getProxy(MyProxyType.SOCKS));
   }
   public void testByPassCatchedAndMyAdd() {
     URLConnector connector = new URLConnector(MyTestCase.testWD);
@@ -112,9 +112,9 @@ public class ConnectionConfiguratorTest extends MyTestCase {
     connector.addProxy(http);
     connector.addProxy(ftp);
     connector.addProxy(socks);
-    assertEquals(http.getProxy(), connector.getPorxy(MyProxyType.HTTP));
-    assertEquals(ftp.getProxy(), connector.getPorxy(MyProxyType.FTP));
-    assertEquals(socks.getProxy(), connector.getPorxy(MyProxyType.SOCKS));
+    assertEquals(http.getProxy(), connector.getProxy(MyProxyType.HTTP));
+    assertEquals(ftp.getProxy(), connector.getProxy(MyProxyType.FTP));
+    assertEquals(socks.getProxy(), connector.getProxy(MyProxyType.SOCKS));
   }
   
   public void testConnectorPropertiesSetGet() {
