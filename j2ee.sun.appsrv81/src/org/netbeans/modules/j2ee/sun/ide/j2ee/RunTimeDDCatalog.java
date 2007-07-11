@@ -116,12 +116,14 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         ///"SCHEMA:http://java.sun.com/xml/ns/j2ee/j2ee_1_4.xsd"                       , "j2ee_1_4",
         "SCHEMA:http://java.sun.com/xml/ns/j2ee/j2ee_jaxrpc_mapping_1_1.xsd"        , "j2ee_jaxrpc_mapping_1_1",
         "SCHEMA:http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd"             ,"j2ee_web_services_1_1",
-       // "SCHEMA:http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd"          ,"j2ee_web_services_client_1_1",
+        "SCHEMA:http://java.sun.com/xml/ns/j2ee/j2ee_web_services_client_1_1.xsd"          ,"j2ee_web_services_client_1_1",
         "SCHEMA:http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"                    , "ejb-jar_3_0",
         "SCHEMA:http://java.sun.com/xml/ns/javaee/application-client_5.xsd"         , "application-client_5",
         "SCHEMA:http://java.sun.com/xml/ns/javaee/application_5.xsd"         , "application_5",
         "SCHEMA:http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"         , "orm_1_0",
         "SCHEMA:http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"         , "persistence_1_0",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/javaee_web_services_1_2.xsd"          ,"javaee_web_services_1_2",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/javaee_web_services_client_1_2.xsd"          ,"javaee_web_services_client_1_2",
 
     };
     
@@ -329,9 +331,17 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private static final String WEBSERVICES_1_1= IBM_J2EE_NS+"/"+WEBSERVICES_1_1_XSD; // NOI18N
     public static final String WEBSERVICES_1_1_ID = "SCHEMA:"+WEBSERVICES_1_1; // NOI18N
 
+    private static final String WEBSERVICES_CLIENT_1_1_XSD="j2ee_web_services_client_1_1.xsd"; // NOI18N
+    private static final String WEBSERVICES_CLIENT_1_1= J2EE_NS+"/"+WEBSERVICES_CLIENT_1_1_XSD; // NOI18N
+    public static final String WEBSERVICES_CLIENT_1_1_ID = "SCHEMA:"+WEBSERVICES_CLIENT_1_1; // NOI18N
+
     private static final String WEBSERVICES_1_2_XSD="javaee_web_services_1_2.xsd"; // NOI18N
     private static final String WEBSERVICES_1_2= JAVAEE_NS+"/"+WEBSERVICES_1_2_XSD; // NOI18N
     public static final String WEBSERVICES_1_2_ID = "SCHEMA:"+WEBSERVICES_1_2; // NOI18N
+
+    private static final String WEBSERVICES_CLIENT_1_2_XSD="javaee_web_services_client_1_2.xsd"; // NOI18N
+    private static final String WEBSERVICES_CLIENT_1_2= JAVAEE_NS+"/"+WEBSERVICES_CLIENT_1_2_XSD; // NOI18N
+    public static final String WEBSERVICES_CLIENT_1_2_ID = "SCHEMA:"+WEBSERVICES_CLIENT_1_2; // NOI18N
 
     private static final String WEBAPP_TAG="web-app"; //NOI18N
     private static final String WEBAPP_2_5_XSD="web-app_2_5.xsd"; // NOI18N
@@ -417,6 +427,14 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         }
         else if (systemId!=null && systemId.endsWith(WEBSERVICES_1_2_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBSERVICES_1_2_XSD);
+        } else if (XML_XSD.equals(systemId)) {
+            return new org.xml.sax.InputSource(new java.io.StringReader(XML_XSD_DEF));
+        }
+        else if (systemId!=null && systemId.endsWith(WEBSERVICES_CLIENT_1_1_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBSERVICES_CLIENT_1_1_XSD);
+        }
+        else if (systemId!=null && systemId.endsWith(WEBSERVICES_CLIENT_1_2_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBSERVICES_CLIENT_1_2_XSD);
         } else if (XML_XSD.equals(systemId)) {
             return new org.xml.sax.InputSource(new java.io.StringReader(XML_XSD_DEF));
         }
