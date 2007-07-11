@@ -32,12 +32,12 @@ import java.io.CharConversionException;
 import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.visualweb.dataconnectivity.actions.RefreshProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
-import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -100,7 +100,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(ResolveProjectDataSourceAction.class),
-//            SystemAction.get(RefreshProjectDataSourceAction.class)
+            SystemAction.get(RefreshProjectDataSourceAction.class)
         };
     }
 
@@ -142,7 +142,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
                 
         // Mark node as broken if the legacy project hasn't been modeled
         if (ImportDataSource.isLegacyProject(nbProject)) {            
-            isBroken = !isModeled;
+            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
         }
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
@@ -152,9 +152,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             } else {
                 isBroken = false;
             }
-        } else {
-            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
-        }
+        } 
         
         if (isBroken){
             Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
@@ -163,17 +161,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             return dSContainerImage;
         }
     }
-    
-    public Image getOpenedIcon(int type){
-         try {
-            ProjectDataSourceTracker.getInstance().getProjectDataSourceInfo(nbProject);
-        } catch (NamingException ne) {
-            ;
-        }
-        return getIcon(type);
-    }            
-    
-    
+                     
     public String getHtmlDisplayName() {
         String dispName = super.getDisplayName();
         try {
@@ -186,7 +174,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         
          // Mark display name as broken if the legacy project hasn't been modeled
         if (ImportDataSource.isLegacyProject(nbProject)) {            
-            isBroken = !isModeled;
+            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
         }
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
@@ -196,10 +184,8 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             } else {
                 isBroken = false;
             }
-        } else {
-            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
         }
-       
+        
         return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
     }
     
