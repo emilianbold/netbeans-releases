@@ -31,5 +31,4 @@ copy of this file in ide/applemenu. Check whether I need to do something there!
     <bind actionName="select-element-next" key="OS-UP"/>
     <bind actionName="select-element-previous" key="OS-DOWN"/>
     <bind actionName="ruby-goto-test" key="OS-E"/>
-    <bind actionName="ruby-open-type" key="M-T"/>
 </bindings>
