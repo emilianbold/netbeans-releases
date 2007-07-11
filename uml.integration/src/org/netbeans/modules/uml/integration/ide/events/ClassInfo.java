@@ -45,12 +45,14 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ICoreRelationshipDiscovery;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.RelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
@@ -670,9 +672,22 @@ public class ClassInfo extends ElementInfo
                 // UML allows this, but Java does not
                 else if (JavaClassUtils.isAnOwner(clazz, general))
                     return null;
-                    
-                else
+
+		else
                 {
+		    if (general instanceof IDerivationClassifier) 
+		    {
+			IDerivation drv = general.getDerivation();
+			if (drv != null) 
+			{
+			    IClassifier templ = drv.getTemplate();
+			    if (templ instanceof IInterface) 
+			    {
+				addSuperInterface(general);
+				return null;
+			    }
+			}
+		    }
                     setSuperClass(general);
                     String superClass = JavaClassUtils.getFullyQualifiedName(general);
                     return superClass;
