@@ -9,7 +9,7 @@
                     <code-name-base>org.jruby</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.99.21</specification-version>
+                        <specification-version>0.99.22</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -23,7 +23,7 @@
                     <code-name-base>org.netbeans.api.gsf</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.32.0</specification-version>
+                        <specification-version>0.33.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -37,14 +37,14 @@
                     <code-name-base>org.netbeans.modules.gsf</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.59.0</specification-version>
+                        <specification-version>0.60.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.ruby</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.73</specification-version>
+                        <specification-version>0.74</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
