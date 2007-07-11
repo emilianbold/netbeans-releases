@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -31,6 +32,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
+import org.openide.ErrorManager;
 
 /** Displays web service client nodes representing the web services for which 
  *  this module has been enabled to use as a client.  Driven by existence of
@@ -39,9 +41,26 @@ import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
  * @author Peter Williams
  */
 public class ClientViewChildren extends FilterNode.Children {
-
+    FileObject wsdlFolder;
+    
     public ClientViewChildren(FileObject wsdlFolder) throws DataObjectNotFoundException {
         super(DataObject.find(wsdlFolder).getNodeDelegate());
+        this.wsdlFolder = wsdlFolder;
+    }
+    
+    protected void addNotify(){
+        super.addNotify();
+        List<Node> children = new ArrayList<Node>();
+        try {
+            FileObject[] wsdls = wsdlFolder.getChildren();
+            for(int i = 0; i < wsdls.length; i++){
+                Node n = DataObject.find(wsdls[i]).getNodeDelegate();
+                children.add(n);
+            }
+            this.setKeys(children);
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
 
     protected Node[] createNodes(Node origNode) {

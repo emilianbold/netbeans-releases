@@ -23,43 +23,46 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientViewImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.core.ProjectClientViewProvider;
 
 /**
  *
  * @author Peter Williams
  */
-public class PrototypeWebServicesClientView implements WebServicesClientViewImpl {
-
-	public PrototypeWebServicesClientView() {
-	}
-	
-	public Node createWebServiceClientView(Project p) {
+public class PrototypeWebServicesClientView implements WebServicesClientViewImpl, ProjectClientViewProvider {
+    
+    public PrototypeWebServicesClientView() {
+    }
+    
+    public Node createWebServiceClientView(Project p) {
         WebServicesClientSupport support = WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
         if (support!=null) {
             return createWebServiceClientView(support.getWsdlFolder());
         }
-		return null;
-	}
-
-	public Node createWebServiceClientView(SourceGroup sg) {
-		return null;
-	}
-	
-	public Node createWebServiceClientView(FileObject wsdlFolder) {
-		Node root = null;
-		
-		try {
-			root = new ClientRootNode(wsdlFolder);
-		} catch(DataObjectNotFoundException ex) {
-			// rewrite nodes so we don't have to deal with this here
-		}
-		
-		return root;
-	}
+        return null;
+    }
+    
+    public Node createWebServiceClientView(SourceGroup sg) {
+        return null;
+    }
+    
+    public Node createWebServiceClientView(FileObject wsdlFolder) {
+        Node root = null;
+        
+        try {
+            root = new ClientRootNode(wsdlFolder);
+        } catch(DataObjectNotFoundException ex) {
+            // rewrite nodes so we don't have to deal with this here
+        }
+        
+        return root;
+    }
+    
+    public Node createClientView(Project project) {
+        return createWebServiceClientView(project);
+    }
 }
 

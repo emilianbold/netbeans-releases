@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -30,34 +30,36 @@ import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 
-public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvider {
-	public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource) {
+public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvider {
+    
+    
+    public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource) {
         Project project = FileOwnerQuery.getOwner(targetSource);
-        ProjectInfo projectInfo = new ProjectInfo(project);
-        int projectType = projectInfo.getProjectType();
-        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(targetSource)) ||
-                (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || 
-                projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) ||
-                (projectInfo.isJwsdpSupported())
-                ) {
-            return new JaxWsInvokeOperation(project);
-        } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
-            return new JaxWsInvokeOperation(project);
+        if(supportsJaxrpcOnly(project, targetSource)){
+            return new JaxRpcInvokeOperation(project);
         }
-        // Tomcat on J2EE14 project Case
-        if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource)) {
-            return new JaxWsInvokeOperation(project);
-        }
+        
         return null;
     }
-        
+    
+    private boolean supportsJaxrpcOnly(Project project, FileObject targetSource){
+        ProjectInfo projectInfo = new ProjectInfo(project);
+        int projectType = projectInfo.getProjectType();
+        if(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(targetSource)) return false;
+        if(projectInfo.isJwsdpSupported())return false;
+        if(Util.isJavaEE5orHigher(project)) return false;
+        if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) return false;
+        if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource))return false;
+        return true;
+    }
+    
     private boolean isJaxWsLibraryOnRuntimeClasspath(FileObject targetSource){
         ClassPath classPath = ClassPath.getClassPath(targetSource,ClassPath.EXECUTE);
         if (classPath != null) {
             if (classPath.findResource("javax/xml/ws/Service.class")!=null) return true;
         }
         return false;
-    }    
+    }
     
     private boolean isJaxWsLibraryOnClasspath(FileObject targetSource) {
         //test on javax.xml.ws.Service.class
@@ -73,7 +75,5 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
         }
         return false;
     }
-
-
-
+    
 }

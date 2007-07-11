@@ -33,4 +33,10 @@ public interface InvokeOperationCookie extends Node.Cookie {
      * Adds a method definition to the the implementation class, possibly to SEI
      */
     public void invokeOperation(int targetSourceTypeI, Node targetNode, Node serviceOperationNode);
+    
+    
+    /**
+     * Determines if the child node represents a web service operation
+     */ 
+    public boolean isWebServiceOperation(Node node);
 }

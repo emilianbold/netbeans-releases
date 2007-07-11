@@ -63,8 +63,10 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 import org.netbeans.modules.websvc.wsdl.config.WsCompileConfigDataObject;
 import org.netbeans.modules.websvc.wsdl.config.PortInformationHandler;
+import org.openide.util.Lookup;
 
 
 /**
@@ -230,8 +232,8 @@ public class ClientBuilder {
             // !PW FIXME do we want to notify the user if registration fails?
             // How does the registry view communicate the difference between "already registered"
             // and "failure during registration" (Since the former is irrelevant.)
-//          WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
-//          registryView.registerService(wsdlTarget, false);
+          WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
+          registryView.registerService(wsdlTarget, false);
 
             // Invoke SAX parser on the WSDL to extract list of port bindings
             //

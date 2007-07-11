@@ -27,8 +27,6 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.core.ProjectClientView;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -42,10 +40,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.util.NbBundle;
-
-//import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.client.WebServicesClientView;
+import org.netbeans.modules.websvc.core.InvokeOperationCookie;
+import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 
 /**
  *
@@ -69,11 +65,6 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
         rootChildren = new Children.Array();
         explorerClientRoot = new AbstractNode(rootChildren);
         projectNodeList = new ArrayList<Node>();
-            /*
-            clientSupport = WebServicesClientSupport.getWebServicesClientSupport(fo);
-            project = FileOwnerQuery.getOwner(fo);
-            clientView = WebServicesClientView.getWebServicesClientView(fo);
-             */
         manager = new ExplorerManager();
         selectedMethod = null;
         
@@ -133,13 +124,11 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
         
         for (int i=0;i<projects.length;i++) {
             Project srcFileProject = FileOwnerQuery.getOwner(srcFileObject);
-            if (srcFileProject!=null && JaxWsUtils.isProjectReferenceable (projects[i], srcFileProject)) {
+            if (srcFileProject!=null && JaxWsUtils.isProjectReferenceable(projects[i], srcFileProject)) {
                 LogicalViewProvider logicalProvider = (LogicalViewProvider)projects[i].getLookup().lookup(LogicalViewProvider.class);
                 if (logicalProvider!=null) {
-                    Node rootNode = logicalProvider.createLogicalView();                   
-                    //boolean jaxWsServices=false;
+                    Node rootNode = logicalProvider.createLogicalView();
                     Node servicesNode = ProjectClientView.createClientView(projects[i]);
-                    //Node servicesNode = JAXWSClientView.getJAXWSClientView().createJAXWSClientView(projects[i]);
                     if (servicesNode!=null) {
                         Children children = new Children.Array();
                         Node[] nodes= servicesNode.getChildren().getNodes();
@@ -151,24 +140,9 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                             projectNodeList.add(new ProjectNode(children, rootNode));
                         }
                     }
-//                    if (!jaxWsServices && srcFileProject==projects[i]) {
-//                        FileObject wsdlFolder = WebServicesClientSupport.getWebServicesClientSupport(srcFileObject).getWsdlFolder();
-//                        servicesNode = WebServicesClientView.getWebServicesClientView(srcFileObject).createWebServiceClientView(wsdlFolder);
-//                        if (servicesNode!=null) {
-//                            Children children = new Children.Array();
-//                            Node[] nodes= servicesNode.getChildren().getNodes();
-//                            if (nodes!=null && nodes.length>0) {
-//                                jaxWsServices=true;
-//                                Node[] filterNodes = new Node[nodes.length];
-//                                for (int j=0;j<nodes.length;j++) filterNodes[j] = new FilterNode(nodes[j]);
-//                                children.add(filterNodes);
-//                                projectNodeList.add(new ProjectNode(children, rootNode));
-//                            }
-//                        }
-//                    }
                 }
             }
-
+            
         }
         Node[] projectNodes = new Node[projectNodeList.size()];
         projectNodeList.<Node>toArray(projectNodes);
@@ -199,12 +173,18 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                 Node nodes[] = manager.getSelectedNodes();
                 if(nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    if(node.getLookup().lookup(WsdlOperation.class)!=null/* || node.getCookie(WebServiceMethod.class) != null*/) {
-                        // This is a method node.
-                        selectedMethod = node;
-                        descriptor.setValid(true);
-                    } else {
-                        // This is not a method node.
+                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(srcFileObject);
+                    if(invokeCookie != null){
+                        if(invokeCookie.isWebServiceOperation(node)) {
+                            // This is a method node.
+                            selectedMethod = node;
+                            descriptor.setValid(true);
+                        } else {
+                            // This is not a method node.
+                            selectedMethod = null;
+                            descriptor.setValid(false);
+                        }
+                    }else{
                         selectedMethod = null;
                         descriptor.setValid(false);
                     }

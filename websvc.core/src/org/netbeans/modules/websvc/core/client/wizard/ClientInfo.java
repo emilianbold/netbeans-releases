@@ -53,7 +53,6 @@ import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-//import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -693,7 +692,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             // saved *and* it's in the list that the current project supports.
             WebServicesClientSupport clientSupport =
                     WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
-            
+
             Object selectedStub = d.getProperty(ClientWizardProperties.CLIENT_STUB_TYPE);
             DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
             if(clientSupport != null) {

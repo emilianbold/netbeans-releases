@@ -7,10 +7,10 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -19,11 +19,11 @@ import org.openide.nodes.Node;
  *
  * @author mkuchtiak
  */
-public class JaxWsInvokeOperation implements InvokeOperationCookie {
+public class JaxRpcInvokeOperation implements InvokeOperationCookie {
     
     private Project project;
     /** Creates a new instance of JaxWsAddOperation */
-    public JaxWsInvokeOperation(Project project) {
+    public JaxRpcInvokeOperation(Project project) {
         this.project=project;
     }
     
@@ -31,14 +31,16 @@ public class JaxWsInvokeOperation implements InvokeOperationCookie {
      * Adds a WS invocation to the class
      */
     public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
-        JaxWsCodeGenerator.insertMethodCall(targetSourceType, getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
+            JaxrpcInvokeOperationGenerator.insertMethodCall(getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
     }
     
     private DataObject getCurrentDataObject(Node n) {
         return (DataObject) n.getCookie(DataObject.class);
     }
-
+    
     public boolean isWebServiceOperation(Node node) {
-        return node.getLookup().lookup(WsdlOperation.class)!=null;
+        return node.getLookup().lookup(WebServiceMethod.class)!=null; 
     }
+    
+    
 }
