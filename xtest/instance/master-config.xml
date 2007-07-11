@@ -219,5 +219,9 @@ Microsystems, Inc. All Rights Reserved.
   <config name="commit-validation-cnd">
       <module name="ide" testtypes="qa-functional" attributes="cnd"/>
   </config>
+  
+  <config name="commit-validation-profiler">
+      <module name="ide" testtypes="qa-functional" attributes="profiler"/>
+  </config>
 
 </testconfig>
