@@ -43,6 +43,7 @@ import org.jruby.ast.Colon3Node;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.FCallNode;
+import org.jruby.ast.ForNode;
 import org.jruby.ast.IScopingNode;
 import org.jruby.ast.IScopingNode;
 import org.jruby.ast.IterNode;
@@ -503,7 +504,7 @@ public class AstUtilities {
     public static Node findBlock(AstPath path) {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
-            if (curr instanceof BlockNode || curr instanceof IterNode) {
+            if (curr instanceof BlockNode || (curr instanceof IterNode && !(curr instanceof ForNode))) {
                 return curr;
             }
         }

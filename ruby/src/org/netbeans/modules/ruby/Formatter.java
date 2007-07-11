@@ -549,8 +549,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = Utilities.getRowEnd(doc, endOffset); // The line's end
             
-            int indentSize = preferences.getIndentation();
-            int hangingIndentSize = preferences.getHangingIndentation();
+            int indentSize = preferences != null ? preferences.getIndentation() : 2;
+            int hangingIndentSize = preferences != null ? preferences.getHangingIndentation() : indentSize;
 
             // Build up a set of offsets and indents for lines where I know I need
             // to adjust the offset. I will then go back over the document and adjust
