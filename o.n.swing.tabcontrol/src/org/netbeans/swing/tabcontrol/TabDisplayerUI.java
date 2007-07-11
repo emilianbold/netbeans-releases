@@ -253,6 +253,7 @@ public abstract class TabDisplayerUI extends ComponentUI {
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
             
             //left button
+            iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/metal_scrollleft_enabled.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/metal_scrollleft_disabled.png"; // NOI18N
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/metal_scrollleft_rollover.png"; // NOI18N
