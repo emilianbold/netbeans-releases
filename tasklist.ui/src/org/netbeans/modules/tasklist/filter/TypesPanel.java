@@ -118,7 +118,6 @@ final class TypesPanel extends JPanel {
         txtVisibleLimit.setText( null == filter ? "" : String.valueOf(filter.getTaskCountLimit()) ); //NOI18N
         lstTypes.setEnabled( null != filter );
         txtVisibleLimit.setEnabled( null != filter );
-        btnOptions.setEnabled( null != filter );
     }
     
     /** This method is called from within the constructor to
