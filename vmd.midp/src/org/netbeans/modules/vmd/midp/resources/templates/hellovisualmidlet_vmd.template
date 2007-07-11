@@ -33,6 +33,7 @@
             <Component componentID="10" typeID="C#DisplayablesCategory">
                 <Component componentID="14" typeID="Cjavax.microedition.lcdui.Form">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="Vform"/>
+                    <Property name="title" typeID="Pjava.lang.String" value="VWelcome"/>
                     <Property name="commands" typeID="1C#CommandEventSource" value="A1:3_R19"/>
                     <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
                     <Property name="items" typeID="1Cjavax.microedition.lcdui.Item" value="A1:3_R16"/>
