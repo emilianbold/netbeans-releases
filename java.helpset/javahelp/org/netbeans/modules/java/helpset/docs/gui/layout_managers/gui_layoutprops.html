@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+<head>
+<title>Setting Layout Properties</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Setting Layout Properties</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p> You can modify the appearance of your forms by adjusting general layout manager
+  properties as well as properties specific to components.</p>
+<p>In the IDE you can modify:</p>
+<ul>
+  <li>General layout properties which effect all components in a container, such
+    as alignment of components and gaps between the components. </li>
+  <li>Layout properties specific to a component that is managed by a particular
+  	layout manager and which apply to that component alone.
+These type of properties are also known as
+ constraints.
+    <!--For example, when BorderLayout is used,
+  the Direction property is set according to which of the five parts of the form
+  the component resides in (North, South, West, East, or Center).-->
+  </li>
+</ul>
+<p><b>To set general layout manager properties:</b></p>
+<ol>
+  <li>Select the layout manager's node in the Inspector window.</li>
+  <li>In the Properties window, select the property you want to edit and enter
+    the desired value. Note that the properties vary depending on the layout
+    manager and that some layout managers do not have any properties. </li>
+  <p>The IDE updates all effected components' positions.</p>
+  <!--<p> With some layout managers (BorderLayout, AbsoluteLayout, and Null Layout) 
+    you can also change constraints by dragging components in the GUI Builder. 
+  </p>-->
+</ol>
+<p><b>To set layout properties of components:</b></p>
+<ol>
+  <li>Select the component in the Inspector window.</li>
+  <li>Click the Properties button at the top of the Properties window.</li>
+  <li>Scroll
+  		down to  Layout properties, select the property you want to edit and enter
+    the desired value.
+   	<p>The IDE automatically updates the component's layout behavior.
+  		<!--<p> With some layout managers (BorderLayout, AbsoluteLayout, and Null Layout) 
+    you can also change constraints by dragging components in the GUI Builder. 
+  </p>-->   
+  	</li>
+</ol>
+
+  <ul class="note">
+    <li> Not all layout managers use constraints. These
+      layout managers (FlowLayout, GridLayout, and BoxLayout), do not have Layout
+      properties and component layout is determined by component order. </li>
+  </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_layoutmanagers.html">About Layout Managers</a> </dd>
+            <dd><a href="gui_settinglayout.html">Setting the Layout Manager</a></dd> 
+            <dd><a href="../gui_containers.html">Working With Containers</a></dd>
+        </dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

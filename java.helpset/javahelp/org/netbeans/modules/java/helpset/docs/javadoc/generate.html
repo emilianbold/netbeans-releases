@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Generating Javadoc Documentation</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Generating Javadoc Documentation</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p> For each of your projects, you can produce a set of Javadoc HTML pages that
+	 describe the project's classes, inner classes, interfaces, constructors,
+	methods, and fields. The Javadoc is constructed from the structure of your
+	code and the Javadoc comments embedded in your code. You can also configure
+	how the IDE generates Javadoc documentation for each of your projects.</p>
+
+  <p><b>To generate Javadoc documentation for a project:</b> </p>
+<ol>
+  <li>Select the project in the Projects window.</li>
+  <li>Choose Build  &gt; Generate 
+    Javadoc for Project. <p>The IDE generates the Javadoc to the <tt>dist/javadoc</tt> 
+    folder in your project directory and opens the index page in the IDE's designated
+    	web browser.
+  </li>
+</ol>
+<p><b>To configure how the IDE generates Javadoc documentation:</b> </p>
+<ol>
+	<li>In the Projects window, right-click the project node  and choose 
+		Properties.</li>
+  <li>Expand the Build node and select Documenting in the left
+	pane of the dialog box.</li>
+  <li>Set the desired options  and click OK.</li>
+</ol>
+
+  <ul class="note"> 
+    <li> In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>
+    	, the Generate Javadoc  command is disabled by default. If your Ant script
+    	contains a target  for generating Javadoc documentation, you can map the
+    	target to the Generate Javadoc  command in the Project Properties
+    	dialog box's Build and Run panel. </li>
+  </ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="accuracy.html">Entering Javadoc Comments in Source Code</a></dd>
+       	<dd><a href="../project/proj_free_targets.html">Mapping an Ant Target to an 
+      IDE Command</a></dd>
+        <dd><a href="javadoc_add.html">Adding Javadoc to a Project</a></dd>
+        <dd><a href="../webbrowser/default.html">Changing the Default Web Browser</a></dd>
+</dl> 
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

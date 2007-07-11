@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Modifying GUI Source Code</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Modifying GUI Source Code</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p> The IDE automatically generates blue guarded blocks of code  as you create
+        your GUI form in the GUI Builder. However, you can  modify the way initialization
+        code is generated 
+        and even write custom code  to be placed
+        within the initialization code. </p>
+
+        <h3>Modifying Code Generation for Form Components</h3>
+        <p>You can modify the way initialization code is generated for a component,
+        form, or component property by editing its Code properties in the Properties
+        window. In addition, you can write custom code and specify where it should be
+        placed within the initialization code. </p>
+        <h4>To modify a form component's  guarded block:</h4>
+        <ol>
+            <li>In the Inspector window, select the  component whose initialization code
+            you want to edit.  
+            <li>Click the Code button at the top of the Properties window to view the Code
+            properties. </li>
+            <li>Select 
+                the  property you wish to edit and enter the desired value.<p>The IDE updates
+                the selected component's guarded code block with the new value. 
+            </li>
+        </ol>
+
+        <h3>Modifying Code Generation for a Property</h3>
+        <p> The IDE enables form component properties to be initialized in more ways
+        than simply setting static values. </p>
+        <p>The IDE enables you to initialize property values from: </p>
+        <ul>
+            <li>A static value you define</li>
+            <li>A component written to the JavaBeans architecture</li>
+            <li>A property of another component on the form</li>
+            <li>A call to a method of the form or one of its components. You can choose
+            from a list of methods that return the appropriate data type.</li>
+            <li>Code you define, which will be included in the generated code</li>
+        </ul>
+            
+        <h4>To modify the initialization code generated for a component's property:</h4>
+        <ol>
+            <li> Select the component in the Inspector window.</li>
+            <li>Click the Properties button at the top of the Properties window. </li>
+            <li> Select the property for which you would like to modify the initialization
+            code. </li>
+            <li> Click the ellipsis (...) button to bring up the Property Editor dialog
+            box. </li>
+            <li> Select Form Connection from the Select Mode combo box. </li>
+            <li> In the Property Editor, select the type of initialization code you would
+            like to add (Value, Bean, Property, Method Call, or User Code).
+            <ul>
+            <li> If you select Value or User Code, you must add a static value or your
+            custom initialization code in the field provided.
+            <li> If you select Bean, Property, or Method Call, you can select from
+                a list of valid options.
+                </ul>
+                The IDE adds the new code to the selected component's guarded block.
+                <!--<p> These options (Value, Bean, and so on) are the same options used in Step 
+                3 of the Connection Wizard. The options are described in more detail on 
+                the corresponding help page for the Connection Wizard, <a href="">Connection Wizard: Enter Parameters</a>.-->
+            </li>
+        </ol>
+        <ul class="note">
+                <li> You can also place custom code before or after
+                a property's initializer. To do this, follow steps 1 through 4 above, and then
+                click the Advanced button to bring up the Advanced Initialization Code
+                dialog box. Type your custom pre-initialization code, post-initialization
+                code, or both in the fields provided. </li>
+        </ul>
+
+        <h3>Modifying GUI Form Code Outside of the IDE</h3>
+        <p>In the IDE each form is comprised of two files:</p>
+        <ul>
+            <li> A <tt>.java</tt> file, which contains the form's Java source code. </li>
+            <li>
+                A <tt>.form</tt> file, which stores the information that is used to generate the 
+                <tt>.java</tt> file when you make changes to the form in the GUI Builder. 
+                This file does not need to be distributed with your application.  If you delete
+                this file, you can no longer use the GUI Builder to change the form.
+            </li>
+        </ul>
+        <p>You can edit the <tt>.java</tt> files using external editors (not 
+        while the form is being edited in the IDE), with the following exceptions:</p>
+        <ul>
+            <li>Do not modify the content of the <tt>initComponents()</tt> method.  The body of
+            this method is always regenerated when the form is opened in the IDE.</li>
+            <li>
+            Do not remove or modify any of the special comments placed in the source by the IDE's
+            GUI Builder (<tt>// GEN-...</tt>).  They are required for the form to open 
+            correctly.  These comments are not visible inside the IDE's Source Editor.</li>
+            <li>Do not modify the headers or footers of event handlers.</li>
+        </ul>
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_editcomponentprops.html">Editing Component Properties</a> </dd>
+            <dd><a href="gui_configuring.html">Configuring the GUI Builder</a> </dd>
+            <dd><a href="gui_about.html">About Java GUIs</a> </dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

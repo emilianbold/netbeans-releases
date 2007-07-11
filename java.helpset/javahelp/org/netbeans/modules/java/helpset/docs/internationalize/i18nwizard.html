@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Internationalizing a Set of Files With the Internationalization Wizard</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Internationalizing a Set of Files With the Internationalization Wizard</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The Internationalization wizard enables you to replace hard-coded strings with 
+  internationalized strings in multiple files. If you are localizing the source 
+  into more than one language, the Internationalization wizard also lets you specify 
+  the localized string for multiple locales.</p>
+
+<p> <b>To automatically internationalize strings in multiple source files:</b> 
+<ol>
+  <li>Choose Tools  &gt; Internationalization 
+     &gt; Internationalization 
+    Wizard from the main window.</li>    
+  <li>Click Add Source(s) to add one or more source files to internationalize. 
+    Click Next to proceed.</li>
+  <li>Click Select All if you want a single resource bundle to contain the key and 
+    value pairs for all the listed sources. To select a resource bundle for specific
+    source files, select the desired sources and click Select Resource. Select the 
+    desired <tt>.properties</tt> file in the Select Resource dialog that appears. 
+    Click Next to proceed.
+
+  <ul class="note"> 
+        <li>The resource bundle must already exist and contain 
+          the required locales in order for this step to be possible. If no resource 
+          bundle exists, you can create a new one by choosing File  &gt; New 
+          from the main window, expanding the Other folder, and selecting Properties 
+          File. You can add locales to the resource bundle by right-clicking its 
+          node in the Files or Projects window and choosing Add Locale.</ul>
+</li>
+
+<!--PENDING : create new Create New Resource Bundle topic and simply link to it here (ie: "If no resource bundle exists, see _____ to create a new ,properties file.")-->
+
+
+  <li>Modify additional values (Advanced Wizard only). You can create a variable 
+    that points to the resource bundle. The variable is then used in the method 
+    calls, which retrieve the localized strings. You must use the <tt>{identifier}.getString("{key}")</tt> 
+    format to access the resource bundle through a variable.
+    
+<!--PENDING : language overly vague - explain why this is useful via context-->
+    
+  <ul class="note"> 
+    <li>This feature is available for Java 
+    sources only and not for other types of files, such as JavaServer Pages
+    <small><sup>TM</sup></small>. To use this feature, set the Advanced Wizard 
+    property in the Internationalization settings to True. 
+    </ul>
+
+    <p>To modify key and value pairs:
+    <ol type="a">
+      <li>From the Source combo box, select the source file in which you want 
+        to create the variable. </li>
+      <li>Select the Generate Field checkbox and set the variable's modifiers.</li>
+      <li>Type the name of the identifier in the Identifier text field.</li>
+      <li>The Init String field gives you a preview of the code that the variable 
+        will use to reference the resource bundle. To change this code, click 
+        Format and select the desired code format from the Init Code Format Editor. 
+      </li>
+      <li>Click Next to generate the field.</li>
+    </ol></li>
+  <li>In the Modify Found Strings pane, set the key name and localized values 
+    for each of the strings you want to internationalize by entering a new value 
+    in the appropriate column. Use the Source combo box to switch between source 
+    files. Deselect the checkbox in the first column for any string you do not 
+    want to internationalize. 
+    </li>
+  <li>To change the code format used to generate the internationalized string 
+    or add arguments to the method call, click the ellipsis button (...) at the 
+    end of the string's row.</li>
+  <li>Click Finish to internationalize the strings for all of the selected source 
+    files.</li>
+</ol>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="autoinsert.html">Internationalizing a Single File</a></dd>
+    <dd><a href="manualinsert.html">Inserting an Internationalized String Into Source Code</a></dd>
+    <dd><a href="custominter.html">Configuring Internationalization Settings</a></dd>
+  </dl>
+</table>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

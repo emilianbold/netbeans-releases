@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Selecting Components in a Form</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Selecting Components in a Form</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p> The IDE's GUI Builder and Inspector window always display the same
+        selected component or components. Selecting a component in one window automatically
+        selects it in the other. </p>
+        <p><b>To select a single component:</b></p>
+        <ul>
+            <li> Click the component's node in the Inspector window or click the component
+            in the GUI Builder. </li>
+        </ul>
+        <p><b>To select multiple components, do one of the following:</b></p>
+        <ul>
+            <li> Hold down the Control key while clicking multiple components in the Form
+            Editor or while clicking multiple nodes in the Inspector window.</li>
+            <li>
+                <p>In the GUI Builder, hold
+                down the Shift key while holding down the left mouse button and
+                drag the mouse over each component in the group. A rectangle is painted
+                as the mouse is dragged over the group of components. When the mouse button
+                is released, all the components included in the rectangle are selected. </p>
+            </li>
+            <li> In the Inspector window, select a consecutive group of components by clicking
+            the first one, holding down the Shift key, and clicking the last component
+            in the group.   </li>
+        </ul>
+        <p><b>To select next and previous components:</b></p>
+        <ul>
+            <li> Press Tab in the GUI Builder to select the next component or press Shift-Tab
+            to select the previous component. </li>
+        </ul>
+        <h3>Controlling Selection Depth</h3>
+        <p> When  working with nested components (components within a container like
+        a panel for example),  clicking in the GUI Builder always selects the
+        most deepest  component at the point of the click. You can, however, select
+        nested components on different levels  
+        using
+        modifier keys, as described below. </p>
+        <p> You can also display the contextual menu for the
+        selected container or subcomponent  at any time by right-clicking. Note that
+        the right-click action does not change the selection depth. </p>
+        <p><b>To select the parent container of a selected component:</b></p>
+        <ol>
+            <li> Press and hold the Alt key. </li>
+            <li>In the GUI Builder, click the selected component.
+                <p> If the currently selected component does not have a parent container
+                (i.e. it is the container component for the entire form), Alt-click selects
+                the deepest component at the point of the click. 
+            </li>
+        </ol>
+        <p><b>To select a subcomponent of a selected container:</b></p>
+        <ol>
+            <li> Press and hold  both the Alt and Shift keys.</li>
+            <li> Click the subcomponent.
+                <p> If the currently selected component does not contain any subcomponents,
+                the container component for the entire form is selected. 
+            </li>
+        </ol>
+
+        <ul class="note">
+            <li> It is often easier to select components
+            using the Inspector window than the GUI Builder. </li>
+        </ul>
+
+        <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="gui_component_align.html">Aligning Components</a> </dd>
+        <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a></dd> 
+        <dd><a href="gui_creatingforms.html">Creating a New Form</a> </dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

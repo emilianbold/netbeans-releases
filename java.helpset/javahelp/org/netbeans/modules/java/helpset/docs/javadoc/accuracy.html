@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Entering Javadoc Comments in Source Code</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Entering Javadoc Comments in Source Code</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p> You can use the Auto Comment Tool to automatically enter Javadoc comments 
+  for any code elements that are not documented. The Auto Comment Tool determines 
+  whether: 
+<ul>
+  <li>All Java elements that should be documented have Javadoc comments. </li>
+  <li>Existing comments correspond with the elements to which they belong. For 
+    example, each parameter in a method must have an <tt>@param</tt> tag, each 
+    exception thrown from the method must have an <tt>@throws </tt>tag, and so 
+    on. </li>
+</ul>
+<p>
+<b>To check your source code for Javadoc comments:</b>
+</p>
+<ol>
+  <li>Right-click the file you want to check in the Projects window or Files window 
+    and choose Tools  &gt; Auto 
+   Comment.</li>
+  <li>Select the method for which you want to correct tagging errors or generate
+  	 missing tags from the list in the left pane. You can use the Filter Toolbar
+  	buttons to
+control which classes and members are displayed. 
+  <ul class="note"> 
+    <li>The <img src="images/ok.gif" align="bottom" hspace="2" alt="OK icon">&nbsp;icon
+    	indicates a valid Javadoc comment, <img src="images/partial.gif" align="bottom"  hspace="2" alt="Error icon">&nbsp;indicates
+    	a partial or incorrect comment, and <img src="images/no_comment.gif" align="bottom"  hspace="2" alt="Missing icon">&nbsp;indicates
+    	no comment. </li>
+  </ul>
+
+<li>Click Auto Correct. 
+    <ul>
+      <li>If a comment is needed, the IDE generates the missing tags and displays 
+        them in the Tags panel of the Auto Comment dialog box and in the line 
+        immediately preceding the method in the source file. </li>
+      <li> If a comment is partial or incorrect, the IDE displays information 
+        on how to complete the comment in the Details panel of the Auto Comment 
+        dialog box. </li>
+    </ul>
+  </li>
+  <li>Make any other desired edits. The Details pane displays "Javadoc comment
+  	OK" when
+  	 the comment is correct. </li>
+  <li> When you are finished, quit the Auto Comment Tool by closing its tab
+  	in the Editor window.</li>
+</ol>
+<p> For more information about Javadoc tags, see:</p>
+<p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://java.sun.com/j2se/1.4/docs/tooldocs/solaris/javadoc.html">
+    <param name="text" value="<html><u>http://java.sun.com/j2se/1.4/docs/tooldocs/solaris/javadoc.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+<p>For information on how to write Javadoc comments, see:</p>
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://java.sun.com/products/jdk/javadoc/writingdoccomments/index.html">
+    <param name="text" value="<html><u>http://java.sun.com/products/jdk/javadoc/writingdoccomments/index.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="generate.html">Generating Javadoc Documentation</a></dd>
+       	<dd><a href="javadoc_add.html">Adding a Javadoc Library to a Project</a></dd>
+</dl> 
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

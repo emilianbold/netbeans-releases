@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+ PENDING: Provide better descriptions of form types, and/or links and/or URLs 
+          for more information on various Java form types.  In particular, a 
+	  glossary item for MDI would be helpful.
+-->
+<html>
+    <head>
+        <title>Creating a New Form</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Creating a New Form</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>In the IDE, you can create JFC/Swing or AWT (Abstract Window Toolkit) forms, 
+        pre-built sample application skeletons, or any class that is based
+        on the JavaBeans<sup><font size="-2">TM</font></sup> component architecture
+        using the provided templates.</p>
+        <h4>To create a new GUI form in the IDE:</h4>
+        <ol>
+            <li> Choose File > New File from the main menu. </li>
+            <li> In the New wizard's Project combo box, select the project for which you
+            want to create the form. </li>
+            <li>Expand the Java GUI Forms node in the Categories pane and select the desired
+            form template. Click Next. </li>
+            <li> Enter the GUI form's class name and location. Click Finish.</li>
+                <p>The IDE creates a blank form of the selected type and opens it in the
+                GUI Builder view of an Editor tab. </p>
+        </ol>
+
+            <ul class="note">
+                <li> In order to avoid repaint problems at both design
+                and run time, only AWT components should be used in AWT forms and only
+                JFC/Swing components should be used in JFC/Swing forms. </li>
+            </ul>
+
+        <!--<p>
+        Templates that start with <tt>J</tt>
+        are JFC/Swing form templates, which use the Java Foundation Classes/Swing
+        (JFC/Swing) components for building GUIs without native code. Native code
+        is code that refers to methods of a specific operating system or that is compiled
+        for a specific processor. AWT is the original Java class library
+        for building Java GUIs. The AWT contains native code. 
+        </p>-->
+        
+        <h3>GUI Form Types in the IDE:</h3>
+        <p> The following table lists the types of form templates available in the IDE.
+        Each differs in the design time and run time look of the form as well as in the code
+        generated for the form's class. </p>
+        <table cellpadding="5" border="1">
+            <tr>
+                <th scope="col" align="left">Form Type</th>
+                <th scope="col" align="left">Description</th>
+            </tr>
+            <tr valign="top">
+                <td><tt>JApplet</tt></td><!--JFC/Swing-->
+                <td> Program run by a Java-enabled web browser or other applet
+                	viewer. </td>
+            </tr>
+            <tr valign="top">
+                <td><tt>JDialog</tt></td><!--JFC/Swing-->
+                <td>Modal or modeless window for collecting user input. </td>
+            </tr>
+            <tr valign="top">
+                <td><tt>JFrame</tt></td><!--JFC/Swing-->
+                <td>Top-level application window. </td>
+            </tr>
+            <tr valign="top">
+                <td><tt>JInternalFrame</tt></td><!--JFC/Swing-->
+                <td>An internal frame that can be placed on a <tt>JDesktopPane</tt> component
+                to create an MDI application. </td>
+            </tr>
+            <tr valign="top">
+                <td><tt>JPanel</tt></td><!--JFC/Swing-->
+                <td>Lightweight container for holding parts of an interface. In turn, the
+                container can be used in any other container, such as a <tt>JFrame</tt>, <tt>JPanel</tt>, <tt>JApplet</tt>,
+                or <tt>JDialog</tt> component. </td>
+            </tr>
+            <tr valign="top">
+                <td>Bean Form</td>
+                <td><p> The template used to create a new form based on any JavaBeans
+                		component. The new form can be visual or
+                		nonvisual. Specify the class in the Superclass field on
+                		the Form Superclass page of the New wizard. The
+                		bean  class that you specify when creating
+                		the new form must be in the classpath and must be already
+                		compiled. </p>
+                  <p>A bean is any class that complies with the JavaBeans component architecture.
+                A bean must have a public constructor without parameters. Use any JFC/Swing
+                component as an example of a JavaBeans class. For example, you can use <tt>javax.swing.JButton</tt> to
+                create a form that will produce a customized button. </p>
+                <p> Using this template, you can also create a plain container for holding
+                beans by specifying <tt>java.lang.Object</tt> as the superclass. </p></td>
+            </tr>
+            <tr valign="top">
+                <td>AWT Forms</td>
+                <td>Visual forms that are based on the AWT. The AWT forms include <tt>Applet</tt>, <tt>Dialog</tt>, <tt>Frame</tt>,
+                and <tt>Panel</tt>. </td>
+            </tr>
+            <tr valign="top">
+                <td>Sample Forms</td>
+                <td align=top> Customized sample forms that include a JFrame-based application
+                with three menus, a JFrame application that can be used as the main window
+                for an MDI application, and a dialog box with OK and Cancel buttons. </td>
+            </tr>
+        </table>
+
+            <dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd><a href="gui_containers.html">Working with Containers</a> </dd>
+                <dd><a href="layout_managers/gui_layoutmanagers.html">About Layout Managers</a></dd>
+                <dd><a href="gui_creatingmdi.html">Creating a Multiple Document Interface (MDI) Application</a> </dd>
+            </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

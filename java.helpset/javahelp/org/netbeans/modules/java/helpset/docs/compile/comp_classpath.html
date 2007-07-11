@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Managing the Classpath</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Managing the Classpath</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>Adding a group of class files to a project's classpath tells the IDE which 
+  classes the project should have access to during compilation and execution. 
+  The IDE also uses classpath settings to enable code completion, automatic highlighting 
+  of compilation errors, and refactoring. 
+<ul class="note">
+	<li>Source roots must only exist in a single project  and
+		cannot be shared with other projects, regardless of whether they are opened
+		or not. If you need to use a library in several projects, create a special
+		project within which to store it.
+</ul>
+
+<h3> Classpath and Standard Projects</h3>
+<!--todo : add mention of libraries node here & mention contextual menu as primary way to add items to classpath (for more detailed configing, use proj props)-->
+<p>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../project/csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="standard projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>
+	, the IDE maintains separate classpaths for compiling and running your 
+project, as well as compiling and running JUnit tests. The IDE automatically adds 
+everything on your project's compilation classpath to the project's runtime classpath.</p>
+
+        <ul class="note">
+        <li>Whenever you build a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard projects">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+        </object> for which a main class is specified, the IDE automatically copies any JAR 
+        files on the project's classpath to the <tt>dist/lib</tt> folder.
+        The IDE also adds each of the JAR files 
+        to the Class-Path element in the application JAR's <tt>manifest.mf</tt> 
+        file. This simplifies running the application outside the IDE. For more 
+        information, see <a href="comp_jar_deploy.html">Preparing 
+        a JAR for Deployment Outside the IDE</a></li>
+        </ul>  
+
+<p><b>To edit a standard project's classpath:</b></p>
+<ol>
+	<li>Expand the project node, right-click the Libraries node, and choose Properties.</li>
+  <li>In the Project Properties dialog box, add the necessary elements to the project's compilation classpath by clicking
+  	the appropriate button. You can add any of the following:
+	<ul><li><b><a href="comp_dependencies.html">Project</a>.</b> The JAR file or
+      	WAR file produced by another project, as well as the associated source
+      	files and Javadoc documentation.</li>
+      <li><b><a href="comp_libraries.html">Library</a>. </b>A collection of JAR 
+        files or folders with compiled classes, which can optionally have associated 
+        source files and Javadoc documentation.</li>
+	<li><b>JAR/Folder.</b> A JAR file or folder that contains compiled classes.</li>
+    </ul>
+   </li>
+    <li>(Optional) In web applications, click the Deploy checkbox if you do not want to
+    package an element in the web application. By default, all classpath elements are included in
+    the web application.</li>
+ <li>(Optional) Click the Build Projects on Classpath checkbox if you do not want to
+ rebuild all projects on the classpath whenever you build the current project. By default, all projects on the classpath and, in
+ web applications, projects listed in the Packaging page, are rebuilt when you build the current project.</li>
+  <li>(Optional) Click the Move Up and Move Down buttons to alter the
+   classpath priority.</li>
+  <li>(Optional) Click the Run, Compile Tests, or Run Tests tabs to make any
+  	changes to the these classpaths.</li>
+</ol>
+
+<ul class="note">
+  <li>You can also add dependent projects and other required resources to a project by simply right-clicking the 
+   Libraries node in the Projects window and choosing the appropriate item (Project, Library, or JAR/Folder) from the contextual menu.
+</ul>
+     
+        
+<h3> Classpath and Free-Form Projects</h3>
+<!--todo : add mention of libraries node here & mention contextual menu as primary way to add items to classpath (for more detailed configing, use proj props)-->
+<p>In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../project/csh/glossary_freeform.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,160">
+        <param name="text" value="free-form projects">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+      </object>
+	, your Ant script handles the classpath for all of your source 
+      folders. The classpath settings for free-form projects only tell the IDE
+	what classes to make available for code completion and refactoring. In order
+	to change a free-form project's actual compilation or runtime classpath you
+must edit your build.xml file directly. </p>
+<p>Note that free-form projects do not have Library nodes nor do free-form project's
+Project Properties dialog boxes include a Libraries panel. For more information,
+	see <a href="../project/proj_free_classpath.html">Declaring the Classpath in
+Free-Form Projects</a>. </p>
+<ul class="note"><li>The project's classpath declaration must exactly match the classpath
+    	used by your Ant script.
+    	</ul>
+
+<dl>
+    <dt><a name="seealso">See also</a></dt>
+    <dd><a href="comp_dependencies.html">Creating Dependencies Between Projects</a></dd>
+    <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>        
+    <dd><a href="../project/proj_jdk.html">Setting the Target JDK</a></dd>
+    <dd><a href="../javadoc/javadoc_add.html">Adding Javadoc to a Project</a></dd>
+  </dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

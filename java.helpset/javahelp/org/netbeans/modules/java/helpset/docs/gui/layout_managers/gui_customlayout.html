@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Using a Custom Layout</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Using a Custom Layout Manager </h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>If you are unable to accomplish the result you require with the provided layout
+        managers, you can use a custom layout manager. </p>
+        <p>To integrate a custom layout manager into the IDE's GUI Builder it must: </p>
+        <ul>
+            <li>Implement the <tt>java.awt.LayoutManager</tt> interface.</li>
+            <li>Be a JavaBeans component.</li>
+            <li>Not use layout parameters (constraints) for individual components.</li>
+        </ul>
+        <ul class="note">
+            <li> If the layout manager does not meet the above
+            requirements, you must create a special support class in order to add it
+            to the GUI Builder.</li>
+        </ul>
+
+        <h4>To install a custom layout manager from the Files window:</h4>
+        <ol>
+            <li> Right-click the layout manager's class in the Files window and choose
+            Tools  &gt; Add to Palette
+            from the contextual menu.</li>
+            <li> In the Select Palette Category dialog box, select one of the categories
+                and click OK.
+                <p>The IDE adds the custom layout manager to the palette window. 
+            </li>
+        </ol>
+
+        <h4>To install a custom layout manager that is packed in a JAR file:</h4>
+        <ol>
+            <li> Choose Tools  &gt; Palette
+            Manager. </li>
+            <li>In the  Install Components to Palette wizard's file chooser, navigate
+            to and select the JAR file for the layout manager.</li>
+            <li> Complete the Install Components to Palette wizard and click Finish.
+                <p>The IDE installs the JavaBean and adds the custom layout manager to the
+                palette window. 
+            </li>
+        </ol>
+
+        <p>For more information on how to create a custom layout, see: </p>
+      
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://form.netbeans.org/">
+            <param name="text" value="<html><u>http://form.netbeans.org/</u></html>"> 
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object></p>
+      
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_layoutmanagers.html">About Layout Managers</a> </dd>
+            <dd><a href="gui_settinglayout.html">Setting the Layout Manager</a> </dd>
+            <dd><a href="gui_gbcustomizer.html">Using the GridBag Customizer</a> </dd>
+        </dl>
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

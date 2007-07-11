@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Preparing a JAR File for Deployment Outside the IDE</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+    <h2>Preparing a JAR File for Deployment Outside the IDE</h2>
+    <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+    
+        <p>Whenever you build a standard Java project for which a main class is 
+        specified, the IDE automatically copies any JAR 
+        files on the project's classpath to the <tt>dist/lib</tt> folder.
+        The IDE also adds each of the JAR files to the Class-Path element in the 
+        application JAR's <tt>manifest.mf</tt> file. This simplifies running 
+        the application outside the IDE.</p>
+        
+        <p>Though the IDE copies the necessary files to the <tt>dist/lib</tt> directory 
+        automatically, the following special cases should be kept in mind:</p>
+        <ul>
+            <li>If two JAR files on the project classpath have the same name, 
+            only the first JAR file is copied to the <tt>lib</tt> folder.</li>
+            <li>If you added a folder of classes or resources to the classpath 
+            (as opposed to a JAR file or project), none of the classpath
+            elements are copied to the <tt>dist</tt> folder.</li>
+            <li>If a library on the project's classpath also has a Class-Path 
+            element specified in its manifest, the content of the Class-Path element 
+            must be on the project's runtime path.</li>
+        </ul>
+    
+    <h3>Running an Application JAR Outside of the IDE</h3>
+    <p>Once you have distributed the archive of your application, the  
+    application can be run outside of the IDE from the command line.</p>    
+    <p><b>To run an application JAR file from the command line:</b></p>
+        <ol>
+            <li>Navigate to the project's <tt>dist</tt> folder.</li>
+            <li>Type the following:
+                <blockquote> 
+                    <tt>java -jar &lt;jar_name&gt;.jar</tt>
+                </blockquote></li>
+        </ol>
+    <p>When you run the <tt>jar</tt> command, the JAR tool uses the JAR manifest 
+    to determine the application entry point and the paths to the dependent binaries
+    that are specified in the <tt>manifest.mf</tt> file.</p>
+        
+    <dl>
+        <dt><a name="seealso">See also</a></dt>
+        <dd><a href="comp_quickref.html">Building Tasks: Quick Reference</a></dd>
+        <dd><a href="comp_project.html">Building a Project</a></dd>
+        <dd><a href="comp_file.html">Compiling a Single File</a></dd>
+        <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
+        <dd><a href="../project/proj_stand_customize.html">Customizing the Ant Build Script</a> </dd>
+    </dl>
+
+    <hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

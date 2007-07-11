@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Managing Component Events</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Managing Component Events</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p> The Java programming language uses events to enable GUI form behavior. Source
+        objects can trigger events which one or more objects with event listeners react
+        to by means of event handlers.</p>
+        <h3>Defining Event Handlers</h3>
+        <p> You can define event handlers using a component's property sheet or contextual
+        menu. You can also define an event handler using the Connection wizard. </p>
+        <p><b>To define an event handler using the property sheet:</b></p>
+        <ol>
+            <li> Select the component in the Inspector window.</li>
+            <li>Click the Events button at the top of the Properties window.</li>
+            <li> Click the value of the desired event in the list. Initially, the value
+            for all events is <tt>&lt;none&gt;</tt>. When you click the value field, <tt>&lt;none&gt;</tt> is
+            automatically replaced with the default event name. </li>
+            <li> Open the Handlers dialog box by clicking
+            the event's ellipsis (...) button. </li>
+            <li>Enter the event handler name by clicking the Add button to add a new name
+            to the list of handlers. Click OK. <p>The code for the listener and the
+            empty body of the handler method is generated. </li>
+        </ol>
+        <ul class="note">
+            <li>Note that you still must add the desired
+            code for the new event handler in the Source Editor. </li>
+        </ul>
+
+        <p><b>To define an event handler using the contextual menu:</b></p>
+        <ol>
+            <li> Right-click  a form component in the Files window, Project window, or
+            Inspector window.</li>
+            <li>Choose Events from the contextual menu and its submenus. Bold menu items
+                in the Events submenus indicate event handlers that have already been defined.
+                <p>The code for the listener and the empty body of the handler method is
+                generated. The default name is assigned to the event handler.    
+            </li>
+            <li> Add your code for the new event handler in the Source Editor. </li>
+        </ol>
+
+        <ul class="note">
+            <li>If multiple events are of the same type, you can use the same
+            handler for all of them. For example, you could set both <tt>focusGained</tt> and <tt>focusLost</tt> to
+            use the <tt>button1FocusChange</tt> handler since they are
+            both of the type <tt>java.awt.event.FocusEvent</tt>. You can also use the same handler
+            for the same event on multiple components.</li>
+        </ul>
+        <!--
+        <ul class="note">
+        <li> You can set the style of how the code for
+        component events and their handlers is generated. Choose Tools > Options.
+        Expand the Editing node and select GUI Builder Settings. Set the Listener
+        Generation Style property. You can choose between the Anonymous Innerclasses,
+        One Innerclass, and Main Class styles. See <a href="gui_configuring.html">Configuring
+        the GUI Builder</a> for a description of these options and other GUI Builder
+        Settings. </li>
+        </ul>-->
+
+        <h3>Adding Multiple Handlers for One Event</h3>
+        <ol>
+            <li> In the Inspector window, select the component for which  you want
+            to add multiple handlers. </li>
+            <li>Click the Events button at the top of the Properties window. </li>
+            <li> Select the event in the property sheet and click the ellipsis (...) button
+            to display the Handlers dialog box. Repeat these steps to add additional
+            event handlers. </li>
+        </ol>
+
+        <h3>Removing Event Handlers</h3>
+        <ol>
+            <li> In the Inspector window, select the component whose event handler you
+            want to remove.</li>
+            <li>Click the Events button at the top of the Properties window. </li>
+            <li> Select the event in
+            the property sheet and click the ellipsis (...) button to display the Handlers
+            dialog box. Alternately, you can simply delete the name of the handler  you
+            want to remove in the Properties window. </li>
+            <li> In  the Handlers dialog box, select the handler to remove
+            from the  list and click Remove. </li>
+        </ol>
+        <p> When you remove an event handler, the corresponding code block is also deleted.
+        If more than one handler uses the same name and same block of code, deleting
+        a single reference to the code does not delete the code itself. Only deleting
+        all references will delete the corresponding code block, and a confirmation
+        dialog box is displayed first. </p>
+
+        <!--<ul class="note">
+            <li> If you remove an event but do not delete the
+            event handler when prompted by the confirmation dialog box, an orphaned
+            handler remains in the guarded text block. To delete the orphaned handler,
+            you need to add another event handler of the same name, delete that event,
+            and then agree to delete the handler in the confirmation dialog box. </li>
+        </ul>-->
+
+        <p>For more information about how to handle events in your program, including
+        information about the Java event model, see the <i>Creating a GUI with JFC/Swing</i> tutorial
+        at: </p>
+
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://java.sun.com/docs/books/tutorial/uiswing">
+            <param name="text" value="<html><u>http://java.sun.com/docs/books/tutorial/uiswing</u></html>"> 
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object></p>
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_events_setting.html">Setting Events With the Connection Wizard</a> </dd>
+            <dd><a href="gui_editcomponentprops.html">Editing Component Properties</a></dd>
+            <dd><a href="gui_modifysource.html">Modifying GUI Source Code</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="20">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

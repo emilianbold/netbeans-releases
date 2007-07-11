@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Working with Containers</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Working with Containers</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Java GUIs are forms comprised of top-level containers within which are grouped
+        sub-containers as well as the various components used to provide the desired information
+        and control functionality.</p>
+        <h3>Controlling View Focus</h3>
+        <p>It is often useful to focus work on single subcontainers rather than
+        	the entire   form the GUI Builder generally displays. When working with
+        	large forms containing complex nested hierarchies of containers, changing
+        	the scope of the GUI Builder's focus enables you to concentrate on specific
+        	parts of your interface. </p>
+        <p><b>To change the GUI Builder's focus to a specific container:</b></p>
+        <ol>
+            <li>In the GUI Builder or Inspector window, right-click the container you
+            want to edit. </li>
+            <li> Choose Design This Container from the contextual menu.
+                <p> The IDE adjusts display of the workspace such that the current container fills the
+                work area and hides the form's other components. The form's entire hierarchy
+                remains available in the Inspector window. 
+            </li>
+        </ol>
+        <p><b>To return the GUI Builder's display focus to the entire form:</b></p>
+        <ol>
+            <li> Right-click the container in the GUI Builder.</li>
+            <li>Choose Design Top Container from the contextual menu.
+                <p> The IDE adjusts the work area display such that the entire form is visible.
+                If the Design Top Container menu item is dimmed, you are already designing
+                the entire form. </p>
+            </li>
+        </ol>
+        <h3>Reordering Components Within a Container</h3>
+        <p> The order of components in a container follows the sequence in which components
+        are added. If the layout manager you have chosen for a container does not use
+        constraints (FlowLayout, BoxLayout, and GridLayout), the order of components
+        also determines how they are arranged visually. You can, however, reorder 
+        the components using the Inspector window or by dragging them in the form itself. </p>
+
+        <ul class="note">
+            <li>With layout managers that use constraints (BorderLayout, GridBagLayout, CardLayout,
+            AbsoluteLayout, and Null Layout), the order of components in the container
+            does not determine the order in which the components appear. For these containers,
+            you can only rearrange the component order in the Inspector window. Although GridBagLayout uses constraints to determine how 
+            components are arranged, component order determines the layout when the
+            Grid X and Grid Y constraints are not used. </li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_creatingforms.html">Creating a New Form</a> </dd>
+            <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a> </dd>
+            <dd><a href="layout_managers/gui_layoutmanagers.html">About Layout Managers</a> </dd>
+        </dl>
+
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

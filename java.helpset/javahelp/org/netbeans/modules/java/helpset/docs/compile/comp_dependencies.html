@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Creating Dependencies Between Projects</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating Dependencies Between Projects</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>When creating Java applications you typically set up a single main project
+	which contains both the project main class and any required projects.
+	Whenever you create separate 
+	<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../project/csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="standard projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>
+    &nbsp;for each of a project's source roots, you have to set up the 
+    classpath dependencies between the main project and the required projects. A 
+    required project is a project that has been added to another project's classpath. </p>
+
+        <ul class="note">
+        <li>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard projects">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+        </object> that have a main class is specified, the IDE automatically copies 
+        any JAR files on the project's classpath to the <tt>dist/lib</tt> folder 
+        when you build the project. The IDE also adds each of the JAR files 
+        to the Class-Path element in the application JAR's <tt>manifest.mf</tt> 
+        file. This simplifies running the application outside the IDE. For more 
+        information, see <a href="comp_jar_deploy.html">Preparing 
+        a JAR for Deployment Outside the IDE</a></li>
+        </ul>    
+    
+    <p>Whenever you clean and build a project, the IDE also cleans and builds
+	its required projects. The required project's attached Javadoc and source
+	code are also made available to the receiving project. <!--note : replace misleading "receiving project" with another term - "main" maybe?--></p>
+
+  <ul class="note"> 
+    <li> If you want to add a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+      </object>&nbsp;to the classpath of a standard project, you have to declare all 
+      of the free-form project's output files. Right-click the free-form project's 
+      node in the Projects window and choose Properties. Then declare the output 
+      files in the Output page of the dialog box. <!-- note : clarify "declare" and "output file" concepts--></td>
+  </ul>
+
+<p><b>To configure project dependencies:</b> 
+<ol>
+  <li>In the Projects window, expand the node of the project to which you want to add a dependent project.</li>
+  <li>Right-click the Libraries node and choose Add Project.</li>
+  <li>Select the directory containing the project whose JAR files you want to 
+    add to the classpath. When you select the project directory, the project name and project JAR
+    	 files are displayed in the dialog's right pane. 
+<ul class="note"><li>The file chooser depicts IDE project directories using 
+    <img src="../images/projectFolder.gif" width="19" height="16" alt="project folder icon"> 
+    icons.</li></ul> <!--note : check icon--></li>
+  <li>Click Add Project JAR Files.</li>
+  <p>The IDE adds the dependent project to the primary project's classpath and display a node for it within the Projects window's Library node.</li>
+</ol>
+
+<ul class="note">
+  <li>In free-form projects, the classpath is defined in your Ant script. See 
+      <a href="../project/proj_free_classpath.html">Declaring the Classpath in 
+      a Free-Form Project</a> for more information.</li>
+  </ul>
+
+<dl>
+    <dt><a name="seealso">See also</a></dt>
+    <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
+    <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>    
+    <dd><a href="../project/proj_stand_about.html">About Standard Projects</a></dd>
+    <dd><a href="../project/proj_free_about.html">About Free-Form Projects</a> </dd>
+    <dd><a href="../javadoc/javadoc_add.html">Adding Javadoc to a Project</a> </dd>
+</dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

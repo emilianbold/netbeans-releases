@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Creating a Multiple Document Interface (MDI) Application</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Creating a Multiple Document Interface (MDI) Application</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p> The multiple document interface (MDI) model is similar to a traditional computer
+        windowing system in that it includes a desktop above which additional windows 
+        float. In a JFC/Swing MDI application, the individual internal windows 
+        are all contained within a single enclosing window (i.e. desktop) which 
+        users can position, resize, minimize, and close. </p>
+        <p><b>To create an MDI application:</b></p>
+        <ol>
+            <li>Choose File > New to display the New wizard. </li>
+            <li>In the New File wizard's Project combo box, select the project for which
+            you want to create the form. </li>
+            <li>Expand the Java GUI Forms node and select
+                one of the following templates:
+                <ul>
+                    <li><b> <tt>JFrame Form </tt> </b>
+                    builds an MDI application from scratch. Note that you
+                    must also add a  <tt>JDesktopPane</tt> component if you choose this template. </li>
+                    <li><b>MDI Application</b> (in  Sample Forms)  creates a
+                    new MDI form with a  <tt>JDesktopPane</tt> and  predefined common menu
+                    items. </li>
+                </ul>
+            </li>
+            <li>Click Next.</li>
+            <li> On the wizard's Name and Location page, enter the form's name in the Class
+            Name combo box, then specify the Location and Package. Click Finish. The IDE
+            displays the new file in the Created File field. </li>
+            <li>(Optional) If you chose the JFrame Form template, select the <tt>JDesktopPane</tt> node
+            in the Palette window's Swing category and click anywhere in the form. </li>
+            <li>(Optional) Add <tt>JInternalFrame</tt> components
+            to the <tt>JDesktopPane</tt> container
+            by selecting <tt>JInternalFrame</tt> components
+            from the Swing category in the Palette window and click in the <tt>JDesktopPane</tt> container.
+            Alternately, you can  copy and paste <tt>JInternalFrame</tt> components
+            to the <tt>JDesktopPane</tt> container in the Files or Project window.</li>
+            <p>The IDE updates the form's layout and displays the new internal frames
+            in the GUI Builder.         
+        </ol>
+        <p><b>Notes:</b></p>
+        <ul>
+            <li> You can add other components directly to the <tt>JDesktopPane</tt> container,
+            such as a <tt>JTable</tt> or <tt>JSlider</tt> component. However, these
+            have standard properties and users can't manipulate them as they might
+            manipulate components in a <tt>JInternalFrame</tt> container. </li>
+            <li> You can also create separate <tt>JInternalFrame</tt> forms and add
+            these to the <tt>JDesktopPane</tt> container
+            programmatically at runtime. </li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_creatingforms.html">Creating a New Form</a> </dd>
+            <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a></dd>
+            <dd><a href="gui_about.html">Designing Java GUIs with the GUI Builder</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

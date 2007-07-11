@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Event Handler Dialog</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Event Handler Dialog</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The Event Handler Dialog enables you to set source
+        objects to trigger events to which one or more objects with event listeners react.
+        You can also remove events using the Event Handler Dialog. 
+        Whenever you define an event handler, the code for the listener and the empty 
+        body of the handler method is generated. In addition, the default name is assigned to 
+        the event handler. </p>
+
+        <p>To open the Event Handler dialog, select the component in the Inspector window and 
+        choose the event you want the component to trigger from the Events submenu. Alternately, 
+        you can access the dialog using the Events area of the Properties window.
+        <ul class="note">
+            <li>Bold menu items indicate that event handlers have already been defined. </li>
+        </ul>    
+        
+        <p><b>Notes:</b>
+        <ul>
+            <li>Note that you still must add the desired
+            code for the new event handler in the Source Editor. </li>
+            <li>If multiple events are of the same type, you can use the same
+            handler for all of them. For example, you could set both <tt>focusGained</tt> and <tt>focusLost</tt> to
+            use the <tt>button1FocusChange</tt> handler since they are
+            both of the type <tt>java.awt.event.FocusEvent</tt>. You can also use the same handler
+            for the same event on multiple components.</li>  
+        <li> When you remove an event handler, the corresponding code block is also deleted.
+        If more than one handler uses the same name and same block of code, deleting
+        a single reference to the code does not delete the code itself. Only deleting
+        all references will delete the corresponding code block, and a confirmation
+        dialog box is displayed first. </li>   
+            <li> If you remove an event but do not delete the
+            event handler when prompted by the confirmation dialog box, an orphaned
+            handler remains in the guarded text block. To delete the orphaned handler,
+            you need to add another event handler of the same name, delete that event,
+            and then agree to delete the handler in the confirmation dialog box. </li>       
+        </ul>
+
+        <p>For more information about how to handle events in your application, including
+        information about the Java event model, see the <i>Creating a GUI with JFC/Swing</i> tutorial
+        at: </p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://java.sun.com/docs/books/tutorial/uiswing">
+            <param name="text" value="<html><u>http://java.sun.com/docs/books/tutorial/uiswing</u></html>"> 
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object></p>
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../gui_events_setting.html">Setting Events With the Connection Wizard</a> </dd>
+            <dd><a href="../gui_events_managing.html">Managing Component Events</a> </dd>
+            <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>            
+        </dl>
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="20">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Running a JUnit Test</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Running a JUnit Test</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp;</small>
+<p>Once you have created a test or test suite, you can use the Run Test command
+  to initiate execution of the test. Run Test commands are available on source
+  nodes only.</p>
+<h4>To run  tests for an entire project:</h4>
+<ol>
+  <li>Select any node or file in the project you want to test in the Projects 
+    or Files window.</li>
+  <li>From the main menu, choose Run &gt; Test <i>project_name</i> (Alt-F6). 
+    <p>The IDE executes each of the project's tests.</p>
+  </li>
+</ol>
+<ul class="note">
+  <li>Alternatively, you can run tests for an entire project by right-clicking the 
+    node of the project you wish to test in the Projects window and choosing Test 
+    Project (Alt-F6) from the contextual menu. 
+</ul>
+<h4>To run a test for a single class:</h4>
+<ol>
+  <li>Select the node of the class for which you want to run a test in the Projects 
+    or Files window. </li>
+  <li>From the main menu, choose Run &gt; Run File &gt; Test <tt><i>classname</i></tt> 
+    (Ctrl-F6). 
+    <p>The IDE executes the test using. 
+      <!--<p>The test is executed using the executor and test runner specified in the JUnit Module 
+	Settings. For more information, see <a href="junit_configuring.html">Configuring JUnit Settings</a>.</p>-->
+    </p>
+  </li>
+</ol>
+<ul class="note">
+  <li>You can also run a class's test by selecting the test class node itself 
+    and choosing Run &gt; Run File &gt; Run <tt><i>testclassname</i></tt> (Shift-F6). 
+</ul>
+<h3>Working with JUnit Test Output</h3>
+<p>When you run a test, the IDE shows output into two tabs:</p>
+<ul>
+  <li>A summary of the passed and failed tests and the description of failed tests 
+    are displayed in the JUnit Test Results window. </li>
+  <li>The output from the JUnit tests themselves is displayed in the Output window.</li>
+</ul>
+<p><b>To work with the JUnit test window:</b></p>
+<ul>
+  <li>Double-click any error to jump to the line in the code where the error occurred.</li>
+  <li>Click the Output button to view the textual JUnit output.</li>
+  <li>Click the <img src="../images/junit_filter.gif" width="20" height="18"> 
+    button to filter switch between viewing all test results and viewing only 
+    failures.</li>
+</ul>
+<dl> 
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="junit_creatingtests.html">Creating a JUnit Test</a></dd>
+    <dd><a href="../run/run_about.html">About Running Java Applications</a></dd>
+</dl> 
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+<table border="0" cellpadding="20">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Compiling a Single File</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Compiling a Single File</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<ul>
+  <li>Select the file in the Projects window, Files window, or Source Editor and 
+    choose Build &gt; Compile File (F9). </li>
+</ul>
+<ul class="note">
+    <li> If you are using a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+      </object>, you need an Ant target for this command. The IDE offers to 
+generate a target the first time you choose the command. In the generated target, 
+you need to specify the directory where to put the compiled class. You can do so by 
+specifying a value for the <tt>build.classes.dir</tt> property in the generated target. 
+For example, you might add the following line to the line above the 
+<tt>&lt;target name="compile-selected-files-in-src"&gt;</tt> entry:
+<pre>&lt;property name="build.classes.dir"  value="build"/&gt;</pre>
+<p>Alternatively, you can replace the value of the provided <tt>build.classes.dir</tt> 
+or rewrite the target entirely.</p>
+ <p>For a full guide to configuring free-form projects, 
+      see: 
+      <p>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+	  </li>
+  </ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="comp_quickref.html">Building Tasks: Quick Reference</a></dd>
+    <dd><a href="comp_project.html">Building a Project</a></dd>
+    <dd><a href="comp_jar.html">Building a JAR File</a></dd>
+    <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
+    <dd><a href="../project/proj_stand_customize.html">Customizing the Ant Build 
+    Script</a></dd>
+</dl>
+
+
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

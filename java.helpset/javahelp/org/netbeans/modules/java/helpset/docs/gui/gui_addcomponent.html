@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Adding a Component to a Form</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Adding a Component to a Form</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Once you have created a new form, you can add components which provide the
+        desired display information and control functionality. In the IDE, you can
+        add components several ways, including: 
+        <ul>
+            <li><b>Drag and Drop</b>
+            <li><b>Pick and Plop</b>
+            <li><b>The Inspector window.</b>            
+        </ul>
+     
+        <h4>To add a component from the Palette:</h4>
+        <ol>
+            <li>Select a component in the Palette window by clicking its icon. Without releasing 
+            the mouse button, drag the component to the desired location in the form.</li>
+            <li>If you want to add the component to the Other Components node, drag the component
+                to the white area outside the form in the GUI Editor's workspace.
+                <p>The IDE adds the component to the selected container in the form. 
+            </li>
+        </ol>
+        <h4>To add multiple components from the Palette:</h4>
+        <ol>
+            <li>Select the component you want to add in the Palette window by clicking its icon.</li>
+            <li>While holding down the Shift key, click the location in the form where 
+            you want to place the first component.</li>
+            <li>Click each additional location in the form that you want to place an 
+            instance of the component you selected in the Palette.</li>
+            <li> If you want to add the component to the Other Components node, click in
+                the white area outside the form in the GUI Editor's workspace.
+                <p>The IDE adds the components to the selected container in the form. 
+            </li>
+        </ol>
+
+        <p> <b>To add a component using the Inspector window:</b> </p>
+        <ol>
+            <li> In the Inspector window, right-click the container to which you want to add a
+            component. </li>
+            <li>Choose the desired component from the Add From Palette submenu.</li>
+            <p> The IDE adds the component to the selected container in the form.</p>
+            </li>
+        </ol>
+        <p> <b>To add a bean from the Projects, Files, or Favorites windows:</b> </p>
+        <ol>
+            <li> In the Files window, locate the bean's class node. The class must be a 
+                bean and it must be compiled. Note that for a class to be a
+                bean, it must be possible to create an instance of the class using an empty
+                public constructor.
+            </li>
+            <li> Right-click the class node and choose Copy from the contextual menu. </li>
+            <li> Choose Paste from the contextual menu of either the GUI Builder or the
+                Other Components node in the Inspector window.
+                <p>The IDE adds the bean to the current form. 
+            </li>
+        </ol>
+        <ul class="note">
+            <li>When working with nested containers, it is sometimes
+            difficult to select the container to which you want to add the component.
+            You must first select the desired container before selecting the component
+            you want to add. You then select the component from the Palette window,
+            hold down the Alt key, and click the desired container again to add the
+            component.</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_selectcomponents.html">Selecting Components in a Form</a></dd>
+            <dd><a href="gui_editcomponentprops.html">Editing Component Properties</a></dd>
+            <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Testing a Bundle for Internationalized Strings</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Testing a Bundle for Internationalized Strings</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>You can check resource bundles for missing key and value pairs by using the 
+  Internationalization Test wizard. The wizard looks for all internationalized 
+  string keys (with a customizable meaning) in the source and checks for a corresponding 
+  key and value pair in the specified resource bundle. You can use the wizard 
+  to add any missing pairs. </p>
+  
+<!--PENDING : clarify "(with a customizable meaning)" - aren't internationalized strings customizeable already?-->
+  
+<p><b>To test a bundle for internationalized strings:</b></p>
+
+<ol>
+  <li>Choose Tools  &gt; Internationalization  &gt; Internationalization Test Wizard.</li>
+  <li>Click Add Source(s) and select one or more source files to test in the Select 
+    Sources dialog that appears. Click Next to proceed.</li>
+  <li>Specify the resource bundles for the source files. Click Select All to check 
+    one resource bundle for all the listed sources. To select a specific resource 
+    bundle for one or more source files, select the desired sources and click Select 
+    Resource. Click Next to proceed. 
+    <p>The wizard lists all of the internationalized strings with missing key 
+      and value pairs in the selected file. The wizard automatically suggests 
+      key names and values for the string.</li>
+
+  <li>Use the Source combo box to switch between source files. Deselect the checkbox 
+    in the first column for any string you do not want to include in the resource 
+    bundle. Change the key name and value for any string by typing a new value 
+    in the appropriate column.</li>
+  <li>Click Finish to add the missing key and value pairs to the resource bundle. 
+</ol>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="replacingformat.html">Code Formats for Internationalized Strings</a></dd>
+    <dd><a href="addparams.html">Adding Arguments for Message Formats</a></dd>
+    <dd><a href="manualinsert.html">Inserting an Internationalized String Into Source Code</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <title>GUI Builder Tasks: Quick Reference</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>GUI Builder Tasks: Quick Reference</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The following table describes common GUI Builder tasks. </p>
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top">
+                <th width="164" align="left" scope="col">To perform this task</th>
+                <th width="506" align="left" scope="col">Follow these steps</th>
+            </tr>
+            <tr valign="top">
+                <td>Reload a form.</td>
+                <td><p>Do one of the following:<ul>
+                    <li>Press Ctrl-R in either the GUI Builder or the Source Editor.</li>
+                    <li>Right-click the root node of the form in  either the Files window,
+                    Projects window, or Inspector window and select Reload Form from the
+                    contextual menu.</li>
+                </ul></td>
+            </tr>
+  
+ 
+            <tr valign="top">
+            <td>Create a menu bar.</td>
+            <td><ol>
+                <li> In the Palette window, click a <tt>JMenuBar</tt>&nbsp;(<img src="images/jmenubar.gif" alt="icon for JMenuBar">)
+                or <tt>MenuBar</tt>&nbsp;(<img src="images/menubar.gif" alt="icon for MenuBar">)
+                component. </li>
+                <li> Click anywhere in the <tt>JFrame</tt>, <tt>JDialog</tt>, or <tt>JApplet</tt> container
+                to which you want to add the menu bar.
+                <p> If this is the first menu bar you have added to the form, the menu
+                bar appears visually on the form. If this is not the form's first
+                menu bar, the menu appears below the Other Components node in the
+                Inspector window and is not visible in the form. </p>
+            </ol></td></tr>
+      
+            <tr valign="top">
+                <td>Add a menu to a menu bar.</td>
+                <td><ol>
+                    <li> Right-click the menu bar in the Inspector window and choose Add
+                    JMenu or Add Menu from the contextual menu. </li>
+                    <li> If you wish to name  the new menu, expand the menu
+                    bar node in the Inspector window, right-click the newly created menu
+                    node, and choose Properties. Then enter the desired name for the text
+                    property.</li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Add a menu item.</td>
+                <td><ol>
+                    <li> In the Inspector window, right-click the menu to which you would
+                    like to add an item. </li>
+                    <li> Choose Add from the contextual menu and then choose an item from
+                    the submenu. </li>
+                    <li> If you wish to rename  the new menu item, expand the
+                    menu node in the Inspector window, right-click the newly created menu
+                    item, and choose Properties. Then enter the desired name for the text
+                    property.
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+            <td>Create a contextual menu.</td>
+            <td><ol>
+                <li> In the Palette window, click the <tt>JPopupMenu</tt>&nbsp;(<img src="./images/jpopupmenu.gif" alt="icon for JPopupMenu">)
+                or <tt>PopupMenu</tt>&nbsp;(<img src="./images/popupmenu.gif" alt="icon for PopupMenu">)
+                contextual menu component. </li>
+                <li> Click anywhere in the form to add the contextual menu. The new menu
+                appears under the Other Components list in the Inspector window.</li>
+                <!--<li> Write code similar to this where you want to show the contextual
+                menu:
+                <pre>
+                popupMenu1.show (component, 100, 100);</pre>
+                </li>-->
+            </ol></td></tr>
+      
+            <tr valign="top">
+            <td>Add an event handler to a component.</td>
+            <td><p>Do one of the following:<ul>
+                <li> Select the component in the Inspector window. Then click the Events
+                button in the Properties window and select the desired event property. </li>
+                <li>Right-click the component in the Inspector window or GUI Builder
+                and choose the desired event from the Events menu in the  contextual
+                menu.</li>
+                <li> Use the Connection wizard by clicking the connection icon in the
+                GUI Builder toolbar,  next clicking the  source component, and then
+                clicking the target component. </li>
+            </ul></td></tr>
+      
+            <!--TODO(tm) : explain in full topic or remove if not important-->
+            <!--<tr valign="top">
+            <td>Change the Current Menu Bar</td>
+            <td><ol>
+            <li>Right-click the current menu bar's node in the Inspector window and
+            choose Cut from the contextual menu to make it invisible. </li>
+            <li> Right-click the Other Components node in the Inspector window and
+            choose Paste. </li>
+            <li>Repeat the cut and paste procedure to place the desired menu bar
+            in the current form's node and thus make it visible in the GUI Builder. </li>
+            </ol></td>
+            </tr>-->
+
+            <tr valign="top">
+                <td>Configure the GUI Builder.</td>
+                <td><ol>
+                    <li>Choose Tools  &gt; Options.</li>
+                    <li>Select the GUI Builder Settings node.</li>
+                    <li>Edit the desired GUI Builder properties. </li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Move or copy a component.</td>
+                <td><ol>
+                    <li> Select the component in the GUI Builder or Inspector window. </li>
+                    <li> Right-click the component  and choose
+                    Cut  or Copy from the contextual menu. </li>
+                    <li> Right-click the destination container in the GUI Builder or Inspector
+                    window and choose Paste from its contextual menu. The component or
+                    components are moved or copied with all properties intact. Events are
+                    maintained only if you are pasting within the same form. </li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Edit component labels.</td>
+                <td><ol>
+                    <li> Select the component in the GUI Builder and do one of the following
+                        to display the in-place editing field:
+                        <ul>
+                            <li> Press the spacebar. </li>
+                            <li> Click the component again. </li>
+                            <li> Right-click the component and choose Edit Text from the contextual
+                            menu. </li>
+                        </ul>
+                    </li>
+                    <li> Type the new label and press Enter. </li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+            <td>Create a Palette window category.</td>
+            <td><ol>
+            <li>Choose Tools > Palette Manager > Swing/AWT Components.</li>
+            <li> In the Palette window, right-click any existing category button
+            and choose Create New Category from the contextual menu. </li>
+            <li> Type a name for the new category in the dialog box that appears
+            and click OK.</li>
+            </ol></td>
+            </tr>
+
+            <tr valign="top">
+                <td>Create a Palette window category.</td>
+                <td><ol>
+                    <li>Choose Tools > Palette Manager > Swing/AWT Components.</li>
+                    <li> Click the New Category button. </li>
+                    <li> Type a name for the new category in the dialog box that appears
+                    and click OK.</li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Remove a Palette window category.</td>
+                <td><ol>
+                    <li>Choose Tools > Palette Manager > Swing/AWT Components. </li>
+                    <li>Click the Remove button. </li>
+                    <li>Click Yes   in the dialog box that appears. </li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Copy a palette category item.</td>
+                <td><ol>
+                    <li>Choose Tools > Palette Manager > Swing/AWT Components.</li>
+                    <li> In the Palette Manager, right-click any existing component and choose
+                    Copy from the contextual menu. </li>
+                    <li> Right-click the Palette category in which you wish to place the
+                    component and choose Paste &gt;  Copy. </li>
+                </ol></td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Remove a palette category item.</td>
+                <td><ol>
+                    <li>Choose Tools > Palette Manager > Swing/AWT Components.</li>
+                    <li>Click the Remove button. </li>
+                    <li>Click Yes in the dialog box that appears. </li>
+                </ol>
+                </td>
+            </tr>
+  
+            <tr valign="top">
+                <td>Add a bean to the Palette window.</td>
+                <td><ol>
+                    <li>Choose Tools > Palette Manager > Swing/AWT Components.</li>
+                    <li>If you wish to create a new category for the bean, click New Category
+                    before you add the bean.</li>
+                    <li>Click Add from JAR, Add from Library, or Add from Project. Complete
+                    the wizard to add the bean. </li>
+                </ol>
+                </td>
+            </tr>
+        </table>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_about.html">About Java GUIs</a></dd>
+            <dd><a href="gui_overview.html">Working with the GUI Builder</a></dd>
+            <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

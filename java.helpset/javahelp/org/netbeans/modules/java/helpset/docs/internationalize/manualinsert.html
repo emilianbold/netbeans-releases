@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Inserting an Internationalized String Into Source Code</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Inserting an Internationalized String Into Source Code</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The Insert Internationalized String command enables you to add internationalization 
+  strings one at a time as you create the source. </p>
+<p> <b>To insert an internationalized string into your source code:</b> 
+<ol>
+  <li>In the Source Editor, put the insertion point at the location in the source 
+    file where you want to insert an internationalized string.</li>
+  <li>Right-click the desired location and choose Tools  &gt; Internationalization 
+     &gt; Insert Internationalized 
+    String from the pop-up menu, or use the keyboard shortcut (Ctrl-Shift-J). 
+    <p> The Insert Internationalized String dialog box appears enabling you to edit 
+    each string in the file consecutively. If no internationalization resource bundle 
+    exists for the file, you can click the New button to create a new properties 
+    file in which to save internationalized strings. To choose a different <tt>.properties </tt>file, 
+    click Browse.</li>
+    
+<!--PENDING : confirm empty field behavior in Insert Internationalized String dialog-->
+    
+  <li> Click Format if you want to change the method used to generate the localized 
+    string.</li>
+  <li>Click Arguments if you want to add arguments to the method call. You can 
+    only add arguments to the method call if you use the <tt>java.text.MessageFormat</tt> 
+    or <tt>org.openide.util.NbBundle.getMessage</tt> formats.</li>
+  <li>Type in values for the Key and Value properties and click OK. <p>The internationalized 
+    string is added to the source code at the cursor location. </li>
+</ol>
+
+<dl>
+      <dt><a name="seealso">See Also</a></dt>
+      <dd><a href="formedstrings.html">Internationalizing a String With the GUI Builder</a></dd>
+      <dd><a href="addparams.html">Adding Arguments for Message Formats</a></dd>
+      <dd><a href="autoinsert.html">Internationalizing a Single File</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font> 
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

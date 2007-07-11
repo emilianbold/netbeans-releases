@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Internationalizing a Single File</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Internationalizing a Single File</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The Internationalize dialog box enables you to replace hard-coded strings 
+  in a single file with internationalized strings. If you need to internationalize 
+  several Java sources into one or more resource bundles, use the Internationalization 
+  wizard.</p>
+
+<p>
+<b>To internationalize source code:</b>
+
+<!--NOTE : "automatically" was misleading, its not automatic (the wizard is more automatic)-->
+
+<ol>
+  <li>In the Files or Projects window, right-click the class file you want to
+  	internationalize  and choose Tools  &gt; Internationalization 
+     &gt; Internationalize. 
+    <p>The Internationalize dialog box opens enabling you to edit each string
+    	in the file consecutively.
+    <ul><li>If a resource bundle already exists for the file, the 
+      <tt>.properties</tt> file in which the strings are saved is displayed in
+      the  Bundle Name field. The Replace String field also displays a preview
+      of the  internationalized string.</li>
+      <li>If no resource bundle exists for the file, the Bundle Name 
+      and Replace String fields are empty. You can click the New button to create
+      	a new  properties file in which to save internationalized strings. The <tt>.properties</tt> 
+      suffix is added to the new file in the Files and Projects windows.</li>
+    </ul>
+  </li>
+      
+<li>
+  	<p>If you want to choose a different <tt>.properties </tt>file, click Browse.</p>
+  	</li>
+  <!--PENDING : mention that .properties isn't visible if file extension visibility has been disabled?-->
+<li>If you want to change the method used to generate the localized
+	 string, click Format.</li>
+  <li>If you want to add arguments to the method call, click Arguments. You
+  	can only add arguments to the method call if you use the <tt>java.text.MessageFormat</tt> 
+    or <tt>org.openide.util.NbBundle.getMessage</tt> formats.</li>
+  <li>Check that the key and value are correct. By default, the Internationalize
+  	 dialog box gives the key the same name as the string being replaced. </li>
+    
+<!--PENDING : point out that for a new bundle the key and value fields are filled in with the first string found in the file (maybe as a tip)-->
+    
+  <li>Click Replace to generate the internationalized string. 
+    <p> The next string to be internationalized is then displayed in the Value
+   text field. </p>  
+  <li>Click Skip to ignore any strings you do not want to internationalize.
+    	 <p>The IDE  automatically dismisses the dialog box once the last string has been
+  		replaced.</p>
+</ol>
+
+  <ul class="note"> 
+    <li>To get information about the highlighted string in the Source Editor, click 
+  Info to see the name of the component containing the string and the property 
+  that the string is associated with. </li>
+  </ul>  
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="i18nwizard.html">Internationalizing a Set of Files With the Internationalization Wizard </a></dd>
+    <dd><a href="manualinsert.html">Inserting an Internationalized String Into Source Code</a></dd>
+    <dd><a href="addparams.html">Adding Arguments for Message Formats</a></dd>
+</dl>
+
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+  <table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

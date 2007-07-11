@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Internationalizing a String With the GUI Builder</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Internationalizing a String With the GUI Builder</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>If you need to internationalize a GUI application, you can use the GUI Builder 
+to replace a GUI component's hard-coded text with internationalized strings.</p>
+
+<p> <b>To insert an internationalized string with the GUI Builder:</b> 
+<ol>
+  <li>Open the desired file in the GUI Builder by double-clicking its node in 
+    the Files or Projects window.</li>
+  <li>Select the appropriate GUI component in the Inspector window.</li>
+  <li>In the Properties window, select the property that you want to internationalize 
+    (for example, the text property of <tt>jLabel</tt>). Click the ellipsis (...) 
+    button to open the property editor.</li>
+  <li>Select Resource Bundle from the Select Mode combo box. 
+    <p>The property editor switches to resource bundle mode. If a resource bundle 
+      already exists for the source, the <tt>.properties</tt> file into which the 
+      internationalized strings will be saved is displayed in the Bundle Name field.</li>
+        
+  <li>To choose a different <tt>.properties </tt>file, click Browse. Alternatively, 
+      you can click New to create a new properties file in which to save the internationalized 
+      strings. The <tt>.properties</tt> suffix is added to the file name you specify. 
+  </li>
+  <li> Click Format if you want to change the method used to generate the internationalized 
+    string.</li>
+  <li>Click Arguments if you want to add arguments to the method call. You can 
+    add arguments to the method call only if you use the <tt>java.text.MessageFormat</tt> 
+    or <tt>org.openide.util.NbBundle.getMessage</tt> formats.</li>
+  <li>Type in values for the Key and Value properties and click OK.</li>
+</ol>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="manualinsert.html">Inserting an Internationalized String Into Source Code</a> </dd>
+    <dd><a href="replacingformat.html">Code Formats for Internationalized Strings</a></dd>
+    <dd><a href="autoinsert.html">Internationalizing a Single File</a></dd>
+</dl>
+
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+  <table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Creating a JUnit Test</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating a JUnit Test</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp;</small>
+<p>The JUnit test generator enables you to create compilable test classes 
+  for use as skeletons in your unit tests. You can create unit tests for single
+  classes and entire packages, as well as empty test skeletons to be used with
+  sources you create later.</p>
+<ul class="note">
+  <li>Generated tests are distinguished by appending <tt>Test</tt> to
+      the tested classes' names (e.g. <tt><i>MyClass</i>Test.java</tt>).</li>
+</ul>
+
+<h4>To create a test for a single class:</h4>
+<ul>
+  <li>Right-click the class in the Projects window and choose Tools &gt; Create 
+    JUnit Tests (Ctrl-Shift-U).</li>
+</ul>
+<h4>To create a test suite:</h4>
+<ol>
+  <li>Right-click the package node containing the source files for which you want 
+    to generate the test suite in the Projects window and choose Tools &gt; Create 
+    JUnit Tests (Ctrl-Shift-U) from the contextual menu. </li>
+  <li>Make sure the Generate Test Suites checkbox is selected, specify any further 
+    options, and click OK. 
+    <p>The IDE generates test classes for all enclosed classes and stores them 
+      in the project's Test Packages node. If any of the test classes already 
+      exist, those classes are updated. </p>
+  </li>
+</ol>
+<h4>To create an empty test:</h4>
+<ol>
+  <li>Choose File  &gt; New
+  File from the main menu.</li>
+  <li>In the New File wizard, select JUnit in the Categories pane  and  Empty
+  	Test in the File Types pane. Click Next.</li>
+  <li>Enter the Test Name and select any options you require.  Click Finish.</li>
+  <p>The test skeleton is created based on the
+    properties specified in JUnit
+    Module Settings.</p>
+</ol>
+<h3>JUnit Test Creation Options</h3>
+  <p>When you generate JUnit tests from existing classes, you can specify the 
+    following options:</p>
+  <ul>
+    <li><b>Method Access Levels.</b> Specifies which methods to generate test 
+      methods for.</li>
+    <li><b>Class Types.</b> Specifies which class types to generate test classes 
+      for. This option is only available when generating tests for multiple classes.</li>
+    <li><b>Optional Classes.</b> Specifies whether to generate a test suite or 
+      whether to just generate the individual test classes. This option is only 
+      available when generating tests for multiple classes.</li>
+    <li><b>Optional Code.</b> Specifies whether to generate the following: 
+      <ul>
+        <li><tt>setUp</tt> method. Method for tasks like initializing fields, 
+          enabling on logging, and resetting environment variables. </li>
+        <li><tt>tearDown</tt> method. Method for cleaning up after tests have 
+          finished running. </li>
+        <li>Default Method Bodies. Instructions for printing out information about 
+          test status to the command output.</li>
+      </ul>
+    </li>
+    <li><b>Optional Comments.</b> Specifies whether to create Javadoc comments 
+      for the test methods and comments that suggest how to implement the test 
+      methods.</li>
+  </ul>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="junit_runningtests.html">Running a JUnit Test</a></dd>
+  <dd><a href="junit_configuring.html">Configuring JUnit</a></dd>
+  <dd><a href="junit_about.html">About JUnit</a></dd>
+</dl>
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+<table border="0" cellpadding="20">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

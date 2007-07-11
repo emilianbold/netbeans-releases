@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Variables Modifier Property Editor</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+    <h2>Variables Modifier Property Editor</h2>
+    <p>The Modifiers Property Editor enables you to define standard Java language modifiers
+    for a Java element.  The items that are available in this property editor depend on
+    the type of Java element being modified. 
+    </p>
+
+    <h4>Access Modifiers</h4>
+    <p>Access modifiers determine where a Java class, method, or field can be accessed. </p>
+    <ul>
+        <li><b>Default.</b>&nbsp;
+            The Java element is accessible to any class in the same package.
+        </li>
+        <li><b>Private.</b>&nbsp;
+            The Java method or field is accessible within the current class.
+        </li>
+        <li><b>Protected.</b>&nbsp;
+            The Java method or field is accessible within the current class and subclasses.
+        </li>
+        <li><b>Public.</b>&nbsp;
+            The Java element is accessible to any class.
+        </li>
+    </ul>
+
+    <h4>Other Modifiers</h4>
+    <p>Other modifiers define how a Java element can be used, or how it interacts with 
+        other classes.</p>
+    <ul>
+        <li><b>Abstract.</b>&nbsp;
+            An abstract class contains some methods that are not defined and must be implemented 
+            in subclasses.  An abstract method contains no body and must be overridden in 
+            subclasses.
+        </li>
+        <li><b>Static.</b>&nbsp;
+            A static method or field is shared by all instances of the current class.
+        </li>
+        <li><b>Transient.</b>&nbsp;
+            A transient field is not saved if the object is serialized.
+        </li>
+        <li><b>Native.</b>&nbsp;
+            A native method is invoked from a Java application, but written in another "native" language,
+            usually C or C++.
+        </li>        
+        <li><b>Final.</b>&nbsp;
+            A final class may not be used as a superclass.  A final method may not be overridden
+            by a subclass.  A final field's value cannot be changed.
+        </li>
+        <li><b>Synchronized.</b>&nbsp;
+            A synchronized method will seize control of the class while it is running. This
+            is used in a multithreaded environment to make sure two threads do not access
+            an object at the same time.
+        </li>
+        <li><b>Volatile.</b>&nbsp;
+            A volatile field's value can be changed by unsynchronized threads.  
+        </li>
+    </ul>
+
+    <dl> 
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="../gui_events_setting.html">Setting Events With the Connection Wizard</a> </dd>
+        <dd><a href="../gui_modifysource.html">Modifying GUI Source Code</a></dd>
+        <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+    </dl>
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small>
+
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

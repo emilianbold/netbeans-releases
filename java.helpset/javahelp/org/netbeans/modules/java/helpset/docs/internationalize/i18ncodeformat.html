@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>I18n String Format Property Editor</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>I18n String Format Property Editor</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The I18n String Format property editor sets the default code format that the 
+  IDE uses to make internationalized strings. The IDE uses this format whenever 
+  it automatically generates internationalized strings with the Internationalize 
+  command and the Internationalization wizard.</p>
+  
+<p>You can use the Replace Code Format combo box to enter the code format for 
+  resource bundle initialization. You can enter your own format or choose from 
+  one of the IDE presets.</p>
+<ul>
+  <li>Use the <tt>identifier</tt> format when you want to cache the bundle in 
+    a specific class. You can also use this format when you want to create a variable 
+    that points to the resource bundle. You can then use the variable as a method 
+    argument rather than the full resource bundle's name.</li>
+  <li>Use the <tt>Utilities</tt> format when you want to have a single resource 
+    bundle for a group of classes, such as all of the classes in a package. Use 
+    this format if you want to use your own custom classes as resource bundles. 
+  <li>Use <tt>java.util.ResourceBundle.getBundle</tt> if you want to use the standard 
+    Java utility class.</li>
+  <li>Use <tt>java.text.MessageFormat</tt> if you want to use strings that are 
+    constructed dynamically at runtime. You can add arguments to specify the dynamically 
+    added elements of the string.</li>
+  <li>Use <tt>org.openide.util.NbBundle.getMessage</tt> or <tt>org.openide.util.NbBundle.getBundle</tt> 
+    if you want to use the NetBeans<small><sup>TM</sup></small> APIs to build 
+    modules for use by the IDE.</li>
+</ul>
+<p>The Arguments field displays the various variables that you can use as arguments 
+  in your generated internationalized strings. </p>
+  
+<h4>To open the I18n String Format property editor:</h4>
+  <ol>
+   <li>Open the Options window by choosing Tools&nbsp; &gt; Options from the main window and click the Advanced Options button. </li>
+   <li>In the left pane of the Options window, expand the Editing node and select Internationalization. </li>
+   <li>Click the ellipsis (...) button for the I18n String Format property.</li>
+  </ol>
+  
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+    <dd><a href="i18nstringformat.html">I18n Search Format Property Editor</a></dd>
+    <dd><a href="i18nkeyformat.html">I18n Test Wizard Format Property Editor</a></dd>
+    <dd><a href="bundleformat.html">Bundle Init Format Property Editor</a></dd>
+</dl>
+
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+  <table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
+

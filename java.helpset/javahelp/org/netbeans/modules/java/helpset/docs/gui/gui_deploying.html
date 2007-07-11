@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Deploying Java GUI Applications</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Deploying Java GUI Applications</h2>
+        <p><small><a href="#seealso">See Also</a></small>
+        <p>In order for the interfaces you create to work 
+        outside of the IDE, you must include the Swing Layout Extensions library 
+        when deploying your applications. This Library contains the various layout-related  
+        extensions that the GUI Builder uses at design time and must be on 
+        the application's classpath at runtime as well.</p>
+        <ul class="note"> 
+            <li>You can find a JAR file of the Swing Layout Extensions library in the
+            following location on your system: 
+            <blockquote>
+                <tt><i>NetBeans_installation_folder</i>/ide8/modules/ext/swing-layout-<i>installed_version</i>.jar</tt>
+            </blockquote>
+            </li>
+        </ul>  
+        
+    <h3>Preparing a GUI Application for Distribution</h3>
+    <p>To ensure that your GUI application can reference the Swing Layout Extensions 
+        library at runtime, the IDE automatically copies the JAR (and any other JAR 
+        files on the project's classpath) to the <tt>dist/lib</tt> folder 
+        whenever you build the project. The IDE also adds each of the JAR files 
+        to the Class-Path element in the application JAR's <tt>manifest.mf</tt> 
+        file.</p>
+        <ul class="note"> 
+            <li>If your form does not include any containers created using FreeDesign, 
+            it is already compatible with standard Java classes and does not require 
+            the Swing Layout Extensions library at runtime.</li>
+        </ul>  
+                    
+        <p><b>To prepare your GUI application for distribution outside of the IDE:</b></p>
+        <ul>
+            <li>Zip the project's <tt>dist</tt> folder (including the lib folder) 
+            into a ZIP archive.</li>
+        </ul>
+        
+    <h3>Running a Standalone GUI Application</h3>
+    <p>Once you have distributed an archive of your GUI application, 
+    your application can be run outside of the IDE from the command line.</p>
+        <p><b>To run a standalone GUI application from the command line:</b></p>
+        <ol>
+            <li>Navigate to the project's <tt>dist</tt> folder.</li>
+            <li>Type the following:
+                <blockquote>
+                    <tt>java -jar <i>jar_name.jar</i></tt>
+                </blockquote></li>
+        </ol>        
+
+    <p>For more information about the Swing layout extension, visit:
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://swing-layout.dev.java.net">
+          <param name="text" value="<html><u>http://swing-layout.dev.java.net</u></html>">
+          <param name="textFontSize" value="medium">
+          <param name="textColor" value="blue">
+      </object>
+       
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../compile/comp_jar_deploy.html">Preparing a JAR for Deployment Outside the IDE</a></dd>
+            <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+            <dd><a href="gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
+        </dl>
+
+        <hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

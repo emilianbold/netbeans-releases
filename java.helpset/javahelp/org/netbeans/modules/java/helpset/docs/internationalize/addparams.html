@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Adding Arguments for Message Formats</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Adding Arguments for Message Formats</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The <tt>java.text.MessageFormat</tt> code format lets you use strings that 
+  are constructed dynamically at runtime. The dynamically added elements are stored 
+  in an array of objects, which is passed as a parameter to <tt>java.text.MessageFormat</tt>. 
+  You can use the Message Format Arguments dialog box to specify the values of 
+  these objects. 
+<p>You can add arguments when you use the <tt>org.openide.util.NbBundle.getMessage</tt> 
+  format. This format is part of the NetBeans<small><sup>TM</sup></small> APIs
+  and is used to build modules for the IDE. Consult the NetBeans API documentation
+  for more information on this format.
+<p>
+<b>To enter substitution parameters for a message format:</b>
+<ol>
+  <li>In the Internationalize dialog box, click the Format button. 
+  <li>Select the <tt>java.text.MessageFormat</tt> format or the <tt>org.openide.util.NbBundle.getMessage</tt> 
+    format from the Replace Code Format combo box. Then click OK. 
+  <li>In the Internationalize dialog box, click the Arguments button.</li>
+  <li>Click the Add button next to the Arguments text field. 
+    <p> A series of parameters, beginning with 0, is added to the text field.</p>
+  <li>Type a value for the parameter in the Code field. </li>
+  <li>Use the Add and Remove buttons to add or remove message parameters. When 
+    you are done, click OK to close the dialog box.</li>
+  <li>Finish entering values for the key and value fields as normal.</li>
+</ol>
+
+<!--QUESTION : how does one "finish" here? need more explicit step description-->
+
+<p> The arguments you supply are substituted for the <tt>{arguments}</tt> wild card 
+  in the following format:
+  <p>  
+  <tt> java.text.MessageFormat(java.util.ResourceBundle.getBundle("</tt><i>bundle 
+  name</i><tt>").getString("</tt><i>key</i><tt>"), new Object[] {</tt><i>arg1, 
+  arg2, arg3</i><tt>}) </tt> 
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd>  <a href="autoinsert.html">Internationalizing a Single File</a></dd>
+    <dd>  <a href="i18nwizard.html">Internationalizing a Set of Files With the Internationalization Wizard</a></dd>
+    <dd>  <a href="formedstrings.html">Internationalizing a String With the GUI Builder</a></dd> 
+</dl>
+
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
+

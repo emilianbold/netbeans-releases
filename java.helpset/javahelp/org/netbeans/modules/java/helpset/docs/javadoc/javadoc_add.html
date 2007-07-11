@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Adding Javadoc to a Project</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Adding Javadoc to a Project</h2>
+
+<p><small><a href="#seealso">See Also</a>&nbsp; </small> </p>
+<p>You can make Javadoc documentation for a JAR file's class available in the IDE 
+by associating that documentation with the JAR file.</p>
+<p>If you want to have access to compiled JDK documentation through the IDE, 
+see <a href="javadoc_jdk.html">Adding the JDK Javadoc to the IDE</a></p>
+<ul class="note">
+<li>When you add a required project to a project's classpath, the required
+    	 project's Javadoc and sources are automatically added to the project as
+    	well.</li>
+</ul>
+<p><b>To add Javadoc for a JAR file:</b></p>
+<ol>
+  <li>Choose Tools  &gt; Library
+  	 Manager from the main menu.</li>
+  <li>In the left pane of the Library Manager, select the project library
+  	within which the JAR file you want to add Javadoc documentation to is located.
+<ul class="note">
+		<li>Only libraries already registered with the IDE are listed in the Library Manager's
+  	Class Libraries list.</li></ul>
+  <li>If the JAR file for which you want to add Javadoc documentation
+  	has not already been added to a registered library, create a new empty library
+   using the New Library button. Next, 
+			in the Classpath tab click Add JAR/Folder and specify the location of
+	the JAR file containing the compiled class files. </li>
+	
+	     	<ul class="note">
+		   	<li>A class library
+  					can contain multiple JAR files as well as their Javadoc documentation and
+				source code.</li>
+     		</ul>
+  	<li>In the Javadoc tab, click Add ZIP/Folder and specify the location of the 
+    	Javadoc files.</li>
+  <li>Click OK to exit the Library Manager.
+  <p>The IDE adds the selected JAR files and Javadoc documentation Zip files
+  	 to the specified library and automatically registers the documentation in
+  	every project that has that JAR file on its classpath. </li>
+</ol>
+
+  <ul class="note"> 
+    <li>When you create a Java class library for a
+    	single JAR  file, you can simply add the JAR file to the project's classpath
+    	to make the associated Javadoc and source code available. If your
+    	Java library contains multiple JAR files, however, you must add the library
+    	itself to the classpath. Adding the library to the classpath also makes
+    	it easier to share the project with other developers. </li>
+  </ul>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../compile/comp_classpath.html">Managing the Classpath</a></dd>
+       	<dd><a href="../debug/debug_source.html">Attaching Source Code to a JAR File</a></dd>
+        <dd><a href="show_in_editor.html">Viewing Javadoc Documentation </a></dd>
+
+</dl> 
+
+<hr>
+<font size=-2><a href="../credits.html">Legal Notices</a></font> 
+<table border="0" cellpadding="50">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
