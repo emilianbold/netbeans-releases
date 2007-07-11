@@ -20,6 +20,7 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
@@ -77,7 +78,7 @@ public class JavaSourceProviderImpl implements JavaSourceProvider {
         }
 
         public Reader filterReader(Reader r) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return new StringReader("class SimplifiedJSPServlet {}"); //NOI18N
         }
 
         public CharSequence filterCharSequence(CharSequence charSequence) {
