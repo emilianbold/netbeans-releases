@@ -68,33 +68,23 @@ public final class GenCodeUtil
 	boolean fullyQualified)
     {
 
-	  String[] packAndName = getFullyQualifiedCodeGenType(classType);
+	String classTypeName = getTypeCodeGenType(classType, fullyQualified);
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
         {
-	    return assembleMultiDimDataType(packAndName, 
+	    return assembleMultiDimDataType(classTypeName, 
 					    collectionTypes, 
 					    useGenerics, 
 					    mult.getRangeCount(),
 					    fullyQualified);
 	}        
-        else
-	{
-	  String fullClassName = null;
-	  if (packAndName != null && packAndName.length == 2) {
-	    if (fullyQualified) 
-		fullClassName = packAndName[0] + "." + packAndName[1];
-	    else 
-		fullClassName = packAndName[1];	
-	  }              
-	  return fullClassName;
-	}
+	return classTypeName;
 
     }
     
     
     public static String assembleMultiDimDataType(
-        String[] coreType, 
+        String coreTypeName, 
         String[] collectionTypes, 
         boolean useGenerics, 
         long dimCount,
@@ -102,23 +92,16 @@ public final class GenCodeUtil
     {
 	boolean isPrimitive = true;
 
-	String coreTypeName = null;
-	if (coreType != null && coreType.length == 2) {
-	    isPrimitive = JavaClassUtils.isPrimitive(coreType[1]);
-	    if (fullyQualified) 
-		coreTypeName = coreType[0] + "." + coreType[1];
-	    else
-		coreTypeName = coreType[1];
-	}
+	isPrimitive = JavaClassUtils.isPrimitive(coreTypeName);
 
         if (dimCount == 0)	    
 	    return coreTypeName;
-
+	
 	if (isPrimitive 
 	    && collectionTypes[(int)dimCount - 1] != null
 	    && ! collectionTypes[(int)dimCount - 1].equals(""))
 	{
-	    String type = JavaClassUtils.getPrimitiveWrapperType(coreType[1]);
+	    String type = JavaClassUtils.getPrimitiveWrapperType(coreTypeName);
 	    if (fullyQualified) 
 		coreTypeName = "java.lang." + type;
 	    else
@@ -126,7 +109,7 @@ public final class GenCodeUtil
 
 	    isPrimitive = false;
 	}	    
-
+	
 	String leftPart = "";
 	String rightPart = "";
 
@@ -230,6 +213,84 @@ public final class GenCodeUtil
 	return new String[] {fullPkgName, fullClassName};
     }
     
+    public static String getTypeName(IClassifier clazz, boolean fullyQualified) 
+    {
+	String fullClassName = "";
+	String[] packAndName = getFullyQualifiedCodeGenType(clazz);
+	if (packAndName != null && packAndName.length == 2) {
+	    if (fullyQualified) 
+		fullClassName = packAndName[0] + "." + packAndName[1];
+	    else 
+		fullClassName = packAndName[1];	
+	}              
+	return fullClassName;
+
+	/*
+        String name = JavaClassUtils.getFullyQualifiedName(clazz);        
+        name = JavaClassUtils.getFullInnerClassName(name);
+	if (! fullyQualified) 
+	{
+	    name = JavaClassUtils.getShortClassName(name);
+	}
+	return name;
+	*/
+    }
+
+    public static String getTypeCodeGenType(IClassifier classType, boolean fullyQualified) 
+    {
+	IClassifier clazz = null;
+	String result = "";
+	if (classType instanceof IDerivationClassifier) 
+	{
+	    IDerivation drv = classType.getDerivation();
+	    if (drv != null) 
+	    {
+		clazz = drv.getTemplate();		
+		List<IUMLBinding> bindings =  drv.getBindings();
+		if (bindings != null) 
+		{
+		    boolean first = true;
+		    for (IUMLBinding b : bindings) 
+		    {
+			if (b.getActual() instanceof IClassifier) 
+			{
+			    String name = getTypeCodeGenType((IClassifier)b.getActual(), fullyQualified);
+			    if (name != null && ! name.trim().equals(""))
+			    {
+				if (JavaClassUtils.isPrimitive(name)) {
+				    name = JavaClassUtils.getPrimitiveWrapperType(name);
+				}
+				if (! first)
+				{
+				    result = result + ", ";
+				} 
+				else 
+				{
+				    first = false;
+				}
+				result = result + name.trim();
+			    }
+			}
+		    }
+		    if (result != null && !result.trim().equals(""))
+		    {
+			result = "<" + result + ">";			
+		    } 
+		}	
+	    }
+	    else 
+	    {
+		clazz = classType;
+	    }
+	}  
+	else 
+	{
+	    clazz = classType;
+	}   
+	result = getTypeName(clazz, fullyQualified) + result;	
+	return result;
+    }
+
 
     // see getCodeGenType()/assembleMultiDimDataType() 
     // for how the type string is formed 
@@ -353,6 +414,7 @@ public final class GenCodeUtil
 
 	return res;
     }
+
 
 
     // utility method merges 2 ArrayLists 

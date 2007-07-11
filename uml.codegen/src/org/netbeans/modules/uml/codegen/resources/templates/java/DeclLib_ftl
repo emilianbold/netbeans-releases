@@ -104,19 +104,19 @@ ${classInfo.getModifierText(classInfo.getModifiers())}
 
 <#macro NormalClassExtends classInfo >
 <@singleline>
-<#if  classInfo.getSuperClass()?? > 
-extends ${classInfo.getSuperClass().getName()} 
+<#if  classInfo.getSuperClassInfo()?? > 
+extends ${classInfo.getSuperClassInfo().getCodeGenType(false)} 
 </#if>
 </@singleline>
 </#macro>
 
 <#macro ClassImplements classInfo >
 <@singleline>
-<#if  classInfo.getSuperInterfaces()?? && (classInfo.getSuperInterfaces()?size > 0) >
+<#if  classInfo.getSuperInterfaceInfos()?? && (classInfo.getSuperInterfaceInfos()?size > 0) >
 implements 
-<#list classInfo.getSuperInterfaces() as interfaceName > 
- ${interfaceName}
-<#if interfaceName_has_next>
+<#list classInfo.getSuperInterfaceInfos() as interfaceInfo > 
+ ${interfaceInfo.getCodeGenType(false)}
+<#if interfaceInfo_has_next>
 ,
 </#if>
 </#list>
@@ -127,11 +127,11 @@ implements
 
 <#macro InterfaceExtends classInfo >
 <@singleline>
-<#if  classInfo.getSuperInterfaces()?? && (classInfo.getSuperInterfaces()?size > 0) >
+<#if  classInfo.getSuperInterfaceInfos()?? && (classInfo.getSuperInterfaceInfos()?size > 0) >
 extends 
-<#list classInfo.getSuperInterfaces() as interfaceName > 
- ${interfaceName}
-<#if interfaceName_has_next>
+<#list classInfo.getSuperInterfaceInfos() as interfaceInfo > 
+ ${interfaceInfo.getCodeGenType(false)}
+<#if interfaceInfo_has_next>
 ,
 </#if>
 </#list>

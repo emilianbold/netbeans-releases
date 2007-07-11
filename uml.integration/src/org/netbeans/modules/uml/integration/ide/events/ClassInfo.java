@@ -217,7 +217,7 @@ public class ClassInfo extends ElementInfo
     // the new/preferred interfaces data member
     private ArrayList<IClassifier> superInterfaces = 
         new ArrayList<IClassifier>();
-    
+        
     /** The enumeration's literals. */
     private Vector mLiterals           = new Vector();
     
@@ -2355,9 +2355,38 @@ public class ClassInfo extends ElementInfo
     // added for template codegen
     //
 
+    public ClassInfo getSuperClassInfo()
+    {
+	if (mSuperClass != null) 
+	{
+	    return getRefClassInfo(mSuperClass, true);
+	}
+        return null;
+    }
+
+    public ArrayList<ClassInfo> getSuperInterfaceInfos()
+    {
+	ArrayList<ClassInfo> res = new ArrayList<ClassInfo>();
+	if (superInterfaces != null) 
+	{
+	    for(IClassifier interf : superInterfaces) 
+	    {
+		res.add(getRefClassInfo(interf, true));
+	    }
+	}
+        return res;
+    }
+
     public String getShortClassName() {
 	return JavaClassUtils.getShortClassName(getName());
     }
+
+
+    public String getCodeGenType(boolean fullyQualified)
+    {
+	return GenCodeUtil.getTypeCodeGenType(getClassElement(), fullyQualified);
+    }
+
 
 
     public Vector getFieldsCodeGenSorted() {
