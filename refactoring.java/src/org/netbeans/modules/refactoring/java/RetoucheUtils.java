@@ -523,8 +523,13 @@ public class RetoucheUtils {
         return cpInfo;
     }
     
-    public static ClasspathInfo getClasspathInfoFor(TreePathHandle handle) {
-        return getClasspathInfoFor(getFileObject(handle));
+    public static ClasspathInfo getClasspathInfoFor(TreePathHandle ... handles) {
+        FileObject[] result = new FileObject[handles.length];
+        int i=0;
+        for (TreePathHandle handle:handles) {
+            result[i++]=getFileObject(handle);
+        }
+        return getClasspathInfoFor(result);
     }
     
     /**

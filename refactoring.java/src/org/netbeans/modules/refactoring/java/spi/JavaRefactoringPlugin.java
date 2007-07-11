@@ -133,7 +133,8 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         if (cpInfo==null) {
-            cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
+            Collection handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+            cpInfo = RetoucheUtils.getClasspathInfoFor((TreePathHandle[])handles.toArray(new TreePathHandle[handles.size()]));
             refactoring.getContext().add(cpInfo);
         }
         return cpInfo;
