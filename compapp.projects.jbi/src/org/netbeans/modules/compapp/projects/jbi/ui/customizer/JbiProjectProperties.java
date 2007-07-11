@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import org.netbeans.modules.compapp.projects.jbi.CasaConstants;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.JbiProjectType;
@@ -57,6 +59,7 @@ import org.w3c.dom.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import java.text.Collator;
 
@@ -312,6 +315,8 @@ public class JbiProjectProperties {
      */
     public static final String SRC_BUILD_DIR = "src.build.dir"; // NOI18N
     
+    public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
+    
     //================== Start of JBI  =====================================//
     
     /**
@@ -438,7 +443,8 @@ public class JbiProjectProperties {
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     private static final PropertyParser STRING_PARSER = new StringParser();
     private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
-    private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
+    private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();    
+    private static final CharsetParser CHARSET_PARSER = new CharsetParser();
     private static final PathParser PATH_PARSER = new PathParser();
     private static final PathParser SEMICOLON_PATH_PARSER = new SemiColonPathParser();
     private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
@@ -508,6 +514,7 @@ public class JbiProjectProperties {
         new PropertyDescriptor(JAVADOC_WINDOW_TITLE, PROJECT, STRING_PARSER),
         new PropertyDescriptor(JAVADOC_ENCODING, PROJECT, STRING_PARSER),
         new PropertyDescriptor(JAVADOC_PREVIEW, PROJECT, BOOLEAN_PARSER),
+        new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
         
         // This should be OS-agnostic
         new PropertyDescriptor(JBI_CONTENT_ADDITIONAL, PROJECT, SEMICOLON_PATH_PARSER),
@@ -548,7 +555,7 @@ public class JbiProjectProperties {
     };
     
     // Private fields ----------------------------------------------------------
-    private Project project;
+    private JbiProject project;
     private HashMap<String, PropertyInfo> properties;
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
@@ -565,7 +572,7 @@ public class JbiProjectProperties {
      * @param refHelper DOCUMENT ME!
      */
     public JbiProjectProperties(
-            Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
+            JbiProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
             ) {
         this.project = project;
         this.properties = new HashMap<String, PropertyInfo>();
@@ -716,7 +723,7 @@ public class JbiProjectProperties {
      *
      * @return DOCUMENT ME!
      */
-    Project getProject() {
+    JbiProject getProject() {
         return project;
     }
     
@@ -1590,6 +1597,52 @@ public class JbiProjectProperties {
                     ((Boolean) value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, antProjectHelper,
                     refHelper
                     );
+        }
+    }
+    
+    private static class CharsetParser extends PropertyParser {
+        /**
+         * DOCUMENT ME!
+         *
+         * @param raw DOCUMENT ME!
+         * @param antProjectHelper DOCUMENT ME!
+         * @param refHelper DOCUMENT ME!
+         *
+         * @return DOCUMENT ME!
+         */
+        public Object decode(
+                String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
+                ) {
+            if (raw == null) {
+                raw = Charset.defaultCharset().name();
+            }
+            return new Charset(raw, new String[0]) {
+                public boolean contains(Charset cs) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public CharsetDecoder newDecoder() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public CharsetEncoder newEncoder() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                
+            };
+        }
+        
+        /**
+         * DOCUMENT ME!
+         *
+         * @param value DOCUMENT ME!
+         * @param antProjectHelper DOCUMENT ME!
+         * @param refHelper DOCUMENT ME!
+         *
+         * @return DOCUMENT ME!
+         */
+        public String encode(
+                Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
+                ) {
+            return ((Charset)value).name();
         }
     }
     

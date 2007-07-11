@@ -44,6 +44,8 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 
@@ -142,6 +144,8 @@ public class JbiProjectGenerator {
             JbiProjectProperties.SRC_BUILD_DIR, 
             "${" + JbiProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_COMPONENTASA_FOLDER // NOI18N
         ); 
+        Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(JbiProjectProperties.SOURCE_ENCODING, enc.name());
         ep.setProperty(JbiProjectProperties.JBI_ROUTING, DEFAULT_JBI_ROUTING);
         ep.setProperty(JbiProjectProperties.JBI_SA_INTERNAL_ROUTING, DEFAULT_JBI_SA_INTERNAL_ROUTING);
         // Start Test Framework

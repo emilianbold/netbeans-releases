@@ -72,13 +72,19 @@ import java.beans.PropertyChangeSupport;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
+import org.netbeans.modules.compapp.projects.jbi.queries.JbiProjectEncodingQueryImpl;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
@@ -132,6 +138,8 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     private AntBasedProjectType abpt;
     private JbiLogicalViewProvider lvp;    
     private FileChangeListener casaFileListener;
+    
+    private static final Logger LOG = Logger.getLogger(JbiProject.class.getName());
     
     
     /**
@@ -199,7 +207,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      *
      * @return DOCUMENT ME!
      */
-    PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         return eval;
     }
     
@@ -287,6 +295,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             new HashSet<TopComponent>(),
             fileBuilt,
             new RecommendedTemplatesImpl(),
+            new JbiProjectEncodingQueryImpl(evaluator()),
             refHelper,
             sourcesHelper.createSources(),
             casaFileListener,
@@ -620,6 +629,15 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     EditableProperties projectEP = helper.getProperties(
                             AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     MigrationHelper.migrateCompAppProperties(projDirLoc, projectEP);
+                    
+                    // 3.3 Add project encoding for old projects
+                    if (projectEP.getProperty(JbiProjectProperties.SOURCE_ENCODING) == null) {
+                        projectEP.setProperty(JbiProjectProperties.SOURCE_ENCODING,
+                                // FIXME: maybe we should use Charset.defaultCharset() instead?
+                                // See comments in JbiProjectEncodingQueryImpl.java
+                                FileEncodingQuery.getDefaultEncoding().name());
+                    }
+                    
                     helper.putProperties(
                             AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
                     
@@ -656,6 +674,22 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             
             if (JbiLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
+            }
+            
+            String prop = eval.getProperty(JbiProjectProperties.SOURCE_ENCODING);
+            if (prop != null) {
+                try {
+                    Charset c = Charset.forName(prop);
+                } catch (IllegalCharsetNameException e) {
+                    //Broken property, log & ignore
+                    LOG.warning("Illegal charset: " + prop+ " in project: " + // NOI18N
+                            FileUtil.getFileDisplayName(getProjectDirectory())); 
+                }
+                catch (UnsupportedCharsetException e) {
+                    //todo: Needs UI notification like broken references.
+                    LOG.warning("Unsupported charset: " + prop+ " in project: " + // NOI18N
+                            FileUtil.getFileDisplayName(getProjectDirectory())); 
+                }
             }
         }
         

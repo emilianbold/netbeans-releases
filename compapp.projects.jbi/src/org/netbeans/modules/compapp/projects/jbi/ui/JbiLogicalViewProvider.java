@@ -82,7 +82,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         JbiProjectProperties.JBI_CONTENT_ADDITIONAL, JbiProjectProperties.SRC_DIR
     };
     
-    private final Project project;
+    private final JbiProject project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
@@ -113,7 +113,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
      * @param resolver DOCUMENT ME!
      */
     public JbiLogicalViewProvider(
-            Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
+            JbiProject project, AntProjectHelper helper, PropertyEvaluator evaluator,
             SubprojectProvider spp, ReferenceHelper resolver
             ) {
         this.project = project;
@@ -146,8 +146,8 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             JbiProjectProperties pps = new JbiProjectProperties(project, helper, resolver);
             
             //helper.addAntProjectListener(epp);
-            kids.add(new Node[] {new JbiModuleViewNode(pps, (JbiProject) project)});
-            kids.add(new Node[] {new TestNode(pps, (JbiProject) project)});
+            kids.add(new Node[] {new JbiModuleViewNode(pps, project)});
+            kids.add(new Node[] {new TestNode(pps, project)});
         } catch (Exception ioe) {
             org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
         }
@@ -475,11 +475,11 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     disable();
                     
                     // Make sure the target component list is not corrupted.
-                    ((JbiProject)project).getProjectProperties().fixComponentTargetList();
+                    project.getProjectProperties().fixComponentTargetList();
                     
                     // Update ASI.xml which could be corrupted due to the 
                     // broken reference.
-                    ((JbiProject)project).getProjectProperties().saveAssemblyInfo();
+                    project.getProjectProperties().saveAssemblyInfo();
                 }
             }
             

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 
 import javax.swing.JButton;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 
 /**
  * Customization of web project
@@ -60,7 +61,7 @@ public class JbiCustomizerProvider implements CustomizerProvider {
     // Option command names
     private static final String COMMAND_OK = "OK"; // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL"; // NOI18N
-    private final Project project;
+    private final JbiProject project;
     private final AntProjectHelper antProjectHelper;
     private final ReferenceHelper refHelper;
     private JbiProjectProperties webProperties;
@@ -73,7 +74,7 @@ public class JbiCustomizerProvider implements CustomizerProvider {
      * @param refHelper DOCUMENT ME!
      */
     public JbiCustomizerProvider(
-        Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
+        JbiProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
     ) {
         this.project = project;
         this.antProjectHelper = antProjectHelper;
