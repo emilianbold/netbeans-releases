@@ -580,7 +580,15 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 
                 // Try to find the partial file
                 FileObject dir = info.getFileObject().getParent();
-                FileObject partial = dir.getFileObject(name + ".rhtml"); // NOI18N
+                // TODO - any other filetypes I should check
+                String[] extensions = { ".rhtml", ".erb", ".html.erb" }; // NOI18N
+                FileObject partial = null;
+                for (String ext : extensions) {
+                    partial = dir.getFileObject(name + ext);
+                    if (partial != null) {
+                        break;
+                    }
+                }
                 if (partial == null) {
                     // Handle some other file types for the partials
                     for (FileObject child : dir.getChildren()) {
