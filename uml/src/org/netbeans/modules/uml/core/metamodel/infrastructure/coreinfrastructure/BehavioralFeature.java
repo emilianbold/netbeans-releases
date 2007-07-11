@@ -44,8 +44,8 @@ import org.netbeans.modules.uml.core.support.umlsupport.Log;
 /**
  * @author sumitabhk
  */
-public class BehavioralFeature extends Feature implements IBehavioralFeature,
-														  INamespace  
+public class BehavioralFeature extends Feature 
+      implements IBehavioralFeature, INamespace  
 {
 	private INamespace m_NamespaceAggregate = new Namespace();
 	private int PDK_RESULT = 3;
@@ -229,98 +229,98 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	}
 
 	private boolean paramsChanged(ETList<IParameter> nl, ETList<IParameter> old)
-	{
-		if (nl.size() == old.size()) 
-		{
-			try
-			{
-				for (int i = 0, count = old.size(); i < count; ++i)
-				{
-					IParameter oldp = old.get(i),
-							   newp = nl.get(i);
-					if (oldp.getTypeName().equals(newp.getTypeName())
-                            && (oldp.getName().equals(newp.getName())
-                                || ( 
-                                 (oldp.getDirection() == BaseElement.PDK_OUT
-                                  || oldp.getDirection() == BaseElement.PDK_RESULT)
-                                && oldp.getDirection() == newp.getDirection())))
-						continue;
-					oldp.setName(newp.getName());
-					oldp.setType(newp.getType());
-					oldp.setDirection(newp.getDirection());
-				}
-				return true;
-			}
-			catch (Exception e) 
-			{
-				Log.stackTrace(e);
-			}
-		}
-		return false;
-	}
+        {
+            if (nl.size() == old.size())
+            {
+                try
+                {
+                    for (int i = 0, count = old.size(); i < count; ++i)
+                    {
+                        IParameter oldp = old.get(i),
+                              newp = nl.get(i);
+                        if (oldp.getTypeName().equals(newp.getTypeName())
+                              && (oldp.getName().equals(newp.getName())
+                              || (
+                              (oldp.getDirection() == BaseElement.PDK_OUT
+                              || oldp.getDirection() == BaseElement.PDK_RESULT)
+                              && oldp.getDirection() == newp.getDirection())))
+                            continue;
+                        oldp.setName(newp.getName());
+                        oldp.setType(newp.getType());
+                        oldp.setDirection(newp.getDirection());
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Log.stackTrace(e);
+                }
+            }
+            return false;
+        }
     
 	private boolean paramsAdded(ETList<IParameter> nl, ETList<IParameter> old)
-	{
-		if (nl.size() > old.size()) 
-		{
-			try
-			{
-				for (int i = 0, count = old.size(); i < count; ++i)
-				{
-					IParameter oldp = old.get(i),
-							   newp = nl.get(i);
-                    
-                    if (!oldp.getTypeName().equals(newp.getTypeName())
-                            || (!oldp.getName().equals(newp.getName())
-                                && ( 
-                                 (oldp.getDirection() != BaseElement.PDK_OUT
-                                  && oldp.getDirection() != BaseElement.PDK_RESULT)
-                                || oldp.getDirection() != newp.getDirection())))
-						return false;
-                    
-
-				}
-				for (int i = old.size(), count = nl.size(); i < count; ++i)
-					addParameter(nl.get(i));
-				return true;
-			}
-			catch (Exception e) 
-			{
-				Log.stackTrace(e);
-			}
-		}
-		return false;
-	}
+        {
+            if (nl.size() > old.size())
+            {
+                try
+                {
+                    for (int i = 0, count = old.size(); i < count; ++i)
+                    {
+                        IParameter oldp = old.get(i),
+                              newp = nl.get(i);
+                        
+                        if (!oldp.getTypeName().equals(newp.getTypeName())
+                              || (!oldp.getName().equals(newp.getName())
+                              && (
+                              (oldp.getDirection() != BaseElement.PDK_OUT
+                              && oldp.getDirection() != BaseElement.PDK_RESULT)
+                              || oldp.getDirection() != newp.getDirection())))
+                            return false;
+                        
+                        
+                    }
+                    for (int i = old.size(), count = nl.size(); i < count; ++i)
+                        addParameter(nl.get(i));
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Log.stackTrace(e);
+                }
+            }
+            return false;
+        }
 	
 	private boolean paramsRemoved(ETList<IParameter> nl, ETList<IParameter> old)
-	{
-		if (old.size() > nl.size()) 
-		{
-			try
-			{
-				for (int i = 0, count = nl.size(); i < count; ++i)
-				{
-					IParameter oldp = old.get(i),
-							   newp = nl.get(i);
-                    if (!oldp.getTypeName().equals(newp.getTypeName())
-                            || (!oldp.getName().equals(newp.getName())
-                                && ( 
-                                 (oldp.getDirection() != BaseElement.PDK_OUT
-                                  && oldp.getDirection() != BaseElement.PDK_RESULT)
-                                || oldp.getDirection() != newp.getDirection())))
-						return false;
-				}
-				for (int i = nl.size(), count = old.size(); i < count; ++i)
-					removeParameter(old.get(i));
-				return true;
-			}
-			catch (Exception e) 
-			{
-				Log.stackTrace(e);
-			}
-		}
-		return false;
-	}
+        {
+            if (old.size() > nl.size())
+            {
+                try
+                {
+                    for (int i = 0, count = nl.size(); i < count; ++i)
+                    {
+                        IParameter oldp = old.get(i),
+                              newp = nl.get(i);
+                        if (!oldp.getTypeName().equals(newp.getTypeName())
+                              || (!oldp.getName().equals(newp.getName())
+                              && (
+                              (oldp.getDirection() != BaseElement.PDK_OUT
+                              && oldp.getDirection() != BaseElement.PDK_RESULT)
+                              || oldp.getDirection() != newp.getDirection())))
+                            return false;
+                    }
+                    for (int i = nl.size(), count = old.size(); i < count; ++i)
+                        removeParameter(old.get(i));
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Log.stackTrace(e);
+                }
+            }
+            return false;
+        }
 
 	/**
 	 *
@@ -347,49 +347,49 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#addRaisedSignal(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ISignal)
 	 */
 	public void addRaisedSignal(ISignal sig)
-	{
-		final ISignal signal = sig;
-		new ElementConnector<IBehavioralFeature>().addChildAndConnect(
-											this, true, "raisedSignal", 
-											"raisedSignal", signal,
-											 new IBackPointer<IBehavioralFeature>() 
-											 {
-												 public void execute(IBehavioralFeature obj) 
-												 {
-													signal.addContext(obj);
-												 }
-											 }										
-											);
-	}
+        {
+            final ISignal signal = sig;
+            new ElementConnector<IBehavioralFeature>().addChildAndConnect(
+                  this, true, "raisedSignal",
+                  "raisedSignal", signal,
+                  new IBackPointer<IBehavioralFeature>()
+            {
+                public void execute(IBehavioralFeature obj)
+                {
+                    signal.addContext(obj);
+                }
+            }
+            );
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#removeRaisedSignal(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ISignal)
 	 */
 	public void removeRaisedSignal(ISignal sig)
-	{		
-		final ISignal signal = sig;
-		new ElementConnector<IBehavioralFeature>().removeByID
-							   (
-								 this,signal,"raisedSignal",
-								 new IBackPointer<IBehavioralFeature>() 
-								 {
-									public void execute(IBehavioralFeature obj) 
-									{
-									   signal.removeContext(obj);
-									}
-								 }										
-								);
-	}
+        {
+            final ISignal signal = sig;
+            new ElementConnector<IBehavioralFeature>().removeByID
+                  (
+                  this,signal,"raisedSignal",
+                  new IBackPointer<IBehavioralFeature>()
+            {
+                public void execute(IBehavioralFeature obj)
+                {
+                    signal.removeContext(obj);
+                }
+            }
+            );
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#getRaisedSignals()
 	 */
 	public ETList<ISignal> getRaisedSignals()
-	{
-		ElementCollector<ISignal> collector = new ElementCollector<ISignal>();
-		return collector.retrieveElementCollectionWithAttrIDs(
-															  this,"raisedSignal", ISignal.class);
-	}
+        {
+            ElementCollector<ISignal> collector = new ElementCollector<ISignal>();
+            return collector.retrieveElementCollectionWithAttrIDs(
+                  this,"raisedSignal", ISignal.class);
+        }
 
 	/**
 	 *
@@ -399,62 +399,63 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	 * @param sig[in] The signal to add.
 	 */
 	public void addHandledSignal(ISignal sig)
-	{
-		EventDispatchRetriever ret = EventDispatchRetriever.instance();
-		IClassifierEventDispatcher disp =
-					(IClassifierEventDispatcher) ret.getDispatcher(
-								EventDispatchNameKeeper.classifier());
-		
-		boolean proceed = true;
-		IEventPayload payload = null;
-		
-		if( disp != null )
-		{
-		   payload = disp.createPayload("PreHandledSignalAdded");	   
-		   proceed = disp.firePreHandledSignalAdded(this,sig,payload);
-		}
-		if (proceed)
-		{	
-			// NOW create the semaphore, because the train is already on the 
-			// track, and the AddChildAndConnect routine is the routine that is going
-			// to cause re-entrancy. Notice we have to wrap this in a scope to make
-			// sure the semaphore destructs before the firing of the event.
-			PreventReEntrance reEnt = new PreventReEntrance();
-         entry = reEnt.startBlocking(entry);
-         
-			try {
-				if (!reEnt.isBlocking())
-				{
-					final ISignal signal = sig;
-					new ElementConnector<IBehavioralFeature>().addChildAndConnect(
-														this, true, "handledSignal", 
-														"handledSignal", signal,
-														 new IBackPointer<IBehavioralFeature>() 
-														 {
-															 public void execute(IBehavioralFeature obj) 
-															 {
-																signal.addHandler(obj);
-															 }
-														 }										
-														);														
-				}
-			}
-			finally
-			{
-				entry = reEnt.releaseBlock();
-			}
-
-   			if( disp != null )
-   			{
-   			   payload = disp.createPayload("HandledSignalAdded");	   
-   			   disp.fireHandledSignalAdded(this,payload);
-   			}
-		}
-		else
-		{
-			//throw exception		
-		}		
-	}
+        {
+            EventDispatchRetriever ret = EventDispatchRetriever.instance();
+            IClassifierEventDispatcher disp =
+                  (IClassifierEventDispatcher) ret.getDispatcher(
+                  EventDispatchNameKeeper.classifier());
+            
+            boolean proceed = true;
+            IEventPayload payload = null;
+            
+            if( disp != null )
+            {
+                payload = disp.createPayload("PreHandledSignalAdded");
+                proceed = disp.firePreHandledSignalAdded(this,sig,payload);
+            }
+            if (proceed)
+            {
+                // NOW create the semaphore, because the train is already on the
+                // track, and the AddChildAndConnect routine is the routine that is going
+                // to cause re-entrancy. Notice we have to wrap this in a scope to make
+                // sure the semaphore destructs before the firing of the event.
+                PreventReEntrance reEnt = new PreventReEntrance();
+                entry = reEnt.startBlocking(entry);
+                
+                try
+                {
+                    if (!reEnt.isBlocking())
+                    {
+                        final ISignal signal = sig;
+                        new ElementConnector<IBehavioralFeature>().addChildAndConnect(
+                              this, true, "handledSignal",
+                              "handledSignal", signal,
+                              new IBackPointer<IBehavioralFeature>()
+                        {
+                            public void execute(IBehavioralFeature obj)
+                            {
+                                signal.addHandler(obj);
+                            }
+                        }
+                        );
+                    }
+                }
+                finally
+                {
+                    entry = reEnt.releaseBlock();
+                }
+                
+                if( disp != null )
+                {
+                    payload = disp.createPayload("HandledSignalAdded");
+                    disp.fireHandledSignalAdded(this,payload);
+                }
+            }
+            else
+            {
+                //throw exception
+            }
+        }
 
 
 	/**
@@ -522,11 +523,11 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#getHandledSignals()
 	 */
 	public ETList<ISignal> getHandledSignals()
-	{
-		ElementCollector<ISignal> collector = new ElementCollector<ISignal>();
-		return collector.retrieveElementCollectionWithAttrIDs(
-															  this,"handledSignal", ISignal.class);
-	}
+        {
+            ElementCollector<ISignal> collector = new ElementCollector<ISignal>();
+            return collector.retrieveElementCollectionWithAttrIDs(
+                  this,"handledSignal", ISignal.class);
+        }
 
 	/**
 	 *
@@ -739,6 +740,25 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 		return parameter;
 	}
 
+        
+        private IParameter cloneFormalParameter(IParameter cloningParam)
+	{
+            IParameter newParam = null;
+            if (cloningParam != null )
+            {
+                newParam = createParameter(cloningParam.getTypeName(), cloningParam.getName());
+                if (newParam != null)
+                {
+                    newParam.setXMIID(cloningParam.getXMIID()); 
+                    newParam.setDirection(cloningParam.getDirection());
+                    newParam.setParameterKind(cloningParam.getParameterKind());
+                    newParam.setMultiplicity(cloningParam.getMultiplicity());
+                    newParam.setOwner(cloningParam.getOwner());
+                }
+            }
+            return newParam;
+        }
+        
 	/**
 	 *
 	 * Retrieves the Parameter that is this feature's return type.
@@ -841,19 +861,19 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#addMethod(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavior)
 	 */
 	public void addMethod(IBehavior behavior)
-	{
-		final IBehavior behav = behavior;
-		new ElementConnector<IBehavioralFeature>().addChildAndConnect(
-											this, true, "method", "method", behav,
-											 new IBackPointer<IBehavioralFeature>() 
-											 {
-												 public void execute(IBehavioralFeature obj) 
-												 {
-													behav.setSpecification(obj);
-												 }
-											 }										
-											);
-	}
+        {
+            final IBehavior behav = behavior;
+            new ElementConnector<IBehavioralFeature>().addChildAndConnect (
+                  this, true, "method", "method", behav,
+                  new IBackPointer<IBehavioralFeature>()
+            {
+                public void execute(IBehavioralFeature obj)
+                {
+                    behav.setSpecification(obj);
+                }
+            }
+            );
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#removeMethod(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavior)
@@ -878,40 +898,40 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#getMethods()
 	 */
 	public ETList<IBehavior> getMethods()
-	{
-		ElementCollector<IBehavior> collector = new ElementCollector<IBehavior>();
-		return collector.retrieveElementCollectionWithAttrIDs(
-															  this,"method", IBehavior.class);				
-	}
+        {
+            ElementCollector<IBehavior> collector = new ElementCollector<IBehavior>();
+            return collector.retrieveElementCollectionWithAttrIDs(
+                  this,"method", IBehavior.class);
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#getRepresentation()
 	 */
 	public IBehavior getRepresentation()
-	{
-		ElementCollector<IBehavior> collector = 
-									  new ElementCollector<IBehavior>();
-		return collector.retrieveSingleElementWithAttrID(this,"representation", IBehavior.class);
-	}
+        {
+            ElementCollector<IBehavior> collector =
+                  new ElementCollector<IBehavior>();
+            return collector.retrieveSingleElementWithAttrID(this,"representation", IBehavior.class);
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#setRepresentation(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavior)
 	 */
 	public void setRepresentation(IBehavior behavior)
-	{
-		final IBehavior behav = behavior;
-		new ElementConnector<IBehavioralFeature>().addChildAndConnect(
-											this, true, "representation", 
-											"representation", behav,
-											 new IBackPointer<IBehavioralFeature>() 
-											 {
-												 public void execute(IBehavioralFeature obj) 
-												 {
-													behav.setRepresentedFeature(obj);
-												 }
-											 }										
-											);
-	}
+        {
+            final IBehavior behav = behavior;
+            new ElementConnector<IBehavioralFeature>().addChildAndConnect(
+                  this, true, "representation",
+                  "representation", behav,
+                  new IBackPointer<IBehavioralFeature>()
+            {
+                public void execute(IBehavioralFeature obj)
+                {
+                    behav.setRepresentedFeature(obj);
+                }
+            }
+            );
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature#getFormalParameters()
@@ -1104,7 +1124,7 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 	 *
 	 * @param pParms[in] The parameter collection
 	 */
-	public void setFormalParameters(ETList<IParameter> inputParams)
+        public void setFormalParameters(ETList<IParameter> inputParams)
 	{
 		// get the formal parameters that are already on the element
 		ETList<IParameter> formalParams = getFormalParameters();
@@ -1239,6 +1259,61 @@ public class BehavioralFeature extends Feature implements IBehavioralFeature,
 			}
 		}
 	}
+        
+       
+        public  void setFormalParameters2(ETList<IParameter> inputParams)
+	{   
+            ETList<IParameter> formalParams = getFormalParameters();
+            ETList<IParameter> newParameters = new ETArrayList<IParameter>();
+            IParameter copiedParam = null;
+            
+            if (inputParams != null)
+            {
+                // We have to clone the imputParams because inputParams and 
+                // fomalParams store the same instances of parameter objects but
+                // the parameters could be in different order. Therefore, removing
+                // parameters in formalParams will also affect those in inputParams
+                for (IParameter param : inputParams)
+                {
+                    copiedParam = cloneFormalParameter(param);
+                    if (copiedParam != null)
+                    {
+                        newParameters.add(copiedParam);
+                    }
+                }
+                
+                // remove all existing formal parameters
+                if (formalParams != null)
+                {
+                    // block events.
+                    boolean success = EventBlocker.startBlocking();
+                    try
+                    {
+                        for (IParameter param : formalParams)
+                        {
+                            removeParameter(param);
+                        }
+                    }
+                    finally
+                    {
+                        EventBlocker.stopBlocking(success);
+                    }
+                }
+                
+                // add new params
+                if (newParameters != null && newParameters.size() > 0)
+                {
+                    for (IParameter param : newParameters)
+                    {
+                        if (param != null)
+                        {
+                            addParameter(param);
+                        }
+                    }
+                }
+            }
+	}
+        
 
 	/**
 	 *

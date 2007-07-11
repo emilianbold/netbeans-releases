@@ -183,6 +183,15 @@ public interface IBehavioralFeature extends IFeature, INamespace
 	 * All parameters other than those with a direction kind of PDK_RESULT.
 	*/
 	public void setFormalParameters( ETList<IParameter> value );
+        
+        
+        /**
+         * Simply removes all the existing parameters and sets new parameters
+         * from a given parameter list.
+         * 
+         * @param parameterList 
+         */
+        public void setFormalParameters2( ETList<IParameter> parameterList );
 
 	/**
 	 * Specific to the Java language.

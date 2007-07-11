@@ -49,6 +49,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -58,6 +59,10 @@ import javax.swing.table.TableColumn;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
 import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
+import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Utilities;
@@ -74,6 +79,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     private ArrayList <ElementData> removedElements = new ArrayList();
     private IPropertyElement parentElement;
     private IPropertyDefinition rootDef;
+    private boolean paramOrderChanged = false;
     
     /**
      * Creates new form ParameterCustomizerTemp
@@ -226,7 +232,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     }
     
     public void saveDataModel() {
-        // - 1st, remove MutiplicityRanges, if any
+        // 1st, remove MutiplicityRanges, if any
         MultiplicityTableModel tableModel = (MultiplicityTableModel) multiplicityTable.getModel();
         Vector <ElementData> removedMultiElemVec = tableModel.getRemovedMultiElemVec();
         if (removedMultiElemVec != null) {
@@ -235,30 +241,60 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             }
         }
         
-        // 2nd, save parameters
+        // 2nd, remove parameters which have been cached in remvovedElements
+        if (removedElements != null) {
+            for (ElementData elem : removedElements) {
+                elem.remove();
+            }
+        }
+        
+        // 3rd, save parameters in the listModel
         Object [] dataList = listModel.toArray();
         // save the elements in the current data model list
         if (dataList != null) {
             Vector <IPropertyElement> paramSubElements = new Vector <IPropertyElement> ();
             ElementData elem = null;
+            IPropertyElement propElem = null;
+            Object modelElem = null;
             for (int i=0; i<dataList.length; i++ ) {
                 elem = (ElementData) dataList[i];
-                // construct a sub-element list in the same order as the listModel
-                paramSubElements.add(elem.getElement());
-                //elem.save();
+                propElem = elem.getElement();
+                if ( propElem != null)
+                {
+                   // construct a sub-element list in the same order as the listModel
+                   paramSubElements.add(propElem);
+                }
             }
             
-            if (this.parentElement != null ) {
-                this.parentElement.setSubElements(paramSubElements);
+            // 4th, save operation
+            if (parentElement != null) {
+                parentElement.setSubElements(paramSubElements);
                 save(parentElement);
-                //this.parentElement.save();
-            }
-        }
-        
-        // 3rd, remove parameters which have been cached in remvovedElements
-        if (removedElements != null) {
-            for (ElementData elem : removedElements) {
-                elem.remove();
+                
+                // Fixed issue #101968
+                // Reset the parameters if their orders have been changed.
+                ETList<IParameter> paramList = new ETArrayList<IParameter>();
+                if (paramOrderChanged && dataList.length > 1)
+                {
+                    // set operation parameter in case the order of parameters have been changed.
+                    // modelElem should be of type IOperation
+                    Vector < IPropertyElement > children = parentElement.getSubElements();
+                    for(IPropertyElement child : children)
+                    {
+                        modelElem = child.getElement();  // modelElem should be of type IParameter
+                        if ( modelElem != null && modelElem instanceof IParameter)
+                        {
+                            paramList.add((IParameter)modelElem);
+                        }
+                    }
+                    modelElem = parentElement.getElement();
+                    if (modelElem != null && modelElem instanceof IOperation )
+                    {
+                        IOperation operationElem = (IOperation) modelElem;
+                        operationElem.setFormalParameters2(paramList);
+                        //save(parentElement);
+                    }
+                }
             }
         }
     }
@@ -792,8 +828,6 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     }
     
     private void populateMultiplicity(ElementData paramProp) {
-        String lower = ElementData.EMPTY_STR;
-        String upper = ElementData.EMPTY_STR;
         Vector <ElementData> multiRanges = null;
         if (paramProp != null) {
             MultiplicityTableModel tableModel = (MultiplicityTableModel) multiplicityTable.getModel();
@@ -974,6 +1008,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         int movedRow = paramList.getSelectedIndex();
         if (movedRow == -1) // nothing is selected; return.
             return;
+        //paramOrderChanged = true;
         if (actionCmd.equals("MOVEUP")) {  // NO I18N
             if (movedRow != 0) { //not already at top
                 swap(movedRow, movedRow-1);
@@ -1008,6 +1043,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         Object Obj2 = listModel.getElementAt(indx2);
         listModel.set(indx1, Obj2);
         listModel.set(indx2, Obj1);
+        paramOrderChanged = true;
     }
     
     private Dimension getMaxButtonWidth(JButton [] buttonList) {
@@ -1030,19 +1066,18 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     }
     
     // This method processes the value of the last cell beeing edited.
-    // The value of the cell is either saved to the data model or reset to empty string
-    // based on the "saved" flag.
+    // The value of the cell is saved to the data model 
     private void setLastEditedCell() {
         int editingRow = multiplicityTable.getEditingRow();
         int editingCol = multiplicityTable.getEditingColumn();
         // if no cell is currently being edited, simply return.
         if (editingRow < 0 || editingCol < 0)
             return;
-        javax.swing.DefaultCellEditor cellEditor =
-              (javax.swing.DefaultCellEditor) multiplicityTable.getCellEditor(editingRow, editingCol);
-        java.awt.Component editorComponent = cellEditor.getComponent();
-        if (editorComponent instanceof javax.swing.JTextField) {
-            String lastEditedText = ((javax.swing.JTextField)editorComponent).getText();
+        DefaultCellEditor cellEditor =
+              (DefaultCellEditor) multiplicityTable.getCellEditor(editingRow, editingCol);
+        Component editorComponent = cellEditor.getComponent();
+        if (editorComponent instanceof JTextField) {
+            String lastEditedText = ((JTextField)editorComponent).getText();
             ((MultiplicityTableModel)multiplicityTable.getModel()).setValueAt(
                   lastEditedText, editingRow, editingCol);
             cellEditor.stopCellEditing();
