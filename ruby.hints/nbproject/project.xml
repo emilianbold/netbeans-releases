@@ -307,7 +307,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.ruby.extrahints</friend>
+                <package>org.netbeans.modules.ruby.hints.spi</package>
+            </friend-packages>
         </data>
         <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>

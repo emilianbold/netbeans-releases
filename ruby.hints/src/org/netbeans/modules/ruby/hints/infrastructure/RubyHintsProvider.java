@@ -29,6 +29,7 @@ import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
+import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**

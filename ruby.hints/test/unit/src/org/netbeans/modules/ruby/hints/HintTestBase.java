@@ -40,7 +40,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
-import org.netbeans.modules.ruby.hints.infrastructure.AstRule;
+import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider;
 import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
 import org.netbeans.spi.editor.hints.ErrorDescription;

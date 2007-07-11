@@ -42,6 +42,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.netbeans.modules.ruby.hints.spi.ErrorRule;
+import org.netbeans.modules.ruby.hints.spi.AstRule;
+import org.netbeans.modules.ruby.hints.spi.Rule;
 
 /** 
  * Manages rules read from the system filesystem.
