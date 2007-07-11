@@ -51,4 +51,9 @@ public class ExpandSameLineDefTest extends HintTestBase {
         String caretLine = "cla^ss FooController; def rescue_action(e) raise e end; end";
         findHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
     }
+    
+    public void testApplyFix() throws Exception {
+        String caretLine = "cla^ss FooController; def rescue_action(e) raise e end; end";
+        applyHint(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine, "class");
+    }
 }
