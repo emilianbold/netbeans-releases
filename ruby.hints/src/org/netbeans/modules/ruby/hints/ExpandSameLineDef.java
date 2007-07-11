@@ -26,6 +26,7 @@ import org.jruby.ast.ClassNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeTypes;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.GsfTokenId;
@@ -84,7 +85,7 @@ public class ExpandSameLineDef extends AbstractHint {
 
     public void run(CompilationInfo info, Node node, AstPath path, List<ErrorDescription> result) {
         // Look for use of deprecated fields
-        if (node instanceof MethodDefNode || node instanceof ClassNode) {
+        if (node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE || node.nodeId == NodeTypes.CLASSNODE) {
             ISourcePosition pos = node.getPosition();
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();

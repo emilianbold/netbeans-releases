@@ -142,7 +142,7 @@ public class RailsDeprecations extends AbstractHint {
 
     private void scan(CompilationInfo info, Node node, List<ErrorDescription> result) {
         // Look for use of deprecated fields
-        if (node instanceof InstVarNode || node instanceof InstAsgnNode) {
+        if (node.nodeId == NodeTypes.INSTVARNODE || node.nodeId == NodeTypes.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
 
             // Skip matches in _test files, since the standard code generator still

@@ -40,6 +40,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class RubyHintsProvider implements HintsProvider {
     private boolean cancelled;
+    private Map<Integer,List<AstRule>> testHints;
+    private Map<Integer,List<AstRule>> testSuggestions;
     
     public RubyHintsProvider() {
     }
@@ -52,7 +54,10 @@ public class RubyHintsProvider implements HintsProvider {
         if (root == null) {
             return;
         }
-        Map<Integer,List<AstRule>> hints = RulesManager.getInstance().getHints(false);
+        Map<Integer,List<AstRule>> hints = testHints;
+        if (testHints == null) {
+            hints = RulesManager.getInstance().getHints(false);
+        }
 
         if (hints.isEmpty()) {
             return;
@@ -81,22 +86,25 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
 
-        Map<Integer, List<AstRule>> suggestions = new HashMap<Integer, List<AstRule>>();
+        Map<Integer, List<AstRule>> suggestions = testSuggestions;
+        if (suggestions == null) {
+            suggestions = new HashMap<Integer, List<AstRule>>();
    
-        suggestions.putAll(RulesManager.getInstance().getHints(true));
-   
-        for (Entry<Integer, List<AstRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
-            List<AstRule> rules = suggestions.get(e.getKey());
+            suggestions.putAll(RulesManager.getInstance().getHints(true));
 
-            if (rules != null) {
-                List<AstRule> res = new LinkedList<AstRule>();
+            for (Entry<Integer, List<AstRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
+                List<AstRule> rules = suggestions.get(e.getKey());
 
-                res.addAll(rules);
-                res.addAll(e.getValue());
+                if (rules != null) {
+                    List<AstRule> res = new LinkedList<AstRule>();
 
-                suggestions.put(e.getKey(), res);
-            } else {
-                suggestions.put(e.getKey(), e.getValue());
+                    res.addAll(rules);
+                    res.addAll(e.getValue());
+
+                    suggestions.put(e.getKey(), res);
+                } else {
+                    suggestions.put(e.getKey(), e.getValue());
+                }
             }
         }
 
@@ -167,5 +175,10 @@ public class RubyHintsProvider implements HintsProvider {
     private boolean isCancelled() {
         return cancelled;
     }
-
+    
+    /** For testing purposes only! */
+    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions) {
+        this.testHints = testHints;
+        this.testSuggestions = testSuggestions;
+    }
 }

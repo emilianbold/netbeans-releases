@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jruby.ast.ForNode;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
@@ -76,7 +75,7 @@ public class BlockVarReuse extends AbstractHint {
     }
 
     public void run(CompilationInfo info, Node node, AstPath path, List<ErrorDescription> result) {
-        if (node instanceof IterNode && !(node instanceof ForNode)) {
+        if (node.nodeId == NodeTypes.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
             @SuppressWarnings(value = "unchecked")
@@ -160,7 +159,7 @@ public class BlockVarReuse extends AbstractHint {
                 }
 
                 // Skip SOME blocks:
-                if (child instanceof IterNode && !(child instanceof ForNode)) {
+                if (child.nodeId == NodeTypes.ITERNODE) {
                     // Skip only the block which the fix is applying to;
                     // the local variable could be aliased in other blocks as well
                     // and we need to keep the program correct!

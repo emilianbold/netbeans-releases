@@ -1,0 +1,6 @@
+   puts @flash 
+        ------
+HINT:Rails Deprecation: Use the flash method instead of working with the @flash instance variable directly
+    puts @request
+         --------
+HINT:Rails Deprecation: Use the request method instead of working with the @request instance variable directly
