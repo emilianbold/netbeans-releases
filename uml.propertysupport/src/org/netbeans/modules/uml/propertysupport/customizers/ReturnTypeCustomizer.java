@@ -179,7 +179,7 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
         messageIcon = new javax.swing.JLabel();
         messageArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(0, 0));
+        setPreferredSize(new java.awt.Dimension(480, 250));
         setLayout(new java.awt.GridBagLayout());
 
         returnTypeLabel.setLabelFor(returnTypeCombo);
@@ -284,7 +284,7 @@ public class ReturnTypeCustomizer extends javax.swing.JPanel implements Enhanced
         messageArea.setBackground(messagePanel.getBackground());
         messageArea.setEditable(false);
         messageArea.setLineWrap(true);
-        messageArea.setRows(2);
+        messageArea.setRows(1);
         messageArea.setWrapStyleWord(true);
         messageArea.setAutoscrolls(false);
 
