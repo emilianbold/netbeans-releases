@@ -240,77 +240,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
         }
         
         return null;
-    }
-    
-    
-    
-    // Add a Data Source using the Add Data Source dialog;
-    // Add a driver using the Add Driver dialog
-    // Add a connection through the DataConnection APIs
-    public boolean addDataSource(Project project, String itemSelected)  {
-        
-        if (!dataSourceExists(project, itemSelected)) {
-            // Show the Add Data Source dialog
-            new AddDataSourceDialog(false, itemSelected).showDialog();
-            DataSourceInfo dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(itemSelected);
-        }
-        
-        DataSourceInfo dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(itemSelected);
-        String jdbcDriverName = "";
-        
-        // If no data source has been registered then add the driver
-        if (dsInfo == null) {
-            if (dataSourceResolved(project, itemSelected))
-                addDriver(dsInfo);
-        } else {
-            // data source has been added
-            NoSelectedServerWarning.getSelectedServerDialog().dispose();
-            
-            // next check to see if the driver has been added
-            JDBCDriver matchingDriver = findMatchingDriver(dsInfo.getDriverClassName());
-            if (matchingDriver != null)
-                jdbcDriverName = matchingDriver.getName();
-            
-            // if the driver hasn't been added yet
-            if (matchingDriver == null) {
-                // if the data source has been added then proceed and add the driver
-                if (dataSourceResolved(project, itemSelected))
-                    addDriver(dsInfo);
-            }
-        }
-        
-        // if user cancels the Add Data Connection then do nothing else add a connection
-//        if (dsInfo == null) {
-//            new AddDataSourceDialog(false, itemSelected).showDialog();
-//            dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(itemSelected);
-//        } else {
-        if (dsInfo != null) {
-            // make sure the driver has been added before adding the connection
-            if (findMatchingDriver(dsInfo.getDriverClassName()) == null)
-                addDriver(dsInfo);
-            else {
-                
-                // Add the connection
-                try {
-                    JdbcDriverInfo jdbcInfo = JdbcDriverInfoManager.getInstance().getCurrentJdbcDriverInfo();
-                    dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(itemSelected);
-                    String username = dsInfo.getUsername();
-                    String password = dsInfo.getPassword();
-                    JDBCDriver drvs = findMatchingDriver(dsInfo.getDriverClassName());
-                    DatabaseConnection dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true); // NOI18N
-                    ConnectionManager.getDefault().addConnection(dbconn);
-                    updateProject(project, dsInfo);
-                    ProjectDataSourceTracker.refreshDataSources(project);
-                    ProjectDataSourceTracker.refreshDataSourceReferences(project);
-                } catch (DatabaseException de) {
-                    de.printStackTrace();
-                }
-            }
-        }
-        
-        
-        return true;
-    }
+    }                
     
     public JDBCDriver addDriver(DataSourceInfo dsInfo) {
         JDBCDriver driver = null ;

@@ -63,25 +63,6 @@ public class BrokenDataSourceSupport {
             return !problemDatasources.isEmpty();
     }
 
-    /**
-     * Shows UI customizer which gives users chance to fix encountered problems,
-     * i.e. choose appropriate application server.
-     *
-     * @param j2eeSpec one of {@link J2eeModule#EJB}, {@link J2eeModule#EAR}
-     * @param moduleType
-     * @return selected application server. Might be <code>null</code>.
-     */
-    public static String selectServer(final Project project) {
-        return NoSelectedServerWarning.selectServerDialog(
-                NbBundle.getMessage(BrokenDataSourceSupport.class, "LBL_Resolve_Missing_DataSource_Title"),
-                NbBundle.getMessage(BrokenDataSourceSupport.class, "ACSD_Resolve_Missing_DataSource"), project); //  NOI18N
-    }
-
-
-    public static boolean addDataSourceAndConnection(Project project, String item) {
-        return DataSourceResolver.getInstance().addDataSource(project, item);
-    }
-
     public static boolean dataSourceExistsCheck(Project project, String item) {
         return DataSourceResolver.getInstance().dataSourceExists(project, item);
     }
