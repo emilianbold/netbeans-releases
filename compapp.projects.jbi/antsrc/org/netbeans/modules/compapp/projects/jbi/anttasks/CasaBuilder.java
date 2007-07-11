@@ -36,7 +36,6 @@ import org.netbeans.modules.compapp.projects.jbi.JbiConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -133,7 +132,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         this.wsdlRepository = wsdlRepository;
         this.task = task;
         
-        String projName = ProjectHelper.getServiceAssemblyID(project);
+        String projName = AntProjectHelper.getServiceAssemblyID(project);
         String projPath = project.getProperty("basedir") + File.separator;
         String srcDirLoc = projPath + "src" + File.separator;
         confDirLoc = srcDirLoc + "conf" + File.separator;

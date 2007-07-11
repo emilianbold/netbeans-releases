@@ -380,6 +380,8 @@ public class BuildServiceAssembly extends Task {
             TransformerFactory transFact = TransformerFactory.newInstance();
             Transformer transformer = transFact.newTransformer();
             transformer.transform(src, rest);
+            fos.flush();
+            fos.close();
         } catch (Exception ex) {
             log("Exception: A processing error occurred; " + ex);
         }        
@@ -797,7 +799,7 @@ public class BuildServiceAssembly extends Task {
     
     private String getProjectName() {
         Project proj = getProject();
-        return ProjectHelper.getServiceAssemblyID(proj);
+        return AntProjectHelper.getServiceAssemblyID(proj);
     }
     
     private String getCasaWSDLFileName() {
