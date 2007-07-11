@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
+import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
@@ -91,7 +92,7 @@ public class ConverterResources {
     static void convertCommand (ConverterItem item, DesignDocument document) {
         DesignComponent command = document.createComponent (CommandCD.TYPEID);
         Converter.convertClass (item, command);
-        MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (command);
+        MidpDocumentSupport.getCategoryComponent (document, CommandsCategoryCD.TYPEID).addComponent (command);
 
         ConverterUtil.convertStringWithUserCode (command, CommandCD.PROP_LABEL, item.getPropertyValue ("label")); // NOI18N
         ConverterUtil.convertStringWithUserCode (command, CommandCD.PROP_LONG_LABEL, item.getPropertyValue ("longLabel")); // NOI18N
