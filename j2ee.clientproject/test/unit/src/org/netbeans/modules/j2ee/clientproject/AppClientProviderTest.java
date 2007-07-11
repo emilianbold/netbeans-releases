@@ -44,6 +44,7 @@ public class AppClientProviderTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
@@ -69,7 +70,7 @@ public class AppClientProviderTest extends NbTestCase {
         assertNotNull(appXmlFO);
         
         // ensure deployment descriptor file is returned
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_CLIENT_XML)),
                 provider.getJ2eeModule().getDeploymentConfigurationFile(APPLICATION_CLIENT_XML));
     }
@@ -77,10 +78,10 @@ public class AppClientProviderTest extends NbTestCase {
     public void testMetadataModel() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
-        assertNotNull(j2eeModule.getDeploymentDescriptor(AppClientMetadata.class));
-        assertNotNull(j2eeModule.getDeploymentDescriptor(WebservicesMetadata.class));
+        assertNotNull(j2eeModule.getMetadataModel(AppClientMetadata.class));
+        assertNotNull(j2eeModule.getMetadataModel(WebservicesMetadata.class));
     }
     
     public void testThatProjectWithoutDDCanBeOpened() throws Exception {
@@ -91,7 +92,7 @@ public class AppClientProviderTest extends NbTestCase {
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         
         // ensure deployment descriptor file is returned
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         File someConfFile = provider.getJ2eeModule().getDeploymentConfigurationFile("does-not-matter.xml");
         assertNotNull("J2eeModuleProvider.getDeploymentConfigurationFile() cannot return null", someConfFile);
         File expected = new File(prjDirF + File.separator + "src" +

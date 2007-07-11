@@ -125,7 +125,7 @@ public final class TestUtil extends ProxyLookup {
                 System.err.println("No FileObject for " + root + " found.\n" +
                         "Maybe you need ${openide/masterfs.dir}/modules/org-netbeans-modules-masterfs.jar\n" +
                         "in test.unit.run.cp.extra, or make sure Lookups.metaInfServices is included in Lookup.default, so that\n" +
-                        "Lookup.default<URLMapper>=" + Lookup.getDefault().lookup(new Lookup.Template(URLMapper.class)).allInstances() + " includes MasterURLMapper\n" +
+                        "Lookup.default<URLMapper>=" + Lookup.getDefault().lookup(new Lookup.Template<URLMapper>(URLMapper.class)).allInstances() + " includes MasterURLMapper\n" +
                         "e.g. by using TestUtil.setLookup(Object[]) rather than TestUtil.setLookup(Lookup).");
             }
             // For the benefit of those not using masterfs.
@@ -385,6 +385,7 @@ public final class TestUtil extends ProxyLookup {
             return dir;
         }
         
+        @Override
         public String toString() {
             return "testproject:" + getProjectDirectory().getNameExt();
         }
@@ -474,7 +475,8 @@ public final class TestUtil extends ProxyLookup {
     }
 
     private static final class Repo extends Repository {
-        
+        private static final long serialVersionUID = 1L;
+
         public Repo(NbTestCase t) throws Exception {
             super(mksystem(t));
         }
@@ -495,7 +497,7 @@ public final class TestUtil extends ProxyLookup {
             addLayer(layers, "org/netbeans/modules/websvc/core/resources/mf-layer.xml");
             // get layer for the java support (for Main class template)
             addLayer(layers, "org/netbeans/modules/java/project/layer.xml");
-            MultiFileSystem mfs = new MultiFileSystem((FileSystem[]) layers.toArray(new FileSystem[layers.size()]));
+            MultiFileSystem mfs = new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
             return mfs;
         }
         
@@ -518,7 +520,7 @@ public final class TestUtil extends ProxyLookup {
         while (name.length() < 3) {
             name = name + "x";
         }
-        File todir = workdir.createTempFile(name, null, workdir);
+        File todir = File.createTempFile(name, null, workdir);
         todir.delete();
         doCopy(d, todir);
         return todir;

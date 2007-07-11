@@ -31,6 +31,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 public class ImportBuildfile extends javax.swing.JPanel implements DocumentListener {
+    private static final long serialVersionUID = 1L;
     
     private JButton ok;
     private String filePath;
@@ -153,9 +154,10 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
     private void updateButton() {
         jTextFieldCreatedFile.setText(filePath + File.separator + jTextFieldBuildName.getText());
 
-        if (jTextFieldBuildName.getText().trim().length() == 0 || jTextFieldBuildName.getText().trim().equals(GeneratedFilesHelper.BUILD_XML_PATH))
+        if (jTextFieldBuildName.getText().trim().length() == 0 || jTextFieldBuildName.getText().trim().equals(GeneratedFilesHelper.BUILD_XML_PATH)) {
             ok.setEnabled(false);
-        else
+        } else {
             ok.setEnabled(true);
+        }
     }    
 }

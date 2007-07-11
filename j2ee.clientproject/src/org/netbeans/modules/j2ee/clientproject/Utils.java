@@ -31,6 +31,9 @@ public class Utils {
     private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
     private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
 
+    private Utils() {
+    }
+    
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
             return "";
@@ -89,7 +92,7 @@ public class Utils {
     public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
         setSteps(panels, steps, steps, 0);
     }
-    
+
 //    /**
 //     * JMI transaction must be started and JMI classpath must be set to use this method
 //     */

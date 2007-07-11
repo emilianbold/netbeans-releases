@@ -119,9 +119,9 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
     public boolean addLibraries(final String classPathId, final Library[] libraries, final String includedLibrariesElement) throws IOException {
         assert libraries != null : "Parameter cannot be null";       //NOI18N
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
+            return (ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
                             List<ClassPathSupport.Item> resources = cs.itemsList( raw, includedLibrariesElement );
@@ -172,9 +172,9 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
     public boolean addArchiveFiles(final String classPathId, final FileObject[] archiveFiles, final String includedLibrariesElement) throws IOException {
         assert archiveFiles != null : "Parameter cannot be null";       //NOI18N
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
+            return (ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);                            
                             List<ClassPathSupport.Item> resources = cs.itemsList( raw, includedLibrariesElement );
@@ -264,9 +264,9 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
     public boolean addAntArtifacts(final String classPathId, final AntArtifactChooser.ArtifactItem[] artifactItems, final String includedLibrariesElement) throws IOException {
         assert artifactItems != null : "Parameter cannot be null";       //NOI18N
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run() throws Exception {
+            return (ProjectManager.mutex().writeAccess(
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty (classPathId);
                             List<ClassPathSupport.Item> resources = cs.itemsList( raw, includedLibrariesElement );

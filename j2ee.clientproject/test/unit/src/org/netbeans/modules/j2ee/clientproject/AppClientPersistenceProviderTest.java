@@ -56,6 +56,7 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected Level logLevel() {
         // enabling logging
         return Level.INFO;
@@ -63,20 +64,22 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
         // as returning Level.FINEST here would log from all loggers
     }
 
+    @Override
     public PrintStream getLog() {
         return System.err;
     }
 
+    @Override
     public void setUp() throws Exception {
         // in an attempt to find the cause of issue 90762
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        Sources src = (Sources)project.getLookup().lookup(Sources.class);
+        Sources src = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         root = groups[0].getRootFolder();
-        provider = (AppClientPersistenceProvider)project.getLookup().lookup(AppClientPersistenceProvider.class);
+        provider = project.getLookup().lookup(AppClientPersistenceProvider.class);
         persistenceLocation = project.getProjectDirectory().getFileObject("src/conf");
 
         FileObject persistenceXml = persistenceLocation.getFileObject("persistence.xml");

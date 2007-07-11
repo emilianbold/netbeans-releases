@@ -27,6 +27,7 @@ import org.openide.util.HelpCtx;
  * @author  phrebejk
  */
 public class CustomizerJar extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
     
     public CustomizerJar( AppClientProjectProperties uiProperties ) {
         initComponents();

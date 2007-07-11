@@ -174,7 +174,9 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
             String defaultFeatures = "wsi, strict"; // NOI18N -- defaults if stub descriptor is bad type (should never happen?)
             if(stubDescriptor instanceof JAXRPCClientStubDescriptor) {
                 JAXRPCClientStubDescriptor stubDesc = (JAXRPCClientStubDescriptor) stubDescriptor;
-                if (wscompileFeatures!=null) stubDesc.setDefaultFeatures(wscompileFeatures);
+                if (wscompileFeatures!=null) {
+                    stubDesc.setDefaultFeatures(wscompileFeatures);
+                }
                 defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
             } else {
                 // !PW FIXME wrong stub type -- log error message.
@@ -200,7 +202,9 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
         // create wscompile:httpproxy property
         if (proxyHost!=null && proxyHost.length()>0) {
             boolean modif = addJVMProxyOptions(projectProperties,proxyHost,proxyPort);
-            if (modif) modifiedProjectProperties = true;
+            if (modif) {
+                modifiedProjectProperties = true;
+            }
             String proxyProperty = "wscompile.client." + serviceName + ".proxy"; // NOI18N
             String oldProxyProperty = privateProperties.getProperty(proxyProperty);
             if(!proxyProperty.equals(oldProxyProperty)) {
@@ -450,8 +454,9 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
     private boolean isProjectOpened() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
-            if (projects[i].equals(project))
+            if (projects[i].equals(project)) {
                 return true;
+            }
         }
         return false;
     }
@@ -804,7 +809,9 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
         try {
             localHosts = InetAddress.getLocalHost().getCanonicalHostName();
         } catch (UnknownHostException ex) {}
-        if (!"localhost".equals(localHosts)) localHosts='\"'+localHosts+"|localhost\""; //NOI18N
+        if (!"localhost".equals(localHosts)) {
+            localHosts='\"'+localHosts+"|localhost\""; //NOI18N
+        }
         if (jvmOptions==null || jvmOptions.length()==0) {
             jvmOptions = PROXY_HOST_OPTION+'='+proxyHost+
                     ' '+PROXY_PORT_OPTION+'='+proxyPort+
@@ -824,7 +831,9 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
                 modif=true;
             }
         }
-        if (modif) prop.setProperty(AppClientProjectProperties.RUN_JVM_ARGS,jvmOptions);
+        if (modif) {
+            prop.setProperty(AppClientProjectProperties.RUN_JVM_ARGS,jvmOptions);
+        }
         return modif;
     }
 

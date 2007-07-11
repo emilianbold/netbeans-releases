@@ -89,7 +89,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
     public PersistenceScope findPersistenceScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            AppClientPersistenceProvider provider = (AppClientPersistenceProvider)project.getLookup().lookup(AppClientPersistenceProvider.class);
+            AppClientPersistenceProvider provider = project.getLookup().lookup(AppClientPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
@@ -98,7 +98,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
     public EntityClassScope findEntityClassScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            AppClientPersistenceProvider provider = (AppClientPersistenceProvider)project.getLookup().lookup(AppClientPersistenceProvider.class);
+            AppClientPersistenceProvider provider = project.getLookup().lookup(AppClientPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;
@@ -123,7 +123,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
+                ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
                 projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),

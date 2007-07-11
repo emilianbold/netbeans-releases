@@ -83,8 +83,9 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
         List<FileObject> files = new ArrayList<FileObject>();
         
         FileObject metaInf = project.getCarModule().getMetaInf();
-        if (metaInf != null)
+        if (metaInf != null) {
             files.add(metaInf);
+        }
         
         SourceRoots src = project.getSourceRoots();
         FileObject[] srcRoots = src.getRoots();
@@ -98,8 +99,9 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
         if (prop != null) {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject srcDir = project.getAntProjectHelper().resolveFileObject(prop);
-            if (projectDirectory != srcDir && !files.contains(srcDir))
+            if (projectDirectory != srcDir && !files.contains(srcDir)) {
                 files.add(srcDir);
+            }
         }
         
         SourceRoots test = project.getTestSourceRoots();
@@ -112,15 +114,16 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
         File resourceDir = project.getCarModule().getResourceDirectory();
         if (resourceDir != null) {
             FileObject resourceFO = FileUtil.toFileObject(resourceDir);
-            if (resourceFO != null)
+            if (resourceFO != null) {
                 files.add(resourceFO);
+            }
         }
         
         return files;
     }
     
     public void notifyDeleting() throws IOException {
-        AppClientActionProvider ap = (AppClientActionProvider) project.getLookup().lookup(AppClientActionProvider.class);
+        AppClientActionProvider ap = project.getLookup().lookup(AppClientActionProvider.class);
         
         assert ap != null;
         
@@ -134,7 +137,7 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
         
-        AppClientProjectClassPathExtender extender = (AppClientProjectClassPathExtender)project.getLookup().lookup(AppClientProjectClassPathExtender.class);
+        AppClientProjectClassPathExtender extender = project.getLookup().lookup(AppClientProjectClassPathExtender.class);
         extender.notifyDeleting();
     }
     
@@ -183,10 +186,11 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
                 AntProjectHelper helper = project.getAntProjectHelper();
                 EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 
-                String jarName = (String) projectProps.get(AppClientProjectProperties.JAR_NAME);
+                String jarName = projectProps.get(AppClientProjectProperties.JAR_NAME);
                 String oldName = jarName.substring(0, jarName.length() - 4);
-                if (jarName.endsWith(".jar") && oldName.equals(oldProjectName)) //NOI18N
+                if (jarName.endsWith(".jar") && oldName.equals(oldProjectName)) { //NOI18N
                     projectProps.put(AppClientProjectProperties.JAR_NAME, newName + ".jar"); //NOI18N
+                }
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                 FileObject ddFO = project.getCarModule().getDeploymentDescriptor();

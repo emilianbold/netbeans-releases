@@ -43,6 +43,7 @@ import org.netbeans.api.project.Project;
  * @author tzezula
  */
 public final class FolderList extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
     
     public static final String PROP_FILES = "files";    //NOI18N
     public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
@@ -240,7 +241,7 @@ public final class FolderList extends javax.swing.JPanel {
         Project p;
         if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null
                 && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
-            final Sources sources = (Sources) p.getLookup().lookup(Sources.class);
+            final Sources sources = p.getLookup().lookup(Sources.class);
             if (sources == null) {
                 return false;
             }
@@ -282,6 +283,9 @@ public final class FolderList extends javax.swing.JPanel {
     }
     
     private static class Renderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 1L;
+        
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
             Project p = FileOwnerQuery.getOwner(f.toURI());

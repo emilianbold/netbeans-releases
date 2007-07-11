@@ -87,6 +87,7 @@ class ProjectNode extends AbstractNode {
         this.artifactLocation = artifactLocation;
     }
 
+    @Override
     public String getDisplayName () {        
         ProjectInformation info = getProjectInformation();        
         if (info != null) {
@@ -98,10 +99,12 @@ class ProjectNode extends AbstractNode {
         }
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
 
+    @Override
     public Image getIcon(int type) {
         if (cachedIcon == null) {
             ProjectInformation info = getProjectInformation();
@@ -126,14 +129,17 @@ class ProjectNode extends AbstractNode {
         return cachedIcon;
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return this.getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (OpenProjectAction.class),
@@ -142,6 +148,7 @@ class ProjectNode extends AbstractNode {
         };
     }
 
+    @Override
     public Action getPreferredAction () {
         return getActions(false)[0];
     }
@@ -221,11 +228,12 @@ class ProjectNode extends AbstractNode {
     }
 
     private static class OpenProjectAction extends NodeAction {
+        private static final long serialVersionUID = 1L;
 
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
             for (int i=0; i<projects.length;i++) {
-                projects[i] = (Project) activatedNodes[i].getLookup().lookup(Project.class);
+                projects[i] = activatedNodes[i].getLookup().lookup(Project.class);
             }
             OpenProjects.getDefault().open(projects, false);
         }
@@ -234,7 +242,7 @@ class ProjectNode extends AbstractNode {
             final Collection/*<Project>*/ openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
             for (int i=0; i<activatedNodes.length; i++) {
                 Project p;
-                if ((p = (Project) activatedNodes[i].getLookup().lookup(Project.class)) == null) {
+                if ((p = activatedNodes[i].getLookup().lookup(Project.class)) == null) {
                     return false;
                 }
                 if (openedProjects.contains(p)) {
@@ -252,6 +260,7 @@ class ProjectNode extends AbstractNode {
             return new HelpCtx (OpenProjectAction.class);
         }
 
+        @Override
         protected boolean asynchronous() {
             return false;
         }

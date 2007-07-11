@@ -128,26 +128,32 @@ final class LibrariesNode extends AbstractNode {
         this.librariesNodeActions = librariesNodeActions;
     }
 
+    @Override
     public String getDisplayName () {
         return this.displayName; 
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }    
     
+    @Override
     public Image getIcon( int type ) {        
         return computeIcon( false, type );
     }
         
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
 
+    @Override
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
@@ -192,7 +198,7 @@ final class LibrariesNode extends AbstractNode {
     }
 
     //Static inner classes
-    private static class LibrariesChildren extends Children.Keys implements PropertyChangeListener {
+    private static class LibrariesChildren extends Children.Keys<Key> implements PropertyChangeListener {
 
         
         /**
@@ -260,11 +266,13 @@ final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
-            this.setKeys(getKeys ());
+            this.setKeys(getKeys());
         }
 
+        @Override
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
             synchronized (this) {
@@ -273,30 +281,28 @@ final class LibrariesNode extends AbstractNode {
                     fsListener = null;
                 }
             }
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<Key>emptySet());
         }
 
-        protected Node[] createNodes(Object obj) {
+        protected Node[] createNodes(Key obj) {
             Node[] result = null;
-            if (obj instanceof Key) {
-                Key key = (Key) obj;
-                switch (key.getType()) {
-                    case Key.TYPE_PLATFORM:
-                        result = new Node[] {PlatformNode.create(eval, platformProperty)};
-                        break;
-                    case Key.TYPE_J2EE_PLATFORM:
-                        Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-                        result = new Node[] {J2eePlatformNode.create(project, eval, j2eePlatformProperty)};
-                        break;
-                    case Key.TYPE_PROJECT:
-                        result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, eval, refHelper, key.getClassPathId(),
-                            key.getEntryId(), includedLibrariesElement)};
-                        break;
-                    case Key.TYPE_LIBRARY:
-                        result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId(), includedLibrariesElement)};
-                        break;
-                }
+            Key key = obj;
+            switch (key.getType()) {
+                case Key.TYPE_PLATFORM:
+                    result = new Node[] {PlatformNode.create(eval, platformProperty)};
+                    break;
+                case Key.TYPE_J2EE_PLATFORM:
+                    Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+                    result = new Node[] {J2eePlatformNode.create(project, eval, j2eePlatformProperty)};
+                    break;
+                case Key.TYPE_PROJECT:
+                    result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, eval, refHelper, key.getClassPathId(),
+                        key.getEntryId(), includedLibrariesElement)};
+                    break;
+                case Key.TYPE_LIBRARY:
+                    result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
+                        helper, eval, refHelper, key.getClassPathId(), key.getEntryId(), includedLibrariesElement)};
+                    break;
             }
             if (result == null) {
                 assert false : "Unknown key type";  //NOI18N
@@ -321,7 +327,7 @@ final class LibrariesNode extends AbstractNode {
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-            ClassPath cp = ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
+            ClassPath cp = ClassPathSupport.createClassPath(rootsList.toArray(new URL[rootsList.size()]));
             cp.addPropertyChangeListener (this);
             cp.getRoots();
             synchronized (this) {
@@ -345,7 +351,7 @@ final class LibrariesNode extends AbstractNode {
             }
             List<String> pe = new ArrayList<String>(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
-                String prop = (String) pe.remove(0);
+                String prop = pe.remove(0);
                 String propName = org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport.getAntPropertyName (prop);
                 if (classPathIgnoreRef.contains(propName)) {
                     continue;
@@ -355,10 +361,10 @@ final class LibrariesNode extends AbstractNode {
                     String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
                     Library lib = LibraryManager.getDefault().getLibrary (eval);
                     if (lib != null) {
-                        List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
+                        List<URL> roots = lib.getContent("classpath");  //NOI18N
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
-                        for (Iterator it = roots.iterator(); it.hasNext();) {
-                            URL rootUrl = (URL) it.next();
+                        for (Iterator<URL> it = roots.iterator(); it.hasNext();) {
+                            URL rootUrl = it.next();
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -514,6 +520,7 @@ final class LibrariesNode extends AbstractNode {
             return this.uri;
         }
 
+        @Override
         public int hashCode() {
             int hashCode = this.type<<16;
             switch (this.type) {
@@ -527,6 +534,7 @@ final class LibrariesNode extends AbstractNode {
             return hashCode;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Key)) {
                 return false;
@@ -554,6 +562,7 @@ final class LibrariesNode extends AbstractNode {
     }
 
     private static class AddProjectAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
 
         private final Project project;
         private final String classPathId;
@@ -574,7 +583,7 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
-            AppClientProjectClassPathExtender cpExtender = (AppClientProjectClassPathExtender) project.getLookup().lookup(AppClientProjectClassPathExtender.class);
+            AppClientProjectClassPathExtender cpExtender = project.getLookup().lookup(AppClientProjectClassPathExtender.class);
             if (cpExtender != null) {
                 try {
                     cpExtender.addAntArtifacts(classPathId, artifactItems, includedLibrariesElement );                    
@@ -589,6 +598,7 @@ final class LibrariesNode extends AbstractNode {
     }
 
     private static class AddLibraryAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
 
         private final Project project;
         private final AntProjectHelper helper;
@@ -623,7 +633,7 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addLibraries (Library[] libraries) {
-            AppClientProjectClassPathExtender cpExtender = (AppClientProjectClassPathExtender) project.getLookup().lookup(AppClientProjectClassPathExtender.class);
+            AppClientProjectClassPathExtender cpExtender = project.getLookup().lookup(AppClientProjectClassPathExtender.class);
             if (cpExtender != null) {
                 try {
                     cpExtender.addLibraries(classPathId, libraries, includedLibrariesElement);
@@ -638,6 +648,7 @@ final class LibrariesNode extends AbstractNode {
     }
 
     private static class AddFolderAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
 
         private final Project project;
         private final String classPathId;
@@ -674,7 +685,7 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addJarFiles (File[] files, FileFilter fileFilter) {
-            AppClientProjectClassPathExtender cpExtender = (AppClientProjectClassPathExtender) project.getLookup().lookup(AppClientProjectClassPathExtender.class);
+            AppClientProjectClassPathExtender cpExtender = project.getLookup().lookup(AppClientProjectClassPathExtender.class);
             if (cpExtender != null) {
                 List<FileObject> fileObjects = new LinkedList<FileObject>();
                 for (int i = 0; i < files.length; i++) {
@@ -711,8 +722,9 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public boolean accept(File f) {
-            if (f.isDirectory())
-                return true;            
+            if (f.isDirectory()) {
+                return true;
+            }
             try {
                 return FileUtil.isArchiveFile(f.toURI().toURL());
             } catch (MalformedURLException mue) {

@@ -35,7 +35,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex.Action;
 
 /**
  *
@@ -50,6 +49,7 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         workDir = TestUtil.makeScratchDir(this);
@@ -82,14 +82,14 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
         project.getProjectDirectory().getFileObject("nbproject/project.properties").addFileChangeListener(l);
         
         new Thread() {
+            @Override
             public void run() {
                 synchronized (privateLock) {
                     try {
                         sync.countDown();
                         sync.await();
-                        ProjectManager.mutex().readAccess(new Action() {
-                            public Object run() {
-                                return null;
+                        ProjectManager.mutex().readAccess(new Runnable() {
+                            public void run() {
                             }
                         });
                     } catch (InterruptedException ex) {
@@ -103,7 +103,7 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
         
         ep.put(AppClientProjectProperties.JAVAC_CLASSPATH, "y");
         
-        helper.putProperties(helper.PROJECT_PROPERTIES_PATH, ep);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
     }
     
 }

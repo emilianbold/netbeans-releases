@@ -72,8 +72,8 @@ public class AppClientSharabilityQuery implements SharabilityQueryImplementation
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
-        Integer ret = (Integer) ProjectManager.mutex().readAccess( new Mutex.Action() {
-            public Object run() {
+        Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+            public Integer run() {
                 synchronized (AppClientSharabilityQuery.this) {
                     if (delegate == null) {
                         delegate = createDelegate ();

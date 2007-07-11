@@ -55,6 +55,7 @@ import org.openide.util.Utilities;
  * @author  tz97951
  */
 public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
 
     private Set/*<Library>*/ containedLibraries;
 
@@ -177,13 +178,14 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
 
     private static final class LibrariesListModel extends AbstractListModel implements PropertyChangeListener {
+        private static final long serialVersionUID = 1L;
 
         private Library[] cache;
 
         public LibrariesListModel () {
             LibraryManager manager = LibraryManager.getDefault();
-            manager.addPropertyChangeListener((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,
-                    this, manager));
+            manager.addPropertyChangeListener(
+                    WeakListeners.create(PropertyChangeListener.class, this, manager));
         }
 
         public synchronized int getSize() {
@@ -240,10 +242,12 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
 
     private final class LibraryRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 1L;
         
         private static final String LIBRARY_ICON = "org/netbeans/modules/j2ee/clientproject/ui/resources/libraries.gif";  //NOI18N               
         private Icon cachedIcon;
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
             String toolTip = null;

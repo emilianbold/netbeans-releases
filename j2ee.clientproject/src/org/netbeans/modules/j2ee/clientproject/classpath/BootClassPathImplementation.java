@@ -58,7 +58,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
             JavaPlatform jp = findActivePlatform ();
             if (jp != null) {
@@ -71,8 +71,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                     result.add (ClassPathSupport.createResource(entry.getURL()));
                 }
                 resourcesCache = Collections.unmodifiableList (result);
-            }
-            else {
+            } else {
                 resourcesCache = Collections.emptyList();
             }
         }
@@ -103,15 +102,16 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             //Active platform was changed
             resetCache ();
         }
-        else if (evt.getSource() == this.platformManager && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()) && activePlatformName != null) {
+        else if (evt.getSource() == this.platformManager
+                && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName())
+                && activePlatformName != null) {
             //Platform definitions were changed, check if the platform was not resolved or deleted
             if (this.isActivePlatformValid) {
                 if (AppClientProjectUtil.getActivePlatform (this.activePlatformName) == null) {
                     //the platform was not removed
                     this.resetCache();
                 }
-            }
-            else {
+            } else {
                 if (AppClientProjectUtil.getActivePlatform (this.activePlatformName) != null) {
                     this.resetCache();
                 }

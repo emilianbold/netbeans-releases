@@ -50,7 +50,7 @@ public class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
         }
         else {
             EditableProperties props = PropertyUtils.getGlobalProperties();
-            String sl = (String) props.get("default.javac.source"); //NOI18N
+            String sl = props.get("default.javac.source"); //NOI18N
             if (sl != null && sl.length() > 0) {
                 return sl;
             } else {

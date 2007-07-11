@@ -115,7 +115,7 @@ public class PlatformUiSupport {
         //null means active broken (unresolved) platform, no need to do anything
         if (platform != null) {
             SpecificationVersion jdk13 = new SpecificationVersion("1.3");  //NOI18N
-            String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N
+            String platformAntName = platform.getProperties().get("platform.ant.name");    //NOI18N
             assert platformAntName != null;
             props.put(AppClientProjectProperties.JAVA_PLATFORM, platformAntName);
             Element root = helper.getPrimaryConfigurationData(true);
@@ -160,8 +160,9 @@ public class PlatformUiSupport {
             }
             String javacSource = sourceLevel.toString();
             // #89131: these levels are not actually distinct from 1.5.
-            if (javacSource.equals("1.6") || javacSource.equals("1.7"))
-                javacSource = "1.5";       
+            if (javacSource.equals("1.6") || javacSource.equals("1.7")) {
+                javacSource = "1.5";
+            }
             String javacTarget = jdk13.compareTo(sourceLevel)>=0 ? "1.1" : javacSource;     //NOI18N
             if (!javacSource.equals(props.getProperty(AppClientProjectProperties.JAVAC_SOURCE))) {
                 props.setProperty(AppClientProjectProperties.JAVAC_SOURCE, javacSource);
@@ -247,6 +248,7 @@ public class PlatformUiSupport {
             return this.getDisplayName().compareTo(((PlatformKey)o).getDisplayName());
         }
         
+        @Override
         public boolean equals(Object other) {
             if (other instanceof PlatformKey) {
                 PlatformKey otherKey = (PlatformKey)other;
@@ -257,10 +259,12 @@ public class PlatformUiSupport {
             }
         }
         
+        @Override
         public int hashCode() {
             return getDisplayName().hashCode();
         }
         
+        @Override
         public String toString() {
             return getDisplayName();
         }
@@ -314,16 +318,19 @@ public class PlatformUiSupport {
             return this.sourceLevel.compareTo(otherKey.sourceLevel);
         }
         
-        public /*@Override*/ boolean equals(final Object other) {
+        @Override
+        public boolean equals(final Object other) {
             return (other instanceof SourceLevelKey) &&
                     ((SourceLevelKey)other).sourceLevel.equals(this.sourceLevel);
         }
         
-        public /*@Override*/ int hashCode() {
+        @Override
+        public int hashCode() {
             return this.sourceLevel.hashCode();
         }
         
-        public /*@Override*/ String toString() {
+        @Override
+        public String toString() {
             StringBuffer buffer = new StringBuffer();
             if (this.broken) {
                 buffer.append("Broken: ");      //NOI18N
@@ -335,6 +342,7 @@ public class PlatformUiSupport {
     }
     
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
+        private static final long serialVersionUID = 1L;
         
         private final JavaPlatformManager pm;
         private PlatformKey[] platformNamesCache;
@@ -387,7 +395,7 @@ public class PlatformUiSupport {
                         PlatformKey pk = new PlatformKey(platforms[i]);
                         orderedNames.add(pk);
                         if (!activeFound && initialPlatform != null) {
-                            String antName = (String) platforms[i].getProperties().get("platform.ant.name");    //NOI18N
+                            String antName = platforms[i].getProperties().get("platform.ant.name");    //NOI18N
                             if (initialPlatform.equals(antName)) {
                                 if (this.selectedPlatform == null) {
                                     this.selectedPlatform = pk;
@@ -445,6 +453,7 @@ public class PlatformUiSupport {
     }
     
     private static class SourceLevelComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
+        private static final long serialVersionUID = 1L;
         
         private static final String VERSION_PREFIX = "1.";      //The version prefix // NOI18N
         private static final int INITIAL_VERSION_MINOR = 2;     //1.2

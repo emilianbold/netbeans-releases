@@ -54,7 +54,7 @@ public class AppClientProjectUtil {
         if (value == null) {
             return null;
         }
-        AppClientProject j2seprj = (AppClientProject) p.getLookup().lookup(AppClientProject.class);
+        AppClientProject j2seprj = p.getLookup().lookup(AppClientProject.class);
         if (j2seprj != null) {
             return j2seprj.evaluator().evaluate(value);
         } else {
@@ -125,7 +125,7 @@ public class AppClientProjectUtil {
         else {
             JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
             for (int i=0; i<installedPlatforms.length; i++) {
-                String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                String antName = installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
                 if (antName != null && antName.equals(activePlatformId)) {
                     return installedPlatforms[i];
                 }

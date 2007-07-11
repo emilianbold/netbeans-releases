@@ -41,6 +41,7 @@ import org.openide.util.NbBundle;
  * @author  phrebejk
  */
 public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
+    private static final long serialVersionUID = 1L;
     
     public static final String COMPILE = "COMPILE";  //NOI18N
     public static final String RUN = "RUN";          //NOI18N
@@ -165,7 +166,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        AppClientLogicalViewProvider viewProvider = (AppClientLogicalViewProvider) uiProperties.getProject().getLookup().lookup(AppClientLogicalViewProvider.class);
+        AppClientLogicalViewProvider viewProvider = uiProperties.getProject().getLookup().lookup(AppClientLogicalViewProvider.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();
     }

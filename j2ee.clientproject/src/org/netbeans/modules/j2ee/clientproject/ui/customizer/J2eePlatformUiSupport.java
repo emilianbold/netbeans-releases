@@ -47,8 +47,9 @@ public class J2eePlatformUiSupport {
     }
     
     public static String getServerInstanceID(Object j2eePlatformModelObject) {
-        if (j2eePlatformModelObject == null)
+        if (j2eePlatformModelObject == null) {
             return null;
+        }
 
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
         String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
@@ -71,6 +72,7 @@ public class J2eePlatformUiSupport {
     }
     
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {
+        private static final long serialVersionUID = 1L;
         
         private J2eePlatformAdapter[] j2eePlatforms;
         private final String initialJ2eePlatform;
@@ -130,6 +132,7 @@ public class J2eePlatformUiSupport {
      }
     
     private static final class J2eeSpecVersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
+        private static final long serialVersionUID = 1L;
         
         private J2eePlatformComboBoxItem[] j2eeSpecVersions;
         private final J2eePlatformComboBoxItem initialJ2eeSpecVersion;
@@ -142,8 +145,9 @@ public class J2eePlatformUiSupport {
             orderedListItems.add(new J2eePlatformComboBoxItem(AppClientProjectProperties.JAVA_EE_5));
             orderedListItems.add(new J2eePlatformComboBoxItem(AppClientProjectProperties.J2EE_1_4));
             if (!initialJ2eeSpecVersion.getCode().equals(AppClientProjectProperties.JAVA_EE_5) &&
-                    !initialJ2eeSpecVersion.getCode().equals(AppClientProjectProperties.J2EE_1_4))
+                    !initialJ2eeSpecVersion.getCode().equals(AppClientProjectProperties.J2EE_1_4)) {
                 orderedListItems.add(0, new J2eePlatformComboBoxItem(AppClientProjectProperties.J2EE_1_3));
+            }
             
             j2eeSpecVersions = orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
             selectedJ2eeSpecVersion = initialJ2eeSpecVersion;
@@ -181,9 +185,15 @@ public class J2eePlatformUiSupport {
         }
 
         private static String findDisplayName(String code){
-            if(code.equals(AppClientProjectProperties.JAVA_EE_5)) return JAVA_EE_5_DISPLAY_NAME;
-            if(code.equals(AppClientProjectProperties.J2EE_1_4)) return J2EE_1_4_DISPLAY_NAME;
-            if(code.equals(AppClientProjectProperties.J2EE_1_3)) return J2EE_1_3_DISPLAY_NAME;
+            if(code.equals(AppClientProjectProperties.JAVA_EE_5)) {
+                return JAVA_EE_5_DISPLAY_NAME;
+            }
+            if(code.equals(AppClientProjectProperties.J2EE_1_4)) {
+                return J2EE_1_4_DISPLAY_NAME;
+            }
+            if(code.equals(AppClientProjectProperties.J2EE_1_3)) {
+                return J2EE_1_3_DISPLAY_NAME;
+            }
             return code; //version display name not found, use the version code for display name        
         }
 
@@ -191,14 +201,16 @@ public class J2eePlatformUiSupport {
             return code;        
         }
 
+        @Override
         public String toString(){
             return displayName;        
         }
     }
 
     public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject, Object j2eeSpecVersionModelObject) {
-        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String))
+        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String)) {
             return false;
+        }
         
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
         String specVersion = (String)j2eeSpecVersionModelObject;
@@ -217,6 +229,7 @@ public class J2eePlatformUiSupport {
             return platform;
         }
         
+        @Override
         public String toString() {
             return platform.getDisplayName();
         }

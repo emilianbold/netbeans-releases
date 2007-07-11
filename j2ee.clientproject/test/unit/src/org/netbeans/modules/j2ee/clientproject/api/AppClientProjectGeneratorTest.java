@@ -164,6 +164,7 @@ public class AppClientProjectGeneratorTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);

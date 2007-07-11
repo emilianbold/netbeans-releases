@@ -38,6 +38,7 @@ import org.openide.util.Lookup;
  * @author Peter Williams
  */
 public class CustomizerWSClientHost extends javax.swing.JPanel implements PropertyChangeListener, HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
     
     private AppClientProjectProperties j2seProperties;
     private WsCompileClientEditorSupport.Panel wsCompileEditor;
@@ -53,8 +54,9 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
         this.wsCompileEditor = null;
         this.serviceSettings = serviceSettings;
 
-        if (serviceSettings.size() > 0)
+        if (serviceSettings.size() > 0) {
             initValues();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -72,6 +74,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void addNotify() {
         super.addNotify();
         
@@ -85,6 +88,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
         component.addPropertyChangeListener(WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED, this);
     }
     
+    @Override
     public void removeNotify() {
         super.removeNotify();
         
@@ -97,7 +101,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
     public void initValues() {
 //        System.out.println("WSClientCustomizer: initValues");
         if (wsCompileEditor == null) {
-            WsCompileClientEditorSupport editorSupport = (WsCompileClientEditorSupport) Lookup.getDefault().lookup(WsCompileClientEditorSupport.class);
+            WsCompileClientEditorSupport editorSupport = Lookup.getDefault().lookup(WsCompileClientEditorSupport.class);
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
         
@@ -127,9 +131,10 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
             String serviceName = newOptionDesc.getServiceName();
             String[] propertyNames=new String[]{"verbose","debug","xPrintStackTrace","xSerializable","optimize"}; //NOI18N
             for (int i=0;i<newOptions.length;i++) {   
-                if (oldOptions[i]!=newOptions[i])
+                if (oldOptions[i]!=newOptions[i]) {
                     j2seProperties.putAdditionalProperty("wscompile.client."+serviceName+"."+propertyNames[i], //NOI18N
                                                          newOptions[i]?"true":"false"); //NOI18N
+                }
             }
         }
     }

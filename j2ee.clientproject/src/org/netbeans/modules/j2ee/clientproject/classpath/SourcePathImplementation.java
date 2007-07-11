@@ -44,7 +44,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private static final String PROP_BUILD_DIR = "build.dir";   //NOI18N
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List resources;
+    private List<PathResourceImplementation> resources;
     private final SourceRoots sourceRoots;
     private final AntProjectHelper projectHelper;
     private final PropertyEvaluator evaluator;
@@ -75,7 +75,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         evaluator.addPropertyChangeListener (this);
     }
 
-    public List /*<PathResourceImplementation>*/ getResources() {
+    public List<PathResourceImplementation> getResources() {
         synchronized (this) {
             if (this.resources != null) {
                 return this.resources;
@@ -83,8 +83,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         }                                
         URL[] roots = sourceRoots.getRootURLs();                                
         String buildDir = null;
-        if (projectHelper != null)
+        if (projectHelper != null) {
             buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(PROP_BUILD_DIR);
+        }
         synchronized (this) {
             if (this.resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.length);

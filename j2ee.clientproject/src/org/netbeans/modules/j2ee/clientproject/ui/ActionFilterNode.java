@@ -81,7 +81,7 @@ class ActionFilterNode extends FilterNode {
      */
     static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
                                     String classPathId, String entryId, String includedLibrariesElement) {
-        DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
+        DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
@@ -108,12 +108,14 @@ class ActionFilterNode extends FilterNode {
         this.mode = mode;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         Action[] result = initActions();        
         return result;
     }
 
 
+    @Override
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
@@ -148,7 +150,7 @@ class ActionFilterNode extends FilterNode {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
                 }
             }            
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
@@ -164,11 +166,12 @@ class ActionFilterNode extends FilterNode {
             this.cpRoot = cpRooot;
         }
 
+        @Override
         protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_ROOT:
                 case MODE_PACKAGE:
-                    DataObject dobj = (DataObject) n.getCookie(org.openide.loaders.DataObject.class);
+                    DataObject dobj = n.getCookie(org.openide.loaders.DataObject.class);
                     if (dobj == null) {
                         assert false : "DataNode without DataObject in Lookup";  //NOI18N
                         return new Node[0];

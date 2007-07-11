@@ -70,11 +70,11 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return res;
         }
         SourceRoots src = null;
-        if (hasSources(binaryRoot, AppClientProjectProperties.BUILD_CLASSES_DIR)) {   //NOI18N
+        if (hasSources(binaryRoot, AppClientProjectProperties.BUILD_CLASSES_DIR)) {
             src = this.sourceRoots;
-        } else if (hasSources(binaryRoot, AppClientProjectProperties.DIST_JAR)) {      //NOI18N
+        } else if (hasSources(binaryRoot, AppClientProjectProperties.DIST_JAR)) {
             src = this.sourceRoots;
-        } else if (hasSources(binaryRoot, AppClientProjectProperties.BUILD_TEST_CLASSES_DIR)) {    //NOI18N
+        } else if (hasSources(binaryRoot, AppClientProjectProperties.BUILD_TEST_CLASSES_DIR)) {
             src = this.testRoots;
         }
         if (src == null) {

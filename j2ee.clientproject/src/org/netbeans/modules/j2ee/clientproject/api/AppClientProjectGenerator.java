@@ -167,8 +167,8 @@ public class AppClientProjectGenerator {
         dirFO.getFileSystem().runAtomicAction(new AtomicAction() {
             public void run() throws IOException {
                 try {
-                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
-                        public Object run() throws Exception {
+                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void>() {
+                        public Void run() throws Exception {
                             Element data = h.getPrimaryConfigurationData(true);
                             Document doc = data.getOwnerDocument();
                             NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
@@ -375,8 +375,9 @@ public class AppClientProjectGenerator {
         SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = v.toString();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
             sourceLevel = "1.5";
+        }
         ep.setProperty(AppClientProjectProperties.JAVAC_SOURCE, sourceLevel); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, sourceLevel); // NOI18N
         
@@ -589,8 +590,9 @@ public class AppClientProjectGenerator {
 
                                 // #89131: these levels are not actually distinct from 1.5.
                                 String srcLevel = sourceLevel;
-                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
                                     srcLevel = "1.5";
+                                }
                                 PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));

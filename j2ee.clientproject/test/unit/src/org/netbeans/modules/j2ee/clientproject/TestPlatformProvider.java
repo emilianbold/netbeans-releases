@@ -89,7 +89,7 @@ public final class TestPlatformProvider implements JavaPlatformProvider {
     private static class TestPlatform extends JavaPlatform {
         
         private final String systemName;
-        private final Map properties;
+        private final Map<String, String> properties;
         private final ClassPath bootClassPath;
         private final String specVersion;
         
@@ -109,7 +109,7 @@ public final class TestPlatformProvider implements JavaPlatformProvider {
             } else {
                 this.bootClassPath = bootCP;
             }
-            this.properties = Collections.singletonMap("platform.ant.name",this.systemName);
+            this.properties = Collections.singletonMap("platform.ant.name", this.systemName);
         }
         
         public FileObject findTool(String toolName) {
@@ -132,15 +132,15 @@ public final class TestPlatformProvider implements JavaPlatformProvider {
             return null;
         }
         
-        public Map getProperties() {
+        public Map<String, String> getProperties() {
             return this.properties;
         }
         
-        public List getJavadocFolders() {
+        public List<URL> getJavadocFolders() {
             return null;
         }
         
-        public Collection getInstallFolders() {
+        public Collection<FileObject> getInstallFolders() {
             return null;
         }
         

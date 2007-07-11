@@ -41,6 +41,7 @@ public final class AppClientAntLogger extends AntLogger {
     /** Default constructor for lookup. */
     public AppClientAntLogger() {}
     
+    @Override
     public boolean interestedInSession(AntSession session) {
         // Even if the initiating project is not a AppClientProject, suppress these messages.
         // However disable our tricks when running at VERBOSE or higher.
@@ -61,6 +62,7 @@ public final class AppClientAntLogger extends AntLogger {
         return false;
     }
     
+    @Override
     public boolean interestedInScript(File script, AntSession session) {
         if (script.getName().equals("build-impl.xml")) { // NOI18N
             File parent = script.getParentFile();
@@ -75,21 +77,25 @@ public final class AppClientAntLogger extends AntLogger {
         return false;
     }
     
+    @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
     
+    @Override
     public String[] interestedInTasks(AntSession session) {
         // XXX will eventually need them all anyway; as is, could list just javac
         return AntLogger.ALL_TASKS;
     }
     
+    @Override
     public int[] interestedInLogLevels(AntSession session) {
         return new int[] {
             AntEvent.LOG_WARN,
         };
     }
     
+    @Override
     public void taskFinished(AntEvent event) {
         if ("javac".equals(event.getTaskName())) { // NOI18N
             Throwable t = event.getException();
@@ -102,6 +108,7 @@ public final class AppClientAntLogger extends AntLogger {
         }
     }
 
+    @Override
     public void messageLogged(AntEvent event) {
         // #43968 - filter out following message
         if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&

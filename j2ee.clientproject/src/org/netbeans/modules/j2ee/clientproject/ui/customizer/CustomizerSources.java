@@ -39,7 +39,6 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
@@ -47,6 +46,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
+    
     private String originalEncoding;
     private AppClientProjectProperties uiProperties;
     private File projectFld;
@@ -69,8 +70,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jTextFieldConfigFilesFolder.setDocument(uiProperties.META_INF_MODEL);
         
         AppClientSourceRootsUi.EditMediator emSR = AppClientSourceRootsUi.registerEditMediator(
-            (AppClientProject)uiProperties.getProject(),
-            ((AppClientProject)uiProperties.getProject()).getSourceRoots(),
+            uiProperties.getProject(),
+            uiProperties.getProject().getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
@@ -78,8 +79,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             downSourceRoot);
         
         AppClientSourceRootsUi.EditMediator emTSR = AppClientSourceRootsUi.registerEditMediator(
-            (AppClientProject)uiProperties.getProject(),
-            ((AppClientProject)uiProperties.getProject()).getTestSourceRoots(),
+            uiProperties.getProject(),
+            uiProperties.getProject().getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 
@@ -107,7 +108,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         enableSourceLevel ();
         
-        this.originalEncoding = ((AppClientProject)uiProperties.getProject()).evaluator().getProperty(AppClientProjectProperties.SOURCE_ENCODING);
+        this.originalEncoding = uiProperties.getProject().evaluator().getProperty(AppClientProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
         }
@@ -559,6 +560,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     // End of variables declaration//GEN-END:variables
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 1L;
         
         public EncodingRenderer() {
             setOpaque(true);
@@ -588,6 +590,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     private static class EncodingModel extends DefaultComboBoxModel {
+        private static final long serialVersionUID = 1L;
         
         public EncodingModel(String originalEncoding) {
             Charset defEnc = null;

@@ -41,6 +41,7 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 final class RemoveClassPathRootAction extends NodeAction {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Implementation of this interfaces has to be placed
@@ -77,7 +78,7 @@ final class RemoveClassPathRootAction extends NodeAction {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
                 for (int i = 0; i < activatedNodes.length; i++) {
-                    Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
+                    Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
                     if (removable == null) {
                         continue;
                     }
@@ -101,7 +102,7 @@ final class RemoveClassPathRootAction extends NodeAction {
 
     protected boolean enable(Node[] activatedNodes) {
         for (int i=0; i<activatedNodes.length; i++) {
-            Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
+            Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
             if (removable==null) {
                 return false;
             }
@@ -120,6 +121,7 @@ final class RemoveClassPathRootAction extends NodeAction {
         return new HelpCtx (RemoveClassPathRootAction.class);
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

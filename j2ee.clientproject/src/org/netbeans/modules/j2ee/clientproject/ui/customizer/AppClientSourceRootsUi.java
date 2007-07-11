@@ -73,6 +73,9 @@ import org.openide.util.NbBundle;
  * @author Tomas Zezula
  */
 public final class AppClientSourceRootsUi {
+
+    private AppClientSourceRootsUi() {
+    }
     
     public static DefaultTableModel createModel( SourceRoots roots ) {
         
@@ -445,15 +448,18 @@ public final class AppClientSourceRootsUi {
     }
     
     private static class SourceRootsModel extends DefaultTableModel {
+        private static final long serialVersionUID = 1L;
         
         public SourceRootsModel(Object[][] data) {
             super(data,new Object[]{"location","label"});//NOI18N
         }
         
+        @Override
         public boolean isCellEditable(int row, int column) {
             return column == 1;
         }
         
+        @Override
         public Class getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -467,6 +473,7 @@ public final class AppClientSourceRootsUi {
     }
     
     private static class FileRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
         
         private File projectFolder;
         
@@ -474,6 +481,7 @@ public final class AppClientSourceRootsUi {
             this.projectFolder = projectFolder;
         }
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
             String displayName;
             if (value instanceof File) {
@@ -498,6 +506,7 @@ public final class AppClientSourceRootsUi {
     }
     
     private static class WarningDlg extends JPanel {
+        private static final long serialVersionUID = 1L;
         
         public WarningDlg(Set<File> invalidRoots) {
             this.initGui(invalidRoots);
@@ -548,6 +557,7 @@ public final class AppClientSourceRootsUi {
         }
         
         private static class InvalidRootRenderer extends DefaultListCellRenderer {
+            private static final long serialVersionUID = 1L;
             
             private boolean projectConflict;
             
@@ -555,6 +565,7 @@ public final class AppClientSourceRootsUi {
                 this.projectConflict = projectConflict;
             }
             
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 File f = (File) value;
                 String message = f.getAbsolutePath();

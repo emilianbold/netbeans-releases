@@ -29,6 +29,7 @@ import org.openide.filesystems.FileObject;
  * @author  Jiri Rechtacek
  */
 public class MainClassWarning extends JPanel {
+    private static final long serialVersionUID = 1L;
    
     private String message;
     private FileObject[] sourcesRoots;

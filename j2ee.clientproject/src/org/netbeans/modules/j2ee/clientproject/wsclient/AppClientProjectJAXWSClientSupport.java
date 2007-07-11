@@ -24,7 +24,8 @@ import java.io.IOException;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.*;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -46,7 +47,7 @@ public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSuppor
     }
 
     public FileObject getWsdlFolder(boolean create) throws IOException {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         Car carModule = Car.getCar(project.getProjectDirectory());
         if (carModule!=null) {
             FileObject webInfFo = carModule.getMetaInf();
@@ -67,26 +68,31 @@ public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSuppor
     
     /** return root folder for xml artifacts
      */
+    @Override
     protected FileObject getXmlArtifactsRoot() {
         return project.getCarModule().getMetaInf();
     }
 
+    @Override
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
         
         String finalClientName = super.addServiceClient(clientName, wsdlUrl, packageName, isJsr109);
         
         // copy resources to META-INF/wsdl/client/${clientName}
         // this will be done only for local wsdl files
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         Client client = jaxWsModel.findClientByName(finalClientName);
-        if (client!=null && client.getWsdlUrl().startsWith("file:")) //NOI18N
+        if (client!=null && client.getWsdlUrl().startsWith("file:")) { //NOI18N
             try {
                 FileObject wsdlFolder = getWsdlFolderForClient(finalClientName);
                 FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
-                if (xmlResorcesFo!=null) WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
+                if (xmlResorcesFo!=null) {
+                    WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
         return finalClientName;
     }
     

@@ -44,6 +44,7 @@ import org.openide.util.NbBundle;
  * @author  phrebejk
  */
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
     
     private AppClientProject project;
     

@@ -311,10 +311,10 @@ public class AppClientProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         
-        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES ) );
-        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
-        RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_CLASSPATH ), null ) );
-        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
+        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator(projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES ) );
+        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
+        RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( RUN_CLASSPATH ), null ) );
+        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(J2EE_PLATFORM));
@@ -368,8 +368,8 @@ public class AppClientProjectProperties {
     public void save() {
         try {                        
             // Store properties 
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
                     if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         AppClientProject.class.getResource("resources/build-impl.xsl")) &
                             GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
@@ -514,10 +514,10 @@ public class AppClientProjectProperties {
         // Create a set of old and new artifacts.
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_CLASSPATH ), null ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList(projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES ) );
+        oldArtifacts.addAll( cs.itemsList(projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList(projectProperties.get( RUN_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList(projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
@@ -890,7 +890,7 @@ public class AppClientProjectProperties {
             }
         }
         while (classpath.hasNext()) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
+            ClassPathSupport.Item item = classpath.next();
             List<File> files = new ArrayList<File>();
             List<File> dirs = new ArrayList<File>();
             getFilesForItem (item, files, dirs);
@@ -898,7 +898,7 @@ public class AppClientProjectProperties {
             if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getReference() == null ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
-                    File f = (File) files.get(i);
+                    File f = files.get(i);
                     key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
                     privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
@@ -907,7 +907,7 @@ public class AppClientProjectProperties {
             if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getReference() == null ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
-                    File f = (File) dirs.get(i);
+                    File f = dirs.get(i);
                     key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
                     privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);

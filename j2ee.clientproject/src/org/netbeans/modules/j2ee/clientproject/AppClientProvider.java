@@ -149,7 +149,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public ClassPathProvider getClassPathProvider() {
-        return (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
+        return project.getLookup().lookup(ClassPathProvider.class);
     }
     
     public FileObject getArchive() {
@@ -184,14 +184,17 @@ public final class AppClientProvider extends J2eeModuleProvider
         return this;
     }
     
+    @Override
     public boolean useDefaultServer() {
         return true;
     }
     
+    @Override
     public String getServerID() {
         return helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_TYPE);
     }
     
+    @Override
     public String getServerInstanceID() {
         return helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
     }
@@ -373,6 +376,7 @@ public final class AppClientProvider extends J2eeModuleProvider
         return helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM);
     }
     
+    @Override
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);

@@ -56,6 +56,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     public void setUp() throws Exception {
         // setup some platforms -- needed for testing findClassPath(FileObject, ClassPath.BOOT)
         FileObject scratch = TestUtil.makeScratchDir(this);
@@ -71,7 +72,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         // setup the project
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        Sources src = (Sources)project.getLookup().lookup(Sources.class);
+        Sources src = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         sourceRoot = findSourceRoot(groups, "${src.dir}");
@@ -86,7 +87,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
     
     public void testClassPaths() throws Exception {
-        ClassPathProvider cpp = (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
         assertNotNull("No ClassPathProvider in project lookup!", cpp);
         
         ClassPath cp;

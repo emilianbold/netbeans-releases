@@ -69,6 +69,7 @@ import org.openide.util.NbBundle;
  * @author  pb97924, Martin Adamek
  */
 public class ImportLocationVisual extends JPanel /*implements DocumentListener */{
+    private static final long serialVersionUID = 1L;
     
     private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
     private static final String J2EE_SPEC_15_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_15"); //NOI18N
@@ -985,6 +986,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
             return serverInstanceID;
         }
 
+        @Override
         public String toString() {
             return displayName;
         }

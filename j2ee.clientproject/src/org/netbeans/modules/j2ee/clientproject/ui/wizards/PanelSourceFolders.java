@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Zezula et al.
  */
 public class PanelSourceFolders extends SettingsPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
 
     private final Panel firer;
     private WizardDescriptor wizardDescriptor;

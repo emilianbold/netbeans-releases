@@ -27,6 +27,7 @@ import org.openide.util.HelpCtx;
  * @author  phrebejk
  */
 public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
     
     private AppClientProjectProperties j2seProperties = null;
     

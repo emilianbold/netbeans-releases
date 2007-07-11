@@ -50,6 +50,7 @@ import org.openide.util.Utilities;
  * @author  phrebejk
  */
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
     
     private final PanelConfigureProject panel;
     private boolean valid;
@@ -513,6 +514,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             return serverInstanceID;
         }
 
+        @Override
         public String toString() {
             return displayName;
         }

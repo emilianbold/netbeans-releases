@@ -30,6 +30,7 @@ import org.openide.util.NbBundle;
  * @author Petr Hrebejk
  */
 public class PanelConfigureProjectVisual extends JPanel {
+    private static final long serialVersionUID = 1L;
     
     private PanelConfigureProject panel;
     

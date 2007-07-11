@@ -63,37 +63,37 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
                     SOURCES,
                     bundle.getString("LBL_Config_Sources"), //NOI18N
                     null,
-                    null);
+                    (ProjectCustomizer.Category[]) null);
         } else if (LIBRARIES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LIBRARIES,
                     bundle.getString( "LBL_Config_Libraries" ), // NOI18N
                     null,
-                    null );
+                    (ProjectCustomizer.Category[]) null );
         } else if (BUILD.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     BUILD,
                     bundle.getString( "LBL_Config_Build" ), // NOI18N
                     null,
-                    null);
+                    (ProjectCustomizer.Category[]) null);
         } else if (JAR.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     JAR,
                     bundle.getString( "LBL_Config_Jar" ), // NOI18N
                     null,
-                    null );
+                    (ProjectCustomizer.Category[]) null );
         } else if (JAVADOC.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     JAVADOC,
                     bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
                     null,
-                    null );
+                    (ProjectCustomizer.Category[]) null );
         } else if (RUN.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     RUN,
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
-                    null );
+                    (ProjectCustomizer.Category[]) null );
         } else if (WEBSERVICECLIENTS.equals(name)) {
             AppClientProject project = (AppClientProject) context.lookup(AppClientProject.class);
             List serviceClientsSettings = null;
@@ -106,7 +106,7 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
                         WEBSERVICECLIENTS,
                         bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
                         null,
-                        null );
+                        (ProjectCustomizer.Category[]) null );
             }
         }
         
@@ -116,11 +116,11 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
-        AppClientProjectProperties uiProps = (AppClientProjectProperties)context.lookup(AppClientProjectProperties.class);
+        AppClientProjectProperties uiProps = context.lookup(AppClientProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (LIBRARIES.equals(nm)) {
-            CustomizerProviderImpl.SubCategoryProvider prov = (CustomizerProviderImpl.SubCategoryProvider)context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
+            CustomizerProviderImpl.SubCategoryProvider prov = context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
             assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";
             return new CustomizerLibraries(uiProps, prov);
         } else if (BUILD.equals(nm)) {

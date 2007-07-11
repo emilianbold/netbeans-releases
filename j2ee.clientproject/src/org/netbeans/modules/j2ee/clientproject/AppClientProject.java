@@ -176,6 +176,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         return helper.getProjectDirectory();
     }
     
+    @Override
     public String toString() {
         return "CarProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -304,8 +305,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
     // Currently unused (but see #47230):
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -322,15 +323,14 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 helper.putPrimaryConfigurationData(data, true);
-                return null;
             }
         });
     }
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -386,8 +386,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
         j2eePlatformListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
-                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                        public Object run() {
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+                        public void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                             ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -397,7 +397,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
                             } catch (IOException e) {
                                 Exceptions.printStackTrace(e);
                             }
-                            return null;
                         }
                     });
                 }
@@ -504,8 +503,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
         }
         
         public String getDisplayName() {
-            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+                public String run() {
                     Element data = updateHelper.getPrimaryConfigurationData(true);
                     // XXX replace by XMLUtil when that has findElement, findText, etc.
                     NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -622,7 +621,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
 
             
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -652,8 +651,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 Exceptions.printStackTrace(e);
             }
             
-            AppClientLogicalViewProvider physicalViewProvider = (AppClientLogicalViewProvider)
-                    AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
+            AppClientLogicalViewProvider physicalViewProvider =  AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
@@ -726,7 +724,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -858,6 +856,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             impl = aa;
         }
     
+        @Override
         public String getID() {
             if (AppClientProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE.equals(getType())) {
                 return AppClientProjectConstants.CAR_ANT_ARTIFACT_ID;
@@ -881,10 +880,12 @@ public final class AppClientProject implements Project, AntProjectListener, File
             return impl.getCleanTargetName();
         }
 
+        @Override
         public URI[] getArtifactLocations() {
             return impl.getArtifactLocations();
         }
     
+        @Override
         public Project getProject() {
             return impl.getProject();
         }

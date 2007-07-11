@@ -80,8 +80,8 @@ public class AppClientSources implements Sources, PropertyChangeListener, Change
      * {@link AppClientSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (AppClientSources.this) {
                     if (delegate == null) {                    

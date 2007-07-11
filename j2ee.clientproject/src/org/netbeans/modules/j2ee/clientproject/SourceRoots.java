@@ -98,7 +98,7 @@ public final class SourceRoots {
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
-        this.helper.getAntProjectHelper().addAntProjectListener ((AntProjectListener)WeakListeners.create(AntProjectListener.class, this.listener,this.helper));
+        this.helper.getAntProjectHelper().addAntProjectListener(WeakListeners.create(AntProjectListener.class, this.listener,this.helper));
     }
 
 
@@ -108,15 +108,15 @@ public final class SourceRoots {
      * It may contain empty strings but not null.
      * @return an array of String
      */
-    public   String[] getRootNames () {
-        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+    public String[] getRootNames() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootNames == null) {
                         readProjectMetadata();
                     }
                 }
-                return sourceRootNames.toArray (new String[sourceRootNames.size()]);
+                return sourceRootNames.toArray(new String[sourceRootNames.size()]);
             }
         });
     }
@@ -126,14 +126,14 @@ public final class SourceRoots {
      * @return an array of String
      */
     public String[] getRootProperties () {
-        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootProperties == null) {
                         readProjectMetadata();
                     }
                 }
-                return sourceRootProperties.toArray (new String[sourceRootProperties.size()]);
+                return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
             }
         });
     }
@@ -143,8 +143,8 @@ public final class SourceRoots {
      * @return an array of FileObject
      */
     public FileObject[] getRoots () {
-        return (FileObject[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
-                public Object run () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
+                public FileObject[] run () {
                     synchronized (this) {
                         //Local caching
                         if (sourceRoots == null) {
@@ -176,8 +176,8 @@ public final class SourceRoots {
      * @return an array of URL
      */
     public URL[] getRootURLs() {
-        return (URL[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<URL[]>() {
+            public URL[] run() {
                 synchronized (this) {
                     //Local caching
                     if (sourceRootURLs == null) {
@@ -229,81 +229,79 @@ public final class SourceRoots {
      * @param labels the names of roots
      */
     public void putRoots (final URL[] roots, final String[] labels) {
-        ProjectManager.mutex().writeAccess(
-                new Mutex.Action () {
-                    public Object run() {
-                        String[] originalProps = getRootProperties();
-                        URL[] originalRoots = getRootURLs();
-                        Map<URL, String> oldRoots2props = new HashMap<URL, String>();
-                        for (int i=0; i<originalProps.length;i++) {
-                            oldRoots2props.put (originalRoots[i],originalProps[i]);
-                        }
-                        Map<URL,String> newRoots2lab = new HashMap<URL,String>();
-                        for (int i=0; i<roots.length;i++) {
-                            newRoots2lab.put (roots[i],labels[i]);
-                        }
-                        Element cfgEl = helper.getPrimaryConfigurationData(true);
-                        NodeList nl = cfgEl.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
-                        assert nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
-                        Element ownerElement = (Element) nl.item(0);
-                        //Remove all old roots
-                        NodeList rootsNodes = ownerElement.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
-                        while (rootsNodes.getLength()>0) {
-                            Element root = (Element) rootsNodes.item(0);
-                            ownerElement.removeChild(root);
-                        }
-                        //Remove all unused root properties
-                        List newRoots = Arrays.asList(roots);
-                        Map<URL, String> propsToRemove = new HashMap<URL, String>(oldRoots2props);
-                        propsToRemove.keySet().removeAll(newRoots);
-                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        for (Iterator<String> it = propsToRemove.values().iterator(); it.hasNext();) {
-                            String propName = it.next();
-                            props.remove(propName);
-                        }
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
-                        //Add the new roots
-                        Document doc = ownerElement.getOwnerDocument();
-                        oldRoots2props.keySet().retainAll(newRoots);
-                        for (Iterator it = newRoots.iterator(); it.hasNext();) {
-                            URL newRoot = (URL) it.next ();
-                            String rootName = oldRoots2props.get (newRoot);
-                            if (rootName == null) {
-                                //Root is new generate property for it
-                                props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                String[] names = newRoot.getPath().split("/");  //NOI18N
-                                rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],""});    //NOI18N
-                                int rootIndex = 1;
-                                while (props.containsKey(rootName)) {
-                                    rootIndex++;
-                                    rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],new Integer(rootIndex)});
-                                }
-                                File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
-                                File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
-                                String path = f.getAbsolutePath();
-                                String prjPath = projDir.getAbsolutePath()+File.separatorChar;
-                                if (path.startsWith(prjPath)) {
-                                    path = path.substring(prjPath.length());
-                                }
-                                else {
-                                    path = refHelper.createForeignFileReference(f, JavaProjectConstants.SOURCES_TYPE_JAVA);
-                                    props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                }
-                                props.put(rootName,path);
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
-                            }
-                            Element newRootNode = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
-                            newRootNode.setAttribute("id",rootName);    //NOI18N
-                            String label = newRoots2lab.get (newRoot);
-                            if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
-                                newRootNode.setAttribute("name",label); //NOI18N
-                            }
-                            ownerElement.appendChild (newRootNode);
-                        }
-                        helper.putPrimaryConfigurationData(cfgEl,true);
-                        return null;
+        ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    String[] originalProps = getRootProperties();
+                    URL[] originalRoots = getRootURLs();
+                    Map<URL, String> oldRoots2props = new HashMap<URL, String>();
+                    for (int i=0; i<originalProps.length;i++) {
+                        oldRoots2props.put (originalRoots[i],originalProps[i]);
                     }
+                    Map<URL,String> newRoots2lab = new HashMap<URL,String>();
+                    for (int i=0; i<roots.length;i++) {
+                        newRoots2lab.put (roots[i],labels[i]);
+                    }
+                    Element cfgEl = helper.getPrimaryConfigurationData(true);
+                    NodeList nl = cfgEl.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
+                    assert nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
+                    Element ownerElement = (Element) nl.item(0);
+                    //Remove all old roots
+                    NodeList rootsNodes = ownerElement.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
+                    while (rootsNodes.getLength()>0) {
+                        Element root = (Element) rootsNodes.item(0);
+                        ownerElement.removeChild(root);
+                    }
+                    //Remove all unused root properties
+                    List newRoots = Arrays.asList(roots);
+                    Map<URL, String> propsToRemove = new HashMap<URL, String>(oldRoots2props);
+                    propsToRemove.keySet().removeAll(newRoots);
+                    EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    for (Iterator<String> it = propsToRemove.values().iterator(); it.hasNext();) {
+                        String propName = it.next();
+                        props.remove(propName);
+                    }
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
+                    //Add the new roots
+                    Document doc = ownerElement.getOwnerDocument();
+                    oldRoots2props.keySet().retainAll(newRoots);
+                    for (Iterator it = newRoots.iterator(); it.hasNext();) {
+                        URL newRoot = (URL) it.next ();
+                        String rootName = oldRoots2props.get (newRoot);
+                        if (rootName == null) {
+                            //Root is new generate property for it
+                            props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            String[] names = newRoot.getPath().split("/");  //NOI18N
+                            rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],""});    //NOI18N
+                            int rootIndex = 1;
+                            while (props.containsKey(rootName)) {
+                                rootIndex++;
+                                rootName = MessageFormat.format(newRootNameTemplate,new Object[]{names[names.length-1],new Integer(rootIndex)});
+                            }
+                            File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
+                            File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
+                            String path = f.getAbsolutePath();
+                            String prjPath = projDir.getAbsolutePath()+File.separatorChar;
+                            if (path.startsWith(prjPath)) {
+                                path = path.substring(prjPath.length());
+                            }
+                            else {
+                                path = refHelper.createForeignFileReference(f, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                                props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            }
+                            props.put(rootName,path);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
+                        }
+                        Element newRootNode = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
+                        newRootNode.setAttribute("id",rootName);    //NOI18N
+                        String label = newRoots2lab.get (newRoot);
+                        if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
+                            newRootNode.setAttribute("name",label); //NOI18N
+                        }
+                        ownerElement.appendChild (newRootNode);
+                    }
+                    helper.putPrimaryConfigurationData(cfgEl,true);
                 }
+            }
         );
     }
     

@@ -213,7 +213,7 @@ public class ClassPathSupport {
                     if ( item.isBroken() ) {
                         break;
                     }
-                    AntArtifact artifact = (AntArtifact)item.getArtifact();                                       
+                    AntArtifact artifact = item.getArtifact();                                       
                     if ( reference == null) {
                         if ( artifact == null ) {
                             break;
@@ -518,6 +518,7 @@ public class ClassPathSupport {
             return object == BROKEN;
         }
         
+        @Override
         public String toString() {
             return "artifactURI=" + artifactURI // NOI18N
                     + ", type=" + type // NOI18N
@@ -527,6 +528,7 @@ public class ClassPathSupport {
                     + ", object=" + object; // NOI18N
         }
         
+        @Override
         public int hashCode() {
         
             int hash = getType();
@@ -551,6 +553,7 @@ public class ClassPathSupport {
             return hash;
         }
     
+        @Override
         public boolean equals( Object itemObject ) {
 
             if ( !( itemObject instanceof Item ) ) {

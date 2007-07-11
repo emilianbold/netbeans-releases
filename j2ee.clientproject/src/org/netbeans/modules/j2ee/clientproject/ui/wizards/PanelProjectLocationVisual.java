@@ -38,6 +38,7 @@ import org.openide.util.NbBundle;
  * @author  Petr Hrebejk
  */
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
+    private static final long serialVersionUID = 1L;
     
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     
@@ -171,6 +172,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }//GEN-LAST:event_browseLocationAction
     
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
@@ -249,8 +251,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
             String formater = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaApplication");
-            while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
+            while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null) {
                 baseCount++;
+            }
             settings.putProperty(NewAppClientProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
         }
         this.projectNameTextField.setText(projectName);

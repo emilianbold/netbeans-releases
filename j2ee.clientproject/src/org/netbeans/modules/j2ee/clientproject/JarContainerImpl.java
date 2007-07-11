@@ -187,7 +187,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     
     private AppClient getAppClient() throws IOException {
         if (webApp==null) {
-            CarImplementation jp = (CarImplementation) webProject.getLookup().lookup(CarImplementation.class);
+            CarImplementation jp = webProject.getLookup().lookup(CarImplementation.class);
             FileObject fo = jp.getDeploymentDescriptor();
             webApp = DDProvider.getDefault().getDDRoot(fo);
         }
@@ -205,7 +205,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private void writeDD(FileObject referencingFile, final String referencingClassName) throws IOException {
-        final CarImplementation jp = (CarImplementation) webProject.getLookup().lookup(CarImplementation.class);
+        final CarImplementation jp = webProject.getLookup().lookup(CarImplementation.class);
         JavaSource javaSource = JavaSource.forFileObject(referencingFile);
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
@@ -233,7 +233,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
             getAppClient().addEjbRef(newRef);
         } catch (ClassNotFoundException ex){}
         
-        ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) webProject.getLookup().lookup(ProjectClassPathExtender.class);
+        ProjectClassPathExtender cpExtender = webProject.getLookup().lookup(ProjectClassPathExtender.class);
         if (cpExtender != null) {
             try {
                 AntArtifactChooser.ArtifactItem artifactItems[] = new AntArtifactChooser.ArtifactItem [1];

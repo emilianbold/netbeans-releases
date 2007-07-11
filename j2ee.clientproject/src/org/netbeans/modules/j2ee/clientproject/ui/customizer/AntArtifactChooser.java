@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  * @author Petr Hrebejk
  */
 public class AntArtifactChooser extends JPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
     
     private String[] artifactTypes;
     
@@ -335,6 +336,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             return artifactURI;
         }
         
+        @Override
         public String toString() {
             return artifactURI.toString();
         }

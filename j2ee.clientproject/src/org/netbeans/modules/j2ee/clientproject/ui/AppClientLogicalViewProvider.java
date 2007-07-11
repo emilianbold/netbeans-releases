@@ -151,7 +151,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = (Project) root.getLookup().lookup(Project.class);
+        Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
         }
@@ -273,7 +273,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
         // icon badging >>>
-        private Set files;
+        private Set<FileObject> files;
         private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
         private final Object privateLock = new Object();
@@ -295,9 +295,9 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             }
             brokenLinksAction = new BrokenLinksAction();
             brokenServerAction = new BrokenServerAction();
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
-                        InstanceListener.class, brokenServerAction, moduleProvider));
+            J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            moduleProvider.addInstanceListener(
+                    WeakListeners.create(InstanceListener.class, brokenServerAction, moduleProvider));
             setProjectFiles(project);
         }
         
@@ -335,10 +335,10 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             setFiles(roots);
         }
         
-        protected void setFiles(Set files) {
+        protected void setFiles(Set<FileObject> files) {
             if (fileSystemListeners != null) {
                 for (FileSystem fs : fileSystemListeners.keySet()) {
-                    FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
+                    FileStatusListener fsl = fileSystemListeners.get(fs);
                     fs.removeFileStatusListener(fsl);
                 }
             }
@@ -368,6 +368,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
+        @Override
         public String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
             try {
@@ -379,12 +380,13 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             return broken || illegalState || brokenServerAction.isEnabled() ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
         
+        @Override
         public Image getIcon(int type) {
             Image img = getMyIcon(type);
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     Logger.getLogger("global").log(Level.INFO, null, e);
@@ -401,12 +403,13 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                    : original;
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             Image img = getMyOpenedIcon(type);
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     Logger.getLogger("global").log(Level.INFO, null, e);
@@ -472,14 +475,17 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             setProjectFiles(project);
         }
         
+        @Override
         public Action[] getActions( boolean context ) {
             return getAdditionalActions();
         }
         
+        @Override
         public boolean canRename() {
             return true;
         }
         
+        @Override
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
@@ -504,7 +510,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             
             List<Action> actions = new ArrayList<Action>(30);
             
-            J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null)); // NOI18N
@@ -538,9 +544,9 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 if (fo != null) {
                     DataObject dobj = DataObject.find(fo);
                     FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
+                    Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
                     Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
+                    Iterator<? extends Object> it = lookup.lookup(query).allInstances().iterator();
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
@@ -564,7 +570,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             }
             actions.add(CommonProjectActions.customizeProjectAction());
 
-            return (Action[])actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
         
         private boolean isBroken() {
@@ -590,6 +596,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
          * Once these are resolved the action is disabled.
          */
         private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener, ChangeListener, Runnable {
+            private static final long serialVersionUID = 1L;
             
             private RequestProcessor.Task task = null;
             
@@ -604,7 +611,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 // That's why I have to listen here also on JPM:
                 weakPCL = WeakListeners.propertyChange(this, JavaPlatformManager.getDefault());
                 JavaPlatformManager.getDefault().addPropertyChangeListener(weakPCL);
-                AppClientLogicalViewProvider.this.addChangeListener((ChangeListener) WeakListeners.change(this, AppClientLogicalViewProvider.this));
+                AppClientLogicalViewProvider.this.addChangeListener(WeakListeners.change(this, AppClientLogicalViewProvider.this));
             }
             
             public void actionPerformed(ActionEvent e) {
@@ -654,6 +661,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         private class BrokenServerAction extends AbstractAction implements 
                     InstanceListener, PropertyChangeListener {
+            private static final long serialVersionUID = 1L;
 
             private RequestProcessor.Task task = null;
             private boolean brokenServer;
@@ -664,6 +672,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 checkMissingServer();
             }
             
+            @Override
             public boolean isEnabled() {
                 return brokenServer;
             }
@@ -711,7 +720,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         }        
     }
     
-    private static final class LogicalViewChildren extends Children.Keys/*<SourceGroup>*/ implements ChangeListener {
+    private static final class LogicalViewChildren extends Children.Keys<Object> implements ChangeListener {
         
         private static final Object LIBRARIES = "Libs"; //NOI18N
         private static final Object TEST_LIBRARIES = "TestLibs"; //NOI18N
@@ -741,6 +750,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             jp = jps[0];
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             getSources().addChangeListener(this);
@@ -776,8 +786,9 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             setKeys(getKeys());
         }
         
+        @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<Object>emptySet());
             getSources().removeChangeListener(this);
             
             AntProjectHelper projectHelper = helper.getAntProjectHelper();
@@ -866,8 +877,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             } else if (key == KEY_CONF_DIR) {
                 result = new Node[] {J2eeProjectView.createConfigFilesView(jp.getMetaInf())};
             } else if (key == KEY_SERVICE_REFS) {
-                java.util.Map properties = ((AppClientProject) project).getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-                String serverInstance = (String)properties.get(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
+                java.util.Map<String, String> properties = ((AppClientProject) project).getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
+                String serverInstance = properties.get(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
                 
                 Car wm = Car.getCar(project.getProjectDirectory());
@@ -917,11 +928,11 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         // Private methods -----------------------------------------------------
         
-        private Collection getKeys() {
+        private Collection<Object> getKeys() {
             //#60800, #61584 - when the project is deleted externally do not try to create children, the source groups
             //are not valid
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
-                return Collections.EMPTY_LIST;
+                return Collections.<Object>emptyList();
             }
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -947,7 +958,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             }
             
             //show the ws client node iff there are some clients
-            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
             JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
             if ((jwcss != null) && (jaxWsModel != null) &&  (jaxWsModel.getClients().length > 0)) {
                 result.add(KEY_SERVICE_REFS);
@@ -976,10 +987,12 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 this.fileObject = group.getRootFolder();
             }
             
+            @Override
             public int hashCode() {
                 return fileObject.hashCode();
             }
             
+            @Override
             public boolean equals(Object obj) {
                 if (!(obj instanceof SourceGroupKey)) {
                     return false;
@@ -997,6 +1010,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         private final class WsdlCreationListener extends FileChangeAdapter {
             
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -1007,6 +1021,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -1026,6 +1041,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         private final class MetaInfListener extends FileChangeAdapter {
             
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
                     fe.getFile().addFileChangeListener(wsdlListener);
@@ -1034,6 +1050,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
                     fe.getFile().removeFileChangeListener(wsdlListener);
@@ -1065,6 +1082,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         }
         
         
+        @Override
         public Action[] getActions(boolean context) {
             if (!context) {
                 if (actions == null) {
@@ -1086,6 +1104,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
     /** The special properties action
      */
     private static class PreselectPropertiesAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
         
         private final Project project;
         private final String nodeName;
@@ -1104,7 +1123,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         public void actionPerformed(ActionEvent e) {
             // J2SECustomizerProvider cp = (J2SECustomizerProvider) project.getLookup().lookup(J2SECustomizerProvider.class);
-            CustomizerProviderImpl cp = (CustomizerProviderImpl) project.getLookup().lookup(CustomizerProviderImpl.class);
+            CustomizerProviderImpl cp = project.getLookup().lookup(CustomizerProviderImpl.class);
             if (cp != null) {
                 cp.showCustomizer(nodeName, panelName);
             }

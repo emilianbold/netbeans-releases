@@ -302,7 +302,7 @@ class AppClientActionProvider implements ActionProvider {
             }
             
             // check project's main class
-            String mainClass = (String)ep.get("main.class"); // NOI18N
+            String mainClass = ep.get("main.class"); // NOI18N
             MainClassStatus result = isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
             if (result != MainClassStatus.SET_AND_VALID) {
                 do {
@@ -310,7 +310,7 @@ class AppClientActionProvider implements ActionProvider {
                     if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
                         return null;
                     }
-                    mainClass = (String)ep.get("main.class"); // NOI18N
+                    mainClass = ep.get("main.class"); // NOI18N
                     result=isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
                 } while (result != MainClassStatus.SET_AND_VALID);
                 try {
@@ -331,7 +331,7 @@ class AppClientActionProvider implements ActionProvider {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
             
-            targetNames = (String[])commands.get(command);
+            targetNames = commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -356,7 +356,7 @@ class AppClientActionProvider implements ActionProvider {
                     return null;
                 } else {
                     p.setProperty("run.class", clazz); // NOI18N
-                    targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                    targetNames = commands.get(COMMAND_RUN_SINGLE);
                         /*
                     } else {
                         p.setProperty("debug.class", clazz); // NOI18N
@@ -383,7 +383,7 @@ class AppClientActionProvider implements ActionProvider {
                 }
             }
         } else {
-            targetNames = (String[])commands.get(command);
+            targetNames = commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -663,7 +663,7 @@ class AppClientActionProvider implements ActionProvider {
     private void showPlatformWarning() {
         final JButton closeOption = new JButton(NbBundle.getMessage(AppClientActionProvider.class, "CTL_BrokenPlatform_Close"));
         closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AppClientActionProvider.class, "AD_BrokenPlatform_Close"));
-        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+        final ProjectInformation pi = this.project.getLookup().lookup(ProjectInformation.class);
         final String projectDisplayName = pi == null ?
             NbBundle.getMessage(AppClientActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
             : pi.getDisplayName();
@@ -712,7 +712,7 @@ class AppClientActionProvider implements ActionProvider {
     }
     
    private boolean isDebugged() {
-        J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
         ServerDebugInfo sdi = jmp.getServerDebugInfo();
         if (sdi == null) {
             return false;

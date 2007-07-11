@@ -67,7 +67,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
+        FileObject fo = this.dirCache.get (propname);
         if (fo == null ||  !fo.isValid()) {
             String prop = helper.getStandardPropertyEvaluator ().getProperty (propname);
             if (prop != null) {
@@ -251,9 +251,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return getSourcepath(file);
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
-        } else {
-            return null;
         }
+        return null;
     }
     
     /**

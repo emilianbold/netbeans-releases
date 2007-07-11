@@ -80,6 +80,7 @@ public class AppClientClassPathUi {
     /** Renderer which can be used to render the classpath in lists
      */    
     public static class ClassPathListCellRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 1L;
         
         private static final Pattern FOREIGN_PLAIN_FILE_REFERENCE = Pattern.compile("\\$\\{file\\.reference\\.([^${}]+)\\}"); // NOI18N
         private static final Pattern UNKNOWN_FILE_REFERENCE = Pattern.compile("\\$\\{([^${}]+)\\}"); // NOI18N
@@ -120,6 +121,7 @@ public class AppClientClassPathUi {
             this.evaluator = evaluator;
         }
         
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             
             ClassPathSupport.Item item = (ClassPathSupport.Item)value;
@@ -144,7 +146,7 @@ public class AppClientClassPathUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( ClassPathSupport.getAntPropertyName( item.getReference() ) );
+                    String name = WELL_KNOWN_PATHS_NAMES.get( ClassPathSupport.getAntPropertyName( item.getReference() ) );
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
@@ -303,7 +305,7 @@ public class AppClientClassPathUi {
                 throw new IllegalArgumentException( "The list's model has to be of class DefaultListModel" ); // NOI18N
             }
             
-            this.listModel = (DefaultListModel)list.getModel();
+            this.listModel = list.getModel();
             this.selectionModel = list.getSelectionModel();
             
             this.addJar = addJar;
@@ -477,7 +479,6 @@ public class AppClientClassPathUi {
             
             public JListListComponent(JList list) {
                 this.list = list;
-                this.model = model;
             }
             
             public Component getComponent() {
@@ -555,12 +556,14 @@ public class AppClientClassPathUi {
         }
 
         public boolean accept(File f) {
-            if (f.isDirectory())
+            if (f.isDirectory()) {
                 return true;
+            }
             String name = f.getName();
             int index = name.lastIndexOf('.');   //NOI18N
-            if (index <= 0 || index==name.length()-1)
+            if (index <= 0 || index==name.length()-1) {
                 return false;
+            }
             String extension = name.substring (index+1).toUpperCase();
             return this.extensions.contains(extension);
         }
@@ -571,6 +574,7 @@ public class AppClientClassPathUi {
     }
 
     public static class ClassPathTableCellItemRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
         
         private ClassPathListCellRenderer renderer;
         private TableCellRenderer booleanRenderer;
@@ -579,6 +583,7 @@ public class AppClientClassPathUi {
             renderer = new ClassPathListCellRenderer(evaluator);
         }
         
+        @Override
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             
             if (value instanceof ClassPathSupport.Item) {
@@ -587,9 +592,9 @@ public class AppClientClassPathUi {
                 setToolTipText( renderer.getToolTipText( item ) );
                 return super.getTableCellRendererComponent(table, renderer.getDisplayName( item ), isSelected, false, row, column);
             } else {
-                if (value instanceof Boolean && booleanRenderer != null)
+                if (value instanceof Boolean && booleanRenderer != null) {
                     return booleanRenderer.getTableCellRendererComponent( table, value, isSelected, false, row, column );
-                else {
+                } else {
                     setIcon( null );
                     return super.getTableCellRendererComponent( table, value, isSelected, false, row, column );
                 }

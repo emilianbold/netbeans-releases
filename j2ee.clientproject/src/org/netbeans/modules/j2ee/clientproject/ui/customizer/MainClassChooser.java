@@ -49,6 +49,7 @@ import org.openide.util.RequestProcessor;
  * @author  Jiri Rechtacek
  */
 public class MainClassChooser extends JPanel {
+    private static final long serialVersionUID = 1L;
 
     private ChangeListener changeListener;
     private String dialogSubtitle = null;
@@ -104,6 +105,7 @@ public class MainClassChooser extends JPanel {
                         }
                     });                    
                 } else {
+                    @SuppressWarnings("unchecked")
                     final ElementHandle<TypeElement>[] arr = possibleMainClasses.toArray(new ElementHandle[possibleMainClasses.size()]);
                     // #46861, sort name of classes
                     Arrays.sort (arr, new MainClassComparator());
@@ -219,6 +221,9 @@ public class MainClassChooser extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private static final class MainClassRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 1L;
+        
+        @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName;
             if (value instanceof String) {
