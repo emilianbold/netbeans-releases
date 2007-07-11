@@ -57,8 +57,6 @@ public class MeasureWebActions extends NbTestCase {
             "Press Page Up in the JSP Editor with large file", true));
         suite.addTest(new PageUpPageDownInJspEditor("BigJSP.jsp", "measureTime",
             "Press Page Down in the JSP Editor with large file", false));
-        suite.addTest(new JavaCompletionInJspEditor("measureTime",
-            "Invoke Code Completion dialog in JSP Editor"));
         suite.addTest(new TypingInJspEditor("Test.jsp", 12, "measureTime",
             "Type a character in JSP Editor"));
         suite.addTest(new TypingInJspEditor("BigJSP.jsp", 12, "measureTime",
