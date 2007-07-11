@@ -40,18 +40,25 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-
-    <!-- You can override default qa-functional-compiler if you need something special -->
-         <!--
-    <target name="qa-functional-compiler">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-            </classpath>
-        </buildTests>
+    <target name="build-languages-lib">
+        <echo> BUILDING LANGUAGES LIB </echo>
+	<java classname="org.apache.tools.ant.Main" dir="../../../languages/test" failonerror="true" fork="true">
+          <jvmarg value="-Dant.home=${ant.home}"/>
+          <arg value="buildtests"/>
+          <arg value="-Dxtest.testtype=qa-functional"/>
+          <arg value="-Dxtest.attribs=stable"/>
+          <arg value="-Dxtest.home=${xtest.home}"/>
+          <arg value="-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
+	  <classpath path="${java.class.path}"/>
+        </java>
     </target>
-    -->
+    
+    <!-- You can override default qa-functional-compiler if you need something special -->
+    <target name="qa-functional-compiler" depends="build-jellytools,build-languages-lib">
+        <!-- Build tests but don't build module sources. -->
+        <ant dir=".." target="do-test-build-qa-functional" />
+        <packageTests/>
+    </target>
     
     <!-- ========= -->
     <!-- Executors -->

@@ -40,12 +40,19 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable, validation, completion" executor="ide_as" name="JSP Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="**/JspColoringTest.class"/>
                 <include name="**/CompletionTest.class"/>   
             </patternset>
         </testset>
     </testbag>
-    
+
+    <testbag testattribs="stable, validation, tokens" executor="ide" name="Tokens Test">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/TokensTest.class"/>   
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="stable, validation, csscompletion" executor="ide_as" name="CSS Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
