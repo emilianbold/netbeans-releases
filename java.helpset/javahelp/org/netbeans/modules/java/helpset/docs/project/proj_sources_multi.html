@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Multiple Source Roots in Projects</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Multiple Source Roots in Projects</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>You can add multiple sources roots to either standard or free-form projects
+	that  require them. However,
+	you should never add the same source root to more than one project because
+	this is not supported in the IDE. 
+<h3>Standard Projects</h3>
+<p>In Standard projects,  it is sometimes advantageous to add  additional
+	source roots to your project's classpath such as, for example,  when the project
+	uses sources stored in a separate resources folder. Because all source directories
+	on a standard project's classpath form a single compilation unit, they are
+also	packaged into the application's JAR when the project is built. In Standard
+	projects, you add source roots to the classpath using the project wizard and
+	properties dialog.
+<ul class="note">
+	<li>Source roots must only   exist in a single project  and
+		cannot be shared with other projects, regardless of whether they are opened
+		or not. If you need to use a library in several projects, create a special
+		project within which to store it.
+</ul>
+
+<h3>Free-Form Projects</h3>
+<p>In free-form projects, each source root can be assigned to independent compilation
+	units providing you maximum flexibility when structuring your applications.
+	Free-form projects, however, require that you manage the classpath by editing
+	your build.xml file directly. For more information, see Managing the Classpath.
+<ul class="note">
+	<li>Source roots must only exist in a single project  and
+		cannot be shared with other projects, regardless of whether they are opened
+		or not. If you need to use a library in several projects, create a special
+		project within which to store it.
+</ul>
+<h3>Using Libraries in Multiple Projects</h3>
+<p>If you want to add a library to more than
+	one project, you must create a special project within which store the
+	 library's compiled source that you want to use.
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_templates.html">Java Project Templates</a></dd>
+    <dd><a href="proj_stand_about.html">About Standard Projects</a></dd>
+    <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
+    <dd><a href="proj_process.html">Working with Projects</a></dd>
+    <dd><a href="proj_quickref.html">Project Tasks: Quick Reference</a></dd></dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

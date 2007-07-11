@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About Debugging Free-Form Projects</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About Debugging Free-Form Projects</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> </p>
+
+<p>Similar to commands for compiling and running, debugging commands rely on 
+various information, such as the location of your 
+sources, the location of the compiled classes and other items on the classpath, 
+and name of the project's main class. </p>
+<p>In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, the IDE does not "know" 
+	about any of these things. When you run a command in the IDE (such as Build), 
+	the IDE simply calls a target in your build script and lets the script handle 
+	the command. Therefore, for debugging to work, you also have to have a build script 
+	target for debugging. The IDE provides some custom Ant tasks to work with the debugger 
+	and also can generate a basic debug target, which attempts to fill in important 
+	details based on other targets in your script.</p>
+
+    <p>To set up debugging in a free-form project, you need to do the following:</p>
+    
+    <ul>
+    <li>Make sure that your classes are compiled with debugging information included. For 
+    example, you might accomplish this in the <tt>compile</tt> 
+    target of your build script by including the argument <tt>debug="true"</tt> in the <tt>&lt;javac&gt;</tt> task.</li>
+
+    <li>If the output of a free-form project is on the classpath of another project, 
+    map the free-form project's source packages to their outputs. This ensures that you can use the 
+    debugger to step into the project's sources when you start a debugging session in a 
+    project that has a dependency on the free-form project. You can do this in the Output
+    panel of the Project Properties dialog box for the free-form project. You can open the 
+    Project Properties dialog box by right-clicking the project's node in the 
+    Projects window and choosing Properties.<!--TODO explain this more?--></li>
+
+    <li>Set the target JDK in your Ant script and specify the source 
+    level in the  Project Properties dialog box. When you step into JDK 
+    classes, the IDE searches the platforms registered in the Java Platform Manager
+    for a Java platform with a matching source level. If no matching Java platform
+    is found, the IDE opens the source code for the IDE's default platform.</li>
+        
+    <li>If you have a free-form project on the classpath of another project, you 
+    must declare the free-form project's output files in order to step into classes 
+    from the project. To declare the output files, right-click the free-form project 
+    node and choose Properties. Then click Outputs and specify the output file 
+    for each source folder.</li>
+
+    <li>Create a target in your build script for debugging and map that target to 
+    the IDE's Debug Project command. The IDE can assist you by generating a basic target 
+    and mapping, but you might need to modify the target. See 
+    <a href="proj_free_debug.html">Creating A Debug Target for a Free-Form 
+    Java Project</a> and <a href="proj_webfree_debug.html">Creating A Debug Target for a Free-Form 
+    Web Project</a> for step-by-step instructions.</li>
+</ul>
+
+<p>For a full guide to configuring free-form projects, see:
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
+    <dd><a href="proj_free_targets.html">Mapping an Ant Target to an IDE Command</a></dd>
+    <dd><a href="proj_free_nbtargs.html">Storing IDE Targets in a Separate Ant Script</a></dd>
+    <dd><a href="../debug/debug_about.html">About Debugging Java Applications</a></dd>
+    <dd><a href="../debug/debug_quickref.html">Debugging Tasks: Quick Reference</a></dd></dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

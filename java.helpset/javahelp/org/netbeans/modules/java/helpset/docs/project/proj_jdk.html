@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Setting the Target JDK in a Project</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Setting the Target JDK in a Project</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>By default, the IDE uses the version of the Java SE platform (JDK) with which 
+  the IDE runs as the default Java platform for compilation, execution, and debugging. 
+  You can view your IDE's JDK version by choosing Help &gt; About and clicking 
+  the Detail tab. The JDK version is listed in the Java field. 
+<ul class="note"> 
+    <li>You can run the IDE with a different JDK version by starting the IDE with 
+      the <tt>--jdkhome</tt>&nbsp; <i><tt>jdk-home-dir</tt> </i>switch on the 
+      command line or in your <tt><i>IDE-HOME</i>/etc/netbeans.conf</tt> file. 
+      For more information, see <a href="../configure/configure_startup-switches.html">IDE 
+      Startup Parameters</a>. 
+</ul>
+
+<p>In the IDE, you can register multiple Java platforms and attach Javadoc and 
+  source code to each platform. For example, if you want to work with the new 
+  features introduced in JDK 5.0, you would either run the IDE on JDK 5.0 or register 
+  JDK 5.0 as a platform and attach the source code and Javadoc to the platform. 
+<p>In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="standard projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, you can switch the target JDK in the Project Properties dialog box. 
+  In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, you have to set the target JDK in the Ant script itself, then specify 
+  the source level in the Project Properties dialog box. 
+<p><b>To register a new Java platform:</b> 
+<ol>
+  <li>Choose Tools &gt; Java Platform Manager from the main window.</li>
+  <li>Click New Platform and select the directory that contains the Java platform. 
+    Java platform directories are marked with a <img src="../images/platform.gif" width="18" height="16" alt="Java platform folder icon"> 
+    in the file chooser.</li>
+  <li>Use the Sources and Javadoc tabs to attach Javadoc documentation and source 
+    code for debugging to the platform.</li>
+  <li>Click Close.</li>
+</ol>
+<p><b>To set the default Java platform for a standard project:</b></p>
+<ol>
+  <li>Right-click the project's root node in the Projects window and choose Properties.</li>
+  <li>In the Project Properties dialog box, select the Libraries node in the
+  	left pane. </li>
+  <li>Choose the desired Java platform in the Java Platform combo box.
+   	<p>Switching the target JDK for a standard project does the following: 
+  		<ul>
+      	<li>Offers the new target JDK's classes for code completion.</li>
+      	<li>If available, displays the target JDK's source code and Javadoc documentation.</li>
+      	<li>Uses the target JDK's executables (<tt>javac</tt> and <tt>java</tt>) 
+        	to compile and execute your application.</li>
+      	<li>Compiles your source code against the target JDK's libraries.</li>
+    	</ul>
+    	<li>If you want to register additional Java platforms with the IDE, you
+    		can do so by clicking the Manage Platforms button. Then click the Add
+    		Platform button and navigate to  the desired platform.</li>
+</ol>
+<p><b>To set the target Java platform for a free-form project:</b></p>
+<!--todo : clarify difference between source level and jdk platform (perhaps rename freeform source level combobox + mention source level usage for standard projects)-->
+<ol>
+  <li>In your Ant script, set the target JDK as desired in the <tt>javac</tt>, 
+    <tt>java</tt>, and <tt>javadoc</tt> tasks.</li>
+  <li>Right-click the project's root node in the Projects window and choose Properties.</li>
+  <li>In the Sources panel, set the level of JDK  you want your application to
+  	be run on in the Source Level combo box. 
+    <p> When you access Javadoc or source code for JDK classes, the IDE searches 
+      the Java platforms registered in the Java Platform Manager for a platform 
+      with a matching version number. If no matching platform is found, the IDE's 
+      default platform is used instead. 
+  </li>
+</ol>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../compile/comp_classpath.html">Managing the Classpath</a></dd>
+      <dd><a href="proj_free_classpath.html">Declaring the Classpath in a Free-Form 
+      Project</a></dd>
+      <dd><a href="../debug/debug_step.html">Stepping Through Your Program</a> </dd></dl>
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Java Project Templates</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+<h2>Java Project Templates</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p> For each type of Java application, the IDE provides two types of project templates:</p>
+<ul>
+  <li><b>Standard templates.</b> Templates in which the IDE controls all source 
+    and classpath settings, compilation, running, and debugging.</li>
+  <li><b>Free-form templates.</b> Templates in which your own Ant script controls 
+    all classpath settings, compilation, running, and debugging.</li>
+</ul>
+<h3>Standard Project Templates</h3>
+<p>With standard project templates, the IDE controls all aspects of how your application 
+  is built, run, and debugged. You set a project's source folder, classpath, and 
+  other project settings when creating the project and in the Project Properties 
+  dialog box. The IDE generates an Ant build script in which all of your settings 
+  are stored. </p>
+<p>The IDE comes with the following standard templates:</p>
+<ul>
+  <li><b><img src="../images/j2seProject.gif" width="16" height="16" alt="Java SE project icon">&nbsp;Standard 
+    Java Applicatons.</b> Java Application, Java Class Library, Java Project with 
+    Existing Sources</li>
+  <li><b><img src="../images/webProjectIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;Web 
+    Applications.</b> Web Application, Web Application with Existing Sources</li>
+  <li><b><img src="../images/earProjectIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;Enterprise 
+    Applications.</b> Enterprise Application, Enterprise Application with Existing 
+    Sources</li>
+  <li><b><img src="../images/EjbModuleNodeIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;EJB 
+    Modules. </b>EJB Module, EJB Module with Existing Sources</li>
+  <li><img src="../images/appclient.gif" width="16" height="16" alt="application project icon">&nbsp;<b>Enterprise Application Clients.</b> Enterprise Application Client, Enterprise Application Client with Existing Sources</li>
+  <li><img src="../images/application_assembler_16.gif" width="16" height="16" alt="packaged archive project icon">&nbsp;<b>Enterprise Packaged Archives.</b> Packaged Archive</li>
+  <li><img src="../images/module.gif" width="16" height="16" alt="module project icon">&nbsp;<b>NetBeans 
+    Plug-in Modules.</b> Module Project, Module Suite Project, Library Wrapper 
+    Module Project</li>
+</ul>
+
+  <ul class="note"> 
+    <li>Depending on what modules you have installed, your 
+      IDE may contain additional templates. Consult the help for your additional 
+      modules for more information.</li>
+  </ul>
+
+<h3>Free-Form Project Templates</h3>
+<p>With free-form project templates, the IDE relies on your existing Ant script
+	 for instructions on how to compile, run, and debug your applications. The
+	settings you configure in the New Project wizard when creating a project as
+	well as in the Project Properties dialog box are used to tell the IDE how
+	your Ant script manages your source code and must be consistent with the settings
+	in your Ant script.</p>
+<p>For example, all classpath elements are handled by your Ant script. When you 
+  declare the classpath for a free-form project, you are only telling the IDE 
+  which classes to make available for code completion and refactoring. These settings 
+  do not affect the actual classpath used when compiling or running your source 
+  code.</p>
+<p>Free-form projects can contain as many source folders as your Ant script 
+  is configured to handle. If your Ant script does not contain targets for all 
+  IDE actions, like debugging and running your project, you can easily write Ant 
+  targets for these actions.</p>
+<p>The standard distribution of the IDE contains the following free-form project 
+  templates: </p>
+<ul>
+  <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;Java 
+    Project with Existing Ant Script. </b>A free-form Java project.</li>
+  <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;Web 
+    Project with Existing Ant Script. </b>A free-form project containing a web 
+    application.</li>
+  <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;EJB 
+    Module with Existing Ant Script. </b>A free-form project containing 
+    an Enterprise JavaBeans module.</li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_stand_about.html">About Standard Projects</a></dd>
+    <dd><a href="proj_free_about.html">About Free-Form Projects</a> </dd>
+    
+  <dd><a href="proj_creating.html">Creating a Java Project</a> </dd>
+  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/create/about/create_webapps_proj.html">Creating 
+    a Web Application Project</a> </dd>
+    <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_creating.html">Creating an Enterprise Application Project</a> </dd>
+    <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/editing/create_ejb_project.html">Creating an EJB Module Project</a> </dd>
+    <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/appclient/appclient_create.html">Creating an Enterprise Application Client</a> </dd>
+    <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/archiveproject/archiveproject_about.html">About Packaged Archive Projects</a> </dd>
+    <dd><a href="nbdocs://org.netbeans.modules.apisupport.project/org/netbeans/modules/apisupport/project/docs/create_plugin/about_create.html">About Creating Modules</a> </dd>
+    <dd><a href="proj_import.html">Importing an Eclipse or JBuilder Project</a></dd></dl>
+	
+<small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

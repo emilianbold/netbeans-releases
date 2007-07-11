@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Customizing the IDE-Generated Ant Script</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Customizing the IDE-Generated Ant Script</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>You can edit the Ant scripts generated for 
+  <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="standard projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>&nbsp;to fine tune the way your project is built and run. See 
+<a href="proj_stand_ant_structure.html">About IDE-Generated Ant Scripts</a> for 
+a description of standard project Ant scripts and properties files.</p>
+<p><b>To override a target from an IDE-generated build script:</b></p>
+<ol>
+  <li>Copy the target from <tt>build-impl.xml</tt> or <tt>suite.xml</tt>
+    to <tt>build.xml</tt> and make any changes to the target.</li>
+</ol>
+<p><b>To add instructions to be processed before or after an Ant target is run:</b></p>
+<ul>
+  <li>Override the <tt>-pre</tt> or <tt>-post</tt> target for the target. 
+    <p> For example, to insert an obfuscator after compilation, type the following 
+      in <tt>build.xml</tt>: 
+    <pre>&lt;target name=&quot;-post-compile&quot;&gt;
+  &lt;obfuscate&gt;
+    &lt;fileset dir=&quot;${build.classes.dir}&quot;/&gt;
+  &lt;/obfuscate&gt;
+&lt;/target&gt;</pre>
+  </li>
+</ul>
+<p><b>To add a new target to the build script:</b></p>
+<ol>
+  <li>Create the new target in <tt>build.xml</tt>. </li>
+  <li>Optionally, add the new target 
+    to the dependencies of any of the IDE's existing targets. Override the existing 
+    target in <tt>build.xml</tt> then add the new target to the existing target's 
+    <tt>depends</tt> property. 
+    <p>For example, the following adds the <tt>new-target</tt> 
+    target to the <tt>run</tt> target's dependencies: 
+    <pre>&lt;target name=&quot;run&quot; depends=&quot;new-target,init,compile&quot;/&gt;</pre>
+    Copy the dependencies exactly as they exist in <tt>build-impl.xml</tt> or
+    <tt>suite.xml</tt>. Notice that you do not need to copy the body of the <tt>run</tt> target into 
+    <tt>build.xml</tt>.</li>
+</ol>
+<p><b>Notes:</b>
+  <ul> 
+    <li>In a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, there is no <tt>build-impl.xml</tt>. 
+      The IDE directly calls targets in the project's Ant script. </li>
+      <li>For NetBeans Plugin Module projects, <tt>build-impl.xml</tt> imports targets
+        from the <tt>suite.xml</tt> in your target platform's <tt>harness</tt> folder.</li>
+      <li>The output folder is deleted every time you 
+        clean your project. You should therefore never set the output folder 
+        to the same location as your source folder without first configuring 
+        the <tt>clean</tt> target to not delete the output folder.</li>
+  </ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_stand_about.html">About Standard Projects</a></dd>
+    <dd><a href="../ant/ant_editing.html">Editing an Ant Script</a></dd>
+    <dd><a href="../ant/ant_running.html">Running an Ant Script</a> </dd>
+    <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>
+    <dd><a href="../run/run_jvm_args.html">Setting JVM Arguments</a></dd></dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

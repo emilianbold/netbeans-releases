@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+
+    <mapID target="javadev_tbd" url="tbd.html"/>
+
+
+<!--start of Building section -->
+<mapID target="comp_about" url="compile/comp_about.html" />
+<mapID target="comp_classpath" url="compile/comp_classpath.html" />
+<mapID target="comp_dependencies" url="compile/comp_dependencies.html" />
+<mapID target="comp_file" url="compile/comp_file.html" />
+<mapID target="comp_jar" url="compile/comp_jar.html" />
+<mapID target="comp_project" url="compile/comp_project.html" />
+<mapID target="comp_process" url="compile/comp_process.html" />
+<mapID target="comp_quickref" url="compile/comp_quickref.html" />
+<mapID target="comp_libraries" url="compile/comp_libraries.html" />
+<mapID target="output.window" url="compile/comp_output.html" />
+<mapID target="jar.deploy" url="compile/comp_jar_deploy.html" />
+
+<mapID target="run_about" url="run/run_about.html" />
+<mapID target="run_app" url="run/run_app.html" />
+<mapID target="run_args" url="run/run_args.html" />
+<mapID target="run_classpath" url="run/run_classpath.html" />
+<mapID target="run_file" url="run/run_file.html" />
+<mapID target="run_process" url="run/run_process.html" />
+<mapID target="run_quickref" url="run/run_quickref.html" />
+<mapID target="run_jvm_args" url="run/run_jvm_args.html" />
+
+<!--Start of Projects section -->
+<mapID target="proj_about" url="project/proj_about.html" />
+<mapID target="proj_creating" url="project/proj_creating.html" />
+<mapID target="proj_main" url="project/proj_main.html" />
+<mapID target="proj_process" url="project/proj_process.html" />
+<mapID target="proj_quickref" url="project/proj_quickref.html" />
+<mapID target="proj_sources_multi" url="project/proj_sources_multi.html" />
+<mapID target="proj_templates" url="project/proj_templates.html" />
+<mapID target="proj_stand_about" url="project/proj_stand_about.html" />
+<mapID target="proj_stand_ant_structure" url="project/proj_stand_ant_structure.html" />
+<mapID target="proj_jdk" url="project/proj_jdk.html" />
+<mapID target="proj_free_about" url="project/proj_free_about.html" />
+<mapID target="proj_free_add" url="project/proj_free_add.html" />
+<mapID target="proj_free_classpath" url="project/proj_free_classpath.html" />
+<mapID target="proj_free_targets" url="project/proj_free_targets.html" />
+<mapID target="proj_free_nbtargs" url="project/proj_free_nbtargs.html" />
+<mapID target="proj_free_debug_about" url="project/proj_free_debug_about.html" />
+<mapID target="proj_free_debug" url="project/proj_free_debug.html" />
+<mapID target="proj_free_projectxml" url="project/proj_free_projectxml.html" />
+<mapID target="proj_webfree_debug" url="project/proj_webfree_debug.html" />
+<mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
+<mapID target="proj_import" url="project/proj_import.html" />
+<mapID target="proj_deleting" url="project/proj_deleting.html" />
+<mapID target="proj_move_copy_rename" url="project/proj_move_copy_rename.html" />
+<mapID target="proj_gloss_freeform" url="project/csh/glossary_freeform.html" />
+<mapID target="proj_gloss_standard" url="project/csh/glossary_standard.html" />
+<mapID target="proj_fav_window" url="project/csh/proj_fav_window.html" />
+
+
+<!--begin GUI Builder section-->
+
+<mapID target="gui.about" url="gui/gui_about.html" />
+<mapID target="gui.overview" url="gui/gui_overview.html" />
+<mapID target="gui.quickref" url="gui/gui_quickref.html" />
+
+<mapID target="gui.designing" url="gui/gui_designing.html" />
+<mapID target="gui.creatingforms" url="gui/gui_creatingforms.html" />
+<mapID target="gui.containers.designing" url="gui/gui_containers.html" />
+<mapID target="gui.components.adding" url="gui/gui_addcomponent.html" />
+<mapID target="gui.components.selecting" url="gui/gui_selectcomponents.html" />
+<mapID target="gui.components.editing" url="gui/gui_editcomponentprops.html" />
+<mapID target="gui.components.aligning" url="gui/gui_component_align.html" />
+<mapID target="gui.components.sizing" url="gui/gui_component_size.html" />
+
+<mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
+<mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
+<mapID target="gui.layouts.gbcustomizer" url="gui/layout_managers/gui_gbcustomizer.html" />
+<mapID target="gui.layouts.custom_mgr" url="gui/layout_managers/gui_customlayout.html" />
+<mapID target="gui.layouts.props" url="gui/layout_managers/gui_layoutprops.html" />
+
+<mapID target="gui.events.managing" url="gui/gui_events_managing.html" />
+<mapID target="gui.connectionwizard" url="gui/gui_events_setting.html" />
+<mapID target="gui.mdi" url="gui/gui_creatingmdi.html" />
+
+<mapID target="gui.config" url="gui/gui_configuring.html" />
+<mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
+<mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
+<mapID target="gui.testing" url="gui/gui_previewing.html" />
+<mapID target="gui.deploying" url="gui/gui_deploying.html" />
+
+
+<!-- Javadoc IDs :-->
+
+<mapID target="javadoc.add" url="javadoc/javadoc_add.html" />
+<mapID target="javadoc.jdk" url="javadoc/javadoc_jdk.html" />
+<mapID target="javadoc.source_editor" url="javadoc/show_in_editor.html" />
+<mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
+<mapID target="javadoc.generate" url="javadoc/generate.html" />
+
+<!--JUnit map ids:-->
+<mapID target="junit_about" url="junit/junit_about.html" />
+<mapID target="junit_overview" url="junit/junit_overview.html" />
+<mapID target="junit_quickref" url="junit/junit_quickref.html" />
+<mapID target="junit_creatingtests" url="junit/junit_creatingtests.html" />
+<mapID target="junit_runningtests" url="junit/junit_runningtests.html" />	
+<mapID target="junit_configuring" url="junit/junit_configuring.html" />
+<mapID target="junit_debuggingtests" url="junit/junit_debuggingtests.html" />
+
+
+<mapID target="internation.internation" url="internationalize/international.html" />
+<mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
+<mapID target="internation.formed" url="internationalize/formedstrings.html" />
+<mapID target="internation.addparams" url="internationalize/addparams.html" />
+<mapID target="internation.settings" url="internationalize/custominter.html" />
+<mapID target="internation.wizard" url="internationalize/i18nwizard.html" />
+<mapID target="internation.replformat" url="internationalize/replacingformat.html" />
+<mapID target="internation.testing" url="internationalize/testingwizard.html" />
+<mapID target="internation.custom" url="internationalize/replacingformat.html" />
+<mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
+<mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
+<mapID target="i18n.pe.bundlestring" url="internationalize/bundleformat.html" />
+<mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
+<mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
+<mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
+<!-- CSH Help ID : Options : Advanced Options : Editing : Internationalization -->
+<mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/options_custominter.html" />
+
+<mapID target="ant_docs" url="ant/ant_docs.html" />
+<mapID target="ant_editing" url="ant/ant_editing.html" />
+<mapID target="ant_intro" url="ant/ant_intro.html" />
+<mapID target="ant_optional-tasks" url="ant/ant_optional-tasks.html" />
+<mapID target="ant_running" url="ant/ant_running.html" />
+<mapID target="ant_settings" url="ant/ant_settings.html" />
+<mapID target="ant_shortcut" url="ant/ant_shortcut.html" />
+<mapID target="ant_tasks-classpath" url="ant/ant_tasks-classpath.html" />
+<mapID target="ant_version" url="ant/ant_version.html" />
+<mapID target="ant_exp-classpath" url="ant/exp-classpath.html" />
+<mapID target="ant_debugging" url="ant/ant_debugging.html" />
+
+
+    <!-- Start of "CSH" section -->
+<!-- New J2SE app Project wizard:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="project/csh/proj_j2se-standapp_wiz.html" />
+
+<!-- New J2SE class library Project wizard:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="project/csh/proj_j2se-standclasslib_wiz.html" />
+
+<!-- New J2SE project from existing sources Project wizard:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexistsrc_wiz1.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelSourceFolders" url="project/csh/proj_j2seexistsrc_wiz2.html" />
+
+<!-- Freeform J2SE and Web Project wizards:-->
+<mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="project/csh/proj_j2sefree_wiz1.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
+
+<!-- Standard J2SE Project Properties dialog:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_props_sources.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_props_libraries.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_props_compiling.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_props_packaging.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props_documenting.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props_run.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost" url="project/csh/proj_j2sestand_props_wsclient.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled" url="project/csh/proj_j2sestand_props_wsclient_disabled.html" />
+
+<!-- Freeform J2SE and Web Project Properties dialog:-->
+<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props_classpath.html" />
+<mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
+
+<!-- Freeform EJB Module Project Properties dialog:-->
+    <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel.ejb.java" url="project/csh/proj_j2sefree_props_sources.html" />
+    <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel.ejb.java" url="project/csh/proj_j2sefree_props_classpath.html" />
+    <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
+    <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
+
+<!--CSH for GUI Builder:-->
+
+<!-- CSH page for event handler dialog box :-->
+<mapID target="gui.csh.handlers" url="gui/csh/gui_event_handler_dialog.html" />
+<!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
+<mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/gui_modifiers_editor.html" />
+<!-- GUI Builder Connection Wizard : F1 and Help button-->
+<mapID target="gui.connecting.source" url="gui/csh/gui_connection_wizard.html" />
+<!--CSH topic for Advanced Modify Source dialog-->
+<mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog.html" />
+<!--CSH topic for GUI Builder main workspace-->
+<mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
+<!--CSH topic for Inspector window; also appears when pressing ? button in Properties window for Form component-->
+<mapID target="gui.component-inspector" url="pending.html" />
+<!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
+<!-- note : commenting out because engineer comfirmed these are obsolete-->
+<!--<mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />-->
+<!--<mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />-->
+<!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
+<!--<mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />-->
+
+
+<!-- Ant CSH :-->
+<!-- Add task dialog box :-->
+<mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/ant_docs.html" />
+<mapID target="org.apache.tools.ant.module.settings" url="ant/ant_settings.html" />
+<!-- add task dialog box; QUESTION - does ant task dialog still exist? :-->
+<mapID target="org.apache.tools.ant.module.node-manip" url="pending.html" />
+<mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/ant_settings.html" />
+
+<!--ID for Java Platform Manager dialog box:-->
+    <mapID target="org.netbeans.api.java.platform.PlatformsCustomizer" url="project/csh/proj_platform_manager.html" />
+    <mapID target="org.netbeans.modules.java.platform.wizard.LocationChooser" url="project/csh/proj_platform_manager.html" />
+    <mapID target="org.netbeans.modules.java.j2seplatform.wizard.DetectPanel" url="project/csh/proj_platform_manager.html" />
+
+
+<!--CSH for the Javadoc Index Search window:-->
+      <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
+
+
+<!--Swing and AWT components in the Form Editor - could conceivably eventually be mapped to JDK docs
+right now the IDs don't seem towork:-->      
+   <mapID target="java.awt.Button" url="pending.html" />
+   <mapID target="java.awt.Label" url="pending.html" />
+   <mapID target="java.awt.TextField" url="pending.html" /> 
+   <mapID target="java.awt.TextArea" url="pending.html" /> 
+   <mapID target="java.awt.Checkbox" url="pending.html" /> 
+   <mapID target="java.awt.Choice" url="pending.html" /> 
+   <mapID target="java.awt.List" url="pending.html" /> 
+   <mapID target="java.awt.Scrollbar" url="pending.html" />
+   <mapID target="java.awt.ScrollPane" url="pending.html" />
+   <mapID target="java.awt.Panel" url="pending.html" />
+   <mapID target="java.awt.Canvas" url="pending.html" />
+   <mapID target="java.awt.MenuBar" url="pending.html" />
+   <mapID target="java.awt.PopupMenu" url="pending.html" />
+   <mapID target="javax.swing.JLabel" url="pending.html" />
+   <mapID target="javax.swing.JButton" url="pending.html" />
+   <mapID target="javax.swing.JCheckBox" url="pending.html" />
+   <mapID target="javax.swing.JRadioButton" url="pending.html" />
+   <mapID target="javax.swing.JComboBox" url="pending.html" />
+   <mapID target="javax.swing.JList" url="pending.html" />
+   <mapID target="javax.swing.JTextField" url="pending.html" />
+   <mapID target="javax.swing.JTextArea" url="pending.html" />
+   <mapID target="javax.swing.JToggleButton" url="pending.html" />
+   <mapID target="javax.swing.JPanel" url="pending.html" />
+   <mapID target="javax.swing.JTabbedPane" url="pending.html" />
+   <mapID target="javax.swing.JScrollBar" url="pending.html" />
+   <mapID target="javax.swing.JScrollPane" url="pending.html" />
+   <mapID target="javax.swing.JMenuBar" url="pending.html" />
+   <mapID target="javax.swing.JPopupMenu" url="pending.html" />
+   <mapID target="javax.swing.JSlider" url="pending.html" />
+   <mapID target="javax.swing.JProgressBar" url="pending.html" />
+   <mapID target="javax.swing.JSplitPane" url="pending.html" />
+   <mapID target="javax.swing.JPasswordField" url="pending.html" />
+   <mapID target="javax.swing.JSeparator" url="pending.html" />
+   <mapID target="javax.swing.JTextPane" url="pending.html" />
+   <mapID target="javax.swing.JEditorPane" url="pending.html" />
+   <mapID target="javax.swing.JTree" url="pending.html" />
+   <mapID target="javax.swing.JTable" url="pending.html" />
+   <mapID target="javax.swing.JToolBar" url="pending.html" />
+   <mapID target="javax.swing.JInternalFrame" url="pending.html" />
+   <mapID target="javax.swing.JLayeredPane" url="pending.html" />
+   <mapID target="javax.swing.JDesktopPane" url="pending.html" />
+   <mapID target="javax.swing.JOptionPane" url="pending.html" />
+
+    
+
+    <!-- End of "CSH" section -->
+
+</map>
+

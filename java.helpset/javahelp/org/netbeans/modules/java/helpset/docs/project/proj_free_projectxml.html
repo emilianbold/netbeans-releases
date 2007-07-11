@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Editing the project.xml File</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Editing the <tt>project.xml</tt> File</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>Each IDE project has a <tt>project.xml</tt> file that includes important information 
+  about the project, such as: 
+<ul>
+  <li>Information about what the project's type (free-form or standard, Web application 
+    or standard Java SE application)</li>
+  <li>Mappings between project commands and targets in an Ant script</li>
+  <li>Information about the project's contents, classpath, and target Java platform. 
+    This information is used to visualize the project and enable code completion 
+    and refactoring.<br>
+  </li>
+</ul>
+<p>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="standard projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, there is usually no need to edit the <tt>project.xml</tt> file. In 
+  <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form projects">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, you often have to edit the <tt>project.xml</tt> file to hook up Ant 
+  targets to IDE commands and make other customizations. 
+<h3>Using Properties in the <tt>project.xml</tt> File</h3>
+<p>Like all XML files, you can define properties inside the XML file itself or 
+  store them in a separate <tt>.properties</tt> file. One way of keeping your 
+  <tt>project.xml</tt> page synchronized with the information in your Ant script 
+  is to import properties into <tt>project.xml</tt> from the same <tt>.properties</tt> 
+  file that is used by your Ant script. </p>
+<p><b>To create and import properties in <tt>project.xml</tt>:</b></p>
+<ol>
+  <li>In the Files window, double-click <tt>project.xml</tt>.</li>
+  <li>Enter the following between the <tt>&lt;name&gt;</tt> element and the <tt>&lt;folders&gt;</tt> 
+    element: 
+    <pre>&lt;properties&gt;
+  &lt;property name=&quot;<i>name</i>&quot;&gt;<i>value</i>&lt;/property&gt;
+  &lt;property-file&gt;<i>my-properties-file</i>.properties&lt;/property-file&gt;
+&lt;/properties&gt; </pre>
+
+      <ul class="note"> 
+        <li>Note that you while you can add properties in 
+          any order, properties can only refer to other properties that have been 
+          defined previously in the file. The properties file path itself can 
+          also use property substitutions.</li>
+      </ul>
+    
+  </li>
+</ol>
+
+<h3>Validating the <tt>project.xml</tt> File</h3>
+<p>The IDE comes bundled with the XML schemas for free-form <tt>project.xml</tt> 
+  files and automatically validates a free-form <tt>project.xml</tt> file every 
+  time you edit and save it. You can view the XML schemas for the free-form <tt>project.xml</tt> 
+  file at the following locations: 
+<ul>
+  <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/ns/freeform-project/1.xsd">
+      <param name="text" value="<html><u>http://www.netbeans.org/ns/freeform-project/1.xsd</u></html>">
+      <param name="textFontSize" value="medium">
+      <param name="textColor" value="blue">
+    </object>. Controls the main section of the free-form <tt>project.xml</tt> 
+    (<tt>&lt;general-data&gt;</tt>). </li>
+  <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/ns/freeform-project-java/1.xsd">
+      <param name="text" value="<html><u>http://www.netbeans.org/ns/freeform-project-java/1.xsd</u></html>">
+      <param name="textFontSize" value="medium">
+      <param name="textColor" value="blue">
+    </object>. Controls the <tt>&lt;java-data&gt;</tt> section.</li>
+  <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/ns/freeform-project-web/1.xsd">
+      <param name="text" value="<html><u>http://www.netbeans.org/ns/freeform-project-web/1.xsd</u></html>">
+      <param name="textFontSize" value="medium">
+      <param name="textColor" value="blue">
+    </object>. Controls the <tt>&lt;web-data&gt;</tt> section (if you have one). 
+  </li>
+</ul>
+<p>For a full guide to configuring free-form projects, see: 
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
+      <dd><a href="proj_free_targets.html">Mapping an Ant Target to an IDE Command</a></dd>
+      <dd><a href="proj_free_debug.html">Creating A Debug Target for a Free-Form Java 
+      Project</a></dd>
+      <dd><a href="proj_webfree_debug.html">Creating A Debug Target for a Free-Form 
+      Web Project</a></dd>
+      <dd><a href="proj_free_nbtargs.html">Storing IDE Targets in a Separate Ant Script</a></dd></dl>
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

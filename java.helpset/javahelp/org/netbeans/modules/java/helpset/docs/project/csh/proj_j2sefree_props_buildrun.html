@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Free-Form Project Properties Dialog Box: Build and Run</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Free-Form Project Properties Dialog Box: Build and Run</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The Free-Form Project Properties dialog box lets you to alter the settings you 
+  entered when you created a 
+	<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>
+  . 
+<p>You open the Free-Form Project Properties dialog box by right-clicking a free-form
+project's node in the Projects window and choosing Properties. 
+  <p>In the Build and Run page, you map IDE commands to targets in your project's
+  Ant script. The combo box for each command contains all of the targets in your
+  project's Ant script. You can also use the Custom Menu Items list to add shortcuts
+  to any of your Ant script's targets to the project node's contextual menu.
+
+<p><b>Notes:</b>
+<ul>
+  <li>If your Ant script does not contain a target for one of the commands on 
+    this page, the command is unavailable in the IDE. </li>
+  <li>If the Ant target for a command lives in a separate Ant script, you have 
+    to edit the project's <tt>project.xml</tt> file to tell the IDE where to look 
+    for the target. See <a href="../proj_free_targets.html">Mapping an Ant Target 
+    to an IDE Command</a> for more information.</li>
+  <li>If your Ant script uses an <tt>&lt;import&gt;</tt> target to import targets 
+    from another Ant script, these targets only appear if the <tt>&lt;import&gt;</tt> 
+    target specifies the full path to the secondary Ant script. If the <tt>&lt;import&gt;</tt> 
+    target uses a property to reference the secondary Ant script, the targets 
+    do not show up in the combo boxes. In this case, you have to map the IDE commands 
+    to the targets by editing the <tt>project.xml </tt>file.</li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../../project/proj_stand_about.html">About Standard Projects</a></dd>
+      <dd><a href="../proj_free_about.html">About Free-Form Projects</a> </dd>
+      <dd>Free-Form Project Properties Dialog Box:</dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sefree_props_sources.html">Java Sources</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/csh/dbox_projprops_freeform/WebLocationsPanel.html">Web 
+      Sources</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sefree_props_classpath.html">Java Sources Classpath</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/csh/dbox_projprops_freeform/WebClasspathPanel.html">Web 
+	      Sources Classpath</a></dd>
+      <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sefree_props_output.html">Output</a></dd></dl>
+<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

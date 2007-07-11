@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Storing IDE Targets in a Separate Ant Script</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Storing IDE Targets in a Separate Ant Script</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>When using a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="./csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, you sometimes have to write Ant targets for IDE actions. For example, 
+  you have to write an Ant target to run a program in the debugger or to compile 
+  the currently selected file in the IDE. 
+<p>If you are not able to write these IDE targets in your project's Ant script, 
+  you can set the IDE to read these targets from a separate Ant script. 
+<p><b>To map an IDE command to an Ant target in a separate Ant script:</b> 
+<ol>
+  <li>Write the target in a separate Ant script. </li>
+  <li>In the Files window, expand your project folder node and the <tt>nbproject 
+    </tt>node. </li>
+  <li>Double-click <tt>project.xml</tt> to open it in the Source Editor.</li>
+  <li> Enter the following in<tt> &lt;ide-actions&gt;</tt>: 
+    <pre>  &lt;action name=&quot;<i>action_name</i>&quot;&gt;
+    &lt;script&gt;<i>path_to_Ant_script</i>&lt;/script&gt;
+    &lt;target&gt;<i>target_name</i>&lt;/target&gt;
+  &lt;/action&gt;</pre>
+    <p><tt>&lt;script&gt;</tt> must precede <tt>&lt;target&gt;</tt>. 
+  </li>
+  <li>If the command also appears in the project's contextual menu, enter the 
+    following in <tt>&lt;context-menu&gt;</tt>: 
+    <pre>  &lt;ide-action name=&quot;<i>action_name</i>&quot;/&gt;</pre>
+  </li>
+</ol>
+<p>For a full guide to configuring free-form projects, see:
+<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    
+  <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
+  <dd><a href="proj_free_debug.html">Creating A Debug Target for a Free-Form Java 
+    Project</a> </dd>
+  <dd><a href="proj_webfree_debug.html">Creating A Debug Target for a Free-Form 
+    Web Project</a> </dd>
+  <dd><a href="proj_free_targets.html">Mapping an Ant Target to an IDE Command</a>
+  </dd></dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>About IDE-Generated Ant Scripts</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+    <h2>About IDE-Generated Ant Scripts</h2>
+    <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+    <p>If you are working with a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="./csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard project">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+    </object>&nbsp;and want to set more project 
+    options than are available in the Project Properties dialog box, you can edit 
+    the project's Ant script and Ant properties. The Ant targets and properties are
+    defined in the following files in your project folder:</p>
+    <ul>
+        <li><tt><b>nbproject/build-impl.xml</b></tt>. The Ant script that contains all 
+        of the instructions for building, running, and debugging the project. You 
+        should never edit this file. You can, however, open it to examine the Ant 
+        targets that are available to be overridden.</li>
+        <li><tt><b>build.xml</b></tt>. The main Ant script for the project. The IDE 
+        calls targets in this Ant script whenever you run IDE commands. <tt>build.xml</tt> 
+        contains a single import statement that imports targets from <tt>build-impl.xml</tt>. 
+        In <tt>build.xml</tt>, you can override any of the targets from <tt>build-impl.xml 
+        </tt>or write new targets.</li>    
+        <li><tt><b>nbproject/project.properties</b></tt>. The Ant properties file that 
+        contains important information about your project, such as the location of 
+        your source and output folders. You can override the properties in this 
+        file. 
+        <li><tt><b>nbproject/private/private.properties</b></tt>. The Ant properties 
+        file that contains properties specific to your installation of the IDE. For 
+        example, if you are sharing the project over VCS, any properties you set in 
+        <tt>private.properties</tt> are not checked into the repository. You can copy 
+        a property from <tt>project.properties</tt> into <tt>private.properties</tt> 
+        and give the property different definitions in each file. The definitions 
+        in <tt>private.properties</tt> take precedence over those in <tt>project.properties</tt>.</li>
+    </ul>
+    <p><b>Notes:</b>
+    <ul> 
+        <li>In a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+            <param name="content" value="./csh/glossary_freeform.html">
+            <param name="viewerActivator" value="javax.help.LinkLabel">
+            <param name="viewerStyle" value="javax.help.Popup">
+            <param name="viewerSize" value="400,160">
+            <param name="text" value="free-form project">
+            <param name="textFontSize" value="medium">
+            <param name="textFontFamily" value="SansSerif">
+            <param name="textFontStyle" value="italic">
+            <param name="textFontWeight" value="bold">
+            <param name="textColor" value="blue">
+        </object>, there is no <tt>build-impl.xml</tt>. 
+        The IDE directly calls targets in the project's Ant script. </li>
+        <li>For NetBeans Plugin Module projects, <tt>build-impl.xml</tt> imports targets
+        from the <tt>suite.xml</tt> in your target plaform's <tt>harness</tt> folder.</li>
+    </ul>
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="proj_stand_customize.html">Customizing the IDE-Generated Ant Script</a></dd>
+        <dd><a href="proj_stand_about.html">About Standard Projects</a></dd>
+        <dd><a href="../ant/ant_editing.html">Editing an Ant Script</a></dd>
+        <dd><a href="../ant/ant_running.html">Running an Ant Script</a></dd>
+        <dd><a href="../run/run_args.html">Setting the Main Class and Runtime Arguments</a></dd>
+        <dd><a href="../run/run_jvm_args.html">Setting JVM Arguments</a></dd>
+    </dl>
+    <hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+    <table border="0" cellpadding="20">
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

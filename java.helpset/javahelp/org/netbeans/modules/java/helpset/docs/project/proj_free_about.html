@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About Free-Form Projects</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About Free-Form Projects</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The IDE also contains free-form project templates for the various categories 
+of projects (such as General Java, Web, and Enterprise). Free-form projects do 
+not produce an Ant script or hold project metadata in another form. Instead, 
+  these projects rely on your existing Ant script to provide instructions for 
+  handling your project source.
+<p>The standard distribution of the IDE contains the following free-form templates: 
+<ul>
+  <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;Java 
+    Project with Existing Ant Script.</b> A free-form project containing one or 
+    more Java source roots. </li>
+  <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp;Web 
+    Application with Existing Ant Script.</b> A free-form project containing a 
+    web application and optionally other Java source roots.</li>
+  <li><b><img src="../images/freeform-project.png" width="16" height="16" alt="free-form project icon">&nbsp; 
+    EJB Module with Existing Ant Script.</b> A free-form project containing 
+    an EJB module and optionally other Java source roots.</li>
+</ul>
+  <ul class="note"> 
+    <li>Depending on what modules you have installed, your 
+      IDE may contain additional templates. Consult the help for your plug-in 
+      modules for more information.</li>
+  </ul>
+
+<h3>Source Folders</h3>
+<p>Free-form Java projects can contain multiple source folders. The classpath 
+  relationships and handling instructions for your source directories must be 
+  handled in your Ant script. 
+<h3>Project Settings</h3>
+<p>In the project's properties, you declare the source folders, classpath, and 
+  output files for your project. Each source root can have a unique classpath 
+  and output file. These settings do not affect the actual contents or classpath 
+  of your application. The settings only tell the IDE how to handle the code. 
+  For example, the classpath settings tell the IDE which classes to make available 
+  for code completion. 
+<h3>IDE Commands and Ant Targets</h3>
+<p>In free-form projects, the IDE relies on your Ant script to provide targets 
+  for all IDE actions, such as running, debugging, and generating Javadoc. If 
+  your Ant script does not contain targets for these commands, the commands are 
+  disabled. </p>
+<p>You can easily write debug targets in your Ant script or in a supplementary 
+  Ant script. You can also add a shortcut to any of your Ant script's targets 
+  to the contextual menu of your project's node in the Projects window.</p>
+<p>For a full guide to configuring free-form projects, see:
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_stand_about.html">About Standard Projects</a></dd>
+      <dd><a href="proj_free_classpath.html">Declaring the Classpath in a Free-Form 
+      Project</a> </dd>
+      <dd><a href="proj_free_targets.html">Mapping an Ant Target to an IDE Command</a></dd>
+      <dd><a href="proj_free_debug.html">Creating A Debug Target for a Free-Form Java 
+      Project</a></dd>
+      <dd><a href="proj_free_nbtargs.html">Storing IDE Targets in a Separate Ant Script</a> 
+      </dd>
+      <dd><a href="proj_webfree_debug.html">Creating a Debug Target for a Free-Form 
+      Web Project</a></dd></dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

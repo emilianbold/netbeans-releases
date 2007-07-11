@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About Standard Projects</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About Standard Projects</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The IDE contains a set of standard project templates for Java SE applications 
+and web applications. Standard Java projects offer the highest integration 
+  with the IDE's support of certain technologies.
+<p>The standard distribution of the IDE contains the following standard templates:
+<ul>
+  <li>For Java SE applications: 
+    <ul>
+      <li><b><img src="../images/j2seProject.gif" width="16" height="16" alt="standard j2se project icon">&nbsp;Java 
+        Application. </b>An empty Java SE project with a main class.</li>
+      <li><b><img src="../images/j2seProject.gif" width="16" height="16" alt="standard j2se project icon">&nbsp;Java 
+        Class Libary. </b>An empty Java class library with no main class.</li>
+      <li><b><img src="../images/j2seProject.gif" width="16" height="16" alt="standard j2se project icon">&nbsp;Java 
+        Project with Existing Sources.</b> A Java SE project with existing sources. 
+      </li>
+    </ul>
+  <li>For web applications: 
+    <ul>
+      <li><b><img src="../images/webProjectIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;Web 
+        Application.</b> An empty web application.</li>
+      <li><b><img src="../images/webProjectIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;Web 
+        Project with Existing Sources.</b> A web application with existing sources.</li>
+    </ul>
+  <li>For EJB modules: 
+    <ul>
+      <li><b><img src="../images/EjbModuleNodeIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;EJB 
+        Module.</b> An empty EJB module.</li>
+      <li><b><img src="../images/EjbModuleNodeIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;EJB 
+        Module with Existing Sources.</b> An EJB module with existing sources.</li>
+    </ul>
+  <li>For enterprise applications: 
+    <ul>
+      <li><b><img src="../images/earProjectIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;Enterprise 
+        Application.</b> An empty enterprise application.</li>
+      <li><b><img src="../images/earProjectIcon.gif" width="16" height="16" alt="standard web project icon">&nbsp;Enterprise 
+        Application with Existing Sources.</b> An enterprise application with 
+        existing sources that conform to the Sun Java BluePrints Guidelines.</li>
+    </ul>
+  <li>For NetBeans plug-in modules: 
+    <ul>
+      <li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module.</b> 
+        An empty module with a <tt>layer.xml</tt> file and a <tt>Bundle.properties</tt> 
+        file. You use a module to implement the logic that integrates the library 
+        wrappers into the platform and provides a user interface for receiving 
+        user input. </li>
+      <li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Library 
+        Wrapper.</b> A library wrapped in a module project and a <tt>Bundle.properties</tt> 
+        file. You use a library wrapper to put a library JAR file on a module's 
+        classpath and export some or all of the JAR file's packages from the module 
+        as public packages.</li>
+      <li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module 
+        Suite.</b> An empty module suite. You use a module suite to group and 
+        deploy a set of interdependent modules and library wrappers. </li>
+    </ul>
+</ul>
+
+  <ul class="note"> 
+    <li>Depending on what modules you have installed, your 
+      IDE may contain additional templates. Consult the help for your additional 
+      modules for more information.
+  </ul>
+
+<h3>Source Folders</h3>
+<p>In standard projects, you can have multiple source folders and multiple JUnit 
+  test folders for each Java SE, web, and EJB project. A single source folder cannot, 
+  however, be added to more than one project. If you need a source folder to be 
+  part of several projects, you should create a separate project for the source 
+  folder and add it to the classpath of each of your projects.
+<h3>Project Settings</h3>
+<p>When you create a project from a standard project template, the IDE generates 
+  an Ant script that controls all aspects of program compilation, execution, and 
+  debugging. 
+<p>You can set basic project settings in the Project Properties dialog box by 
+  right-clicking a project node in the Projects window and choosing Properties. 
+  All changes are immediately registered in the project's Ant script. You can 
+  also set more complex options by editing the project's Ant script and properties 
+  file directly. 
+<h3>The Project Folder</h3>
+<p>Each standard project has a project folder where the IDE stores the Ant script,
+	 project metadata, and output folders. In projects with existing sources, you
+	 can place the project source directories in the same location as the project
+	 folder or in a separate location. In empty projects, the source root is always
+	 in the same location as the project directory.</p>
+	 <!--note: mention that this happens in the Files window-->
+<p>The following table lists the contents of a project folder:</p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left"> Item</th>
+    <th scope="col" align="left">Description</th>
+  </tr>
+  <tr valign="top"> 
+    <td> <tt>build.xml</tt></td>
+    <td> 
+      The build script called by the IDE. This build script only contains an 
+        import statement that imports targets from <tt>nbproject/build-impl.xml</tt>. 
+        Use the <tt>build.xml</tt> to override targets from <tt>build-impl.xml</tt> 
+        or to create new targets.
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td><tt>nbproject</tt></td>
+    <td> 
+      <p>The directory that contains the project Ant script and other metadata.This 
+        directory contains:</p>
+      <ul>
+        <li> <tt>build-impl.xml</tt>. The IDE-generated Ant script. You should 
+          never edit <tt>build-impl.xml</tt> directly &#151; always override its 
+          targets in <tt>build.xml</tt>. </li>
+        <li><tt>project.properties</tt>. Ant properties used by the IDE to configure 
+          the Ant script. Although you can edit this file manually, you generally 
+          do not need to, as it is automatically updated by the IDE when you configure 
+          the project's properties.</li>
+        <li><tt>project.xml</tt> and <tt>genfiles.properties</tt>. IDE-generated 
+          metadata files. Although you can edit <tt>project.xml</tt> manually, 
+          for standard projects you generally do not need to. You should never 
+          edit <tt>genfiles.properties</tt>.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td><tt>nbproject/private</tt></td>
+    <td>The directory that holds properties that are defined for you only. If 
+      you are sharing the project over VCS, any properties you define in <tt>private.properties</tt> 
+      are not checked in with other project metadata and are applied only to your 
+      installation of the IDE.</td>
+  </tr>
+  <tr valign="top"> 
+    <td><tt>build</tt></td>
+    <td>The output directory for compiled classes.</td>
+  </tr>
+  <tr valign="top">
+    <td><tt>dist</tt></td>
+    <td>The output directory of packaged build outputs (JAR files and WAR files). 
+      Standard Java projects produce one build output per project. The <tt>dist 
+      </tt>directory also contains generated Javadoc documentation.</td>
+  </tr>
+</table>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
+    <dd><a href="../compile/comp_classpath.html">Managing the Classpath</a></dd>
+    <dd><a href="proj_stand_customize.html">Customizing the IDE-Generated Ant Script</a></dd></dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

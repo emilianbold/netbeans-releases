@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='ISO-8859-1'  ?>
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<toc version="2.0">
+    <tocitem text="IDE Basics" >
+    <tocitem text="Working with Projects" >
+    <tocitem text="About Projects" target="proj_about" />
+    <tocitem text="Working with Projects" target="proj_process"/>
+    <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
+    <tocitem text="Multiple Source Roots in Projects" target="proj_sources_multi"/>
+    <tocitem text="Creating a Java Project" target="proj_creating"/>
+    <tocitem text="Java Project Templates" target="proj_templates" />
+    <tocitem text="Importing an Eclipse or JBuilder Project" target="proj_import" />
+    <tocitem text="Deleting a Project" target="proj_deleting" />
+    <tocitem text="Moving, Copying, and Renaming a Project" target="proj_move_copy_rename" />
+    <tocitem text="Setting the Main Project" target="proj_main" />
+    <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
+    <tocitem text="Setting the Target JDK" target="proj_jdk" />
+    <tocitem text="Standard Projects" >
+    <tocitem text="About Standard Projects" target="proj_stand_about" />
+    <tocitem text="Managing the Classpath" target="comp_classpath" />
+    <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
+    <tocitem text="About IDE-Generated Ant Scripts" target="proj_stand_ant_structure" />
+    <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
+    </tocitem>
+    <tocitem text="Free-Form Projects" >
+    <tocitem text="About Free-Form Projects" target="proj_free_about" />
+    <tocitem text="Adding a Source Directory to a Free-Form Project" target="proj_free_add" />
+    <tocitem text="Declaring the Classpath in Free-Form Projects" target="proj_free_classpath" />
+    <tocitem text="Mapping an Ant Target to an IDE Command" target="proj_free_targets" />
+    <tocitem text="About Debugging Free-Form Projects" target="proj_free_debug_about" />
+    <tocitem text="Creating a Debug Target for a Free-Form Java Project" target="proj_free_debug" />
+    <tocitem text="Creating a Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
+    <tocitem text="Storing IDE Targets in a Separate Ant Script" target="proj_free_nbtargs" />
+        <tocitem text="Editing the project.xml File" target="proj_free_projectxml" />
+        </tocitem>    
+    </tocitem>
+    </tocitem>
+    <tocitem text="Java Project Basics" >
+    <tocitem text="Editing Source Files" >
+    </tocitem>
+    <tocitem text="Building Java Applications" >
+    <tocitem text="About Building Java Applications" target="comp_about" />
+    <tocitem text="Working with Builds" target="comp_process" />
+    <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
+    <tocitem text="Building a Project" target="comp_project" />
+    <tocitem text="Compiling a Single File" target="comp_file" />
+    <tocitem text="Managing the Classpath" target="comp_classpath" />
+    <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
+    <tocitem text="Building a JAR File" target="comp_jar" />
+    <tocitem text="Preparing a JAR File for Deployment Outside the IDE" target="jar.deploy" />
+        <tocitem text="Output Window" target="output.window"/>
+        </tocitem> 
+          <tocitem text="Running Java Applications" >
+    <tocitem text="About Running Java Applications" target="run_about" />
+    <tocitem text="Working with Project Execution" target="run_process" />
+    <tocitem text="Running Tasks: Quick Reference" target="run_quickref" />
+    <tocitem text="Running an Application" target="run_app" />
+    <tocitem text="Running a Single File" target="run_file" />
+    <tocitem text="Setting the Runtime Classpath" target="run_classpath" />
+    <tocitem text="Setting the Main Class and Arguments" target="run_args" />
+    <tocitem text="Setting JVM Arguments" target="run_jvm_args" />
+  </tocitem>
+  
+  
+  <tocitem text="Building Java GUIs">
+    <tocitem text="About Java GUIs" target="gui.about"/>
+    <tocitem text="Working with the GUI Builder" target="gui.overview"/>
+    <tocitem text="GUI Builder Tasks: Quick Reference" target="gui.quickref"/>
+    <tocitem text="Designing Java GUIs">      
+      <tocitem text="Designing Java GUIs with the GUI Builder" target="gui.designing" />            
+      <tocitem text="Creating a New Form" target="gui.creatingforms" />
+      <tocitem text="Working with Containers" target="gui.containers.designing" />
+      <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
+      <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
+      <tocitem text="Aligning Components" target="gui.components.aligning" />
+      <tocitem text="Sizing Components" target="gui.components.sizing" />     
+      <tocitem text="Editing Component Properties" target="gui.components.editing" />
+      <tocitem text="Setting Events With the Connection Wizard" target="gui.connectionwizard" />
+      <tocitem text="Managing Component Events" target="gui.events.managing" />
+      <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
+      <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
+      <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
+      <tocitem text="Previewing a Form" target="gui.testing" />    
+      <tocitem text="Deploying GUI Applications" target="gui.deploying" />  
+    </tocitem>    
+    <tocitem text="Working with Layout Managers">    
+      <tocitem text="About Layout Managers" target="gui.layouts.about" />
+      <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
+      <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
+      <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
+      <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
+    </tocitem>    
+    <tocitem text="Configuring the GUI Builder" target="gui.config" />
+  </tocitem>
+
+  
+    <tocitem text="Working with Ant">
+    <tocitem text="About Working with Ant" target="ant_intro" />
+    <tocitem text="Editing an Ant Script" target="ant_editing" />
+    <tocitem text="Running an Ant Script" target="ant_running" />
+    <tocitem text="Debugging an Ant Script" target="ant_debugging" />
+    <tocitem text="Creating a Shortcut to a Target" target="ant_shortcut" />
+    <tocitem text="Configuring Ant Settings" target="ant_settings" />
+    <tocitem text="Switching Ant Versions" target="ant_version" />
+    <tocitem text="Ant Classpath and Custom Tasks" target="ant_tasks-classpath" />     
+    <tocitem text="Installing Ant Documentation" target="ant_docs" />
+  </tocitem>
+  
+  <tocitem text="Working With Javadoc Documentation">
+    <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
+    <tocitem text="Adding the JDK Javadoc to the IDE" target="javadoc.jdk"/>
+    <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
+    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
+    <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
+  </tocitem>
+
+  <tocitem text="Testing with JUnit">
+    <tocitem text="About JUnit" target="junit_about"></tocitem>
+    <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
+    <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
+    <tocitem text="Creating a JUnit Test" target="junit_creatingtests"></tocitem>
+    <tocitem text="Running a JUnit Test" target="junit_runningtests"></tocitem>
+    <tocitem text="Debugging a JUnit Test" target="junit_debuggingtests"></tocitem>
+    <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
+  </tocitem>
+    </tocitem>
+    
+</toc>
