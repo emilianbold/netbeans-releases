@@ -233,7 +233,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         if (!defaultValue){
             // get configuration panel with values from the wm
             Servlet servlet = JSFConfigUtilities.getActionServlet(webModule.getDeploymentDescriptor());
-            panel.setServletName(servlet.getServletName());
+            panel.setServletName(servlet == null ? "Faces Servlet" : servlet.getServletName()); // NOI18N
             panel.setURLPattern(JSFConfigUtilities.getActionServletMapping(webModule.getDeploymentDescriptor()));
             panel.setValidateXML(JSFConfigUtilities.validateXML(webModule.getDeploymentDescriptor()));
             panel.setVerifyObjects(JSFConfigUtilities.verifyObjects(webModule.getDeploymentDescriptor()));
