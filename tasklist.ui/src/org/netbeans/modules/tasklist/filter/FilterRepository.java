@@ -169,6 +169,8 @@ public final class FilterRepository {
             filter.setKeywordsFilter( new KeywordsFilter() );
             filters.add( filter );
             setActive( filter );
+            
+            save();
         }
     }
     
