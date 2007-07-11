@@ -54,12 +54,12 @@
 
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 
-<mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
+
 <mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
 <mapID target="java.override.tasktopic" url="java/override.html" />
 
 
-<mapID target="java.java_sources" url="java/java_sources.html" />
+
 <mapID target="java.encoding" url="java/encoding.html" />
 
 
@@ -363,8 +363,6 @@ under Print Settings in the Options window)
 <!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
 <mapID target="org.netbeans.core.NbSheet" url="files/files_properties.html" />
 
-<!--csh page for projects|settings|Java Sources:-->
-<mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 
 <!--csh pages for Find and Find in Projects windows-->
 <mapID target="org.netbeans.modules.search.types.FullTextType" url="files/findinfiles-csh.html" />
@@ -428,8 +426,6 @@ under Print Settings in the Options window)
 <!--Override methods dialog box-->
 <mapID target="org.netbeans.modules.java.tools.OverrideAction" url="java/override_implement_methods_db.html"/>
 
-<!-- Options | Editing | Java Sources | Override Methods :-->
-<mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
 
 
