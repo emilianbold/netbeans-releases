@@ -20,6 +20,7 @@
 package gui.action;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -89,7 +90,8 @@ public class TypingInJspEditor extends WebPerformanceTestCase {
     public ComponentOperator open(){
         //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_A)).perform(editorOperator);
+        KeyStroke keyA = KeyStroke.getKeyStroke('a');
+        new ActionNoBlock(null, null, keyA).perform(editorOperator);
         return null;
     }
     
