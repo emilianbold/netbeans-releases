@@ -33,7 +33,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="url_key" stringvalue="URL_Default_Standard"/>
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
-        <attr name="instanceClass" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
         <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
       </file>
       

@@ -92,7 +92,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         if (newAPI) {
             cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceCreate", "methodvalue:org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider")); //NOI18N
-            cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceClass", "org.netbeans.spi.autoupdate.UpdateProvider")); //NOI18N
             cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceOf", "org.netbeans.spi.autoupdate.UpdateProvider")); //NOI18N            
         }        
         String url_key_base = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
