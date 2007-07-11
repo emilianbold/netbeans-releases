@@ -10,6 +10,8 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
     private Map<String, String> namespaceToPrefixMap;
     private WSDLModel mModel;
     private final boolean showPortType;
+    public static final String FAULT_PARTS_LISTENER = "FAULT_PARTS_LISTENER";
 
     private boolean mIsShowMessageComboBoxes = false;
 
@@ -122,6 +125,17 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
         };
         
         requestReplyOperationPanel1.getOperationTypeComboBox().addActionListener(al);
+        requestReplyOperationPanel1.addPropertyChangeListener(FAULT_PARTS_LISTENER, new PropertyChangeListener() {
+        
+            public void propertyChange(PropertyChangeEvent evt) {
+                PropertyChangeListener[] changeListeners = 
+                    getPropertyChangeListeners(FAULT_PARTS_LISTENER);
+                for (PropertyChangeListener listener : changeListeners) {
+                    listener.propertyChange(evt);
+                }
+            }
+        
+        });
         oneWayOperationPanel1.getOperationTypeComboBox().addActionListener(al);
         
         this.selectedOperationType = op1;
@@ -183,7 +197,6 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
     
     public String getOperationName() {
         return selectedOperationConfiguration.getOperationName();
-//        return this.operationNameTextField.getText();
     }
     
     public Map<String, String> getNamespaceToPrefixMap() {
@@ -192,7 +205,6 @@ public class OperationConfigurationPanel extends javax.swing.JPanel {
     
     public void setOperationName(String operationName) {
         selectedOperationConfiguration.setOperationName(operationName);
-//        this.operationNameTextField.setText(operationName);
     }
     
     public OperationType getOperationType() {

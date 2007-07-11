@@ -25,6 +25,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
@@ -35,6 +37,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyUtil;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
+import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel.PartAndElementOrType;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
@@ -54,7 +57,9 @@ public class PortTypePanel extends javax.swing.JPanel {
     
     String mErrorMessage = null;
     
-    private List existingMeessages = new ArrayList();
+    private List<String> existingMessages = new ArrayList<String>();
+
+    private String mWarningMessage;
             
     /** Creates new form PortTypePanel */
     public PortTypePanel() {
@@ -131,19 +136,19 @@ public class PortTypePanel extends javax.swing.JPanel {
             String[] messages = PropertyUtil.getAllMessages(this.mModel);
             if(messages != null) {
                 for(int i = 0; i < messages.length; i++) {
-                 existingMeessages.add(messages[i]);
+                 existingMessages.add(messages[i]);
                 }
             }
             
             String inputMessageName = NameGenerator.getInstance().generateUniqueInputMessageName(operationName, mModel);
             String outputMessageName = NameGenerator.getInstance().generateUniqueOutputMessageName(operationName, mModel);
-            String faultMessageName = NameGenerator.getInstance().generateUniqueFaultMessageName(operationName, mModel);
+            //String faultMessageName = NameGenerator.getInstance().generateUniqueFaultMessageName(operationName, mModel);
 
             MessageNameTextChangeListener messageListener = new MessageNameTextChangeListener();
                     
             this.portTypeConfigurationPanel1.setInputMessages(messages, inputMessageName, messageListener);
             this.portTypeConfigurationPanel1.setOutputMessages(messages, outputMessageName, messageListener);
-            this.portTypeConfigurationPanel1.setFaultMessages(messages, faultMessageName, messageListener);
+            this.portTypeConfigurationPanel1.setFaultMessages(messages, null, messageListener);
             
             
         }
@@ -154,6 +159,12 @@ public class PortTypePanel extends javax.swing.JPanel {
         
         this.portTypeConfigurationPanel1.getPortTypeNameTextField().getDocument().addDocumentListener(portTypeListner);
         this.portTypeConfigurationPanel1.getOperationNameTextField().getDocument().addDocumentListener(operationListener);
+        portTypeConfigurationPanel1.addPropertyChangeListener(OperationConfigurationPanel.FAULT_PARTS_LISTENER, new PropertyChangeListener() {
+        
+            public void propertyChange(PropertyChangeEvent evt) {
+                validateAll();
+            }
+        });
     }
     
     private boolean isValidName(String text) {
@@ -213,6 +224,7 @@ public class PortTypePanel extends javax.swing.JPanel {
         }
         
         this.mErrorMessage = null;
+        this.mWarningMessage = null;
         updateMessagePanel();
         
     }
@@ -224,7 +236,8 @@ public class PortTypePanel extends javax.swing.JPanel {
         PortType pt = mModel.findComponentByName(text, PortType.class);
             
         if(pt != null) {
-            this.mErrorMessage = "PortType \"" + text + "\" already exists.";
+            this.mErrorMessage = NbBundle.getMessage(PortTypePanel.class, 
+                    "ERR_MSG_PORTTYPE_EXISTS", text);
             exist = true;
         } 
                 
@@ -268,12 +281,26 @@ public class PortTypePanel extends javax.swing.JPanel {
                 valid = isValidName(messageName);
             }
         }
-        return valid;
+        
+        List<PartAndElementOrType> faultParts = portTypeConfigurationPanel1.getFaultMessageParts();
+        
+        if (faultParts != null && faultParts.isEmpty()) {
+            if (!valid) {
+                mErrorMessage = null;
+                valid = true;
+            }
+            if (messageName != null && messageName.length() > 0) {
+                mWarningMessage = NbBundle.getMessage(OperationPanel.class, "WARNING_NO_PARTS_IN_FAULT", messageName);
+                valid = false;
+            }
+        }
+        
+        return valid;   
     }
     
     
     private boolean isExistingMessage(String messageName) {
-         return existingMeessages.contains(messageName);
+         return existingMessages.contains(messageName);
      }
     
     private void updateMessagePanel() {
@@ -283,7 +310,11 @@ public class PortTypePanel extends javax.swing.JPanel {
                 this.mDD.setValid(false);
             }
         } else {
-            commonMessagePanel1.setMessage("");
+            if (mWarningMessage != null) {
+                commonMessagePanel1.setWarningMessage(mWarningMessage);
+            } else {
+                commonMessagePanel1.setMessage(""); 
+            }
             if(this.mDD != null) {
                 this.mDD.setValid(true);
             }
@@ -320,8 +351,6 @@ public class PortTypePanel extends javax.swing.JPanel {
          public void removeUpdate(DocumentEvent e) {
              validateAll();
          }
- 
-
         
     }
     
@@ -339,8 +368,6 @@ public class PortTypePanel extends javax.swing.JPanel {
              validateAll();
          }
          
-         
-        
     }
     
     

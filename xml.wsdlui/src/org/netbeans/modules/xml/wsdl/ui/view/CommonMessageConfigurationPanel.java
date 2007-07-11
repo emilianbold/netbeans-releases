@@ -50,6 +50,7 @@ import org.openide.util.NbBundle;
  */
 public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
     
+    public static final String PARTS_LISTENER = "PARTS_LISTENER";
     private Map<String, String> namespaceToPrefixMap;
     private Project mProject;
     
@@ -270,6 +271,7 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
                     partsTable.setRowSelectionInterval(newRow, newRow);
                     scrollToVisible(newRow, 0);
                 }
+                firePropertyChange(PARTS_LISTENER, null, "deleted"); 
             } else if (e.getType() == TableModelEvent.INSERT) {
                 int rowCount = model.getRowCount();
                 int newRow = rowCount - 1;
@@ -277,6 +279,7 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
                     partsTable.setRowSelectionInterval(newRow, newRow);
                     scrollToVisible(newRow, 0);
                 }
+                firePropertyChange(PARTS_LISTENER, null, "inserted"); 
             } else if (e.getType() == TableModelEvent.UPDATE) {
                 int lastRow = e.getLastRow();
                 

@@ -25,6 +25,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
@@ -34,6 +36,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyUtil;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
+import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel.PartAndElementOrType;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
@@ -51,9 +54,11 @@ public class OperationPanel extends javax.swing.JPanel {
     
     private DialogDescriptor mDD;
     
-    private List existingMeessages = new ArrayList();
+    private List<String> existingMessages = new ArrayList<String>();
     
     String mErrorMessage = null;
+
+    private String mWarningMessage;
     
     /** Creates new form OperationPanel */
     public OperationPanel() {
@@ -122,19 +127,19 @@ public class OperationPanel extends javax.swing.JPanel {
             String[] messages = PropertyUtil.getAllMessages(this.mModel);
             if(messages != null) {
                 for(int i = 0; i < messages.length; i++) {
-                 existingMeessages.add(messages[i]);
+                 existingMessages.add(messages[i]);
                 }
             }
             
             String inputMessageName = NameGenerator.getInstance().generateUniqueInputMessageName(operationName, mModel);
             String outputMessageName = NameGenerator.getInstance().generateUniqueOutputMessageName(operationName, mModel);
-            String faultMessageName = NameGenerator.getInstance().generateUniqueFaultMessageName(operationName, mModel);
+            //String faultMessageName = NameGenerator.getInstance().generateUniqueFaultMessageName(operationName, mModel);
                     
             MessageNameTextChangeListener messageListener = new MessageNameTextChangeListener();
             
             this.operationConfigurationPanel1.setInputMessages(messages, inputMessageName, messageListener);
             this.operationConfigurationPanel1.setOutputMessages(messages, outputMessageName, messageListener);
-            this.operationConfigurationPanel1.setFaultMessages(messages, faultMessageName, messageListener);
+            this.operationConfigurationPanel1.setFaultMessages(messages, null, messageListener);
             
             
         }
@@ -142,6 +147,13 @@ public class OperationPanel extends javax.swing.JPanel {
                 
         OperationNameTextChangeListener operationListener  = new OperationNameTextChangeListener();
         this.operationConfigurationPanel1.getOperationNameTextField().getDocument().addDocumentListener(operationListener);
+        
+        operationConfigurationPanel1.addPropertyChangeListener(OperationConfigurationPanel.FAULT_PARTS_LISTENER, new PropertyChangeListener() {
+            
+            public void propertyChange(PropertyChangeEvent evt) {
+                validateAll();
+            }
+        });
     }
     
     
@@ -189,6 +201,7 @@ public class OperationPanel extends javax.swing.JPanel {
         }
         
         this.mErrorMessage = null;
+        this.mWarningMessage = null;
         updateMessagePanel();
         
     }
@@ -231,12 +244,26 @@ public class OperationPanel extends javax.swing.JPanel {
                 valid = isValidName(messageName);
             }
         }
+        
+        List<PartAndElementOrType> faultParts = operationConfigurationPanel1.getFaultMessageParts();
+        
+        if (faultParts != null && faultParts.isEmpty()) {
+            if (!valid) {
+                mErrorMessage = null;
+                valid = true;
+            }
+            if (messageName != null && messageName.length() > 0) {
+                mWarningMessage = NbBundle.getMessage(OperationPanel.class, "WARNING_NO_PARTS_IN_FAULT", messageName);
+                valid = false;
+            }
+        }
+        
         return valid;
     }
     
     
     private boolean isExistingMessage(String messageName) {
-         return existingMeessages.contains(messageName);
+         return existingMessages.contains(messageName);
      }
     
     private void updateMessagePanel() {
@@ -246,11 +273,18 @@ public class OperationPanel extends javax.swing.JPanel {
                 this.mDD.setValid(false);
             }
         } else {
-            commonMessagePanel1.setMessage("");
+            if (mWarningMessage != null) {
+                commonMessagePanel1.setWarningMessage(mWarningMessage);
+            } else {
+                commonMessagePanel1.setMessage(""); 
+            }
             if(this.mDD != null) {
                 this.mDD.setValid(true);
             }
+            
         }
+        
+        
         
     }
     

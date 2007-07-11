@@ -25,6 +25,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +108,7 @@ public class RequestReplyOperationPanel extends javax.swing.JPanel implements Op
         faultLabel = new javax.swing.JLabel();
         faultPanel = new javax.swing.JPanel();
         faultMessagePartsConfigurationTable = new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap, mModel);
-        faultMessageNameConfigurationPanel1 = new MessageNameConfigurationPanel(this.faultMessagePartsConfigurationTable); ;
+        faultMessageNameConfigurationPanel1 = new MessageNameConfigurationPanel(this.faultMessagePartsConfigurationTable);
         faultMessagePartsConfigurationTable = faultMessagePartsConfigurationTable;
 
         portTypeNameLabel.setLabelFor(portTypeNameTextField);
@@ -265,6 +267,14 @@ public class RequestReplyOperationPanel extends javax.swing.JPanel implements Op
         outputMessagePartsConfigurationTable.addNewRow();
         outputMessagePartsConfigurationTable.clearSelection();
         
+        faultMessagePartsConfigurationTable.addPropertyChangeListener(CommonMessageConfigurationPanel.PARTS_LISTENER, new PropertyChangeListener() {
+        
+            public void propertyChange(PropertyChangeEvent evt) {
+                firePropertyChange(OperationConfigurationPanel.FAULT_PARTS_LISTENER, evt.getOldValue(), evt.getNewValue());
+            }
+        
+        });
+        
         inputMessageNameConfigurationPanel1.setVisible(this.mIsShowMessageComboBoxes);
         outputMessageNameConfigurationPanel1.setVisible(this.mIsShowMessageComboBoxes);
         faultMessageNameConfigurationPanel1.setVisible(this.mIsShowMessageComboBoxes);
@@ -316,9 +326,6 @@ public class RequestReplyOperationPanel extends javax.swing.JPanel implements Op
         
         
     }
-    
-    private  OperationType selectedOperationType;
-    private JPanel operationCardPanel;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel OperationNameLabel;
