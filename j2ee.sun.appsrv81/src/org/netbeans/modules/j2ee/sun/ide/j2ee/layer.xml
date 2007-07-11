@@ -273,9 +273,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder>
      </folder>
      
-     <folder name="WarmUp">
-         <file name="org.netbeans.modules.j2ee.sun.ide.WarmUp.instance"/> 
-     </folder>
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-j2ee-sunserver.xml" url="error-annotation.xml"/>

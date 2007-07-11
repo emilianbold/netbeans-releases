@@ -23,6 +23,7 @@ import java.io.File;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.openide.modules.ModuleInstall;
@@ -83,11 +84,12 @@ public class Installer extends ModuleInstall {
                 
                 if (null != prop && prop.trim().length() > 0) {
                     // There is a possible root directory for the AS
-                    File propFile = new File(prop);
-                    ClassLoader cl = ServerLocationManager.getNetBeansAndServerClassLoader(propFile);
-                    if (null != cl && !propFile.canWrite()) {
-                        createDomainAndRecord(propFile);
+                    File platformRoot = new File(prop);
+                    ClassLoader cl = ServerLocationManager.getNetBeansAndServerClassLoader(platformRoot);
+                    if (null != cl && !platformRoot.canWrite()) {
+                        createDomainAndRecord(platformRoot);
                     } 
+                    RegisterPointbase.getDefault().register(platformRoot);
                 }
             }
         }
