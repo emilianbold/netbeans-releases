@@ -102,7 +102,7 @@ public class SvnPropertiesTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
-            
+
             //open project
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
@@ -116,20 +116,20 @@ public class SvnPropertiesTest extends JellyTestCase {
             oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.clear();
-            
+
             // set svnProperty for file
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             SvnPropertiesOperator spo = SvnPropertiesOperator.invoke(node);
             spo.typePropertyName("fileName");
             spo.typePropertyValue("fileValue");
             spo.add();
-            Thread.sleep(500);
-            assertEquals("Wrong row count of table.", 1, spo.propertiesTable().getRowCount());
+            oto.waitText("property 'fileName' set on");
+            Thread.sleep(1000);
+            assertEquals("1. Wrong row count of table.", 1, spo.propertiesTable().getRowCount());
             assertFalse("Recursively checkbox should be disabled on file! ", spo.cbRecursively().isEnabled());
-            Thread.sleep(500);
+            Thread.sleep(1000);
             spo.cancel();
-            Thread.sleep(500);
-            
+            Thread.sleep(1000);
             //  set svnProperty for folder - one recursive and one nonrecursive
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             spo = SvnPropertiesOperator.invoke(node);
@@ -138,25 +138,28 @@ public class SvnPropertiesTest extends JellyTestCase {
             spo.typePropertyName("nonrecursiveName");
             spo.typePropertyValue("nonrecursiveValue");
             spo.add();
-            Thread.sleep(500);
+            oto.waitText("property 'nonrecursiveName' set on");
+            Thread.sleep(1000);
             spo.checkRecursively(true);
             spo.typePropertyName("recursiveName");
             spo.typePropertyValue("recursiveValue");
             spo.add();
-            Thread.sleep(500);
-            assertEquals("Wrong row count of table.", 2, spo.propertiesTable().getRowCount());
+            oto.waitText("property 'recursiveName' set (recursively) on");
+            Thread.sleep(1000);
+            assertEquals("2. Wrong row count of table.", 2, spo.propertiesTable().getRowCount());
             spo.cancel();
-            
+
             //  verify whether the recursive property is present on file
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             spo = SvnPropertiesOperator.invoke(node);
-            Thread.sleep(500);
-            assertEquals("Wrong row count of table.", 2, spo.propertiesTable().getRowCount());
+            Thread.sleep(1000);
+            assertEquals("3. Wrong row count of table.", 2, spo.propertiesTable().getRowCount());
             assertEquals("Expected file is missing.", "recursiveName", spo.propertiesTable().getModel().getValueAt(1, 0).toString());
             spo.propertiesTable().selectCell(1, 0);
             spo.remove();
-            Thread.sleep(500);
-            assertEquals("Wrong row count of table.", 1, spo.propertiesTable().getRowCount());
+            oto.waitText("property 'recursiveName' deleted");
+            Thread.sleep(1000);
+            assertEquals("4. Wrong row count of table.", 1, spo.propertiesTable().getRowCount());
             spo.cancel();
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
