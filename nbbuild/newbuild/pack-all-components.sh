@@ -69,7 +69,7 @@ rm -rf enterprise*
 pack_component $DIST/zip/moduleclusters $BASENAME soa "soa*"
 rm -rf soa*
 
-pack_component $DIST/zip/moduleclusters $BASENAME soa "identity*"
+pack_component $DIST/zip/moduleclusters $BASENAME identity "identity*"
 rm -rf identity*
 
 pack_component $DIST/zip/moduleclusters $BASENAME apisupport "apisupport*"
