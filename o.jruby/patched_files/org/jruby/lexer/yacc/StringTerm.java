@@ -507,7 +507,7 @@ public class StringTerm extends StrTerm {
         }
         
         public String toString() {
-            return "StringTermState[" + nest + "," + processingEmbedded + "]";
+            return "StringTermState[nest=" + nest + ",embed=" + processingEmbedded + "]";
         }
         
         private int nest;
@@ -536,8 +536,40 @@ public class StringTerm extends StrTerm {
         return true;
     }
     
+    private static String toFuncString(int func) {
+        StringBuilder sb = new StringBuilder();
+        if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
+            sb.append("escape|");
+        }
+        if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
+            sb.append("expand|");
+        }
+        if ((func & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
+            sb.append("regexp|");
+        }
+        if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
+            sb.append("qwords|");
+        }
+        if ((func & RubyYaccLexer.STR_FUNC_SYMBOL) != 0) {
+            sb.append("symbol|");
+        }
+        if ((func & RubyYaccLexer.STR_FUNC_INDENT) != 0) {
+            sb.append("indent|");
+        }
+        
+        String s = sb.toString();
+        
+        if (s.endsWith("|")) {
+            s = s.substring(0, s.length()-1);
+        } else if (s.length() == 0) {
+            s = "-";
+        }
+
+        return s;
+    }
+
     public String toString() {
-        return "StringTerm[" + func + "," + term + "," + (int)paren + "," + nest + "," + processingEmbedded + "]";
+        return "StringTerm[func=" + toFuncString(func) + ",term=" + term + ",paren=" + (int)paren + ",nest=" + nest + ",embed=" + processingEmbedded + "]";
     }
 
     public int hashCode() {
