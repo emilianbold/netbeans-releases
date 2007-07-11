@@ -122,14 +122,6 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST constraints
 >
 
-<!-- Kind of mode.
-     Attribute "kind" is kind of mode. It is either "editor" or "view".
--->
-<!ELEMENT mode-kind    EMPTY >
-<!ATTLIST mode-kind
-    kind (editor | view) #REQUIRED
->
-
 <!-- Path describe path to mode in model tree.
      "orientation" sets orientation of splitter. "horizontal" means splitting
      along x axis - components are from left to right. "vertical" means splitting

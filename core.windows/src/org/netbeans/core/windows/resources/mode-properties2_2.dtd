@@ -70,8 +70,8 @@ Microsystems, Inc. All Rights Reserved.
     "side" direction of slide
 -->
 <!ELEMENT slidingSide      EMPTY >
-<!ATTLIST side
-    type (left | right | bottom) #REQUIRED
+<!ATTLIST slidingSide
+    side (left | right | bottom) #REQUIRED
 >
 
 
@@ -139,14 +139,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!ELEMENT constraints  (path*) >
 <!ATTLIST constraints
->
-
-<!-- Kind of mode.
-     Attribute "kind" is kind of mode. It is either "editor" or "view".
--->
-<!ELEMENT mode-kind    EMPTY >
-<!ATTLIST mode-kind
-    kind (editor | view) #REQUIRED
 >
 
 <!-- Path describe path to mode in model tree.
