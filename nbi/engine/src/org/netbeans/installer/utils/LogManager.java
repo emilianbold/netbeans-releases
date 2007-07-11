@@ -85,11 +85,17 @@ public final class LogManager {
                 write(string);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
             logWriter = null;
         }
         
         started = true;
+    }
+    
+    public static synchronized void stop() {
+        started = false;
+        
+        logWriter.close();
     }
     
     public static synchronized void indent() {

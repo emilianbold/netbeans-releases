@@ -218,6 +218,8 @@ public class Installer implements FinishHandler {
         DownloadManager.getInstance().terminate();
         SystemUtils.deleteFilesOnExit();
         
+        LogManager.stop();
+        
         exitImmediately(errorCode);
     }
     
