@@ -65,7 +65,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
         svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
         MidpDocumentSupport.getCategoryComponent(animator.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
 
-        if (animator.getType() == SVGMenuCD.TYPEID) {
+        if (animator.getDocument ().getDescriptorRegistry ().isInHierarchy (SVGMenuCD.TYPEID, animator.getType())) {
             parseSVGMenuItems(transferable, animator);
         }
 
