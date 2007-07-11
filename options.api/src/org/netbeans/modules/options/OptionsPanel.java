@@ -313,15 +313,20 @@ public class OptionsPanel extends JPanel {
         int h = NbPreferences.forModule(OptionsPanel.class).getInt("OptionsHeight",getInitSize().height);//NOI18N
         return new Dimension (w, h);
     }
-    
+
+    @Override
+    public Dimension getPreferredSize() {
+        //#108865 Scrollbars appear on Options dialog - preferredSize mustn't exceed screenBounds.? - 100 
+        //else NbPresenter will show up scrollbars                            
+        Dimension d = super.getPreferredSize();
+        final Rectangle screenBounds = Utilities.getUsableScreenBounds();
+        return new Dimension(Math.min(d.width, screenBounds.width - 101), Math.min(d.height, screenBounds.height - 101));
+    }
+        
     void storeUserSize() {
         Dimension d = pOptions.getSize();
-        //#108865 Scrollbars appear on Options dialog - preferredSize mustn't exceed screenBounds.? - 100 
-        //else NbPresenter will show up scrollbars
-        final Rectangle screenBounds = Utilities.getUsableScreenBounds();
-            
-        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsWidth",Math.min(d.width, screenBounds.width - 101));//NOI18N
-        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsHeight",Math.min(d.height, screenBounds.height - 101));//NOI18N
+        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsWidth",d.width);//NOI18N
+        NbPreferences.forModule(OptionsPanel.class).putInt("OptionsHeight",d.height);//NOI18N
         pOptions.setPreferredSize(d);
     }
     
