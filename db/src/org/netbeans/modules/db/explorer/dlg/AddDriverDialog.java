@@ -22,18 +22,19 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.DefaultListModel;
@@ -51,8 +52,6 @@ import org.openide.windows.WindowManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.classfile.ClassFile;
-import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.db.util.DriverListUtil;
 import org.openide.util.Exceptions;
 
@@ -65,6 +64,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private JComponent progressComponent;
     
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
+    private static final Logger logger = Logger.getLogger(AddDriverDialog.class.getName());
 
     /** Creates new form AddDriverDialog1 */
     public AddDriverDialog() {
@@ -314,6 +314,15 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 for (int i = 0; i < drvs.size(); i++) {
                     try {
                         URL url = (URL)drvs.get(i);
+                        
+                        // This classloader is used to load classes
+                        // from the current jar file.  We can then use
+                        // introspection to see if a class in the jar file
+                        // implements java.sql.Driver
+                        URLClassLoader jarloader = new URLClassLoader(
+                                new URL[] { url }, 
+                                this.getClass().getClassLoader());
+
                         File file = new File(new URI(url.toExternalForm()));
                         JarFile jf = new JarFile(file);
                         try {
@@ -324,17 +333,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
                                 if (className.endsWith(".class")) { // NOI18N
                                     className = className.replace('/', '.');
                                     className = className.substring(0, className.length() - 6);
-                                    InputStream stream = jf.getInputStream(entry);
-                                    try {
-                                        ClassFile classFile = new ClassFile(stream, false);
-                                        for (Iterator iter = classFile.getInterfaces().iterator(); iter.hasNext();) {
-                                            ClassName interfaceName = (ClassName)iter.next();
-                                            if ("java.sql.Driver".equals(interfaceName.getExternalName())) { // NOI18N
-                                                addDriverClass(className);
-                                            }
-                                        }
-                                    } finally {
-                                        stream.close();
+                                    if ( isDriverClass(jarloader, className) ) {
+                                        addDriverClass(className);
                                     }
                                 }
                             }
@@ -405,6 +405,38 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
     
+    private boolean isDriverClass(URLClassLoader jarloader, String className) {
+        Class clazz = null;
+
+        try {
+            clazz = jarloader.loadClass(className);
+        } catch ( Throwable t ) {
+            logger.log(Level.FINE, null, t);
+            logger.log(Level.INFO,
+                 "Got an exception trying to load class " +
+                 className + " during search for drivers in jar file " +
+                 jarloader.getURLs()[0].toExternalForm() + ": " +
+                 t.getClass().getName() + ": " + t.getMessage() + 
+                 ".  Skipping this class."); // NOI18N
+
+            return false;         
+        }
+        if ( clazz == null) {
+            logger.log(Level.WARNING,
+                "Class object for class " + className + " is null during " +
+                "search for JDBC driver classes in jar file " +
+                jarloader.getURLs()[0].toExternalForm() + 
+                ".  Skipping this class"); // NOI18N
+            return false;
+        }
+
+        if ( java.sql.Driver.class.isAssignableFrom(clazz) ) {
+            return true;
+        }
+        
+        return false;
+    }
+        
     public String getDisplayName() {
         return nameTextField.getText();
     }
