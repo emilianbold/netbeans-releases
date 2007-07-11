@@ -295,7 +295,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.TextSelectionHighlighting"; //NOI18N
     
         public TextSelectionHighlighting(JTextComponent component) {
-            super(component, FontColorNames.SELECTION_COLORING, false, true);
+            super(component, FontColorNames.SELECTION_COLORING, true, true);
         }
     
         protected Position[] getCurrentBlockPositions(Document document, Caret caret) {
