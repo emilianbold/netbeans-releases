@@ -83,6 +83,8 @@ public class ClasspathInfoTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
+        //Delete unneeded rt.jar
+        rtJar.delete();
     }
 
     public static Test suite() {
