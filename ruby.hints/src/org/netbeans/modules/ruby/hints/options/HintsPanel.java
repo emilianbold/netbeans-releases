@@ -139,7 +139,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         optionsPanel.add(severityComboBox, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(toProblemCheckBox, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_InTasklist_CheckBox")); // NOI18N
-        toProblemCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         toProblemCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -176,7 +175,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
         descriptionTextArea.setEditable(false);
-        descriptionTextArea.setFont(new java.awt.Font("Dialog", 0, 10));
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
