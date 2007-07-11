@@ -98,10 +98,16 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
 
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(ResolveProjectDataSourceAction.class),
-            SystemAction.get(RefreshProjectDataSourceAction.class)
-        };
+        if (ImportDataSource.isLegacyProject(nbProject)) {
+            return new Action[] {
+                SystemAction.get(ResolveProjectDataSourceAction.class),
+                SystemAction.get(RefreshProjectDataSourceAction.class)
+            };
+        } else {
+            return new Action[] {         
+                SystemAction.get(RefreshProjectDataSourceAction.class)
+            };
+        }
     }
 
     public Action getPreferredAction() {
