@@ -34,6 +34,8 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- delete -->
                 <include name="org/netbeans/test/subversion/main/delete/DeleteTest.class"/>
                 <!--<include name="org/netbeans/test/subversion/main/delete/RefactoringTest.class"/>-->
+                <!-- SvnProperties -->
+                <include name="org/netbeans/test/subversion/main/properties/SvnPropertiesTest.class"/>
                 <!-- archeology -->
                 <include name="org/netbeans/test/subversion/main/archeology/SearchHistoryUITest.class"/>
                 <include name="org/netbeans/test/subversion/main/archeology/AnnotationsTest.class"/>
