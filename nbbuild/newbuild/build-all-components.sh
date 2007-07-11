@@ -74,6 +74,17 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-javadoc
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Building of Javadoc Distrubution failed"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/NetBeans-*-javadoc.zip $DIST/zip/$BASENAME-javadoc.zip
+    cp nbbuild/build/javadoc $DIST/
+fi
+
 cd $NB_ALL/nbbuild
 
 #Remove the build helper files
