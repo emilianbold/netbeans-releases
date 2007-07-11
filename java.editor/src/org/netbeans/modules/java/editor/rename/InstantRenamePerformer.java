@@ -50,6 +50,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.SyncDocumentRegion;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
@@ -197,10 +199,12 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return null;
         }
         
-        //#89736: if the caret is not in the resolved element's name, no rename:
-        final Highlight name = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info, info.getDocument(), path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+        final Document doc = info.getDocument();
         
-        info.getDocument().render(new Runnable() {
+        //#89736: if the caret is not in the resolved element's name, no rename:
+        final Highlight name = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info, doc, path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+        
+        doc.render(new Runnable() {
             public void run() {
                 wasResolved[0] = name.getStart() <= caret && caret <= name.getEnd();
             }
@@ -215,7 +219,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         if (allowInstantRename(el)) {
-            Set<Highlight> points = new HashSet<Highlight>(new FindLocalUsagesQuery().findUsages(el, info, info.getDocument()));
+            final Set<Highlight> points = new HashSet<Highlight>(new FindLocalUsagesQuery().findUsages(el, info, doc));
             
             if (el.getKind().isClass()) {
                 //rename also the constructors:
@@ -223,13 +227,25 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     TreePath t = info.getTrees().getPath(c);
                     
                     if (t != null) {
-                        Highlight h = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info, info.getDocument(), t, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+                        Highlight h = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info, doc, t, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
                         
                         if (h != null) {
                             points.add(h);
                         }
                     }
                 }
+            }
+            
+            final boolean[] overlapsWithGuardedBlocks = new boolean[1];
+            
+            doc.render(new Runnable() {
+                public void run() {
+                    overlapsWithGuardedBlocks[0] = overlapsWithGuardedBlocks(doc, points);
+                }
+            });
+            
+            if (overlapsWithGuardedBlocks[0]) {
+                return null;
             }
             
             return points;
@@ -248,6 +264,26 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             Element enclosing = e.getEnclosingElement();
             
             return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
+        }
+        
+        return false;
+    }
+    
+    private static boolean overlapsWithGuardedBlocks(Document doc, Set<Highlight> highlights) {
+        if (!(doc instanceof GuardedDocument))
+            return false;
+        
+        GuardedDocument gd = (GuardedDocument) doc;
+        MarkBlock current = gd.getGuardedBlockChain().getChain();
+        
+        while (current != null) {
+            for (Highlight h : highlights) {
+                if ((current.compare(h.getStart(), h.getEnd()) & MarkBlock.OVERLAP) != 0) {
+                    return true;
+                }
+            }
+            
+            current = current.getNext();
         }
         
         return false;
