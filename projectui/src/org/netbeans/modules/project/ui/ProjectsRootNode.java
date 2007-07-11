@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -45,12 +46,18 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -297,24 +304,71 @@ public class ProjectsRootNode extends AbstractNode {
                                                 
     }
         
-    private static final class BadgingNode extends FilterNode implements PropertyChangeListener {
+    private static final class BadgingNode extends FilterNode implements PropertyChangeListener, Runnable, FileStatusListener {
 
-        private static String badgedNamePattern = NbBundle.getMessage( ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern" );
-        
-        public BadgingNode( Node n, boolean addSearchInfo ) {
-            super( n,
-                   null,                //default children
-                   addSearchInfo
-                   ? new ProxyLookup(
-                         n.getLookup(),
-                         Lookups.singleton(alwaysSearchableSearchInfo(SearchInfoFactory
-                                            .createSearchInfoBySubnodes(n))))
-                   : n.getLookup() );
-            OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
+        private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
+        private final FileObject file;
+        private final Set<FileObject> files;
+        private FileStatusListener fileSystemListener;
+        private RequestProcessor.Task task;
+        private volatile boolean nameChange;
+
+        public BadgingNode(Node n, boolean addSearchInfo) {
+            super(n, null, addSearchInfo ? new ProxyLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(n)))) : n.getLookup());
+            OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
+            DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
+            if (fold != null) {
+
+                file = fold.getPrimaryFile();
+                files = Collections.singleton(file);
+                try {
+                    FileSystem fs = file.getFileSystem();
+                    fileSystemListener = FileUtil.weakFileStatusListener(this, fs);
+                    fs.addFileStatusListener(fileSystemListener);
+                } catch (FileStateInvalidException e) {
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(e, "Can not get " + file + " filesystem, ignoring..."); // NO18N
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+            } else {
+                file = null;
+                files = null; 
+            }
         }
+
+        public void run() {
+            if (nameChange) {
+                fireDisplayNameChange(null, null);
+                nameChange = false;
+            }
+        }
+
+        public void annotationChanged(FileStatusEvent event) {
+            if (task == null) {
+                task = RequestProcessor.getDefault().create(this);
+            }
+
+            if (nameChange == false && event.isNameChange()) {
+                if (event.hasChanged(file)) {
+                    nameChange |= event.isNameChange();
+                }
+            }
+
+            task.schedule(50); // batch by 50 ms
+        }
+
+
         
         public String getDisplayName() {
             String original = super.getDisplayName();
+            DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
+            if (fold != null) {
+                try {            
+                    original = fold.getPrimaryFile().getFileSystem ().getStatus ().annotateName (original, Collections.singleton(fold.getPrimaryFile()));
+                } catch (FileStateInvalidException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }           
             return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
         }
 
@@ -329,6 +383,24 @@ public class ProjectsRootNode extends AbstractNode {
                     // ignore
                 }
             }
+            DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
+            if (fold != null) {
+
+                try {
+                    FileSystem.Status stat = fold.getPrimaryFile().getFileSystem().getStatus();
+                    if (stat instanceof FileSystem.HtmlStatus) {
+                        FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+
+                        String result = hstat.annotateNameHtml(super.getDisplayName(), Collections.singleton(fold.getPrimaryFile()));
+                        //Make sure the super string was really modified
+                        if (!super.getDisplayName().equals(result)) {
+                           return isMain() ? "<b>" + (result) + "</b>" : result; //NOI18N
+                        }
+                    }
+                } catch (FileStateInvalidException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }      
             return isMain() ? "<b>" + (htmlName == null ? dispName : htmlName) + "</b>" : htmlName; //NOI18N
         }
 
