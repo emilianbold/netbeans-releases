@@ -28,11 +28,14 @@ import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.TSEObjectUI;
 import com.tomsawyer.editor.TSTransform;
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -40,7 +43,12 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGeneratorContext;
+import org.apache.batik.svggen.SVGGraphics2D;
 import org.openide.ErrorManager;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 
 /**
  * @author KevinM
@@ -85,7 +93,7 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
             {
             case SaveAsGraphicKind.SAFK_JPG :
                 FileImageOutputStream fio = new FileImageOutputStream(new File(fileName));
-                write("jpg", fio, false,
+                write("jpg", fio, false,   // NOI18N
                         TSEGraphWindow.CUSTOM_SIZE, false, false, QUALITY,
                         (int)(getGraphWindow().getGraph().getFrameBounds().getWidth()*scale),
                         (int)(getGraphWindow().getGraph().getFrameBounds().getHeight()*scale));
@@ -122,7 +130,7 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
     }
     
     
-    // override TSEGraphImageEncoder.writeJPEGFormat() to use ImageIO API 
+    // override TSEGraphImageEncoder.writeJPEGFormat() to use ImageIO API
     public void writeJPEGFormat(OutputStream fo)
             throws IOException, com.sun.image.codec.jpeg.ImageFormatException
     {
@@ -139,9 +147,9 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
             int height)
             throws IOException, com.sun.image.codec.jpeg.ImageFormatException
     {
-        write("jpg", fo, visibleAreaOnly, zoomType, drawGrid, selectedOnly, 
-                quality, 
-                (int)getGraphWindow().getGraph().getFrameBounds().getWidth(), 
+        write("jpg", fo, visibleAreaOnly, zoomType, drawGrid, selectedOnly,   // NOI18N
+                quality,
+                (int)getGraphWindow().getGraph().getFrameBounds().getWidth(),
                 (int)getGraphWindow().getGraph().getFrameBounds().getHeight());
     }
     
@@ -149,8 +157,8 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
     public void writePNGFormat(OutputStream fo)
             throws IOException, com.sun.image.codec.jpeg.ImageFormatException
     {
-        writePNGFormat(fo, false, TSEGraphWindow.ACTUAL_SIZE, false, false, 
-                (int)getGraphWindow().getGraph().getFrameBounds().getWidth(), 
+        writePNGFormat(fo, false, TSEGraphWindow.ACTUAL_SIZE, false, false,
+                (int)getGraphWindow().getGraph().getFrameBounds().getWidth(),
                 (int)getGraphWindow().getGraph().getFrameBounds().getHeight());
     }
     
@@ -164,9 +172,29 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
             int height)
             throws IOException, com.sun.image.codec.jpeg.ImageFormatException
     {
-        write("png", fo, visibleAreaOnly, zoomType, drawGrid, selectedOnly, 0, width, height);
+        write("png", fo, visibleAreaOnly, zoomType, drawGrid, selectedOnly, 0, width, height); // NOI18N
     }
     
+    public void writeSVGFormat(  OutputStream fo,
+            boolean visibleAreaOnly,
+            int zoomType,
+            boolean drawGrid,
+            boolean selectedOnly,
+            int width,
+            int height)
+            throws IOException, com.sun.image.codec.jpeg.ImageFormatException
+    {
+        write("svg", fo, visibleAreaOnly, zoomType, drawGrid, selectedOnly, 0, width, height); // NOI18N
+    }
+    
+    public void writeSVGFormat(  OutputStream fo )
+            
+            throws IOException, com.sun.image.codec.jpeg.ImageFormatException
+    {
+        write("svg", fo, false, TSEGraphWindow.ACTUAL_SIZE, false, false, 0,   // NOI18N
+                (int)getGraphWindow().getGraph().getFrameBounds().getWidth(),
+                (int)getGraphWindow().getGraph().getFrameBounds().getHeight());
+    }
     
     public void write(String format,
             Object fo,
@@ -216,9 +244,9 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
         }
         try
         {
-            if ("jpg".equals(format) && (fo instanceof ImageOutputStream))
+            if ("jpg".equals(format) && (fo instanceof ImageOutputStream))   // NOI18N
             {
-                Iterator iter = ImageIO.getImageWritersByFormatName("jpg");
+                Iterator iter = ImageIO.getImageWritersByFormatName("jpg");   // NOI18N
                 ImageWriter writer = (ImageWriter)iter.next();
                 
                 ImageWriteParam iwp = writer.getDefaultWriteParam();
@@ -233,11 +261,38 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
                 
                 writer.dispose();
             }
+            
             else
             {
                 if (fo instanceof OutputStream)
                 {
-                    ImageIO.write(bufferedImage, format, (OutputStream)fo);
+                    if ("svg".equals(format))  // NOI18N
+                    {
+                        // Get a DOMImplementation.                                             
+                        DOMImplementation impl =
+                                GenericDOMImplementation.getDOMImplementation();
+                        
+                        // Create an instance of org.w3c.dom.Document.
+                        String svgNS = "http://www.w3.org/2000/svg";   // NOI18N
+                        Document myFactory = impl.createDocument(svgNS, "svg", null);   // NOI18N
+                        
+                        SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(myFactory);
+                        // # 78585 embed the fonts for drawing strings, so that it does not rely 
+                        // on system fonts for display
+                        ctx.setEmbeddedFontsOn(true);
+                        SVGGraphics2D svgGenerator = new SVGGraphics2D(ctx, true);
+                        
+                        svgGenerator.drawRenderedImage(bufferedImage,  new AffineTransform());
+                        
+                        // Finally, stream out SVG to the output using UTF-8 encoding.
+                        boolean useCSS = true; // we want to use CSS style attributes
+                        Writer out = new OutputStreamWriter((OutputStream)fo, "UTF-8");  // NOI18N
+                        svgGenerator.stream(out, useCSS); 
+                    }
+                    else
+                    {
+                        ImageIO.write(bufferedImage, format, (OutputStream)fo);
+                    }
                     ((OutputStream)fo).flush();
                     ((OutputStream)fo).close();
                 }
