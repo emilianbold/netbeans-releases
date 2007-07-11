@@ -27,10 +27,15 @@ package org.netbeans.modules.editor.lib2.highlighting;
  */
 public final class OffsetGapList<E extends OffsetGapList.Offset> extends AbstractOffsetGapList<E> {
     
-    /** Creates a new instance of SimpleOffsetGapList */
+    /** Creates a new instance of OffsetGapList */
     public OffsetGapList() {
+        super();
     }
 
+    public OffsetGapList(boolean fixedZeroOffset) {
+        super(fixedZeroOffset);
+    }
+    
     protected int elementRawOffset(E elem) {
         return elem.getRawOffset();
     }

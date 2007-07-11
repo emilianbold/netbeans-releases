@@ -95,7 +95,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     public OffsetsBag(Document document, boolean mergeHighlights) {
         this.document = document;
         this.mergeHighlights = mergeHighlights;
-        this.marks = new OffsetGapList<Mark>();
+        this.marks = new OffsetGapList<Mark>(true); // do not move 0 offset, #102955
         this.docListener = new DocL(this);
         this.document.addDocumentListener(docListener);
     }

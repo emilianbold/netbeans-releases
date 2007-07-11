@@ -84,9 +84,28 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
 
     private int offsetGapLength = Integer.MAX_VALUE / 2; // 32 bytes
 
+    private final boolean fixedZeroOffset;
+    
+    /**
+     * Creates new <code>AbstractOffsetGapList</code> with <code>fixedZeroOffset = false</code>.
+     */
     public AbstractOffsetGapList() {
+        this(false);
     }
 
+    /**
+     * Creates new <code>AbstractOffsetGapList</code>.
+     * 
+     * @param fixedZeroOffset If <code>true</code> the offset 0 will
+     *   always stay 0, otherwise it will move as any other offset
+     *   when inserting in front of it (ie. at offsets less then or equal to 0).
+     *   If <code>true</code> the behavior is the same as handling position 0
+     *   in swing <code>Document</code>s.
+     */
+    public AbstractOffsetGapList(boolean fixedZeroOffset) {
+        this.fixedZeroOffset = fixedZeroOffset;
+    }
+    
     /**
      * Adds an <code>element</code> to this list. The <code>element</code> is
      * going to be added to at the position, which is appropriate for the
@@ -403,8 +422,11 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
         // at the begining of the removal offset area
         while (index < size) {
             E elem = get(index++);
-            if (elementRawOffset(elem) < removeAreaEndRawOffset) {
-                setElementRawOffset(elem, removeAreaEndRawOffset);
+            int rawOffset = elementRawOffset(elem);
+            if (rawOffset < removeAreaEndRawOffset) {
+                if (!fixedZeroOffset || rawOffset != 0) {
+                    setElementRawOffset(elem, removeAreaEndRawOffset);
+                }
             } else { // all subsequent offsets are higher
                 break;
             }
@@ -425,7 +447,7 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
      * @param offset offset to which the <code>offsetGapStart</code>
      *  should be assigned.
      * @param index index of the first element in the list
-     *  that has an offset that is greater or equal that the given offset parameter.
+     *  that has an offset that is greater than or equal to the given offset parameter.
      *  <br>
      *  It may be computed by {@link #findElementIndex(int)}.
      */
@@ -436,7 +458,9 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
                 E elem = get(i);
                 int rawOffset = elementRawOffset(elem);
                 if (rawOffset < offsetGapStart) {
-                    setElementRawOffset(elem, rawOffset + offsetGapLength);
+                    if (!fixedZeroOffset || rawOffset != 0) {
+                        setElementRawOffset(elem, rawOffset + offsetGapLength);
+                    }
                 } else {
                     break;
                 }
@@ -447,7 +471,9 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
                 E elem = get(i);
                 int rawOffset = elementRawOffset(elem);
                 if (rawOffset >= offsetGapStart) {
-                    setElementRawOffset(elem, rawOffset - offsetGapLength);
+                    if (!fixedZeroOffset || rawOffset != 0) {
+                        setElementRawOffset(elem, rawOffset - offsetGapLength);
+                    }
                 } else {
                     break;
                 }
@@ -617,9 +643,13 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
      * @return real offset that the element is supposed to have.
      */
     protected final int raw2Offset(int rawOffset) {
-        return (rawOffset < offsetGapStart)
-            ? rawOffset
-            : rawOffset - offsetGapLength;
+        if (fixedZeroOffset && rawOffset == 0) {
+            return 0;
+        } else {
+            return (rawOffset < offsetGapStart)
+                ? rawOffset
+                : rawOffset - offsetGapLength;
+        }
     }
     
     /**
@@ -629,9 +659,13 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
      * @return raw offset that can be used in elements.
      */
     protected final int offset2raw(int offset) {
-        return (offset < offsetGapStart)
-            ? offset
-            : offset + offsetGapLength;
+        if (fixedZeroOffset && offset == 0) {
+            return 0;
+        } else {
+            return (offset < offsetGapStart)
+                ? offset
+                : offset + offsetGapLength;
+        }
     }
     
     protected void consistencyCheck() {
