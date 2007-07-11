@@ -98,18 +98,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         // build the URL
         String url = WLDeploymentFactory.URI_PREFIX + this.host + ":" + this.port + ":" + serverRoot; // NOI18N
         
-        // set the username and password
-        String username = this.username;
-        String password = this.password;
-        
         String displayName = (String)wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
-        
-        // set the additional properties of the instance: server installation 
-        // directory, profile root directory, whether the server is local or
-        // remote and the instance name
-        String serverRoot = this.serverRoot;
-        String domainRoot = this.domainRoot;
-        String isLocal = this.isLocal;
         
         // if all the data is normally validated - create the instance and 
         // attach the additional properties
@@ -175,30 +164,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     }
 
     /**
-     * Getter for the server host
-     *
-     * @return the server host
-     */
-    public String getHost() {
-        return host;
-    }
-
-    /**
      * Setter for the server host
      *
      * @param host the new server host
      */
     public void setHost(String host) {
         this.host = host;
-    }
-
-    /**
-     * Getter for the server port
-     *
-     * @return the server port
-     */
-    public String getPort() {
-        return port;
     }
 
     /**
@@ -211,15 +182,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     }
 
     /**
-     * Getter for the username
-     *
-     * @return the username
-     */
-    public String getUsername() {
-        return username;
-    }
-
-    /**
      * Setter for the username
      *
      * @param username the new username
@@ -229,30 +191,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     }
 
     /**
-     * Getter for the password
-     *
-     * @return the password
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
      * Setter for the password
      *
      * @param password the new password
      */
     public void setPassword(String password) {
         this.password = password;
-    }
-    
-    /**
-     * Getter for the isLocal property
-     *
-     * @return "true" if the server is local, "false" otherwise
-     */
-    public String getIsLocal() {
-        return this.isLocal;
     }
     
     /**
