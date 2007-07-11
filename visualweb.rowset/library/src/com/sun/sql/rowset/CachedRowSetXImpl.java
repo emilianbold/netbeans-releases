@@ -2449,10 +2449,25 @@ public class CachedRowSetXImpl extends BaseRowSetX implements CachedRowSetX, Row
     private ResultSetMetaData oracleFixup(Connection tempConn, String command)
 	throws SQLException
     {
-	String[] s = command.split("(?i:where|group by|order by)");
-	String cmd = s[0] + " WHERE 1=0";
-	Log.getLogger().finest("Executing modified statement: " + cmd);
-	PreparedStatement tempPS = tempConn.prepareStatement(cmd);
+	Log.getLogger().entering("CachedRowSetXImpl", "oracleFixup()", command);
+	String cmd = command;
+
+	// Extract the GROUP BY, to use later
+	String groupBy="";
+	int pos = cmd.toUpperCase().indexOf("GROUP BY");
+	if (pos != -1) {
+	    groupBy = cmd.substring(pos);
+	    cmd = cmd.substring(0,pos);
+	}
+
+	// Retain SELECT/FROM, remove WHERE/HAVING/ORDER BY
+	String[] parts = cmd.split("(?i:where|having|order by)");
+
+	// Attach new WHERE clause, previous GROUP BY
+	String newCommand = parts[0] + " WHERE 1=0 " + groupBy;
+
+	Log.getLogger().finest("Executing modified statement: " + newCommand);
+	PreparedStatement tempPS = tempConn.prepareStatement(newCommand);
 	tempPS.execute();
 	return tempPS.getMetaData();
     }
@@ -4220,7 +4235,6 @@ public class CachedRowSetXImpl extends BaseRowSetX implements CachedRowSetX, Row
                 
                 Log.getLogger().finest("About to get connection, DataSource: " + ds);
 
-System.out.println("username: " + username);		
                 if(username == null || username.equals("")) { //NOI18N
                     conn = ds.getConnection();
                 } else {
