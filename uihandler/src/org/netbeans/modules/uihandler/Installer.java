@@ -32,7 +32,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -75,7 +77,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -106,6 +107,8 @@ public class Installer extends ModuleInstall {
     private static OutputStream logStream;
     private static int logsSize;
     private static URL hintURL;
+
+    private static Pattern ENCODING = Pattern.compile("<meta.*http-equiv='Content-Type'.*content=.*charset=([A-Za-z0-9\\-]+)'>"); // NOI18N
     
     @Override
     public void restored() {
@@ -679,7 +682,7 @@ public class Installer extends ModuleInstall {
                     File tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
                     FileOutputStream os = new FileOutputStream(tmp);
-                    FileUtil.copy(conn.getInputStream(), os);
+                    copyWithEncoding(conn.getInputStream(), os);
                     os.close();
                     conn.getInputStream().close();
                     LOG.log(Level.FINE, "doShow, all read from = {0}", url); // NOI18N
@@ -724,6 +727,29 @@ public class Installer extends ModuleInstall {
                 }
             }
             LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
+        }
+
+        private void copyWithEncoding(InputStream inputStream, FileOutputStream os) throws IOException {
+            byte[] arr = new byte[4096];
+            
+            String text = null;
+            String enc = "utf-8";
+            for (;;) {
+                int len = inputStream.read(arr);
+                if (len == -1) {
+                    break;
+                }
+                boolean first = text == null;
+                text = new String(arr, 0, len, enc);
+                if (first) {
+                    Matcher m = ENCODING.matcher(text);
+                    if (m.find()) {
+                        enc = m.group(1);
+                        text = new String(arr, 0, len, enc);
+                    }
+                }
+                os.write(text.getBytes());
+            }
         }
         
         private synchronized final void doCloseDialog() {
