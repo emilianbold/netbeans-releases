@@ -40,6 +40,8 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
 
     public static final String DEPLOYMENT_PREFIX = "deployments."; //NOI18N
     
+    final RequestProcessor.Task task=RequestProcessor.getDefault().create(this);
+    
     /**
      * Creates a new instance of MobilityDeploymentProperties
      */
@@ -109,7 +111,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
 
     public Object put(String key, Object value) {
         Object retValue = super.put(key, value);
-        RequestProcessor.getDefault().post(this, 200);
+        task.schedule(200);
         return retValue;
     }
 }
