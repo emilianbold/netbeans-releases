@@ -226,30 +226,25 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             private void updateSelection() {
                 oldValue = selectedNodes;
 
-                Collection<Node> currentNodes = Arrays.asList(oldValue);
+                Collection<Node> currentNodes = new HashSet<Node>(Arrays.asList(oldValue));
 
-                // PENDING: filter out duplicities from the selection
-                Collection<Node> newSelection = Arrays.asList(value);
+                Collection<Node> newSelection = new HashSet<Node>(Arrays.asList(value));
 
-                Collection<Node> nodesToAdd = new LinkedList<Node>(newSelection);
+                Collection<Node> nodesToAdd = new HashSet<Node>(newSelection);
                 nodesToAdd.removeAll(currentNodes);
 
-                Collection<Node> nodesToRemove = new LinkedList<Node>(currentNodes);
+                Collection<Node> nodesToRemove = new HashSet<Node>(currentNodes);
                 nodesToRemove.removeAll(newSelection);
 
                 selectedNodes = value;
 
-                Iterator<Node> it;
-
                 // remove listeners from nodes that are being deselected
-                for (it = nodesToRemove.iterator(); it.hasNext();) {
-                    Node n = it.next();
+                for (Node n: nodesToRemove) {
                     n.removeNodeListener(weakListener);
                 }
 
                 // and add listeners to nodes that become selected
-                for (it = nodesToAdd.iterator(); it.hasNext();) {
-                    Node n = it.next();
+                for (Node n: nodesToAdd) {
                     n.removeNodeListener(weakListener);
                     n.addNodeListener(weakListener);
                 }

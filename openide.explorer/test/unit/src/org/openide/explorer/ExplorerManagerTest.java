@@ -65,6 +65,39 @@ public class ExplorerManagerTest extends NbTestCase
         events.add(ev);
     }
     
+    public void testScalingSelectionChange() throws Exception {
+        
+        int [] sizes = new int[] { 10, 100, 1000, 10000 };
+        for (int i = 0; i<sizes.length; i++) {
+            int count = computeEqualsCount(sizes[i]);
+            assertTrue("n*log(n) complexity of selection change", 
+                     count < sizes[i] * Math.log(sizes[i]));
+        }
+    }
+    
+    private int computeEqualsCount(int size) throws Exception {
+        Integer [] arr = new Integer[size];
+        for (int i = 0; i<arr.length; i++) {
+            arr[i] = i;
+        }
+        ExplorerManager myem = new ExplorerManager();
+        IntKeys mykeys = new IntKeys();
+        mykeys.keys(arr);
+        Node myroot = new AbstractNode(mykeys);
+        myem.setRootContext(myroot);
+        
+        Node[] ch = myroot.getChildren().getNodes(true);
+        
+        Node[] neuCh = new Node[ch.length-1];
+        System.arraycopy(ch, 0, neuCh, 0, neuCh.length);
+        myem.setSelectedNodes(neuCh);
+        IntKeys.eqCounter = 0;
+        myem.setSelectedNodes(ch);
+        myem.setSelectedNodes(neuCh);
+
+        return IntKeys.eqCounter;
+    }
+    
     public void testNormalSelectionChange() throws Exception {
         final Node a = keys.key("a key");
         
@@ -148,7 +181,7 @@ public class ExplorerManagerTest extends NbTestCase
         assertEquals("No nodes can be selected", 0, arr.length);
     }
     
-    private static final class Keys extends Children.Keys {
+    private static final class Keys extends Children.Keys<String> {
         public Node key(String k) {
             keys(new String[] { k });
             return getNodes()[0];
@@ -156,10 +189,34 @@ public class ExplorerManagerTest extends NbTestCase
         public void keys(String[] keys) {
             super.setKeys(keys);
         }
-        protected Node[] createNodes(Object o) {
+        protected Node[] createNodes(String o) {
             AbstractNode an = new AbstractNode(Children.LEAF);
-            an.setName((String)o);
+            an.setName(o);
             return new Node[] { an };
+        }
+    }
+    
+    private static final class IntKeys extends Children.Keys<Integer> {
+        static int eqCounter;
+
+        public void keys(Integer[] keys) {
+            super.setKeys(keys);
+        }
+        protected Node[] createNodes(Integer o) {
+            AbstractNode an = new CountingNode();
+            an.setName(Integer.toString(o));
+            return new Node[] { an };
+        }
+        private static class CountingNode extends AbstractNode {
+            CountingNode() {
+                super (Children.LEAF);
+            }
+            
+            @Override
+            public boolean equals(Object obj) {
+                eqCounter++;
+                return super.equals(obj);
+            }
         }
     }
 }
