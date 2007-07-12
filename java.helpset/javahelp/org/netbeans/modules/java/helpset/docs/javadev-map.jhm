@@ -222,7 +222,7 @@
 <!--CSH topic for Inspector window; also appears when pressing ? button in Properties window for Form component-->
 <mapID target="gui.component-inspector" url="pending.html" />
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
-<!-- note : commenting out because engineer comfirmed these are obsolete-->
+
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />-->
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />-->
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
@@ -297,7 +297,7 @@
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="gui/gui_addingtopalette.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="gui/gui_addingtopalette.html" />
 
-   <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
+
 
 
 <!--CSH - Insert Internationalized String dialog:-->
