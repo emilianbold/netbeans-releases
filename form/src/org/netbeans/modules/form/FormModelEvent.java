@@ -603,7 +603,9 @@ public class FormModelEvent extends EventObject
         }
 
         private void addComponent() {
-            RADComponent[] currentSubComps = getContainer().getSubBeans();
+            RADComponent component = getComponent();
+            ComponentContainer container = getContainer();
+            RADComponent[] currentSubComps = container.getSubBeans();
             RADComponent[] undoneSubComps =
                 new RADComponent[currentSubComps.length+1];
 
@@ -612,7 +614,7 @@ public class FormModelEvent extends EventObject
 
             for (int i=0,j=0; j < undoneSubComps.length; i++,j++) {
                 if (i == componentIndex) {
-                    undoneSubComps[j] = getComponent();
+                    undoneSubComps[j] = component;
                     if (i == currentSubComps.length)
                         break;
                     j++;
@@ -620,24 +622,25 @@ public class FormModelEvent extends EventObject
                 undoneSubComps[j] = currentSubComps[i];
             }
 
-            if (getCreatedDeleted())
-                FormModel.setInModelRecursively(getComponent(), true);
+            if (getCreatedDeleted() || !component.isInModel()) {
+                FormModel.setInModelRecursively(component, true);
+            }
 
-            getContainer().initSubComponents(undoneSubComps);
+            container.initSubComponents(undoneSubComps);
 
-            if (getContainer() instanceof RADVisualContainer
-                && getComponent() instanceof RADVisualComponent)
+            if (container instanceof RADVisualContainer
+                && component instanceof RADVisualComponent)
             {
                 LayoutSupportManager layoutSupport =
-                    ((RADVisualContainer)getContainer()).getLayoutSupport();
+                    ((RADVisualContainer)container).getLayoutSupport();
                 if (layoutSupport != null)
                     layoutSupport.addComponents(
-                        new RADVisualComponent[] { (RADVisualComponent)getComponent() },
+                        new RADVisualComponent[] { (RADVisualComponent)component },
                         new LayoutConstraints[] { getComponentLayoutConstraints() },
                         componentIndex);
             }
 
-            getFormModel().fireComponentAdded(getComponent(), getCreatedDeleted());
+            getFormModel().fireComponentAdded(component, getCreatedDeleted());
         }
 
         private void removeComponent() {
