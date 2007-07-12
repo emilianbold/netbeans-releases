@@ -201,8 +201,11 @@ public class BasicColumnView extends JPanel implements ColumnView {
 
         // If this column isn't in the table, return immediately.
         // Likewise, don't scroll if there is only one column.
+        // Also don't scroll if next column is the last one, See IZ100119.
         int columnIndex = columnList.indexOf(column);
-        if (columnIndex == -1 || columnList.size() <= 1) {
+        if ( (columnIndex == -1) ||
+             (columnList.size() <= 1) ||
+             (columnList.size() -2  == columnIndex) ) {
             return;
         }
 
