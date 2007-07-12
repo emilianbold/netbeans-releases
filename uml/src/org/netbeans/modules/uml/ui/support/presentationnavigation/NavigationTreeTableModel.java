@@ -53,10 +53,13 @@ import org.netbeans.modules.uml.ui.swing.treetable.TreeTableModel;
 public class NavigationTreeTableModel implements TreeTableModel
 {
 	// Names of the columns.
-	static protected String[]  cNames = {PresentationNavigationResources.getString("IDS_ITEM"), 
-													 PresentationNavigationResources.getString("IDS_FULLNAME"),
-													 PresentationNavigationResources.getString("IDS_TYPE"),
-													 PresentationNavigationResources.getString("IDS_STATE") };
+	static protected String[]  cNames = 
+        {
+            PresentationNavigationResources.getString("IDS_ITEM"), 
+            PresentationNavigationResources.getString("IDS_FULLNAME"),
+            PresentationNavigationResources.getString("IDS_TYPE"),
+            PresentationNavigationResources.getString("IDS_STATE") 
+        };
 
 	// Types of the columns.
 	static protected Class[]  cTypes = { Object.class, String.class, String.class, String.class};

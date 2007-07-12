@@ -136,17 +136,17 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 		{
 			"main.previewDiagram.text",  mBundle.getString("main.previewDiagram.text") }, {
 			"main.previewDiagram.command", ADDrawingAreaConstants.PRINT_PREVIEW }, {
-			"main.previewDiagram.icon", "toolbar_images/Print-Preview.png" }, {
+			"main.previewDiagram.icon", "images/print-preview.png" }, {
 			"main.previewDiagram.tooltip",  mBundle.getString("main.previewDiagram.tooltip") }, {
 
 			//"main.printDiagram.text",  mBundle.getString("main.printDiagram.text") }, {
 			//"main.printDiagram.command", ADDrawingAreaConstants.PRINT_GRAPH }, {
-			//"main.printDiagram.icon", "toolbar_images/Print.gif" }, {
+			//"main.printDiagram.icon", "images/Print.gif" }, {
 			//"main.printDiagram.tooltip", mBundle.getString("main.printDiagram.tooltip") }, {
 
 			"main.ExportAsImage.text",  mBundle.getString("main.ExportAsImage.text") }, {
 			"main.ExportAsImage.command", ADDrawingAreaConstants.SAVE_AS_IMAGE }, {
-			"main.ExportAsImage.icon", "toolbar_images/ExportAsImage.png" }, {
+			"main.ExportAsImage.icon", "images/export-as-image.png" }, {
 			"main.ExportAsImage.tooltip", mBundle.getString("main.ExportAsImage.tooltip") }, {
 
                         "main.select.group", "select_pan_zoom" }, {
@@ -154,137 +154,138 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
                         "main.select.checked", "true" }, {
 			"main.select.text", mBundle.getString("main.select.text") }, {
 			"main.select.command", ADDrawingAreaConstants.SELECT_STATE }, {
-			"main.select.icon", "toolbar_images/SelectionArrow.png" }, {
+			"main.select.icon", "images/selection-arrow.png" }, {
 			"main.select.tooltip", mBundle.getString("main.select.tooltip") }, {
 
                         "main.pan.group", "select_pan_zoom" }, {    
 			"main.pan.text", mBundle.getString("main.pan.text") }, {
 			"main.pan.command", ADDrawingAreaConstants.PAN_STATE }, {
-			"main.pan.icon", "toolbar_images/Pan.png" }, {
+			"main.pan.icon", "images/pan.png" }, {
 			"main.pan.tooltip", mBundle.getString("main.pan.tooltip") }, {
 
-			"main.changeSpacing.text", mBundle.getString("main.changeSpacing.text") }, {
-			"main.changeSpacing.command", ADDrawingAreaConstants.CHANGE_SPACING }, {
-			"main.changeSpacing.icon", "toolbar_images/ChangeSpacing.gif" }, {
-			"main.changeSpacing.tooltip", mBundle.getString("main.changeSpacing.tooltip") }, {
+// conover - icon does not exist
+//			"main.changeSpacing.text", mBundle.getString("main.changeSpacing.text") }, {
+//			"main.changeSpacing.command", ADDrawingAreaConstants.CHANGE_SPACING }, {
+//			"main.changeSpacing.icon", "images/ChangeSpacing.gif" }, {
+//			"main.changeSpacing.tooltip", mBundle.getString("main.changeSpacing.tooltip") }, {
 
                         "main.zoomWithMarquee.group", "select_pan_zoom" }, {    
 			"main.zoomWithMarquee.text", mBundle.getString("main.zoomWithMarquee.text") }, {
 			"main.zoomWithMarquee.command", ADDrawingAreaConstants.ZOOM_STATE }, {
-			"main.zoomWithMarquee.icon", "toolbar_images/Magnify.png" }, {
+			"main.zoomWithMarquee.icon", "images/magnify.png" }, {
 			"main.zoomWithMarquee.tooltip", mBundle.getString("main.zoomWithMarquee.tooltip") }, {
 
                         "main.zoomInteractively.group", "select_pan_zoom" }, {    
 			"main.zoomInteractively.text", mBundle.getString("main.zoomInteractively.text") }, {
 			"main.zoomInteractively.command", ADDrawingAreaConstants.INTERACTIVE_ZOOM_STATE }, {
-			"main.zoomInteractively.icon", "toolbar_images/InteractiveZoom.png" }, {
+			"main.zoomInteractively.icon", "images/interactive-zoom.png" }, {
 			"main.zoomInteractively.tooltip", mBundle.getString("main.zoomInteractively.tooltip") }, {
 
                         "main.navigateLink.group", "select_pan_zoom" }, {
 			"main.navigateLink.text", mBundle.getString("main.navigateLink.text") }, {
 			"main.navigateLink.command", ADDrawingAreaConstants.EDGE_NAVIGATION_STATE }, {
-			"main.navigateLink.icon", "toolbar_images/NavigateLink.png" }, {
+			"main.navigateLink.icon", "images/navigate-link.png" }, {
 			"main.navigateLink.tooltip", mBundle.getString("main.navigateLink.tooltip") }, {
 
 			"main.overviewWindow.text", mBundle.getString("main.overviewWindow.text") }, {
 			"main.overviewWindow.command", ADDrawingAreaConstants.OVERVIEW_WINDOW }, {
-			"main.overviewWindow.icon", "toolbar_images/Overview.png" }, {
+			"main.overviewWindow.icon", "images/overview.png" }, {
 			"main.overviewWindow.tooltip", mBundle.getString("main.overviewWindow.tooltip") }, {
 
 			"main.diagramSync.text", mBundle.getString("main.diagramSync.text") }, {
 			"main.diagramSync.command", ADDrawingAreaConstants.DIAGRAM_SYNC }, {
-			"main.diagramSync.icon", "toolbar_images/SyncDiagrams.png" }, {
+			"main.diagramSync.icon", "images/sync-diagrams.png" }, {
 			"main.diagramSync.tooltip", mBundle.getString("main.diagramSync.tooltip") }, {
 
 //			"main.showFriendly.text", mBundle.getString("main.showFriendly.text") }, {
 //			"main.showFriendly.command", ADDrawingAreaConstants.SHOW_FRIENDLY }, {
-//			"main.showFriendly.icon", "toolbar_images/ShowFriendlyNames.png" }, {
+//			"main.showFriendly.icon", "images/show-friendly-names.png" }, {
 //			"main.showFriendly.tooltip", mBundle.getString("main.showFriendly.tooltip") }, {
 
 			"main.relationshipDiscovery.text", mBundle.getString("main.relationshipDiscovery.text") }, {
 			"main.relationshipDiscovery.command", ADDrawingAreaConstants.RELATION_DISCOVERY }, {
-			"main.relationshipDiscovery.icon", "toolbar_images/RelationshipDiscovery.png" }, {
+			"main.relationshipDiscovery.icon", "images/relationship-discovery.png" }, {
 			"main.relationshipDiscovery.tooltip", mBundle.getString("main.relationshipDiscovery.tooltip") }, {
 
 			"main.fitToWindow.text", mBundle.getString("main.fitToWindow.text") }, {
 			"main.fitToWindow.command", ADDrawingAreaConstants.ZOOM_AUTO_FIT }, {
-			"main.fitToWindow.icon", "toolbar_images/FitToWindow.png" }, {
+			"main.fitToWindow.icon", "images/fit-to-window.png" }, {
 			"main.fitToWindow.tooltip", mBundle.getString("main.fitToWindow.tooltip") }, {
 
 			"main.zoomIn.text", mBundle.getString("main.zoomIn.text") }, {
 			"main.zoomIn.command", ADDrawingAreaConstants.ZOOM_IN }, {
-			"main.zoomIn.icon", "toolbar_images/ZoomIn.png" }, {
+			"main.zoomIn.icon", "images/zoom-in.png" }, {
 			"main.zoomIn.tooltip", mBundle.getString("main.zoomIn.tooltip") }, {
 
 			"main.zoomOut.text", mBundle.getString("main.zoomOut.text") }, {
 			"main.zoomOut.command", ADDrawingAreaConstants.ZOOM_OUT }, {
-			"main.zoomOut.icon", "toolbar_images/ZoomOut.png" }, {
+			"main.zoomOut.icon", "images/zoom-out.png" }, {
 			"main.zoomOut.tooltip", mBundle.getString("main.zoomOut.tooltip") }, {
 
 			"main.moveForword.text", mBundle.getString("main.moveForword.text") }, {
 			"main.moveForword.command", ADDrawingAreaConstants.MOVE_FORWORD }, {
-			"main.moveForword.icon", "toolbar_images/MoveForward.png" }, {
+			"main.moveForword.icon", "images/move-forward.png" }, {
 			"main.moveForword.tooltip", mBundle.getString("main.moveForword.tooltip") }, {
 
 			"main.moveToFront.text", mBundle.getString("main.moveToFront.text") }, {
 			"main.moveToFront.command", ADDrawingAreaConstants.MOVE_TO_FRONT }, {
-			"main.moveToFront.icon", "toolbar_images/MoveFront.png" }, {
+			"main.moveToFront.icon", "images/move-front.png" }, {
 			"main.moveToFront.tooltip", mBundle.getString("main.moveToFront.tooltip") }, {
 
 			"main.moveBackward.text", mBundle.getString("main.moveBackward.text") }, {
 			"main.moveBackward.command", ADDrawingAreaConstants.MOVE_BACKWARD }, {
-			"main.moveBackward.icon", "toolbar_images/MoveBackward.png" }, {
+			"main.moveBackward.icon", "images/move-backward.png" }, {
 			"main.moveBackward.tooltip", mBundle.getString("main.moveBackward.tooltip") }, {
 
 			"main.moveToBack.text", mBundle.getString("main.moveToBack.text") }, {
 			"main.moveToBack.command", ADDrawingAreaConstants.MOVE_TO_BACK }, {
-			"main.moveToBack.icon", "toolbar_images/MoveToBack.png" }, {
+			"main.moveToBack.icon", "images/move-to-back.png" }, {
 			"main.moveToBack.tooltip", mBundle.getString("main.moveToBack.tooltip") }, {
 
 			//"main.layout.circularLayout.text", mBundle.getString("main.layout.circularLayout.text") }, {
-			//"main.layout.circularLayout.icon", "toolbar_images/CircularLayout.gif" }, {
+			//"main.layout.circularLayout.icon", "images/CircularLayout.gif" }, {
 			//"main.layout.circularLayout.tooltip", mBundle.getString("main.layout.circularLayout.tooltip") }, {
 			//"main.layout.circularLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.CIRCULAR }, {
                         
                         "main.layout.hierarchicalLayout.group", "layout" }, {
 			"main.layout.hierarchicalLayout.text", mBundle.getString("main.layout.hierarchicalLayout.text") }, {
-			"main.layout.hierarchicalLayout.icon", "toolbar_images/HierarchicalLayout.png" }, {
+			"main.layout.hierarchicalLayout.icon", "images/hierarchical-layout.png" }, {
 			"main.layout.hierarchicalLayout.tooltip", mBundle.getString("main.layout.hierarchicalLayout.tooltip") }, {
 			//"main.layout.hierarchicalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.HIERARCHICAL }, {
                         "main.layout.hierarchicalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + ILayoutKind.LK_HIERARCHICAL_LAYOUT }, {
 
                         "main.layout.orthogonalLayout.group", "layout" }, {    
 			"main.layout.orthogonalLayout.text", mBundle.getString("main.layout.orthogonalLayout.text") }, {
-			"main.layout.orthogonalLayout.icon", "toolbar_images/OrthogonalLayout.png" }, {
+			"main.layout.orthogonalLayout.icon", "images/orthogonal-layout.png" }, {
 			"main.layout.orthogonalLayout.tooltip", mBundle.getString("main.layout.orthogonalLayout.tooltip") }, {
 			//"main.layout.orthogonalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.ORTHOGONAL }, {
                          "main.layout.orthogonalLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + ILayoutKind.LK_ORTHOGONAL_LAYOUT}, {
                           
                         "main.layout.symmetricLayout.group", "layout" }, {     
 			"main.layout.symmetricLayout.text", mBundle.getString("main.layout.symmetricLayout.text") }, {
-			"main.layout.symmetricLayout.icon", "toolbar_images/SymmetricLayout.png" }, {
+			"main.layout.symmetricLayout.icon", "images/symmetric-layout.png" }, {
 			"main.layout.symmetricLayout.tooltip", mBundle.getString("main.layout.symmetricLayout.tooltip") }, {
 			//"main.layout.symmetricLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.SYMMETRIC }, {
                         "main.layout.symmetricLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + ILayoutKind.LK_SYMMETRIC_LAYOUT }, {
 
 			//"main.layout.treeLayout.text", mBundle.getString("main.layout.treeLayout.text") }, {
-			//"main.layout.treeLayout.icon", "toolbar_images/TreeLayout.gif" }, {
+			//"main.layout.treeLayout.icon", "images/TreeLayout.gif" }, {
 			//"main.layout.treeLayout.tooltip", mBundle.getString("main.layout.treeLayout.tooltip") }, {
 			//"main.layout.treeLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + TSDGraph.TREE }, {
                         //"main.layout.treeLayout.command", ADDrawingAreaConstants.APPLY_LAYOUT + "." + ILayoutKind.LK_TREE_LAYOUT }, {
 
 			"main.layout.layoutSequenceDiagram.text", mBundle.getString("main.layout.layoutSequenceDiagram.text") }, {
-			"main.layout.layoutSequenceDiagram.icon", "toolbar_images/SequenceLayout.png" }, {
+			"main.layout.layoutSequenceDiagram.icon", "images/sequence-layout.png" }, {
 			"main.layout.layoutSequenceDiagram.tooltip", mBundle.getString("main.layout.layoutSequenceDiagram.tooltip") }, {
 			"main.layout.layoutSequenceDiagram.command", ADDrawingAreaConstants.SEQUENCE_LAYOUT }, {
 
 			//"main.layout.relayout.text", mBundle.getString("main.layout.relayout.text") }, {
-			//"main.layout.relayout.icon", "toolbar_images/Relayout.gif" }, {
+			//"main.layout.relayout.icon", "images/Relayout.gif" }, {
 			//"main.layout.relayout.tooltip", mBundle.getString("main.layout.relayout.tooltip") }, {
 			//"main.layout.relayout.command", ADDrawingAreaConstants.APPLY_LAYOUT }, {
 
 			"main.layout.incrementalLayout.text", mBundle.getString("main.layout.incrementalLayout.text") }, {
-			"main.layout.incrementalLayout.icon", "toolbar_images/IncrementalLayout.png" }, {
+			"main.layout.incrementalLayout.icon", "images/incremental-layout.png" }, {
 			"main.layout.incrementalLayout.tooltip", mBundle.getString("main.layout.incrementalLayout.tooltip") }, {
 			"main.layout.incrementalLayout.command", ADDrawingAreaConstants.INCREMENTAL_LAYOUT },
 
@@ -497,7 +498,8 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			"graphwindow.default.width", "600" }, {
 			"graphwindow.default.height", "400" }, {
 			"editor.undo.limit", "50" }, {
-			"editor.icon", "toolbar_images/Describe.jpg" }, {
+			// "editor.icon", "images/Describe.jpg" }, {
+			"editor.icon", "images/uml.png" }, {
 			"dialog.zoom.title", mBundle.getString("dialog.zoom.title") }, {
 			"dialog.zoom.message", mBundle.getString("dialog.zoom.message") }, {
 
@@ -518,9 +520,10 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			"dialog.gridSizeError.title", mBundle.getString("dialog.gridSizeError.title") }, {
 			"dialog.gridSizeError.message", mBundle.getString("dialog.gridSizeError.message") }, {
 
-			"dialog.open.title", mBundle.getString("dialog.open.title") }, {
-			"dialog.open.message", mBundle.getString("dialog.open.message") }, {
-			"dialog.open.icon", "images/open.gif" }, {
+// conover - image does not exist
+//			"dialog.open.title", mBundle.getString("dialog.open.title") }, {
+//			"dialog.open.message", mBundle.getString("dialog.open.message") }, {
+//			"dialog.open.icon", "images/open.gif" }, {
 
 			"dialog.openError.fileNotFound.title", mBundle.getString("dialog.openError.fileNotFound.title") }, {
 			"dialog.openError.fileNotFound.message", NbBundle.getMessage(ADDrawingAreaBundle.class,

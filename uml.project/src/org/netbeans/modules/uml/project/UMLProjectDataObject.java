@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -52,7 +53,7 @@ public class UMLProjectDataObject extends MultiDataObject
     
     // file extension for uml project xml file
     public static final String EXT = "etd";  //NOI18N
-    public static final String ICON = "org/netbeans/modules/uml/project/ui/resources/modelRootNode.gif";
+    public static final String ICON = ImageUtil.IMAGE_FOLDER + "model-root-node.png"; // NOI18N
     private EditorCookie editor = null;
     
     private FileObject fo = null;

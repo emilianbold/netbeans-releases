@@ -416,7 +416,7 @@ public final class ReverseEngineerAction extends AbstractAction
     
 //    protected String iconResource()
 //    {
-//        return "org/netbeans/modules/uml/resources/toolbar_images/ReverseEngineer.png"; // NOI18N
+//        return ImageUtil.IMAGE_FOLDER + "reverse-engineer.png"; // NOI18N
 //    }
 //    
     

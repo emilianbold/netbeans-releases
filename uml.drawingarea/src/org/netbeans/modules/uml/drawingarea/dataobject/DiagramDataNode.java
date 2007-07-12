@@ -23,6 +23,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.openide.actions.OpenAction;
@@ -35,43 +36,13 @@ import org.openide.util.actions.SystemAction;
 
 public class DiagramDataNode extends DataNode
 {
-    public static final String IMAGE_ICON_ATTR_NAME = "iconImage";
-    
-    public static final String ICON_BASE_PATH =
-            "org/netbeans/modules/uml/resources/"; // NOI18N
-    
-    protected static final String DIAGRAM_ICON_DEFAULT =
-            ICON_BASE_PATH + "diagramsRootNode.png"; // NOI18N
-    
-    public static final String DIAGRAM_ICON_ACTIVITY =
-            ICON_BASE_PATH + "ActivityDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_CLASS =
-            ICON_BASE_PATH + "ClassDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_COLLABORATION =
-            ICON_BASE_PATH + "CollaborationDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_COMPONENT =
-            ICON_BASE_PATH + "ComponentDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_DEPLOYMENT =
-            ICON_BASE_PATH + "DeploymentDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_SEQUENCE =
-            ICON_BASE_PATH + "SequenceDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_STATE =
-            ICON_BASE_PATH + "StateDiagram.png"; // NOI18N;
-    
-    public static final String DIAGRAM_ICON_USECASE =
-            ICON_BASE_PATH + "UseCaseDiagram.png"; // NOI18N;
-    
+    public static final String IMAGE_ICON_ATTR_NAME = "iconImage"; // NOI18N
+
     
     public DiagramDataNode(DiagramDataObject obj)
     {
         super(obj, Children.LEAF);
-        setIconBaseWithExtension(DIAGRAM_ICON_DEFAULT);
+        setIconBaseWithExtension(ImageUtil.DIAGRAM_ICON_DEFAULT);
         
         IProxyDiagramManager diagramMgr = ProxyDiagramManager.instance();
         
@@ -81,48 +52,50 @@ public class DiagramDataNode extends DataNode
         setValue(IMAGE_ICON_ATTR_NAME, proxyDiagram.getDiagramKind());
     }
     
-    
+    // TODO: this method does not appeared to be used anywhere, and the param
+    // is not used at all in the method ???
     public Image getIcon(int i)
     {
-        String imageFile = DIAGRAM_ICON_DEFAULT;
+        String imageFile = ImageUtil.DIAGRAM_ICON_DEFAULT;
         int diagramType = IDiagramKind.DK_UNKNOWN;
         
         Object value = getValue(IMAGE_ICON_ATTR_NAME);
+        
         if (value != null)
             diagramType = ((Integer)value).intValue();
         
         switch (diagramType)
         {
             case IDiagramKind.DK_ACTIVITY_DIAGRAM:
-                imageFile = DIAGRAM_ICON_ACTIVITY;
+                imageFile = ImageUtil.DIAGRAM_ICON_ACTIVITY;
                 break;
 
             case IDiagramKind.DK_CLASS_DIAGRAM:
-                imageFile = DIAGRAM_ICON_CLASS;
+                imageFile = ImageUtil.DIAGRAM_ICON_CLASS;
                 break;
 
             case IDiagramKind.DK_COLLABORATION_DIAGRAM:
-                imageFile = DIAGRAM_ICON_COLLABORATION;
+                imageFile = ImageUtil.DIAGRAM_ICON_COLLABORATION;
                 break;
 
             case IDiagramKind.DK_COMPONENT_DIAGRAM:
-                imageFile = DIAGRAM_ICON_COMPONENT;
+                imageFile = ImageUtil.DIAGRAM_ICON_COMPONENT;
                 break;
 
             case IDiagramKind.DK_DEPLOYMENT_DIAGRAM:
-                imageFile = DIAGRAM_ICON_DEPLOYMENT;
+                imageFile = ImageUtil.DIAGRAM_ICON_DEPLOYMENT;
                 break;
 
             case IDiagramKind.DK_SEQUENCE_DIAGRAM:
-                imageFile = DIAGRAM_ICON_SEQUENCE;
+                imageFile = ImageUtil.DIAGRAM_ICON_SEQUENCE;
                 break;
 
             case IDiagramKind.DK_STATE_DIAGRAM:
-                imageFile = DIAGRAM_ICON_STATE;
+                imageFile = ImageUtil.DIAGRAM_ICON_STATE;
                 break;
 
             case IDiagramKind.DK_USECASE_DIAGRAM:
-                imageFile = DIAGRAM_ICON_USECASE;
+                imageFile = ImageUtil.DIAGRAM_ICON_USECASE;
                 break;
         }
         

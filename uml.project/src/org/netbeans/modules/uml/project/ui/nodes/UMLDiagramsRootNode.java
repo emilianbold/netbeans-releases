@@ -48,6 +48,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewDiagramType;
 import java.awt.datatransfer.Transferable;
 import java.util.Enumeration;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 
@@ -62,7 +63,7 @@ public final class UMLDiagramsRootNode extends UMLModelElementNode
 {
     
     private static final String ICON =
-        "org/netbeans/modules/uml/project/ui/resources/diagramsRootNode.gif"; //NOI18N
+        ImageUtil.IMAGE_FOLDER + "diagrams-root-node.png"; //NOI18N
     
     static final RequestProcessor rp = new RequestProcessor();
     private static Icon folderIconCache;

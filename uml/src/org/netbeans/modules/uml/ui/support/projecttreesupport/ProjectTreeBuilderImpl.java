@@ -503,41 +503,41 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
 
       // The diagrams
       m_SortMap.put("Diagram", new Integer(sortIndex++));
-      m_SortMap.put("Diagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("Diagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("Diagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("Diagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("ActivityDiagram", new Integer(sortIndex++));
-      m_SortMap.put("ActivityDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("ActivityDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("ActivityDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("ActivityDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("ClassDiagram", new Integer(sortIndex++));
-      m_SortMap.put("ClassDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("ClassDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("ClassDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("ClassDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("CollaborationDiagram", new Integer(sortIndex++));
-      m_SortMap.put("CollaborationDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("CollaborationDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("CollaborationDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("CollaborationDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("ComponentDiagram", new Integer(sortIndex++));
-      m_SortMap.put("ComponentDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("ComponentDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("ComponentDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("ComponentDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("DeploymentDiagram", new Integer(sortIndex++));
-      m_SortMap.put("DeploymentDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("DeploymentDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("DeploymentDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("DeploymentDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("ImplementationDiagram", new Integer(sortIndex++));
-      m_SortMap.put("ImplementationDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("ImplementationDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("ImplementationDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("ImplementationDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("RobustnessDiagram", new Integer(sortIndex++));
-      m_SortMap.put("RobustnessDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("RobustnessDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("RobustnessDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("RobustnessDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("SequenceDiagram", new Integer(sortIndex++));
-      m_SortMap.put("SequenceDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("SequenceDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("SequenceDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("SequenceDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("StateDiagram", new Integer(sortIndex++));
-      m_SortMap.put("StateDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("StateDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("StateDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("StateDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("SummaryDiagram", new Integer(sortIndex++));
-      m_SortMap.put("SummaryDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("SummaryDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("SummaryDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("SummaryDiagram_CLOSED", new Integer(sortIndex++));
       m_SortMap.put("UseCaseDiagram", new Integer(sortIndex++));
-      m_SortMap.put("UseCaseDiagram_BROKEN", new Integer(sortIndex++));
-      m_SortMap.put("UseCaseDiagram_CLOSED", new Integer(sortIndex++));
+//      m_SortMap.put("UseCaseDiagram_BROKEN", new Integer(sortIndex++));
+//      m_SortMap.put("UseCaseDiagram_CLOSED", new Integer(sortIndex++));
 
       // Attributes,Operations,EnumerationLiterals and ActivityPartitions folders appear after the diagrams
       // The single single type and the folder type needs to have the same
@@ -692,7 +692,7 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
       m_SortMap.put("UseCaseDetail", new Integer(sortIndex++));
       m_SortMap.put("UseCaseDetails", new Integer(sortIndex++));
 
-	  m_SortMap.put("JoinForkNode", new Integer(sortIndex++));
+      m_SortMap.put("JoinForkNode", new Integer(sortIndex++));
 
       // Show relationships and other folders at the bottom
       m_SortMap.put("Messages", new Integer(sortIndex++));

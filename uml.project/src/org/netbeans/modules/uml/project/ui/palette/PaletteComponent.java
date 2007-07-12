@@ -19,14 +19,10 @@
 
 package org.netbeans.modules.uml.project.ui.palette;
 
-import java.awt.Image;
-
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import org.openide.util.Utilities;
-
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 
 public class PaletteComponent extends JPanel
@@ -47,23 +43,12 @@ public class PaletteComponent extends JPanel
    public void initComponent(IDrawingAreaControl control)
    {
       m_Control = control;
+
       if (m_Control != null)
-      {
          //initialize the toolbars according to the control
-         Image img = Utilities.loadImage("org/netbeans/modules/uml/resources/Actor.png");
-         ImageIcon icon = new ImageIcon();
-         icon.setImage(img);
-         JButton btn = new JButton(icon);
-         this.add(btn);
-      }
-      else
-      {
-         //assume its a class diagram
-         Image img = Utilities.loadImage("org/netbeans/modules/uml/resources/Class.png");
-         ImageIcon icon = new ImageIcon();
-         icon.setImage(img);
-         JButton btn = new JButton(icon);
-         this.add(btn);
-      }
+         add(new JButton(ImageUtil.instance().getIcon("actor.png"))); // NOI18N
+      
+      else //assume its a class diagram
+         add(new JButton(ImageUtil.instance().getIcon("class.png"))); // NOI18N
    }
 }

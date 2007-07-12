@@ -28,8 +28,11 @@ import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -177,7 +180,8 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
      */
     private static class CategoryNode extends AbstractNode {
 
-        private Image icon = Utilities.loadImage( "org/netbeans/modules/project/uiapi/defaultCategory.gif" ); // NOI18N    
+        private Image icon = Utilities.loadImage(
+            ImageUtil.IMAGE_FOLDER + "default-category.gif"); // NOI18N    
 
         public CategoryNode( ProjectCustomizer.Category category ) {
             super( ( category.getSubcategories() == null || category.getSubcategories().length == 0 ) ? 

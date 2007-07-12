@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -22,33 +22,38 @@ package org.netbeans.modules.uml.integration.ide.actions;
 import org.netbeans.modules.uml.integration.finddialog.FindControllerDialog;
 import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
 
 public final class FindInModelAction extends AbstractUMLToolbarAction
 {
     public boolean shouldEnable()
-	{
-		Project[] projects = ProjectUtil.getOpenUMLProjects();
-		return projects.length > 0 ;
-	}
-
-	public String getName() {
-		return NbBundle.getMessage(FindInModelAction.class, "CTL_FindInModelAction");
-	}
-	
-	
-	protected String iconResource() {
-		return "org/netbeans/modules/uml/resources/toolbar_images/FindInModel.png";
-	}
-	
-    public void performAction() {
-		Thread r = new Thread() {
-			public void run() {
-				FindControllerDialog fc = new FindControllerDialog();
-				fc.showFindDialog();
-			}
+    {
+        Project[] projects = ProjectUtil.getOpenUMLProjects();
+        return projects.length > 0 ;
+    }
+    
+    public String getName()
+    {
+        return NbBundle.getMessage(FindInModelAction.class, "CTL_FindInModelAction"); // NOI18N
+    }
+    
+    
+    protected String iconResource()
+    {
+        return ImageUtil.IMAGE_FOLDER + "find-in-model.png"; // NOI18N
+    }
+    
+    public void performAction()
+    {
+        Thread r = new Thread()
+        {
+            public void run()
+            {
+                FindControllerDialog fc = new FindControllerDialog();
+                fc.showFindDialog();
+            }
         };
         r.start();
     }
 }
-

@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -284,8 +285,7 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
                 
                 retVal = new AbstractNode(new Children.SortedArray());
                 retVal.setName(info.getDisplayName());
-                retVal.setIconBaseWithExtension(
-                    "org/netbeans/modules/uml/project/ui/resources/umlProject.gif");
+                retVal.setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "uml.png"); // NOI18N
                 mNodeMap.put(object, retVal);
             }
         }

@@ -252,58 +252,19 @@ public class CommonResourceManager implements ICommonResourceManager
       m_ElementNameIconMap.put("UseCaseDetail", RESOURCE_BUNDLE.getString("IDI_USECASEDETAIL"));
       m_ElementNameIconMap.put("VBAModule", RESOURCE_BUNDLE.getString("IDI_VBAMODULE"));
       m_ElementNameIconMap.put("VBAProject", RESOURCE_BUNDLE.getString("IDI_VBAPROJECT"));
-      // The diagrams
-      // cvc - CR#6271077
-      // In Buzz (JSE v8) we are not using separate icons for closed
-      // vs opened diagrams, so just have the CLOSED entries use the same
-      // icon as the "non-CLOSED"
       m_ElementNameIconMap.put("Diagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM"));
-      m_ElementNameIconMap.put("Diagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_BROKEN"));
-      m_ElementNameIconMap.put("Diagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_CLOSED"));
       m_ElementNameIconMap.put("ActivityDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ACTIVITY"));
-      m_ElementNameIconMap.put("ActivityDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ACTIVITY_BROKEN"));
-      //      m_ElementNameIconMap.put("ActivityDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ACTIVITY_CLOSED"));
-      m_ElementNameIconMap.put("ActivityDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ACTIVITY"));
       m_ElementNameIconMap.put("ClassDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_CLASS"));
-      m_ElementNameIconMap.put("ClassDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_CLASS_BROKEN"));
-      //      m_ElementNameIconMap.put("ClassDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_CLASS_CLOSED"));
-      m_ElementNameIconMap.put("ClassDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_CLASS"));
       m_ElementNameIconMap.put("CollaborationDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COLLABORATION"));
-      m_ElementNameIconMap.put("CollaborationDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COLLABORATION_BROKEN"));
-      //      m_ElementNameIconMap.put("CollaborationDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COLLABORATION_CLOSED"));
-      m_ElementNameIconMap.put("CollaborationDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COLLABORATION"));
       m_ElementNameIconMap.put("ComponentDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COMPONENT"));
-      m_ElementNameIconMap.put("ComponentDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COMPONENT_BROKEN"));
-      //      m_ElementNameIconMap.put("ComponentDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COMPONENT_CLOSED"));
-      m_ElementNameIconMap.put("ComponentDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_COMPONENT"));
       m_ElementNameIconMap.put("DeploymentDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_DEPLOYMENT"));
-      m_ElementNameIconMap.put("DeploymentDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_DEPLOYMENT_BROKEN"));
-      //      m_ElementNameIconMap.put("DeploymentDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_DEPLOYMENT_CLOSED"));
-      m_ElementNameIconMap.put("DeploymentDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_DEPLOYMENT"));
       m_ElementNameIconMap.put("ImplementationDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_IMPLEMENTATION"));
-      m_ElementNameIconMap.put("ImplementationDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_IMPLEMENTATION_BROKEN"));
-      //      m_ElementNameIconMap.put("ImplementationDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_IMPLEMENTATION_CLOSED"));
-      m_ElementNameIconMap.put("ImplementationDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_IMPLEMENTATION"));
       m_ElementNameIconMap.put("RobustnessDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ROBUSTNESS"));
-      m_ElementNameIconMap.put("RobustnessDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ROBUSTNESS_BROKEN"));
-      //      m_ElementNameIconMap.put("RobustnessDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ROBUSTNESS_CLOSED"));
-      m_ElementNameIconMap.put("RobustnessDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_ROBUSTNESS"));
       m_ElementNameIconMap.put("SequenceDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SEQUENCE"));
-      m_ElementNameIconMap.put("SequenceDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SEQUENCE_BROKEN"));
-      //      m_ElementNameIconMap.put("SequenceDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SEQUENCE_CLOSED"));
-      m_ElementNameIconMap.put("SequenceDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SEQUENCE"));
       m_ElementNameIconMap.put("StateDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_STATE"));
-      m_ElementNameIconMap.put("StateDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_STATE_BROKEN"));
-      //      m_ElementNameIconMap.put("StateDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_STATE_CLOSED"));
-      m_ElementNameIconMap.put("StateDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_STATE"));
       m_ElementNameIconMap.put("SummaryDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SUMMARY"));
-      m_ElementNameIconMap.put("SummaryDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SUMMARY_BROKEN"));
-      //      m_ElementNameIconMap.put("SummaryDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SUMMARY_CLOSED"));
-      m_ElementNameIconMap.put("SummaryDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_SUMMARY"));
       m_ElementNameIconMap.put("UseCaseDiagram", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_USECASE"));
-      m_ElementNameIconMap.put("UseCaseDiagram_BROKEN", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_USECASE_BROKEN"));
-      //      m_ElementNameIconMap.put("UseCaseDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_USECASE_CLOSED"));
-      m_ElementNameIconMap.put("UseCaseDiagram_CLOSED", RESOURCE_BUNDLE.getString("IDI_DIAGRAM_USECASE"));
+
       // Folder icons
       m_ElementNameIconMap.put("ConstraintFolder", RESOURCE_BUNDLE.getString("IDI_CONSTRAINTSPACKAGEICON"));
       m_ElementNameIconMap.put("TagDefinitionFolder", RESOURCE_BUNDLE.getString("IDI_TAGDEFINITIONPACKAGEICON"));
@@ -312,9 +273,7 @@ public class CommonResourceManager implements ICommonResourceManager
       m_ElementNameIconMap.put("Diagrams", RESOURCE_BUNDLE.getString("IDI_DIAGRAMS"));
       
       // Other
-      m_ElementNameIconMap.put("Workspace", RESOURCE_BUNDLE.getString("IDI_WORKSPACE"));
       m_ElementNameIconMap.put("Project", RESOURCE_BUNDLE.getString("IDI_PROJECT"));
-      m_ElementNameIconMap.put("WSProject", RESOURCE_BUNDLE.getString("IDI_PROJECTCLOSED"));
       m_ElementNameIconMap.put("NewProperty", RESOURCE_BUNDLE.getString("IDI_NEWPROPERTY"));
       
       // Collections
@@ -457,6 +416,7 @@ public class CommonResourceManager implements ICommonResourceManager
    
    public Icon getIconForFile(String iconLocation)
    {
+       
       Image img = ProductHelper.getProxyUserInterface().getResource(iconLocation);
       if (img != null)
       {
@@ -464,14 +424,14 @@ public class CommonResourceManager implements ICommonResourceManager
          //ImageIcon icon = new ImageIcon(iconLocation);
          return icon;
       }
-      //		URL url = ClassLoader.getSystemClassLoader().getResource(iconLocation);
-      //
-      //		File f = new File(iconLocation);
-      //	  	if (url != null)
-      //	  	{
-      //			ImageIcon icon = new ImageIcon(url);
-      //			return icon;
-      //	  	}
+//		URL url = ClassLoader.getSystemClassLoader().getResource(iconLocation);
+//
+//		File f = new File(iconLocation);
+//	  	if (url != null)
+//	  	{
+//			ImageIcon icon = new ImageIcon(url);
+//			return icon;
+//	  	}
       return null;
    }
    
@@ -643,19 +603,22 @@ public class CommonResourceManager implements ICommonResourceManager
             {
                searchStr = displayName;
             }
-            
+          
             if (!isValid && searchStr.length() > 0)
             {
-               searchStr = pManager.getBrokenIcon(diaKind);
+                // searchStr = pManager.getBrokenIcon(diaKind);
+                searchStr = pManager.getOpenIcon(diaKind);
             }
+            
             else if (!isOpen && searchStr.length() > 0)
             {
-               searchStr = pManager.getClosedIcon(diaKind);
+                // searchStr = pManager.getClosedIcon(diaKind);
+                searchStr = pManager.getOpenIcon(diaKind);
             }
          }
       }
+      
       return searchStr;
    }
    
 }
-

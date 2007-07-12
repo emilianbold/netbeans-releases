@@ -31,7 +31,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr boolvalue="true" name="template"/>                    
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/ -->
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyAnalysisProject.html"/>
                 </file>   
                 
@@ -40,7 +41,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr boolvalue="true" name="template"/>                    
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.umlJava"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/ -->
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyJavaProject.html"/>
                 </file>
                 
@@ -49,7 +51,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr boolvalue="true" name="template"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.reverseEngineer"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/ -->
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/revEngProject.html"/>
                 </file>  
                 
@@ -71,7 +74,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/toolbar_images/NewDiagram.png"/>
+            <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/toolbar_images/NewDiagram.png"/ -->
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/new-diagram.png"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/newDiagram.html"/>
             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.NewUMLDiagWizardIterator.createDiagramIterator"/>
             <attr name="templateCategory" stringvalue="uml-type"/>
@@ -80,7 +84,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/Package.png"/>
+            <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/Package.png"/ -->
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/package.png"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/newPackage.html"/>
             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.NewUMLDiagWizardIterator.createPackageIterator"/>
             <attr name="templateCategory" stringvalue="uml-type"/>
@@ -89,7 +94,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/Class.png"/>
+            <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/Class.png"/ -->
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/class.png"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/newElement.html"/>
             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.NewUMLDiagWizardIterator.createElementIterator"/>
             <attr name="templateCategory" stringvalue="uml-type"/>

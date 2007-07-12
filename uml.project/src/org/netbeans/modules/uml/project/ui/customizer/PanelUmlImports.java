@@ -23,10 +23,12 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.Utilities;
 
 
@@ -212,10 +214,11 @@ public class PanelUmlImports extends JPanel
        {
            setText(value.toString());
            
-           Image image = Utilities.loadImage("org/netbeans/modules/uml/project/ui/resources/umlProject.gif");
-           if(image != null)
+           Icon image = ImageUtil.instance().getIcon("uml.png"); // NOI18N
+           
+           if (image != null)
            {
-               setIcon(new ImageIcon(image));
+               setIcon(image);
            }
        }
    }

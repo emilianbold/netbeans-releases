@@ -25,6 +25,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.reporting.wizard.ReportWizardSettings;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -61,7 +62,9 @@ public final class GenerateModelReportAction extends CookieAction
         UMLProject project = (UMLProject)node.getLookup().lookup(UMLProject.class);
         if (project!=null)
         {
-            UMLProjectHelper helper = (UMLProjectHelper)project.getLookup().lookup(UMLProjectHelper.class);
+            UMLProjectHelper helper = (UMLProjectHelper)project.getLookup()
+                .lookup(UMLProjectHelper.class);
+            
             return helper.getProject();
         }
         return null;
@@ -75,7 +78,9 @@ public final class GenerateModelReportAction extends CookieAction
     
     public String getName()
     {
-        return NbBundle.getMessage(GenerateModelReportAction.class, "CTL_GenerateModelReportAction");
+        return NbBundle.getMessage(
+            GenerateModelReportAction.class, 
+            "CTL_GenerateModelReportAction"); // NOI18N
     }
     
     protected Class[] cookieClasses()
@@ -88,7 +93,8 @@ public final class GenerateModelReportAction extends CookieAction
     
     protected String iconResource()
     {
-        return "org/netbeans/modules/uml/resources/toolbar_images/ModelReport.png";
+        // converted to central image folder
+        return ImageUtil.IMAGE_FOLDER + "model-report.png"; // NOI18N
     }
     
     public HelpCtx getHelpCtx()

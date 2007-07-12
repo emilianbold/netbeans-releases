@@ -253,6 +253,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.uml.core.typemanagement</package>
                 <package>org.netbeans.modules.uml.core.workspacemanagement</package>
                 <package>org.netbeans.modules.uml.resources</package>
+                <package>org.netbeans.modules.uml.resources.images</package>
                 <package>org.netbeans.modules.uml.ui.addins.associateDialog</package>
                 <package>org.netbeans.modules.uml.ui.addins.dependencyanalyzer</package>
                 <package>org.netbeans.modules.uml.ui.addins.diagramcreator</package>

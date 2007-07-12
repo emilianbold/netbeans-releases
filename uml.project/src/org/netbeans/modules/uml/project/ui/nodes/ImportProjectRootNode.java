@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -37,6 +37,7 @@ import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.ImportElementListener;
 import javax.swing.Action;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.NbBundle;
 
@@ -45,7 +46,8 @@ import org.openide.util.NbBundle;
  *
  * @author Administrator
  */
-public class ImportProjectRootNode extends AbstractNode implements ImportElementListener
+public class ImportProjectRootNode extends AbstractNode 
+    implements ImportElementListener
 {
     IProject project = null;
     
@@ -54,32 +56,33 @@ public class ImportProjectRootNode extends AbstractNode implements ImportElement
     {
         super(new ImportedProjectChildren(helper));
         this.project = helper.getProject();
-        setIconBaseWithExtension(
-            "org/netbeans/modules/uml/project/ui/resources/import_elements.png");
+        setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "import-elements.png"); // NOI18N
     }
     
-    public String getDisplayName () {
-        return (String)NbBundle.getMessage(ImportProjectRootNode.class, "ImportedNode_Name"); 
+    public String getDisplayName()
+    {
+        return (String)NbBundle.getMessage(ImportProjectRootNode.class, "ImportedNode_Name"); // NOI18N
     }
-
-    public String getName () {
+    
+    public String getName()
+    {
         return this.getDisplayName();
-    } 
-
-    ////////////////////////////////////////////////////////////////////////////
-    // ImportElementListener methods 
+    }
     
-    public void elementImported(UMLProject project, 
-                                IElement element, 
-                                IElementImport importElement)
+    ////////////////////////////////////////////////////////////////////////////
+    // ImportElementListener methods
+    
+    public void elementImported(UMLProject project,
+        IElement element,
+        IElementImport importElement)
     {
         ImportedProjectChildren children = (ImportedProjectChildren)getChildren();
         children.addNewImportedElement(project, element, importElement, true);
     }
     
-    public void packageImported(UMLProject project, 
-                                IElement element, 
-                                IPackageImport importElement)
+    public void packageImported(UMLProject project,
+        IElement element,
+        IPackageImport importElement)
     {
         ImportedProjectChildren children = (ImportedProjectChildren)getChildren();
         children.addNewImportedPackage(project, element, importElement, true);

@@ -75,6 +75,7 @@ import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.project.ui.nodes.UMLPhysicalViewProvider;
 import org.netbeans.modules.uml.project.ui.nodes.ModelRootNodeCookie;
 import org.netbeans.modules.uml.project.ui.customizer.UMLImportsUiSupport;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.util.ITaskFinishListener;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
@@ -87,11 +88,8 @@ import org.openide.windows.WindowManager;
  */
 public class UMLProject implements Project, AntProjectListener
 {
-    private static final Icon PROJECT_ICON =
-            new ImageIcon(Utilities.loadImage(
-            "org/netbeans/modules/uml/project/ui/resources/umlProject.gif")); // NOI18N
-    
-    
+    private static final Icon PROJECT_ICON = ImageUtil.instance().getIcon("uml.png"); // NOI18N
+
     private final Lookup mLookup;
     private final UMLProjectHelper mHelper;
     private final ReferenceHelper mRefHelper;

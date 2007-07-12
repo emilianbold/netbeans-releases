@@ -1755,11 +1755,11 @@ public class ADProjectTreeEngine
             }
             else if((isValid == true) && (isOpen == false))
             {
-               retVal = displayName + "_CLOSED";
+               retVal = displayName; // + "_CLOSED";
             }
             else
             {
-               retVal = displayName + "_BROKEN";
+               retVal = displayName; // + "_BROKEN";
             }
          }
       }

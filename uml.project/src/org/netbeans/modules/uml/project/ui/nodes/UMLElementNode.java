@@ -623,96 +623,105 @@ public class UMLElementNode extends AbstractModelElementNode
 		return SystemAction.get(OpenAction.class);
 	}
 	
-	public Image getIcon(int type)
-	{
-		Image retVal = null;
-	//	if(icon!=null) return icon;
-		
-		ITreeItem item = this;
-		IProjectTreeItem data = item.getData();
-		
-		if(icon!=null) 
-		{
-			retVal = icon;
-		}
-		else
-		{
-		
-		if (item instanceof ITreeFolder)
-		{
-			CommonResourceManager resource = CommonResourceManager.instance();
-			retVal = createImage(resource
-				.getIconDetailsForElementType(item.getName()));
-		}
-		
-		else if (item instanceof ITreeDiagram)
-		{
-			ITreeDiagram diagram = (ITreeDiagram)item;
-			
-			CommonResourceManager resource = CommonResourceManager.instance();
-			retVal = createImage(resource
-				.getIconDetailsForElementType(diagram.getDiagramType()));
-		}
-		
-		else if (data.getModelElement() != null)
-		{
-			if (data.getModelElement() instanceof IProject)
-				retVal = super.getIcon(type);
-			
-			else
-			{
-				CommonResourceManager resource =
-					CommonResourceManager.instance();
-				
-				retVal = createImage(
-					resource.getIconDetailsForDisp(data.getModelElement()));
-			}
-		}
-		
-		else if (data.isProject())
-		{
-//         CommonResourceManager resource = CommonResourceManager.instance();
-//         retVal = createImage(
-//				resource.getIconDetailsForElementType("WSProject"));
-			
-			retVal = super.getIcon(type);
-		}
-		
-		else if (data.isWorkspace())
-		{
-			CommonResourceManager resource = CommonResourceManager.instance();
-			// special case for design pattern catalog
-			
-			if (data.getItemText().equals("DesignPatternCatalog")) // NOI18N
-			{
-				retVal = createImage(resource
-					.getIconDetailsForElementType(
-					"DesignPatternCatalog")); // NOI18N
-			}
-			
-			else
-			{
-				retVal = createImage(resource
-					.getIconDetailsForElementType("Workspace")); // NOI18N
-			}
-		}
-		
-		else
-		{
-			CommonResourceManager resource = CommonResourceManager.instance();
-			retVal = createImage(
-				resource.getIconDetailsForElementType(item.getName()));
-		}
-		}
-		if (retVal == null)
-			retVal = super.getIcon(type);
-		
-		//return getIconWithOverlay(retVal, this);
-		retVal=getIconWithOverlay(retVal, this);
-		
-		icon=retVal;
-		return icon;
-	}
+        public Image getIcon(int type)
+        {
+            Image retVal = null;
+            //	if(icon!=null) return icon;
+            
+            ITreeItem item = this;
+            IProjectTreeItem data = item.getData();
+            
+            if (icon!=null)
+            {
+                retVal = icon;
+            }
+            
+            else
+            {
+                
+                if (item instanceof ITreeFolder)
+                {
+                    CommonResourceManager resource =
+                        CommonResourceManager.instance();
+                    
+                    retVal = createImage(resource
+                        .getIconDetailsForElementType(item.getName()));
+                }
+                
+                else if (item instanceof ITreeDiagram)
+                {
+                    ITreeDiagram diagram = (ITreeDiagram)item;
+                    
+                    CommonResourceManager resource =
+                        CommonResourceManager.instance();
+                    
+                    retVal = createImage(resource
+                        .getIconDetailsForElementType(diagram.getDiagramType()));
+                }
+                
+                else if (data.getModelElement() != null)
+                {
+                    if (data.getModelElement() instanceof IProject)
+                        retVal = super.getIcon(type);
+                    
+                    else
+                    {
+                        CommonResourceManager resource =
+                            CommonResourceManager.instance();
+                        
+                        retVal = createImage(
+                            resource.getIconDetailsForDisp(data.getModelElement()));
+                    }
+                }
+                
+                else if (data.isProject())
+                {
+                    // CommonResourceManager resource = 
+                    //     CommonResourceManager.instance();
+                    // retVal = createImage(
+                    //     resource.getIconDetailsForElementType("WSProject"));
+                    
+                    retVal = super.getIcon(type);
+                }
+                
+                else if (data.isWorkspace())
+                {
+                    CommonResourceManager resource = CommonResourceManager.instance();
+                    // special case for design pattern catalog
+                    
+                    if (data.getItemText().equals("DesignPatternCatalog")) // NOI18N
+                    {
+                        retVal = createImage(
+                            resource.getIconDetailsForElementType(
+                            "DesignPatternCatalog")); // NOI18N
+                    }
+                    
+                    else
+                    {
+                        retVal = createImage(resource
+                            .getIconDetailsForElementType("Workspace")); // NOI18N
+                    }
+                }
+                
+                else
+                {
+                    CommonResourceManager resource = 
+                        CommonResourceManager.instance();
+                    
+                    retVal = createImage(
+                        resource.getIconDetailsForElementType(item.getName()));
+                }
+            }
+            
+            if (retVal == null)
+                retVal = super.getIcon(type);
+            
+            //return getIconWithOverlay(retVal, this);
+            retVal=getIconWithOverlay(retVal, this);
+            
+            icon=retVal;
+            return icon;
+        }
 	
 	public Image getOpenedIcon(int type)
 	{

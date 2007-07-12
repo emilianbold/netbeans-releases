@@ -78,6 +78,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewDiagramType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDisplayer;
@@ -278,7 +279,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
     }
     
     private static Image brokenProjectBadge = Utilities.loadImage(
-            "org/netbeans/modules/uml/project/ui/resources/brokenProjectBadge.gif"); // NOI18N
+        ImageUtil.IMAGE_FOLDER + "broken-project-badge.gif"); // NOI18N
     /////// end isBroken stuff
     
     // Private innerclasses ----------------------------------------------------
@@ -301,8 +302,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                     mProject, mHelper, evaluator, mImportSupport),
                     Lookups.singleton(mProject));
             
-            setIconBaseWithExtension(
-                    "org/netbeans/modules/uml/project/ui/resources/umlProject.gif"); // NOI18N
+            setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "uml.png"); // NOI18N
             
             setName(ProjectUtils.getInformation( mProject ).getDisplayName());
             

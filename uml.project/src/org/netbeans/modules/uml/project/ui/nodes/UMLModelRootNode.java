@@ -59,6 +59,7 @@ import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.swing.projecttree.JFilterDialog;
 import org.netbeans.modules.uml.project.ui.nodes.actions.FilterAction;
 import javax.swing.tree.DefaultTreeModel;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.SaveAction;
 import org.openide.cookies.SaveCookie;
@@ -139,8 +140,7 @@ public class UMLModelRootNode extends UMLModelElementNode
         this.displayName = NbBundle.getMessage(
                 UMLModelRootNode.class, "CTL_UMLModelRootNode"); //NOI18N
         
-        setIconBaseWithExtension(
-                "org/netbeans/modules/uml/project/ui/resources/modelRootNode.gif"); // NOI18N
+        setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "model-root-node.png"); // NOI18N
         
         try
         {

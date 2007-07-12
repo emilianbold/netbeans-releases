@@ -86,17 +86,23 @@ public class JDefaultNewDialog extends WizardSheet implements ActionListener
 		super();
 	}
 
-	public void init(Icon hbmWatermark, GraphicsConfiguration hpalWatermark, Icon hbmHeader) 
-	{
-		if (hbmWatermark != null && hbmHeader != null) {
-			super.init(hbmWatermark, hpalWatermark, hbmHeader);
-		} else {
-			// just load up the default images
-			super.init(new ImageIcon(JDefaultNewDialog.class.getResource(NewDialogResources.getString("JDefaultNewDialog.WATERMARK"))), //$NON-NLS-1$
-                    null, 
-                    new ImageIcon(JDefaultNewDialog.class.getResource(NewDialogResources.getString("JDefaultNewDialog.BANNER")))); //$NON-NLS-1$
-		}
-	}
+        public void init(Icon hbmWatermark, GraphicsConfiguration hpalWatermark, Icon hbmHeader)
+        {
+            if (hbmWatermark != null && hbmHeader != null)
+            {
+                super.init(hbmWatermark, hpalWatermark, hbmHeader);
+            }
+            
+            else
+            {
+                // just load up the default images
+//                super.init(new ImageIcon(JDefaultNewDialog.class.getResource(
+//                    NewDialogResources.getString("JDefaultNewDialog.WATERMARK"))), // NOI18N
+//                    null,
+//                    new ImageIcon(JDefaultNewDialog.class.getResource(
+//                    NewDialogResources.getString("JDefaultNewDialog.BANNER")))); // NOI18N
+            }
+        }
 
 	public void init(Icon hbmWatermark, GraphicsConfiguration hpalWatermark, Icon hbmHeader, INewDialogTabDetails details) 
 	{

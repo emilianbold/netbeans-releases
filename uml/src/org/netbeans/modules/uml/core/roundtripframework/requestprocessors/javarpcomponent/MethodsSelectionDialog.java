@@ -690,9 +690,9 @@ class CheckRenderer extends JPanel implements TreeCellRenderer
         // URL classURL = getClass().getResource("resources/class.gif");
         // URL methodURL = getClass().getResource("resources/method.gif");
 		URL classURL = getClass().getResource(
-			"resources/Class.png"); // NOI18N
+			"resources/images/class.png"); // NOI18N
         URL methodURL = getClass().getResource(
-			"resources/operation.gif"); // NOI18N
+			"resources/images/operation.gif"); // NOI18N
 
         ImageIcon classIcon = new ImageIcon(classURL);
         ImageIcon methodIcon = new ImageIcon(methodURL);
