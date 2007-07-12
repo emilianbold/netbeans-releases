@@ -56,7 +56,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     private PropertyEditorBooleanUC(boolean supportsCustomEditor) {
         this.supportsCustomEditor = supportsCustomEditor;
-        initComponents();
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
@@ -70,19 +69,15 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return new PropertyEditorBooleanUC(true);
     }
 
-    private void initComponents() {
-        radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN")); // NOI18N
-        customEditor = new CustomEditor();
-    }
-
     @Override
     public InplaceEditor getInplaceEditor() {
         if (inplaceEditor == null) {
             inplaceEditor = new BooleanInplaceEditor(this, new ItemListener() {
+
                 public void itemStateChanged(ItemEvent e) {
-                    if (!(inplaceEditor.getComponent() instanceof JCheckBox))
+                    if (!(inplaceEditor.getComponent() instanceof JCheckBox)) {
                         return;
+                    }
                     JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
                     PropertyValue value = MidpTypes.createBooleanValue(checkBox.isSelected());
                     PropertyEditorBooleanUC.this.setValue(value);
@@ -115,10 +110,17 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     }
 
     public JComponent getCustomEditorComponent() {
+        if (customEditor == null) {
+            customEditor = new CustomEditor();
+        }
         return customEditor;
     }
 
     public JRadioButton getRadioButton() {
+        if (radioButton == null) {
+            radioButton = new JRadioButton();
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN")); // NOI18N
+        }
         return radioButton;
     }
 
@@ -146,11 +148,11 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return MidpTypes.getBoolean((PropertyValue) super.getValue()) ? TRUE_TEXT : FALSE_TEXT;
     }
 
-    public void setTextForPropertyValue (String text) {
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
 
-    public String getTextForPropertyValue () {
+    public String getTextForPropertyValue() {
         return null;
     }
 
@@ -167,12 +169,29 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
+            if (customEditor.getText().equals("true"))
+                updateInplaceEditorComponent(true);
+            else 
+                updateInplaceEditorComponent(false);
         }
     }
 
     @Override
     public boolean canWrite() {
         return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
+    }
+
+    @Override
+    public Object getDefaultValue() {
+        PropertyValue value = (PropertyValue) super.getDefaultValue();
+        if (value.getKind() == PropertyValue.Kind.VALUE && value.getPrimitiveValue() instanceof Boolean)
+            updateInplaceEditorComponent((Boolean) value.getPrimitiveValue());
+        return super.getDefaultValue();
+    }
+
+    private void updateInplaceEditorComponent(boolean selected) {
+        JCheckBox ic = (JCheckBox) inplaceEditor.getComponent();
+        ic.setSelected(selected);
     }
 
     private class CustomEditor extends JPanel implements ActionListener {

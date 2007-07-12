@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -38,7 +39,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
  */
 public class PropertyEditorArrayInteger extends GroupPropertyEditor implements ExPropertyEditor{
     
-    private String textToParse;
+    private static String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG");
     
     public static DesignPropertyEditor create() {
         return new PropertyEditorArrayInteger();
@@ -58,7 +59,6 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
                 text.append(","); //NOI18N
         }
         text.append("]"); //NOI18N
-        
         return text.toString();
     }
     
@@ -66,7 +66,7 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
         String newText = decodeValuesFromText(text);
         
         if (newText == null)
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Illegal property formating : "+ text)); //NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + " " + text)); //NOI18N
         else {
             GroupValue values = getValue();
             Iterator<String> propertyNamesIter = Arrays.asList(values.getPropertyNames()).iterator();

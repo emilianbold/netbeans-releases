@@ -256,7 +256,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     public void customEditorOKButtonPressed() {
     }
     
-    public final void invokeSaveToModel() {
+public final void invokeSaveToModel() {
         try {
             propertySupport.setValue(getValue());
         } catch (IllegalArgumentException ex) {
