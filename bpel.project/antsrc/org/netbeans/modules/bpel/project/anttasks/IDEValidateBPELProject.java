@@ -251,12 +251,14 @@ public class IDEValidateBPELProject extends Task {
 
       for (BPELFile bpel : myBPELFiles) {
         if (bpel.getQName().equals(qName)) {
-          throw new BuildException(
-            " \n" +
-            "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
-            "have the same bpel process name and targetname space:\n" +
-            qName + " \n \n"
-          );
+          if ( !mAllowBuildWithError) { // # 106342
+            throw new BuildException(
+              " \n" +
+              "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
+              "have the same bpel process name and targetname space:\n" +
+              qName + " \n \n"
+            );
+          }
         }
       }
       myBPELFiles.add(current);
