@@ -154,30 +154,7 @@ under Print Settings in the Options window)
 <mapID target="css_createcss"    url="xml/css/css_create.html" />
 
 
-<!-- debug IDs :-->
 
-<mapID target="debug.about" url="debug/debug_about.html" />
-<mapID target="debug.process" url="debug/debug_process.html" />
-<mapID target="debug.quickref" url="debug/debug_quickref.html" />
-<mapID target="debug.local" url="debug/debug_local.html" />
-<mapID target="debug.finish" url="debug/debug_finish.html" />
-<mapID target="debug.context" url="debug/debug_context.html" />
-<mapID target="debug.fix.watch" url="debug/debug_fix_watch.html" />
-<mapID target="debug.new.watch" url="debug/debug_new_watch.html" />
-<mapID target="debug.pop" url="debug/debug_pop.html" />
-<mapID target="debug.callstack" url="debug/debug_callstack.html" />
-<mapID target="debug.variables" url="debug/debug_variables.html" />
-<mapID target="breakpoint.about" url="debug/breakpoint_about.html" />
-<mapID target="breakpoint.group" url="debug/breakpoint_group.html" />
-<mapID target="breakpoint.setting" url="debug/breakpoint_setting.html" />
-<mapID target="breakpoint.conditional" url="debug/breakpoint_conditional.html" />
-<mapID target="debug.fix" url="debug/debug_fix.html" />
-<mapID target="debug.threads" url="debug/debug_threads.html" />
-<mapID target="debug.source" url="debug/debug_source.html" />
-<mapID target="debug.step" url="debug/debug_step.html" />
-<mapID target="debug.remote" url="debug/debug_remote.html" /> 
-<mapID target="debug.expression" url="debug/debug_expression.html" /> 
-<mapID target="debug.window" url="debug/CSH/debug_window.html" /> 
 
 
 
@@ -357,51 +334,6 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.search.types.ModificationDateType" url="files/findinfiles-csh.html" />
 
 
-<!--CSH for Debugger windows-->
-<mapID target="NetbeansDebuggerSourcesNode" url="debug/CSH/sources_view.html" />
-<mapID target="NetbeansDebuggerClassNode" url="debug/CSH/classes_view.html" />
-<mapID target="NetbeansDebuggerWatchNode" url="debug/CSH/watches_view.html" />
-<mapID target="NetbeansDebuggerVariableNode" url="debug/CSH/variables_view.html" />
-<mapID target="NetbeansDebuggerCallStackNode" url="debug/CSH/callstack_view.html" />
-<mapID target="NetbeansDebuggerSessionNode" url="debug/CSH/sessions_view.html" />
-<mapID target="NetbeansDebuggerThreadNode" url="debug/CSH/threads_view.html" />
-<mapID target="NetbeansDebuggerBreakpointNode" url="debug/CSH/breakpoint_view.html" />
-
-<!--nodes in the Classes window-->
-<mapID target="NetbeansDebuggerConstructorNode" url="debug/CSH/classes_view.html"/>
-<mapID target="NetbeansDebuggerFieldNode" url="debug/CSH/classes_view.html"/>
-<mapID target="NetbeansDebuggerMethodNode" url="debug/CSH/classes_view.html"/>
-<mapID target="NetbeansDebuggerPackageNode" url="debug/CSH/classes_view.html"/>
-
-<mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/CSH/session_properties.html"/>
-<mapID target="NetbeansDebuggerThreadsPropertiesSheet" url="debug/CSH/threads_properties.html"/>
-<mapID target="NetbeansDebuggerOutputWindow" url="debug/CSH/debug_output.html"/>
-
-<mapID target="debug.add.breakpoint.java.class" url="debug/CSH/breakpoint_class.html" />
-<mapID target="debug.add.breakpoint.java.exception" url="debug/CSH/breakpoint_exception.html" />
-<mapID target="debug.add.breakpoint.java.field" url="debug/CSH/breakpoint_variable.html" />
-<mapID target="debug.add.breakpoint.java.method" url="debug/CSH/breakpoint_method.html" />
-<mapID target="debug.add.breakpoint.java.thread" url="debug/CSH/breakpoint_thread.html" />
-<mapID target="debug.add.watch" url="debug/CSH/watch_window.html" />
-<mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/CSH/brkpt_exception.html" />
-<mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/CSH/brkpt_line.html" />
-<mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/CSH/brkpt_variable.html" />
-<mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/CSH/brkpt_method.html" />
-<mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/CSH/brkpt_thread.html" />
-<mapID target="NetbeansDebuggerBreakpointClassJPDA" url="debug/CSH/brkpt_class.html" />
-
-<mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/CSH/old_stack_call.html"/>
-
-<!--evaluate expression dialog box-->	
-<mapID target="org.netbeans.modules.debugger.jpda.ui.Evaluator" url="debug/CSH/evaluate_expression.html"/>
-
-<!--debug actions - usually associated with menu items-->	
-<mapID target="NetbeansDebuggerFixAction" url="debug/debug_fix.html"/>
-<mapID target="NetbeansDebuggerGoToCalledMethodAction" url="debug/debug_callstack.html"/>
-<mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
-<mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
-
-<!--TODO - add mappings for debug dialog topics-->
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
@@ -428,8 +360,6 @@ under Print Settings in the Options window)
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
 
-<!--CSH - Insert Internationalized String dialog:-->
-<mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
 
 
@@ -567,10 +497,6 @@ under Print Settings in the Options window)
 
    <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
   
-   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="beans/adding.html" />
-   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="beans/adding.html" />
-
-   <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
 
 <!--CSH ID for Options | Editing | Form Editor Settings :-->
     <mapID target="gui.configuring" url="configure/options_form_classic.html" />
@@ -579,9 +505,6 @@ under Print Settings in the Options window)
 
 
 
-
-<!--This ID is for the Auto Comment Tool tab in Source Editor:-->
-   <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 
 
 
@@ -593,11 +516,7 @@ under Print Settings in the Options window)
 
     <!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
     <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
-    <!--Create Tests dialog box-->
-    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh_creatingtests.html" />  
-    <!--JUnit Test Results Window -->
-    <mapID target="org.netbeans.modules.junit.output.ResultWindow" url="junit/junit_resultswindow.html" /> 
- 
+
         <!--TODO - help topic for Actions dialog; if topic is written, close 39369: -->   
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    
