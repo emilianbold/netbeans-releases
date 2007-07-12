@@ -22,11 +22,15 @@ import org.netbeans.modules.vmd.api.io.*;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.Fold;
 import org.openide.util.Lookup;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
 import javax.swing.*;
+import java.util.HashMap;
 
 /**
  * @author David Kaspar
@@ -104,6 +108,20 @@ public class CodeResolver implements DesignDocumentAwareness {
                 return;
             }
 
+            JEditorPane pane = null;
+            FoldHierarchy foldHierarchy = null;
+            HashMap<String, Boolean> foldStates = null;
+
+            if (regenerateSourceCode) {
+                pane = findEditorPane ();
+                foldHierarchy = FoldHierarchy.get (pane);
+                foldStates = new HashMap<String, Boolean> ();
+            }
+
+            if (pane != null) {
+                storeFoldStates (foldHierarchy.getRootFold (), foldStates);
+            }
+
             final long eventID = document.getTransactionManager ().writeAccess (new Runnable() {
                 public void run () {
                     if (regenerateSourceCode)
@@ -129,7 +147,47 @@ public class CodeResolver implements DesignDocumentAwareness {
                             generator.updateCodeFromModel (context, document);
                     }
                 });
+
+            if (pane != null)
+                loadFoldStates (foldHierarchy, foldHierarchy.getRootFold (), foldStates);
         }
+    }
+
+    private void storeFoldStates (Fold fold, HashMap<String, Boolean> foldStates) {
+        String description = fold.getDescription ();
+        if ("custom-fold".equals (fold.getType ().toString ())  &&  description != null) // NOI18N
+            foldStates.put (description, fold.isCollapsed ());
+        for (int a = 0; a < fold.getFoldCount (); a ++)
+            storeFoldStates (fold.getFold (a), foldStates);
+    }
+
+    private void loadFoldStates (FoldHierarchy foldHierarchy, Fold fold, HashMap<String, Boolean> foldStates) {
+        String description = fold.getDescription ();
+        if ("custom-fold".equals (fold.getType ().toString ())  &&  description != null) { // NOI18N
+            Boolean state = foldStates.get (description);
+            if (state != null  &&  state != fold.isCollapsed ()) {
+                if (state)
+                    foldHierarchy.collapse (fold);
+                else
+                    foldHierarchy.expand (fold);
+            }
+        }
+        for (int a = 0; a < fold.getFoldCount (); a ++)
+            loadFoldStates (foldHierarchy, fold.getFold (a), foldStates);
+    }
+
+    private JEditorPane findEditorPane () {
+        if (! SwingUtilities.isEventDispatchThread ()) {
+            Debug.warning ("Fold states cannot be restored since the code is invoke outside of AWT-thread"); // NOI18N
+            return null;
+        }
+        JEditorPane[] panes = context.getCloneableEditorSupport ().getOpenedPanes ();
+        if (panes.length < 0) {
+            Debug.warning ("No editor pane found for", context); // NOI18N
+            return null;
+        } else if (panes.length > 1)
+            Debug.warning ("Multiple editor panes found for", context, "taking first one"); // NOI18N
+        return panes[0];
     }
 
     public void notifyDataObjectClosed () {
