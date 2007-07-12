@@ -22,6 +22,9 @@ package org.netbeans.modules.compapp.projects.base.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.text.Collator;
 import java.util.*;
 
@@ -126,6 +129,7 @@ public class IcanproProjectProperties {
     public static final String PASSWORD_PROPERTY_KEY = "com.sun.jbi.ui.devtool.appserver.instance.password";
     public static final String URL_PROPERTY_KEY = "com.sun.jbi.ui.devtool.appserver.instance.url";
     public static final String USER_NAME_PROPERTY_KEY = "com.sun.jbi.ui.devtool.appserver.instance.userName";
+    public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
 
     public static final String JBI_REGISTRY_COMPONENT_FILE_KEY = "com.sun.jbi.registry.component.file";
     public static final String JBI_REGISTRY_BROKER_HOST_KEY = "com.sun.jbi.messaging.brokerHost";
@@ -143,6 +147,7 @@ public class IcanproProjectProperties {
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
     private static final PathParser PATH_PARSER = new PathParser();
     private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
+    private static final CharsetParser CHARSET_PARSER = new CharsetParser();
 
     // Info about the property destination
     // XXX only properties which are visually set should be described here
@@ -178,6 +183,7 @@ public class IcanproProjectProperties {
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
+        new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
 
         //================== Start of IcanPro =====================================//
         new PropertyDescriptor( JBI_SETYPE_PREFIX, PROJECT, STRING_PARSER ),
@@ -675,6 +681,53 @@ public class IcanproProjectProperties {
                 return null;
             else
                 return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
+        }
+    }
+    
+    
+    private static class CharsetParser extends PropertyParser {
+        /**
+         * DOCUMENT ME!
+         *
+         * @param raw DOCUMENT ME!
+         * @param antProjectHelper DOCUMENT ME!
+         * @param refHelper DOCUMENT ME!
+         *
+         * @return DOCUMENT ME!
+         */
+        public Object decode(
+                String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
+                ) {
+            if (raw == null) {
+                raw = Charset.defaultCharset().name();
+            }
+            return new Charset(raw, new String[0]) {
+                public boolean contains(Charset cs) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public CharsetDecoder newDecoder() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public CharsetEncoder newEncoder() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                
+            };
+        }
+        
+        /**
+         * DOCUMENT ME!
+         *
+         * @param value DOCUMENT ME!
+         * @param antProjectHelper DOCUMENT ME!
+         * @param refHelper DOCUMENT ME!
+         *
+         * @return DOCUMENT ME!
+         */
+        public String encode(
+                Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
+                ) {
+            return ((Charset)value).name();
         }
     }
 

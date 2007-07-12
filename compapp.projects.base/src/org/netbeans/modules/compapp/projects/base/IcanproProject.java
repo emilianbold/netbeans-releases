@@ -20,28 +20,28 @@
 
 package org.netbeans.modules.compapp.projects.base;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-//import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
-import org.netbeans.modules.compapp.projects.base.ui.BrokenReferencesAlertPanel;
-import org.netbeans.modules.compapp.projects.base.ui.FoldersListSettings;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -60,12 +60,8 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-// import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -77,7 +73,6 @@ import org.w3c.dom.Text;
  */
 public final class IcanproProject implements Project, AntProjectListener {
 
-//    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("com/sun/jbi/ui/devtoolT/projects/icanpro/ui/resources/icanproProjectIcon.gif")); // NOI18N
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/icanproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
 
@@ -86,6 +81,8 @@ public final class IcanproProject implements Project, AntProjectListener {
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
+    
+    private static final Logger LOG = Logger.getLogger(IcanproProject.class.getName());
 
     public IcanproProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -110,7 +107,7 @@ public final class IcanproProject implements Project, AntProjectListener {
         return helper.getStandardPropertyEvaluator();
     }
 
-    PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         return eval;
     }
 
@@ -153,6 +150,7 @@ public final class IcanproProject implements Project, AntProjectListener {
             new ProjectOpenedHookImpl(),
             fileBuilt,
             new RecommendedTemplatesImpl(),
+            new IcanproProjectEncodingQueryImpl(evaluator()),
             refHelper,
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
@@ -271,19 +269,47 @@ public final class IcanproProject implements Project, AntProjectListener {
             try {
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                IcanproProject.class.getResource("resources/build-impl.xsl"),
-                true);
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        IcanproProject.class.getResource("resources/build-impl.xsl"),
+                        true);
                 genFilesHelper.refreshBuildScript(
-                getBuildXmlName(),
-                IcanproProject.class.getResource("resources/build.xsl"),
-                true);
+                        getBuildXmlName(),
+                        IcanproProject.class.getResource("resources/build.xsl"),
+                        true);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
 
+            // Add project encoding for old projects
+            EditableProperties projectEP = helper.getProperties(
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
+                projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
+                        // FIXME: maybe we should use Charset.defaultCharset() instead?
+                        // See comments in IcanproProjectEncodingQueryImpl.java
+                        FileEncodingQuery.getDefaultEncoding().name());
+            }            
+            helper.putProperties(
+                    AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+                    
             if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 // BrokenReferencesSupport.showAlert();
+            }
+                        
+            String prop = eval.getProperty(IcanproProjectProperties.SOURCE_ENCODING);
+            if (prop != null) {
+                try {
+                    Charset c = Charset.forName(prop);
+                } catch (IllegalCharsetNameException e) {
+                    //Broken property, log & ignore
+                    LOG.warning("Illegal charset: " + prop+ " in project: " + // NOI18N
+                            getProjectDirectory()); 
+                }
+                catch (UnsupportedCharsetException e) {
+                    //todo: Needs UI notification like broken references.
+                    LOG.warning("Unsupported charset: " + prop+ " in project: " + // NOI18N
+                            getProjectDirectory()); 
+                }
             }
         }
 

@@ -25,10 +25,12 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -132,6 +134,35 @@ public final class VisualPropertySupport {
     }
 
     
+    /**
+     * Registers combo box.
+     * @param component 
+     * @param model 
+     * @param cellRenderer 
+     * @param klass 
+     * @param propertyName 
+     */
+    public void register(JComboBox component, ComboBoxModel model, 
+            ListCellRenderer cellRenderer, String propertyName, Class klass) {
+        comboType = 0;
+
+        Object value = getAsType(propertyName, klass);
+        component2property.put(component, propertyName);
+
+        // Add all items and find the selected one
+        component.removeAllItems();
+
+        component.setModel(model);
+        
+        if (cellRenderer != null) {
+            component.setRenderer(cellRenderer);
+        }
+
+        component.setSelectedItem(value);
+        component.removeActionListener(componentListener);
+        component.addActionListener(componentListener);
+    }
+    
     // Static methods for reading components and models ------------------------
     
     private static Boolean readValue( JCheckBox checkBox ) {
@@ -148,8 +179,8 @@ public final class VisualPropertySupport {
         }
     }
     
-    private static String readValue( JComboBox comboBox ) {
-        return (String)comboBox.getSelectedItem();
+    private static Object readValue( JComboBox comboBox ) {
+        return comboBox.getSelectedItem();
     }
     
     // Private methods ---------------------------------------------------------

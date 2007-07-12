@@ -20,9 +20,21 @@
 
 package org.netbeans.modules.compapp.projects.base.ui.customizer;
 
+import java.awt.Component;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.UIResource;
+import org.netbeans.modules.compapp.projects.base.IcanproProject;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -54,8 +66,93 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         vps.register(jTextFieldProjectType, IcanproProjectProperties.JBI_SE_TYPE);
         vps.register(jTextFieldServiceUnitDescription, IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION);
 
+        Charset originalCharset = (Charset) webProperties.get(IcanproProjectProperties.SOURCE_ENCODING);
+        String originalEncoding = (originalCharset != null) ?
+            originalCharset.name() : Charset.defaultCharset().name();
+        
+        vps.register(jComboBoxEncoding, new EncodingModel(originalEncoding), 
+                new EncodingRenderer(), IcanproProjectProperties.SOURCE_ENCODING,
+                Charset.class);
     }
 
+    
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, 
+                int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof Charset;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((Charset) value).displayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+        
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+        
+    }
+    
+    private static class EncodingModel extends DefaultComboBoxModel {
+        
+        public EncodingModel(String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset(originalEncoding);
+                    addElement(defEnc);
+                } catch (IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).info(
+                            "IllegalCharsetName: " + originalEncoding); // NOI18N
+                }
+            }
+            if (defEnc == null) {
+                defEnc = Charset.defaultCharset();
+            }
+            setSelectedItem(defEnc);
+        }
+    }
+    
+    private static class UnknownCharset extends Charset {
+        
+        UnknownCharset(String name) {
+            super(name, new String[0]);
+        }
+        
+        public boolean contains(Charset c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public CharsetDecoder newDecoder() {
+            throw new UnsupportedOperationException();
+        }
+        
+        public CharsetEncoder newEncoder() {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -71,6 +168,8 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         jTextFieldProjectType = new javax.swing.JTextField();
         jLabelServiceUnitDescription = new javax.swing.JLabel();
         jTextFieldServiceUnitDescription = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jComboBoxEncoding = new javax.swing.JComboBox();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -87,6 +186,10 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         jLabelServiceUnitDescription.setLabelFor(jLabelServiceUnitDescription);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelServiceUnitDescription, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnit_JLabel")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "TXT_Encoding")); // NOI18N
+
+        jComboBoxEncoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -96,14 +199,16 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabelProjectName)
                     .add(jLabelProjectType)
-                    .add(jLabelServiceUnitDescription))
+                    .add(jLabelServiceUnitDescription)
+                    .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
-                    .add(jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
+                        .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
+                    .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                    .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -124,6 +229,10 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabelServiceUnitDescription))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -131,6 +240,8 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox jComboBoxEncoding;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelProjectName;
     private javax.swing.JLabel jLabelProjectType;
     private javax.swing.JLabel jLabelServiceUnitDescription;

@@ -22,6 +22,7 @@ package org.netbeans.modules.compapp.projects.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -29,6 +30,7 @@ import org.openide.filesystems.Repository;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -133,6 +135,8 @@ public class IcanproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAVA_PLATFORM, "default_platform");
         ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");
         ep.setProperty(IcanproProjectProperties.WSDL_CLASSPATH, "");
+        Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(IcanproProjectProperties.SOURCE_ENCODING, enc.name());
 
         //============= Start of IcanPro========================================//
         //ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "bpelse"); // NOI18N
