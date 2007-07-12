@@ -363,7 +363,7 @@ public class Util {
                 double version = Double.parseDouble(j2eeModule.getModuleVersion());
                 if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
                     return true;
-                };
+                }
                 if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
                     return true;
                 }
@@ -386,7 +386,7 @@ public class Util {
 
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
         String keystoreLocation = null;
-        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();
             
@@ -412,7 +412,7 @@ public class Util {
     }
 
     public static FileObject getTomcatLocation(Project project) {
-        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         FileObject folder = null;
         if (mp != null) { 
             try {
@@ -595,7 +595,7 @@ public class Util {
 
     public static final boolean isGlassfish(Project project) {
         if (project != null) {
-            J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
             if (mp != null) {
                 String instid = mp.getServerInstanceID();
                 if ((instid != null) && (instid.toLowerCase().contains("appserv"))) {     //NOI18N
@@ -623,7 +623,7 @@ public class Util {
     
     private static J2eeModuleProvider getProvider(Project p) {
         if (p != null) {
-            return (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+            return p.getLookup().lookup(J2eeModuleProvider.class);
         }
         return null;
     }

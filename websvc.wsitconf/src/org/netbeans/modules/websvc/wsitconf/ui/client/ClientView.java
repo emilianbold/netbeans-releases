@@ -137,7 +137,7 @@ public class ClientView extends SectionView {
                 addSection(bindingCont, false);
                 bindingNodes.add(bindingNodeContainer);
             }
-            rootChildren.add((Node[]) bindingNodes.toArray(new Node[bindingNodes.size()]));
+            rootChildren.add(bindingNodes.toArray(new Node[bindingNodes.size()]));
         } else {
             Binding binding = (Binding) bindings.toArray()[0];
             ArrayList<Node> nodes = new ArrayList<Node>();
@@ -171,7 +171,7 @@ public class ClientView extends SectionView {
                 addSection(advancedConfigPanel);
                 nodes.add(advancedConfigNode);
             }
-            rootChildren.add((Node[]) nodes.toArray(new Node[nodes.size()]));
+            rootChildren.add(nodes.toArray(new Node[nodes.size()]));
         }
         setRoot(root);
     }

@@ -87,7 +87,7 @@ public class CallbackPanel extends SectionInnerPanel {
         this.jaxwsmodel = jaxWsModel;
         this.serviceModel = serviceModel;
 
-        FileObject fo = (FileObject) node.getLookup().lookup(FileObject.class);
+        FileObject fo = node.getLookup().lookup(FileObject.class);
         if (fo != null) project = FileOwnerQuery.getOwner(fo);
         
         initComponents();
@@ -516,7 +516,7 @@ private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
     dlg.setVisible(true); 
-    if (dlgDesc.getValue() == dlgDesc.OK_OPTION) {
+    if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
         storePanel.storeState();
     }
 }//GEN-LAST:event_trustStoreButtonActionPerformed
@@ -530,7 +530,7 @@ private void keyStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     dlg.setVisible(true); 
 
-    if (dlgDesc.getValue() == dlgDesc.OK_OPTION) {
+    if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
         storePanel.storeState();
     }
 }//GEN-LAST:event_keyStoreButtonActionPerformed
@@ -552,7 +552,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }
     
     private J2eePlatform getJ2eePlatform(){
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if(provider != null){
             String serverInstanceID = provider.getServerInstanceID();
             if(serverInstanceID != null && serverInstanceID.length() > 0) {
