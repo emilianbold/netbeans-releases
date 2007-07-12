@@ -104,140 +104,28 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         assertEquals(expectedLines,resultLines);
     }
     
-    public void testDoesSomeCopy () throws Exception {
-        FileSystem fs = createLocalFileSystem (new String[] {
-            "root/X.txt", 
-            "root/Y.txt",
-            "nonroot/Z.txt"
-        });
-        
-        FileObject fo = fs.findResource ("root");
-        FileObject tg = fs.getRoot().createFolder ("target");
-        
-        java.util.HashSet set = new java.util.HashSet ();
-        set.add ("X.txt");
-          Copy.copyDeep (fo, tg, set);
-
-        assertEquals ("One file copied", 1, tg.getChildren().length);
-        String n = tg.getChildren ()[0].getNameExt();
-        assertEquals ("Name is X.txt", "X.txt", n);
-        
+    public void testCopy () throws Exception {
+        copyTest ("path/X.txt");        
     }
     
     public void testDoesDeepCopy () throws Exception {
-        FileSystem fs = createLocalFileSystem (new String[] {
-            "root/subdir/X.txt", 
-            "root/Y.txt",
-            "nonroot/Z.txt"
-        });
-        
-        FileObject fo = fs.findResource ("root");
-        FileObject tg = fs.getRoot().createFolder ("target");
-        
-        java.util.HashSet set = new java.util.HashSet ();
-        set.add ("subdir/X.txt");
-        Copy.copyDeep (fo, tg, set);
-        
-        assertEquals ("One file copied", 1, tg.getChildren().length);
-        assertEquals ("Name is X.txt", "subdir", tg.getChildren ()[0].getNameExt());
-        assertEquals ("One children of one child", 1, tg.getChildren()[0].getChildren().length);
-        assertEquals ("X.txt", "X.txt", tg.getChildren()[0].getChildren()[0].getNameExt());
-        
+        copyTest ("path/dir/subdir/deepDir/X.txt");
     }
     
     public void testCopyAttributes () throws Exception {
-        FileSystem fs = createLocalFileSystem (new String[] {
-            "root/X.txt", 
-            "root/Y.txt",
-            "nonroot/Z.txt"
-        });
-        FileObject x = fs.findResource ("root/X.txt");
-        x.setAttribute ("ahoj", "yarda");
-        
-        FileObject fo = fs.findResource ("root");
-        FileObject tg = fs.getRoot().createFolder ("target");
-        
-        java.util.HashSet set = new java.util.HashSet ();
-        set.add ("X.txt");
-        Copy.copyDeep (fo, tg, set);
-        
-        assertEquals ("One file copied", 1, tg.getChildren().length);
-        assertEquals ("Name is X.txt", "X.txt", tg.getChildren ()[0].getNameExt());
-        assertEquals ("attribute copied", "yarda", tg.getChildren()[0].getAttribute("ahoj"));
-    }
-    
+        copyTest (true, "path/X.txt");
+    }    
+
     public void testCopyFolderAttributes () throws Exception {
-        FileSystem fs = createLocalFileSystem (new String[] {
-            "root/sub/X.txt", 
-            "root/Y.txt",
-            "nonroot/Z.txt"
-        });
-        FileObject x = fs.findResource ("root/sub");
-        x.setAttribute ("ahoj", "yarda");
-        
-        FileObject fo = fs.findResource ("root");
-        FileObject tg = fs.getRoot().createFolder ("target");
-        
-        java.util.HashSet set = new java.util.HashSet ();
-        set.add ("sub");
-        set.add ("sub/X.txt");
-        Copy.copyDeep (fo, tg, set);
-        
-        assertEquals ("One file copied", 1, tg.getChildren().length);
-        assertEquals ("Name of the dir is sub", "sub", tg.getChildren ()[0].getNameExt());
-        assertEquals ("attribute copied", "yarda", tg.getChildren()[0].getAttribute("ahoj"));
-        assertEquals ("X.txt", "X.txt", tg.getChildren()[0].getChildren()[0].getNameExt());
-    }
+        copyTest (true, new String[]{"path/folder/","path/folder/f.txt"});
+    }    
     
     public void testDoNotCopyEmptyDirs () throws Exception {
-        FileSystem fs = createLocalFileSystem (new String[] {
-            "root/sub/X.txt", 
-            "root/Y.txt",
-            "nonroot/Z.txt"
-        });
-        FileObject x = fs.findResource ("root/sub");
-        
-        FileObject fo = fs.findResource ("root");
-        FileObject tg = fs.getRoot().createFolder ("target");
-        
-        java.util.HashSet set = new java.util.HashSet ();
-        Copy.copyDeep (fo, tg, set);
-        
-        assertEquals ("Nothing copied", 0, tg.getChildren().length);
+        copyTest("path/emptyDir/");
     }
     
-    public void testDoNotOverwriteFiles () throws Exception {
-        java.util.HashSet set = new java.util.HashSet ();
-        set.add ("X.txt");
-        
-        FileSystem fs = createLocalFileSystem (new String[] {
-            "root/project/X.txt", 
-            "root/X.txt",
-            "nonroot/Z.txt"
-        });
-        
-        writeTo (fs, "root/project/X.txt", "content-project");
-        writeTo (fs, "root/X.txt", "content-global");
-
-        FileObject tg = fs.getRoot().createFolder ("target");
-        
-        FileObject project = fs.findResource ("root/project");
-        Copy.copyDeep (project, tg, set);
-        
-        
-        
-        FileObject root = fs.findResource ("root");
-        Copy.copyDeep (root, tg, set);
-
-        
-        FileObject x = tg.getFileObject ("X.txt");
-        assertNotNull ("File copied", x);
-        
-        byte[] arr = new byte[300];
-        int len = x.getInputStream ().read (arr);
-        String content = new String (arr, 0, len);
-        
-        assertEquals ("The content is kept from project", content, "content-project");
+    public void testDoNotCopyEmptyDirs2 () throws Exception {
+        copyTest(new String[] {"path/emptyDir/", "path/emptyDir/emptyDir2/"});
     }
     
     public void testDoesCopyHiddenFiles () throws Exception {
@@ -265,12 +153,12 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         
         
         HashSet set = new HashSet ();
-        set.add ("Yes.txt");
-        set.add ("X.txt_hidden");
+        set.add ("root/Yes.txt");
+        set.add ("root/X.txt_hidden");
         Copy.copyDeep (fo, tg, set);
         
-        assertEquals ("After the copy there is still one file", 1, tg.getChildren().length);
-        assertEquals ("but the file is Yes.txt, as X.txt is hidden by txt_hidden", "Yes.txt", tg.getChildren()[0].getNameExt());
+        assertEquals("After the copy there is still one file", 1, tg.getFileObject("root").getChildren().length);
+        assertEquals ("but the file is Yes.txt, as X.txt is hidden by txt_hidden", "Yes.txt", tg.getFileObject("root").getChildren()[0].getNameExt());
     }
     
     private static void writeTo (FileSystem fs, String res, String content) throws java.io.IOException {
@@ -289,15 +177,9 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         for (int i = 0; i < resources.length; i++) {                        
             File f = new File (mountPoint,resources[i]);
             if (f.isDirectory() || resources[i].endsWith("/")) {
-                f.mkdirs();
-            }
-            else {
-                f.getParentFile().mkdirs();
-                try {
-                    f.createNewFile();
-                } catch (IOException iex) {
-                    throw new IOException ("While creating " + resources[i] + " in " + mountPoint.getAbsolutePath() + ": " + iex.toString() + ": " + f.getAbsolutePath() + " with resource list: " + Arrays.asList(resources));
-                }
+              FileUtil.createFolder(f);
+            } else {
+              FileUtil.createData(f);  
             }
         }
         
@@ -307,5 +189,71 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         } catch (Exception ex) {}
         
         return lfs;
+    }
+
+    private void copyTest(String... pathXtxt) throws IOException {    
+        copyTest(false, pathXtxt);
+    }
+    private void copyTest(boolean testAttribs, String... allPath) throws IOException {
+        String atribName = "attribName";
+        String testPath = allPath[0];
+        ArrayList<String> fileList = new ArrayList<String>();
+        fileList.addAll(Arrays.asList(allPath));
+        fileList.addAll(Arrays.asList(new java.lang.String[]{ 
+        "path/Yes.txt", "path/No.txt", "path/Existing.txt"}));
+        
+        FileSystem fs = createLocalFileSystem(fileList.toArray(new String[fileList.size()]));
+
+        
+        FileObject path = fs.findResource("path");
+        assertNotNull(path);
+        FileObject tg = fs.getRoot().createFolder("target");
+        assertNotNull(tg);
+        FileObject existing = FileUtil.createData(tg, "path/Existing.txt");
+        assertNotNull(existing);
+        writeTo (fs, "target/path/Existing.txt", "existing-content");
+        
+        FileObject toCopyOne = fs.findResource (testPath);
+        boolean isFolder = toCopyOne.isFolder();
+        boolean isEmptyFolder = isFolder && !toCopyOne.getData(true).hasMoreElements();
+        assertNotNull(toCopyOne);
+        if (testAttribs) {
+            toCopyOne.setAttribute (atribName, atribName);
+        }
+        
+        HashSet set = new HashSet();
+        for (String currentPath : allPath) {
+            currentPath = currentPath.endsWith("/") ? currentPath.substring(0, currentPath.length()-1) : currentPath;
+            set.add(currentPath);
+        }
+
+        set.add("path/Yes.txt");
+        set.add("path/Existing.txt");
+        org.netbeans.upgrade.Copy.copyDeep(path, tg, set);
+
+        assertNotNull("file not copied: " + "path/Existing.txt", tg.getFileObject("path/Existing.txt"));        
+        assertNotNull("file not copied: " + "path/Yes.txt", tg.getFileObject("path/Yes.txt"));
+        assertNull("file not copied: " + "path/No.txt", tg.getFileObject("path/No.txt"));
+        org.openide.filesystems.FileObject copiedOne = tg.getFileObject(testPath);
+
+        FileObject copiedPath = tg.getFileObject("path");
+        assertNotNull("file copied: " + "path", copiedPath);        
+        assertEquals("file copied: " + testPath, isEmptyFolder, copiedOne == null);
+        if (!isEmptyFolder) {
+            String expected = testPath.endsWith("/") ? testPath.substring(0, testPath.length()-1) : testPath;
+            assertEquals("file copied: " + testPath,  expected, org.openide.filesystems.FileUtil.getRelativePath(tg, copiedOne));
+            if (testAttribs) {
+                assertEquals ("attribute copied", atribName, copiedOne.getAttribute(atribName));                
+            }            
+        }
+        
+        
+        byte[] arr = new byte[300];
+        int len = existing.getInputStream ().read (arr);
+        String content = new String (arr, 0, len);
+
+        //testDoNotOverwriteFiles
+        assertEquals ("The content is kept from project", content, "existing-content");
+        
     }
  }
