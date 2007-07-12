@@ -96,7 +96,7 @@ public class PageFlowController {
         FileObject configFile = context.getFacesConfigFile();
 
         try {
-            configDataObj = (DataObject) DataObject.find(configFile);
+            configDataObj = DataObject.find(configFile);
         } catch (DataObjectNotFoundException donfe) {
             donfe.printStackTrace();
         }

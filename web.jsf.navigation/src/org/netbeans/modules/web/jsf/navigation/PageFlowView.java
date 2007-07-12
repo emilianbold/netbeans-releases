@@ -22,6 +22,7 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.IllegalComponentStateException;
 import java.awt.Image;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -30,11 +31,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleStateSet;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -68,6 +74,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -89,6 +96,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
     private static final int CAPACITY = 1000;
+    
+    private JComponent view;
+    
+    
+    private static final String ACN_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACN_PageView_TC");
+    private static final String ACDS_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACDS_PageView_TC");
 
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context) {
         this.multiview = multiview;
@@ -100,13 +113,15 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         deserializeNodeLocation(getStorageFile(context.getFacesConfigFile()));
         //runnables = new LinkedBlockingQueue<Runnable>();
         pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
-        System.out.println("SetupGraph");
+        LOG.fine("Initializing Page Flow SetupGraph");
         
         setFocusable(true);
-        System.out.println("SetFocusable True");
         
         executor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, runnables);        
-        System.out.println("Create Executor Thread");
+        LOG.finest("Create Executor Thread");
+        
+        getAccessibleContext().setAccessibleDescription(ACDS_PAGEVIEW_TC);
+        getAccessibleContext().setAccessibleName(ACN_PAGEVIEW_TC);
         
     }
 
@@ -170,8 +185,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     }
 
 
-    private JComponent view;
-
     /*
      * Initializes the Panel and the graph
      **/
@@ -179,7 +192,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         setLayout(new BorderLayout());
 
         scene = new PageFlowScene(this);
-
+        
+        scene.setAccessibleContext(this.getAccessibleContext());
         view = scene.createView();
 
         JScrollPane pane = new JScrollPane(view);
@@ -287,6 +301,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
     }
 
+    
+//    private static final String ACN_PAGE = NbBundle.getMessage(PageFlowView.class, "ACN_Page");
+//    private static final String ACDS_PAGE = NbBundle.getMessage(PageFlowView.class, "ACDS_Page");    
+//    private static final String ACN_PIN = NbBundle.getMessage(PageFlowView.class, "ACN_Pin");
+//    private static final String ACDS_PIN = NbBundle.getMessage(PageFlowView.class, "ACDS_Pin");
+//    private static final String ACN_EDGE = NbBundle.getMessage(PageFlowView.class, "ACN_Edge");
+//    private static final String ACDS_EDGE = NbBundle.getMessage(PageFlowView.class, "ACDS_Edge");
     /**
      * Creates a PageFlowScene node from a pageNode.  The PageNode will generally be some type of DataObject unless
      * there is no true file to represent it.  In that case a abstractNode should be passed
@@ -303,6 +324,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
         widget.setPreferredLocation(sceneData.getPageLocation(pageName));
+
+//        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
+//        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);
 
         scene.addPin(pageNode, new Pin(pageNode));
         runPinSetup(pageNode, widget);
@@ -390,9 +414,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //        if( navComp != null ){
         //            widget.setProperties(navComp, Arrays.asList(navComp.getBufferedIcon()));
         //        }
+//        widget.getAccessibleContext().setAccessibleName(ACN_PIN);
+//        widget.getAccessibleContext().setAccessibleDescription(ACDS_PIN);
         return widget;
     }
-
 
     /**
      * Creates an Edge or Connection in the Graph Scene
@@ -407,6 +432,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.addEdge(navCaseEdge);
         setEdgeSourcePin(navCaseEdge, fromPageNode);
         setEdgeTargePin(navCaseEdge, toPageNode);
+        
+        //connectionWidget.getAccessibleContext().setAccessibleName(ACN_EDGE);        
+        //connectionWidget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
     }
 
 
