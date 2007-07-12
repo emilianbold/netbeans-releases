@@ -242,7 +242,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                     String compName = suTransfer.getComponentName();
                     final CasaServiceEngineServiceUnit seSU = 
                             mModel.addServiceEngineServiceUnit(
-                            suName, compName, suDescription, false, false, point.x, point.y); 
+                            suName, compName, suDescription, false, false, true, point.x, point.y); 
 
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {  

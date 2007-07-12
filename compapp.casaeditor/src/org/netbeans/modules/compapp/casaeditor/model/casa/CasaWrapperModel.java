@@ -1131,7 +1131,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                 "",   // component name unknown       // NOI18N
                 null, // use default service unit description
                 internal, 
-                true, // unknown
+                true, // is unknown?
+                !internal, // is defined? Treat external SU as defined and internal SU as undefined.
                 x, y); 
     }
     
@@ -1153,7 +1154,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
             String projName, String compName, String description,
-            boolean internal, boolean unknown,
+            boolean internal, boolean unknown, boolean defined,
             int x, int y) {
         
         CasaComponentFactory factory = getFactory();
@@ -1163,7 +1164,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         seSU.setY(y);
         seSU.setInternal(internal);
         seSU.setUnknown(unknown);
-        seSU.setDefined(false);
+        seSU.setDefined(defined);
         seSU.setName(projName);
         seSU.setUnitName(projName);
         seSU.setDescription(description == null ? 
@@ -2052,7 +2053,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Adds a component project into compapp project.
+     * Adds a component project into compapp project (from project explorer).
      *
      * @param project   a component project
      * @param x         x location of the new service unit in the editor
@@ -2070,8 +2071,9 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         addServiceEngineServiceUnit(projectName, type, 
                 null,  // use default description
-                true,  // is internal SESU
-                false, // is known
+                true,  // is internal SESU?
+                false, // is known?
+                false, // is defined?
                 x, y);
     }
     
