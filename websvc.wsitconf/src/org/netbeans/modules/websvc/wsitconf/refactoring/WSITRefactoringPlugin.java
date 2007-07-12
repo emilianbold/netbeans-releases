@@ -132,6 +132,7 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
                             if (isWebSvcFromWsdl(el)) return;
                             fireProgressListenerStep();
                             JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(file);
+                            if (supp == null) return;
                             WSDLModel model = null;
                             fireProgressListenerStep();
                             try {
