@@ -7,6 +7,7 @@
     <import file="../../../nbbuild/templates/projectized.xml"/>
     
     <!-- Create the javadoc zip file from the rowset src -->
+    <!-- this target below is not currently being used -->
     <target name="rowset-doc-zip">
         <unzip src="external/src.zip" dest="external">
             <patternset>
