@@ -39,6 +39,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -85,7 +87,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
@@ -1293,30 +1294,34 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
     private final SaveCookie saveCookie = new SaveCookie() {
         public void save() throws java.io.IOException {
-            if (EventQueue.isDispatchThread()) {
-                doSave();
+            if (formEditor == null) { // not saving form, only java
+                doSave(false); // don't need to be in event dispatch thread (#102986)
+            } else if (EventQueue.isDispatchThread()) {
+                doSave(true);
             } else {
                 try {
                     EventQueue.invokeAndWait(new Runnable() {
                         public void run() {
-                            doSave();
+                            doSave(true);
                         }
                     });
-                } catch (InterruptedException iex) {
-                    iex.printStackTrace();
-                } catch (InvocationTargetException itex) {
-                    itex.printStackTrace();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, "", ex); // NOI18N
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, "", ex); // NOI18N
                 }
             }
         }
-        
-        private void doSave() {
+
+        private void doSave(boolean bothJavaAndForm) {
             try {
-                DataObject dobj = getDataObject();
-                dobj.getCookie(FormEditorSupport.class).saveDocument();
-                dobj.setModified(false);
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
+                if (bothJavaAndForm) {
+                    saveDocument();
+                } else {
+                    saveSourceOnly();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, "", ex); // NOI18N
             }
         }
     };
