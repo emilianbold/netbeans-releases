@@ -46,6 +46,7 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testAddMethodAfterConstants"));
 //        suite.addTest(new EnumTest("testRenameConstantCheckJavadoc"));
 //        suite.addTest(new EnumTest("testRenameWithInit"));
+//        suite.addTest(new EnumTest("testRenameMethodInEnum"));
         return suite;
     }
 
@@ -372,6 +373,125 @@ public class EnumTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    /**
+     * Demonstrates #106932
+     * 
+     * Original:
+     * 
+     * <code>
+     * public enum BugEnum {
+     *   VALUE1{
+     *     public String doSomeTest(){
+     *       return "value1";
+     *     }    
+     *   }
+     *   ,
+     *   VALUE2{
+     *     public String doSomeTest(){
+     *       return "value2";
+     *     }
+     *   };
+     *   
+     *   public String doSomeTest(){
+     *     return null;
+     *   }
+     * }
+     * </code>
+     * 
+     * Expected result:
+     * 
+     * <code>
+     * public enum Test {
+     * public enum BugEnum {
+     *   VALUE1{
+     *     public String delejNecoHovado(){
+     *       return "value1";
+     *     }    
+     *   }
+     *   ,
+     *   VALUE2{
+     *     public String delejNecoHovado(){
+     *       return "value2";
+     *     }
+     *   };
+     *   
+     *   public String delejNecoHovado(){
+     *     return null;
+     *   }
+     * }
+     * </code>
+     */
+    public void testRenameMethodInEnum() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "public enum BugEnum {\n" +
+            "  VALUE1{\n" +
+            "    public String doSomeTest(){\n" +
+            "      return \"value1\";\n" +
+            "    }    \n" +
+            "  }\n" +
+            "  ,\n" +
+            "  VALUE2{\n" +
+            "    public String doSomeTest(){\n" +
+            "      return \"value2\";\n" +
+            "    }\n" +
+            "  };\n" +
+            "  \n" +
+            "  public String doSomeTest(){\n" +
+            "    return null;\n" +
+            "  }\n" +
+            "}\n"
+            );
+        String golden =
+            "public enum BugEnum {\n" +
+            "  VALUE1{\n" +
+            "    public String delejNecoHovado(){\n" +
+            "      return \"value1\";\n" +
+            "    }    \n" +
+            "  }\n" +
+            "  ,\n" +
+            "  VALUE2{\n" +
+            "    public String delejNecoHovado(){\n" +
+            "      return \"value2\";\n" +
+            "    }\n" +
+            "  };\n" +
+            "  \n" +
+            "  public String delejNecoHovado(){\n" +
+            "    return null;\n" +
+            "  }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                // method in VALUE1
+                VariableTree vt = (VariableTree) clazz.getMembers().get(1);
+                NewClassTree nct = ((NewClassTree) vt.getInitializer());
+                MethodTree method = (MethodTree) nct.getClassBody().getMembers().get(1);
+                workingCopy.rewrite(method, make.setLabel(method, "delejNecoHovado"));
+                
+                // method in VALUE2
+                vt = (VariableTree) clazz.getMembers().get(2);
+                nct = ((NewClassTree) vt.getInitializer());
+                method = (MethodTree) nct.getClassBody().getMembers().get(1);
+                workingCopy.rewrite(method, make.setLabel(method, "delejNecoHovado"));
+                
+                method = (MethodTree) clazz.getMembers().get(3);
+                workingCopy.rewrite(method, make.setLabel(method, "delejNecoHovado"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
