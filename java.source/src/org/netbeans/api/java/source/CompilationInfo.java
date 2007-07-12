@@ -173,9 +173,7 @@ public class CompilationInfo {
             String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, getFileObject())));
             TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
             if (e != null) {                
-                if (!isLocal(e)) {
-                    result.add (e);
-                }
+                result.add (e);
             }
         }
         else {
