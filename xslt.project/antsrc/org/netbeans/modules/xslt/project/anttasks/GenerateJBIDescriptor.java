@@ -127,7 +127,6 @@ public class GenerateJBIDescriptor extends org.apache.tools.ant.Task {
         //read project classpath
         //TODO: refactor this to use wsdl classpath
         List<File> projectDirs = new ArrayList<File>();
-        System.out.println("mProjectClassPath: "+mProjectClassPath);
         if(this.mProjectClassPath != null
                 && !this.mProjectClassPath.trim().equals("")
                 && !this.mProjectClassPath.trim().equals("${javac.classpath}")) {

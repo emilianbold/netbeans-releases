@@ -19,13 +19,19 @@
 package org.netbeans.modules.xslt.project.anttasks;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
-import org.apache.tools.ant.BuildException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Iterator;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.netbeans.modules.xslt.project.CommandlineTransformmapCatalogModel;
+import org.netbeans.modules.xslt.project.CommandlineWSDLModelRetriever;
 
 /**
  *
@@ -37,36 +43,34 @@ public class JBIGenerator extends AbstractJBIGenerator {
     private Logger logger = Logger.getLogger(JBIGenerator.class.getName());    
     private List<File> myDependentProjectDirs;
     private List<File> mySourceDirs;
-    
+//    private WSDLModelRetriever myWSDLModelRetriever;
+            
     public JBIGenerator(List<File> depedentProjectDirs , List<File> sourceDirs, String srcDir, String buildDir) {
         super(srcDir, buildDir);
         myDependentProjectDirs = depedentProjectDirs;
-        System.out.println("myDependentProjectDirs: "+myDependentProjectDirs);
-        if (myDependentProjectDirs != null) {
-            int i =0;
-            for (File file : myDependentProjectDirs) {
-                i++;
-                if (file == null) {
-                    System.out.println(i+"] file is null");
-                } else {
-                    System.out.println(i+"] file "+file.getPath());
-                }
-            }
-
-        }
 
         mySourceDirs = sourceDirs;
-        if (mySourceDirs != null) {
-            int i =0;
-            for (File file : mySourceDirs) {
-                i++;
-                if (file == null) {
-                    System.out.println(i+"] source  file is null");
-                } else {
-                    System.out.println(i+"] source file "+file.getPath());
+        
+        Result<ExternalModelRetriever> result = Lookup.getDefault().lookup(
+            new Lookup.Template<ExternalModelRetriever>(ExternalModelRetriever.class));
+
+        Collection<? extends ExternalModelRetriever>  retrievers = null;
+        if (result != null) {
+            retrievers = result.allInstances();
+        }
+
+        if (retrievers != null) {
+        
+            for (ExternalModelRetriever retriever : retrievers) {
+                if (retriever instanceof CommandlineWSDLModelRetriever) {
+                    CommandlineWSDLModelRetriever wsdlModelRetriever = 
+                                    (CommandlineWSDLModelRetriever) retriever;
+                    if (!wsdlModelRetriever.isInitialized()) {
+                        wsdlModelRetriever.init(depedentProjectDirs, sourceDirs);
+                    }
+                    break;
                 }
             }
-
         }
     }
     
@@ -86,7 +90,8 @@ public class JBIGenerator extends AbstractJBIGenerator {
         }
         TMapModel tMapModel = null;
         try {
-            tMapModel = TransformmapCatalogModel.getDefault().getTMapModel(transformmapFile.toURI());
+            tMapModel = CommandlineTransformmapCatalogModel.getDefault().
+                    getTMapModel(transformmapFile.toURI());
         }catch (Exception ex) {
             this.logger.log(java.util.logging.Level.SEVERE, "Error while creating Tramsformap Model ", ex);
             throw new RuntimeException("Error while creating Transformmap Model ",ex);
@@ -101,13 +106,12 @@ public class JBIGenerator extends AbstractJBIGenerator {
         return tMapModel;
     }
     
-    protected <T extends ReferenceableWSDLComponent> T resolveReference(NamedComponentReference<T> ref) {
+    protected <T extends ReferenceableWSDLComponent> T resolveReference(
+            NamedComponentReference<T> ref) 
+    {
         if (ref == null) {
             return null;
         }
-        T target = null;
-        
-        
-        return target;
+        return ref.get();
     }
 }

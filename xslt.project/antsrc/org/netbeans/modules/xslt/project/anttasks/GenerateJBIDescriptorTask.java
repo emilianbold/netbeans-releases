@@ -163,6 +163,7 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
         } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
         } catch(InvocationTargetException ex) {
+            ex.getCause().printStackTrace();
             throw new RuntimeException(ex);
         } catch(InstantiationException ex) {
             throw new RuntimeException(ex);
