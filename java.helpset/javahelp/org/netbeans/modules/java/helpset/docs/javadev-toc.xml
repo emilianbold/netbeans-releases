@@ -85,7 +85,9 @@
       <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
       <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
       <tocitem text="Previewing a Form" target="gui.testing" />    
-      <tocitem text="Deploying GUI Applications" target="gui.deploying" />  
+      <tocitem text="Deploying GUI Applications" target="gui.deploying" /> 
+
+
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
       <tocitem text="About Layout Managers" target="gui.layouts.about" />
@@ -94,6 +96,7 @@
       <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
       <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
     </tocitem>    
+      <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
   </tocitem>
 

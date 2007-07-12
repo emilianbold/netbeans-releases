@@ -90,6 +90,10 @@
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
 
+<!--below entry is also ID for Palette Manager and Add to Palette actions in actions pool, as well as Palette Manager dialog and sub-dialogs:-->
+<mapID target="beans.adding" url="gui/gui_addingtopalette.html" />
+
+
 <!-- Javadoc IDs :-->
 
 <mapID target="javadoc.add" url="javadoc/javadoc_add.html" />
