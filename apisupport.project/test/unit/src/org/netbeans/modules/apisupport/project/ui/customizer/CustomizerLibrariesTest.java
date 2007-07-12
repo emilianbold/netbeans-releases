@@ -42,7 +42,7 @@ public class CustomizerLibrariesTest extends TestBase {
         SingleModuleProperties props = SingleModulePropertiesTest.loadProperties(p);
         CustomizerLibraries panel = new CustomizerLibraries(props);
         panel.refresh();
-        Reference/*<CustomizerLibraries>*/ ref = new WeakReference/*<CustomizerLibraries>*/(panel);
+        Reference<?> ref = new WeakReference<Object>(panel);
         OpenProjects.getDefault().close(new Project[] { p });
         panel = null;
         p = null;
