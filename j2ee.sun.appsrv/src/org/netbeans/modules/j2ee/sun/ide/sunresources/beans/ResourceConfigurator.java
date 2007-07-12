@@ -138,13 +138,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ConnectorResource connresource = resources.newConnectorResource();
         ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
         
-        String connectionFactoryJndiName= "jms/" + jndiName + "Factory"; // NOI18N
+        String connectionFactoryJndiName= jndiName + "Factory"; // NOI18N
+        String connectionFactoryPoolName = jndiName + "FactoryPool"; // NOI18N
         connresource.setJndiName(connectionFactoryJndiName);
         connresource.setDescription("");
         connresource.setEnabled("true");
-        connresource.setPoolName(connectionFactoryJndiName);
+        connresource.setPoolName(connectionFactoryPoolName);
         
-        connpoolresource.setName(connectionFactoryJndiName);
+        connpoolresource.setName(connectionFactoryPoolName);
         connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
         
         if(type.equals(MessageDestination.Type.QUEUE)) {
