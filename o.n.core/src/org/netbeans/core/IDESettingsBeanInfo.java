@@ -50,7 +50,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
             desc[0].setDisplayName (NbBundle.getMessage (IDESettingsBeanInfo.class, "PROP_CONFIRM_DELETE"));
             desc[0].setShortDescription (NbBundle.getMessage (IDESettingsBeanInfo.class, "HINT_CONFIRM_DELETE"));
-
+            desc[0].setHidden (true);
+            
             desc[1].setHidden (true);
             
             desc[2].setHidden (true);
