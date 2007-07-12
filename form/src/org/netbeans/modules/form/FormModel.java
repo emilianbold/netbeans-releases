@@ -65,7 +65,6 @@ public class FormModel
     private UndoRedo.Manager undoRedoManager;
     private boolean undoRedoRecording = false;
     private CompoundEdit compoundEdit;
-    private boolean autoEndCoumpoundEdit;
     private boolean undoCompoundEdit = false;
 
     private FormEvents formEvents;
@@ -73,6 +72,7 @@ public class FormModel
     // list of listeners registered on FormModel
     private ArrayList listeners;
     private EventBroker eventBroker;
+    private boolean firing;
 
     private MetaComponentCreator metaCreator;
 
@@ -531,26 +531,20 @@ public class FormModel
         return undoRedoRecording;
     }
 
-    public boolean startCompoundEdit(boolean endAutomatically) {
+    private void startCompoundEdit() {
         if (compoundEdit == null) {
             t("starting compound edit"); // NOI18N
             compoundEdit = new CompoundEdit();
-            autoEndCoumpoundEdit = endAutomatically;
-            return true;
         }
-        return false;
     }
 
     public CompoundEdit endCompoundEdit(boolean commit) {
         if (compoundEdit != null) {
             t("ending compound edit: "+commit); // NOI18N
             compoundEdit.end();
-            autoEndCoumpoundEdit = false;
             if (commit && undoRedoRecording && compoundEdit.isSignificant()) {
                 getUndoRedoManager().undoableEditHappened(
                     new UndoableEditEvent(this, compoundEdit));
-            } else {
-                undoCompoundEdit = false;
             }
             CompoundEdit edit = compoundEdit;
             compoundEdit = null;
@@ -566,16 +560,15 @@ public class FormModel
     }
 
     public boolean isCompoundEditInProgress() {
-        return compoundEdit != null && compoundEdit.isInProgress();
+        return compoundEdit != null; // && compoundEdit.isInProgress();
     }
 
     public void addUndoableEdit(UndoableEdit edit) {
         t("adding undoable edit"); // NOI18N
-        if (isCompoundEditInProgress())
-            compoundEdit.addEdit(edit);
-        else
-            getUndoRedoManager().undoableEditHappened(
-                     new UndoableEditEvent(this, edit));
+        if (!isCompoundEditInProgress()) {
+            startCompoundEdit();
+        }
+        compoundEdit.addEdit(edit);
     }
 
     UndoRedo.Manager getUndoRedoManager() {
@@ -975,14 +968,53 @@ public class FormModel
         return ev;
     }
 
-    public void fireEvents(FormModelEvent[] events) {
+    /**
+     * Fires events collected from all changes done during the last round of AWT
+     * event queue. After firing, if there was no error, all the changes are
+     * placed as one UndoableEdit into undo/redo queue. When the fired events are
+     * processed, some more changes may happen, but these should be fired
+     * immeditalely (not later) to be included in the same UndoableEdit. This may
+     * cause this method is re-entered while previous firing is not finished yet.
+     * For robustness, if some error happens which would leave things in
+     * incosistent state, all the changes done so far are undone:
+     * If an operation failed before firing, the undoCompoundEdit field is set
+     * and then no events are fired at all (the changes were defective), and the
+     * changes done before the failure are undone. All the changes are undone
+     * also if the failure happens during processing the events (e.g. the layout
+     * can't be built).
+     */
+    private void fireEventBatch(FormModelEvent[] events) {
+        if (!firing) {
+            boolean firingFailed = false;
+            try {
+                firing = true;
+                if (!undoCompoundEdit) {
+                    firingFailed = true;
+                    fireEvents(events);
+                    firingFailed = false;
+                }
+            } finally {
+                firing = false;
+                boolean revert = undoCompoundEdit || firingFailed;
+                undoCompoundEdit = false;
+                CompoundEdit edit = endCompoundEdit(!revert);
+                if (edit != null && revert) {
+                    edit.undo();
+                }
+            }
+        } else { // re-entrant call
+            fireEvents(events);
+        }
+    }
+
+    void fireEvents(FormModelEvent[] events) {
         java.util.List targets;
         synchronized(this) {
-            if (listeners == null)
+            if (listeners == null || listeners.size() == 0) {
                 return;
+            }
             targets = (ArrayList) listeners.clone();
         }
-
         for (int i=0; i < targets.size(); i++) {
             FormModelListener l = (FormModelListener) targets.get(i);
             l.formChanged(events);
@@ -1064,11 +1096,6 @@ public class FormModel
 
             if (eventList == null) {
                 eventList = new ArrayList();
-                if (ev.isModifying()
-                    && FormModel.this.isUndoRedoRecording()
-                    && FormModel.this.startCompoundEdit(true))
-                    t("compound undoable edit started from event broker"); // NOI18N
-
                 java.awt.EventQueue.invokeLater(this);
             }
 
@@ -1088,27 +1115,11 @@ public class FormModel
 
         public void run() {
             List list = pickUpEvents();
-            boolean firedSuccessfully = false;
-            try {
-                if (list != null && !list.isEmpty()) {
-                    FormModelEvent[] events = new FormModelEvent[list.size()];
-                    list.toArray(events);
-                    t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
-                    FormModel.this.fireEvents(events);
-                }
-                firedSuccessfully = true;
-            } finally {
-                if (FormModel.this.autoEndCoumpoundEdit) {
-                    CompoundEdit edit = FormModel.this.endCompoundEdit(true);
-                    if (edit != null) {
-                        t("coumpound undoable edit ended automatically"); // NOI18N
-                        if ((undoCompoundEdit || !firedSuccessfully) && getUndoRedoManager().canUndo()) {
-                            undoCompoundEdit = false;
-                            getUndoRedoManager().undo();
-                        }
-                    }
-                    undoCompoundEdit = false;
-                }
+            if (list != null && !list.isEmpty()) {
+                FormModelEvent[] events = new FormModelEvent[list.size()];
+                list.toArray(events);
+                t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
+                FormModel.this.fireEventBatch(events);
             }
         }
     }

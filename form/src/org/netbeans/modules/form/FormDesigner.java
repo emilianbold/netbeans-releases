@@ -493,23 +493,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         RepaintManager.currentManager(componentLayer).validateInvalidComponents();
 
         LayoutModel layoutModel = formModel.getLayoutModel();
-        Object layoutUndoMark = layoutModel.getChangeMark();
-        UndoableEdit layoutUndoEdit = layoutModel.getUndoableEdit();
-        boolean autoUndo = true;
-
-        try {
-            if (getLayoutDesigner().updateCurrentState() && fireChange) {
-                formModel.fireFormChanged(true); // hack: to regenerate code once again
-            }
-            autoUndo = false;
-        } finally {
-            if ((!firstLayout || autoUndo) && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                formModel.addUndoableEdit(layoutUndoEdit);
-            } // note: change is ignored if done as part of adjusting newly
-              // opened form - this should not be undoable
-            if (autoUndo) {
-                formModel.forceUndoOfCompoundEdit();                
-            }
+        if (getLayoutDesigner().updateCurrentState() && fireChange) {
+            formModel.fireFormChanged(true); // hack: to regenerate code once again
         }
 
         layoutModel.endUndoableEdit();

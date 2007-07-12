@@ -227,40 +227,39 @@ public class SelectLayoutAction extends CallableSystemAction {
         FormModel formModel = metacont.getFormModel();
         LayoutModel layoutModel = formModel.getLayoutModel();
 
+        formModel.setNaturalContainerLayout(metacont);
+
+        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
+        Container cont = metacont.getContainerDelegate(formDesigner.getComponent(metacont));
+        Insets insets = new Insets(0, 0, 0, 0);
+        if (cont instanceof JComponent) {
+            Border border = ((JComponent)cont).getBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(cont);
+            }
+        }
+
+        Map<String, Rectangle> idToBounds = new HashMap<String, Rectangle>();
+        Rectangle notKnown = new Rectangle();
+        for (RADVisualComponent metacomp : metacont.getSubComponents()) {
+            Component comp = (Component)formDesigner.getComponent(metacomp);
+            if (comp == null) {
+                comp = (Component)metacomp.getBeanInstance(); // Issue 65919
+            }
+            Rectangle bounds = comp.getBounds();
+            Dimension dim = comp.getPreferredSize();
+            if (bounds.equals(notKnown)) { // Issue 65919
+                bounds.setSize(dim);
+            }
+            bounds = new Rectangle(bounds.x - insets.left, bounds.y - insets.top, bounds.width, bounds.height);
+            idToBounds.put(metacomp.getId(), bounds);
+        }
+
         Object layoutUndoMark = layoutModel.getChangeMark();
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
         boolean autoUndo = true;
         try {
-            formModel.setNaturalContainerLayout(metacont);
-
-            FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
-            Container cont = metacont.getContainerDelegate(formDesigner.getComponent(metacont));
-            Insets insets = new Insets(0, 0, 0, 0);
-            if (cont instanceof JComponent) {
-                Border border = ((JComponent)cont).getBorder();
-                if (border != null) {
-                    insets = border.getBorderInsets(cont);
-                }
-            }
-
-            Map<String, Rectangle> idToBounds = new HashMap<String, Rectangle>();
-            Rectangle notKnown = new Rectangle();
-            for (RADVisualComponent metacomp : metacont.getSubComponents()) {
-                Component comp = (Component)formDesigner.getComponent(metacomp);
-                if (comp == null) {
-                    comp = (Component)metacomp.getBeanInstance(); // Issue 65919
-                }
-                Rectangle bounds = comp.getBounds();
-                Dimension dim = comp.getPreferredSize();
-                if (bounds.equals(notKnown)) { // Issue 65919
-                    bounds.setSize(dim);
-                }
-                bounds = new Rectangle(bounds.x - insets.left, bounds.y - insets.top, bounds.width, bounds.height);
-                idToBounds.put(metacomp.getId(), bounds);
-            }
-
             formDesigner.getLayoutDesigner().copyLayoutFromOutside(idToBounds, metacont.getId(), false);
-
             autoUndo = false;
         } finally {
             if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
