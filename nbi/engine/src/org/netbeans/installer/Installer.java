@@ -253,16 +253,6 @@ public class Installer implements FinishHandler {
     private void loadProperties() {
         LogManager.logEntry("loading engine properties"); // NOI18N
         
-        LogManager.logIndent("setting some default values"); // NOI18N
-        
-        System.setProperty(
-                INSTALLER_APPLICATION_NAME_PROPERTY, 
-                DEFAULT_INSTALLER_APPLICATION_NAME);
-        LogManager.log(INSTALLER_APPLICATION_NAME_PROPERTY + " => " + // NOI18N
-                DEFAULT_INSTALLER_APPLICATION_NAME);
-        
-        LogManager.unindent();
-        
         try {
             LogManager.logIndent("loading properties file from " + // NOI18N
                     EngineResources.ENGINE_PROPERTIES);
@@ -967,11 +957,6 @@ public class Installer implements FinishHandler {
             "I.lock.file.exists.dialog.text"; // NOI18N
     
     private static final String ERROR_CANNOT_CREATE_LOCK_FILE_KEY = 
-            "I.error.cannot.create.lock.file"; // NOI18N
-    
-    public static final String INSTALLER_APPLICATION_NAME_PROPERTY = 
-            "nbi.installer.application.name"; // NOI18N
-    
-    public static final String DEFAULT_INSTALLER_APPLICATION_NAME = 
-            "NBI Installer"; // NOI18N
+            "I.error.cannot.create.lock.file"; // NOI18N    
+
 }
