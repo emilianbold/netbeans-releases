@@ -178,7 +178,7 @@ public class WSITModelSupport {
             WSDLModel originalwsdlmodel = getModelFromFO(originalWsdlFO, true);
             
             // check whether config file already exists
-            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getNameExt());
+            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(), CONFIG_WSDL_EXTENSION);
             if ((configFO != null) && (configFO.isValid())) {
                 return getModelFromFO(configFO, true);
             }
@@ -589,6 +589,12 @@ public class WSITModelSupport {
     public synchronized static void save(WSDLModel model) {
         try {
             if (model != null) {
+                Collection<Import> imports = model.getDefinitions().getImports();
+                for (Import i : imports) {
+                    WSDLModel importedModel = i.getImportedWSDLModel();
+                    save(importedModel);
+                }
+
                 FileObject wsdlFO = Utilities.getFileObject(model.getModelSource());
                 if (wsdlFO == null) {
                     logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
