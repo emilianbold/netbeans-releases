@@ -40,6 +40,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteFolder;
 import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteItem;
 

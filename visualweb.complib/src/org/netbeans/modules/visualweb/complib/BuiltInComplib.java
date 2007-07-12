@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.openide.modules.InstalledFileLocator;
 
 /**

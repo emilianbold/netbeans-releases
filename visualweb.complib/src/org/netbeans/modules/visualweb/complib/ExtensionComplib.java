@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;

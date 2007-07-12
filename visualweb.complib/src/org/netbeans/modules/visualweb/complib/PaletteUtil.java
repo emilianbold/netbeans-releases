@@ -32,6 +32,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.Complib.Identifier;
 import org.netbeans.modules.visualweb.complib.ComplibManifest.EeSpecVersion;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.ComponentInfo;

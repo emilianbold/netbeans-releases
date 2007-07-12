@@ -22,6 +22,8 @@ package org.netbeans.modules.visualweb.complib;
 import java.io.File;
 import java.io.IOException;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
+
 public class SharedComplib extends ExtensionComplib {
 
     SharedComplib(File absoluteLibDir) throws ComplibException, IOException {

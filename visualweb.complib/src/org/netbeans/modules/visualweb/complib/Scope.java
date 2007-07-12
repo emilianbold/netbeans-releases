@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

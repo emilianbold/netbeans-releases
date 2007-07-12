@@ -38,8 +38,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.Complib;
-import org.netbeans.modules.visualweb.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.IdeUtil;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.ComponentInfo;

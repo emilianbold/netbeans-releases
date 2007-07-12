@@ -30,7 +30,7 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.visualweb.complib.ComplibException;
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.IdeUtil;
 import org.netbeans.modules.visualweb.complib.SharedComplib;

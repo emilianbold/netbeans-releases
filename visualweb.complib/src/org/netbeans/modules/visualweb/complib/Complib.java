@@ -28,6 +28,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
+
 /**
  * Represents a component library consisting of a collection of components. This
  * is either a built-in or an extension component library provided by a third

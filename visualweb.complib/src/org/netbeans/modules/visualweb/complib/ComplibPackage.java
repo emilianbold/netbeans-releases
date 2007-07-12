@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteFolder;
 
 /**

@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.visualweb.complib;
 
+import org.netbeans.modules.visualweb.api.complib.ComplibException;
+
 
 /**
  * Indicates problem with complib manifest attribute
