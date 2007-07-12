@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.api.io.providers;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.DocumentInterface;
 import org.netbeans.modules.vmd.io.DocumentInterfaceImpl;
 import org.netbeans.modules.vmd.io.DocumentLoad;
 import org.netbeans.modules.vmd.io.DocumentSave;
@@ -29,6 +30,8 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.RequestProcessor;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ArrayList;
+import java.lang.ref.WeakReference;
 
 /**
  * @author David Kaspar
@@ -41,6 +44,7 @@ public final class DocumentSerializer {
     private DataObjectContext context;
     private DesignDocument document;
     private UndoRedo.Manager undoRedoManager;
+    private ArrayList<WeakReference<DocumentInterface>> documentInterfaces = new ArrayList<WeakReference<DocumentInterface>> ();
 
     private boolean loaded = false;
     private boolean loading = false;
@@ -49,6 +53,7 @@ public final class DocumentSerializer {
         public void run () {
             undoRedoManager.discardAllEdits ();
             DocumentInterfaceImpl loadingDocumentInterface = new DocumentInterfaceImpl (context, undoRedoManager);
+            documentInterfaces.add (new WeakReference<DocumentInterface> (loadingDocumentInterface));
             final DesignDocument loadingDocument = new DesignDocument (loadingDocumentInterface);
             DocumentLoad.load (context, loadingDocument);
             IOSupport.resetCodeResolver (context.getDataObject (), loadingDocument); // HINT - if a new document is created which should update source code then do not call this method 
@@ -162,6 +167,15 @@ public final class DocumentSerializer {
         }
         fireDesignDocumentAwareness (null);
         listeners.clear ();
+    }
+
+    boolean hasDocumentInterface (DocumentInterface documentInterface) {
+        if (documentInterface == null)
+            return false;
+        for (WeakReference<DocumentInterface> ref : documentInterfaces)
+            if (ref.get () == documentInterface)
+                return true;
+        return false;
     }
 
 }

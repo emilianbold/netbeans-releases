@@ -23,21 +23,20 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.core.api.multiview.MultiViews;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
 
 /**
  * @author David Kaspar
@@ -80,27 +79,17 @@ public final class ProjectUtils {
     public static Project getProject(DataObjectContext context) {
         if (context == null)
             return null;
-        return getProject(context.getDataObject());
+        return FileOwnerQuery.getOwner (context.getDataObject().getPrimaryFile ());
     }
     
     /**
      * Returns a project instance for a data object.
-     * @param dataObject the data object
-     * @return the project
-     * @throws NullPointerException when the dataObject parameter is null
-     */
-    public static Project getProject(DataObject dataObject) {
-        return FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-    }
-    
-    /**
-     * Returns a project instance for a data object.
-     * @param DesignDocument the DesignDocument
+     * @param document the document
      * @return the project
      * @throws NullPointerException when the DesignDocument parameter is null
      */
     public static Project getProject(DesignDocument document) {
-        return getProject(IOSupport.getDataObjectForDocument(document));
+        return getProject(getDataObjectContextForDocument(document));
     }
     
     /**
@@ -111,7 +100,7 @@ public final class ProjectUtils {
      * @return the context; null if no context found
      */
     public static DataObjectContext getDataObjectContextForDocument(DesignDocument document) {
-        return IOSupport.getDataObjectForDocument(document);
+        return IOSupport.getDataObjectForDocumentInterface(document);
     }
     
     /**
@@ -147,9 +136,8 @@ public final class ProjectUtils {
     }
     /**
      *  RequestVisibity for TopComponent
-     *
-     * @param projectID the ID of prject
      */
+    // TODO - add DataObjectContext parameter
     public static void requestVisibility(String topComponentDisplayName) {
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             Lookup.Result devs = tc.getLookup().lookupResult(DataEditorView.class);

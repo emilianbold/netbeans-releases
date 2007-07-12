@@ -21,13 +21,16 @@ package org.netbeans.modules.vmd.api.io.providers;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.DocumentInterface;
 import org.netbeans.modules.vmd.io.CodeResolver;
 import org.netbeans.modules.vmd.io.DataObjectContextImpl;
 import org.netbeans.modules.vmd.io.DocumentLoad;
 import org.netbeans.modules.vmd.io.editor.EditorViewDescription;
 import org.netbeans.modules.vmd.io.editor.EditorViewFactorySupport;
+import org.netbeans.modules.vmd.io.editor.EditorViewElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
@@ -178,19 +181,22 @@ public final class IOSupport {
      * @return the data object context
      */
     // TODO - should be hidden - used by ProjectUtils.getDataObjectContextForDocument method only
-    public synchronized static DataObjectContext getDataObjectForDocument(DesignDocument document) {
+    public synchronized static DataObjectContext getDataObjectForDocumentInterface(DesignDocument document) {
+        assert Debug.isFriend (ProjectUtils.class, "getDataObjectContextForDocument"); // NOI18N
+        DocumentInterface documentInterface = document.getDocumentInterface ();
         for (DataObject dataObject : serializers.keySet()) {
             if (dataObject == null)
                 continue;
             DocumentSerializer documentSerializer = getDocumentSerializer(dataObject); // TODO - use direct access to serializers field
-            if (document == documentSerializer.getActualDocument())
+            if (documentSerializer.hasDocumentInterface (documentInterface))
                 return getDataObjectContext(dataObject);
         }
         return null;
     }
-    
+
     // TODO - should be hidden - used by EditorViewElement.componentActivated method only
     public static void notifyDataEditorViewActivated(DataEditorView activatedView) {
+        assert Debug.isFriend (EditorViewElement.class, "componentActivated"); // NOI18N
         if (activatedView == null)
             return;
         CodeResolver resolver = resolvers.get(activatedView.getContext().getDataObject());

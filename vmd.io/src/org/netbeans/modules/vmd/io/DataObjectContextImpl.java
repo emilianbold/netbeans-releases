@@ -62,7 +62,7 @@ public class DataObjectContextImpl implements DataObjectContext {
         if (initialized)
             return;
         initialized = true;
-        projectID = ProjectUtils.getProjectID (ProjectUtils.getProject (dataObject));
+        projectID = ProjectUtils.getProjectID (ProjectUtils.getProject (this));
         projectType = IOSupport.getDocumentSerializer (dataObject).getProjectType ();
         if (projectType == null)
             projectType = PROJECT_TYPE_VMD_UNKNOWN;
