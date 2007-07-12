@@ -43,56 +43,58 @@ public class FileListPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         scrlPnFiles = new javax.swing.JScrollPane();
         listFiles = new javax.swing.JList();
         btnAdd = new javax.swing.JButton();
         btnRemove = new javax.swing.JButton();
 
+        setLayout(new java.awt.GridBagLayout());
+
+        scrlPnFiles.setAlignmentY(0.0F);
+        scrlPnFiles.setPreferredSize(new java.awt.Dimension(350, 50));
+        scrlPnFiles.setRequestFocusEnabled(false);
+
         listFiles.setModel(getFileListModel());
+        listFiles.setPreferredSize(new java.awt.Dimension(300, 75));
         scrlPnFiles.setViewportView(listFiles);
 
-        btnAdd.setText( org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindingFiles_Add")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        add(scrlPnFiles, gridBagConstraints);
+
+        btnAdd.setText(org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindingFiles_Add")); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPressedEvent(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
+        add(btnAdd, gridBagConstraints);
 
-        btnRemove.setText( org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindinfFiles_Remove"));// NOI18N
+        btnRemove.setText(org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindinfFiles_Remove")); // NOI18N
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPressedEvent(evt);
             }
         });
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(scrlPnFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(btnRemove)
-                    .add(btnAdd))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(layout.createSequentialGroup()
-                        .add(scrlPnFiles, 0, 0, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(btnAdd)
-                        .add(11, 11, 11)
-                        .add(btnRemove)
-                        .add(24, 24, 24))))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
+        add(btnRemove, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnPressedEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPressedEvent
