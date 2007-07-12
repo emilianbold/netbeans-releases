@@ -19,30 +19,21 @@
 
 package org.netbeans.modules.vmd.inspector;
 
-import java.awt.datatransfer.Transferable;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.common.DefaultOrderingController;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.openide.nodes.AbstractNode;
+
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 
 /**
@@ -137,7 +128,7 @@ final class InspectorFolderWrapper {
     
     void resolveFolder(DesignDocument document) {
         if (node == null) {
-            DataObjectContext dc = IOSupport.getDataObjectForDocument(document);
+            DataObjectContext dc = ProjectUtils.getDataObjectContextForDocument(document);
             if (dc != null) {
                 node = new InspectorFolderNode(dc);
             } else  //TODO No Lookup for root node cause its creates inside of constructor

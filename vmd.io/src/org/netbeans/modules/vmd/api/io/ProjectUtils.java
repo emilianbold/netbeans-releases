@@ -100,7 +100,7 @@ public final class ProjectUtils {
      * @return the context; null if no context found
      */
     public static DataObjectContext getDataObjectContextForDocument(DesignDocument document) {
-        return IOSupport.getDataObjectForDocumentInterface(document);
+        return IOSupport.getDataObjectContextForDocumentInterface(document);
     }
     
     /**

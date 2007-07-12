@@ -181,7 +181,7 @@ public final class IOSupport {
      * @return the data object context
      */
     // TODO - should be hidden - used by ProjectUtils.getDataObjectContextForDocument method only
-    public synchronized static DataObjectContext getDataObjectForDocumentInterface(DesignDocument document) {
+    public synchronized static DataObjectContext getDataObjectContextForDocumentInterface(DesignDocument document) {
         assert Debug.isFriend (ProjectUtils.class, "getDataObjectContextForDocument"); // NOI18N
         DocumentInterface documentInterface = document.getDocumentInterface ();
         for (DataObject dataObject : serializers.keySet()) {
