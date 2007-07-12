@@ -182,7 +182,7 @@ public class CodeResolver implements DesignDocumentAwareness {
             return null;
         }
         JEditorPane[] panes = context.getCloneableEditorSupport ().getOpenedPanes ();
-        if (panes.length < 0) {
+        if (panes == null  ||  panes.length < 1) {
             Debug.warning ("No editor pane found for", context); // NOI18N
             return null;
         } else if (panes.length > 1)
