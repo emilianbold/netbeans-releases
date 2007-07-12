@@ -20,10 +20,14 @@
 package org.netbeans.modules.xml.jaxb.ui;
 
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
@@ -52,6 +56,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         schemaSource = new javax.swing.ButtonGroup();
         lblSchemaName = new javax.swing.JLabel();
@@ -67,11 +72,6 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         lblPackageName = new javax.swing.JLabel();
         txtPackageName = new javax.swing.JTextField();
         lblOptions = new javax.swing.JLabel();
-        chkbxNv = new javax.swing.JCheckBox();
-        chkbxReadOnly = new javax.swing.JCheckBox();
-        chkbxNpa = new javax.swing.JCheckBox();
-        chkbxVerbose = new javax.swing.JCheckBox();
-        chkbxQuiet = new javax.swing.JCheckBox();
         lblSchemaType = new javax.swing.JLabel();
         cmbSchemaType = new javax.swing.JComboBox();
         jSeparator1 = new javax.swing.JSeparator();
@@ -83,15 +83,33 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         txtCatalogFile = new javax.swing.JTextField();
         btnBrowseCatalogFile = new javax.swing.JButton();
 
+        setLayout(new java.awt.GridBagLayout());
+
         lblSchemaName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(lblSchemaName, gridBagConstraints);
 
-        lblPrjName.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Project"));// NOI18N
+        lblPrjName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Project")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(lblPrjName, gridBagConstraints);
 
-        lblSchemaFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchamaFile"));// NOI18N
+        lblSchemaFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchamaFile")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(lblSchemaFile, gridBagConstraints);
 
         schemaSource.add(rdoSelectFromFileSys);
         rdoSelectFromFileSys.setSelected(true);
-        rdoSelectFromFileSys.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromLocalFileSystem"));// NOI18N
+        rdoSelectFromFileSys.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromLocalFileSystem")); // NOI18N
         rdoSelectFromFileSys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rdoSelectFromFileSys.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rdoSelectFromFileSys.addActionListener(new java.awt.event.ActionListener() {
@@ -99,6 +117,14 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 0);
+        add(rdoSelectFromFileSys, gridBagConstraints);
 
         txtSchemaName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -110,8 +136,24 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 JAXBBindingInfoPnl.this.focusLost(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(txtSchemaName, gridBagConstraints);
 
         txtPrjName.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(txtPrjName, gridBagConstraints);
 
         txtFilePath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -123,16 +165,31 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 JAXBBindingInfoPnl.this.focusLost(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 35, 5, 0);
+        add(txtFilePath, gridBagConstraints);
 
-        btnBrowseFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse"));// NOI18N
+        btnBrowseFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
         btnBrowseFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        add(btnBrowseFile, gridBagConstraints);
 
         schemaSource.add(rdoSelectURL);
-        rdoSelectURL.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromURL"));// NOI18N
+        rdoSelectURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromURL")); // NOI18N
         rdoSelectURL.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rdoSelectURL.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rdoSelectURL.addActionListener(new java.awt.event.ActionListener() {
@@ -140,9 +197,17 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 0);
+        add(rdoSelectURL, gridBagConstraints);
 
         txtURL.setEditable(false);
-        txtURL.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_URL_Filler"));// NOI18N
+        txtURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_URL_Filler")); // NOI18N
         txtURL.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fireChangeEvent(evt);
@@ -153,46 +218,64 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 JAXBBindingInfoPnl.this.focusLost(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 35, 5, 5);
+        add(txtURL, gridBagConstraints);
 
-        lblPackageName.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_PackageName"));// NOI18N
+        lblPackageName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_PackageName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(lblPackageName, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(txtPackageName, gridBagConstraints);
 
-        lblOptions.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Options"));// NOI18N
+        lblOptions.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Options")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(lblOptions, gridBagConstraints);
 
-        chkbxNv.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV"));// NOI18N
-        chkbxNv.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxNv.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        chkbxReadOnly.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly"));// NOI18N
-        chkbxReadOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxReadOnly.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        chkbxNpa.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA"));// NOI18N
-        chkbxNpa.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxNpa.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        chkbxVerbose.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose"));// NOI18N
-        chkbxVerbose.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxVerbose.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        chkbxVerbose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fireChangeEvent(evt);
-            }
-        });
-
-        chkbxQuiet.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet"));// NOI18N
-        chkbxQuiet.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxQuiet.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        chkbxQuiet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fireChangeEvent(evt);
-            }
-        });
-
-        lblSchemaType.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaType"));// NOI18N
+        lblSchemaType.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaType")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(lblSchemaType, gridBagConstraints);
 
         cmbSchemaType.setModel(getSchemaTypeComboBoxModel());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(cmbSchemaType, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        add(jSeparator1, gridBagConstraints);
 
-        chkbxUseBindingFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseBindingFile"));// NOI18N
+        chkbxUseBindingFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseBindingFile")); // NOI18N
         chkbxUseBindingFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseBindingFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseBindingFile.addActionListener(new java.awt.event.ActionListener() {
@@ -200,8 +283,14 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(chkbxUseBindingFile, gridBagConstraints);
 
-        chkbxUseCatalogFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseCatalogFile"));// NOI18N
+        chkbxUseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseCatalogFile")); // NOI18N
         chkbxUseCatalogFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseCatalogFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseCatalogFile.addActionListener(new java.awt.event.ActionListener() {
@@ -209,8 +298,14 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(chkbxUseCatalogFile, gridBagConstraints);
 
-        chkbxUseExtension.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseExtension"));// NOI18N
+        chkbxUseExtension.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseExtension")); // NOI18N
         chkbxUseExtension.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseExtension.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseExtension.addActionListener(new java.awt.event.ActionListener() {
@@ -218,152 +313,61 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(chkbxUseExtension, gridBagConstraints);
 
-        btnSelectBindingFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Configure"));// NOI18N
+        btnSelectBindingFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Configure")); // NOI18N
         btnSelectBindingFile.setEnabled(false);
         btnSelectBindingFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(btnSelectBindingFile, gridBagConstraints);
 
         cmbBindingFiles.setModel(getBindingFilesComboBoxModel());
         cmbBindingFiles.setEnabled(false);
         cmbBindingFiles.setPreferredSize(new java.awt.Dimension(275, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(cmbBindingFiles, gridBagConstraints);
 
         txtCatalogFile.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
+        add(txtCatalogFile, gridBagConstraints);
 
-        btnBrowseCatalogFile.setText( org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse"));// NOI18N
+        btnBrowseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
         btnBrowseCatalogFile.setEnabled(false);
         btnBrowseCatalogFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSelectionHandler(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(btnBrowseCatalogFile, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(lblSchemaFile)
-                                .add(layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                        .add(lblSchemaName)
-                                        .add(lblPrjName))
-                                    .add(35, 35, 35)
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                        .add(txtSchemaName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                                        .add(org.jdesktop.layout.GroupLayout.LEADING, txtPrjName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE))))
-                            .add(21, 21, 21))
-                        .add(layout.createSequentialGroup()
-                            .add(10, 10, 10)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(rdoSelectFromFileSys)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 311, Short.MAX_VALUE))
-                                .add(layout.createSequentialGroup()
-                                    .add(rdoSelectURL)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                        .add(layout.createSequentialGroup()
-                                            .add(txtFilePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 349, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .add(18, 18, 18)
-                                            .add(btnBrowseFile))
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                            .add(layout.createSequentialGroup()
-                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                                    .add(cmbBindingFiles, 0, 282, Short.MAX_VALUE)
-                                                    .add(txtCatalogFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                                    .add(btnBrowseCatalogFile)
-                                                    .add(btnSelectBindingFile)))
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtPackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                                            .add(cmbSchemaType, 0, 30, Short.MAX_VALUE)
-                                            .add(layout.createSequentialGroup()
-                                                .add(chkbxNv)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(chkbxReadOnly)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(chkbxNpa)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(chkbxVerbose)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(chkbxQuiet)))
-                                        .add(txtURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 445, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(21, 21, 21)))))
-                    .add(lblPackageName)
-                    .add(chkbxUseCatalogFile)
-                    .add(chkbxUseBindingFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lblSchemaType)
-                    .add(lblOptions)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 474, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(chkbxUseExtension))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(19, 19, 19)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblSchemaName)
-                    .add(txtSchemaName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblPrjName)
-                    .add(txtPrjName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblSchemaFile)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rdoSelectFromFileSys)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(btnBrowseFile)
-                    .add(txtFilePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rdoSelectURL)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txtURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblSchemaType)
-                    .add(cmbSchemaType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblPackageName)
-                    .add(txtPackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblOptions)
-                    .add(chkbxNv)
-                    .add(chkbxReadOnly)
-                    .add(chkbxNpa)
-                    .add(chkbxVerbose)
-                    .add(chkbxQuiet))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chkbxUseExtension)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chkbxUseBindingFile)
-                    .add(btnSelectBindingFile)
-                    .add(cmbBindingFiles, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chkbxUseCatalogFile)
-                    .add(txtCatalogFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(btnBrowseCatalogFile))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
     }// </editor-fold>//GEN-END:initComponents
 
 private void focusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_focusLost
@@ -380,11 +384,73 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     }
 
     private void initComponentsCustom(){
+        chkbxNv = new javax.swing.JCheckBox();
+        chkbxReadOnly = new javax.swing.JCheckBox();
+        chkbxNpa = new javax.swing.JCheckBox();
+        chkbxVerbose = new javax.swing.JCheckBox();
+        chkbxQuiet = new javax.swing.JCheckBox();
+
+        this.chkbxNv.setMargin(new Insets(5, 5, 5, 5));
+        this.chkbxReadOnly.setMargin(new Insets(5, 5, 5, 5));
+        this.chkbxNpa.setMargin(new Insets(5, 5, 5, 5));        
+        this.chkbxVerbose.setMargin(new Insets(5, 5, 5, 5));
+        this.chkbxQuiet.setMargin(new Insets(5, 5, 5, 5));        
+
+        chkbxNv.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N
+        chkbxNv.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        chkbxReadOnly.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N
+        chkbxReadOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        chkbxNpa.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N
+        chkbxNpa.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+
+        chkbxVerbose.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N
+        chkbxVerbose.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        chkbxVerbose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fireChangeEvent(evt);
+            }
+        });
+
+	chkbxQuiet.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet")); // NOI18N
+	chkbxQuiet.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+	chkbxQuiet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fireChangeEvent(evt);
+            }
+	});
+
+        this.optionsBox = Box.createHorizontalBox();
+        this.optionsBox.add(this.chkbxNv);
+        this.optionsBox.add(Box.createHorizontalStrut(10));
+        this.optionsBox.add(this.chkbxReadOnly);
+        this.optionsBox.add(Box.createHorizontalStrut(10));
+        this.optionsBox.add(this.chkbxNpa);
+        this.optionsBox.add(Box.createHorizontalStrut(10));
+        this.optionsBox.add(this.chkbxVerbose);
+        this.optionsBox.add(Box.createHorizontalStrut(10));
+        this.optionsBox.add(this.chkbxQuiet);
+        this.optionsBox.add(Box.createHorizontalStrut(10));
+        
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5);    
+        add(this.optionsBox, gridBagConstraints);
+    
+        // set tooltips.
         this.chkbxNv.setToolTipText(getMsg("TT_NV")); //NOI18N
         this.chkbxReadOnly.setToolTipText(getMsg("TT_ReadOnly")); //NOI18N
         this.chkbxNpa.setToolTipText(getMsg("TT_NPA")); //NOI18N
         this.chkbxVerbose.setToolTipText(getMsg("TT_Verbose")); //NOI18N
         this.chkbxQuiet.setToolTipText(getMsg("TT_Quiet")); //NOI18N
+
         this.chkbxUseExtension.setToolTipText(getMsg("TT_Extension")); //NOI18N
         this.chkbxUseBindingFile.setToolTipText(getMsg("TT_chkbxBindingFile"));//NOI18N
         this.chkbxUseCatalogFile.setToolTipText(getMsg("TT_chkbxCatalogFile"));//NOI18N
@@ -453,11 +519,6 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         }
 
         if (evt.getSource() == this.btnSelectBindingFile){
-//            String filePath = selectFileFromFileSystem(this,
-//                    JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
-//            if (filePath != null){
-//                this.cmbBindingFiles.addItem(filePath);
-//            }
             Vector<String> files = new Vector<String>();
             files.addAll(getBindingFiles());
             FileListPanel flp = new FileListPanel();
@@ -469,7 +530,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
                 files.removeAllElements();
                 files.addAll(flp.getFiles());
                 DefaultComboBoxModel model = new DefaultComboBoxModel(files);
-                this.cmbBindingFiles.setModel(model);                
+                this.cmbBindingFiles.setModel(model);
             }
         }
 
@@ -490,14 +551,9 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private javax.swing.JButton btnBrowseCatalogFile;
     private javax.swing.JButton btnBrowseFile;
     private javax.swing.JButton btnSelectBindingFile;
-    private javax.swing.JCheckBox chkbxNpa;
-    private javax.swing.JCheckBox chkbxNv;
-    private javax.swing.JCheckBox chkbxQuiet;
-    private javax.swing.JCheckBox chkbxReadOnly;
     private javax.swing.JCheckBox chkbxUseBindingFile;
     private javax.swing.JCheckBox chkbxUseCatalogFile;
     private javax.swing.JCheckBox chkbxUseExtension;
-    private javax.swing.JCheckBox chkbxVerbose;
     private javax.swing.JComboBox cmbBindingFiles;
     private javax.swing.JComboBox cmbSchemaType;
     private javax.swing.JSeparator jSeparator1;
@@ -520,6 +576,15 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
 
     // Custom code
+    // Custom UI components
+    private javax.swing.JCheckBox chkbxNpa;
+    private javax.swing.JCheckBox chkbxNv;
+    private javax.swing.JCheckBox chkbxQuiet;
+    private javax.swing.JCheckBox chkbxReadOnly;
+    private javax.swing.JCheckBox chkbxVerbose;
+    private javax.swing.Box optionsBox;
+
+    // Custom variables
     private static java.util.Vector<ComboElement<String, String>> schemaTypes = null;
     private static java.util.Map<String, String> LAST_BROWSED_DIRS = new java.util.HashMap<String, String>();
     private JAXBWizBindingCfgPanel wizPanel = null;
