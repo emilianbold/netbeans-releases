@@ -18,19 +18,14 @@
  */
 
 package org.netbeans.nbbuild;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.netbeans.junit.*;
-
+import org.netbeans.junit.NbTestCase;
 
 /** Is generation of Jnlp files correct?
  *
@@ -46,14 +41,14 @@ public class MakeMasterJNLPTest extends NbTestCase {
     }
     
     
-    public void testGenerateRefenrenceFilesOnce() throws Exception {
-        doGenerateRefenrenceFiles(1);
+    public void testGenerateReferenceFilesOnce() throws Exception {
+        doGenerateReferenceFiles(1);
     }
-    public void testGenerateRefenrenceFilesThree() throws Exception {
-        doGenerateRefenrenceFiles(3);
+    public void testGenerateReferenceFilesThrice() throws Exception {
+        doGenerateReferenceFiles(3);
     }
     
-    private void doGenerateRefenrenceFiles(int cnt) throws Exception {
+    private void doGenerateReferenceFiles(int cnt) throws Exception {
         Manifest m;
         
         m = ModuleDependenciesTest.createManifest ();
