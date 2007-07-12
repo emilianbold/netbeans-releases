@@ -365,8 +365,9 @@ public final class ParseProjectXml extends Task {
                 if (myself == null) { // #71130
                     ModuleListParser.resetCaches();
                     modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
-                    myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
-                    assert myself != null;
+                    String cnb = getCodeNameBase(pDoc);
+                    myself = modules.findByCodeNameBase(cnb);
+                    assert myself != null : "Cannot find myself as " + cnb;
                 }
                 deps = getDeps(pDoc, modules);
             }
