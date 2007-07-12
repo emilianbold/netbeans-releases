@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Evaluate Expression Dialog Box</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Evaluate Expression Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>Use this dialog box to evaluate any expression to view the values of local 
+  variables for the current method, class variables, and method calls. You open 
+  this dialog box by starting a debugging session and choosing Run > Evaluate 
+  Expression (Ctrl-F9) from the main window.</p>
+<p>If you open the Sources window when a debugging session is running, it closes 
+  automatically when you end the debugging session. If you open the window when 
+  no debugging session is running, it stays open until you close it.</p>
+<p>To use the dialog box, type the expression in the Expression drop-down and 
+  click Evaluate. The result is Shown in the Results window. You can set a watch 
+  for the Expression by clicking the Watch button. The watch is added to the 
+<a href="watches_view.html">Watches window</a>.</p>
+<p><b>Notes:</b> 
+<ul>
+  <li>If you evaluate a method that changes a global variable, the global variable's 
+    value is changed in the debugging session as well.</li>
+  <li>If you try to evaluate a variable that is outside the scope of the current 
+    method, the IDE says <tt>"<i>variable</i>" is not a known variable in current 
+    context</tt>. You can use the Call Stack window to change the current method 
+    context.</li>
+  <li>If you try to access a global variable before the class that contains the 
+    variable is instantiated, the IDE says <tt>Cannot access instance variable 
+    "<i>variable</i>" from static context</tt>.</li>
+</ul>
+<h3><a name="seealso">See Also</a></h3>
+<dl> 
+  <dd><a href="../debug_new_watch.html">Creating a Watch</a></dd>
+  <dd><a href="../debug_fix_watch.html">Creating a Fixed Watch</a></dd>
+  <dd><a href="../debug_callstack.html">Using the Call Stack</a></dd>
+  <dd><a href="../debug_about.html">About Debugging Applications</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

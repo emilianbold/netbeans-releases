@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Threads Window</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Threads Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Threads window lists all threads in the current debugging session. 
+You open the Threads window by choosing Window &gt; Debugging &gt; Threads.</p>
+<p>The information given for each thread is the thread name and state. One thread is the current thread. By default, the current thread is the thread in the current session from which the debugger gained control. When you select a different current session, the Threads window is updated to show the threads for that session.</p>
+
+<h3><a name="threadstates">Thread States</a></h3>
+<p>The following table describes the thread states for the debugger. </p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">State</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr valign="top">
+		<td>Monitor</td>
+		<td>Thread is waiting on a Java monitor.</td>
+	</tr>
+	<tr valign="top">
+		<td>Not Started</td>
+		<td>Thread has not yet been started.</td>
+	</tr>
+	<tr valign="top">
+		<td>Running</td>
+		<td>Thread is runnable.</td>
+	</tr>
+	<tr valign="top">
+		<td>Sleeping</td>
+		<td>Thread is sleeping. <tt>Thread.sleep()</tt> was called.</td>
+	</tr>
+	<tr valign="top">
+		<td>Unknown</td>
+		<td>Thread status is unknown.</td>
+	</tr>
+	<tr valign="top">
+		<td>Wait</td>
+		<td>Thread is waiting. <tt>Object.wait()</tt> was called.</td>
+	</tr>
+	<tr valign="top">
+		<td>Zombie</td>
+		<td>Thread has completed execution.</td>
+	</tr>
+</table>
+
+<h3><a name="icons">Icons</a></h3>
+<p>The following table describes the icons displayed to the left of the object name.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Icon</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/CurrentThreadGroup.gif" alt="Current thread group"></td>
+		<td>The thread group that contains the current thread</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/ThreadGroup.gif" alt="Thread group"></td>
+		<td>A thread group that does not contain the current thread</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/CurrentThread.gif" alt="Current thread"></td>
+		<td>The current thread</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/RunningThread.gif" alt="Running thread"></td>
+		<td>A thread that is running and is not current</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/SuspendedThread.gif" alt="Suspended thread"></td>
+		<td>A thread that is suspended and is not current</td>
+	</tr>
+</table>
+
+<h3><a name="actions">Actions</a></h3>
+<p>Right-clicking the Threads window opens the pop-up menu, where you can choose the following actions:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col" nowrap>Menu Item</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr valign="top">
+		<td>Make Current </td>
+		<td>Makes the selected thread the current thread. This command is equivalent to double-clicking the thread.</td>
+	</tr>
+	<tr valign="top">
+      <td nowrap>Resume</td>
+      <td>Resumes execution of the selected thread. </td>
+  </tr>
+	<tr valign="top">
+		<td>Go to Source</td>
+		<td>Shows the source code for the newest frame on the selected thread's stack.</td>
+	</tr>
+	<tr valign="top">
+		<td>List Options</td>
+		<td>Enables you to customize the display of the Threads window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
+See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
+	</tr>
+</table>
+
+<h3>Properties</h3>
+<p>You can see all the <a href="threads_properties.html">properties</a> for a thread by right-clicking the node for the thread 
+ and choosing Properties.</p>
+ <p>By default, all properties are also displayed directly in the Threads window, except for the Suspended property.</p>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>
+	<dd><a href="../debug_threads.html">Debugging Threads in the IDE</a></dd>
+	<dd><a href="debug_window.html">Debugger Windows</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

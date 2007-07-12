@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Local Variables Window</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Local Variables Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Local Variables window lists the local variables in the current call. By default, the Local Variables window opens automatically whenever you start a debugging session. You can open the Local Variables window by choosing Window &gt; Debugging &gt; Local Variables.</p>
+<p>If you open the Local Variables window when a debugging session is running, it closes automatically when you end the debugging session. If you open the window when no debugging session is running, it stays open until you close it.</p>
+<p>The information given for each variable includes the variable name, type, and value. You can click the control to the left of the name to expand or collapse the variable. If the object type is displayed in blue underlined text, clicking the text jumps to the object type in the source code. You can click the Value cell to edit the value directly in the Local Variables window. </p>
+<p>In some cases, the debugger assigns a pound sign (#) and a number as the variable's value. This number is a unique identifier of the given instance. You can use this identifier to determine if a variable points to the same or to a different instance. You cannot edit this value. </p>
+
+<h3><a name="icons">Icons</a></h3>
+<p>The following table describes the icons displayed to the left of the object name.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Icon</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr>
+		<td><img src="../images/LocalVariable.gif" alt="Local variable icon"></td>
+		<td>Local variable</td>
+	</tr>
+	<tr>
+		<td><img src="../images/SuperVariable.gif" alt="Super variable icon"></td>
+		<td>Container for a superclass</td>
+	</tr>
+	<tr>
+		<td><img src="../images/StaticVariable.gif" alt="Static field icon"></td>
+		<td>Static field of an object</td>
+	</tr>
+	<tr>
+		<td><img src="../images/Field.gif" alt="Non-Static field icon"></td>
+		<td>Non-static field of an object</td>
+	</tr>
+</table>
+
+<h3><a name="actions">Actions</a></h3>
+<p>If you right-click inside the Local Variables window, the pop-up menu displays the following choices:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col" nowrap>Menu Item</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr valign="top">
+		<td nowrap>Create Fixed Watch</td>
+		<td>Creates a fixed watch of the selected object. A fixed watch displays the specified object or memory location regardless of the current context.</td>
+	</tr>
+	<tr valign="top">
+		<td>Display As</td>
+		<td>For objects of type integer only. Determines how the value of the selected object is shown. The choices are decimal, hexadecimal, octal, and binary.</td>
+	</tr>
+	<tr valign="top">
+		<td>List Options</td>
+		<td>Enables you to customize the display of the Local Variables window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
+See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
+	</tr>
+</table>
+
+<h3>Properties </h3>
+<p>You can see all the properties for a variable by right-clicking the node for the variable 
+ and choosing Properties.</p>
+<p>By default, all properties are also displayed directly in the Variables window, except for the <tt>toString()</tt> property.</p>
+
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>
+	<dd><a href="../debug_quickref.html">Debugging Tasks: Quick Reference</a></dd>
+	<dd><a href="../debug_variables.html">Variables and Expressions in the IDE</a></dd>
+	<dd><a href="../debug_fix_watch.html">Creating a Fixed Watch</a></dd>
+	<dd><a href="debug_window.html">Debugger Windows</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

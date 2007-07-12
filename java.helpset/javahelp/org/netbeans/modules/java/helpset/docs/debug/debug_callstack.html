@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Using the Call Stack </title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Using the Call Stack</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p> The Call Stack window lists the sequence of calls made during the execution
+	of the current thread. By default, the Call Stack window opens automatically
+  whenever you start a debugging session. </p>
+<p>The information given for each call includes the name of the call, followed 
+  by the file name and line number of the call's currently executing statement. 
+  If the file name and line number are displayed in blue underlined text, then 
+  the text is linked to the source code for that call. </p>
+<p>You can open the Call Stack window at any time by choosing Window  &gt; Debugging  &gt; Call
+Stack (Alt -Shift-3). </p>
+<h3> Changing the Current Call</h3>
+<p>The current call (marked by a <img src="images/CurrentFrame.gif" alt="Current frame icon"> 
+  icon) is the most recent call made by the current thread. When you select a 
+  different current thread, the Call Stack window is updated to show the calls 
+  for that thread. The Local Variables window displays the values of variables 
+  for the current call. </p>
+<p><b>To browse the call stack, do any of the following:</b></p>
+<ul>
+  <li>To move one level away from the <tt>main</tt> routine, choose Run  &gt; Stack 
+     &gt; Make Callee Current 
+    (Ctrl-Alt-up arrow). </li>
+  <li>To move one level toward the <tt>main</tt> routine, choose Run  &gt; Stack 
+     &gt; Make Caller Current 
+    (Ctrl-Alt-down arrow). </li>
+  <li>To make a call current, double-click the call in the Call Stack window.</li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_pop.html">Popping a Call From the Call Stack</a></dd>
+    <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
+    <dd><a href="debug_threads.html">Debugging Threads in the IDE</a></dd>
+</dl>
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

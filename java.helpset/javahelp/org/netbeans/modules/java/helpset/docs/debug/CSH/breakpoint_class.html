@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>New Breakpoint Dialog Box: Class</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>New Breakpoint Dialog Box: Class</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <p>You use the New Breakpoint dialog box to set a breakpoint on a class.</p>
+        <p>To open the dialog box, from the main menu, choose Run &gt; New Breakpoint 
+        (Ctrl-Shift-F8), then select Class from the Breakpoint Type drop-down list.</p>
+        <ul class="note">
+            <li>If the fields in the dialog box are already filled in, 
+            the information is based on the location of the insertion point in the Source Editor.</li>
+        </ul>
+
+        <p>You can set the following values:</p>
+        <ul>
+            <li><b>Settings. </b>
+            <ul>
+                <li><b>Package Name.</b> The name of the package you want the 
+                debugger to stop on. You can use an asterisk (*) for the package name 
+                if you do not want to specify a single package. </li>
+                <li><b>Class Name.</b> The name of the class file you want the 
+                debugger to stop on. You can use an asterisk for the class name 
+                if you do not want to specify just one class. For example, 
+                if you specify <tt>java.lang</tt> as the package name and * for the class name, the 
+                breakpoint applies to any class from the package <tt>java.lang</tt>. </li>
+                <li><b>Exclusion Filter.</b> If selected, the breakpoint applies to 
+                classes whose names do not match the specified class name.</li>
+                <li><b>Breakpoint Set On.</b> When to trigger the breakpoint.
+                <ul>
+                    <li><b>Class Prepare.</b> Triggers the breakpoint when the 
+                    class is loaded into the virtual machine. </li>
+                    <li><b>Class Unload. </b>Triggers the breakpoint when the 
+                    class is unloaded from the virtual machine. </li>
+                    <li><b>Class Prepare or Unload.</b> <b> </b>Triggers 
+                    the breakpoint both when the class is loaded and when it is 
+                    unloaded from the virtual machine.</li>
+                </ul></li>
+            </ul></li>
+            <li><b>Actions.</b> The actions to take when the breakpoint is triggered.
+            <ul>
+                <li><b>Suspend.</b> Specifies which threads in the program 
+                being debugged are suspended when the breakpoint is reached. 
+                You can specify no threads, all threads, or the breakpoint 
+                thread. The breakpoint thread is the thread that is current 
+                when the breakpoint is reached.</li>
+                <li><b>Print Text.</b> The specified message is printed 
+                in the Debugger Console view of the Output window. For information 
+                on the tags you can include in the message, see 
+                <a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>. </li>
+            </ul></li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="breakpoint_window.html">New Breakpoint Dialog Box</a></dd>
+            <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+   <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+            <dt>&nbsp;</dt>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

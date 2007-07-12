@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Debugging Threads in the IDE</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Debugging Threads in the IDE</h2>
+<small><a href="#seealso">See Also</a></small></p>
+<p> All the threads created in the current session are displayed in the Threads window.
+  You can open the Threads window by choosing Window  &gt; Debugging &gt; Threads (Alt-Shift-7).</p>
+  
+<h3>Changing the Current Thread</h3>
+<p> Only one thread is the current thread at any given time. By default, the
+	current thread is the thread within the current session from which the debugger
+	gained control. When you switch between threads to debug, the Call Stack and
+	Local Variables windows are automatically updated to reflect the data applicable
+	to that thread. </p>
+        
+<p><b>To change the current thread:</b></p>
+<ul>
+  <li>Double-click any thread in the Threads window to make it the current thread. </li>
+</ul>
+
+<h3>Suspending and Resuming Threads</h3>
+<p> You can suspend execution of a thread if you think it is causing problems
+  and then later resume the thread once the problem is solved. </p>
+<p>In the Threads window, the icon to the left of the thread name indicates whether the thread
+is suspended or waiting to be resumed.<img src="images/CurrentThread.gif" alt="Current thread"> indicates
+the current thread. <img src="images/RunningThread.gif" alt="Running thread"> indicates
+a thread that is running and is not current, and <img src="images/SuspendedThread.gif" alt="Suspended thread">indicates
+a thread that is suspended and is not current. You can  also display the Suspend
+property as a boolean flag (True or False) in the Threads window by clicking
+the columns button (<img src="images/ChangeColumn.gif" alt="Change Column" hspace="2">)
+and select the Suspend checkbox. </p>
+<ul class="note">
+  <li>  The state of the Thread is independent of whether the thread is suspended
+  	or waiting to be resumed. A thread's state may be Running while the Suspend
+  	property is True. </li>
+  </ul>
+<p><b>To suspend or resume a thread:</b></p>
+<ul>
+  <li>Right-click the thread in the Threads window and choose the Resume or Suspend command. </li>
+</ul>
+
+<h3>Viewing Source Code for a Thread</h3>
+<p>You can view the source code of a thread in the IDE's Source Editor if you
+	think it is causing problems and want to examine it further. 
+<p><b>To view a thread's source:</b>
+<ul>
+  <li>Right-click the thread in the Threads window and choose Go To Source. 
+    <p> If the source of the thread is available, the Source Editor jumps to the 
+      current call on the thread's call stack. 
+  </li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_new_watch.html">Creating a Watch</a></dd>
+    <dd><a href="debug_callstack.html">Using the Call Stack</a></dd>
+    <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>New Breakpoint Dialog Box: Exception</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>New Breakpoint Dialog Box: Exception</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You use the New Breakpoint dialog box to set a breakpoint on an exception.</p>
+<p>To open the dialog box, from the main menu, choose 
+Run &gt; New Breakpoint, then select Exception from the 
+Breakpoint Type drop-down list.</p>
+
+<p>You can set the following values:</p>
+<ul>
+	<li><b>Settings. </b>
+		<ul>
+			<li><b>Package Name.</b> The name of the package 
+that contains the exception that you want the debugger to stop 
+on. If this field is already filled in, the information is based 
+on the location of the insertion point in the Source Editor.</li>
+			<li><b>Exception Class Name.</b> The full 
+class name of the exception or error. </li>
+			<li><b>Stop on.</b> When to trigger the breakpoint: 
+when the exception is caught, when the exception is not caught, or on all 
+exceptions (exception caught or uncaught). </li>
+			<li><b>Condition.</b> A Boolean expression that 
+triggers the breakpoint when the expression evaluates to True. 
+For information on the syntax rules for setting a condition, 
+see <a href="../debug_syntaxrules_breakpointconditions.html">Syntax Rules for Setting a Condition on a Breakpoint</a>.</li>
+		</ul></li>
+	<li><b>Actions.</b> The actions to take when the breakpoint is triggered.
+        <ul>
+                <li><b>Suspend.</b> Specifies which threads in the program 
+                being debugged are suspended when the breakpoint is reached. 
+                You can specify no threads, all threads, or the breakpoint 
+                thread. The breakpoint thread is the thread that is current 
+                when the breakpoint is reached.</li>
+          <li><b>Print Text.</b> The specified message is printed in the 
+Debugger Console view of the Output window. For information on the 
+tags you can include in the message, 
+see <a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
+        </ul>
+  </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="breakpoint_window.html">New Breakpoint Dialog Box</a></dd>
+            <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+   <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

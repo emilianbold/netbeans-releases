@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Setting a Java Breakpoint</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Setting a Java Breakpoint</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Except for line breakpoints, all Java breakpoints are defined globally 
+and therefore affect all IDE projects that include the source on which
+a breakpoint is set. For example, if you set a class breakpoint on <tt>com.me.MyClass</tt> in
+one project, the IDE will stop execution every time it encounters that class
+during a debugging session for other projects that include the class. </p>
+
+<p><b>To set a line breakpoint:</b></p>
+<ul>
+  <li>Click the left margin of the line in the Source Editor or press Ctrl-F8.</li>
+</ul>
+
+<p><b>To set all other types of breakpoints:</b></p>
+<ol>
+  <li>In the Source Editor, select the code element on which you want to set
+     a breakpoint. For example, if you want to set a class breakpoint on the class 
+    <tt>BeanCounter</tt>, select the class name in the class declaration.</li>
+  <li>Choose Run &gt; New Breakpoint (Ctrl-Shift-F8). 
+  <p>The New Breakpoint dialog box opens with a suggested breakpoint type and target filled in.</p></li>
+  <li>If necessary, adjust the suggested breakpoint type in the Breakpoint Type drop-down list.</li>
+  <li>Enter the package and class name for which you want to set the breakpoint. </li>
+  <li>Set any additional options you require in the New Breakpoint dialog and click OK. 
+      <p>The IDE creates the new breakpoint for the selected source element. </p>
+  </li>
+</ol>
+
+<p><b>To modify an existing breakpoint:</b></p>
+<ol>
+  <li>Choose Windows &gt; Debugging &gt; Breakpoints (Alt-Shift-5) to open the Breakpoints window.</li>
+  <li>Right-click any breakpoint and choose Customize to open the Customize Breakpoint dialog box.</li>
+  <li>Adjust any settings or actions you require and click OK. 
+      <p>The IDE updates the breakpoint for the selected source element.</p> 
+  </li>
+</ol>
+
+<p><b>To enable and disable a breakpoint:</b></p>
+<ul>
+    <li>Right-click the breakpoint in the Breakpoints window and choose Enable or Disable.</li>
+</ul>
+
+<p><b>Notes:</b></p>
+<ul>
+    <li>You can modify and enable line breakpoints by right-clicking the breakpoint
+icon in the left margin of the Source Editor and choosing from the Breakpoint submenu.</li>
+    <li>You cannot set conditional breakpoints on threads and classes.</li>
+    <li>When a debugging session is running, you can use code completion in the New Breakpoint dialog box.</li>
+</ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="breakpoint_about.html">Breakpoints in the IDE</a></dd>
+    <dd><a href="breakpoint_conditional.html">Setting a Conditional Breakpoint</a></dd>
+    <dd><a href="breakpoint_group.html">Organizing Breakpoints Into a Group</a></dd>
+    <dd><a href="debug_about.html">About Debugging Java Applications</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+</body>
+</html>

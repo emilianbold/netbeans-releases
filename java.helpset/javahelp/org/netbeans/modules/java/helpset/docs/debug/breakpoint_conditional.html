@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Setting a Conditional Breakpoint</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Setting a Conditional Breakpoint</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>You can set conditions on a breakpoint so that execution only breaks if the 
+condition is true. You can set conditions on any breakpoint except thread and 
+class breakpoints.</p>
+<p><b>To set conditions on a breakpoint:</b></p>
+<ol>
+  <li>Create a new breakpoint or open an existing breakpoint's customizer as described 
+    above. 
+  <li> Type the condition in the Condition field. The condition must follow the 
+    Java syntax rules. The condition may include anything that can be on the right 
+    side of the equal sign (<tt>=</tt>). The condition may also include variables 
+    and methods that are within the current context. The following are exceptions: 
+    <ul>
+      <li> Imports are ignored. You must use fully qualified names, such as <tt>obj 
+        instanceof java.lang.String</tt>. </li>
+      <li> You cannot access outerclass methods and variables directly. Use <tt>this.<i>variableName</i></tt> 
+        or <tt>this$1</tt>. </li>
+    </ul>
+  </li>
+</ol>
+<p>Conditional line breakpoints have a <img src="images/ConditionalBreakpoint.gif" alt="conditional breakpoint icon">
+icon in the left margin of the Source Editor.</p>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="breakpoint_about.html">Breakpoints in the IDE</a></dd>
+    <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+    <dd><a href="breakpoint_group.html">Organizing Breakpoints Into a Group</a></dd>
+    <dd><a href="debug_about.html">About Debugging Java Applications</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+</body>
+</html>

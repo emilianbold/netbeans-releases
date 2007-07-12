@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<title>Creating a Fixed Watch</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Creating a Fixed Watch</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p>A fixed watch describes the
+object that is currently assigned to a variable while a normal watch describes
+the content of the variable.
+Fixed watches are specific to the Java 2 debugger.</p>
+<p>For example, consider the following code: </p>
+<pre>
+java.awt.Dimension dim=new java.awt.Dimension(10,20);
+java.awt.Dimension newDim=dim;
+dim=new java.awt.Dimension(20,30);
+newDim.height=15
+</pre>
+<p>
+With the debugger stopped on the second line, you can create
+a normal watch on the variable <tt>dim</tt>.  If you
+create a fixed watch on the variable <tt>dim</tt>, the watch describes
+the object that is currently assigned to the variable,
+which is <tt>java.awt.Dimension(10,20))</tt>.  If you
+press F8 to step over the code three times, the value of the
+normal watch becomes
+<tt>java.awt.Dimension(20,30)</tt>. This change occurred
+on the third line of source code.  The value of the fixed
+watch is <tt>java.awt.Dimension(15,20)</tt>.  The fixed
+watch was created on the object with a height of 10, but the
+fourth line changed the height of this object to 15.</p>
+<p><b>To create a fixed watch:</b></p>
+<ul>
+    <li>In the Local Variables or Watches window, right-click a variable and choose Create Fixed Watch.
+    <p>The fixed watch is added to the Watches window.</p></li> 
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_new_watch.html">Creating a Watch</a> </dd>
+    <dd><a href="debug_variables.html">Variables and Expressions in the IDE</dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
