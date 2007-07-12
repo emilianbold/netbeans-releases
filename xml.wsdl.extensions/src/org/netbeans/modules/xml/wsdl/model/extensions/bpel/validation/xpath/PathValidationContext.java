@@ -58,10 +58,16 @@ public class PathValidationContext extends AbstractXPathVisitor {
         return newContext;
     }
     
+    /**
+     * Returns the Global WSLD component to which the validation is applied.
+     */
     public WSDLComponent getWsdlContext() {
         return myWsdlComponent;
     }
     
+    /**
+     * Returns the immediate owner of the validated XPath expression.
+     */
     public WSDLComponent getXpathContentElement() {
         return myXpathContentElement;
     }

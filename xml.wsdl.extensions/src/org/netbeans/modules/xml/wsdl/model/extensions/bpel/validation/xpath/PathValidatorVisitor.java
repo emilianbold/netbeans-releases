@@ -506,7 +506,7 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
         ResultItem resultItem = new ResultItem(
                 myContext.getValidator(),
                 resultType,
-                myContext.getWsdlContext(),
+                myContext.getXpathContentElement(),
                 str);
         myContext.getVVisitor().getResultItems().add(resultItem);
     }
