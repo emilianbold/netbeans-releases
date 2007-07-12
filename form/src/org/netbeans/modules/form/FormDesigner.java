@@ -2184,10 +2184,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         return;
                     }
                     else {
-                        boolean removeMapping = (topDesignComponent != null)
-                                 ? topDesignComponent.isParentComponent(removed)
-                                 : true;
-                        replicator.removeComponent(ev.getComponent(), ev.getContainer(), removeMapping);
+                        replicator.removeComponent(ev.getComponent(), ev.getContainer());
                         updateDone = true;
                     }
                     // Note: BindingDesignSupport takes care of removing bindings

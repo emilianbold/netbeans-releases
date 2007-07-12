@@ -389,10 +389,7 @@ public class VisualReplicator { //implements VisualMapper
         }
     }
 
-    public void removeComponent(RADComponent metacomp,
-                                ComponentContainer metacont,
-                                boolean removeMapping)
-    {
+    public void removeComponent(RADComponent metacomp, ComponentContainer metacont) {
         if (metacomp == null)
             return;
 
@@ -481,9 +478,7 @@ public class VisualReplicator { //implements VisualMapper
             else return;
         }
 
-        if (removeMapping) {
-            removeMapping(metacomp);
-        }
+        removeMapping(metacomp);
     }
 
     public void updateComponentProperty(RADProperty property) {
@@ -502,7 +497,7 @@ public class VisualReplicator { //implements VisualMapper
         // [maybe this should be done for all AWT components]
         if (targetComp instanceof java.awt.Scrollbar) {
             // remove the component and add a new clone
-            removeComponent(metacomp, null, true);
+            removeComponent(metacomp, null);
             addComponent(metacomp);
             return;
         }
