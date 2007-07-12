@@ -29,6 +29,8 @@ import java.beans.*;
 import java.io.*;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -437,7 +439,15 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             newselection = new Node[0];
         }
 
-        setExploredContext(rootContext, newselection);
+        try {
+            setExploredContext(rootContext, newselection);
+        } catch (IllegalArgumentException x) {
+            // XXX not supposed to happen, yet does on occasion for as yet unknown reasons (race condition?), e.g.
+            // http://beetle.czech.sun.com/automatedtests/xtest/netbeans_dev/200707111200/qa-unit_stable/qa-t4u-sol6_1/testrun_070712-051438/testbag_65/htmlresults/suites/TEST-org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleListTest.html#testDisableCluster
+            // Could protect setRootContext with Children.MUTEX.readAccess like setExploredContext already does,
+            // but readAccess would anyway not prevent a two-thread race condition (not clear why sEC uses it).
+            Logger.getLogger(ExplorerManager.class.getName()).log(Level.INFO, null, x);
+        }
     }
 
     /** @return true iff all nodes are under the target node */
