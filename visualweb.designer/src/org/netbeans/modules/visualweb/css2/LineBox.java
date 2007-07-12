@@ -28,6 +28,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
+import org.netbeans.modules.visualweb.designer.CssUtilities;
 
 import org.openide.ErrorManager;
 
@@ -409,7 +410,9 @@ public class LineBox extends ContainerBox {
 
         // linebox's baseline. This is the "baseline of the parent box"
         // listed in the CSS2 spec under the vertical-align property.
-        int baseLine = height - maxBelow;
+//        int baseLine = height - maxBelow;
+        // XXX #109310 The baseline is at the bottom.
+        int baseLine = height;
 
         // TODO: implement half-leading!! See CSS2 section 10.8.1!
         // Vertical alignment:
@@ -499,6 +502,12 @@ public class LineBox extends ContainerBox {
                 
                 // XXX This nasty assertion always breaks the designer, revise what is supposed to be here.
 //                assert false : align;
+
+                // XXX #109310 This should be lenght value now (what to do with percentage?).
+                // For now handle similar way like a baseline.
+                int absoluteAlign = (int)cssAlign.getFloatValue();
+                int newY = baseLine - box.getBaseline() - absoluteAlign;
+                box.setY(newY);
             }
         }
 

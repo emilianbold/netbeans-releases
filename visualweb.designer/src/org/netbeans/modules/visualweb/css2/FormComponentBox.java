@@ -307,22 +307,23 @@ public class FormComponentBox extends ContainerBox {
 
             Font font = createdC.getFont();
 
-            // Set the baseline alignment for all form components except Text Areas
-            // (these are not baseline aligned)
-            if ((tag != HtmlTag.TEXTAREA) && (font != null)) {
-                // This returns 0 for some reason:
-                //baseline = font.getBaselineFor('j');
-//                FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
-                FontMetrics metrics = DesignerUtils.getFontMetrics(font);
-                baseline = metrics.getHeight() - metrics.getDescent();
-
-                // Here I wanted to look up the component's insets, and border insets
-                // and add in the top offsets - but that doesn't work right. Various
-                // look and feels are returning strange values here, so components end
-                // up getting aligned in a weird way. Therefore, instead I just use 
-                // half leading:
-                baseline += ((height - baseline) / 2);
-            }
+            // XXX #109310 The baseline is at the bottom.
+//            // Set the baseline alignment for all form components except Text Areas
+//            // (these are not baseline aligned)
+//            if ((tag != HtmlTag.TEXTAREA) && (font != null)) {
+//                // This returns 0 for some reason:
+//                //baseline = font.getBaselineFor('j');
+////                FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
+//                FontMetrics metrics = DesignerUtils.getFontMetrics(font);
+//                baseline = metrics.getHeight() - metrics.getDescent();
+//
+//                // Here I wanted to look up the component's insets, and border insets
+//                // and add in the top offsets - but that doesn't work right. Various
+//                // look and feels are returning strange values here, so components end
+//                // up getting aligned in a weird way. Therefore, instead I just use 
+//                // half leading:
+//                baseline += ((height - baseline) / 2);
+//            }
         }
     }
     
