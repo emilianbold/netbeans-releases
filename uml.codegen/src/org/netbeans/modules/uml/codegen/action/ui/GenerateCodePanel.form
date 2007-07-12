@@ -20,24 +20,23 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="scrollPlaceHolder" alignment="1" pref="553" max="32767" attributes="0"/>
-                  <Component id="statusLabel" alignment="0" pref="553" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="scrollPlaceHolder" alignment="0" pref="540" max="32767" attributes="0"/>
+                  <Component id="statusLabel" alignment="0" pref="540" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="locationLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="locationText" pref="387" max="32767" attributes="0"/>
+                      <Component id="locationText" pref="374" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseButton" min="-2" max="-2" attributes="1"/>
                   </Group>
-                  <Component id="backupSourcesCheck" alignment="0" pref="553" max="32767" attributes="0"/>
-                  <Component id="generateMarkersCheck" alignment="0" pref="553" max="32767" attributes="0"/>
-                  <Component id="showDialogCheckBox" alignment="0" pref="553" max="32767" attributes="0"/>
-                  <Component id="addMarkersCheck" alignment="0" pref="553" max="32767" attributes="0"/>
-                  <Component id="advancedBtn" alignment="1" min="-2" pref="79" max="-2" attributes="0"/>
-                  <Component id="templatesLabel" alignment="0" pref="553" max="32767" attributes="0"/>
+                  <Component id="backupSourcesCheck" alignment="0" pref="540" max="32767" attributes="0"/>
+                  <Component id="generateMarkersCheck" alignment="0" pref="540" max="32767" attributes="0"/>
+                  <Component id="showDialogCheckBox" alignment="0" pref="540" max="32767" attributes="0"/>
+                  <Component id="addMarkersCheck" alignment="0" pref="540" max="32767" attributes="0"/>
+                  <Component id="templatesLabel" alignment="0" pref="540" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -60,12 +59,10 @@
               <Component id="addMarkersCheck" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="showDialogCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="advancedBtn" min="-2" pref="23" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="templatesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="scrollPlaceHolder" pref="217" max="32767" attributes="0"/>
+              <Component id="scrollPlaceHolder" pref="214" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="statusLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -179,6 +176,9 @@
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JCheckBox" name="showDialogCheckBox">
       <Properties>
@@ -195,24 +195,15 @@
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="advancedBtn">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="LBL_Button_Less" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="actionCommand" type="java.lang.String" value="TEMPLATES_PANEL_SWITCH"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="advancedBtnexpand"/>
-      </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="templatesLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Templates:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="LBL_TemplatesLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="scrollPlaceHolder">

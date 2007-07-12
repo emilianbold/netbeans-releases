@@ -22,12 +22,12 @@ package org.netbeans.modules.uml.codegen.action;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.swing.JButton;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
 
-import org.netbeans.modules.uml.common.ui.SaveNotifier;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -45,15 +45,14 @@ import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.util.AbstractNBTask;
-import org.netbeans.modules.uml.util.DummyCorePreference;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
@@ -151,11 +150,13 @@ public class GenerateCodeAction extends CookieAction
             } // for
         } // else - more than one node selected
 
-        UMLProjectProperties prjProps = retrieveUMLProject().getUMLProjectProperties();
-
-        if (prjProps.isCodeGenShowDialog() || 
-            !CodeGenUtil.areTemplatesEnabled(
-                prjProps.getCodeGenTemplatesArray()))
+        UMLProjectProperties prjProps = 
+            retrieveUMLProject().getUMLProjectProperties();
+        
+        boolean templatesEnabled = CodeGenUtil.areTemplatesEnabled(
+            prjProps.getCodeGenTemplatesArray());
+        
+        if (prjProps.isCodeGenShowDialog() || !templatesEnabled)
         {
             // display gen code options dialog
             GenerateCodePanel gcPanel = new GenerateCodePanel(
@@ -165,7 +166,7 @@ public class GenerateCodeAction extends CookieAction
 
             gcPanel.requestFocus();
 
-            if (!displayDialogDescriptor(gcPanel))
+            if (!displayDialogDescriptor(gcPanel, templatesEnabled))
                 return;
         }
         
@@ -275,18 +276,54 @@ public class GenerateCodeAction extends CookieAction
     }
 
     
-    private boolean displayDialogDescriptor(GenerateCodePanel gcPanel)
+    private boolean displayDialogDescriptor(
+        GenerateCodePanel gcPanel, boolean templatesEnabled)
     {
+        JButton detailsButton = new JButton();
+        detailsButton.setActionCommand("TEMPLATES"); // NOI18N
+        detailsButton.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(
+            GenerateCodeAction.class, "ACSD_DetailsButton")); // NOI18N
+
+        if (templatesEnabled)
+        {
+            Mnemonics.setLocalizedText(detailsButton, 
+                NbBundle.getMessage(
+                GenerateCodeAction.class, "LBL_TemplatesShowButton")); // NOI18N
+        }
+        
+        else
+        {
+            Mnemonics.setLocalizedText(detailsButton, 
+                NbBundle.getMessage(
+                GenerateCodeAction.class, "LBL_TemplatesHideButton")); // NOI18N
+        }
+        
+        Object[] buttonOptions =
+        {
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.CANCEL_OPTION,
+            detailsButton
+        };
+        
+        Object[] closeOptions =
+        {
+            DialogDescriptor.OK_OPTION,
+            DialogDescriptor.CANCEL_OPTION,
+            DialogDescriptor.DEFAULT_OPTION
+        };
+        
         GenerateCodeDescriptor gcd = new GenerateCodeDescriptor(
-                gcPanel, // inner pane
-                NbBundle.getMessage(GenerateCodeAction.class,
-                "LBL_GenerateCodeDialog_Title"), // NOI18N
-                true, // modal flag
-                NotifyDescriptor.OK_CANCEL_OPTION, // button option type
-                NotifyDescriptor.OK_OPTION, // default button
-                DialogDescriptor.DEFAULT_ALIGN, // button alignment
-                new HelpCtx("uml_diagrams_generating_code"), // NOI18N
-                gcPanel); // button action listener
+            gcPanel, // inner pane
+            NbBundle.getMessage(GenerateCodeAction.class,
+            "LBL_GenerateCodeDialog_Title"), // NOI18N
+            true, // modal flag
+            buttonOptions, // button option type
+            NotifyDescriptor.OK_OPTION, // default button
+            DialogDescriptor.DEFAULT_ALIGN, // button alignment
+            new HelpCtx("uml_diagrams_generating_code"), // NOI18N
+            gcPanel, // button action listener
+            false); // isLeaf
         
         gcPanel.getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(GenerateCodeAction.class, "ACSN_CodeGenDialog")); // NOI18N
@@ -294,10 +331,12 @@ public class GenerateCodeAction extends CookieAction
                 .getMessage(GenerateCodeAction.class, "ACSD_CodeGenDialog")); // NOI18N
         gcPanel.requestFocus();
         
-        return (DialogDisplayer.getDefault().notify(gcd) ==
-                NotifyDescriptor.OK_OPTION);
+        gcd.setClosingOptions(closeOptions);
+
+        return (DialogDisplayer.getDefault().notify(gcd) == 
+            NotifyDescriptor.OK_OPTION);
     }
-    
+
     
     protected Class[] cookieClasses()
     {

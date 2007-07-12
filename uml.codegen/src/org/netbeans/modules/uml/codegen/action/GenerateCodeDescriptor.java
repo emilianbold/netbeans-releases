@@ -59,6 +59,31 @@ public class GenerateCodeDescriptor extends DialogDescriptor
         gcPanel.addPropertyChangeListener(this);
     }
     
+    public GenerateCodeDescriptor(
+            GenerateCodePanel gcPanel,
+            String title,
+            boolean modal,
+            Object[] options,
+            Object defaultButton,
+            int alignType,
+            HelpCtx helpCtx, 
+            ActionListener listener,
+            boolean isLeaf)
+    {
+        super(
+            gcPanel,
+            title,
+            modal,
+            options,
+            defaultButton,
+            alignType,
+            helpCtx,
+            listener,
+            isLeaf);
+        
+        gcPanel.addPropertyChangeListener(this);
+    }
+
     public void propertyChange(PropertyChangeEvent evt)
     {
         if (evt.getPropertyName().equals(PROP_VALID))

@@ -27,11 +27,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
+import org.netbeans.modules.uml.codegen.action.GenerateCodeAction;
 import org.netbeans.modules.uml.codegen.action.GenerateCodeDescriptor;
 import org.netbeans.modules.uml.codegen.ui.customizer.TabbedPanel;
 import org.netbeans.modules.uml.codegen.ui.customizer.TemplateModel;
@@ -41,6 +43,7 @@ import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.awt.Mnemonics;
 
 import org.openide.util.NbBundle;
 
@@ -72,7 +75,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
         boolean isCollapsable, UMLProjectProperties prjProps)
     {
         initComponents();
-        
+
         String folder = prjProps.getCodeGenFolderLocation();
         
         if (folder == null || folder.length() == 0)
@@ -110,10 +113,10 @@ public class GenerateCodePanel extends javax.swing.JPanel
         {
             if (!noTemplatesEnabled)
             {
-                advancedBtn.setText(NbBundle.getMessage(
-                    GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
-                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
+//                advancedBtn.setText(NbBundle.getMessage(
+//                    GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
+//                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
+//                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
 
                 setSize(getWidth(), getHeight() - 200);
                 scrollPlaceHolder.setVisible(false);
@@ -124,10 +127,10 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
             else
             {
-                advancedBtn.setText(NbBundle.getMessage(
-                    GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
+//                advancedBtn.setText(NbBundle.getMessage(
+//                    GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
+//                 org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
+//                     NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
 
                 statusLabel.setText(NbBundle.getMessage(
                     GenerateCodePanel.class, "MSG_AtLeastOneTemplate")); // NIO18N
@@ -136,7 +139,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
         
         else
         {
-            advancedBtn.setVisible(false);
+//            advancedBtn.setVisible(false);
             statusLabel.setVisible(false);
         }
     }
@@ -163,7 +166,6 @@ public class GenerateCodePanel extends javax.swing.JPanel
         generateMarkersCheck = new javax.swing.JCheckBox();
         addMarkersCheck = new javax.swing.JCheckBox();
         showDialogCheckBox = new javax.swing.JCheckBox();
-        advancedBtn = new javax.swing.JButton();
         templatesLabel = new javax.swing.JLabel();
         scrollPlaceHolder = new javax.swing.JScrollPane();
         panelPlaceHolder = new javax.swing.JPanel();
@@ -193,26 +195,16 @@ public class GenerateCodePanel extends javax.swing.JPanel
         generateMarkersCheck.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         generateMarkersCheck.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        addMarkersCheck.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_AddMergeMarkers")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addMarkersCheck, org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_AddMergeMarkers")); // NOI18N
         addMarkersCheck.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         addMarkersCheck.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         showDialogCheckBox.setSelected(true);
-        showDialogCheckBox.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_GenCodeShowDialog")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showDialogCheckBox, org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_GenCodeShowDialog")); // NOI18N
         showDialogCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         showDialogCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-        advancedBtn.setActionCommand("TEMPLATES_PANEL_SWITCH");
-        advancedBtn.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                advancedBtnexpand(evt);
-            }
-        });
-
-        templatesLabel.setText("Templates:");
+        templatesLabel.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_TemplatesLabel")); // NOI18N
 
         panelPlaceHolder.setLayout(new java.awt.BorderLayout());
         scrollPlaceHolder.setViewportView(panelPlaceHolder);
@@ -224,23 +216,22 @@ public class GenerateCodePanel extends javax.swing.JPanel
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
-                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(locationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(locationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                        .add(locationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
-                    .add(backupSourcesCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
-                    .add(generateMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
-                    .add(showDialogCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
-                    .add(addMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(templatesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, backupSourcesCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, generateMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, showDialogCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, addMarkersCheck, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, templatesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -259,12 +250,10 @@ public class GenerateCodePanel extends javax.swing.JPanel
                 .add(addMarkersCheck)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(showDialogCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(templatesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                .add(scrollPlaceHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(statusLabel)
                 .addContainerGap())
@@ -282,37 +271,6 @@ public class GenerateCodePanel extends javax.swing.JPanel
         getAccessibleContext().setAccessibleName("");
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ASCD_ExportCodePanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advancedBtnexpand
-    Container topCont = getTopLevelAncestor();
-
-    scrollPlaceHolder.setVisible(!scrollPlaceHolder.isVisible());
-    templatesLabel.setVisible(scrollPlaceHolder.isVisible());
-    
-    if (scrollPlaceHolder.isVisible())
-    {
-        advancedBtn.setText(NbBundle.getMessage(
-            GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-         org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-             NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_Less")); // NOI18N
-       
-//        setSize(getWidth(), getHeight() + 200);
-        topCont.setSize(topCont.getWidth(), topCont.getHeight() + 300);
-    }
-    
-    else
-    {
-        advancedBtn.setText(NbBundle.getMessage(
-            GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
-         org.openide.awt.Mnemonics.setLocalizedText(advancedBtn, 
-             NbBundle.getMessage(GenerateCodePanel.class, "LBL_Button_More")); // NOI18N
-
-//        setSize(getWidth(), getHeight() - 200);
-        topCont.setSize(topCont.getWidth(), topCont.getHeight() - 300);
-    }
-    
-    topCont.doLayout();
-}//GEN-LAST:event_advancedBtnexpand
 
     private ChooseLocationDialog chooser = null;
     
@@ -378,6 +336,41 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
             props.setCodeGenShowDialog(isShowDialog());
             props.save();
         }
+        
+        else if (actionEvent.getActionCommand().equals("TEMPLATES")) // NOI18N
+        {
+            JButton button = (JButton)actionEvent.getSource();
+            Container topCont = getTopLevelAncestor();
+            scrollPlaceHolder.setVisible(!scrollPlaceHolder.isVisible());
+            templatesLabel.setVisible(scrollPlaceHolder.isVisible());
+
+            if (scrollPlaceHolder.isVisible())
+            {
+                button.setText(NbBundle.getMessage(
+                    GenerateCodeAction.class, "LBL_TemplatesHideButton")); // NOI18N
+
+                Mnemonics.setLocalizedText(button, NbBundle.getMessage(
+                    GenerateCodeAction.class, "LBL_TemplatesHideButton")); // NOI18N
+
+                setSize(getWidth(), getHeight() + 200);
+                topCont.setSize(topCont.getWidth(), topCont.getHeight() + 250);
+            }
+
+            else
+            {
+                button.setText(NbBundle.getMessage(
+                    GenerateCodeAction.class, "LBL_TemplatesShowButton")); // NOI18N
+
+                Mnemonics.setLocalizedText(button, NbBundle.getMessage(
+                    GenerateCodeAction.class, "LBL_TemplatesShowButton")); // NOI18N
+
+                setSize(getWidth(), getHeight() - 200);
+                topCont.setSize(topCont.getWidth(), topCont.getHeight() - 250);
+            }
+
+            topCont.doLayout();
+        }
+
     }
     
     public String getSelectedFolderName()
@@ -493,7 +486,6 @@ private void advancedBtnexpand(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox addMarkersCheck;
-    private javax.swing.JButton advancedBtn;
     private javax.swing.JCheckBox backupSourcesCheck;
     private javax.swing.JButton browseButton;
     private javax.swing.JCheckBox generateMarkersCheck;
