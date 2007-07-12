@@ -352,6 +352,104 @@ void findSuitableJava(LauncherProperties * props) {
     return;
 }
 
+
+
+void resolveLauncherStringProperty(LauncherProperties * props, WCHAR ** result) {
+    if(*result!=NULL) {
+        WCHAR * propStart = wcsstr(*result, L"$P{");
+        if(propStart!=NULL) {
+            WCHAR * propEnd = wcsstr(propStart + 3, L"}");
+            if(propEnd!=NULL) {
+                WCHAR * propName;
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... resolving string property", 1);
+                propName = appendStringNW(NULL, 0, propStart + 3 ,
+                        getLengthW(propStart + 3) - getLengthW(propEnd));
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... property name is : ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, propName, 1);
+                
+                if(propName!=NULL) {
+                    char * name = toChar(propName);
+                    const WCHAR * propValue = getI18nProperty(props, name);
+                    if(propValue!=NULL) {
+                        WCHAR * tmp = newpWCHAR(getLengthW(*result) - getLengthW(propName) - 4 + getLengthW(propValue));
+                        wcsncat(tmp, *result, getLengthW(*result) - getLengthW(propStart));
+                        wcscat(tmp, propValue);
+                        wcsncat(tmp, propEnd + 1, getLengthW(propEnd + 1));
+                        FREE(*result);
+                        *result = tmp;                        
+                    }
+                    FREE(name);
+                    FREE(propName);
+                }
+            }
+        }
+    }
+}
+
+void resolveLauncherProperties(LauncherProperties * props, WCHAR **result) {
+    if(*result != NULL) {
+        WCHAR * propStart = wcsstr(*result, L"$L{");
+        if(propStart!=NULL) {
+            WCHAR * propEnd = wcsstr(propStart + 3, L"}");
+            if(propEnd!=NULL) {
+                WCHAR * propName = appendStringNW(NULL, 0, propStart + 3 , getLengthW(propStart + 3) - getLengthW(propEnd));
+                if(propName!=NULL) {
+                    WCHAR * propValue = NULL;
+                    
+                    if(wcscmp(propName, L"nbi.launcher.tmp.dir")==0) {
+                        propValue = appendStringW(NULL, props->tmpDir); // launcher tmpdir
+                    } else if(wcscmp(propName, L"nbi.launcher.java.home")==0) {
+                        if(props->java!=NULL) {
+                            propValue  = appendStringW(NULL, props->java->javaHome); // relative to javahome
+                        }
+                    } else if(wcscmp(propName, L"nbi.launcher.user.home")==0) {
+                        propValue = getCurrentUserHome();
+                    } else if(wcscmp(propName, L"nbi.launcher.parent.dir")==0) {
+                        propValue = appendStringW(NULL, props->exeDir); // launcher parent
+                    }
+                    
+                    
+                    if(propValue!=NULL) {
+                        WCHAR * tmp = newpWCHAR(getLengthW(*result) - getLengthW(propName) - 4 + getLengthW(propValue));
+                        wcsncat(tmp, *result, getLengthW(*result) - getLengthW(propStart));
+                        wcscat(tmp, propValue);
+                        wcsncat(tmp, propEnd + 1, getLengthW(propEnd + 1));
+                        
+                        FREE(*result);
+                        FREE(propValue);
+                        *result = tmp;
+                    }
+                }
+            }
+        }
+    }
+    
+}
+
+void resolveString(LauncherProperties * props, WCHAR ** result) {
+    WCHAR * tmp = NULL;
+    
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Resolving string : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+    do {
+        FREE(tmp);
+        tmp = appendStringW(NULL, *result);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 1 : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+        resolveLauncherProperties(props, result);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 2 : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);        
+        resolveLauncherStringProperty(props, result);
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 3 : ", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+    } while(wcscmp(tmp, *result)!=0);
+    
+    FREE(tmp);
+    
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".... final : ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+}
+
 void resolvePath(LauncherProperties * props, LauncherResource * file) {
     WCHAR * result = NULL;
     DWORD i=0;
@@ -359,31 +457,8 @@ void resolvePath(LauncherProperties * props, LauncherResource * file) {
     if(file==NULL) return;
     if(file->resolved!=NULL) return;
     
-    switch (file->type) {
-        case 2:
-            if(props->java!=NULL) {
-                result = appendStringW(NULL, props->java->javaHome); // relative to javahome
-            }
-            break;
-        case 3:
-            // relative to user home
-            result = getCurrentUserHome();
-            break;
-        case 4:
-            result = appendStringW(NULL, props->exeDir); // launcher parent
-            break;
-        case 5:
-            result = appendStringW(NULL, props->tmpDir); // launcher tmpdir
-            break;
-        case 0: // absolute path, nothing to add
-        case 1: // bundled file with full path path, nothing to add
-        default:
-            break; // the same as absolute, nothing to add
-    }
-    if(result!=NULL) {
-        result = appendStringW(result, L"\\");
-    }
-    file->resolved = appendStringW(result, file->path);
+    file->resolved = appendStringW(NULL, file->path);
+    resolveString(props, & (file->resolved));
     
     for(i=0;i<getLengthW(file->resolved);i++) {
         if(file->resolved[i]==L'/') {
@@ -408,6 +483,7 @@ void setClasspathElements(LauncherProperties * props) {
                 preCP = appendStringW(preCP, CLASSPATH_SEPARATOR);
             }
             //WCHAR *last = props->classpath;
+            resolveString(props, &preCP);
             tmp = appendStringW(preCP, props->classpath);
             FREE(props->classpath);
             props->classpath = tmp;
@@ -436,6 +512,7 @@ void setClasspathElements(LauncherProperties * props) {
             if (props->classpath != NULL) {
                 props->classpath = appendStringW(props->classpath, CLASSPATH_SEPARATOR);
             }
+            resolveString(props, &appCP);
             props->classpath = appendStringW(props->classpath, appCP);
             FREE(appCP);
         }
@@ -509,6 +586,14 @@ void setAdditionalArguments(LauncherProperties * props) {
         props->jvmArguments->size  = props->jvmArguments->size + jArg;
         if(props->jvmArguments->items==NULL) props->jvmArguments->items = javaArgs;
         if(props->appArguments->items==NULL) props->appArguments->items = appArgs;
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... resolving jvm arguments", 1);
+        for(i=0;i<props->jvmArguments->size;i++) {
+            resolveString(props, &props->jvmArguments->items[i]);
+        }
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... resolving app arguments", 1);
+        for(i=0;i<props->appArguments->size;i++) {
+            resolveString(props, &props->appArguments->items[i]);
+        }
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished parsing parameters", 1);
     }
 }
@@ -557,8 +642,8 @@ void setLauncherCommand(LauncherProperties *props) {
 }
 
 void executeMainClass(LauncherProperties * props) {
-    if(isOK(props) && !isTerminated(props)) {        
-        int64t * minSize = newint64_t(0, 0);        
+    if(isOK(props) && !isTerminated(props)) {
+        int64t * minSize = newint64_t(0, 0);
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Executing main class", 1);
         checkFreeSpace(props, props->tmpDir, minSize);
         if(isOK(props)) {
@@ -566,7 +651,7 @@ void executeMainClass(LauncherProperties * props) {
             HANDLE hErrorWrite;
             char * error = NULL;
             
-            CreatePipe(&hErrorRead, &hErrorWrite, NULL, 0);            
+            CreatePipe(&hErrorRead, &hErrorWrite, NULL, 0);
             hideLauncherWindows(props);
             executeCommand(props, props->command, NULL, INFINITE, props->stdoutHandle, hErrorWrite, NORMAL_PRIORITY_CLASS);
             if(!isOK(props)) {
@@ -574,7 +659,7 @@ void executeMainClass(LauncherProperties * props) {
                 props->exitCode = props->status;
             } else {
                 char * s = DWORDtoCHAR(props->exitCode);
-                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished his work. Exit code is ", 0);                
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished his work. Exit code is ", 0);
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
                 FREE(s);
             }
@@ -614,7 +699,7 @@ void executeMainClass(LauncherProperties * props) {
 DWORD isOnlyHelp(LauncherProperties * props) {
     if(argumentExists(props, helpArg, 1) || argumentExists(props, helpOtherArg, 1)) {
         
-        WCHARList * help = newWCHARList(NUMBER_OF_HELP_ARGUMENTS);        
+        WCHARList * help = newWCHARList(NUMBER_OF_HELP_ARGUMENTS);
         DWORD counter = 0;
         WCHAR * helpString = NULL;
         
@@ -661,7 +746,7 @@ WCHARList * getCommandlineArguments() {
 
 
 LauncherProperties * createLauncherProperties() {
-    LauncherProperties *props = (LauncherProperties*)LocalAlloc(LPTR,sizeof(LauncherProperties));
+    LauncherProperties *props = (LauncherProperties*)LocalAlloc(LPTR, sizeof(LauncherProperties));
     DWORD c = 0;
     props->launcherCommandArguments = newWCHARList(11);
     props->launcherCommandArguments->items[c++] = appendStringW(NULL, outputFileArg);
@@ -691,6 +776,7 @@ LauncherProperties * createLauncherProperties() {
     props->java    = NULL;
     props->command = NULL;
     props->jvms    = NULL;
+    props->other   = NULL;
     props->alreadyCheckedJava = NULL;
     props->exePath = getExePath();
     props->exeName = getExeName();
@@ -743,7 +829,7 @@ void freeLauncherResourceList(LauncherResourceList ** list) {
 
 
 void freeLauncherProperties(LauncherProperties **props) {
-    if((*props)!=NULL) {        
+    if((*props)!=NULL) {
         DWORD i=0;
         writeMessageA(*props, OUTPUT_LEVEL_DEBUG, 0, "Closing launcher properties", 1);
         freeWCHARList(& ( (*props)->appArguments));
@@ -755,6 +841,8 @@ void freeLauncherProperties(LauncherProperties **props) {
         freeLauncherResourceList(&((*props)->jars));
         
         freeLauncherResourceList(&((*props)->jvms));
+        
+        freeLauncherResourceList(&((*props)->other));
         
         freeLauncherResource(&((*props)->testJVMFile));
         

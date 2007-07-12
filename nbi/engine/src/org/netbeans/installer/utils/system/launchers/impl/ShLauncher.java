@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -74,12 +74,12 @@ public class ShLauncher extends CommonLauncher {
     public static final String MIN_JAVA_VERSION_UNIX = "1.5.0_03";
     
     private static final String [] JAVA_COMMON_LOCATIONS = {
-        "/usr/java", "/usr/java/*",        
-        "/usr/jdk",  "/usr/jdk/*",        
-        "/usr/j2se",  "/usr/j2se/*",        
+        "/usr/java", "/usr/java/*",
+        "/usr/jdk",  "/usr/jdk/*",
+        "/usr/j2se",  "/usr/j2se/*",
         "/usr/j2sdk", "/usr/j2sdk/*",
         
-        "/usr/java/jdk", "/usr/java/jdk/*",        
+        "/usr/java/jdk", "/usr/java/jdk/*",
         "/usr/jdk/instances", "/usr/jdk/instances/*",
         
         "/usr/local/java", "/usr/local/java/*",
@@ -87,18 +87,18 @@ public class ShLauncher extends CommonLauncher {
         "/usr/local/j2se", "/usr/local/j2se/*",
         "/usr/local/j2sdk","/usr/local/j2sdk/*",
         
-        "/opt/java",  "/opt/java/*",        
-        "/opt/jdk*",  "/opt/jdk/*",        
-        "/opt/j2sdk", "/opt/j2sdk/*",        
+        "/opt/java",  "/opt/java/*",
+        "/opt/jdk*",  "/opt/jdk/*",
+        "/opt/j2sdk", "/opt/j2sdk/*",
         "/opt/j2se",  "/opt/j2se/*",
         
         "/usr/lib/jvm",
         "/usr/lib/jvm/*",
-        "/usr/lib/jdk*",        
-
-        "/export/jdk",   "/export/jdk/*",        
-        "/export/java",  "/export/java/*",        
-        "/export/j2se",  "/export/j2se/*",        
+        "/usr/lib/jdk*",
+        
+        "/export/jdk",   "/export/jdk/*",
+        "/export/java",  "/export/java/*",
+        "/export/j2se",  "/export/j2se/*",
         "/export/j2sdk", "/export/j2sdk/*"
     };
     
@@ -128,7 +128,7 @@ public class ShLauncher extends CommonLauncher {
             addTestJVMFile(sb);
             addClasspathJars(sb);
             addJavaCompatible(sb);
-            
+            addOtherResources(sb);
             addNumberVariable(sb, "TOTAL_BUNDLED_FILES_SIZE", getBundledFilesSize());
             addNumberVariable(sb, "TOTAL_BUNDLED_FILES_NUMBER", getBundledFilesNumber());
             
@@ -139,14 +139,14 @@ public class ShLauncher extends CommonLauncher {
             addStringVariable(sb, "TEST_JVM_CLASS", testJVMClass);
             
             String jvmArgs = ((jvmArguments!=null) ?
-                escapeSlashes(StringUtils.asString(jvmArguments,StringUtils.SPACE)):
+                escapeVarSign(escapeSlashes(StringUtils.asString(jvmArguments,StringUtils.SPACE))):
                 StringUtils.EMPTY_STRING);
             LogManager.log("JVM args : " + jvmArgs);
             addStringVariable(sb, "JVM_ARGUMENTS", jvmArgs);
             
             
             String appArgs = ((jvmArguments!=null) ?
-                escapeSlashes(StringUtils.asString(appArguments,StringUtils.SPACE)):
+                escapeVarSign(escapeSlashes(StringUtils.asString(appArguments,StringUtils.SPACE))):
                 StringUtils.EMPTY_STRING);
             LogManager.log("Application args : " + appArgs);
             addStringVariable(sb, "APP_ARGUMENTS", appArgs);
@@ -218,6 +218,29 @@ public class ShLauncher extends CommonLauncher {
         return list;
     }
     
+    protected void addOtherResources(StringBuilder sb) throws IOException {
+        int counter = 0;
+        addNumberVariable(sb, "OTHER_RESOURCES_NUMBER", otherResources.size());
+        
+        for(LauncherResource resource : otherResources) {
+            addLauncherResource(sb, resource, "OTHER_RESOURCE_" + counter);
+            counter ++;
+        }
+        
+    }
+       
+    private void addLauncherResource(StringBuilder sb, LauncherResource resource, String id) throws IOException {
+        long type = resource.getPathType().toLong();
+        addNumberVariable(sb, id + "_TYPE", type); //NOI18N
+        
+        if(resource.isBundled()) {            
+            addNumberVariable(sb, id + "_SIZE",
+                    FileUtils.getSize(new File(resource.getPath())));
+        }
+        addStringVariable(sb, id + "_PATH",
+                escapeVarSign(escapeSlashesAndChars(resource.getAbsolutePath())));        
+        
+    }
     protected String getI18NResourcePrefix() {
         return DEFAULT_UNIX_RESOURCE_SUFFIX;
     }
@@ -237,6 +260,11 @@ public class ShLauncher extends CommonLauncher {
     }
     private String escapeSlashesAndChars(String str) {
         return escapeSlashes(escapeChars(str));
+    }
+    
+    private String escapeVarSign(String str) {
+        return (str==null) ? StringUtils.EMPTY_STRING :
+            str.replace("$", "\\$");
     }
     private String escapeSlashes(String str) {
         return (str==null) ? StringUtils.EMPTY_STRING :
@@ -352,29 +380,7 @@ public class ShLauncher extends CommonLauncher {
     }
     private void addTestJVMFile(StringBuilder sb) throws IOException {
         nextLine(sb);
-        long type = (testJVMFile!=null) ? testJVMFile.getPathType().toLong() : 0L;
-        
-        addNumberVariable(sb, "TEST_JVM_FILE_TYPE", type); //NOI18N
-        
-        if(testJVMFile == null || testJVMFile.isBundled()) {
-            long size = 0;
-            String name = StringUtils.EMPTY_STRING;
-            if(testJVMFile!=null) {
-                String path = testJVMFile.getPath();
-                File  testFile = new File(path);
-                size = FileUtils.getSize(testFile);
-                name = testFile.getName();
-            } else {
-                size = ResourceUtils.getResourceSize(TEST_JVM_RESOURCE);
-                name = ResourceUtils.getResourceFileName(TEST_JVM_RESOURCE);
-            }
-            addNumberVariable(sb, "TEST_JVM_FILE_SIZE", size);      //NOI18N
-            addStringVariable(sb, "TEST_JVM_FILE_PATH",   //NOI18N
-                    escapeSlashesAndChars(name));
-        } else {
-            addStringVariable(sb, "TEST_JVM_FILE_PATH",        //NOI18N
-                    escapeSlashesAndChars(testJVMFile.getPath()));
-        }
+        addLauncherResource(sb, testJVMFile, "TEST_JVM_FILE");        
     }
     
     private void addClasspathJars(StringBuilder sb) throws IOException {
@@ -384,14 +390,8 @@ public class ShLauncher extends CommonLauncher {
         
         int counter = 0;
         for(LauncherResource jarFile : jars) {
-            addNumberVariable(sb, "JAR_TYPE_" + counter, jarFile.getPathType().toLong());
-            if ( jarFile.isBundled()) {
-                File file = new File(jarFile.getPath());
-                addNumberVariable(sb, "JAR_SIZE_" + counter, FileUtils.getSize(file));
-                addStringVariable(sb,"JAR_PATH_" + counter, escapeSlashesAndChars(file.getName()));
-            } else{
-                addStringVariable(sb, "JAR_PATH_"+ counter, escapeSlashesAndChars(jarFile.getPath()));
-            }
+            addLauncherResource(sb, jarFile, "JAR_" + counter);
+            
             counter++;
         }
         nextLine(sb);
@@ -452,27 +452,15 @@ public class ShLauncher extends CommonLauncher {
         nextLine(sb);
     }
     
-    private int addJavaPaths(int count, StringBuilder sb, List<LauncherResource> list) {
+    private int addJavaPaths(int count, StringBuilder sb, List<LauncherResource> list) throws IOException {
         int counter = count;
         for(LauncherResource location : list) {
-            addNumberVariable(sb, "JAVA_LOCATION_TYPE_" + counter, //NOI18N
-                    location.getPathType().toLong());
-            String path = location.getPath();
-            if(location.isBundled()) {
-                addNumberVariable(sb, "JAVA_LOCATION_SIZE_" + counter, //NOI18N
-                        FileUtils.getSize(new File(path)));
-                addStringVariable(sb, "JAVA_LOCATION_PATH_" + counter,//NOI18N
-                        escapeSlashesAndChars(new File(path).getName()));
-            } else {
-                addStringVariable(sb, "JAVA_LOCATION_PATH_" + counter, //NOI18N
-                        escapeSlashesAndChars(path));
-            }
-            
+            addLauncherResource(sb, location, "JAVA_LOCATION_" + counter);
             counter ++;
         }
         return counter;
     }
-    private int addJavaPaths(int count, StringBuilder sb, String  [] paths) {
+    private int addJavaPaths(int count, StringBuilder sb, String  [] paths) throws IOException {
         List <LauncherResource> list = new ArrayList <LauncherResource> ();
         for(String path : paths) {
             list.add(new LauncherResource(LauncherResource.Type.ABSOLUTE, path));
@@ -482,7 +470,7 @@ public class ShLauncher extends CommonLauncher {
     protected String [] getCommonSystemJavaLocations() {
         return JAVA_COMMON_LOCATIONS;
     }
-    private void addPossibleJavaLocations(StringBuilder sb) {
+    private void addPossibleJavaLocations(StringBuilder sb) throws IOException {
         int total = 0;
         total = addJavaPaths(total, sb, jvms);
         total = addJavaPaths(total, sb, getCommonSystemJavaLocations());
@@ -498,18 +486,12 @@ public class ShLauncher extends CommonLauncher {
     }
     private void addBundledData(FileOutputStream fos, Progress progress, long total) throws IOException {
         
-        if(testJVMFile==null || testJVMFile.isBundled()) { // if bundle TestJVM
+        if(testJVMFile.isBundled()) { // if bundle TestJVM
             LogManager.log("Bundle testJVM file..."); //NOI18N
-            if(testJVMFile!=null) {
-                addData(fos, new File(testJVMFile.getPath()), progress, total);
-            } else {
-                addData(fos, ResourceUtils.getResource(TEST_JVM_RESOURCE), progress, total);
-            }
-            long sz = (testJVMFile!=null) ?
-                FileUtils.getSize(new File(testJVMFile.getPath())) :
-                ResourceUtils.getResourceSize(TEST_JVM_RESOURCE);
+            File testJVMfile = new File(testJVMFile.getPath());
+            addData(fos, testJVMfile, progress, total);
+            long sz = FileUtils.getSize(testJVMfile);                
             fillWithPads(fos, sz);
-            
             LogManager.log("... done bundle testJVM file");//NOI18N
         }
         for(LauncherResource jvm : jvms) {
@@ -532,6 +514,15 @@ public class ShLauncher extends CommonLauncher {
                 fillWithPads(fos, sz);
             }
         }
-        
+        for(LauncherResource file : otherResources) {
+            if(file.isBundled()) {
+                File otherFile = new File(file.getPath());
+                LogManager.log("Bundle other file " + otherFile );     //NOI18N
+                addData(fos, otherFile , progress, total);
+                LogManager.log("... done bundle other file");      //NOI18N
+                long sz = FileUtils.getSize(otherFile );
+                fillWithPads(fos, sz);
+            }
+        }
     }
 }

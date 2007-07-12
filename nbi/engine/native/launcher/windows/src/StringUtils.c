@@ -170,8 +170,8 @@ WCHAR * getDefaultString(const char *name) {
         return L"NBI Launcher";
     } else if(lstrcmpA(name, EXTERNAL_RESOURE_LACK_PROP)==0) {
         return L"Can`t run launcher\nThe following file is missing : %s";
-    }
-    return NULL;
+    } 
+    return NULL;   
 }
 
 DWORD getLengthA(const char * message) {

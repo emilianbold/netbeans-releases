@@ -60,7 +60,7 @@ extern "C" {
     typedef struct _launcherResource {
         WCHAR * path;
         WCHAR * resolved;
-        DWORD   type;
+        DWORD   type;        
     } LauncherResource;
     
     typedef struct _launcherResourceList {
@@ -94,6 +94,7 @@ extern "C" {
         
         LauncherResourceList * jars;
         LauncherResourceList * jvms;
+        LauncherResourceList * other;
         
         LauncherResource * testJVMFile;
         
@@ -138,7 +139,8 @@ extern "C" {
         I18NStrings * i18nMessages;
         DWORD I18N_PROPERTIES_NUMBER;
         StringListEntry * alreadyCheckedJava;
-        WCHARList * launcherCommandArguments;
+        WCHARList * launcherCommandArguments;       
+        
     } LauncherProperties ;
     
     

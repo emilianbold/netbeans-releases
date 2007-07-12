@@ -480,6 +480,8 @@ extractBundledData() {
 	message "$MSG_EXTRACTING"
 	debug "Extracting bundled jars  data..."
 	extractJars		
+	debug "Extracting other  data..."
+	extractOtherData
 	debug "Extracting finished..."
 }
 
@@ -507,12 +509,8 @@ setTestJVMClasspath() {
 }
 
 extractTestJVMFile() {
-        TEST_JVM_PATH=`resolvePath $TEST_JVM_FILE_TYPE "$TEST_JVM_FILE_PATH"`
-        if [ $TEST_JVM_FILE_TYPE -eq 0 ] ; then	
-	    debug "Extracting TestJVM file size=$TEST_JVM_FILE_SIZE to $TEST_JVM_PATH"
-	    extractFile "$TEST_JVM_FILE_SIZE" "$TEST_JVM_PATH"
-	    debug "... done"
-        fi 
+        TEST_JVM_PATH=`resolveResourcePath "TEST_JVM_FILE"`
+	extractResource "TEST_JVM_FILE"
 	setTestJVMClasspath
         
 }
@@ -522,19 +520,52 @@ installJVM() {
 	# install JVM and set LAUNCHER_JAVA_EXE here
 }
 
+resolveResourcePath() {
+	resourcePrefix="$1"
+	resourceName=`eval echo "$""$resourcePrefix""_PATH"`
+	resourcePath=`resolveString "$resourceName"`
+    	echo "$resourcePath"
+
+}
+
+resolveResourceSize() {
+	resourcePrefix="$1"
+	resourceSize=`eval echo "$""$resourcePrefix""_SIZE"`
+    	echo "$resourceSize"
+}
+
+resolveResourceType() {
+	resourcePrefix="$1"
+	resourceType=`eval echo "$""$resourcePrefix""_TYPE"`
+	echo "$resourceType"
+}
+
+extractResource() {
+        resourcePrefix="$1"
+	resourceType=`resolveResourceType "$resourcePrefix"`
+	if [ $resourceType -eq 0 ] ; then
+                resourceSize=`resolveResourceSize "$resourcePrefix"`
+            	resourcePath=`resolveResourcePath "$resourcePrefix"`
+
+	    	debug "Extracting resource size=$resourceSize to $resourcePath"		
+            	extractFile "$resourceSize" "$resourcePath"
+		debug "... done"
+	fi
+        
+}
+
 extractJars() {
         counter=0
 	while [ $counter -lt $JARS_NUMBER ] ; do
-		JAR_TYPE=`eval echo "$""JAR_TYPE_$counter"`
-		if [ $JAR_TYPE -eq 0 ] ; then
-			BUNDLED_JAR_NAME=`eval echo "$""JAR_PATH_$counter"`
-			BUNDLED_JAR_SIZE=`eval echo "$""JAR_SIZE_$counter"`
-            		BUNDLED_JAR_PATH=`resolvePath $JAR_TYPE "$BUNDLED_JAR_NAME"`
+		extractResource "JAR_$counter"
+		counter=`expr "$counter" + 1`
+	done
+}
 
-	    		debug "Extracting bundled JAR file size=$BUNDLED_JAR_SIZE to $BUNDLED_JAR_PATH"		
-            		extractFile "$BUNDLED_JAR_SIZE" "$BUNDLED_JAR_PATH"
-			debug "... done"
-		fi		
+extractOtherData() {
+        counter=0
+	while [ $counter -lt $OTHER_RESOURCES_NUMBER ] ; do
+		extractResource "OTHER_RESOURCE_$counter"
 		counter=`expr "$counter" + 1`
 	done
 }
@@ -542,85 +573,29 @@ extractJars() {
 extractJVMFiles() {
 	javaCounter=0
 	while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] ; do		
-		fileType=`eval echo "$""JAVA_LOCATION_TYPE_$javaCounter"`		
-		if [ $fileType -eq 0 ] ; then 
-			# bundled
-
-			JVM_FILE_NAME=`eval echo "$""JAVA_LOCATION_PATH_$jvmCounter"`
-			JVM_FILE_SIZE=`eval echo "$""JAVA_LOCATION_SIZE_$jvmCounter"`
-	            	JVM_PATH=`resolvePath $fileType "$JVM_FILE_NAME"`
-	        
-			debug "Extracting JVM file size=$JVM_FILE_SIZE to $JVM_PATH"	    
-	            	extractFile "$JVM_FILE_SIZE" "$JVM_PATH"
-	        	debug "... extracting JVM done"
-		fi
+		extractResource "JAVA_LOCATION_$javaCounter"
 		javaCounter=`expr "$javaCounter" + 1`
 	done
 }
 
-resolvePath () {
-	fileType=$1
-	path="$2"
-	parent=""
-	# resolve here external jar : launcher dir, user dir, javahome dir, etc
-	# known types:
-	# 0 - bundled
-  	# 1 - absolute
-	# 2 - from javahome
-	# 3 - from userhome
-	# 4 - from launcher parent dir
-	# 5 - from launcher tmpdir
-	#
-	case $fileType in
-        	0)                        		
-			parent="$LAUNCHER_TEMP_RUNNING"
-			;;
-		1)                        		
-			;;
-		2)	
-			parent="$LAUNCHER_JAVA"
-			;;
-		3)
-			parent="$HOME"
-			;;
-		4)
-			parent="$LAUNCHER_DIR"
-			;;
-		5)
-			parent="$LAUNCHER_TEMP_RUNNING"
-			;;
-		*)	
-			;;
-	esac
-	if [ -n "$parent" ] ; then
-		path="$parent"/"$path"
-	fi
-	echo "$path"
-}
 
 processJarsClasspath() {
 	JARS_CLASSPATH=""
 	jarsCounter=0
 	while [ $jarsCounter -lt $JARS_NUMBER ] ; do
-		cpFile=`eval echo "$""JAR_PATH_$jarsCounter"`
-		fileType=`eval echo "$""JAR_TYPE_$jarsCounter"`
-		debug "Adding file [$jarsCounter] with type=$fileType to classpath: $cpFile"
-		if [ -n "$cpFile" ] ; then			
-			resolvedFile=`resolvePath $fileType "$cpFile"`
-			debug "... full path : $resolvedFile"
-			if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! -L "$resolvedFile" ] ; then
-					message "$MSG_ERROP_MISSING_RESOURCE" "$resolvedFile"
-					exitProgram $ERROR_MISSING_RESOURCES
-			else
-				if [ -z "$JARS_CLASSPATH" ] ; then
-					JARS_CLASSPATH="$resolvedFile"
-				else				
-					JARS_CLASSPATH="$JARS_CLASSPATH":"$resolvedFile"
-				fi
+		resolvedFile=`resolveResourcePath "JAR_$jarsCounter"`
+		debug "... adding jar to classpath : $resolvedFile"
+		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! -L "$resolvedFile" ] ; then
+				message "$MSG_ERROP_MISSING_RESOURCE" "$resolvedFile"
+				exitProgram $ERROR_MISSING_RESOURCES
+		else
+			if [ -z "$JARS_CLASSPATH" ] ; then
+				JARS_CLASSPATH="$resolvedFile"
+			else				
+				JARS_CLASSPATH="$JARS_CLASSPATH":"$resolvedFile"
 			fi
+		fi			
 			
-			
-		fi
 		jarsCounter=`expr "$jarsCounter" + 1`
 	done
 	debug "Jars classpath : $JARS_CLASSPATH"
@@ -709,9 +684,8 @@ searchJava() {
 		    # search java in the common system paths
 		    javaCounter=0
             	    while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
-		    	argJavaHome=`eval "echo \"$""JAVA_LOCATION_PATH_$javaCounter\""`
-		    	fileType=`eval echo "$""JAVA_LOCATION_TYPE_$javaCounter"`
-		    	argJavaHome=`resolvePath $fileType "$argJavaHome"`
+		    	fileType=`resolveResourceType "JAVA_LOCATION_$javaCounter"`
+		    	argJavaHome=`resolveResourcePath "JAVA_LOCATION_$javaCounter"`
 
 		    	debug "... next location $argJavaHome"
 			
@@ -1023,7 +997,7 @@ checkFreeSpace() {
 			if [ $? -eq 0 ] ; then 
 				 debug "    getting POSIX df with 512 bytes blocks"
 				 availableBlocks=`df -P "$path" | sed "1d" | awk ' { print $A }' A=$column 2>/dev/null`
-			# try  Solaris df from xpg4 
+			# try  Solaris df from xpg4
 			elif  [ -x /usr/xpg4/bin/df ] ; then 
 				 debug "    getting xpg4 df with default-size blocks"
 				 availableBlocks=`/usr/xpg4/bin/df -P "$path" | sed "1d" | awk ' { print $A }' A=$column 2>/dev/null`
@@ -1078,7 +1052,9 @@ prepareClasspath() {
     fi
 
     if [ -n "$PREPEND_CP" ] ; then
-	debug "Prepending classpath with [$PREPEND_CP]"
+	debug "Appending classpath with [$PREPEND_CP]"
+	PREPEND_CP=`resolveString "$PREPEND_CP"`
+
 	if [ -z "$LAUNCHER_CLASSPATH" ] ; then
 		LAUNCHER_CLASSPATH="$PREPEND_CP"		
 	else
@@ -1087,17 +1063,119 @@ prepareClasspath() {
     fi
     if [ -n "$APPEND_CP" ] ; then
 	debug "Appending classpath with [$APPEND_CP]"
+	APPEND_CP=`resolveString "$APPEND_CP"`
 	if [ -z "$LAUNCHER_CLASSPATH" ] ; then
 		LAUNCHER_CLASSPATH="$APPEND_CP"	
 	else
 		LAUNCHER_CLASSPATH="$LAUNCHER_CLASSPATH":"$APPEND_CP"	
 	fi
     fi
+    debug "Launcher Classpath : $LAUNCHER_CLASSPATH"
+}
+
+resolvePropertyStrings() {
+	args="$1"
+	propertyStart=`echo "$args" | sed "s/^.*\\$P{//"`
+	propertyValue=""
+	propertyName=""
+
+	#Resolve i18n strings and properties
+	if [ 0 -eq `ifEquals "$propertyStart" "$args"` ] ; then
+		propertyName=`echo "$propertyStart" |  sed "s/}.*//" 2>/dev/null`
+		if [ -n "$propertyName" ] ; then
+			propertyValue=`getMessage "$propertyName"`
+
+			if [ 0 -eq `ifEquals "$propertyValue" "$propertyName"` ] ; then				
+				propertyName="\$P{$propertyName}"
+				propertyValue=`escapeString "$propertyValue"`
+				propertyValue=`escapeString "$propertyValue"`
+				args=`replaceString "$args" "$propertyName" "$propertyValue"`
+			fi
+		fi
+	fi
+			
+	echo "$args"
+}
+
+
+resolveLauncherSpecialProperties() {
+	propertyValue=""
+	propertyName=""
+	propertyStart=`echo "$args" | sed "s/^.*\\$L{//"`
+
+	
+        if [ 0 -eq `ifEquals "$propertyStart" "$args"` ] ; then
+ 		propertyName=`echo "$propertyStart" |  sed "s/}.*//" 2>/dev/null`
+		
+
+		if [ -n "$propertyName" ] ; then
+			case "$propertyName" in
+		        	"nbi.launcher.tmp.dir")                        		
+					propertyValue="$LAUNCHER_TEMP_RUNNING"
+					;;
+				"nbi.launcher.java.home")	
+					propertyValue="$LAUNCHER_JAVA"
+					;;
+				"nbi.launcher.user.home")
+					propertyValue="$HOME"
+					;;
+				"nbi.launcher.parent.dir")
+					propertyValue="$LAUNCHER_DIR"
+					;;
+				*)
+					propertyValue="$propertyName"
+					;;
+			esac
+			if [ 0 -eq `ifEquals "$propertyValue" "$propertyName"` ] ; then				
+				propertyName="\$L{$propertyName}"
+				propertyValue=`escapeString "$propertyValue"`
+				propertyValue=`escapeString "$propertyValue"`
+				args=`replaceString "$args" "$propertyName" "$propertyValue"`
+			fi      
+		fi
+	fi            
+	echo "$args"
+}
+
+resolveString() {
+ 	args="$1"
+	last="$args"
+	repeat=1
+
+	while [ 1 -eq $repeat ] ; do
+		repeat=1
+		args=`resolvePropertyStrings "$args"`
+		args=`resolveLauncherSpecialProperties "$args"`		
+		if [ 1 -eq `ifEquals "$last" "$args"` ] ; then
+		    repeat=0
+		fi
+		last="$args"
+	done
+	echo "$args"
+}
+
+replaceString() {
+	initialString="$1"	
+	fromString="$2"
+	toString="$3"
+	fromString=`echo "$fromString" | sed "s/\\\//\\\\\\\\\//g" 2>/dev/null`
+	toString=`echo "$toString" | sed "s/\\\//\\\\\\\\\//g" 2>/dev/null`
+        replacedString=`echo "$initialString" | sed "s/${fromString}/${toString}/g" 2>/dev/null`        
+	echo "$replacedString"
 }
 
 prepareArguments() {
+    debug "Prepare JVM and Application arguments... "
     LAUNCHER_JVM_ARGUMENTS="$LAUNCHER_JVM_ARGUMENTS $JVM_ARGUMENTS"
     LAUNCHER_APP_ARGUMENTS="$LAUNCHER_APP_ARGUMENTS $APP_ARGUMENTS"
+
+    debug "... resolving jvm arguments : $LAUNCHER_JVM_ARGUMENTS"
+    LAUNCHER_JVM_ARGUMENTS=`resolveString "$LAUNCHER_JVM_ARGUMENTS"`
+    debug ".... resolved jvm arguments : $LAUNCHER_JVM_ARGUMENTS"
+
+    debug "... resolving app arguments : $LAUNCHER_APP_ARGUMENTS"
+    LAUNCHER_APP_ARGUMENTS=`resolveString "$LAUNCHER_APP_ARGUMENTS"`
+    debug ".... resolved app arguments : $LAUNCHER_APP_ARGUMENTS"
 }
 
 executeMainClass() {

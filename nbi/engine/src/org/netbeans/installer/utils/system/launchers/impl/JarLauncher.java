@@ -149,9 +149,9 @@ public class JarLauncher extends CommonLauncher {
             }
         }
         commandList.add(classpath);
-        commandList.addAll(Arrays.asList(jvmArguments));
+        commandList.addAll(jvmArguments);
         commandList.add(mainClass);
-        commandList.addAll(Arrays.asList(appArguments));
+        commandList.addAll(appArguments);
         return commandList.toArray(new String [commandList.size()]);
     }
     

@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -37,9 +38,9 @@ import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 
 import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
@@ -51,7 +52,6 @@ import org.netbeans.installer.utils.progress.Progress;
  */
 public abstract class CommonLauncher extends Launcher {
     private static final int BUF_SIZE = 102400;
-    protected static final String TEST_JVM_RESOURCE = JavaUtils.TEST_JDK_RESOURCE;
     
     protected CommonLauncher(LauncherProperties pr) {
         super(pr);
@@ -111,12 +111,13 @@ public abstract class CommonLauncher extends Launcher {
     }
     
     
-    protected void checkAllParameters() throws IOException {        
+    protected void checkAllParameters() throws IOException {
         checkBundledJars();
         checkJvmFile();
         checkOutputFileName();
         checkI18N();
         checkMainClass();
+        checkTestJVMFile();
         checkTestJVMClass();
         checkCompatibleJava();
     }
@@ -235,6 +236,19 @@ public abstract class CommonLauncher extends Launcher {
         }
         
     }
+    protected void checkTestJVMFile()   throws IOException {
+        LogManager.log(ErrorLevel.DEBUG, "Checking testJVM file...");
+        if(testJVMFile==null) {
+            try  {
+                testJVMFile = new LauncherResource(FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI));
+            }  catch(DownloadException e) {
+                IOException ex = new IOException("Can`t get testJVM file");
+                ex.initCause(e);
+                throw ex;
+            }
+        }
+    }
+    
     protected void checkOutputFileName() throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Checking output file name...");
         if(outputFile==null) {
@@ -261,16 +275,16 @@ public abstract class CommonLauncher extends Launcher {
         } else if (addExtenstion) {
             LogManager.log(ErrorLevel.DEBUG, "... output is defined, adding extension");
             // outfile is defined but we need to set launcher-dependent extension
-            outputFile = new File(outputFile.getParent(),  
+            outputFile = new File(outputFile.getParent(),
                     outputFile.getName() + getExtension());
             addExtenstion = false;
         }
         LogManager.log("... out file : " + outputFile); //NOI18N
-    }    
+    }
     protected String getJavaCounter(int counter) {
         return "{" + counter + "}";
     }
-    protected long getBundledFilesSize() {
+    protected long getBundledFilesSize() throws IOException {
         long total = 0;
         
         for (LauncherResource jvmFile : jvms) {
@@ -279,18 +293,22 @@ public abstract class CommonLauncher extends Launcher {
                 total += FileUtils.getSize(file);
             }
         }
-        if(testJVMFile!=null) {
-            if(testJVMFile.isBundled()) {
-                total += FileUtils.getSize(new File(testJVMFile.getPath()));
-            }
-        } else {
-            total += ResourceUtils.getResourceSize(TEST_JVM_RESOURCE);
+        if(testJVMFile.isBundled()) {
+            total += FileUtils.getSize(new File(testJVMFile.getPath()));
         }
+        
         for (LauncherResource jarFile : jars) {
             if ( jarFile.isBundled()) {
                 File file = new File(jarFile.getPath());
                 total += FileUtils.getSize(file);
             }
+        }
+        for(LauncherResource other : otherResources) {
+            if(other.isBundled()) {
+                File otherFile = new File(other.getPath());
+                total += FileUtils.getSize(otherFile);
+            }
+            
         }
         return total;
     }
@@ -301,11 +319,16 @@ public abstract class CommonLauncher extends Launcher {
                 total ++;
             }
         }
-        if(testJVMFile==null || testJVMFile.isBundled()) {
+        if(testJVMFile.isBundled()) {
             total++;
         }
         for (LauncherResource jarFile : jars) {
             if ( jarFile.isBundled()) {
+                total ++;
+            }
+        }
+        for (LauncherResource other : otherResources) {
+            if (other.isBundled()) {
                 total ++;
             }
         }

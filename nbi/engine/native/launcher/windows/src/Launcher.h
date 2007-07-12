@@ -43,7 +43,8 @@ extern "C" {
     void processLauncher(LauncherProperties * props);
     
     void resolvePath(LauncherProperties * props, LauncherResource * file);
-    
+    void resolveString(LauncherProperties * props, WCHAR ** result);
+    void resolveLauncherProperties(LauncherProperties * props, WCHAR **result);    
     void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg);
     
 #ifdef	__cplusplus

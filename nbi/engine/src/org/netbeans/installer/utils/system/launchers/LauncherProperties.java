@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -33,6 +33,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
+import static org.netbeans.installer.utils.system.launchers.LauncherResource.Type.*;
 
 /**
  *
@@ -40,19 +41,21 @@ import org.netbeans.installer.utils.helper.JavaCompatibleProperties;
  */
 public class LauncherProperties implements Cloneable {
     
-    protected File stubFile;    
-    protected List<LauncherResource> jars;    
+    protected File stubFile;
+    protected List<LauncherResource> jars;
     protected List<LauncherResource> jvms;
+    protected List <LauncherResource> otherResources;
+    
     protected HashMap <String, PropertyResourceBundle> i18nMap;
     protected LauncherResource testJVMFile;
     protected File outputFile;
     protected boolean addExtenstion;
-    protected String [] jvmArguments;
-    protected String [] appArguments;
+    protected List <String> jvmArguments;
+    protected List <String> appArguments;
     protected String mainClass;
     protected String testJVMClass;
     protected List <JavaCompatibleProperties> compatibleJava;
-    
+     
     public LauncherResource getTestJVMFile() {
         return testJVMFile;
     }
@@ -61,8 +64,8 @@ public class LauncherProperties implements Cloneable {
         appArguments = nl.appArguments;
         jvmArguments = nl.jvmArguments;
         i18nMap = nl.i18nMap;
-        jars = nl.jars;        
-        jvms = nl.jvms;        
+        jars = nl.jars;
+        jvms = nl.jvms;
         outputFile = nl.outputFile;
         addExtenstion = nl.addExtenstion;
         compatibleJava = nl.compatibleJava;
@@ -70,14 +73,16 @@ public class LauncherProperties implements Cloneable {
         testJVMClass = nl.testJVMClass;
         stubFile = nl.stubFile;
         testJVMFile = nl.testJVMFile;
+        otherResources = nl.otherResources;    
     }
     public LauncherProperties() {
         compatibleJava = new ArrayList <JavaCompatibleProperties> ();
-        jvmArguments = new String [] {};
-        appArguments = new String [] {};
-        i18nMap = new HashMap <String, PropertyResourceBundle>();        
+        jvmArguments = new ArrayList <String>();
+        appArguments = new ArrayList <String>();
+        i18nMap = new HashMap <String, PropertyResourceBundle>();
         jars = new ArrayList <LauncherResource> ();
         jvms = new ArrayList <LauncherResource> ();
+        otherResources = new ArrayList<LauncherResource> ();        
     }
     public void setLauncherStub(File launcherStub) {
         this.stubFile = launcherStub;
@@ -94,7 +99,13 @@ public class LauncherProperties implements Cloneable {
     }
     
     public void setJvmArguments(String[] jvmArguments) {
-        this.jvmArguments = jvmArguments;
+        this.jvmArguments = new ArrayList <String> ();
+        for(String s : jvmArguments) {
+            this.jvmArguments.add(s);
+        }
+    }
+    public void setJvmArguments(List <String> jvmArguments) {
+        this.jvmArguments = jvmArguments;        
     }
     
     public void setI18n(File i18nDir) throws IOException {
@@ -130,7 +141,13 @@ public class LauncherProperties implements Cloneable {
         compatibleJava.add(javaProp);
     }
     
-    public void setAppArguments(String [] appArguments) {
+    public void setAppArguments(String[] appArguments) {
+        this.appArguments = new ArrayList <String> ();
+        for(String s : appArguments) {
+            this.appArguments.add(s);
+        }
+    }
+    public void setAppArguments(List <String> appArguments) {
         this.appArguments = appArguments;
     }
     
@@ -141,11 +158,11 @@ public class LauncherProperties implements Cloneable {
     public List<LauncherResource> getJars() {
         return jars;
     }
-    public String[] getAppArguments() {
+    public List <String> getAppArguments() {
         return appArguments;
     }
     
-    public String[] getJvmArguments() {
+    public List<String> getJvmArguments() {
         return jvmArguments;
     }
     
@@ -156,7 +173,7 @@ public class LauncherProperties implements Cloneable {
     public File getStubFile() {
         return stubFile;
     }
-   
+    
     public void addJVM(LauncherResource location) {
         jvms.add(location);
     }
@@ -171,6 +188,14 @@ public class LauncherProperties implements Cloneable {
     }
     HashMap <String, PropertyResourceBundle> getI18nMap() {
         return i18nMap;
+    }
+    
+    public void addOtherResource(LauncherResource resource) {
+        otherResources.add(resource);
+    }
+    
+    public List <LauncherResource> getOtherResources() {
+        return otherResources;
     }
     
     private String getLocaleName(String name) {

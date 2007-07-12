@@ -24,9 +24,9 @@ package org.netbeans.installer.utils.system.launchers.impl;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PropertyResourceBundle;
@@ -126,11 +126,7 @@ public class ExeLauncher extends CommonLauncher {
             addNumber(fos, bundledSize, true);
             
             //add testJVM section
-            if(testJVMFile!=null) {
-                addFileSection(fos, testJVMFile, progress,total);
-            } else {
-                addFileSection(fos, TEST_JVM_RESOURCE, progress);
-            }
+            addFileSection(fos, testJVMFile, progress,total);
             
             //java locations that the launcher should see at first
             LogManager.log("Adding JVM external locations and bundled files"); //NOI18N
@@ -139,6 +135,10 @@ public class ExeLauncher extends CommonLauncher {
             // number of bundled and external jars
             LogManager.log("Adding bundled and external jars"); //NOI18N
             addData(fos, jars, progress, total);
+            
+            // a number of other resources
+            LogManager.log("Adding other resources"); //NOI18N
+            addData(fos, otherResources, progress, total);
             
         } catch (IOException ex) {
             LogManager.log(ex);
@@ -275,7 +275,13 @@ public class ExeLauncher extends CommonLauncher {
     private void addData(FileOutputStream fos, boolean isTrue) throws IOException {
         addNumber(fos, isTrue ? 1L : 0L);
     }
-    
+    private void addData(FileOutputStream fos, HashMap<String, LauncherResource> map, Progress progress, long total) throws IOException{
+        addNumber(fos, map.size(), false);
+        for(String key : map.keySet()) {
+            addString(fos, key, true);
+            addFileSection(fos, map.get(key), progress, total);
+        }
+    }
     private void addData(FileOutputStream fos, List<LauncherResource> list, Progress progress, long total) throws IOException{
         addNumber(fos, list.size());
         //add every entry section
@@ -286,6 +292,9 @@ public class ExeLauncher extends CommonLauncher {
                     file.toString());//NOI18N
             addFileSection(fos, file, progress, total);
         }
+    }
+    private void addData(FileOutputStream fos, List <String> strings, boolean isUnicode) throws IOException {
+        addData(fos, strings.toArray(new String[0]),isUnicode);
     }
     private void addData(FileOutputStream fos, String [] strings, boolean isUnicode) throws IOException {
         
@@ -300,31 +309,14 @@ public class ExeLauncher extends CommonLauncher {
         
     }
     
-    
-    private void addFileSection(FileOutputStream fos, File file, Progress progress, long total) throws IOException {
-        addData(fos, file.getName(), true);
-        addNumber(fos,  file.length(),true);
-        addData(fos, file, progress, total);
-    }
-    
-    private void addFileSection(FileOutputStream fos, LauncherResource file, Progress progress, long total) throws IOException {
-        addNumber(fos, file.getPathType().toLong());
+    private void addFileSection(FileOutputStream fos, LauncherResource file, Progress progress, long total) throws IOException {        
+        addNumber(fos, file.getPathType().toLong());                
+        addData(fos, file.getAbsolutePath(), true);
         if(file.isBundled()) {
-            addFileSection(fos,new File(file.getPath()), progress,total);
-        } else {
-            addData(fos, file.getPath(), true);
-        }
+            addNumber(fos,  new File(file.getPath()).length(),true);
+            addData(fos, new File(file.getPath()), progress, total);
+        }   
     }
-    
-    private void addFileSection(FileOutputStream fos, String resource, Progress progress) throws IOException {
-        addNumber(fos, LauncherResource.Type.BUNDLED.toLong());
-        addData(fos, ResourceUtils.getResourceFileName(resource), true);
-        addNumber(fos,  ResourceUtils.getResourceSize(resource),true);
-        InputStream is = ResourceUtils.getResource(resource);
-        addData(fos, is, progress, 0);
-        is.close();
-    }
-    
     
     private void addData(FileOutputStream fos, PropertyResourceBundle bundle, String localeName, List <String> propertiesNames) throws IOException {
         String propertyName;

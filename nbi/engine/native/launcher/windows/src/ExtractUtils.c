@@ -298,7 +298,14 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
         HANDLE hFileWrite = CreateFileW(output, GENERIC_READ | GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, hFileRead);
         
         if (hFileWrite == INVALID_HANDLE_VALUE) {
-            WCHAR * err = getErrorDescription(GetLastError());
+            WCHAR * err;
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "[ERROR] Can`t create file ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, output, 1);
+            
+            err = getErrorDescription(GetLastError());
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Error description : ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, err, 1);
+            
             showErrorW(props, OUTPUT_ERROR_PROP, 2, output, err);
             FREE(err);
             *status = ERROR_INPUTOUPUT;
@@ -360,7 +367,7 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
 }
 
 //returns : ERROR_OK, ERROR_INTEGRITY, ERROR_FREE_SPACE
-void extractFileToDir(LauncherProperties * props, WCHAR *dir, WCHAR ** resultFile) {
+void extractFileToDir(LauncherProperties * props, WCHAR ** resultFile) {
     WCHAR * fileName = NULL;
     int64t * fileLength = NULL;
     
@@ -373,17 +380,31 @@ void extractFileToDir(LauncherProperties * props, WCHAR *dir, WCHAR ** resultFil
     if(!isOK(props)) return;
     
     if(fileName!=NULL) {
-        WCHAR * output = appendStringW(appendStringW(appendStringW(NULL, dir), FILE_SEP), fileName);
-        FREE(fileName);
+        DWORD i=0;
+        WCHAR * dir;
+        resolveString(props, &fileName);
         
+        for(i=0;i<getLengthW(fileName);i++) {
+            if(fileName[i]==L'/') {
+                fileName[i]=L'\\';
+            }
+        }
+        
+        dir = getParentDirectory(fileName);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... extract to directory = ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  dir, 1);
         
         checkFreeSpace(props, dir, fileLength);
+        FREE(dir);
         if(isOK(props)) {
-            extractDataToFile(props, output, fileLength);
-            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... extracted", 1);
-            *resultFile = output;
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... starting data extraction", 1);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... output file is ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, fileName, 1);
+            extractDataToFile(props, fileName, fileLength);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... extraction finished", 1);
+            *resultFile = fileName;
+        } else {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... data extraction canceled", 1);
         }
     } else {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,  "Error! File name can`t be null. Seems to be integrity error!", 1);
@@ -418,7 +439,7 @@ void loadI18NStrings(LauncherProperties * props) {
         return ;
     }
     
-    props->i18nMessages = (I18NStrings * ) LocalAlloc(LPTR,sizeof(I18NStrings) * numberOfProperties);
+    props->i18nMessages = (I18NStrings * ) LocalAlloc(LPTR, sizeof(I18NStrings) * numberOfProperties);
     
     props->I18N_PROPERTIES_NUMBER = numberOfProperties;
     props->i18nMessages->properties = newppChar(props->I18N_PROPERTIES_NUMBER);
@@ -485,14 +506,14 @@ void loadI18NStrings(LauncherProperties * props) {
 }
 
 LauncherResource * newLauncherResource() {
-    LauncherResource * file = (LauncherResource *) LocalAlloc(LPTR,sizeof(LauncherResource));
+    LauncherResource * file = (LauncherResource *) LocalAlloc(LPTR, sizeof(LauncherResource));
     file->path=NULL;
-    file->resolved=NULL;
+    file->resolved=NULL;    
     file->type=0;
     return file;
 }
 WCHARList * newWCHARList(DWORD number) {
-    WCHARList * list = (WCHARList*) LocalAlloc(LPTR,sizeof(WCHARList));
+    WCHARList * list = (WCHARList*) LocalAlloc(LPTR, sizeof(WCHARList));
     list->size  = number;
     if(number>0) {
         DWORD i=0;
@@ -522,12 +543,12 @@ void freeWCHARList(WCHARList ** plist) {
 }
 
 LauncherResourceList * newLauncherResourceList(DWORD number) {
-    LauncherResourceList * list = (LauncherResourceList*) LocalAlloc(LPTR,sizeof(LauncherResourceList));
+    LauncherResourceList * list = (LauncherResourceList*) LocalAlloc(LPTR, sizeof(LauncherResourceList));
     list->size  = number;
     if(number > 0) {
         DWORD i=0;
         
-        list->items = (LauncherResource**) LocalAlloc(LPTR,sizeof(LauncherResource*) * number);
+        list->items = (LauncherResource**) LocalAlloc(LPTR, sizeof(LauncherResource*) * number);
         for(i=0;i<number;i++) {
             list->items[i] = NULL;
         }
@@ -540,29 +561,35 @@ LauncherResourceList * newLauncherResourceList(DWORD number) {
 void freeLauncherResource(LauncherResource ** file) {
     if(*file!=NULL) {
         FREE((*file)->path);
-        FREE((*file)->resolved);
+        FREE((*file)->resolved);        
         FREE(*file);
+        
     }
 }
 
 
-void extractLauncherResource(LauncherProperties * props, WCHAR *outputdir, LauncherResource ** file, char * name) {
+void extractLauncherResource(LauncherProperties * props, LauncherResource ** file, char * name) {
     char * typeStr = appendString(appendString(NULL, name), " type");
     * file = newLauncherResource();
     
     readNumberWithDebug( props, & ((*file)->type) , typeStr);
+    
     if(isOK(props)) {
         FREE(typeStr);
+        
         if((*file)->type==0) { //bundled
-            extractFileToDir(props, outputdir, & ((*file)->path));
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,  "... file is bundled", 1);
+            extractFileToDir(props, & ((*file)->path));
             if(!isOK(props)) {
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,  "Error extracting file!", 1);
                 return;
             } else {
+                (*file)->resolved = appendStringW(NULL, (*file)->path);
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "file was succesfully extracted to ", 0);
                 writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  (*file)->path, 1);
             }
         } else {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1,  "... file is external", 1);
             readStringWithDebugW(props, & ((*file)->path), name);
             if(!isOK(props)) {
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error reading ", 1);
@@ -595,7 +622,7 @@ void readWCHARList(LauncherProperties * props, WCHARList ** list, char * name) {
         if(!isOK(props)) return;
     }
 }
-void readLauncherResourceList(LauncherProperties * props, WCHAR * outputdir, LauncherResourceList ** list, char * name) {
+void readLauncherResourceList(LauncherProperties * props,  LauncherResourceList ** list, char * name) {
     DWORD num = 0;
     DWORD i=0;
     char * numberStr = appendString(appendString(NULL, "number of "), name);
@@ -605,7 +632,7 @@ void readLauncherResourceList(LauncherProperties * props, WCHAR * outputdir, Lau
     
     * list = newLauncherResourceList(num);
     for(i=0;i<(*list)->size;i++) {
-        extractLauncherResource(props, outputdir, & ((*list)->items[i]), "launcher resource");
+        extractLauncherResource(props, & ((*list)->items[i]), "launcher resource");
         if(!isOK(props)) {
             char * str = appendString(appendString(NULL, "Error processing "), name);
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, str, 1);
@@ -638,7 +665,7 @@ void readLauncherProperties(LauncherProperties * props) {
     
     
     if ( props->compatibleJavaNumber > 0 ) {
-        props->compatibleJava = (JavaCompatible **) LocalAlloc(LPTR,sizeof(JavaCompatible *) * props->compatibleJavaNumber);
+        props->compatibleJava = (JavaCompatible **) LocalAlloc(LPTR, sizeof(JavaCompatible *) * props->compatibleJavaNumber);
         for(i=0;i<props->compatibleJavaNumber;i++) {
             
             props->compatibleJava [i] = newJavaCompatible() ;
@@ -676,22 +703,22 @@ void readLauncherProperties(LauncherProperties * props) {
 
 void extractJVMData(LauncherProperties * props) {
     if(isOK(props)) {
-        WCHAR * outputdir = props->tmpDir;
         
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting JVM data... ", 1);
-        extractLauncherResource(props, outputdir, &(props->testJVMFile), "testJVM file");
+        extractLauncherResource(props,  &(props->testJVMFile), "testJVM file");
         if(!isOK(props)) {
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error extracting testJVM file!", 1);
             return ;
         }
         
-        readLauncherResourceList(props, outputdir, &(props->jvms), "JVMs");
+        readLauncherResourceList(props, &(props->jvms), "JVMs");
     }
 }
 
 void extractData(LauncherProperties *props) {
-    if(isOK(props)) {        
+    if(isOK(props)) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting Bundled data... ", 1);
-        readLauncherResourceList(props, props->tmpDir, &(props->jars), "bundled and external files");
+        readLauncherResourceList(props,  &(props->jars), "bundled and external files");
+        readLauncherResourceList(props,  &(props->other), "other data");
     }
 }
