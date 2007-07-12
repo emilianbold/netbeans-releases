@@ -22,16 +22,20 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
@@ -41,18 +45,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
-    
-    private Set<FileObject> knownFiles = new WeakSet<FileObject>();
     
     public ErrorAnnotator() {
     }
@@ -62,7 +63,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     }
 
     @Override
-    public synchronized Image annotateIcon(Image icon, int iconType, Set files) {
+    public Image annotateIcon(Image icon, int iconType, Set files) {
         if (!TasklistSettings.isTasklistEnabled() || !TasklistSettings.isBadgesEnabled())
             return null;
         
@@ -70,21 +71,19 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
-            inError = TaskCache.getDefault().isInError(folder, false);
-            knownFiles.add(folder);
+            inError = isInError(folder, false, true);
         } else {
             for (Object o : files) {
                 if (o instanceof FileObject) {
                     FileObject f = (FileObject) o;
                     
                     if (f.isFolder()) {
-                        knownFiles.add(f);
-                        if (inError)
-                            continue;
-                        if (TaskCache.getDefault().isInError(f, true)) {
+                        if (isInError(f, true, !inError)) {
                             inError = true;
                             continue;
                         }
+                        if (inError)
+                            continue;
                         
                         Project p = FileOwnerQuery.getOwner(f);
                         
@@ -92,7 +91,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                             for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java"/*JavaProjectConstants.SOURCES_TYPE_JAVA*/)) {
                                 FileObject sgRoot = sg.getRootFolder();
                                 
-                                if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && TaskCache.getDefault().isInError(sgRoot, true)) {
+                                if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && isInError(sgRoot, true, true)) {
                                     inError = true;
                                     break;
                                 }
@@ -104,12 +103,8 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                         }
                     }else {
                         if (f.isData() && "java".equals(f.getExt())) {
-                            knownFiles.add(f);
-                            if (inError)
-                                continue;
-                            if (TaskCache.getDefault().isInError(f, true)) {
+                            if (isInError(f, true, !inError)) {
                                 inError = true;
-                                continue;
                             }
                         }
                     }
@@ -174,16 +169,23 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     
     public synchronized void updateInError(Set<URL> urls)  {
         Set<FileObject> toRefresh = new HashSet<FileObject>();
-        for (FileObject f : knownFiles) {
+        for (Iterator<FileObject> it = knownFiles2Error.keySet().iterator(); it.hasNext(); ) {
+            FileObject f = it.next();
             try {
                 if (urls.contains(f.getURL())) {
                     toRefresh.add(f);
+                    Integer i = knownFiles2Error.get(f);
+                    
+                    if (i != null) {
+                        knownFiles2Error.put(f, i | INVALID);
+                        
+                        enqueue(f);
+                    }
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        fireFileStatusChanged(toRefresh);
     }
     
     public void fireFileStatusChanged(Set<FileObject> fos) {
@@ -206,4 +208,71 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         return null;
     }
     
+    private static final int IN_ERROR_REC = 1;
+    private static final int IN_ERROR_NONREC = 2;
+    private static final int INVALID = 4;
+    
+    private Map<FileObject, Integer> knownFiles2Error = new WeakHashMap<FileObject, Integer>();
+    
+    private void enqueue(FileObject file) {
+        if (toProcess == null) {
+            toProcess = new LinkedList<FileObject>();
+            WORKER.schedule(50);
+        }
+        
+        toProcess.add(file);
+    }
+    
+    private synchronized boolean isInError(FileObject file, boolean recursive, boolean forceValue) {
+        boolean result = false;
+        Integer i = knownFiles2Error.get(file);
+
+        if (i != null) {
+            result = (i & (recursive ? IN_ERROR_REC : IN_ERROR_NONREC)) != 0;
+            
+            if ((i & INVALID) == 0)
+                return result;
+        }
+        
+        if (!forceValue) {
+            if (i == null) {
+                knownFiles2Error.put(file, null);
+            }
+            return result;
+        }
+
+        enqueue(file);
+        return result;
+    }
+    
+    private Collection<FileObject> toProcess = null;
+    private final RequestProcessor.Task WORKER = new RequestProcessor("ErrorAnnotator worker", 1).create(new Runnable() {
+        public void run() {
+            Collection<FileObject> toProcess;
+            
+            synchronized (ErrorAnnotator.this) {
+                toProcess = ErrorAnnotator.this.toProcess;
+                ErrorAnnotator.this.toProcess = null;
+            }
+            
+            for (FileObject f : toProcess) {
+                boolean recError;
+                boolean nonRecError;
+                if (f.isData()) {
+                    recError = nonRecError = TaskCache.getDefault().isInError(f, true);
+                } else {
+                    recError = TaskCache.getDefault().isInError(f, true);
+                    nonRecError = TaskCache.getDefault().isInError(f, false);
+                }
+
+                Integer value = (recError ? IN_ERROR_REC : 0) | (nonRecError ? IN_ERROR_NONREC : 0);
+
+                synchronized (ErrorAnnotator.this) {
+                    knownFiles2Error.put(f, value);
+                }
+
+                fireFileStatusChanged(Collections.singleton(f));
+            }
+        }
+    });
 }
