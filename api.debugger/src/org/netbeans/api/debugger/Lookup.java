@@ -148,10 +148,12 @@ abstract class Lookup implements ContextProvider {
                 if (className.endsWith(HIDDEN)) continue;
                 if (s != null && s.contains (className)) continue;
                 Object instance = null;
-                instance = instanceCache.get (className);
-                if (instance == null) {
-                    instance = createInstance (className);
-                    instanceCache.put (className, instance);
+                synchronized(instanceCache) {
+                    instance = instanceCache.get (className);
+                    if (instance == null) {
+                        instance = createInstance (className);
+                        instanceCache.put (className, instance);
+                    }
                 }
                 if (instance != null)
                     ll.add (instance, className);
@@ -165,9 +167,11 @@ abstract class Lookup implements ContextProvider {
                 ((rootFolder == null) ? "" : rootFolder + "/") + 
                 ((folder == null) ? "" : folder + "/") + 
                 name;
-            if (!registrationCache.containsKey (resourceName))
-                registrationCache.put (resourceName, loadMetaInf (resourceName));
-            return (List) registrationCache.get (resourceName);
+            synchronized(registrationCache) {
+                if (!registrationCache.containsKey (resourceName))
+                    registrationCache.put (resourceName, loadMetaInf (resourceName));
+                return (List) registrationCache.get (resourceName);
+            }
         }
     
         /**
