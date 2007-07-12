@@ -82,7 +82,11 @@ public abstract class CommonLauncher extends Launcher {
             return addData(fos,fis,progress,total);
         } finally {
             if(fis!=null) {
-                fis.close();
+                try {
+                    fis.close();
+                } catch(IOException ex) {
+                    LogManager.log(ex);
+                }
             }
         }
         
@@ -164,9 +168,8 @@ public abstract class CommonLauncher extends Launcher {
         LogManager.log(ErrorLevel.DEBUG, "Checking JVMs...");
         for(LauncherResource file: jvms) {
             if(file.isBundled()) {
-                File jvmFile = new File(file.getPath());
-                if(!FileUtils.exists(jvmFile)) {
-                    throw new IOException("JVM file " + jvmFile + " not found");
+                if(file.getInputStream() == null) {
+                    throw new IOException("JVM file " + file.getPath() + " not found");
                 }
             }}
     }
@@ -179,7 +182,7 @@ public abstract class CommonLauncher extends Launcher {
             // get the first
             File jarFile = null;
             for(LauncherResource file : jars) {
-                if(file.isBundled()) {
+                if(file.isBundled() && !file.isBasedOnResource()) {
                     jarFile=new File(file.getPath());
                     Manifest manifest = new JarFile(jarFile).getManifest();
                     if(manifest!=null) {
@@ -194,7 +197,7 @@ public abstract class CommonLauncher extends Launcher {
             throw new IOException("No specified main class among bundled files");
         } else{
             for(LauncherResource file : jars) {
-                if(file.isBundled()) {
+                if(file.isBundled() && !file.isBasedOnResource() ) {
                     File jarFile=new File(file.getPath());
                     if((new JarFile(jarFile).getJarEntry(mainClass.replace(".","/") + ".class"))!=null) {
                         return;
@@ -239,13 +242,8 @@ public abstract class CommonLauncher extends Launcher {
     protected void checkTestJVMFile()   throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Checking testJVM file...");
         if(testJVMFile==null) {
-            try  {
-                testJVMFile = new LauncherResource(FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI));
-            }  catch(DownloadException e) {
-                IOException ex = new IOException("Can`t get testJVM file");
-                ex.initCause(e);
-                throw ex;
-            }
+            //final File testJVM = FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI, true);
+            testJVMFile = new LauncherResource(JavaUtils.TEST_JDK_RESOURCE);
         }
     }
     
@@ -255,7 +253,7 @@ public abstract class CommonLauncher extends Launcher {
             LogManager.log(ErrorLevel.DEBUG, "... output file name is not specified, getting name from the first bundled file");
             String outputFileName  = null;
             for(LauncherResource file : jars) {
-                if(file.isBundled()) {
+                if(file.isBundled() && !file.isBasedOnResource()) {
                     File jarFile = new File(file.getPath());
                     String name = jarFile.getName();
                     if(name.endsWith(FileUtils.JAR_EXTENSION)) {
@@ -288,27 +286,15 @@ public abstract class CommonLauncher extends Launcher {
         long total = 0;
         
         for (LauncherResource jvmFile : jvms) {
-            if ( jvmFile .isBundled()) {
-                File file = new File(jvmFile.getPath());
-                total += FileUtils.getSize(file);
-            }
+            total += jvmFile.getSize();
         }
-        if(testJVMFile.isBundled()) {
-            total += FileUtils.getSize(new File(testJVMFile.getPath()));
-        }
+        total += testJVMFile.getSize();
         
         for (LauncherResource jarFile : jars) {
-            if ( jarFile.isBundled()) {
-                File file = new File(jarFile.getPath());
-                total += FileUtils.getSize(file);
-            }
+            total += jarFile.getSize();
         }
         for(LauncherResource other : otherResources) {
-            if(other.isBundled()) {
-                File otherFile = new File(other.getPath());
-                total += FileUtils.getSize(otherFile);
-            }
-            
+            total += other.getSize();
         }
         return total;
     }

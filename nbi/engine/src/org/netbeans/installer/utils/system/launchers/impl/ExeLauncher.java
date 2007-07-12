@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -24,9 +24,9 @@ package org.netbeans.installer.utils.system.launchers.impl;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PropertyResourceBundle;
@@ -275,13 +275,7 @@ public class ExeLauncher extends CommonLauncher {
     private void addData(FileOutputStream fos, boolean isTrue) throws IOException {
         addNumber(fos, isTrue ? 1L : 0L);
     }
-    private void addData(FileOutputStream fos, HashMap<String, LauncherResource> map, Progress progress, long total) throws IOException{
-        addNumber(fos, map.size(), false);
-        for(String key : map.keySet()) {
-            addString(fos, key, true);
-            addFileSection(fos, map.get(key), progress, total);
-        }
-    }
+    
     private void addData(FileOutputStream fos, List<LauncherResource> list, Progress progress, long total) throws IOException{
         addNumber(fos, list.size());
         //add every entry section
@@ -309,13 +303,33 @@ public class ExeLauncher extends CommonLauncher {
         
     }
     
-    private void addFileSection(FileOutputStream fos, LauncherResource file, Progress progress, long total) throws IOException {        
-        addNumber(fos, file.getPathType().toLong());                
-        addData(fos, file.getAbsolutePath(), true);
+    private void addFileSection(FileOutputStream fos, LauncherResource file, Progress progress, long total) throws IOException {
+        addNumber(fos, file.getPathType().toLong());
+        String path;
+        if(file.isBasedOnResource()) {
+            path = file.getPathType().getPathString(
+                    ResourceUtils.getResourceFileName(file.getPath()));
+        } else {
+            path = file.getAbsolutePath();
+        }
+        addData(fos, path, true);
+        
         if(file.isBundled()) {
-            addNumber(fos,  new File(file.getPath()).length(),true);
-            addData(fos, new File(file.getPath()), progress, total);
-        }   
+            addNumber(fos, file.getSize(), true);
+            InputStream is = null;
+            try {
+                is = file.getInputStream();
+                addData(fos, is, progress, total);
+            } finally {
+                if(is!=null) {
+                    try {
+                        is.close();
+                    } catch(IOException e) {
+                        LogManager.log(e);
+                    }
+                }
+            }
+        }
     }
     
     private void addData(FileOutputStream fos, PropertyResourceBundle bundle, String localeName, List <String> propertiesNames) throws IOException {

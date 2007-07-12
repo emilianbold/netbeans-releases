@@ -228,17 +228,29 @@ public class ShLauncher extends CommonLauncher {
         }
         
     }
-       
+    
     private void addLauncherResource(StringBuilder sb, LauncherResource resource, String id) throws IOException {
         long type = resource.getPathType().toLong();
         addNumberVariable(sb, id + "_TYPE", type); //NOI18N
         
-        if(resource.isBundled()) {            
-            addNumberVariable(sb, id + "_SIZE",
-                    FileUtils.getSize(new File(resource.getPath())));
+        String path;
+        if(resource.isBundled()) {
+            long size = resource.getSize();
+            
+            if(resource.isBasedOnResource()) {
+                path = resource.getPathType().getPathString(
+                        ResourceUtils.getResourceFileName(resource.getPath()));
+            } else {
+                path = resource.getAbsolutePath();
+            }
+            addNumberVariable(sb, id + "_SIZE", size);
+        } else {
+            path = resource.getAbsolutePath();
         }
+        
+        
         addStringVariable(sb, id + "_PATH",
-                escapeVarSign(escapeSlashesAndChars(resource.getAbsolutePath())));        
+                escapeVarSign(escapeSlashesAndChars(path)));
         
     }
     protected String getI18NResourcePrefix() {
@@ -380,7 +392,7 @@ public class ShLauncher extends CommonLauncher {
     }
     private void addTestJVMFile(StringBuilder sb) throws IOException {
         nextLine(sb);
-        addLauncherResource(sb, testJVMFile, "TEST_JVM_FILE");        
+        addLauncherResource(sb, testJVMFile, "TEST_JVM_FILE");
     }
     
     private void addClasspathJars(StringBuilder sb) throws IOException {
@@ -484,45 +496,40 @@ public class ShLauncher extends CommonLauncher {
             addString(fos, SH_LINE_SEPARATOR, false);
         }
     }
-    private void addBundledData(FileOutputStream fos, Progress progress, long total) throws IOException {
-        
-        if(testJVMFile.isBundled()) { // if bundle TestJVM
+    
+    private void addLauncherResourceData(FileOutputStream fos, LauncherResource resource, Progress progress, long total)  throws IOException {
+        if(resource.isBundled()) { // if bundle TestJVM
             LogManager.log("Bundle testJVM file..."); //NOI18N
-            File testJVMfile = new File(testJVMFile.getPath());
-            addData(fos, testJVMfile, progress, total);
-            long sz = FileUtils.getSize(testJVMfile);                
-            fillWithPads(fos, sz);
-            LogManager.log("... done bundle testJVM file");//NOI18N
+            InputStream is = null;
+            try {
+                String path = resource.getPath();
+                LogManager.log("... path is " + path); //NOI18N
+                is = resource.getInputStream();                                
+                addData(fos, is, progress, total);
+                fillWithPads(fos, resource.getSize());
+            } finally {
+                try {
+                    if(is!=null) {
+                        is.close();
+                    }
+                } catch (IOException ex) {
+                    LogManager.log(ex);
+                }
+            }
+            LogManager.log("... done bundle launcher resource file");//NOI18N
         }
+    }
+    private void addBundledData(FileOutputStream fos, Progress progress, long total) throws IOException {
+        addLauncherResourceData(fos, testJVMFile, progress, total);
+        
         for(LauncherResource jvm : jvms) {
-            if(jvm.isBundled()) {
-                File jvmFile = new File(jvm.getPath());
-                LogManager.log("Bundle jvm " + jvmFile);        //NOI18N
-                addData(fos, jvmFile, progress, total);
-                LogManager.log("... done bundle jvm");          //NOI18N
-                long sz = FileUtils.getSize(jvmFile);
-                fillWithPads(fos, sz);
-            }
+            addLauncherResourceData(fos, jvm,progress,total);
         }
-        for(LauncherResource file : jars) {
-            if(file.isBundled()) {
-                File jarFile = new File(file.getPath());
-                LogManager.log("Bundle jar " + jarFile);     //NOI18N
-                addData(fos, jarFile, progress, total);
-                LogManager.log("... done bundle jar");      //NOI18N
-                long sz = FileUtils.getSize(jarFile);
-                fillWithPads(fos, sz);
-            }
+        for(LauncherResource jar : jars) {
+            addLauncherResourceData(fos, jar,progress,total);
         }
-        for(LauncherResource file : otherResources) {
-            if(file.isBundled()) {
-                File otherFile = new File(file.getPath());
-                LogManager.log("Bundle other file " + otherFile );     //NOI18N
-                addData(fos, otherFile , progress, total);
-                LogManager.log("... done bundle other file");      //NOI18N
-                long sz = FileUtils.getSize(otherFile );
-                fillWithPads(fos, sz);
-            }
+        for(LauncherResource other : otherResources) {
+            addLauncherResourceData(fos, other,progress,total);
         }
     }
 }

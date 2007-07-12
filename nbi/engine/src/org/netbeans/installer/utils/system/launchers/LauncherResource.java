@@ -21,6 +21,12 @@
 package org.netbeans.installer.utils.system.launchers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 
 /**
@@ -48,7 +54,7 @@ public class LauncherResource {
             }
             return 1L;
         }
-
+        
         public String toString() {
             switch(this) {
                 case BUNDLED:
@@ -68,12 +74,21 @@ public class LauncherResource {
                     
             }
         }
-
+        public String getPathString(String path) {
+            if(this.equals(Type.ABSOLUTE)) {
+                return path;
+            } else if (this.equals(Type.BUNDLED)) {
+                return "$L{" + Type.BUNDLED.toString()+ "}/" +
+                        new File(path).getName();
+            } else {
+                return "$L{" + this.toString() + "}/" + path;
+            }
+        }
     };
     
     private Type  type;
     private String path;
-    
+    private boolean resourceBased;
     /**
      * Bundled launcher file
      */
@@ -91,7 +106,12 @@ public class LauncherResource {
         this.type=type;
         this.path=path;
     }
-    
+    /** Bundled launcher resource with NBI resource as a source */
+    public LauncherResource(String resourceURI) {
+        this.type = Type.BUNDLED;
+        this.path = resourceURI;
+        this.resourceBased = true;
+    }
     public Type getPathType() {
         return type;
     }
@@ -101,16 +121,39 @@ public class LauncherResource {
     public String getPath() {
         return path;
     }
-    
-    
-    public String getAbsolutePath() {
-        if(type.equals(Type.ABSOLUTE)) {
-            return path;
-        } else if (type.equals(Type.BUNDLED)) {
-            return "$L{" + Type.BUNDLED.toString()+ "}/" + 
-                    new File(path).getName();
+    public boolean isBasedOnResource() {
+        return resourceBased;
+    }
+    public InputStream getInputStream()  {
+        if(isBundled()) {
+            if(resourceBased) {
+                return ResourceUtils.getResource(path);
+            } else {
+                File f = new File(getPath());
+                if(FileUtils.exists(f)) {
+                    try {
+                        return new FileInputStream(f);
+                    } catch (FileNotFoundException ex) {
+                        LogManager.log(ex);
+                    }
+                }
+                return null;
+            }
         } else {
-            return "$L{" + type.toString() + "}/" + path;
+            return null;
+        }
+        
+    }
+    public String getAbsolutePath() {
+        return type.getPathString(path);
+    }
+    public long getSize() {
+        if(isBundled()) {
+            return isBasedOnResource() ?
+                ResourceUtils.getResourceSize(path) :
+                FileUtils.getSize(new File(path));
+        } else {
+            return 0;
         }
     }
 }
