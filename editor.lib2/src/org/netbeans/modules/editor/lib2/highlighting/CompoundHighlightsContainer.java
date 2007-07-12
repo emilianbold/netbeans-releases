@@ -52,7 +52,6 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     private Document doc;
     private HighlightsContainer[] layers;
     private long version = 0;
-    private Throwable lastUpdater = null;
 
     private final String LOCK = new String("CompoundHighlightsContainer.LOCK"); //NOI18N
     private final LayerListener listener = new LayerListener(this);
@@ -105,7 +104,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
             if (lowest == -1 || highest == -1) {
                 // not sure what is cached -> reset the cache
-                cache = null;
+                discardCache();
             } else {
                 int maxDistance = Math.max(MIN_CACHE_SIZE, highest - lowest);
                 if (endOffset > lowest - maxDistance && endOffset <= highest && startOffset < lowest) {
@@ -121,7 +120,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                     // inside the cached area
                 } else {
                     // completely off the area and too far
-                    cache = null;
+                    discardCache();
                 }
             }
             
@@ -209,7 +208,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     
             this.doc = doc;
             this.layers = layers;
-            cache = null;
+            discardCache();
             increaseVersion();
 
             // Add the listener to the new layers
@@ -242,7 +241,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         synchronized (LOCK) {
             // XXX: Perhaps we could do something more efficient.
-            cache = null;
+            discardCache();
             increaseVersion();
             
             docForEvents = doc;
@@ -288,10 +287,17 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     private void increaseVersion() {
         version++;
         if (LOG.isLoggable(Level.FINE)) {
-            lastUpdater = new Throwable(
-                "This stacktrace shows, who created version " + version + //NOI18N
-                " of this highlighting container"); //NOI18N
+            LOG.fine("CHC@" + Integer.toHexString(System.identityHashCode(this)) + //NOI18N
+                ", OB@" + (cache == null ? "null" : Integer.toHexString(System.identityHashCode(cache))) + //NOI18N
+                ", doc@" + Integer.toHexString(System.identityHashCode(doc)) + " version=" + version); //NOI18N
         }
+    }
+    
+    private void discardCache() {
+        if (cache != null) {
+            cache.discard();
+        }
+        cache = null;
     }
     
     private static final class LayerListener implements HighlightsChangeListener {

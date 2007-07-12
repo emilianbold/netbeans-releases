@@ -99,6 +99,25 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         this.docListener = new DocL(this);
         this.document.addDocumentListener(docListener);
     }
+
+    /**
+     * Discards this <code>OffsetsBag</code>. This method should be called when
+     * a client stops using the bag. After calling this method no other methods
+     * should be called. The bag is effectively empty and it is not possible to
+     * modify it.
+     */
+    public void discard() {
+        synchronized (marks) {
+            if (document != null) {
+                document.removeDocumentListener(docListener);
+                
+                marks.clear();
+                version++;
+                docListener = null;
+                document = null;
+            }
+        }
+    }
     
     /**
      * Adds a highlight to this bag. The highlight is specified by its staring
@@ -208,6 +227,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         int changeEnd = Integer.MIN_VALUE;
 
         synchronized (marks) {
+            assert document != null : "Can't modify discarded bag."; //NOI18N
+            
             int [] clearedArea = clearImpl();
             int [] populatedArea = null;
             
@@ -280,6 +301,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         }
         
         synchronized (marks) {
+            assert document != null : "Can't modify discarded bag."; //NOI18N
+            
             if (marks.isEmpty()) {
                 return;
             }
@@ -377,7 +400,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         }
         
         synchronized (marks) {
-            return new Seq(version, startOffset, endOffset);
+            if (document != null) {
+                return new Seq(version, startOffset, endOffset);
+            } else {
+                return HighlightsSequence.EMPTY;
+            }
         }
     }
 
@@ -388,6 +415,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         int [] clearedArea;
         
         synchronized (marks) {
+            assert document != null : "Can't modify discarded bag."; //NOI18N
+            
             clearedArea = clearImpl();
             if (clearedArea != null) {
                 version++;
@@ -419,6 +448,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         if (startOffset == endOffset) {
             return null;
         } else {
+            assert document != null : "Can't modify discarded bag."; //NOI18N
             assert startOffset < endOffset : "Start offset must be before the end offset. startOffset = " + startOffset + ", endOffset = " + endOffset; //NOI18N
             assert attributes != null : "Highlight attributes must not be null."; //NOI18N
         }
@@ -676,6 +706,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             OffsetsBag bag = get();
             if (bag != null) {
                 synchronized (bag.marks) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("OffsetsBag@" + Integer.toHexString(System.identityHashCode(this)) + //NOI18N
+                            " insertUpdate: doc=" + Integer.toHexString(System.identityHashCode(document)) + //NOI18N
+                            ", offset=" + e.getOffset() + ", insertLength=" + e.getLength() + //NOI18N
+                            ", docLength=" + document.getLength()); //NOI18N
+                    }
                     bag.marks.defaultInsertUpdate(e.getOffset(), e.getLength());
                 }
             } else {
@@ -687,6 +723,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             OffsetsBag bag = get();
             if (bag != null) {
                 synchronized (bag.marks) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("OffsetsBag@" + Integer.toHexString(System.identityHashCode(this)) + //NOI18N
+                            " removeUpdate: doc=" + Integer.toHexString(System.identityHashCode(document)) + //NOI18N
+                            ", offset=" + e.getOffset() + ", removedLength=" + e.getLength() + //NOI18N
+                            ", docLength=" + document.getLength()); //NOI18N
+                    }
                     bag.marks.defaultRemoveUpdate(e.getOffset(), e.getLength());
                 }
             } else {
