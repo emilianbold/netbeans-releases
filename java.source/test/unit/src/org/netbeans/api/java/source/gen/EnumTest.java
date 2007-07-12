@@ -44,6 +44,7 @@ public class EnumTest extends GeneratorTest {
         suite.addTestSuite(EnumTest.class);
 //        suite.addTest(new EnumTest("testConstantRename"));
 //        suite.addTest(new EnumTest("testAddMethodAfterConstants"));
+//        suite.addTest(new EnumTest("testRenameConstantCheckJavadoc"));
         return suite;
     }
     
@@ -192,6 +193,112 @@ public class EnumTest extends GeneratorTest {
             null // default value - not applicable here, used by annotations
         );
         return newMethod;
+    }
+    
+    // #105959
+    public void testRenameConstantCheckJavadoc() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+                "/*\n" +
+                " * RequestType.java\n" +
+                " *\n" +
+                " * Created on January 6, 2007, 7:11 PM\n" +
+                " */\n" +
+                "\n" +
+                "package quantum.protocol.version0;\n" +
+                "\n" +
+                "/**\n" +
+                " * Protocol request types.\n" +
+                " *\n" +
+                " * @author Gili Tzabari\n" +
+                " */\n" +
+                "public enum RequestType\n" +
+                "{\n" +
+                "  /**\n" +
+                "   * Create a new connection.\n" +
+                "   */\n" +
+                "  NEW_SESSION,\n" +
+                "  /**\n" +
+                "   * Return the id of a class.\n" +
+                "   */\n" +
+                "  GET_CLASS_ID,\n" +
+                "  /**\n" +
+                "   * Return the id of an object.\n" +
+                "   */\n" +
+                "  GET_OBJECT_ID,\n" +
+                "  /**\n" +
+                "   * Return the id of a method.\n" +
+                "   */\n" +
+                "  GET_METHOD_ID,\n" +
+                "  /**\n" +
+                "   * Invoke a method.\n" +
+                "   */\n" +
+                "  INVOKE_METHOD,\n" +
+                "  /**\n" +
+                "   * Retrieves a remote resource.\n" +
+                "   */\n" +
+                "  GET_RESOURCE;\n" +
+                "}"
+            );
+        String golden =
+                "/*\n" +
+                " * RequestType.java\n" +
+                " *\n" +
+                " * Created on January 6, 2007, 7:11 PM\n" +
+                " */\n" +
+                "\n" +
+                "package quantum.protocol.version0;\n" +
+                "\n" +
+                "/**\n" +
+                " * Protocol request types.\n" +
+                " *\n" +
+                " * @author Gili Tzabari\n" +
+                " */\n" +
+                "public enum RequestType\n" +
+                "{\n" +
+                "  /**\n" +
+                "   * Create a new connection.\n" +
+                "   */\n" +
+                "  NEW_SESSION_2,\n" +
+                "  /**\n" +
+                "   * Return the id of a class.\n" +
+                "   */\n" +
+                "  GET_CLASS_ID,\n" +
+                "  /**\n" +
+                "   * Return the id of an object.\n" +
+                "   */\n" +
+                "  GET_OBJECT_ID,\n" +
+                "  /**\n" +
+                "   * Return the id of a method.\n" +
+                "   */\n" +
+                "  GET_METHOD_ID,\n" +
+                "  /**\n" +
+                "   * Invoke a method.\n" +
+                "   */\n" +
+                "  INVOKE_METHOD,\n" +
+                "  /**\n" +
+                "   * Retrieves a remote resource.\n" +
+                "   */\n" +
+                "  GET_RESOURCE;\n" +
+                "}";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree vt = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(vt, make.setLabel(vt, "NEW_SESSION_2"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     String getGoldenPckg() {
