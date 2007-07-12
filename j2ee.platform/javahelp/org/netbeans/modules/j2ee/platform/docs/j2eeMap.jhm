@@ -526,11 +526,15 @@
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.EntityClassesPanel" url="ejb/csh/ejb_generate_cmp2.html" />
     
     <!-- Enterprise Resources CSH -->
-
+    <!-- These topics are for Enterprise Resources popup menu in Source Editor -->
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbPanel" url="ejb/csh/call_ejb.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SelectDatabasePanel" url="enterprise/csh/use_db.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.MessageDestinationPanel" url="enterprise/csh/send_jms.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SendEmailPanel" url="enterprise/csh/send_email.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SendJMSMessageAction" url="enterprise/csh/send_jms.html" />
+    <!-- This help id for send JMS message may be obsolete now in 6.0 -->
+    <!-- <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.MessageDestinationPanel" url="enterprise/csh/send_jms.html" /> -->
+
+
     
     <!-- End of EJB help -->
 

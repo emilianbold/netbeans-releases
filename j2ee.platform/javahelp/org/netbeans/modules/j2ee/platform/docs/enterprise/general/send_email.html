@@ -15,7 +15,7 @@
 <ol>
   <li>(Optional) Create a service locator class to handle getting the reference 
     to the database.</li>
-  <li>Open the Java file from which you want to send the JMS message. The file 
+  <li>Open the Java file from which you want to send the e-mail message. The file 
     must be in an EJB module project or a standard web application project. You 
     cannot generate lookup code in a free-form web application project.</li>
   <li>In the Source Editor, right-click the file and choose Enterprise Resources 
@@ -25,25 +25,25 @@
     code or use an existing service locator. You can click the Browse to search 
     for the service locator class name.</li>
   <li>Click OK. 
-    <p> The IDE creates two methods: 
+      <p> The IDE creates two methods: </p>
     <ul>
       <li><tt><b>getSession</b></tt><b>.</b> Looks up the mail resource and creates 
         a mail session.</li>
       <li><tt><b>sendMail</b></tt><b>.</b> Constructs and send the e-mail. </li>
     </ul>
     <p>The IDE also registers the resource reference in your module's general 
-      deployment descriptor. 
+    deployment descriptor.</p> 
   </li>
   <li>In your code, call the <tt>sendMail</tt> method and pass the e-mail adress, 
     subject, and body as parameters.</li>
 </ol>
-<p><b>Notes:</b> 
+<p><b>Notes:</b></p>
 <ul>
   <li>You have to configure the JavaMail resource on the application server yourself. 
-    If your project's target server is the Sun Java System Applciation Server, 
+    If your project's target server is the Sun Java System Applciation Server/GlassFish, 
     you can use the JavaMail Resource template in the Sun Resources category of 
     the New File wizard.</li>
-  <li> If your project's target server is the Sun Java System Applciation Server, 
+  <li> If your project's target server is the Sun Java System Application Server/GlassFish, 
     the IDE automatically configures the resource reference in the application-specific 
     deployment descriptor. If you are deploying to a different application server, 
     you have to configure the server-specific deployment descriptors yourself.</li>

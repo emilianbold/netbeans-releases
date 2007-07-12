@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2006 Sun Microsystems, Inc. 
+ * Copyright © 2007 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
@@ -20,18 +20,16 @@
 <p>EJB or web application modules can be deployed either by themselves or as a part of an enterprise application.
 Likewise, Java application clients can be either regular Java desktop applicaitons, or can be 
 full Java EE application client modules. Adding an EJB module, web module, or application
-client module to an enterpirse application lets you further configure the way those modules interact
-with each other.</p>
+client module to an enterprise application lets you further configure the way those modules interact with each other.</p>
 
 <p>When you add a module to an enterprise application, the IDE does the following:</p>
 <ul>
-  <li>Lists the module under the enterprise application's J2EE Modules node.</li>
+  <li>Lists the module under the enterprise application's Java EE Modules node.</li>
   <li>Adds the module project to the enterprise application project's list of 
     required projects. This means that the module project is cleaned and built 
     whenever you clean and build the enterprise application project.</li>
   <li>Adds a module reference to the enterprise application's general <a href="ent_app_configure.html">deployment 
-    descriptors</a>. If the target server is the Sun Java System Application Server, 
-    the IDE also adds the reference to the server-specific deployment descriptor.</li>
+    descriptors</a>.</li>
   <li>Packages the module's build output (JAR file or WAR file) into the enterprise 
     application's EAR file when building the project.</li>
 </ul>
@@ -39,7 +37,7 @@ with each other.</p>
 <ol>
   <li>Open the module project and the enterprise application project.</li>
   <li>In the Projects window, right-click the enterprise application node for 
-    the J2EE application and choose Add J2EE Module.</li>
+    the Java EE application and choose Add Java EE Module.</li>
   <li>In the dialog box, select the module and click OK.</li>
 </ol>
 <ul class="tip">
@@ -54,8 +52,8 @@ with each other.</p>
       <param name="textFontStyle" value="italic">
       <param name="textFontWeight" value="bold">
       <param name="textColor" value="blue">
-    </object> to an enterprise application. Since the build and deploy process 
-    for <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    </object> to an enterprise application. You cannot add 
+    <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
       <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">
       <param name="viewerStyle" value="javax.help.Popup">
@@ -66,16 +64,14 @@ with each other.</p>
       <param name="textFontStyle" value="italic">
       <param name="textFontWeight" value="bold">
       <param name="textColor" value="blue">
-    </object> is not controlled by the IDE, you cannot add a free-form project 
-    to an enterprise application.</li>
+    </object> to an enterprise application because the build and deploy process is not controlled by the IDE.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="about_ent_apps.html">About Enterprise Applications</a></dd>
     <dd><a href="ent_app_creating.html">Creating an Enterprise Application</a></dd>
     <dd><a href="add_resources_to_ent_app.html">Adding an External Resource to an Enterprise Application</a></dd>
-    <dd><a href="ent_app_configure.html">Editing an Enterprise Application's Deployment 
-      Descriptors</a></dd>
+    <dd><a href="ent_app_configure.html">Editing an Enterprise Application's Deployment Descriptors</a></dd>
 </dl>
  
 

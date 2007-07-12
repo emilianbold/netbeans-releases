@@ -14,41 +14,44 @@
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>Unless your EJB modules and web application modules are designed to be deployed as stand-alone modules, 
   you should always deploy them by deploying the enterprise application 
-  that contains them. If you run the Run Project or Deploy Project commands on an individual 
+  that contains them. If you run the Run or Undeploy and Deploy commands on an individual 
   module that is part of an enterprise application, the IDE only deploys that 
   module itself. Any changes you have made in the other modules in the project are 
   not propagated to the server.</p>
+  
   <p><b>To deploy an enterprise application:</b></p>
 <ul>
   <li>In the Projects window, right-click the enterprise application project and 
     choose one of the following: 
     <ul>
-      <li><b>Run Project.</b> Starts the target application server and domain, 
-        undeploys the enterprise application if it is already deployed, deploys 
-        the enterprise application to the target application server and domain, 
+      <li><b>Run.</b> Starts the target application server and domain, 
+        deploys the enterprise application to the target application server and domain, 
         and displays it in the IDE's default browser.</li>
-      <li><b>Deploy Project.</b> Starts the target application server and domain 
-        and deploys the enterprise application to it.</li>
+      <li><b>Undeploy and Deploy.</b> If already deployed, 
+      stops the application and all application sessions and processes and undeploys the enterprise application. 
+      The enterprise application is then deployed to the target application server and domain.</li>
     </ul>
   </li>
 </ul>
 
-<ul class="note">
-   <li>You cannot start and stop a remote installation of a server from within the IDE.</li>
-</ul>
-<!-- TODO reword to say you can only do this in the sun server
-<p><b>To undeploy an enterprise application:</b></p>
+
+<p><b>To undeploy an enterprise application 
+(Sun Java System Application Server/GlassFish):</b></p>
 <ol>
-  <li>In the Runtime window, expand the Servers node and the Sun Java System Application 
-    Server node. 
+  <li>In the Services window, expand the Servers node and the Sun Java System Application 
+    Server/GlassFish node. 
     <ul class="note">
-      <li>If the Sun Java System Application Server has been stopped or removed, <a href="../../server/server_register.html">set 
-        the target server</a>. </li>
+      <li>The server must be running and <a href="../../server/server_register.html">registered with the IDE</a>. </li>
     </ul>
   </li>
   <li>Expand the Applications node and the Enterprise Applications node.</li>
   <li>Right-click the enterprise applications node and choose Undeploy.</li>
-</ol>-->
+</ol>
+
+<ul class="note">
+   <li>You cannot start and stop a remote installation of a server from within the IDE.</li>
+</ul>
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="about_ent_apps.html">About Enterprise Applications</a></dd>

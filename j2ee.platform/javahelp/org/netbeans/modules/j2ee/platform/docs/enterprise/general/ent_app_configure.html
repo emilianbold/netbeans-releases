@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -16,7 +16,7 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p>An enterprise application includes two types of <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+<p>An enterprise application generally includes two types of <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
 		      <param name="content" value="../../ejb/glossary/deploymentdesc.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">
       <param name="viewerStyle" value="javax.help.Popup">
@@ -28,21 +28,23 @@
       <param name="textFontWeight" value="bold">
       <param name="textColor" value="blue">
     </object>:</p>
-<ul>
-  <li>The general J2EE deployment descriptor that configures deployment settings 
-    on any J2EE-compliant implementation. It describes the enterprise application, 
-    which components it uses, how the components relate to each other, and which 
-    resources they use. The general enterprise application deployment descriptor 
-    is called <tt>application.xml</tt>.</li>
-  <li>The server-specific deployment descriptor that configures deployment settings 
-    for the application server to which you are deploying. For the Sun Java System 
-    Application Server, the IDE provides a graphical deployment descriptor editor 
-    and automatically updates the deployment descriptor as you edit your files. 
-    For all other application servers, you have to write the server-specific deployment 
-    descriptors yourself. </li>
-</ul>
+    <ul>
+        <li>A general J2EE deployment descriptor that configures deployment settings 
+        on any J2EE-compliant implementation. It describes the enterprise application, 
+        which components it uses, how the components relate to each other, and which 
+        resources they use. The general enterprise application deployment descriptor 
+        is called <tt>application.xml</tt>.</li>
+        <li>A server-specific deployment descriptor that configures deployment settings 
+        for the application server to which you are deploying.
+        If you are deploying your application to the Sun Java System Application Server/GlassFish, 
+        the IDE provides a graphical deployment descriptor editor 
+        and automatically updates the deployment descriptor as you edit your files. 
+        For all other application servers, you have to write the server-specific deployment 
+        descriptors yourself. </li>
+    </ul>
+    
 <p>Entries in these files are automatically generated when you 
-<a href="add_modules_to_ent_app.html">add a module to the enterprise Application</a>.
+<a href="add_modules_to_ent_app.html">add a module to the enterprise application</a>.
 Both deployment descriptors are XML files that are stored in
 the enterprise application's META-INF folder. You can edit both
 files in the Source Editor. The <tt>sun-application.xml</tt> file can also
@@ -62,6 +64,14 @@ files in the Source Editor. The <tt>sun-application.xml</tt> file can also
     contextual menu to verify that the document follows the XML schema for web 
     deployment descriptors.</li>
 </ol>
+
+<ul class="note">
+        <li>If you have a Java EE 5 enterprise application that is deployed to a Java EE 5 application server,
+        you can specify most deployment settings using annotations.
+        However, you have the option of using XML descriptors as an alternative to annotations 
+        or to supplement or override some annotations.</li>
+    </ul>
+    
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="about_ent_apps.html">About Enterprise Applications</a></dd>
