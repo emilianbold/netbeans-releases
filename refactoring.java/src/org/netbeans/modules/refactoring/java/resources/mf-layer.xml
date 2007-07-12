@@ -95,17 +95,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-    <folder name="folder">
-        <folder name="any">
-            <folder name="Actions">
-              <file name="RefactoringAll.instance">
-                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                  <attr name="position" intvalue="1000"/>
-                    </file>
-              <file name="RenameAction.instance_hidden"/>
-            </folder>
-        </folder>
-    </folder>
   </folder> 
   <folder name="Services">
       <folder name="org-netbeans-modules-refactoring">

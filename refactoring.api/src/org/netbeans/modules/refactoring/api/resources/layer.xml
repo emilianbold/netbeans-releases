@@ -138,25 +138,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
   <folder name="Loaders">
-    <folder name="text">
-        <folder name="x-java">
-            <folder name="Actions">
-              <file name="RefactoringWhereUsed.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.WhereUsedAction"/>
-                  <attr name="position" intvalue="1900"/>
-                    </file>
-              <file name="RefactoringAll.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RSMDataObjectAction"/>
-                  <attr name="position" intvalue="2000"/>
-                    </file>
-              <file name="RefactoringSeparator-1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                  <attr name="position" intvalue="2100"/>
-                    </file>
-              <file name="RenameAction.instance_hidden"/>
-            </folder>
-        </folder>
-    </folder>
     <folder name="folder">
         <folder name="any">
             <folder name="Actions">
