@@ -718,19 +718,22 @@ public class RubyInstallation {
     }
 
     private String getJRubyBin() {
-        return getJRubyHome() + File.separator + "bin";
+        return getJRubyHome() + File.separator + "bin"; // NOI18N
     }
 
     private String getJRubyLib() {
-        return getJRubyHome() + File.separator + "lib";
+        return getJRubyHome() + File.separator + "lib"; // NOI18N
     }
 
     /** Return the lib directory for the currently chosen Ruby interpreter */
     public String getRubyLib() {
-        File rubyLib = new File(new File(getRuby()).getParentFile().getParent(), "lib"); // NOI18N
+        File rubyHome = getRubyHome();
+        if (rubyHome == null) {
+            return null;
+        }
+        File rubyLib = new File(rubyHome, "lib"); // NOI18N
 
         if (rubyLib.exists() && new File(rubyLib, "ruby").exists()) { // NOI18N
-
             try {
                 return rubyLib.getCanonicalPath();
             } catch (IOException ioe) {
