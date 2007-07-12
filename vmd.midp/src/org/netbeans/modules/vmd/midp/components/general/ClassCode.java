@@ -82,12 +82,15 @@ public class ClassCode {
         protected void generateClassBodyCode(StyledDocument document) {
             if (! ClassSupport.isLazyInitialized(getComponent()))
                 return;
+
             MultiGuardedSection section = MultiGuardedSection.create(document, getComponent().getComponentID() + "-getter");// NOI18N
+            String directAccess = CodeReferencePresenter.generateDirectAccessCode (getComponent ());
+
+            section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Getter: " + directAccess + " \">\n"); // NOI18N
+            section.getWriter ().write ("public " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateAccessCode(getComponent()) + " {\n"); // NOI18N
+            section.getWriter ().write ("if (" + directAccess + " == null) {\n").commit(); // NOI18N
             
-            section.getWriter().write("public " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateAccessCode(getComponent()) + " {\n" // NOI18N
-                    + "if (" + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + " == null) {\n").commit(); // NOI18N
-            
-            section.switchToEditable(getComponent().getComponentID() + "-preInit");
+            section.switchToEditable(getComponent().getComponentID() + "-preInit"); // NOI18N
             section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
             
             section.switchToGuarded();
@@ -99,14 +102,15 @@ public class ClassCode {
                 footer.generateClassInitializationFooter(section);
             section.getWriter().commit();
             
-            section.switchToEditable(getComponent().getComponentID() + "-postInit");
+            section.switchToEditable(getComponent().getComponentID() + "-postInit"); // NOI18N
             section.getWriter().write(" // write post-init user code here\n").commit(); // NOI18N
             
             section.switchToGuarded();
-            section.getWriter().write("}\n"
-                    + "return " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ";\n" // NOI18N
-                    + "}\n").commit(); // NOI18N
-            
+            section.getWriter().write("}\n"); // NOI18N
+            section.getWriter().write("return " + directAccess + ";\n"); // NOI18N
+            section.getWriter().write("}\n"); // NOI18N
+            section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
+
             section.close();
         }
         

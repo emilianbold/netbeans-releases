@@ -96,6 +96,7 @@ public final class DisplayCD extends ComponentDescriptor {
             protected void generateClassBodyCode (StyledDocument document) {
                 MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-switchDisplayable"); // NOI18N
 
+                section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: switchDisplayable \">\n"); // NOI18N
                 section.getWriter ().write ("public void switchDisplayable (Alert alert, Displayable nextDisplayable) {\n").commit (); // NOI18N
 
                 section.switchToEditable (getComponent ().getComponentID () + "-preSwitch"); // NOI18N
@@ -119,7 +120,8 @@ public final class DisplayCD extends ComponentDescriptor {
                 section.getWriter ().write (" // write post-switch user code here\n").commit (); // NOI18N
 
                 section.switchToGuarded ();
-                section.getWriter ().write ("}\n").commit (); // NOI18N
+                section.getWriter ().write ("}\n"); // NOI18N
+                section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
 
                 section.close ();
             }

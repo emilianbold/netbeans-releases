@@ -94,12 +94,14 @@ public final class MobileDeviceStartEventSourceCD extends ComponentDescriptor {
                 protected void generateClassBodyCode (StyledDocument document) {
                     MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-startMIDlet"); // NOI18N
 
+                    section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: startMIDlet \">\n"); // NOI18N
                     section.getWriter ().write ("public void startMIDlet () {\n"); // NOI18N
 
                     CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, getComponent ());
 
                     assert section.isGuarded ();
-                    section.getWriter ().write ("}\n").commit (); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                    section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
 
                     section.close ();
                 }

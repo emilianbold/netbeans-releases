@@ -414,7 +414,9 @@ public class ListCode {
             List<PropertyValue> array = list.readProperty (ListCD.PROP_ELEMENTS).getArray ();
 
             MultiGuardedSection section = MultiGuardedSection.create (document, list.getComponentID () + "-action"); // NOI18N
-            section.getWriter ().write ("public void " + CodeReferencePresenter.generateDirectAccessCode (list) + LIST_ACTION_METHOD_SUFFIX + " () {\n").commit (); // NOI18N
+            String methodName = CodeReferencePresenter.generateDirectAccessCode (list) + LIST_ACTION_METHOD_SUFFIX;
+            section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+            section.getWriter ().write ("public void " + methodName + " () {\n").commit (); // NOI18N
             section.switchToEditable (list.getComponentID () + "-preAction"); // NOI18N
             section.getWriter ().write (" // enter pre-action user code here\n").commit (); // NOI18N
             section.switchToGuarded ();
@@ -461,7 +463,8 @@ public class ListCode {
             section.switchToEditable (list.getComponentID () + "-postAction"); // NOI18N
             section.getWriter ().write (" // enter post-action user code here\n").commit (); // NOI18N
             section.switchToGuarded ();
-            section.getWriter ().write ("}\n").commit (); // NOI18N
+            section.getWriter ().write ("}\n"); // NOI18N
+            section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
             section.close ();
         }
 

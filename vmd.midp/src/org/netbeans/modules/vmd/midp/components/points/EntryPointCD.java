@@ -77,9 +77,12 @@ public class EntryPointCD extends ComponentDescriptor {
                 protected void generateClassBodyCode (StyledDocument document) {
                     DesignComponent component = getComponent ();
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-entry"); // NOI18N
-                    section.getWriter ().write ("public void " + CodeReferencePresenter.generateDirectAccessCode (component) + " () {\n"); // NOI18N
+                    String methodName = CodeReferencePresenter.generateDirectAccessCode (component);
+                    section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+                    section.getWriter ().write ("public void " + methodName + " () {\n"); // NOI18N
                     CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, component.readProperty (PROP_START).getComponent ());
-                    section.getWriter ().write ("}\n").commit (); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                    section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
                     section.close ();
                 }
             },

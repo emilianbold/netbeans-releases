@@ -87,14 +87,18 @@ public final class JavaCodeGenerator {
 
         section = MultiGuardedSection.create (document, VMD_FIELDS_SECTION_ID);
         assert section != null;
+        section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Fields \">\n"); // NOI18N
         for (CodeClassLevelPresenter presenter : classLevel)
             presenter.generateFieldSectionCode (section);
+        section.getWriter ().write ("//</editor-fold>\n"); // NOI18N
         section.getWriter ().commit ();
         section.close ();
 
         section = MultiGuardedSection.create (document, VMD_METHODS_SECTION_ID);
+        section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Methods \">\n"); // NOI18N
         for (CodeClassLevelPresenter presenter : classLevel)
             presenter.generateMethodSectionCode (section);
+        section.getWriter ().write ("//</editor-fold>\n"); // NOI18N
         section.getWriter ().commit ();
         section.close ();
 

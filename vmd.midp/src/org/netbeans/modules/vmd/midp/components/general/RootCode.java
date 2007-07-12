@@ -59,6 +59,7 @@ public final class RootCode {
 
         protected void generateClassBodyCode (StyledDocument document) {
             MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-initialize"); // NOI18N
+            section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: initialize \">\n"); // NOI18N
             section.getWriter ().write ("private void initialize () {\n").commit (); // NOI18N
             section.switchToEditable (getComponent ().getComponentID () + "-preInitialize"); // NOI18N
             section.getWriter ().write (" // write pre-initialize user code here\n").commit (); // NOI18N
@@ -73,7 +74,9 @@ public final class RootCode {
             section.switchToEditable (getComponent ().getComponentID () + "-postInitialize"); // NOI18N
             section.getWriter ().write (" // write post-initialize user code here\n").commit (); // NOI18N
             section.switchToGuarded ();
-            section.getWriter ().write ("}\n").commit (); // NOI18N
+
+            section.getWriter ().write ("}\n"); // NOI18N
+            section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
             section.close ();
         }
     }
@@ -104,7 +107,7 @@ public final class RootCode {
         try {
             return Utilities.topologicalSort (list, map);
         } catch (TopologicalSortException e) {
-            Debug.warning ("Topological sort failed", "UnsortableSets", e.unsortableSets ());
+            Debug.warning ("Topological sort failed", "UnsortableSets", e.unsortableSets ()); // NOI18N
             return (List<DesignComponent>) e.partialSort ();
         }
 

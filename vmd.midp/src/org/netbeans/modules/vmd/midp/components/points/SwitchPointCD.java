@@ -135,7 +135,9 @@ public class SwitchPointCD extends ComponentDescriptor {
                 protected void generateClassBodyCode (StyledDocument document) {
                     DesignComponent component = getComponent ();
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-switch"); // NOI18N
-                    section.getWriter ().write ("public void " + CodeReferencePresenter.generateDirectAccessCode (component) + " () {\n").commit (); // NOI18N
+                    String methodName = CodeReferencePresenter.generateDirectAccessCode (component);
+                    section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+                    section.getWriter ().write ("public void " + methodName + " () {\n").commit (); // NOI18N
                     section.switchToEditable (component.getComponentID () + "-preSwitch"); // NOI18N
                     section.getWriter ().write (" // enter pre-switch user code here\n").commit (); // NOI18N
                     section.switchToGuarded ();
@@ -157,7 +159,8 @@ public class SwitchPointCD extends ComponentDescriptor {
                     section.switchToEditable (component.getComponentID () + "-postSwitch"); // NOI18N
                     section.getWriter ().write (" // enter post-switch user code here\n").commit (); // NOI18N
                     section.switchToGuarded ();
-                    section.getWriter ().write ("}\n").commit (); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                    section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
                     section.close ();
                 }
             }

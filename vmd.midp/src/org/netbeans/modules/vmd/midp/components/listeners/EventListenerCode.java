@@ -196,6 +196,7 @@ class EventListenerCode {
                 return;
 
             MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-commandAction"); // NOI18N
+            section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: commandAction for Displayables \">\n"); // NOI18N
             section.getWriter ().write ("public void commandAction (Command command, Displayable displayable) {\n").commit (); // NOI18N
 
             section.switchToEditable (getComponent ().getComponentID () + "-preCommandAction"); // NOI18N
@@ -208,7 +209,8 @@ class EventListenerCode {
             section.getWriter ().write (" // write post-action user code here\n").commit (); // NOI18N
             section.switchToGuarded ();
 
-            section.getWriter ().write ("}\n").commit (); // NOI18N
+            section.getWriter ().write ("}\n"); // NOI18N
+            section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
             section.close ();
         }
 
@@ -295,6 +297,7 @@ class EventListenerCode {
                 return;
 
             MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-itemCommandAction"); // NOI18N
+            section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: commandAction for Items \">\n"); // NOI18N
             section.getWriter ().write ("public void commandAction (Command command, Item item) {\n").commit (); // NOI18N
 
             section.switchToEditable (getComponent ().getComponentID () + "-preItemCommandAction"); // NOI18N
@@ -307,7 +310,8 @@ class EventListenerCode {
             section.getWriter ().write (" // write post-action user code here\n").commit (); // NOI18N
             section.switchToGuarded ();
 
-            section.getWriter ().write ("}\n").commit (); // NOI18N
+            section.getWriter ().write ("}\n"); // NOI18N
+            section.getWriter ().write ("//</editor-fold>\n").commit (); // NOI18N
             section.close ();
         }
 
