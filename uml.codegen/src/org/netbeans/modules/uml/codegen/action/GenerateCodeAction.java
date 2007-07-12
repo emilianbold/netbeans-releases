@@ -1,3 +1,4 @@
+
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -153,7 +154,8 @@ public class GenerateCodeAction extends CookieAction
         UMLProjectProperties prjProps = retrieveUMLProject().getUMLProjectProperties();
 
         if (prjProps.isCodeGenShowDialog() || 
-            CodeGenUtil.areTemplatesEnabled(prjProps.getCodeGenTemplatesArray()))
+            !CodeGenUtil.areTemplatesEnabled(
+                prjProps.getCodeGenTemplatesArray()))
         {
             // display gen code options dialog
             GenerateCodePanel gcPanel = new GenerateCodePanel(
