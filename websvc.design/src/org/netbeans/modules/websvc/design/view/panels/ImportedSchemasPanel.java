@@ -175,42 +175,44 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(importedSchemasList);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/panels/Bundle"); // NOI18N
-        addBtn.setText(bundle.getString("Add_DotDotDot_label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addBtn, bundle.getString("Add_DotDotDot_label")); // NOI18N
 
-        removeBtn.setText(bundle.getString("Remove_label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, bundle.getString("Remove_label")); // NOI18N
 
-        schemasLabel.setText(bundle.getString("LBL_IMPORTED_SCHEMAS")); // NOI18N
+        schemasLabel.setLabelFor(importedSchemasList);
+        org.openide.awt.Mnemonics.setLocalizedText(schemasLabel, bundle.getString("LBL_IMPORTED_SCHEMAS")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(schemasLabel)
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 271, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(28, 28, 28)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(removeBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))))
-                .addContainerGap(28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {addBtn, removeBtn}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(schemasLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(101, 101, 101)
                         .add(addBtn)
-                        .add(28, 28, 28)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeBtn))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(schemasLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 269, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
