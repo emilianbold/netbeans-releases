@@ -25,20 +25,20 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
@@ -66,7 +66,7 @@ import org.openide.util.TaskListener;
  *
  * @author Tim Boudreau
  */
-public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTEventListener  {
+public class HintsUI implements MouseListener, KeyListener, PropertyChangeListener, AWTEventListener  {
     
     private static HintsUI INSTANCE;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
@@ -90,8 +90,8 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     
     /** Creates a new instance of HintsUI */
     private HintsUI() {
-        Registry.addChangeListener(this);
-        stateChanged(null);
+        EditorRegistry.addPropertyChangeListener(this);
+        propertyChange(null);
     }
     
     public JTextComponent getComponent() {
@@ -608,8 +608,8 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         }
     }
 
-    public void stateChanged(ChangeEvent e) {
-        JTextComponent active = Registry.getMostActiveComponent();
+    public void propertyChange(PropertyChangeEvent e) {
+        JTextComponent active = EditorRegistry.lastFocusedComponent();
         
         if (getComponent() != active) {
             setHints(null, null, false);

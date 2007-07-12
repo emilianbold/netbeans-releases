@@ -35,8 +35,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.editor.Registry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -46,7 +46,7 @@ import org.openide.util.Parameters;
  *
  * @author Jan Lahoda
  */
-class OpenedEditors implements ChangeListener, PropertyChangeListener {
+class OpenedEditors implements PropertyChangeListener {
 
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
@@ -55,7 +55,11 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
     private static OpenedEditors DEFAULT;
 
     private OpenedEditors() {
-        Registry.addChangeListener(this);
+        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                stateChanged();
+            }
+        });
     }
 
     public static synchronized OpenedEditors getDefault() {
@@ -95,7 +99,7 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
         return Collections.unmodifiableCollection(visibleEditors2Files.values());
     }
 
-    public synchronized void stateChanged(ChangeEvent e) {
+    public synchronized void stateChanged() {
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
             visibleEditors2Files.remove(c);
@@ -103,7 +107,7 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
 
         visibleEditors.clear();
 
-        JTextComponent editor = Registry.getMostActiveComponent();
+        JTextComponent editor = EditorRegistry.lastFocusedComponent();
 
         FileObject fo = editor != null ? getFileObject(editor) : null;
         if (editor instanceof JEditorPane && fo != null && JavaSource.forFileObject(fo) != null) {

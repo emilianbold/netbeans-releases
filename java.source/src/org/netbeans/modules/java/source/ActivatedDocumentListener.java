@@ -18,13 +18,14 @@
  */
 package org.netbeans.modules.java.source;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
@@ -35,7 +36,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-public class ActivatedDocumentListener implements ChangeListener {
+public class ActivatedDocumentListener implements PropertyChangeListener {
     
     private static ActivatedDocumentListener INSTANCE;
     
@@ -49,12 +50,18 @@ public class ActivatedDocumentListener implements ChangeListener {
      * Creates a new instance of ActivatedDocumentListener
      */
     private ActivatedDocumentListener() {
-        Registry.addChangeListener(this);
+        EditorRegistry.addPropertyChangeListener(this);
     }
 
-    public synchronized void stateChanged(ChangeEvent e) {
-        Document active = Registry.getMostActiveDocument();
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
+        JTextComponent activeComponent = EditorRegistry.lastFocusedComponent();
         
+        if (activeComponent == null) {
+            return ;
+        }
+        
+        Document active = activeComponent.getDocument();
+                
         if (active == null)
             return ;
         
@@ -119,5 +126,5 @@ public class ActivatedDocumentListener implements ChangeListener {
             return JavaDataLoader.JAVA_MIME_TYPE.equals(fo.getMIMEType());
         }
     }
-    
+
 }

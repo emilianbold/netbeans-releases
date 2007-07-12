@@ -91,12 +91,12 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;
@@ -1616,17 +1616,22 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         
     }
     
-    private static class EditorRegistryListener implements ChangeListener, CaretListener, PropertyChangeListener {
+    private static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
                         
         private Request request;
         private JTextComponent lastEditor;
         
         public EditorRegistryListener () {
-            Registry.addChangeListener(this);
+            EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    editorRegistryChanged();
+                }
+            });
+            editorRegistryChanged();
         }
                 
-        public void stateChanged(ChangeEvent event) {
-            final JTextComponent editor = Registry.getMostActiveComponent();
+        public void editorRegistryChanged() {
+            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
