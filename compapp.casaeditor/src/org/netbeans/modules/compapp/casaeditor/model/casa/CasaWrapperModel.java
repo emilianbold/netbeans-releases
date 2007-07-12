@@ -544,11 +544,10 @@ public class CasaWrapperModel extends CasaModelImpl {
                 bindingType = ltg;
             }
         }
-        if (bindingType == null) {
-//            // missing the binding type, use the default for now...
-//            bindingType = ltg;            
-            String msg = "Failed to populate binding for " + 
-                    (bType == null ? "unknown binding type" : bType.toUpperCase()) + ".";
+        if (bindingType == null) {      
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                    "MSG_FAIL_TO_POPULATE_BINDING", // NOI18N
+                    bType == null ? "null" : bType.toUpperCase()); // NOI18N
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -1140,7 +1139,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        return getUniqueName(existingUnknownNames, "Unknown"); // NOI18N
+        String unknownSESUNamePrefix = 
+                NbBundle.getMessage(this.getClass(), 
+                    "TXT_UNKNOWN_EXTERNAL_SESU_PREFIX"); // NOI18N
+        return getUniqueName(existingUnknownNames, unknownSESUNamePrefix);
+                
     }
     
     public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
@@ -1149,31 +1152,32 @@ public class CasaWrapperModel extends CasaModelImpl {
             int x, int y) {
         
         CasaComponentFactory factory = getFactory();
-        CasaServiceEngineServiceUnit seSUs =
+        CasaServiceEngineServiceUnit seSU =
                 factory.createCasaEngineServiceUnit();
-        seSUs.setX(x);
-        seSUs.setY(y);
-        seSUs.setInternal(internal);
-        seSUs.setUnknown(unknown);
-        seSUs.setDefined(false);
-        seSUs.setName(projName);
-        seSUs.setUnitName(projName);
-        seSUs.setDescription("some description"); // NOI18N
-        seSUs.setComponentName(compName);
-        seSUs.setArtifactsZip(projName + ".jar"); // NOI18N
+        seSU.setX(x);
+        seSU.setY(y);
+        seSU.setInternal(internal);
+        seSU.setUnknown(unknown);
+        seSU.setDefined(false);
+        seSU.setName(projName);
+        seSU.setUnitName(projName);
+        seSU.setDescription(NbBundle.getMessage(this.getClass(), 
+                    "TXT_SERVICE_UNIT_DESCRIPTION")); // NOI18N
+        seSU.setComponentName(compName);
+        seSU.setArtifactsZip(projName + ".jar"); // NOI18N
         
         CasaServiceUnits sus = getRootComponent().getServiceUnits();
         startTransaction();
         try {
-            sus.addServiceEngineServiceUnit(-1, seSUs);
+            sus.addServiceEngineServiceUnit(-1, seSU);
         } finally {
             if (isIntransaction()) {
-                fireServiceEngineServiceUnitAdded(seSUs);
+                fireServiceEngineServiceUnitAdded(seSU);
                 endTransaction();
             }
         }
         
-        return seSUs;
+        return seSU;
     }
     
     private PortType getDummyPortType(final WSDLModel compAppWSDLModel, 
@@ -1434,7 +1438,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (!portTypeExists) {
             portTypeLink = casaFactory.createCasaLink();
             portTypeLink.setHref(portTypeHref);
-            portTypeLink.setType("simple");
+            portTypeLink.setType("simple"); // NOI18N
         }
 
         startTransaction();
@@ -1453,7 +1457,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                 casaBCSU.setUnitName(componentName);
                 casaBCSU.setComponentName(componentName);
                 casaBCSU.setName(componentName); // FIXME
-                casaBCSU.setDescription("some description"); // NOI18N
+                casaBCSU.setDescription(NbBundle.getMessage(this.getClass(), 
+                    "TXT_SERVICE_UNIT_DESCRIPTION")); // NOI18N
                 casaBCSU.setArtifactsZip(componentName + ".jar"); // NOI18N
                 
                 CasaPorts casaPorts = casaFactory.createCasaPorts();
