@@ -47,7 +47,7 @@ import org.openide.util.WeakListeners;
 final class JspSourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List resources;
+    private List <PathResourceImplementation> resources;
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
     private ProjectDirectoryListener projectDirListener;
@@ -66,7 +66,7 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
         projectDir.addFileChangeListener(FileUtil.weakFileChangeListener(projectDirListener, projectDir));
     }
 
-    public List /*<PathResourceImplementation>*/ getResources() {
+    public List <PathResourceImplementation> getResources() {
         synchronized (this) {
             if (this.resources != null) {
                 return resources;
@@ -89,7 +89,7 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
                 if (webDocbaseDirRes != null) {
                     this.resources = Collections.singletonList(webDocbaseDirRes);
                 } else {
-                    this.resources = Collections.EMPTY_LIST;
+                    this.resources = Collections.<PathResourceImplementation>emptyList();
                 }
             }
         }
