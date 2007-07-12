@@ -35,28 +35,15 @@
 
 <!--begin Beans section-->
 
-<mapID target="beans.intro" url="beans/intro.html" />
-<mapID target="beans.creating" url="beans/creating.html" />
 
-<!--also is ID for Add Property dialog (Bean Patterns | Add | Property and Bean Patterns | Add | Indexed Property:-->
-<mapID target="beans.properties" url="beans/properties.html" />
-<!--also is ID for Add Event SEt dialogs (Bean Patterns | Add | Unicast Event set and  | Add | Multicast Event Set:-->
-<mapID target="beans.eventsets" url="beans/eventsets.html" />
 
-<mapID target="beans.deleting" url="beans/deleting.html" />
-<mapID target="beans.beaninfo.generating" url="beans/generating.html" />
-<!--below entry is also CSH for Bean Info Editor:-->
-<mapID target="beans.beaninfo.nodes" url="beans/nodes.html" />
+
 <mapID target="beans.getset" url="beans/getset.html" />
-<mapID target="beans.icon" url="beans/beanicon.html" />
-<!--below entry is also ID for Palette Manager and Add to Palette actions in actions pool, as well as Palette Manager dialog and sub-dialogs:-->
-<mapID target="beans.adding" url="beans/adding.html" />
+
 
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 
 
-<mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
-<mapID target="java.override.tasktopic" url="java/override.html" />
 
 
 
@@ -423,8 +410,6 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewInterface" url="pending.html"/>
 
 
-<!--Override methods dialog box-->
-<mapID target="org.netbeans.modules.java.tools.OverrideAction" url="java/override_implement_methods_db.html"/>
 
 
 
