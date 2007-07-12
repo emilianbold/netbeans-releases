@@ -420,42 +420,18 @@ public class LanguageRegistry implements Iterable<Language> {
      */
     void initializeLanguageForEditor(Language l) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        final FileObject root = fs.findResource("Editors/" + l.getMimeType());
+        final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
 
-        // init old options
-        if (root.getFileObject("Settings.settings") == null) {
+        // Compatibility....
+        FileObject oldSettingsFile = root.getFileObject("Settings.settings"); // NOI18N
+        if (oldSettingsFile != null) {
             try {
-                fs.runAtomicAction(new AtomicAction() {
-                        public void run() {
-                            try {
-                                InputStream is =
-                                    getClass().getClassLoader()
-                                        .getResourceAsStream("org/netbeans/modules/gsf/GsfOptions.settings");
-
-                                try {
-                                    FileObject fo = root.createData("Settings.settings");
-                                    OutputStream os = fo.getOutputStream();
-
-                                    try {
-                                        FileUtil.copy(is, os);
-
-                                        //                                        System.out.println("@@@ Successfully created " + fo.getPath());
-                                    } finally {
-                                        os.close();
-                                    }
-                                } finally {
-                                    is.close();
-                                }
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    });
+                oldSettingsFile.delete();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-
+        
         // init code folding bar
         if ((root.getFileObject(
                     "SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance") == null) &&
