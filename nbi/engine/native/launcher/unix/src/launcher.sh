@@ -261,19 +261,31 @@ setLauncherLocale() {        index=0
         debug "Final Launcher Locale : $LAUNCHER_LOCALE"	
 }
 
+escapeBackslash() {
+	echo "$1" | sed "s/\\\/\\\\\\\/g"
+}
+
 ifLess() {
-	compare=`awk 'END { if ( a < b ) { print 1 } else { print 0 } }' a="$1" b="$2" < /dev/null`
+	arg1=`escapeBackslash "$1"`
+	arg2=`escapeBackslash "$2"`
+	compare=`awk 'END { if ( a < b ) { print 1 } else { print 0 } }' a="$arg1" b="$arg2" < /dev/null`
 	echo $compare
 }
 
 
 ifGreater() {
-	compare=`awk 'END { if ( a > b ) { print 1 } else { print 0 } }' a="$1" b="$2" < /dev/null`
+	arg1=`escapeBackslash "$1"`
+	arg2=`escapeBackslash "$2"`
+
+	compare=`awk 'END { if ( a > b ) { print 1 } else { print 0 } }' a="$arg1" b="$arg2" < /dev/null`
 	echo $compare
 }
 
 ifEquals() {
-	compare=`awk 'END { if ( a == b ) { print 1 } else { print 0 } }' a="$1" b="$2" < /dev/null`
+	arg1=`escapeBackslash "$1"`
+	arg2=`escapeBackslash "$2"`
+
+	compare=`awk 'END { if ( a == b ) { print 1 } else { print 0 } }' a="$arg1" b="$arg2" < /dev/null`
 	echo $compare
 }
 
