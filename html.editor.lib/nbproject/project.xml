@@ -177,6 +177,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+		<friend>org.netbeans.modules.languages.php</friend>
                 <package>org.netbeans.editor.ext.html</package>
                 <package>org.netbeans.editor.ext.html.dtd</package>
                 <package>org.netbeans.editor.ext.html.parser</package>
