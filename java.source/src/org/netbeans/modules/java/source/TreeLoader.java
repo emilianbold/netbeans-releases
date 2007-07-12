@@ -25,18 +25,21 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.usages.SymbolDumper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -67,9 +70,14 @@ public class TreeLoader extends LazyTreeLoader {
                 JavacTaskImpl jti = context.get(JavacTaskImpl.class);
                 if (fo != null && jti != null) {
                     Log.instance(context).nerrors = 0;
-                    jti.analyze(jti.enter(jti.parse(FileObjects.nbFileObject(fo))));
-                    dumpSymFile(clazz);
-                    return true;
+                    JavaFileObject jfo = FileObjects.nbFileObject(fo);
+                    try {
+                        jti.analyze(jti.enter(jti.parse(jfo)));
+                        dumpSymFile(clazz);
+                        return true;                        
+                    } catch (CouplingAbort ca) {
+                        RepositoryUpdater.couplingAbort(ca, jfo);
+                    }
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
