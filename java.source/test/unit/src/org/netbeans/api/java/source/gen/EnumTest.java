@@ -45,9 +45,10 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testConstantRename"));
 //        suite.addTest(new EnumTest("testAddMethodAfterConstants"));
 //        suite.addTest(new EnumTest("testRenameConstantCheckJavadoc"));
+//        suite.addTest(new EnumTest("testRenameWithInit"));
         return suite;
     }
-    
+
     /**
      * Test renames 'A' constant to 'A2' constant in code written below:
      * 
@@ -292,6 +293,76 @@ public class EnumTest extends GeneratorTest {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 VariableTree vt = (VariableTree) clazz.getMembers().get(1);
                 workingCopy.rewrite(vt, make.setLabel(vt, "NEW_SESSION_2"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Test adds the method at the end of the class, demonstrates #104839
+     * 
+     * Original:
+     * 
+     * <code>
+     * public enum Test {
+     *     A(1), B(2), C(3);
+     * 
+     *     public Test(int i) {
+     *     }
+     * }
+     * </code>
+     * 
+     * Expected result:
+     * 
+     * <code>
+     * public enum Test {
+     *     A(1), B2(2), C(3);
+     *    
+     *     public Test(int i) {
+     *     }
+     * }
+     * </code>
+     */
+    public void testRenameWithInit() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A(1), B(2), C(3);\n" +
+            "\n" +
+            "    public Test(int i) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A(1), B2(2), C(3);\n" +
+            "\n" +
+            "    public Test(int i) {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree vt = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(vt, make.setLabel(vt, "B2"));
             }
 
         };
