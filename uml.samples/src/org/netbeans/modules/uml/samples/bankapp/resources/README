@@ -31,17 +31,17 @@ To open the sample UML Modeling project:
    BankAccountDependencies, and withdrawSD. These diagrams are not packaged with this sample, 
    but they can be created quite easily.
 
-   Creating the BankClassDiagram diagram:
+   Creating the BankClassDiagram class diagram:
    Under the Model node, expand the bankpack package node. Select the bankpack package and 
    all the elements in the bankapp package. Right-click the selected nodes and select the
    Create Diagram from Selected elements action. Choose Class Diagram as the diagram type and 
    enter BankClassDiagram as the diagram name and click OK. The diagram will be created and opened.
 
-   Creating the BankAccountDependencies diagram:
+   Creating the BankAccountDependencies class diagram:
    Under the Model node, expand the bankpack package node. Right-click the BankAccount class element
    and select the Generate Dependency Diagram action. The diagram will be created and opened.
 
-   Creating the BankAccountDependencies diagram:
+   Creating the withdrawSD sequence diagram:
    Under the Model node, expand the bankpack package node. Navigate to Checking -> Operations -> withdraw. 
    Right-click withdraw and select Reverse Engineer Operation. Select Sequence Diagram and name the 
    diagram withdrawSD and click OK. The diagram will be created and opened.

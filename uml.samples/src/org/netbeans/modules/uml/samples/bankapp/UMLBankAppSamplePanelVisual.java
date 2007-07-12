@@ -63,6 +63,7 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents()
     {
+
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
@@ -76,12 +77,12 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         createdUmlFolderTextField = new javax.swing.JTextField();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, "Java Project &Name:");
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "LBL_JavaProjectNameLabel")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, "Projects &Location:");
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "LBL_ProjectsLocationLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, "Br&owse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "LBL_BrowseButton")); // NOI18N
         browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener()
         {
@@ -92,13 +93,15 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
         });
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, "Java Project &Folder:");
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "LBL_JavaProjectFolderLable")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(umlProjectNameLabel, "UML Project Name:");
+        umlProjectNameLabel.setLabelFor(umlProjectNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(umlProjectNameLabel, org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "LBL_UMLProjectNameLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(createdUmlFolderLabel, "UML Project Folder:");
+        createdUmlFolderLabel.setLabelFor(createdUmlFolderTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(createdUmlFolderLabel, org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "LBL_UMLProjectFolderLabel")); // NOI18N
 
         createdUmlFolderTextField.setEditable(false);
 
@@ -118,16 +121,16 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                            .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
+                            .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                            .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton)
                         .addContainerGap())
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(createdUmlFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                            .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                            .add(umlProjectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
+                            .add(createdUmlFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                            .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                            .add(umlProjectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
                         .add(95, 95, 95))))
         );
         layout.setVerticalGroup(
@@ -154,8 +157,19 @@ public class UMLBankAppSamplePanelVisual extends JPanel implements DocumentListe
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createdUmlFolderLabel)
                     .add(createdUmlFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(163, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        projectNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSN_JavaProjectName")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSD_JavaProjectName")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSN_ProjectsLocation")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSD_ProjectsLocation")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSN_JavaProjectFolder")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSD_JavaProjectFolder")); // NOI18N
+        umlProjectNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSN_UMLProjectName")); // NOI18N
+        umlProjectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSD_UMLProjectName")); // NOI18N
+        createdUmlFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSN_UMLProjectFolder")); // NOI18N
+        createdUmlFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLBankAppSamplePanelVisual.class, "ACSD_UMLProjectFolder")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
