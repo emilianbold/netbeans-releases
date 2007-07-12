@@ -303,14 +303,12 @@ class CopySupport {
             boolean targetNewLayout = targetComponent instanceof RADVisualContainer
                     && ((RADVisualContainer)targetComponent).getLayoutSupport() == null;
             RADVisualContainer sourceContainer = null;
-            Object layoutUndoMark = null;
-            UndoableEdit layoutEdit = null;
             Map<String, String> sourceToTargetId = null; // for new-to-new layout copy
             Map<String, Rectangle> idToBounds = null; // for old-to-new layout copy
 
             if (targetNewLayout) {
-                // do all source components come from a visual container from which
-                // we can copy the layout to the new layout?
+                // do all source components come from one visual container from
+                // which we can copy the layout to the new layout?
                 for (RADComponent sourceComp : sourceComponents) {
                     if (sourceComp instanceof RADVisualComponent) {
                         RADVisualComponent sourceCompVisual = (RADVisualComponent) sourceComp;
@@ -333,7 +331,30 @@ class CopySupport {
                         || !isConvertibleLayout(sourceContainer))) {
                     sourceContainer = null; // old layout not suitable for conversion
                 }
-                // take care about undo in target layout model
+            }
+
+            // do we need to care about undo in layout model?
+            Object layoutUndoMark = null;
+            UndoableEdit layoutEdit = null;
+            boolean layoutModelAffected = false;
+            if (targetNewLayout) {
+                layoutModelAffected = true;
+            } else if (move) {
+                for (RADComponent sourceComp : sourceComponents) {
+                    if (sourceComp instanceof RADVisualComponent) {
+                        RADVisualComponent sourceCompVisual = (RADVisualComponent) sourceComp;
+                        if (!sourceCompVisual.isMenuComponent()) {
+                            RADVisualContainer parent = sourceCompVisual.getParentContainer();
+                            if (parent != null && parent.getLayoutSupport() == null) {
+                                // this source component comes from new layout
+                                layoutModelAffected = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (layoutModelAffected) {
                 layoutUndoMark = targetLayout.getChangeMark();
                 layoutEdit = targetLayout.getUndoableEdit();
             }
