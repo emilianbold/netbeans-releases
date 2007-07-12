@@ -976,7 +976,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	print(cs.spaceWithinMethodCallParens() ? " )" : ")");
 	if (tree.def != null) {
 	    Name enclClassNamePrev = enclClassName;
-	    enclClassName = null;
+	    enclClassName = tree.def.name;
 	    printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace());
 	    enclClassName = enclClassNamePrev;
 	}
