@@ -202,14 +202,11 @@ public class BPELCatalogModel implements CatalogModel {
             factory = (BpelModelFactory)//Lookups.metaInfServices(getClass().getClassLoader()).lookup(BpelModelFactory.class);            
                 Lookup.getDefault().lookup(BpelModelFactory.class);
         }catch (Exception cnfe) {
-//         System.out.println(cnfe.getMessage());
             throw new RuntimeException(cnfe);
         }
         return factory;
         
     }
-    
-    
     
     /**
      * Implementation of CatalogModel
@@ -230,9 +227,6 @@ public class BPELCatalogModel implements CatalogModel {
             
          return new ModelSource(lookup, readOnly);
      }
-
-    
-    
     
     /**
      * Creates BPEL Model from BPEL URI
@@ -246,7 +240,6 @@ public class BPELCatalogModel implements CatalogModel {
         model.sync();
         return model;
     }
-    
     
     protected URI resolveUsingApacheCatalog(List<File> catalogFileList, String locationURI) throws CatalogModelException, IOException  {
         CatalogResolver catalogResolver;
@@ -305,54 +298,6 @@ public class BPELCatalogModel implements CatalogModel {
         }
         return null;
     }    
-    /*
-    private static String normalizeURI(String uriref) {
-    StringBuilder newRef = new StringBuilder();
-    byte[] bytes;
-    
-    if (uriref == null) {
-        return null;
-    }
-    
-    try {
-        bytes = uriref.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException uee) {
-        // this can't happen
-        return uriref;
-    }
-    
-    for (int count = 0; count < bytes.length; count++) {
-        int ch = bytes[count] & 0xFF;
-        
-        if ((ch <= 0x20)    // ctrl
-        || (ch > 0x7F)  // high ascii
-        || (ch == 0x22) // "
-        || (ch == 0x3C) // <
-        || (ch == 0x3E) // >
-        || (ch == 0x5C) // \
-        || (ch == 0x5E) // ^
-        || (ch == 0x60) // `
-        || (ch == 0x7B) // {
-        || (ch == 0x7C) // |
-        || (ch == 0x7D) // }
-        || (ch == 0x7F)) {
-        newRef.append(encodedByte(ch));
-        } else {
-        newRef.append((char) bytes[count]);
-        }
-    }
-    
-    return newRef.toString();
-    }    
-    
-    public static String encodedByte(int b) {
-    String hex = Integer.toHexString(b).toUpperCase();
-    if (hex.length() < 2) {
-        return "%0" + hex;
-    } else {
-        return "%" + hex;
-    }
-    }   */ 
     
      public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
          //TODO FIXME: this is to fix a build break. Please implement this method.

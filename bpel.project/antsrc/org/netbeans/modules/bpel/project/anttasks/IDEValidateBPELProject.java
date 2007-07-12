@@ -292,19 +292,22 @@ public class IDEValidateBPELProject extends Task {
         }
         Validation validation = new Validation();
         validation.validate((org.netbeans.modules.xml.xam.Model)model,  ValidationType.COMPLETE);
-        Collection col  =validation.getValidationResult();
+        Collection col = validation.getValidationResult();
         boolean isError = false;
+        StringBuffer buffer = new StringBuffer();
 
         for (Iterator itr = col.iterator(); itr.hasNext();) {
           ResultItem resultItem = (ResultItem) itr.next();
           logValidationErrors(bpel, resultItem);
 
           if (resultItem.getType() == Validator.ResultType.ERROR) {
+            String description = resultItem.getDescription();
+            buffer.append("\nError: " + description);
             isError = true;
           }
         }
         if (isError) {
-          throw new BuildException("Found validation errors.");
+          throw new BuildException("\nFound validation errors:\n" + buffer);
         }
     }
 
@@ -370,15 +373,15 @@ public class IDEValidateBPELProject extends Task {
         validateBPEL(bpelFile);
       }
       catch (Throwable ex) {
-        logger.log(Level.SEVERE, "Validation has errors on "+ bpelFile.getAbsolutePath());
+//        logger.log(Level.SEVERE, "Validation has errors on "+ bpelFile.getAbsolutePath());
 
         if (ex.getMessage() != null) {
-          logger.severe( ex.getMessage());
+//          logger.severe( ex.getMessage());
         }
         if ( !mAllowBuildWithError) {
           StringWriter writer = new StringWriter();
           PrintWriter pWriter = new PrintWriter(writer);
-          ex.printStackTrace(pWriter);
+//          ex.printStackTrace(pWriter);
           throw new BuildException(ex);
         }
       }

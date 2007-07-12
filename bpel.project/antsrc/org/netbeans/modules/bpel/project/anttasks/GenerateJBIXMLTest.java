@@ -58,9 +58,7 @@ public class GenerateJBIXMLTest {
         }catch (Exception ex) {
             throw new BuildException("Creation of Bpel model failed!", ex);
         }
-//        System.out.println("Gettng partner links!");
         PartnerLink[] pLinks = bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks();
-//        System.out.println("Got partner links!");
         for (int index =0; index < pLinks.length; index++) {
             String partnerLinkName = pLinks[index].getName();
             WSDLReference partnerLinkTypeWSDLRef = pLinks[index].getPartnerLinkType();
@@ -76,7 +74,6 @@ public class GenerateJBIXMLTest {
                     if (nmrRole1 != null ) {
                         QName portTypeQName1 = nmrRole1.getQName();
                         if (portTypeQName1 != null) {
-//                            System.out.println("Port Type1 = "+portTypeQName1.getLocalPart()+ " Prefix = "+portTypeQName1.getPrefix()+ "Port Type1 = "+portTypeQName1.getNamespaceURI());
                         }
                     }
                 }
@@ -89,23 +86,17 @@ public class GenerateJBIXMLTest {
                 if (nmrRole2 != null ) {
                     QName portTypeQName2 = nmrRole2.getQName();
                     if (portTypeQName2 != null) {
-//                        System.out.println("Port Type2 = "+portTypeQName2.getLocalPart()+ " Prefix = "+portTypeQName2.getPrefix()+ "Port Type = "+portTypeQName2.getNamespaceURI());
                     }
                 }
             }                     
             }
-//             System.out.println("Partner Link Name = "+partnerLinkQNameLocalPart+ " Prefix = "+partnerLinkQNameNSPrefix + "partnerLinkQNameLocalPart = "+partnerLinkQNameLocalPart +" partnerLinkNameSpaceURI = "+partnerLinkNameSpaceURI);
             WSDLReference partnerMyRoleWSDLRef = pLinks[index].getMyRole();
-//            System.out.println(" My ROLE = "+partnerMyRoleWSDLRef.getQName().getLocalPart()+" Prefix = "+partnerMyRoleWSDLRef.getQName().getPrefix()+" Namepsace URI "+partnerMyRoleWSDLRef.getQName().getNamespaceURI());
             partnerMyRoleWSDLRef = pLinks[index].getPartnerRole();
             if (partnerMyRoleWSDLRef != null) {
                 QName qName = partnerMyRoleWSDLRef.getQName();
                 if (qName != null) {
-//                System.out.println(" Partner ROLE = "+partnerMyRoleWSDLRef.getQName().getLocalPart()+" Prefix = "+partnerMyRoleWSDLRef.getQName().getPrefix()+" Namepsace URI "+partnerMyRoleWSDLRef.getQName().getNamespaceURI());
                 }
             }
-
         }
-
     }
 }

@@ -140,9 +140,7 @@ public class ValidateBPELProjectTask extends Task {
                 mAllowBuildWithError = true;
             }
         }
-        
     }  
-
     
     /**
      * Invoke validate BPEL Model
@@ -189,7 +187,7 @@ public class ValidateBPELProjectTask extends Task {
             driver.invoke(validateBPELObj,
                       param);                        
             
-             driver = antTaskClass.getMethod("execute",
+            driver = antTaskClass.getMethod("execute",
                             null);
             driver.invoke(validateBPELObj, null);                    
             
@@ -197,8 +195,9 @@ public class ValidateBPELProjectTask extends Task {
                     null);
             
             Boolean isErrors = (Boolean) driver.invoke(validateBPELObj, null);
+
             if(isErrors.booleanValue()) {
-            	throw new BuildException("Found validation errors.");
+                throw new BuildException("Found validation errors.");
             }
             
         }catch (Throwable ex) {

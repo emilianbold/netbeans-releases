@@ -42,7 +42,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import javax.xml.namespace.QName;
 
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
@@ -433,7 +432,7 @@ public class JBIGenerator {
         Provider provider = null;
         Consumer consumer = null;
         for (int index =0; index < pLinks.length; index++) {
-        	PartnerLink pLink = pLinks[index];
+            PartnerLink pLink = pLinks[index];
             String partnerLinkName = pLink.getName();
             WSDLReference partnerLinkTypeWSDLRef = pLinks[index].getPartnerLinkType();
             
@@ -471,8 +470,6 @@ public class JBIGenerator {
                         }
                     }
                 }
-                //  System.out.println(" My ROLE = "+partnerMyRoleWSDLRef.getQName().getLocalPart()+" Prefix = "+partnerMyRoleWSDLRef.getQName().getPrefix()+" Namepsace URI "+partnerMyRoleWSDLRef.getQName().getNamespaceURI());
-                
                 if (portName == null) {
                     logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+partnerLinkName+"\"");
                     throw new RuntimeException("Problem encountered while processing portType !");
@@ -501,8 +498,6 @@ public class JBIGenerator {
                         }
                     }
                 }
-                //  System.out.println(" My ROLE = "+partnerMyRoleWSDLRef.getQName().getLocalPart()+" Prefix = "+partnerMyRoleWSDLRef.getQName().getPrefix()+" Namepsace URI "+partnerMyRoleWSDLRef.getQName().getNamespaceURI());
-                
                 if (portName == null) {
                     logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+partnerLinkName+"\"");
                     throw new RuntimeException("Problem encountered while processing portType !");

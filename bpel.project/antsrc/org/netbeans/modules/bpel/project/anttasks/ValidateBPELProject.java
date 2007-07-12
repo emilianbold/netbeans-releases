@@ -33,12 +33,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import java.net.URI;
-
 import java.util.Collection;
-
 import java.util.HashMap;
 import java.util.Iterator;
-
 import java.util.Map;
 
 import org.netbeans.modules.xml.xam.Component;
@@ -431,8 +428,6 @@ public class ValidateBPELProject extends Task {
             columnNumStr.append(columnNumber);
             columnNumStr.append(" ");
             }
-
-            
             msgType = msgType + ": "; 
 
             StringBuffer msg = new StringBuffer(100);
@@ -444,9 +439,6 @@ public class ValidateBPELProject extends Task {
             msg.append(columnNumStr);
             msg.append(msgType);
             msg.append(errorDescription);
-
-
-//            System.out.println(msg.toString());            
         }
         
         private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
@@ -454,9 +446,7 @@ public class ValidateBPELProject extends Task {
                     validateBPEL(bpelFile);
   
                 } catch (Throwable ex) {
-//                        System.out.println("Validation has errors on "+bpelFile.getAbsolutePath());
                         logger.log(Level.SEVERE, "Validation has errors on "+bpelFile.getAbsolutePath() );
-//                        System.out.println("Error Message - "+ ex.getMessage());
                         
                         if ( ex.getMessage() != null) {
                             logger.severe( ex.getMessage());
@@ -467,9 +457,6 @@ public class ValidateBPELProject extends Task {
                             ex.printStackTrace(pWriter);
                             throw new BuildException(ex);
                         }
-                       // logValidationErrors(ToDoEvent.Severity.ERROR, bpelFile, "Error compiling bpel process \n"+ writer.toString(), "please check if bpel file is valid", 1, 1 );
                 }
-                
         }
-        
 }
