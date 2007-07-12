@@ -44,9 +44,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -59,6 +57,7 @@ import org.netbeans.modules.j2ee.ejbcore.action.CallEjbGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 
 public class Utils {
@@ -259,8 +258,7 @@ public class Utils {
             boolean remote, boolean throwExceptions, String ejbRefName, Project nodeProject) throws IOException {
         // find the project containing the source file
         Project enterpriseProject = FileOwnerQuery.getOwner(referencingFileObject);
-        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+        EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
 
         boolean enterpriseProjectIsJavaEE5 = isJavaEE5orHigher(enterpriseProject);
         boolean nodeProjectIsJavaEE5 = isJavaEE5orHigher(nodeProject);
@@ -301,15 +299,9 @@ public class Utils {
         
         boolean differentProject = target != null && !enterpriseProject.equals(target.getProject());
         if (differentProject) {
-            ProjectClassPathModifier cpModifier = enterpriseProject.getLookup().lookup(ProjectClassPathModifier.class);
-            if (cpModifier != null) {
-                cpModifier.addAntArtifacts(
-                        new AntArtifact[] {target},
-                        target.getArtifactLocations(),
-                        enterpriseProject.getProjectDirectory(),
-                        ClassPath.COMPILE
-                        );
-            }
+            ProjectClassPathExtender pcpe = enterpriseProject.getLookup().lookup(ProjectClassPathExtender.class);
+            assert pcpe != null;
+            pcpe.addAntArtifact(target, target.getArtifactLocations()[0]);
         }
     }
     

@@ -68,7 +68,8 @@ public class InjectionTargetQuery {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = new boolean[1];
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 result[0] = isInjectionTarget(controller, typeElement);
             }
@@ -102,7 +103,8 @@ public class InjectionTargetQuery {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = new boolean[1];
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 result[0] = isStaticReferenceRequired(controller, typeElement);
             }
