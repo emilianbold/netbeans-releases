@@ -469,7 +469,7 @@ Microsystems, Inc. All Rights Reserved.
 
             <file name="org-netbeans-modules-project-ui-NewFile.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="100"/>
             </file>
 
             <file name="org-netbeans-modules-project-ui-NewProject.shadow">
@@ -479,7 +479,7 @@ Microsystems, Inc. All Rights Reserved.
 
             <file name="org-netbeans-modules-project-ui-OpenProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="300"/>
             </file>
             
              

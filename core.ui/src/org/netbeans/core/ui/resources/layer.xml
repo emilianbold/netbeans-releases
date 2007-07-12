@@ -289,7 +289,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="File">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-openide-actions-SaveAllAction.instance">
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="400"/>
             </file>
         </folder>
         <folder name="Memory">
