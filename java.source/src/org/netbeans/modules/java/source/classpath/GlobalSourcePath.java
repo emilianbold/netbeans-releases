@@ -50,6 +50,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -60,6 +61,8 @@ import org.openide.util.WeakListeners;
 public class GlobalSourcePath {
     
     public static final String PROP_INCLUDES = ClassPath.PROP_INCLUDES;
+
+    private static final RequestProcessor firer = new RequestProcessor ();
     
     private static GlobalSourcePath instance;
     
@@ -157,9 +160,14 @@ public class GlobalSourcePath {
             this.unknownResources = null;
             this.timeStamp++;
         }
-        this.sourcePath.firePropertyChange ();
-        this.binaryPath.firePropertyChange ();
-        this.unknownSourcePath.firePropertyChange();
+
+        firer.post(new Runnable () {
+            public void run() {
+                sourcePath.firePropertyChange ();
+                binaryPath.firePropertyChange ();
+                unknownSourcePath.firePropertyChange();
+            }
+        });        
     }
     
     private static Result createResources (final Request r) {
