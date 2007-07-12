@@ -346,7 +346,9 @@ public class MenuEditLayer extends JPanel {
     
     private void unconfigureFormListeners() {
         if(menuBarFormListener != null) {
-            formDesigner.getFormModel().removeFormModelListener(menuBarFormListener);
+            if(formDesigner != null && formDesigner.getFormModel() != null) {
+                formDesigner.getFormModel().removeFormModelListener(menuBarFormListener);
+            }
         }
         menuBarFormListener = null;
     }    
