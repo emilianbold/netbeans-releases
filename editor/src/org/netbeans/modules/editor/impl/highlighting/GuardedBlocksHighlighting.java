@@ -19,7 +19,8 @@
 
 package org.netbeans.modules.editor.impl.highlighting;
 
-import java.util.ConcurrentModificationException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,36 +37,63 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer {
+public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer implements PropertyChangeListener {
     
     private static final Logger LOG = Logger.getLogger(GuardedBlocksHighlighting.class.getName());
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.oldlibbridge.GuardedBlocksHighlighting"; //NOI18N
     
     private final Document document;
+    private final MarkBlockChain guardedBlocksChain;
     private final MimePath mimePath;
 
-    private long version = 0;
     private AttributeSet attribs = null;
     
     /** Creates a new instance of NonLexerSytaxHighlighting */
     public GuardedBlocksHighlighting(Document document, String mimeType) {
         this.document = document;
+        if (document instanceof GuardedDocument) {
+            this.guardedBlocksChain = ((GuardedDocument) document).getGuardedBlockChain();
+            this.guardedBlocksChain.addPropertyChangeListener(WeakListeners.propertyChange(this, this.guardedBlocksChain));
+        } else {
+            this.guardedBlocksChain = null;
+        }
         this.mimePath = MimePath.parse(mimeType);
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
-            if (document instanceof GuardedDocument) {
-                MarkBlockChain guardedBlocks = ((GuardedDocument) document).getGuardedBlockChain();
-                return new HSImpl(version, guardedBlocks, startOffset, endOffset);
+            if (guardedBlocksChain != null) {
+                return new HSImpl(guardedBlocksChain.getChain(), startOffset, endOffset);
             } else {
                 return HighlightsSequence.EMPTY;
             }
+        }
+    }
+    
+    // ----------------------------------------------------------------------
+    //  PropertyChangeListener implementation
+    // ----------------------------------------------------------------------
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == null || evt.getPropertyName().equals(MarkBlockChain.PROP_BLOCKS_CHANGED)) {
+            int start = evt.getOldValue() == null ? -1 : ((Integer) evt.getOldValue()).intValue();
+            int end = evt.getNewValue() == null ? -1 : ((Integer) evt.getNewValue()).intValue();
+            
+            if (start < 0 || start >= document.getLength()) {
+                start = 0;
+            }
+            
+            if (end <= start || end > document.getLength()) {
+                end = Integer.MAX_VALUE;
+            }
+            
+            fireHighlightsChange(start, end);
         }
     }
     
@@ -75,27 +103,22 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
 
     private final class HSImpl implements HighlightsSequence {
         
-        private final long version;
-        private final MarkBlockChain guardedBlocks;
         private final int startOffset;
         private final int endOffset;
 
         private boolean init = false;
         private MarkBlock block;
         
-        public HSImpl(long version, MarkBlockChain guardedBlocks, int startOffset, int endOffset) {
-            this.version = version;
-            this.guardedBlocks = guardedBlocks;
+        public HSImpl(MarkBlock block, int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
+            this.block = block;
         }
         
         public boolean moveNext() {
             if (!init) {
                 init = true;
 
-                block = guardedBlocks.getChain();
-                
                 while(null != block) {
                     if (block.getEndOffset() > startOffset) {
                         break;
@@ -138,8 +161,6 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
 
         public int getStartOffset() {
             synchronized (GuardedBlocksHighlighting.this) {
-                checkVersion();
-                
                 if (!init) {
                     throw new NoSuchElementException("Call moveNext() first."); //NOI18N
                 } else if (block == null) {
@@ -152,8 +173,6 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
 
         public int getEndOffset() {
             synchronized (GuardedBlocksHighlighting.this) {
-                checkVersion();
-                
                 if (!init) {
                     throw new NoSuchElementException("Call moveNext() first."); //NOI18N
                 } else if (block == null) {
@@ -166,8 +185,6 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
 
         public AttributeSet getAttributes() {
             synchronized (GuardedBlocksHighlighting.this) {
-                checkVersion();
-                
                 if (!init) {
                     throw new NoSuchElementException("Call moveNext() first."); //NOI18N
                 } else if (block == null) {
@@ -193,12 +210,6 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
                 return attribs;
             }
         }
-        
-        private void checkVersion() {
-            if (this.version != GuardedBlocksHighlighting.this.version) {
-                throw new ConcurrentModificationException();
-            }
-        }
     } // End of HSImpl class
-    
+
 }
