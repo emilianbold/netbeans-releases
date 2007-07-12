@@ -1289,7 +1289,10 @@ public class CasualDiff {
             copyTo(bounds[0], oldT.getStartPosition());
             return diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
         } else {
-            return oldT.endPos();
+            tokenSequence.move(oldT.endPos());
+            PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            tokenSequence.moveNext();
+            return tokenSequence.offset();
         }
     }
     
@@ -1697,6 +1700,7 @@ public class CasualDiff {
     private List<JCTree> filterHidden(List<JCTree> list) {
         List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
+        boolean enumConstants = false;
         for (JCTree tree : list) {
             if (Kind.METHOD == tree.getKind()) {
                 // filter syntetic constructors, i.e. constructors which are in
@@ -1705,9 +1709,18 @@ public class CasualDiff {
                     continue;
             } else if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
-                if (isCommaSeparated(var)) {
+                if ((var.mods.flags & Flags.ENUM) != 0) {
+                    // collect enum constants, make a field group from them
+                    // and set the flag.
                     fieldGroup.add(var);
+                    enumConstants = true;
                     continue;
+                } else {
+                    // collect field group, make a field group
+                    if (isCommaSeparated(var)) {
+                        fieldGroup.add(var);
+                        continue;
+                    }
                 }
             } else if (Kind.BLOCK == tree.getKind()) {
                 JCBlock block = (JCBlock) tree;
@@ -1716,13 +1729,14 @@ public class CasualDiff {
                     continue;
             }
             if (!fieldGroup.isEmpty()) {
-                result.add(new FieldGroupTree(fieldGroup));
+                result.add(new FieldGroupTree(fieldGroup, enumConstants));
                 fieldGroup = new ArrayList<JCVariableDecl>();
+                enumConstants = false;
             }
             result.add(tree);
         }
         if (!fieldGroup.isEmpty())
-            result.add(new FieldGroupTree(fieldGroup));
+            result.add(new FieldGroupTree(fieldGroup, enumConstants));
         return result;
     }
     

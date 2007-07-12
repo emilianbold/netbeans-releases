@@ -26,39 +26,45 @@ import java.util.List;
 
 /**
  * Fake tree. Represents fields separated by comma.
- * 
+ *
  * @author pflaska
  */
 public class FieldGroupTree extends JCTree implements Tree {
-    
-    List<JCVariableDecl> vars;
 
-    public FieldGroupTree(List<JCVariableDecl> vars) {
+    private List<JCVariableDecl> vars;
+    private boolean enumeration;
+
+    public FieldGroupTree(List<JCVariableDecl> vars, boolean enumeration) {
         super(0);
         this.vars = vars;
         pos = TreeInfo.getStartPos(vars.get(0));
+        this.enumeration = enumeration;
     }
 
     public Kind getKind() {
         return Kind.OTHER;
     }
-    
+
     public List<JCVariableDecl> getVariables() {
         return vars;
     }
-    
+
+    public boolean isEnum() {
+        return enumeration;
+    }
+
     public int endPos() {
         return TreeInfo.endPos(vars.get(vars.size()-1));
     }
-    
+
     public <R, D> R accept(TreeVisitor<R, D> arg0, D arg1) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     public void accept(Visitor arg0) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     @Override
     public boolean equals(Object arg0) {
         if (arg0 instanceof FieldGroupTree) {
@@ -66,10 +72,9 @@ public class FieldGroupTree extends JCTree implements Tree {
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         return vars.hashCode();
     }
-    
 }

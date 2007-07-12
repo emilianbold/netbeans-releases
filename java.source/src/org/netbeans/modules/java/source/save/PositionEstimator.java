@@ -22,7 +22,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -818,7 +820,13 @@ public abstract class PositionEstimator {
                 
                 // teribolak
                 if (item instanceof FieldGroupTree) { //
-                    treeEnd = ((FieldGroupTree) item).endPos();
+                    FieldGroupTree fgt = ((FieldGroupTree) item);
+                    List<JCVariableDecl> vars = fgt.getVariables();
+                    treeEnd = (int) positions.getEndPosition(compilationUnit, vars.get(vars.size()-1));
+                    seq.move(treeEnd);
+                    moveToSrcRelevant(seq, Direction.FORWARD);
+                    seq.moveNext();
+                    treeEnd = seq.offset();
                 }
                 
                 seq.move(treeStart);
