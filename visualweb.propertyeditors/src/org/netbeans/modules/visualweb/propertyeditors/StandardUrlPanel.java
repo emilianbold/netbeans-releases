@@ -128,7 +128,8 @@ public class StandardUrlPanel extends JPanel implements PropertyChangeListener, 
             linkButton.setMnemonic(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "LINK_BUTTON_MNEMONIC").charAt(0));
             valueTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "VALUE_TEXTFIELD_ACCESS_NAME"));
             valueTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "VALUE_TEXTFIELD_ACCESS_DESC"));
-            tabs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "TAB_PANE_ACCESS_DESC"));
+            tabs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "TAB_PANE_ACCESS_NAME"));
+            tabs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "TAB_PANE_ACCESS_DESC"));            
         } catch (Exception e) {
             e.printStackTrace();
         }
