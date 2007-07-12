@@ -381,7 +381,9 @@ public class BindingTargetPanel extends JPanel {
             Object o = tp.getLastPathComponent();
             if (o instanceof BindingTargetNode) {
                 BindingTargetNode btn = (BindingTargetNode)o;
-                bindingCallback.setNewExpressionText(calcExpression(btn));
+                if (!(btn instanceof Null)) {
+                    bindingCallback.setNewExpressionText(calcExpression(btn));
+                }
                 customPanel = btn.getCustomDisplayPanel(updateCallback);
                 if (customPanel != null) {
                     this.add(customPanel, customPanelConstraints);
