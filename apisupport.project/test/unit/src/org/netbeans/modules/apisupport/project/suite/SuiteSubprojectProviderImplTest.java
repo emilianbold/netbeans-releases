@@ -37,7 +37,7 @@ public class SuiteSubprojectProviderImplTest extends TestBase {
     
     public void testGetSubprojects() throws Exception {
         SuiteProject s = generateSuite("suite");
-        SubprojectProvider spp = (SubprojectProvider) s.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = s.getLookup().lookup(SubprojectProvider.class);
         assertEquals("suite doesn't have any submodules", 0, spp.getSubprojects().size());
         NbModuleProject module1 = generateSuiteComponent(s, "module1");
         assertEquals("suite has one submodule", 1, spp.getSubprojects().size());
@@ -50,7 +50,7 @@ public class SuiteSubprojectProviderImplTest extends TestBase {
     
     public void testChangeListener() throws Exception {
         SuiteProject s = generateSuite("suite");
-        SubprojectProvider spp = (SubprojectProvider) s.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = s.getLookup().lookup(SubprojectProvider.class);
         SPPChangeListener l = new SPPChangeListener();
         spp.addChangeListener(l);
         NbModuleProject module1 = generateSuiteComponent(s, "module1");
