@@ -80,6 +80,7 @@ public final class DisplayCD extends ComponentDescriptor {
             @Override
             protected void generateMethodSectionCode (MultiGuardedSection section) {
                 if (isPreviousScreenEventHandlerUsed ()) {
+                    section.getWriter ().write ("/**\n * Switches a display to previous displayable of the current displayable.\n * The <code>display</code> instance is obtain from the <code>getDisplay</code> method.\n */\n"); // NOI18N
                     section.getWriter ().write ("private void switchToPreviousDisplayable () {\n"); // NOI18N
                     section.getWriter ().write ("Displayable __currentDisplayable = getDisplay ().getCurrent ();\n"); // NOI18N
                     section.getWriter ().write ("if (__currentDisplayable != null) {\n"); // NOI18N
@@ -97,6 +98,7 @@ public final class DisplayCD extends ComponentDescriptor {
                 MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-switchDisplayable"); // NOI18N
 
                 section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: switchDisplayable \">\n"); // NOI18N
+                section.getWriter ().write ("/**\n * Switches a current displayable in a display. The <code>display</code> instance is taken from <code>getDisplay</code> method. This method is used by all actions in the design for switching displayable.\n * @param alert the Alert which is temporarily set to the display; if <code>null</code>, then <code>nextDisplayable</code> is set immediately\n * @param nextDisplayable the Displayable to be set\n */\n"); // NOI18N
                 section.getWriter ().write ("public void switchDisplayable (Alert alert, Displayable nextDisplayable) {\n").commit (); // NOI18N
 
                 section.switchToEditable (getComponent ().getComponentID () + "-preSwitch"); // NOI18N

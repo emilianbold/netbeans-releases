@@ -414,8 +414,10 @@ public class ListCode {
             List<PropertyValue> array = list.readProperty (ListCD.PROP_ELEMENTS).getArray ();
 
             MultiGuardedSection section = MultiGuardedSection.create (document, list.getComponentID () + "-action"); // NOI18N
-            String methodName = CodeReferencePresenter.generateDirectAccessCode (list) + LIST_ACTION_METHOD_SUFFIX;
+            String listName = CodeReferencePresenter.generateDirectAccessCode (list);
+            String methodName = listName + LIST_ACTION_METHOD_SUFFIX;
             section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+            section.getWriter ().write ("/**\n * Performs an action assigned to the selected list element in the " + listName + " component.\n */\n"); // NOI18N
             section.getWriter ().write ("public void " + methodName + " () {\n").commit (); // NOI18N
             section.switchToEditable (list.getComponentID () + "-preAction"); // NOI18N
             section.getWriter ().write (" // enter pre-action user code here\n").commit (); // NOI18N

@@ -137,6 +137,7 @@ public class SwitchPointCD extends ComponentDescriptor {
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-switch"); // NOI18N
                     String methodName = CodeReferencePresenter.generateDirectAccessCode (component);
                     section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+                    section.getWriter ().write ("/**\n * Performs an action assigned to the " + methodName + " switch-point.\n */\n"); // NOI18N
                     section.getWriter ().write ("public void " + methodName + " () {\n").commit (); // NOI18N
                     section.switchToEditable (component.getComponentID () + "-preSwitch"); // NOI18N
                     section.getWriter ().write (" // enter pre-switch user code here\n").commit (); // NOI18N

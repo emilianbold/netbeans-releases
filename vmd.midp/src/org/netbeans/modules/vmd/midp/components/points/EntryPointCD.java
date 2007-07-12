@@ -25,15 +25,15 @@ import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.EntryStartEventSourceCD;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.openide.util.Utilities;
 
 import javax.swing.text.StyledDocument;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -79,6 +79,7 @@ public class EntryPointCD extends ComponentDescriptor {
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-entry"); // NOI18N
                     String methodName = CodeReferencePresenter.generateDirectAccessCode (component);
                     section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+                    section.getWriter ().write ("/**\n * Performs an action assigned to the " + methodName + " entry-point.\n */\n"); // NOI18N
                     section.getWriter ().write ("public void " + methodName + " () {\n"); // NOI18N
                     CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, component.readProperty (PROP_START).getComponent ());
                     section.getWriter ().write ("}\n"); // NOI18N

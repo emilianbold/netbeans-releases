@@ -155,12 +155,14 @@ public class ConverterCode {
         if (getDisplayBeforeCode != null)
             globalCode.append (processUserCodeByTable (replaceTable, getDisplayBeforeCode)).append ('\n'); // NOI18N
         getDisplayMethodBody += "\n        // return Display.getDisplay (this);\n"; // NOI18N
+        globalCode.append ("    /**\n     * Returns a display instance.\n     * @return the display instance.\n     */\n"); // NOI18N
         globalCode.append ("public Display getDisplay () {\n").append (processUserCodeByTable (replaceTable, getDisplayMethodBody)).append ("}\n"); // NOI18N
         globalCode.append ('\n'); // NOI18N
 
         if (exitMIDletBeforeCode != null)
             globalCode.append (processUserCodeByTable (replaceTable, exitMIDletBeforeCode)).append ('\n'); // NOI18N
         exitMIDletMethodBody += "\n        // switchDisplayable (null, null);\n        // destroyApp(true);\n        // notifyDestroyed();\n"; // NOI18N
+        globalCode.append ("    /**\n     * Exits MIDlet.\n     */\n"); // NOI18N
         globalCode.append ("public void exitMIDlet() {\n").append (processUserCodeByTable (replaceTable, exitMIDletMethodBody)).append ("}\n"); // NOI18N
         globalCode.append ('\n'); // NOI18N
 

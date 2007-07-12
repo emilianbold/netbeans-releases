@@ -100,6 +100,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
                     MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-resumeMIDlet"); // NOI18N
 
                     section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: resumeMIDlet \">\n"); // NOI18N
+                    section.getWriter ().write ("/**\n * Performs an action assigned to the Mobile Device - MIDlet Resumed point.\n */\n"); // NOI18N
                     section.getWriter ().write ("public void resumeMIDlet () {\n"); // NOI18N
 
                     CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode (section, getComponent ());

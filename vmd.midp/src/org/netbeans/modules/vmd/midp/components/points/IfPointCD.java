@@ -102,6 +102,7 @@ public class IfPointCD extends ComponentDescriptor {
                     MultiGuardedSection section = MultiGuardedSection.create (document, component.getComponentID () + "-if"); // NOI18N
                     String methodName = CodeReferencePresenter.generateDirectAccessCode (component);
                     section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+                    section.getWriter ().write ("/**\n * Performs an action assigned to the " + methodName + " if-point.\n */\n"); // NOI18N
                     section.getWriter ().write ("public void " + methodName + " () {\n").commit (); // NOI18N
                     section.switchToEditable (component.getComponentID () + "-preIf"); // NOI18N
                     section.getWriter ().write (" // enter pre-if user code here\n").commit (); // NOI18N

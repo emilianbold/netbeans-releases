@@ -353,8 +353,10 @@ public final class MidpCustomCodePresenterSupport {
             List<PropertyValue> array = menu.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ();
 
             MultiGuardedSection section = MultiGuardedSection.create (document, menu.getComponentID () + "-action"); // NOI18N
-            String methodName = CodeReferencePresenter.generateDirectAccessCode (menu) + SVG_MENU_ACTION_METHOD_SUFFIX;
+            String menuName = CodeReferencePresenter.generateDirectAccessCode (menu);
+            String methodName = menuName + SVG_MENU_ACTION_METHOD_SUFFIX;
             section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: " + methodName + " \">\n"); // NOI18N
+            section.getWriter ().write ("/**\n * Performs an action assigned to the selected SVG menu element in the " + menuName + " component.\n */\n"); // NOI18N
             section.getWriter ().write ("public void " + methodName + " () {\n").commit (); // NOI18N
             section.switchToEditable (menu.getComponentID () + "-preAction"); // NOI18N
             section.getWriter ().write (" // enter pre-action user code here\n").commit (); // NOI18N
