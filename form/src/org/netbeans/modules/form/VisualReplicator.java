@@ -314,7 +314,7 @@ public class VisualReplicator { //implements VisualMapper
                     if (visualMetaCont.getLayoutSupport() == null) {
                         // don't try incremental update with new layout support
                         updateContainerLayout(visualMetaCont);
-                        //return;
+                        // layout is built, but we continue to also add e.g. menu bar
                     }
                     container = visualMetaCont.getContainerDelegate((Container)contClone);
                 }
