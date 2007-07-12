@@ -77,6 +77,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     {
         initComponents();
         registerListeners();
+        populateElementTypeChoices();
         populateTemplatesTreeValues(false);
 
         // gets set to true on the initial expand/collapse setup
@@ -102,6 +103,53 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         removeRowButton.addActionListener(this);
     }
     
+    
+    private void populateElementTypeChoices()
+    {
+        for (String type: ELEMENT_TYPE_CHOICE_BUNDLE_KEYS)
+        {
+            modelElementCombo.addItem(NbBundle.getMessage(
+                DomainTemplatesManagerPanel.class, type));
+        }
+    }
+    
+    private final static String[] ELEMENT_TYPE_CHOICE_BUNDLE_KEYS = new String[]
+    {
+        "VAL_ElementType_NodeSelected", // NOI18N
+        "VAL_ElementType_Class", // NOI18N
+        "VAL_ElementType_Interface", // NOI18N
+        "VAL_ElementType_Enumeration", // NOI18N
+        "VAL_ElementType_Action", // NOI18N
+        "VAL_ElementType_Component", // NOI18N
+        "VAL_ElementType_Datatype", // NOI18N
+        "VAL_ElementType_Invocation", // NOI18N
+        "VAL_ElementType_Lifeline", // NOI18N
+        "VAL_ElementType_Node", // NOI18N
+        "VAL_ElementType_SimpleState", // NOI18N
+        "VAL_ElementType_UseCase", // NOI18N
+        "VAL_ElementType_AbortedFinalState", // NOI18N
+        "VAL_ElementType_ActivityFinalNode", // NOI18N
+        "VAL_ElementType_ChoicePseudoState", // NOI18N
+        "VAL_ElementType_CombinedFragment", // NOI18N
+        "VAL_ElementType_Comment", // NOI18N
+        "VAL_ElementType_CompositeState", // NOI18N
+        "VAL_ElementType_DataStore", // NOI18N
+        "VAL_ElementType_Decision", // NOI18N
+        "VAL_ElementType_DeepHistoryState", // NOI18N
+        "VAL_ElementType_DeploymentSpecification", // NOI18N
+        "VAL_ElementType_DerivationClassifier", // NOI18N
+        "VAL_ElementType_EntryPointState", // NOI18N
+        "VAL_ElementType_FinalState", // NOI18N
+        "VAL_ElementType_FlowFinal", // NOI18N
+        "VAL_ElementType_InitialNode", // NOI18N
+        "VAL_ElementType_JunctionState", // NOI18N
+        "VAL_ElementType_Package", // NOI18N
+        "VAL_ElementType_ParameterUsage", // NOI18N
+        "VAL_ElementType_ShallowHistoryState", // NOI18N
+        "VAL_ElementType_Signal", // NOI18N
+        "VAL_ElementType_SubmachineState", // NOI18N
+        "VAL_ElementType_TemplateClass" // NOI18N
+    };
     
     private void populateTemplatesTreeValues(boolean reset)
     {
@@ -566,7 +614,6 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
 
         modelElementLabel.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Model_Element")); // NOI18N
 
-        modelElementCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<None Selected>", "Class", "Interface", "Enumeration", "Aborted Final State", "Actor", "Activity Final Node", "Choice Pseudo State", "Combined Fragment", "Comment", "Component", "Composite State", "Data Store", "Datatype", "Decision", "Deep History State", "Deployment Specification", "Deriviation Classifier", "Entry Point State", "Final State", "Flow Final", "Initial Node", "Invocation", "Junction State", "Lifeline", "Node", "Package", "Parameter Usage", "Simple State", "Shallow History State", "Signal", "Submachine State", "Template Class", "Use Case" }));
         modelElementCombo.addItemListener(new java.awt.event.ItemListener()
         {
             public void itemStateChanged(java.awt.event.ItemEvent evt)

@@ -193,42 +193,7 @@
         <Component class="javax.swing.JComboBox" name="modelElementCombo">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="34">
-                <StringItem index="0" value="&lt;None Selected&gt;"/>
-                <StringItem index="1" value="Class"/>
-                <StringItem index="2" value="Interface"/>
-                <StringItem index="3" value="Enumeration"/>
-                <StringItem index="4" value="Aborted Final State"/>
-                <StringItem index="5" value="Actor"/>
-                <StringItem index="6" value="Activity Final Node"/>
-                <StringItem index="7" value="Choice Pseudo State"/>
-                <StringItem index="8" value="Combined Fragment"/>
-                <StringItem index="9" value="Comment"/>
-                <StringItem index="10" value="Component"/>
-                <StringItem index="11" value="Composite State"/>
-                <StringItem index="12" value="Data Store"/>
-                <StringItem index="13" value="Datatype"/>
-                <StringItem index="14" value="Decision"/>
-                <StringItem index="15" value="Deep History State"/>
-                <StringItem index="16" value="Deployment Specification"/>
-                <StringItem index="17" value="Deriviation Classifier"/>
-                <StringItem index="18" value="Entry Point State"/>
-                <StringItem index="19" value="Final State"/>
-                <StringItem index="20" value="Flow Final"/>
-                <StringItem index="21" value="Initial Node"/>
-                <StringItem index="22" value="Invocation"/>
-                <StringItem index="23" value="Junction State"/>
-                <StringItem index="24" value="Lifeline"/>
-                <StringItem index="25" value="Node"/>
-                <StringItem index="26" value="Package"/>
-                <StringItem index="27" value="Parameter Usage"/>
-                <StringItem index="28" value="Simple State"/>
-                <StringItem index="29" value="Shallow History State"/>
-                <StringItem index="30" value="Signal"/>
-                <StringItem index="31" value="Submachine State"/>
-                <StringItem index="32" value="Template Class"/>
-                <StringItem index="33" value="Use Case"/>
-              </StringArray>
+              <StringArray count="0"/>
             </Property>
           </Properties>
           <Events>
