@@ -82,7 +82,7 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 else
     mv nbbuild/NetBeans-*-javadoc.zip $DIST/zip/$BASENAME-javadoc.zip
-    cp nbbuild/build/javadoc $DIST/
+    cp -r nbbuild/build/javadoc $DIST/
 fi
 
 cd $NB_ALL/nbbuild
