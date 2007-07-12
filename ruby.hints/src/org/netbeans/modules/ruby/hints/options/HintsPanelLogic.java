@@ -101,6 +101,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         this.customizerPanel = customizerPanel;
         this.descriptionTextArea = descriptionTextArea;        
         
+        valueChanged( null );
+        
         errorTree.addKeyListener(this);
         errorTree.addMouseListener(this);
         errorTree.getSelectionModel().addTreeSelectionListener(this);
@@ -108,7 +110,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severityComboBox.addActionListener(this);
         tasklistCheckBox.addChangeListener(this);
         
-        valueChanged( null );
     }
     
     void disconnect() {
@@ -247,7 +248,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                                     
             // Optionally show the customizer
             customizerPanel.removeAll();
-            JComponent c = hint.getCustomizer(getPreferences4Modification(hint));
+            JComponent c = hint.getCustomizer(ex == null ? 
+                getCurrentPrefernces(hint) :
+                getPreferences4Modification(hint));
             
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
