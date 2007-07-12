@@ -29,6 +29,8 @@ import java.beans.PropertyChangeListener;
 public interface WSConfiguration {
     
     public static String PROPERTY="value";
+
+    public static String PROPERTY_ENABLE="enabled";
     
     /**
      * Returns the user interface component for this WSConfiguration.
@@ -74,6 +76,11 @@ public interface WSConfiguration {
      * Used to determine if a functionality is active.
      */ 
     boolean isSet();
+
+    /**
+     * Used to determine if a functionality is enabled.
+     */ 
+    boolean isEnabled();
 
     /**
      * Allows to register for changes on the client.

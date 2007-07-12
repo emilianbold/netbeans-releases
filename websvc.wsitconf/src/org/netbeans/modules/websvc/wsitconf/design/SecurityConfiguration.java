@@ -76,7 +76,7 @@ public class SecurityConfiguration implements WSConfiguration {
             private void update() {
                 boolean enabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
                 for (PropertyChangeListener pcl : listeners) {
-                    PropertyChangeEvent pce = new PropertyChangeEvent(this, WSConfiguration.PROPERTY, null, enabled);
+                    PropertyChangeEvent pce = new PropertyChangeEvent(SecurityConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
                     pcl.propertyChange(pce);
                 }
             }
@@ -183,5 +183,8 @@ public class SecurityConfiguration implements WSConfiguration {
             binding.getModel().removeComponentListener(cl);
         }
     }
-    
+
+    public boolean isEnabled() {
+        return true;
+    }
 }

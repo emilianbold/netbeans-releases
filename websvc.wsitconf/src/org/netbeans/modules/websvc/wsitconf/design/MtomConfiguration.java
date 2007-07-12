@@ -69,7 +69,7 @@ public class MtomConfiguration  implements WSConfiguration{
             private void update() {
                 boolean enabled = TransportModelHelper.isMtomEnabled(binding);
                 for (PropertyChangeListener pcl : listeners) {
-                    PropertyChangeEvent pce = new PropertyChangeEvent(this, WSConfiguration.PROPERTY, null, enabled);
+                    PropertyChangeEvent pce = new PropertyChangeEvent(MtomConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
                     pcl.propertyChange(pce);
                 }
             }
@@ -144,5 +144,8 @@ public class MtomConfiguration  implements WSConfiguration{
             binding.getModel().removeComponentListener(cl);
         }
     }
-    
+
+    public boolean isEnabled() {
+        return true;
+    }
 }

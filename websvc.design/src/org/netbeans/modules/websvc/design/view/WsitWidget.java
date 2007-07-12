@@ -23,6 +23,8 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
@@ -60,8 +62,7 @@ public class WsitWidget extends AbstractTitledWidget {
     private transient ButtonWidget advancedButton;
     private transient ImageLabelWidget headerLabelWidget;
     private Service service;
-    
-    
+    private PropertyChangeListener configListener;
     
     /**
      * Creates a new instance of OperationWidget
@@ -75,6 +76,7 @@ public class WsitWidget extends AbstractTitledWidget {
         this.service=service;
         setOpaque(true);
         setBackground(TITLE_COLOR_PARAMETER);
+        configListener = new WSConfigurationListener(this);
         createContent();
     }
     
@@ -106,32 +108,57 @@ public class WsitWidget extends AbstractTitledWidget {
         advancedButton = new ButtonWidget(getScene(),
                 new AdvancedAction(service,implementationClass));
         advancedButton.setOpaque(true);
-        advancedButton.setRoundedBorder(advancedButton.BORDER_RADIUS, 4, 0, null);
+        advancedButton.setRoundedBorder(ButtonWidget.BORDER_RADIUS, 4, 0, null);
         advancedButtonContainer.addChild(advancedButton);
         getContentWidget().addChild(advancedButtonContainer);
     }
     
     private void populateConfigWidget() {
-        configButtons.removeChildren();
+        final ObjectScene scene = (ObjectScene) getScene();
         for(WSConfigurationProvider provider : getConfigProviders()){
-            WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
+            final WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
             if(config != null){
-                CheckBoxWidget button = new CheckBoxWidget(getScene(), config.getDisplayName());
+                CheckBoxWidget button = new CheckBoxWidget(getScene(), config.getDisplayName()) {
+                    @Override
+                    public void notifyAdded() {
+                        super.notifyAdded();
+                        config.registerListener(configListener);
+                        scene.addObject(config, this);
+                        setSelected(config.isSet());
+                        setVisible(config.isEnabled());
+                        determineVisibility();
+                    }
+                    @Override
+                    public void notifyRemoved() {
+                        super.notifyRemoved();
+                        config.unregisterListener(configListener);
+                        scene.removeObject(config);
+                    }
+                };
                 button.setAction(new ConfigWidgetAction(config));
                 button.setToolTipText(config.getDescription());
                 button.getLabelWidget().setFont(
                         getScene().getFont().deriveFont(Font.BOLD));
-                button.setSelected(config.isSet()); //TODO: need to refresh the widget to reflect state
                 configButtons.addChild(button);
             }
         }
-        configButtons.setVisible(!configButtons.getChildren().isEmpty());
     }
     
+    private void determineVisibility() {
+        for(Widget button:configButtons.getChildren()) {
+            if(button.isVisible()) {
+                setVisible(true);
+                return;
+            }
+        }
+        setVisible(false);
+    }
+
     protected Paint getBodyPaint(Rectangle bounds) {
         return TITLE_COLOR_PARAMETER;
     }
     
+    @Override
     public Object hashKey() {
         return service==null?null:service.getServiceName()+"_wsit";
     }
@@ -199,4 +226,34 @@ public class WsitWidget extends AbstractTitledWidget {
         }
     }
     
+    final class WSConfigurationListener implements PropertyChangeListener {
+
+        private WsitWidget widget;
+        private WSConfigurationListener(WsitWidget widget) {
+            this.widget= widget;
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+            Object source = evt.getSource();
+            ObjectScene scene = (ObjectScene) widget.getScene();
+            String property = evt.getPropertyName();
+            Object newValue = evt.getNewValue();
+            if(source instanceof WSConfiguration) {
+                Widget configWidget = scene.findWidget(source);
+                if(WSConfiguration.PROPERTY.equals(property)) {
+                    if(configWidget instanceof CheckBoxWidget) {
+                        ((CheckBoxWidget)configWidget).setSelected((Boolean)newValue);
+                        widget.revalidate(true);
+                    }
+                } else if(WSConfiguration.PROPERTY_ENABLE.equals(property)) {
+                    if(configWidget instanceof CheckBoxWidget) {
+                        ((CheckBoxWidget)configWidget).setVisible((Boolean)newValue);
+                        widget.determineVisibility();
+                        widget.revalidate();
+                    }
+                }
+
+            }
+        }
+        
+    }
 }

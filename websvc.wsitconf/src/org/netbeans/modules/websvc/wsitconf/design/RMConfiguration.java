@@ -67,7 +67,7 @@ public class RMConfiguration implements WSConfiguration {
             private void update() {
                 boolean enabled = RMModelHelper.isRMEnabled(binding);
                 for (PropertyChangeListener pcl : listeners) {
-                    PropertyChangeEvent pce = new PropertyChangeEvent(this, WSConfiguration.PROPERTY, null, enabled);
+                    PropertyChangeEvent pce = new PropertyChangeEvent(RMConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
                     pcl.propertyChange(pce);
                 }
             }
@@ -142,4 +142,7 @@ public class RMConfiguration implements WSConfiguration {
         }
     }
     
+    public boolean isEnabled() {
+        return true;
+    }
 }
