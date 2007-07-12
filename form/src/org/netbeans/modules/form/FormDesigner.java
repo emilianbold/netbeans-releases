@@ -28,13 +28,11 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
-import javax.swing.undo.UndoableEdit;
 
 import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.core.spi.multiview.*;
-import org.netbeans.modules.form.InPlaceEditLayer.FinishListener;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.openide.DialogDisplayer;
@@ -115,7 +113,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public static final int MODE_ADD = 2;
     
     private boolean initialized = false;
-    private boolean firstLayout;
 
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
@@ -179,7 +176,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     
     void initialize() {
         initialized = true;
-        firstLayout = true;
         removeAll();
 
         componentLayer = new ComponentLayer();
@@ -318,6 +314,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (formModelListener != null) {
                 formModel.removeFormModelListener(formModelListener);                
             }                
+            if (settingsListener != null) {
+                FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
+            }
             topDesignComponent = null;
             formModel = null;
         }
@@ -484,9 +483,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (getLayoutDesigner() == null) {
             return;
         }
-
-        boolean firstLayout = this.firstLayout;
-        this.firstLayout = false;
 
         // Ensure that the components are laid out
         componentLayer.revalidate(); // Add componentLayer among components to validate
@@ -1677,13 +1673,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public void componentClosed() {
         super.componentClosed();
         if (formModel != null) {
-            if (formModelListener != null)
+            if (formModelListener != null) {
                 formModel.removeFormModelListener(formModelListener);
+            }
+            if (settingsListener != null) {
+                FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
+            }
             topDesignComponent = null;
             formModel = null;
-        }
-        if (settingsListener != null) {
-            FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
         }
     }
 
