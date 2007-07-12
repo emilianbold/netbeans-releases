@@ -778,13 +778,12 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         btnTest = new javax.swing.JButton();
         txtExampleInstructions = new javax.swing.JTextPane();
 
-        setLayout(new java.awt.GridBagLayout());
-
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 formFocusGained(evt);
             }
         });
+        setLayout(new java.awt.GridBagLayout());
 
         pnlTypePattern.setLayout(new java.awt.GridBagLayout());
 
@@ -794,7 +793,6 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
                 cmbTypeActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -802,8 +800,9 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         pnlTypePattern.add(cmbType, gridBagConstraints);
-        cmbType.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("type"));
-        cmbType.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("typeDescription"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle"); // NOI18N
+        cmbType.getAccessibleContext().setAccessibleName(bundle.getString("type")); // NOI18N
+        cmbType.getAccessibleContext().setAccessibleDescription(bundle.getString("typeDescription")); // NOI18N
 
         cmbPattern.setEditable(true);
         cmbPattern.setEnabled(false);
@@ -812,7 +811,6 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
                 cmbPatternActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -821,44 +819,42 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         pnlTypePattern.add(cmbPattern, gridBagConstraints);
-        cmbPattern.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("pattern"));
-        cmbPattern.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("pattern"));
+        cmbPattern.getAccessibleContext().setAccessibleName(bundle.getString("pattern")); // NOI18N
+        cmbPattern.getAccessibleContext().setAccessibleDescription(bundle.getString("pattern")); // NOI18N
 
         typePatternGroup.add(rbType);
         rbType.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("type_mnemonic").charAt(0));
         rbType.setSelected(true);
-        rbType.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("type"));
+        rbType.setText(bundle.getString("type")); // NOI18N
         rbType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbTypeActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         pnlTypePattern.add(rbType, gridBagConstraints);
-        rbType.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("type"));
-        rbType.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("typeDescription"));
+        rbType.getAccessibleContext().setAccessibleName(bundle.getString("type")); // NOI18N
+        rbType.getAccessibleContext().setAccessibleDescription(bundle.getString("typeDescription")); // NOI18N
 
         typePatternGroup.add(rbPattern);
         rbPattern.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("pattern_mnemonic").charAt(0));
-        rbPattern.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("pattern"));
+        rbPattern.setText(bundle.getString("pattern")); // NOI18N
         rbPattern.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbPatternActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         pnlTypePattern.add(rbPattern, gridBagConstraints);
-        rbPattern.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("pattern"));
+        rbPattern.getAccessibleContext().setAccessibleDescription(bundle.getString("pattern")); // NOI18N
 
         pnlType.setLayout(new java.awt.GridBagLayout());
 
@@ -866,25 +862,25 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
 
         lblMinFractional.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("minFractional_mnemonic").charAt(0));
         lblMinFractional.setLabelFor(cmbMinFractional);
-        lblMinFractional.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("minFractional"));
+        lblMinFractional.setText(bundle.getString("minFractional")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         pnlFractional.add(lblMinFractional, gridBagConstraints);
-        lblMinFractional.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("minFractional"));
-        lblMinFractional.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("minFractional"));
+        lblMinFractional.getAccessibleContext().setAccessibleName(bundle.getString("minFractional")); // NOI18N
+        lblMinFractional.getAccessibleContext().setAccessibleDescription(bundle.getString("minFractional")); // NOI18N
 
         lblMaxFractional.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("maxFractional_mnemonic").charAt(0));
         lblMaxFractional.setLabelFor(cmbMaxFractional);
-        lblMaxFractional.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("maxFractional"));
+        lblMaxFractional.setText(bundle.getString("maxFractional")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         pnlFractional.add(lblMaxFractional, gridBagConstraints);
-        lblMaxFractional.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("maxFractional"));
-        lblMaxFractional.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("maxFractional"));
+        lblMaxFractional.getAccessibleContext().setAccessibleName(bundle.getString("maxFractional")); // NOI18N
+        lblMaxFractional.getAccessibleContext().setAccessibleDescription(bundle.getString("maxFractional")); // NOI18N
 
         cmbMinFractional.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -917,25 +913,25 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
 
         lblMinInteger.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("minInteger_mnemonic").charAt(0));
         lblMinInteger.setLabelFor(cmbMinInteger);
-        lblMinInteger.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("minInteger"));
+        lblMinInteger.setText(bundle.getString("minInteger")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         pnlInteger.add(lblMinInteger, gridBagConstraints);
-        lblMinInteger.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("minInteger"));
-        lblMinInteger.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("minInteger"));
+        lblMinInteger.getAccessibleContext().setAccessibleName(bundle.getString("minInteger")); // NOI18N
+        lblMinInteger.getAccessibleContext().setAccessibleDescription(bundle.getString("minInteger")); // NOI18N
 
         lblMaxInteger.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("maxInteger_mnemonic").charAt(0));
         lblMaxInteger.setLabelFor(cmbMaxInteger);
-        lblMaxInteger.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("maxInteger"));
+        lblMaxInteger.setText(bundle.getString("maxInteger")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         pnlInteger.add(lblMaxInteger, gridBagConstraints);
-        lblMaxInteger.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("maxInteger"));
-        lblMaxInteger.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("maxInteger"));
+        lblMaxInteger.getAccessibleContext().setAccessibleName(bundle.getString("maxInteger")); // NOI18N
+        lblMaxInteger.getAccessibleContext().setAccessibleDescription(bundle.getString("maxInteger")); // NOI18N
 
         cmbMinInteger.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -966,31 +962,31 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
 
         lblFractional.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("fractionalDigits_mnemonic").charAt(0));
         lblFractional.setLabelFor(cmbMinFractional);
-        lblFractional.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("fracDigits"));
+        lblFractional.setText(bundle.getString("fracDigits")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         pnlType.add(lblFractional, gridBagConstraints);
-        lblFractional.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("fractionalDigits"));
-        lblFractional.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("fractionalDigits"));
+        lblFractional.getAccessibleContext().setAccessibleName(bundle.getString("fractionalDigits")); // NOI18N
+        lblFractional.getAccessibleContext().setAccessibleDescription(bundle.getString("fractionalDigits")); // NOI18N
 
         lblInteger.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("integerDigits_mnemonic").charAt(0));
         lblInteger.setLabelFor(cmbMinInteger);
-        lblInteger.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("intDigits"));
+        lblInteger.setText(bundle.getString("intDigits")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         pnlType.add(lblInteger, gridBagConstraints);
-        lblInteger.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("integerDigits"));
-        lblInteger.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("integerDigits"));
+        lblInteger.getAccessibleContext().setAccessibleName(bundle.getString("integerDigits")); // NOI18N
+        lblInteger.getAccessibleContext().setAccessibleDescription(bundle.getString("integerDigits")); // NOI18N
 
         cbUseGrouping.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("groupingUsed_mnemonic").charAt(0));
         cbUseGrouping.setSelected(true);
-        cbUseGrouping.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("groupingUsed"));
+        cbUseGrouping.setText(bundle.getString("groupingUsed")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -998,20 +994,19 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         pnlType.add(cbUseGrouping, gridBagConstraints);
-        cbUseGrouping.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("groupingUsed"));
+        cbUseGrouping.getAccessibleContext().setAccessibleDescription(bundle.getString("groupingUsed")); // NOI18N
 
         pnlLocale.setLayout(new java.awt.GridBagLayout());
 
         currencyGroup.add(rbCurrencyCode);
         rbCurrencyCode.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("currencyCode_mnemonic").charAt(0));
         rbCurrencyCode.setSelected(true);
-        rbCurrencyCode.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("currencyCode"));
+        rbCurrencyCode.setText(bundle.getString("currencyCode")); // NOI18N
         rbCurrencyCode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbCurrencyCodeActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -1019,14 +1014,13 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         pnlLocale.add(rbCurrencyCode, gridBagConstraints);
-        rbCurrencyCode.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("currencyCode"));
+        rbCurrencyCode.getAccessibleContext().setAccessibleDescription(bundle.getString("currencyCode")); // NOI18N
 
         cmbLocale.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbLocaleActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -1035,12 +1029,12 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         pnlLocale.add(cmbLocale, gridBagConstraints);
-        cmbLocale.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("locale"));
-        cmbLocale.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("locale"));
+        cmbLocale.getAccessibleContext().setAccessibleName(bundle.getString("locale")); // NOI18N
+        cmbLocale.getAccessibleContext().setAccessibleDescription(bundle.getString("locale")); // NOI18N
 
         lblLocale.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("locale_mnemonic").charAt(0));
         lblLocale.setLabelFor(cmbLocale);
-        lblLocale.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("locale"));
+        lblLocale.setText(bundle.getString("locale")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1051,7 +1045,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
 
         lblChooseCurrency.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("chooseCurrency_mnemonic").charAt(0));
         lblChooseCurrency.setLabelFor(cmbCurrencyCode);
-        lblChooseCurrency.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("chooseCurrency"));
+        lblChooseCurrency.setText(bundle.getString("chooseCurrency")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1059,24 +1053,23 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         pnlLocale.add(lblChooseCurrency, gridBagConstraints);
-        lblChooseCurrency.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("currencyCode"));
+        lblChooseCurrency.getAccessibleContext().setAccessibleDescription(bundle.getString("currencyCode")); // NOI18N
 
         currencyGroup.add(rbSymbol);
         rbSymbol.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("symbol_mnemonic").charAt(0));
-        rbSymbol.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("symbol"));
+        rbSymbol.setText(bundle.getString("symbol")); // NOI18N
         rbSymbol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbSymbolActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         pnlLocale.add(rbSymbol, gridBagConstraints);
-        rbSymbol.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("symbol"));
+        rbSymbol.getAccessibleContext().setAccessibleDescription(bundle.getString("symbol")); // NOI18N
 
         txtEnterSymbol.setColumns(10);
         txtEnterSymbol.setHorizontalAlignment(javax.swing.JTextField.LEFT);
@@ -1086,7 +1079,6 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
                 txtEnterSymbolActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -1095,15 +1087,14 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(2, 10, 0, 0);
         pnlLocale.add(txtEnterSymbol, gridBagConstraints);
-        txtEnterSymbol.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("symbol"));
-        txtEnterSymbol.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("symbol"));
+        txtEnterSymbol.getAccessibleContext().setAccessibleName(bundle.getString("symbol")); // NOI18N
+        txtEnterSymbol.getAccessibleContext().setAccessibleDescription(bundle.getString("symbol")); // NOI18N
 
         cmbCurrencyCode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmbCurrencyCodeActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -1113,7 +1104,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         pnlLocale.add(cmbCurrencyCode, gridBagConstraints);
-        cmbCurrencyCode.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("currencyCode"));
+        cmbCurrencyCode.getAccessibleContext().setAccessibleDescription(bundle.getString("currencyCode")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1135,7 +1126,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         pnlTypePattern.add(pnlType, gridBagConstraints);
 
         cbIntegerOnly.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("integerOnly_mnemonic").charAt(0));
-        cbIntegerOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("intOnly"));
+        cbIntegerOnly.setText(bundle.getString("intOnly")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -1144,7 +1135,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         pnlTypePattern.add(cbIntegerOnly, gridBagConstraints);
-        cbIntegerOnly.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("intOnly"));
+        cbIntegerOnly.getAccessibleContext().setAccessibleDescription(bundle.getString("intOnly")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1157,7 +1148,6 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         add(pnlTypePattern, gridBagConstraints);
 
         pnlExample.setLayout(new java.awt.GridBagLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -1168,14 +1158,14 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
 
         lblExample.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("example_mnemonic").charAt(0));
         lblExample.setLabelFor(cmbExample);
-        lblExample.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("example"));
+        lblExample.setText(bundle.getString("example")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         pnlExample.add(lblExample, gridBagConstraints);
-        lblExample.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("example"));
+        lblExample.getAccessibleContext().setAccessibleDescription(bundle.getString("example")); // NOI18N
 
         txtResults.setEditable(false);
         txtResults.setText("1234.56");
@@ -1186,12 +1176,12 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         pnlExample.add(txtResults, gridBagConstraints);
-        txtResults.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("results"));
-        txtResults.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("results"));
+        txtResults.getAccessibleContext().setAccessibleName(bundle.getString("results")); // NOI18N
+        txtResults.getAccessibleContext().setAccessibleDescription(bundle.getString("results")); // NOI18N
 
         lblResults.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("result_mnemonic").charAt(0));
         lblResults.setLabelFor(txtResults);
-        lblResults.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("results"));
+        lblResults.setText(bundle.getString("results")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -1199,7 +1189,7 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         pnlExample.add(lblResults, gridBagConstraints);
-        lblResults.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("results"));
+        lblResults.getAccessibleContext().setAccessibleDescription(bundle.getString("results")); // NOI18N
 
         cmbExample.setEditable(true);
         cmbExample.addActionListener(new java.awt.event.ActionListener() {
@@ -1212,7 +1202,6 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
                 cmbExampleFocusGained(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -1220,29 +1209,28 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         pnlExample.add(cmbExample, gridBagConstraints);
-        cmbExample.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("example"));
-        cmbExample.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("example"));
+        cmbExample.getAccessibleContext().setAccessibleName(bundle.getString("example")); // NOI18N
+        cmbExample.getAccessibleContext().setAccessibleDescription(bundle.getString("example")); // NOI18N
 
         btnTest.setMnemonic(org.openide.util.NbBundle.getBundle(NumberConverterCustomizerPanel.class).getString("testBtn_mnemonic").charAt(0));
-        btnTest.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("testText"));
+        btnTest.setText(bundle.getString("testText")); // NOI18N
         btnTest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnTestActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         pnlExample.add(btnTest, gridBagConstraints);
-        btnTest.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("testText"));
+        btnTest.getAccessibleContext().setAccessibleDescription(bundle.getString("testText")); // NOI18N
 
         txtExampleInstructions.setBackground(getBackground());
         txtExampleInstructions.setBorder(null);
         txtExampleInstructions.setEditable(false);
-        txtExampleInstructions.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("exampleInstructionsText"));
+        txtExampleInstructions.setText(bundle.getString("exampleInstructionsText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1250,8 +1238,8 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 11);
         pnlExample.add(txtExampleInstructions, gridBagConstraints);
-        txtExampleInstructions.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("exampleInstructionsText"));
-        txtExampleInstructions.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle").getString("exampleInstructionsText"));
+        txtExampleInstructions.getAccessibleContext().setAccessibleName(bundle.getString("exampleInstructionsText")); // NOI18N
+        txtExampleInstructions.getAccessibleContext().setAccessibleDescription(bundle.getString("exampleInstructionsText")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1262,6 +1250,8 @@ public class NumberConverterCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         add(pnlExample, gridBagConstraints);
 
+        getAccessibleContext().setAccessibleName("NumberFormat");
+        getAccessibleContext().setAccessibleDescription("Number Format...");
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTestActionPerformed
