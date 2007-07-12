@@ -54,6 +54,9 @@ rm -rf platform*
 pack_component $DIST/zip/moduleclusters $BASENAME mobility "mobility*"
 rm -rf mobility*
 
+pack_component $DIST/zip/moduleclusters $BASENAME identity "identity*"
+rm -rf identity*
+
 pack_component $DIST/zip/moduleclusters $BASENAME ide "ide*"
 rm -rf ide*
 
@@ -68,9 +71,6 @@ rm -rf enterprise*
 
 pack_component $DIST/zip/moduleclusters $BASENAME soa "soa*"
 rm -rf soa*
-
-pack_component $DIST/zip/moduleclusters $BASENAME identity "identity*"
-rm -rf identity*
 
 pack_component $DIST/zip/moduleclusters $BASENAME apisupport "apisupport*"
 rm -rf apisupport*
