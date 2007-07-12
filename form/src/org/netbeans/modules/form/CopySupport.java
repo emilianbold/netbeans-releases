@@ -528,7 +528,7 @@ class CopySupport {
     static ClassSource getCopiedBeanClassSource(Transferable t) {
         DataObject dobj = (DataObject)
             NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
-        FileObject fo = dobj != null ? dobj.getPrimaryFile() : null;
+        FileObject fo = (dobj != null && dobj.isValid()) ? dobj.getPrimaryFile() : null;
         if (fo == null)
             return null;
 
