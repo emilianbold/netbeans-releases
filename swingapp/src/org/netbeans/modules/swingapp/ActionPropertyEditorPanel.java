@@ -1239,6 +1239,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newMethodName.matches("^\\d.*")) { //NOI18N
             return true;
         }
+        if(!newMethodName.matches("^[a-zA-Z]\\w*")) {
+            return true;
+        }
         return false;
     }
     
