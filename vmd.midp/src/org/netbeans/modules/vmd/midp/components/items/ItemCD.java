@@ -173,8 +173,6 @@ public class ItemCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
-                
-                // properties
                 createPropertiesPresenter(),
                 // inspector
                 new InspectorFolderComponentPresenter(true),
@@ -203,15 +201,16 @@ public class ItemCD extends ComponentDescriptor {
                 new DeletePresenter() {
                     protected void delete () {
                         DesignComponent component = getComponent ();
-                        DesignComponent form = component.getParentComponent ();
-                        ArraySupport.remove (form, FormCD.PROP_ITEMS, component);
+                        DesignComponent parent = component.getParentComponent ();
+                        //TOOD this is should be check of Gauge attached to the ALert it is too generic
+                        //This typeID check is becaouse of Gauge which could be also attached to the AlertCD
+                        if (parent.getType() == FormCD.TYPEID )
+                            ArraySupport.remove (parent, FormCD.PROP_ITEMS, component);
                     }
                 },
                 // screen
                 new ItemDisplayPresenter (),
                 new DisplayableResourceCategoriesPresenter()
-        
-        
         
         );
     }

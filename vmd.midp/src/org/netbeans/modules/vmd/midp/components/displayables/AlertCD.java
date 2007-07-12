@@ -99,7 +99,7 @@ public final class AlertCD extends ComponentDescriptor {
                     .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
                     .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING)
                     .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE)
-                    .addProperty("Use Indicator", PropertyEditorIndicator.createInstance(), PROP_INDICATOR)
+                    .addProperty("Use Indicator", PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR)
                     .addProperty("Timeout", PropertyEditorTimeout.createInstance(), PROP_TIMEOUT);
     }
 

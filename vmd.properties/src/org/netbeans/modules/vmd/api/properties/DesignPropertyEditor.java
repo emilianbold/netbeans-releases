@@ -244,7 +244,8 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     /**
      * This method is executed at the beginning of write transaction when data from property
      * editor is writes into the model
-     * @return Boolean.FALSE ONLY this method will be executed without any other support for saving data
+     * @return Boolean.FALSE ONLY this method will be executed without any other 
+     * support it's means that value of property editor is not saved 
      */
     public boolean executeInsideWriteTransaction() {
         return true;
@@ -256,6 +257,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     public void customEditorOKButtonPressed() {
     }
     
+    @SuppressWarnings("unchecked")
 public final void invokeSaveToModel() {
         try {
             propertySupport.setValue(getValue());
