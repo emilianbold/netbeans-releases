@@ -25,7 +25,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
-import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderInfo;
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import java.io.Writer;
@@ -35,9 +34,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.openide.ErrorManager;
 
 /**
  * A simple writer to write the Java Source.
@@ -55,12 +52,12 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private String className;
     private WebServiceDescriptor wsData;
     private WsdlPort port;
-    private List<WsdlOperation> operations;
+    private final List<WsdlOperation> operations;
     
     int indent = 0;
     
-    private Set dataProviders = new HashSet();
-    private List<java.lang.reflect.Method> sortedMethods;
+    private Set<DataProviderInfo> dataProviders = new HashSet<DataProviderInfo>();
+    private final List<java.lang.reflect.Method> sortedMethods;
     boolean isJaxRpc = false;
     
     /** Creates a new instance of JavaWriter */
@@ -250,7 +247,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private void printOperations(WsdlPort port) {
         
         // This is to keep track of the overloadded method names
-        Map methodNames = new HashMap();
+        Map<String, Integer> methodNames = new HashMap<String, Integer>();
         
         /**
          * get the Java class name for the port.
@@ -267,42 +264,76 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         String portInterfaceVariable = portInterfaceName.substring(portInterfaceName.lastIndexOf('.') + 1, portInterfaceName.length());
         String portInterfacePrefix = portInterfaceVariable.toLowerCase() ;
         portInterfaceVariable = portInterfaceVariable.toLowerCase() + "1";
+        
+        // Use the internal model if doing jax-ws, otherwise use java reflection
+        Iterator<DataProviderMethod> methodIterator = null;
+        if (isJaxRpc) {
+            methodIterator = new Iterator<DataProviderMethod>() {
+                private int i = 0;
+                public boolean hasNext() {
+                    return i < sortedMethods.size();
+                }
 
-        for(int j = 0; j < sortedMethods.size(); j++) {
-            java.lang.reflect.Method method = sortedMethods.get(j);
-            Operation operation = getCorrespondingOperation(method, operations);
-            
-            if (operation == null) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Web Service client method not found in model - " + method.getName());
-                continue;
-            }
+                public DataProviderMethod next() {
+                    java.lang.reflect.Method method = sortedMethods.get(i++);
+                    return new DataProviderJavaMethod(method);
+                }
+
+                public void remove() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
+        }else {
+            methodIterator = new Iterator<DataProviderMethod>() {
+                private int i = 0;
+                public boolean hasNext() {
+                    return i < operations.size();
+                }
+
+                public DataProviderMethod next() {
+                    Operation nextOperation = (Operation)operations.get(i++).getInternalJAXWSOperation();
+                    return new DataProviderModelMethod(nextOperation.getJavaMethod());
+                }
+
+                public void remove() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
+        }
+        
+        
+        while (methodIterator.hasNext()) {
+            DataProviderMethod method = methodIterator.next();
             
             println();
             
-            String methodReturnTypeName = method.getReturnType().getCanonicalName();
-            String methodName = method.getName();
+            String methodReturnTypeName = method.getMethodReturnType();
+            String methodName = method.getMethodName();
             
             print("  public " + methodReturnTypeName + " " + methodName + "(");
-            
-            Class[] parameters = method.getParameterTypes();
-            for (int i = 0; i < parameters.length; i++) {
-                if (i != 0) {
+
+            boolean firstParameter = true;
+            for (DataProviderParameter parameter : method.getParameters()) {
+                if (!firstParameter) {
                     print(",");
+                }else {
+                    firstParameter = false;
                 }
-                            
-                print(parameters[i].getCanonicalName() + " " + "arg" + i);
+                
+                print(parameter.getType() + " " + parameter.getName());
             }
             print(") ");
             
-            Class[] exceptions = method.getExceptionTypes();
-            for (int i = 0; i < exceptions.length; i++) {
-                if (i == 0) {
+            boolean firstException = true;
+            for (String exceptionClass : method.getExceptions()) {
+                if (firstException) {
                     print(" throws ");
+                    firstException = false;
                 }else {
                     print(", ");
                 }
                 
-                print(exceptions[i].getCanonicalName());
+                print(exceptionClass);
             }
             println(" {");
             
@@ -318,9 +349,14 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 print("         " + portInterfaceVariable + "." + methodName + "(");
             }
             
-            for (int i = 0; i < parameters.length; i++) {
-                print("arg" + i);
-                if (i + 1 < parameters.length) print(", ");
+            firstParameter = true;
+            for (DataProviderParameter parameter : method.getParameters()) {
+                if (!firstParameter) {
+                    print(", ");
+                }else {
+                    firstParameter = false;
+                }
+                print(parameter.getName());
             }
             println(");");
             println("  }");
@@ -329,9 +365,9 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             // For overloaded method, we'll index method names
             if(!"void".equals(methodReturnTypeName))
             {
-                String dpClassName = method.getName();
+                String dpClassName = method.getMethodName();
 
-                Integer occurrence = (Integer)methodNames.get( method.getName() );
+                Integer occurrence = methodNames.get( method.getMethodName() );
                 if( occurrence == null )
                     occurrence = new Integer(1);
                 else
@@ -339,11 +375,11 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                     occurrence = new Integer( occurrence.intValue() + 1 );
 
                     // The data provider class name = method name + num of occurrence 
-                    dpClassName = method.getName() + occurrence;
+                    dpClassName = method.getMethodName() + occurrence;
                 }
-                methodNames.put( method.getName(), occurrence ); 
+                methodNames.put( method.getMethodName(), occurrence ); 
 
-                dataProviders.add( new DataProviderInfo( packageName, className, operation.getJavaMethod() , dpClassName ) ); // NOI18N
+                dataProviders.add( new DataProviderInfo( packageName, className, method , dpClassName ) );
             }
         }
 
@@ -389,55 +425,6 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         }
     }
         
-    private Operation getCorrespondingOperation(java.lang.reflect.Method method, List<WsdlOperation> operations) {
-        Operation result = null;
-        String methodName = method.getName();
-        Class[] parameters = method.getParameterTypes();
-        for (WsdlOperation op : operations) {
-            String opName = op.getJavaName();
-            List<WsdlParameter> opParameters = op.getParameters();
-            
-            // check the method names (case-sensitivity is ignored in some cases
-            // due to the differences between JAX-WS and JAX-RPC operation naming
-            // conventions)
-            if (!opName.equalsIgnoreCase(methodName) ||
-                (!opName.equals(methodName) && result != null)) {
-                continue;
-            }
-            
-            // check parameter signatures
-            if (opParameters.size() != parameters.length) {
-                continue;
-            }
-            
-            boolean matches = true;
-            for (int i = 0; i < parameters.length; i++) {
-                WsdlParameter opParam = opParameters.get(i);
-                if (opParam.isHolder() && isJaxRpc) {
-                    Class[] interfaces = parameters[i].getInterfaces();
-                    boolean hasHolderImpl = false;
-                    for (int j = 0; j < interfaces.length; j++) {
-                        if (interfaces[i].getName().equals("javax.xml.rpc.holders.Holder")) { // NOI18N
-                            hasHolderImpl = true;
-                            break;
-                        }
-                    }
-                    matches = matches && hasHolderImpl;
-                }else if (opParam.isHolder()) {
-                    matches = matches && parameters[i].getName().equals("javax.xml.ws.Holder"); //NOI18N
-                }else {
-                    matches = matches && parameters[i].getName().equals(opParam.getTypeName());
-                }
-            }
-            
-            if (matches) {
-                result = (Operation)op.getInternalJAXWSOperation();
-            }
-            
-        }
-        
-        return result;
-    }
     
     private String designTimeReturnValue( String returnType ) {
         

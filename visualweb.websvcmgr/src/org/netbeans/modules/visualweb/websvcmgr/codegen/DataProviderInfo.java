@@ -20,7 +20,6 @@
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
-import com.sun.tools.ws.processor.model.java.JavaMethod;
 
 /**
  *
@@ -32,14 +31,14 @@ public class DataProviderInfo {
     private String packageName;
     
     // Everyting about this method
-    private JavaMethod javaMethod;
+    private DataProviderMethod method;
     
     private String methodName4DPClass;
     
-    public DataProviderInfo( String packageName, String clientWrapperClassName, JavaMethod method, String methodName4DPClass ) {
+    public DataProviderInfo( String packageName, String clientWrapperClassName, DataProviderMethod method, String methodName4DPClass ) {
         this.packageName = packageName;
         this.clientWrapperClassName = clientWrapperClassName;
-        this.javaMethod = method;
+        this.method = method;
         this.methodName4DPClass = methodName4DPClass;
     }
     
@@ -59,9 +58,8 @@ public class DataProviderInfo {
         return this.clientWrapperClassName;
     }
     
-    public JavaMethod getJavaMethod()
-    {
-        return this.javaMethod;
+    public DataProviderMethod getMethod() {
+        return method;
     }
     
     public String toString()
@@ -70,7 +68,7 @@ public class DataProviderInfo {
         
         buf.append( "DPClassName: " + getClassName() + "\n" );
         buf.append( "ClientWrapperClassName: " + clientWrapperClassName + "\n" );
-        buf.append( "Method: " + javaMethod.getName() );
+        buf.append( "Method: " + method.getMethodName() );
         
         return buf.toString();
     }

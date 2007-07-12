@@ -38,7 +38,7 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceMetaDataTransfer;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceTransferManager;
-import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtData;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderModelMethod;
 import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
 import org.netbeans.modules.visualweb.websvcmgr.nodes.WebServiceLibReferenceHelper;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
@@ -259,7 +259,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             // webservice port/method node is even dragged onto the designer
             // without dropping
             WebServiceDescriptor wsDescriptor = getProxyDescriptorForProject(wsData);
-            String methodSig = Util.getMethodSignatureAsString(javaMethod);
+            String methodSig = Util.getMethodSignatureAsString(new DataProviderModelMethod(javaMethod));
             DesignerWebServiceExtData data = 
                     (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
             String beanClassName = data.getPortToDataProviderMap().get(port.getName()).get(methodSig);
@@ -281,7 +281,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
                 wsDescriptor = wsData.getJaxRpcDescriptor();
             }
             
-            String methodSig = Util.getMethodSignatureAsString(javaMethod);
+            String methodSig = Util.getMethodSignatureAsString(new DataProviderModelMethod(javaMethod));
             DesignerWebServiceExtData data =
                     (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
             return data.getPortToDataProviderMap().get(port.getJavaName()).get(methodSig);

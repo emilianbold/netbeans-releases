@@ -20,18 +20,15 @@
 package org.netbeans.modules.visualweb.websvcmgr.util;
 
 
-import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.util.*;
 import java.text.*;
 import java.io.*;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.ErrorManager;
 
 import org.w3c.dom.*;
 
-import com.sun.tools.ws.processor.model.Port;
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 
 // import com.sun.tools.ws.wscompile.JavaCompilerHelper;
@@ -57,6 +54,8 @@ import org.netbeans.modules.visualweb.xml.rpc.processor.model.Port;
 import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaParameter;
  */
 import org.netbeans.modules.visualweb.websvcmgr.NotFoundException;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderMethod;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderParameter;
 import org.openide.util.NbBundle;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
@@ -478,40 +477,31 @@ public class Util {
         return returnString;
     }
     
-    /** Create a name based on the Java Method and its parameters 
-     *  Complete signature of the method is returned
-     */
-    public static String getMethodSignatureAsString( JavaMethod method ) {
+    public static String getMethodSignatureAsString(DataProviderMethod method) {
         StringBuffer sig = new StringBuffer();
-        sig.append( method.getName() );
+        sig.append( method.getMethodName() );
         sig.append( "(" );
         
         // Parameters
         boolean first = true;
-//        Iterator params = method.getParameters();
-        Iterator params = method.getParametersList().iterator();
-        while (params.hasNext()) {
-            JavaParameter param = (JavaParameter)params.next();
-            
+        
+        for (DataProviderParameter param : method.getParameters()) {            
             if( first )
                 first = false;
             else
                 sig.append( "," );
             
             // Only want the class name part
-            String paramTypeName = param.getType().getRealName();
-            int lastDot = paramTypeName.lastIndexOf( '.' ); // NOI18N
-            if( lastDot != -1 )
-                paramTypeName = paramTypeName.substring( lastDot+1 );
+            String paramTypeName = param.getType();
             
             sig.append( paramTypeName );
         }
         
         sig.append( ")" );
         
-        return sig.toString();
+        return sig.toString();    
     }
-    
+
     /**
      * This method will take a WSDL port name like "threat.cfc" and change it to
      * "ThreatCfc"

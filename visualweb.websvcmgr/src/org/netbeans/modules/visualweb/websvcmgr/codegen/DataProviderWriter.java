@@ -21,10 +21,8 @@ package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 
-import com.sun.tools.ws.processor.model.java.JavaParameter;
 
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -93,26 +91,17 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
         println( "    protected ArrayList methodArgumentNames = new ArrayList();" );
         println( "    // Properties. One per method parameter." );
-//        Iterator paramIter = dataProviderInfo.getJavaMethod().getParameters();
-        Iterator paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();
-        while( paramIter.hasNext() )
-        {
-            JavaParameter param = (JavaParameter)paramIter.next();
-            println( "    protected " + param.getType().getRealName() + " " + param.getName() + ";" );
-            
+
+        for (DataProviderParameter parameter : dataProviderInfo.getMethod().getParameters()) {
+            println( "    protected " + parameter.getType() + " " + parameter.getName() + ";" );
         }
         println();
         
         // Default Constructor
         println( "    public " + className + "() {" );
         // Collect the method parameter names
-//        paramIter = dataProviderInfo.getJavaMethod().getParameters();
-        paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();        
-        while( paramIter.hasNext() )
-        {
-            JavaParameter param = (JavaParameter)paramIter.next();
-            println( "        methodArgumentNames.add( \"" + param.getName() + "\" );" );
-            
+        for (DataProviderParameter parameter : dataProviderInfo.getMethod().getParameters()) {
+            println( "        methodArgumentNames.add( \"" + parameter.getName() + "\" );" );
         }
         println( "    }" );
         println();
@@ -129,7 +118,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
         // Call super.setDataMethod() - need to the method name and parameter class types
         println( "        try { " );
         println( "            java.lang.reflect.Method dataMethod = " + clientWrapperClassName + ".class.getMethod(" );
-        println( "                \"" + dataProviderInfo.getJavaMethod().getName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
+        println( "                \"" + dataProviderInfo.getMethod().getMethodName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
         println( "            super.setDataMethod( dataMethod );" );
         
         
@@ -156,20 +145,16 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println();
         
         // Methods for get/set of the properties/method parameters
-//        paramIter = dataProviderInfo.getJavaMethod().getParameters();
-        paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();
-        while( paramIter.hasNext() )
-        {
-            JavaParameter param = (JavaParameter)paramIter.next();
-            
+        
+        for (DataProviderParameter param : dataProviderInfo.getMethod().getParameters()) {
             // Getter
-            println( "    public " + param.getType().getRealName() + " get" + Util.upperCaseFirstChar( param.getName() ) + "() {" );
+            println( "    public " + param.getType() + " get" + Util.upperCaseFirstChar( param.getName() ) + "() {" );
             println( "        return " + param.getName() + ";");
             println( "    }" );
             println();
             
             // Setter
-            println( "    public void set" + Util.upperCaseFirstChar( param.getName() ) + "( " + param.getType().getRealName() + " " + param.getName() + " ) { " );
+            println( "    public void set" + Util.upperCaseFirstChar( param.getName() ) + "( " + param.getType() + " " + param.getName() + " ) { " );
             println( "        this." + param.getName() + " = " + param.getName() + ";" );
             println( "    }" );
             println();
@@ -178,7 +163,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         // Implement abstract method from super class - getDataMethodArguments()
         println( "    public Object[] getDataMethodArguments() {" );
-        if( dataProviderInfo.getJavaMethod().getParametersList().isEmpty() )
+        if( dataProviderInfo.getMethod().getParameters().isEmpty() )
             println( "        return new Object[0];" );
         else {
             println( "        try { " );
@@ -250,17 +235,15 @@ public class DataProviderWriter extends java.io.PrintWriter {
     {
         StringBuffer buf = new StringBuffer();
         boolean first = true;
-        Iterator paramIter = dataProviderInfo.getJavaMethod().getParametersList().iterator();
-        while( paramIter.hasNext() )
-        {
-            JavaParameter param = (JavaParameter)paramIter.next();
+        
+        for (DataProviderParameter param : dataProviderInfo.getMethod().getParameters()) {
             if( first )
                     first = false;
                 else
                     buf.append( ", " );
 
                 // TODO need to handle primitive type
-                buf.append( param.getType().getRealName() );
+                buf.append( param.getType() );
                 buf.append( ".class" ); // NOI18N
             
         }

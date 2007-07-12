@@ -261,12 +261,6 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 for (int index = 0; index < methods.length; index++) {
                     methodList.add(methods[index]);
                 }
-//                Collections.sort(methodList,
-//                        new Comparator<java.lang.reflect.Method>() {
-//                    public int compare(java.lang.reflect.Method m1, java.lang.reflect.Method m2) {
-//                        return m1.getName().compareToIgnoreCase(m2.getName());
-//                    }
-//                });
 
                 beanWriter = new WrapperClientWriter(new FileWriter(webserviceClient), wsMetadataDesc, isJaxRpc, methodList, port.getOperations());
                 
@@ -293,7 +287,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                     DataProviderInfo dp = (DataProviderInfo)iter.next();
                     
                     // update the Port method name to dpClassName mapping
-                    methodToDataProviderTempMap.put(Util.getMethodSignatureAsString(dp.getJavaMethod()),
+                    methodToDataProviderTempMap.put(Util.getMethodSignatureAsString(dp.getMethod()),
                             wsMetadataDesc.getPackageName() + "." + dp.getClassName());
                     
                     try {
