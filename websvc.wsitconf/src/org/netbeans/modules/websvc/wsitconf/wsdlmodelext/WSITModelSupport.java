@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -53,6 +54,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
@@ -313,10 +315,6 @@ public class WSITModelSupport {
         return model;
     }
     
-    private static FileObject getLocalWsdlFO(FileObject localWSDLFolder, String wsdlName){
-        return localWSDLFolder.getFileObject(wsdlName);
-    }
-    
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
      */
     public static WSDLModel getServiceModelForClient(JAXWSClientSupport supp, Client client) throws IOException, Exception {
@@ -330,13 +328,9 @@ public class WSITModelSupport {
     }
     
     private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
-        String wsdlLocation = supp.getWsdlLocation(service.getName());
-        FileObject wsdlFO = getLocalWsdlFO(supp.getLocalWsdlFolderForService(service.getName(),false), getWSDLFileName(wsdlLocation));
+        String wsdlLocation = service.getLocalWsdlFile();
+        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(File.separator + wsdlLocation);
         return getModelFromFO(wsdlFO, true);
-    }
-    
-    private static String getWSDLFileName(String wsdlLocation){
-        return wsdlLocation.substring(wsdlLocation.lastIndexOf("/") + 1);
     }
     
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
@@ -613,15 +607,26 @@ public class WSITModelSupport {
         }
     }
     
-    //TODO: Need a way to determine binding that the user wants
-    //For now just get the first one (if there is one)
     public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection<FileObject> createdFiles) {
+        String portName = service.getPortName();
+        String serviceName = service.getServiceName();
         WSDLModel model = WSITModelSupport.getModelForService(service, implClass, project, create, createdFiles);
         if (model == null) return null;
         Definitions definitions = model.getDefinitions();
         Collection<Binding> bindings = definitions.getBindings();
-        if(bindings.size() > 0){
-            return bindings.iterator().next();
+        if ((bindings == null) || (bindings.size() == 0)) return null;
+        if (bindings.size() == 1) return bindings.iterator().next();
+        Collection<org.netbeans.modules.xml.wsdl.model.Service> services = definitions.getServices();
+        for (org.netbeans.modules.xml.wsdl.model.Service s : services) {
+            if (serviceName.equals(s.getName())) {
+                Collection<Port> ports = s.getPorts();
+                for (Port p : ports) {
+                    if (portName.equals(p.getName())) {
+                        QName b = p.getBinding().getQName();
+                        return model.findComponentByName(b, Binding.class);
+                    }
+                }
+            }
         }
         return null;
     }
