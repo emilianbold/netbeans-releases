@@ -852,7 +852,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
         }
 
-        if (parent.getLayoutSupport() == null) { // new layout may impose more limitation
+        if (parent != null && parent.getLayoutSupport() == null) { // new layout may impose more limitation
             workingIds = formDesigner.getLayoutDesigner().getDraggableComponents(workingIds);
             if (workingIds.size() != workingComps.size()) {
                 workingComps.clear();
