@@ -23,13 +23,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.spi.RubyDebuggerImplementation;
@@ -121,8 +123,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         if (descriptor.getPwd() != null) {
             debugDesc.setBaseDirectory(descriptor.getPwd());
         }
-        if (jrubySet && descriptor.getClassPath() != null) {
-            debugDesc.setEnvironment(Collections.singletonMap("CLASSPATH", descriptor.getClassPath())); // NOI18N
+        if (jrubySet) {
+            debugDesc.setEnvironment(getJRubyEnvironment(descriptor));
         }
         RubyDebuggerProxy proxy;
         String interpreter = RubyInstallation.getInstance().getRuby();
@@ -139,7 +141,16 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         proxy.startDebugging(RubyBreakpoint.getBreakpoints());
         return proxy.getDebugTarged().getProcess();
     }
-    
+
+    private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
+        Map<String, String> env = new HashMap<String, String>();
+        env.put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
+        if (descriptor.getClassPath() != null) {
+            env.put("CLASSPATH", descriptor.getClassPath()); // NOI18N
+        }
+        return env;
+    }
+
     private static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         boolean jrubySet = RubyInstallation.getInstance().isJRubySet();
