@@ -88,7 +88,11 @@ public class PortTypeEditor extends PropertyEditorSupport
 
             QName qName;
             for(PortType pt : portTypes) {
-                qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
+                if(CasaWrapperModel.isDummyPortType(pt)) {
+                    qName = new QName(Constants.EMPTY_STRING,Constants.EMPTY_STRING); 
+                } else {
+                    qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
+                }
                 mPortTypesComboBox.addItem(qName);
                 mapPTtoQName.put(pt, qName);
             }
