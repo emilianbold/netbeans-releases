@@ -167,24 +167,27 @@ public class Reformatter {
             char kind = delEnd < 0 ? 'i' : addEnd < 0 ? 'r' : 'c';
             switch (kind) {
             case 'i':
-                if (sourceTS.moveNext() || sourceTS.isEmpty()) {
-                    int sourceOffset = sourceTS.isEmpty() ? offset : sourceTS.offset() + offset;
-                    if (sourceOffset >= startOffset && sourceOffset <= endOffset) {
-                        Position pos = doc.createPosition(sourceOffset + shift);
-                        StringBuilder sb = new StringBuilder();
-                        textTS.moveIndex(addStart);
-                        while (textTS.moveNext() && textTS.index() <= addEnd)
-                            sb.append(textTS.token().text());
-                        if (sb.length() > 0)
-                            diffs.add(new Diff(pos, pos, sb.toString()));
-                    }
+                int sourceOffset = offset;
+                if (sourceTS.moveNext()) {
+                    sourceOffset += sourceTS.offset();
+                } else if (sourceTS.movePrevious()) {
+                    sourceOffset += sourceTS.offset() + sourceTS.token().length();
+                }
+                if (sourceOffset >= startOffset && sourceOffset <= endOffset) {
+                    Position pos = doc.createPosition(sourceOffset + shift);
+                    StringBuilder sb = new StringBuilder();
+                    textTS.moveIndex(addStart);
+                    while (textTS.moveNext() && textTS.index() <= addEnd)
+                        sb.append(textTS.token().text());
+                    if (sb.length() > 0)
+                        diffs.add(new Diff(pos, pos, sb.toString()));
                 }
                 break;
             case 'r':
                 int start = -1;
                 int end = -1;
                 while (sourceTS.moveNext() && sourceTS.index() <= delEnd) {
-                    int sourceOffset = sourceTS.offset() + offset;
+                    sourceOffset = sourceTS.offset() + offset;
                     int sourceEndOffset = sourceOffset + sourceTS.token().length();
                     if (sourceEndOffset > startOffset && sourceOffset < endOffset) {
                         if (start < 0) {
@@ -206,7 +209,7 @@ public class Reformatter {
                 StringBuilder preDelta = new StringBuilder();
                 StringBuilder postDelta = new StringBuilder();
                 while (sourceTS.moveNext() && sourceTS.index() <= delEnd) {
-                    int sourceOffset = sourceTS.offset() + offset;
+                    sourceOffset = sourceTS.offset() + offset;
                     int sourceEndOffset = sourceOffset + sourceTS.token().length();
                     if (sourceEndOffset < startOffset) {
                         preDelta.append(sourceTS.token().text());
