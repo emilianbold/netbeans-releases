@@ -207,11 +207,11 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
 
         setLayout(new java.awt.BorderLayout());
 
+        colorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         colorPanel.setLayout(new java.awt.GridBagLayout());
 
-        colorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         colorLabel.setLabelFor(colorPanel);
-        colorLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_COLOR"));
+        colorLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_COLOR")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -220,7 +220,8 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         colorPanel.add(colorLabel, gridBagConstraints);
 
         browseButton.setText("...");
-        browseButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("BG_SELECTION_BUTTON_TOOLTIP"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle"); // NOI18N
+        browseButton.setToolTipText(bundle.getString("BG_SELECTION_BUTTON_TOOLTIP")); // NOI18N
         browseButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         browseButton.setPreferredSize(new java.awt.Dimension(20, 20));
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -228,7 +229,6 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 browseButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
@@ -236,8 +236,8 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(6, 3, 0, 0);
         colorPanel.add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("BG_SELECTION_BUTTON_ACCESSIBLE_NAME"));
-        browseButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("BG_SELECTION_BUTTON_ACCESSIBLE_DESC"));
+        browseButton.getAccessibleContext().setAccessibleName(bundle.getString("BG_SELECTION_BUTTON_ACCESSIBLE_NAME")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("BG_SELECTION_BUTTON_ACCESSIBLE_DESC")); // NOI18N
 
         imageFileField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -249,7 +249,6 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 imageFileFieldFocusLost(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -261,7 +260,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         colorPanel.add(imageFileField, gridBagConstraints);
 
         lineHeightLabel.setLabelFor(imageFileField);
-        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_IMAGE"));
+        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_IMAGE")); // NOI18N
         lineHeightLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -271,21 +270,21 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         colorPanel.add(lineHeightLabel, gridBagConstraints);
 
         imageTileLabel.setLabelFor(repeatComboBox);
-        imageTileLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUNDTILE"));
+        imageTileLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUNDTILE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(imageTileLabel, gridBagConstraints);
 
         imageScrollLabel.setLabelFor(scrollComboBox);
-        imageScrollLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_SCROLL"));
+        imageScrollLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_SCROLL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(imageScrollLabel, gridBagConstraints);
 
         scrollComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -293,7 +292,6 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 scrollComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -301,14 +299,13 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(scrollComboBox, gridBagConstraints);
-        scrollComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("SCROLL_COMBO_ACCESSIBLE_DESC"));
+        scrollComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("SCROLL_COMBO_ACCESSIBLE_DESC")); // NOI18N
 
         repeatComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 repeatComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -316,24 +313,24 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(repeatComboBox, gridBagConstraints);
-        repeatComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("TILE_COMBO_ACCESSIBLE_DESC"));
+        repeatComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("TILE_COMBO_ACCESSIBLE_DESC")); // NOI18N
 
         horizontalPosLabel.setLabelFor(horizontalPosComboBox);
-        horizontalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_HORIZONTAL_POS"));
+        horizontalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_HORIZONTAL_POS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(horizontalPosLabel, gridBagConstraints);
 
         verticalPosLabel.setLabelFor(verticalPosComboBox);
-        verticalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_VERTICAL_POS"));
+        verticalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_VERTICAL_POS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(verticalPosLabel, gridBagConstraints);
 
         horizontalPosComboBox.setEditable(true);
@@ -347,7 +344,6 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 horizontalPosComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -356,7 +352,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(horizontalPosComboBox, gridBagConstraints);
-        horizontalPosComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("HORIZPOS_COMBO_ACCESSIBLE_DESC"));
+        horizontalPosComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("HORIZPOS_COMBO_ACCESSIBLE_DESC")); // NOI18N
 
         verticalPosComboBox.setEditable(true);
         verticalPosComboBox.setEnabled(false);
@@ -370,7 +366,6 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 verticalPosComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -379,7 +374,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(verticalPosComboBox, gridBagConstraints);
-        verticalPosComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("VERTPOS_COMBO_ACCESSIBLE_DESC"));
+        verticalPosComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("VERTPOS_COMBO_ACCESSIBLE_DESC")); // NOI18N
 
         horizontalUnitComboBox.setEnabled(false);
         horizontalUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -387,15 +382,14 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 horizontalUnitComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         colorPanel.add(horizontalUnitComboBox, gridBagConstraints);
-        horizontalUnitComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("HORIZPOS_UNIT_COMBO_ACCESSIBLE_NAME"));
-        horizontalUnitComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("HORIZPOS_UNIT_COMBO_ACCESSIBLE_DESC"));
+        horizontalUnitComboBox.getAccessibleContext().setAccessibleName(bundle.getString("HORIZPOS_UNIT_COMBO_ACCESSIBLE_NAME")); // NOI18N
+        horizontalUnitComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("HORIZPOS_UNIT_COMBO_ACCESSIBLE_DESC")); // NOI18N
 
         verticalUnitComboBox.setEnabled(false);
         verticalUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -403,18 +397,16 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 verticalUnitComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         colorPanel.add(verticalUnitComboBox, gridBagConstraints);
-        verticalUnitComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("VERTPOS_UNIT_COMBO_ACCESSIBLE_NAME"));
-        verticalUnitComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("VERTPOS_UNIT_COMBO_ACCESSIBLE_DESC"));
+        verticalUnitComboBox.getAccessibleContext().setAccessibleName(bundle.getString("VERTPOS_UNIT_COMBO_ACCESSIBLE_NAME")); // NOI18N
+        verticalUnitComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("VERTPOS_UNIT_COMBO_ACCESSIBLE_DESC")); // NOI18N
 
         colorSelectionPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -422,16 +414,15 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
 
         add(colorPanel, java.awt.BorderLayout.NORTH);
 
+        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorPanel.setLayout(new java.awt.BorderLayout());
 
-        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorLabel.setForeground(new java.awt.Color(0, 0, 153));
         errorLabel.setMinimumSize(new java.awt.Dimension(200, 20));
         errorLabel.setPreferredSize(new java.awt.Dimension(200, 20));
         errorPanel.add(errorLabel, java.awt.BorderLayout.CENTER);
 
         add(errorPanel, java.awt.BorderLayout.SOUTH);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void verticalUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_verticalUnitComboBoxItemStateChanged
