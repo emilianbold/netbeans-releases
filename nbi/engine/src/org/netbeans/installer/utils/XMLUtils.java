@@ -76,35 +76,34 @@ public abstract class XMLUtils {
             final File file) throws XMLException {
         FileOutputStream output = null;
         
-        try {
-            for (int i = 0; i < MAXIMUM_SAVE_ATTEMPTS; i++) {
+        for (int i = 0; i < MAXIMUM_SAVE_ATTEMPTS; i++) {
+            try {
                 saveXMLDocument(document, output = new FileOutputStream(file));
                 
-                // check the size of the resulting file -- sometimes it just happens 
-                // to be empty, we need to resave then; if we fail to save for 
-                // several times (MAXIMUM_SAVE_ATTEMPTS) -- fail with an 
+                // check the size of the resulting file -- sometimes it just happens
+                // to be empty, we need to resave then; if we fail to save for
+                // several times (MAXIMUM_SAVE_ATTEMPTS) -- fail with an
                 // XMLException
-                if (file.length() > 0) {
-                    break;
+            } catch (IOException e) {
+                throw new XMLException("Cannot save XML document", e);
+            } finally {
+                if (output != null) {
+                    try {
+                        output.close();
+                        output = null;
+                    } catch (IOException e) {
+                        ErrorManager.notifyDebug("Could not close the stream", e);
+                    }
                 }
             }
-            
-            if (file.length() == 0) {
-                throw new XMLException("Cannot save XML document after " + 
-                        MAXIMUM_SAVE_ATTEMPTS + " attempts, the resulting " +
-                        "file is empty.");
-            }
-        } catch (IOException e) {
-            throw new XMLException("Cannot save XML document", e);
-        } finally {
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    ErrorManager.notifyDebug("Could not close the stream", e);
-                }
+            if (file.length() > 0) {
+                return;
             }
         }
+        throw new XMLException("Cannot save XML document after " +
+                MAXIMUM_SAVE_ATTEMPTS + " attempts, the resulting " +
+                "file is empty.");
+        
     }
     
     public static void saveXMLDocument(
@@ -345,9 +344,9 @@ public abstract class XMLUtils {
             List <List <Requirement>> orList = requirement.getAlternatives();
             for(List <Requirement> requirememntsBlock : orList) {
                 element.appendChild(
-                        saveDependencies(requirememntsBlock, 
+                        saveDependencies(requirememntsBlock,
                         element.getOwnerDocument().createElement("or")));
-            }            
+            }
         }
         
         return element;
@@ -618,6 +617,6 @@ public abstract class XMLUtils {
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/utils/xml/reformat.xslt"; // NOI18N
     
-    private static final int MAXIMUM_SAVE_ATTEMPTS = 
+    private static final int MAXIMUM_SAVE_ATTEMPTS =
             3;
 }
