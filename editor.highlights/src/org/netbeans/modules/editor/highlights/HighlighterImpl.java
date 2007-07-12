@@ -22,16 +22,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseCaret;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
@@ -141,9 +141,15 @@ public final class HighlighterImpl implements PropertyChangeListener, ChangeList
             layer.setHighlights(type, highlights);
             
             c.repaint(); //TODO: not very efficient.
+            
+            // force caret repaint, see #100384
+            Caret caret = c.getCaret();
+            if (caret instanceof BaseCaret) {
+                ((BaseCaret) caret).settingsChange(null);
+            }
         }
     }
-
+    
     public void stateChanged(ChangeEvent e) {
         assureRegistered(Registry.getMostActiveComponent());
     }
