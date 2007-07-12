@@ -38,7 +38,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import java.util.Iterator;
 import javax.swing.text.Document;
-import org.netbeans.modules.editor.lib2.DocumentsRegistry;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.KeyEventBlocker;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.ComponentUtils;
@@ -201,7 +201,7 @@ public class EditorFindDialogSupport extends WindowAdapter implements ActionList
     }
 
     private void updateCaretPosition() {
-        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
             caretPosition = c.getCaret().getDot();
         }
@@ -216,7 +216,7 @@ public class EditorFindDialogSupport extends WindowAdapter implements ActionList
        
     public void windowDeactivated(WindowEvent evt) {
         Map<String, Object> findProps = findPanel.getFindProps();
-        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
             boolean blockSearch = getBooleanProp(EditorFindSupport.FIND_BLOCK_SEARCH, findProps);
             if (blockSearch && !findPerformed){
@@ -487,7 +487,7 @@ public class EditorFindDialogSupport extends WindowAdapter implements ActionList
         }
         
         private void initBlockSearch(){
-            JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+            JTextComponent c = EditorRegistry.lastFocusedComponent();
             String selText = null;
             int startSelection = 0;
             int endSelection = 0;
@@ -692,7 +692,7 @@ public class EditorFindDialogSupport extends WindowAdapter implements ActionList
             if (evt.getItem() == bwdSearch){
                 if (blockSearch.isEnabled() && blockSearch.isSelected()) {
                     boolean value = val.booleanValue();
-                    JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+                    JTextComponent c = EditorRegistry.lastFocusedComponent();
                     if (c!=null){
                         c.getCaret().setDot(value ? blockSearchEndPos : blockSearchStartPos);
                         updateCaretPosition();
@@ -711,7 +711,7 @@ public class EditorFindDialogSupport extends WindowAdapter implements ActionList
                     if (blockSearchStartPos <= 0  && blockSearchEndPos <= 0 ) {
                         initBlockSearch();
                     }else{
-                        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+                        JTextComponent c = EditorRegistry.lastFocusedComponent();
                         if (c!=null){
                             c.getCaret().setDot(bwdSearch.isSelected() ? blockSearchEndPos : blockSearchStartPos);
                             updateCaretPosition();

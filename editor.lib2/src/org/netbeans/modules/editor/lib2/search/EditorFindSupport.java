@@ -37,10 +37,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.modules.editor.lib2.ComponentUtils;
 import org.netbeans.modules.editor.lib2.DocUtils;
-import org.netbeans.modules.editor.lib2.DocumentsRegistry;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
 import org.netbeans.modules.editor.lib2.highlighting.Factory;
 import org.netbeans.modules.editor.lib2.search.DocumentFinder.FindReplaceResult;
@@ -249,7 +249,7 @@ public final class EditorFindSupport {
     }
     
     public void setBlockSearchHighlight(int startSelection, int endSelection){
-        JTextComponent comp = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent comp = EditorRegistry.lastFocusedComponent();
         BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.BLOCK_SEARCH_LAYER);
 
         if (layer != null) {
@@ -327,7 +327,7 @@ public final class EditorFindSupport {
         
         b = (Boolean)props.get(FIND_INC_SEARCH);
         if (b != null && b.booleanValue()) { // inc search enabled
-            JTextComponent comp = DocumentsRegistry.getMostActiveComponent();
+            JTextComponent comp = EditorRegistry.lastFocusedComponent();
             
             if (comp != null) {
                 b = (Boolean)props.get(FIND_BACKWARD_SEARCH);
@@ -408,7 +408,7 @@ public final class EditorFindSupport {
 
     public void incSearchReset() {
         // Find the layer
-        JTextComponent comp = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent comp = EditorRegistry.lastFocusedComponent();
         BlockHighlighting layer = comp == null ? null : (BlockHighlighting)findLayer(comp, Factory.INC_SEARCH_LAYER);
         
         if (layer != null) {
@@ -482,7 +482,7 @@ public final class EditorFindSupport {
         incSearchReset();
         props = getValidFindProperties(props);
         boolean back = isBackSearch(props, oppositeDir);
-        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         Object findWhat = props.get(FIND_WHAT);
         if (findWhat == null) { // nothing to search for
             return null;
@@ -664,7 +664,7 @@ public final class EditorFindSupport {
         int blockSearchStart = (i != null) ? i.intValue() : -1;
         int blockSearchEnd = getBlockEndOffset();
 
-        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         if (c != null) {
             String s = (String)props.get(FIND_REPLACE_WITH);
             Caret caret = c.getCaret();
@@ -712,7 +712,7 @@ public final class EditorFindSupport {
 
     public void replaceAll(Map<String, Object> props) {
         incSearchReset();
-        JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         Document doc = (Document)c.getDocument();
         int maxCnt = doc.getLength();
         int replacedCnt = 0;

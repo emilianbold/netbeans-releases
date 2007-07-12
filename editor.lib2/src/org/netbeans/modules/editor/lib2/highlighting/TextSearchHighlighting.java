@@ -23,6 +23,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -45,7 +47,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal
  */
-public class TextSearchHighlighting extends AbstractHighlightsContainer implements PropertyChangeListener, HighlightsChangeListener {
+public class TextSearchHighlighting extends AbstractHighlightsContainer implements PropertyChangeListener, HighlightsChangeListener, DocumentListener {
 
     private static final Logger LOG = Logger.getLogger(TextSearchHighlighting.class.getName());
     
@@ -66,8 +68,12 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         this.component = component;
         this.document = component.getDocument();
         
+        // Let the bag update first...
         this.bag = new OffsetsBag(document);
         this.bag.addHighlightsChangeListener(this);
+        
+        // ...and the internal listener second
+        this.document.addDocumentListener(WeakListeners.document(this, this.document));
         
         EditorFindSupport.getInstance().addPropertyChangeListener(
             WeakListeners.propertyChange(this, EditorFindSupport.getInstance())
@@ -93,6 +99,18 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         }
     }
 
+    public void insertUpdate(DocumentEvent e) {
+        this.bag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        this.bag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, false);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        // not interested
+    }
+    
     private void fillInTheBag() {
         document.render(new Runnable() {
             public void run() {

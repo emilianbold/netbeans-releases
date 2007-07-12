@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 
 /**
  * 
@@ -41,7 +42,7 @@ public final class ComponentUtils {
     }
 
     public static void returnFocus() {
-         JTextComponent c = DocumentsRegistry.getMostActiveComponent();
+         JTextComponent c = EditorRegistry.lastFocusedComponent();
          if (c != null) {
              requestFocus(c);
          }

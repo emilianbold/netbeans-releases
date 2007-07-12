@@ -19,9 +19,13 @@
 package org.netbeans.modules.editor.impl;
 
 import java.awt.event.FocusEvent;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.editor.*;
 import javax.swing.Action;
 import javax.swing.UIManager;
+import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.openide.util.NbBundle;
 
 import java.awt.Color;
@@ -29,6 +33,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -55,6 +60,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.openide.awt.Mnemonics;
+import org.openide.util.Utilities;
 
 
 /**
@@ -103,12 +110,21 @@ public final class SearchBar extends JToolBar {
     private JButton findNextButton;
     private JButton findPreviousButton;
     private JCheckBox matchCaseCheckBox;
+    private JCheckBox wholeWordsCheckBox;
+    private JCheckBox regexpCheckBox;
+    private JCheckBox highlightCheckBox;
     private Map findProps;
         
+    @SuppressWarnings("unchecked")
     public SearchBar(JTextComponent component) {
         this.component = component;
 
         setFloatable(false);
+        Color bgColor = getBackground();
+        bgColor = new Color( Math.max( 0, bgColor.getRed() - 20 ),
+                             Math.max( 0, bgColor.getGreen() - 20 ),
+                             Math.max( 0, bgColor.getBlue() - 20 ) );        
+        setBackground(bgColor);
         
         //setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         addMouseListener(sharedMouseListener);
@@ -163,7 +179,7 @@ public final class SearchBar extends JToolBar {
                 }
             });
 
-        closeButton = new JButton(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/find_close.png"))); // NOI18N
+        closeButton = new JButton(new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/find_close.png"))); // NOI18N
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 looseFocus();
@@ -172,8 +188,9 @@ public final class SearchBar extends JToolBar {
         closeButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_CloseIncrementalSearchSidebar")); // NOI18N
         processButton(closeButton);
         
-        findLabel = new JLabel(NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
-
+        findLabel = new JLabel(); 
+        Mnemonics.setLocalizedText( findLabel, NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
+        
         // configure incremental search text field
         incrementalSearchTextField = new JTextField(10) {
             public Dimension getMinimumSize() {
@@ -185,7 +202,7 @@ public final class SearchBar extends JToolBar {
             }
         };
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
-
+        
         // listen on text change
         incrementalSearchTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -227,11 +244,9 @@ public final class SearchBar extends JToolBar {
                 }});
 
         // configure find next button
-        
-        // configure find next button
         findNextButton = new JButton(
-            NbBundle.getMessage(SearchBar.class, "CTL_FindNext"), // NOI18N
-            new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/find_next.png"))); // NOI18N
+            new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/find_next.png"))); // NOI18N
+        Mnemonics.setLocalizedText( findNextButton, NbBundle.getMessage(SearchBar.class, "CTL_FindNext")); // NOI18N
         findNextButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     findNext();
@@ -239,11 +254,9 @@ public final class SearchBar extends JToolBar {
         processButton(findNextButton);
 
         // configure find previous button
-        
-        // configure find previous button
         findPreviousButton = new JButton(
-            NbBundle.getMessage(SearchBar.class, "CTL_FindPrevious"), // NOI18N
-            new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/find_previous.png"))); // NOI18N
+            new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/find_previous.png"))); // NOI18N
+        Mnemonics.setLocalizedText(findPreviousButton, NbBundle.getMessage(SearchBar.class, "CTL_FindPrevious")); // NOI18N
         findPreviousButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     findPrevious();
@@ -252,34 +265,90 @@ public final class SearchBar extends JToolBar {
         processButton(findPreviousButton);
 
         // configure match case check box
-        matchCaseCheckBox = new JCheckBox(NbBundle.getMessage(SearchBar.class, "CTL_MatchCase"), false); // NOI18N
+        matchCaseCheckBox = new JCheckBox();
+        Mnemonics.setLocalizedText(matchCaseCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_MatchCase")); // NOI18N
         matchCaseCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Put focus back in the incremental search textField
+                incrementalSearch();
                 incrementalSearchTextField.requestFocusInWindow();
             }
         });
         processButton(matchCaseCheckBox);
 
+        wholeWordsCheckBox = new JCheckBox();
+        Mnemonics.setLocalizedText(wholeWordsCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WholeWords")); // NOI18N
+        wholeWordsCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Put focus back in the incremental search textField
+                incrementalSearch();
+                incrementalSearchTextField.requestFocusInWindow();
+            }
+        });
+        processButton(wholeWordsCheckBox);
+        
+        regexpCheckBox = new JCheckBox();
+        Mnemonics.setLocalizedText(regexpCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Regexp")); // NOI18N
+        regexpCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Switch other checkbozes on/off
+                // matchCaseCheckBox.setEnabled(!regexpCheckBox.isSelected());
+                wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
+                // Put focus back in the incremental search textField
+                incrementalSearch();
+                incrementalSearchTextField.requestFocusInWindow();
+            }
+        });
+        processButton(regexpCheckBox);
+        
+        highlightCheckBox = new JCheckBox();
+        Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight")); // NOI18N
+        highlightCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Put focus back in the incremental search textField
+                incrementalSearch();
+                incrementalSearchTextField.requestFocusInWindow();
+            }
+        });
+        highlightCheckBox.setSelected(true);
+        processButton(highlightCheckBox);
+        
+
         // configure find properties
         findProps = new HashMap();
-        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
-        findProps.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.FALSE);
-        findProps.put(SettingsNames.FIND_WRAP_SEARCH, Boolean.TRUE);
-
-        add(closeButton);
-        addSeparator();
+        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, true);
+        findProps.put(SettingsNames.FIND_WHOLE_WORDS, false);
+        findProps.put(SettingsNames.FIND_WRAP_SEARCH, true);
+        findProps.put(SettingsNames.FIND_BLOCK_SEARCH, false);
+        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, null);
+        findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, null);
+        // XXX take from preferences
+        findProps.put(SettingsNames.FIND_MATCH_CASE, false);
+        findProps.put(SettingsNames.FIND_REG_EXP, false);
+        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, true);
+        
+        // padding at the end of the toolbar
+        JPanel spacer = new JPanel();
+        spacer.setSize(4, 4);
+        spacer.setMaximumSize(new Dimension(4,4));
+        spacer.setOpaque(false);
+        add(spacer);
+        
         add(findLabel);
         add(incrementalSearchTextField);
         addSeparator();
         add(findPreviousButton);
         add(findNextButton);
+        addSeparator();
         add(matchCaseCheckBox);
-
+        add(wholeWordsCheckBox);
+        add(regexpCheckBox);
+        add(highlightCheckBox);
         // padding at the end of the toolbar
         JPanel padding = new JPanel();
         padding.setOpaque(false);
         add(padding);
+        add(closeButton);
         
         // initially not visible
         setVisible(false);
@@ -302,16 +371,25 @@ public final class SearchBar extends JToolBar {
     }
     
     private void gainFocus() {
+        
         setVisible(true);
+        initBlockSearch();
         incrementalSearchTextField.requestFocusInWindow();
 
         if (incrementalSearchTextField.getText().length() > 0) {
             // preselect the text in incremental search text field
             incrementalSearchTextField.selectAll();
+            findPreviousButton.setEnabled(true);
+            findNextButton.setEnabled(true);
+        }
+        else {
+            findPreviousButton.setEnabled(false);
+            findNextButton.setEnabled(false);
         }
     }
 
     private void looseFocus() {
+        FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         setVisible(false);
 
         if (component.isEnabled()) {
@@ -319,18 +397,32 @@ public final class SearchBar extends JToolBar {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void incrementalSearch() {
         String incrementalSearchText = incrementalSearchTextField.getText();
-
+        boolean empty = incrementalSearchText.length() <= 0;
+        
+        // Enable/disable the pre/next buttons
+        findPreviousButton.setEnabled(!empty);
+        findNextButton.setEnabled(!empty);
+        
         // configure find properties
         FindSupport findSupport = FindSupport.getFindSupport();
 
         findProps.put(SettingsNames.FIND_WHAT, incrementalSearchText);
-        findProps.put(SettingsNames.FIND_MATCH_CASE,
-            matchCaseCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
-        findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, Boolean.FALSE);
-        findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.TRUE);
-
+        findProps.put(SettingsNames.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
+        findProps.put(SettingsNames.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
+        findProps.put(SettingsNames.FIND_REG_EXP, regexpCheckBox.isSelected());
+        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
+        
+        findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, false);        
+        findProps.put(SettingsNames.FIND_INC_SEARCH, true);
+        
+        findSupport.putFindProperty(SettingsNames.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
+        // findSupport.putFindProperties(findProps);
+        findSupport.putFindProperty(SettingsNames.FIND_WHAT, incrementalSearchText);
+        
+        
         // search starting at current caret position
         int caretPosition = component.getCaretPosition();
 
@@ -341,6 +433,7 @@ public final class SearchBar extends JToolBar {
             // text not found - indicate error in incremental search
             // text field with red foreground
             incrementalSearchTextField.setForeground(Color.red);
+            Toolkit.getDefaultToolkit().beep();
         }
     }
 
@@ -352,6 +445,7 @@ public final class SearchBar extends JToolBar {
         find(false);
     }
 
+    @SuppressWarnings("unchecked")
     private void find(boolean next) {
         String incrementalSearchText = incrementalSearchTextField.getText();
 
@@ -362,14 +456,16 @@ public final class SearchBar extends JToolBar {
         findProps.put(SettingsNames.FIND_MATCH_CASE,
             matchCaseCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
         findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, Boolean.FALSE);
-        findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.FALSE);
+        findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.TRUE);
+        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
 
         if (findSupport.find(findProps, !next)) {
             // text found - reset incremental search text field's foreground
-            incrementalSearchTextField.setForeground(null);
+            incrementalSearchTextField.setBackground(null);
         } else {
             // text not found - indicate error in incremental search text field with red foreground
-            incrementalSearchTextField.setForeground(Color.red);
+            incrementalSearchTextField.setBackground(Color.red);
+            Toolkit.getDefaultToolkit().beep();
         }
     }
 
@@ -381,6 +477,71 @@ public final class SearchBar extends JToolBar {
             button.addMouseListener(sharedMouseListener);
         }
         button.setFocusable(false);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void initBlockSearch() {
+        JTextComponent c = org.netbeans.editor.Utilities.getLastActiveComponent();
+        String selText = null;
+        int startSelection = 0;
+        int endSelection = 0;
+        boolean blockSearchVisible = false;
+
+        if (c != null) {
+            startSelection = c.getSelectionStart();
+            endSelection = c.getSelectionEnd();
+
+            Document doc = c.getDocument();
+            if (doc instanceof BaseDocument){
+                BaseDocument bdoc = (BaseDocument) doc;
+                try{
+                    int startLine = org.netbeans.editor.Utilities.getLineOffset(bdoc, startSelection);
+                    int endLine = org.netbeans.editor.Utilities.getLineOffset(bdoc, endSelection);
+                    if (endLine > startLine) {
+                        blockSearchVisible = true;
+                    }
+                } catch (BadLocationException ble){
+                }
+            }
+
+            // caretPosition = bwdSearch.isSelected() ? c.getSelectionEnd() : c.getSelectionStart();
+
+            if (blockSearchVisible == false){
+                selText = c.getSelectedText();
+                if (selText != null) {
+                    int n = selText.indexOf( '\n' );
+                    if (n >= 0 ) selText = selText.substring(0, n);
+                    incrementalSearchTextField.setText(selText);
+                    // findWhat.getEditor().setItem(selText);
+                    // changeFindWhat(true);
+                }
+            }
+
+            int blockSearchStartPos = blockSearchVisible ? startSelection : 0;
+            int blockSearchEndPos = blockSearchVisible ? endSelection : 0;
+
+            try{                
+                findProps.put(SettingsNames.FIND_BLOCK_SEARCH, blockSearchVisible);
+                findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, blockSearchStartPos);
+                int be = getBlockEndOffset();
+                if (be < 0){
+                    findProps.put(SettingsNames.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndPos));
+                }else{
+                    blockSearchEndPos = be;
+                }
+                FindSupport.getFindSupport().setBlockSearchHighlight(blockSearchStartPos, blockSearchEndPos);
+            } catch(BadLocationException ble){
+                findProps.put(SettingsNames.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                findProps.put(SettingsNames.FIND_BLOCK_SEARCH_START, null);
+            }
+            
+            FindSupport.getFindSupport().putFindProperties(findProps);
+        }
+    }
+    
+    private int getBlockEndOffset(){
+        Position pos = (Position) FindSupport.getFindSupport().getFindProperties().get(SettingsNames.FIND_BLOCK_SEARCH_END);
+        return (pos != null) ? pos.getOffset() : -1;
     }
     
     /**
@@ -405,7 +566,7 @@ public final class SearchBar extends JToolBar {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                JComponent comp = Utilities.getEditorUI(target).getExtComponent();
+                JComponent comp = org.netbeans.editor.Utilities.getEditorUI(target).getExtComponent();
                 if (comp != null) {
                     SearchBar issb = findComponent(comp,SearchBar.class, 5);
                     if (issb != null) {
@@ -429,7 +590,7 @@ public final class SearchBar extends JToolBar {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                JComponent comp = Utilities.getEditorUI(target).getExtComponent();
+                JComponent comp = org.netbeans.editor.Utilities.getEditorUI(target).getExtComponent();
                 if (comp != null) {
                     SearchBar issb = findComponent(comp,SearchBar.class, 5);
                     if (issb != null) {
