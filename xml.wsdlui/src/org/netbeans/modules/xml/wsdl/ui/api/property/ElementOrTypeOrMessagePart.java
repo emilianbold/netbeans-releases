@@ -35,13 +35,14 @@ import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 public class ElementOrTypeOrMessagePart {
-    GlobalElement mElement;
-    GlobalType mType;
-    Part mPart;
-    Message mMessage;
-    QName mQName;
-    ParameterType pType = ParameterType.NONE;
-    WSDLModel mModel;
+    private GlobalElement mElement;
+    private GlobalType mType;
+    private Part mPart;
+    private Message mMessage;
+    private QName mQName;
+    private ParameterType pType = ParameterType.NONE;
+    private WSDLModel mModel;
+    private String mPartName;
 
     public ElementOrTypeOrMessagePart(QName qname, WSDLModel model, ParameterType pType) {
         this.pType = pType;
@@ -56,8 +57,10 @@ public class ElementOrTypeOrMessagePart {
                         for (GlobalElement ele : ges) {
                             if (qname.getLocalPart().equals(ele.getName())) {
                                 mElement = ele;
+                                break;
                             }
                         }
+                        
                     }
                 } else if (pType == ParameterType.TYPE){
                     Collection<GlobalType> gts = schema.findAllGlobalTypes();
@@ -65,6 +68,7 @@ public class ElementOrTypeOrMessagePart {
                         for (GlobalType type : gts) {
                             if (qname.getLocalPart().equals(type.getName())) {
                                 mType = type;
+                                break;
                             }
                         }
                     }
@@ -84,6 +88,8 @@ public class ElementOrTypeOrMessagePart {
     public ElementOrTypeOrMessagePart(QName qname, WSDLModel model, String partName) {
         pType = ParameterType.MESSAGEPART;
         mModel = model;
+        mQName = qname;
+        mPartName = partName;
         mMessage = mModel.findComponentByName(qname, Message.class);
         if (mMessage != null) {
             for (Part part : mMessage.getParts()) {
@@ -125,11 +131,15 @@ public class ElementOrTypeOrMessagePart {
     @Override
     public String toString() {
         if (mQName != null) {
-            return Utility.fromQNameToString(mQName);
+            String str = Utility.fromQNameToString(mQName);
+            if (pType == ParameterType.MESSAGEPART) {
+                str = str + "/" + mPartName;
+            }
+            return str;
         }
         
         String namespace = null;
-        String localPart = null;
+        String localPart = "";
         if (mElement != null) {
             namespace = mElement.getModel().getSchema().getTargetNamespace();
             localPart = mElement.getName();
