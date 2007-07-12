@@ -19,18 +19,14 @@
 package org.netbeans.modules.visualweb.xhtml;
 
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
-import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Iterator;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 
 import org.openide.DialogDescriptor;
@@ -43,11 +39,11 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
+import javax.swing.JDialog;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
 /**
@@ -332,7 +328,9 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
                 null, //new HelpCtx("new_page_fragment"), // NOI18N
                 null);
 
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
+        JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dlg);
+        dialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(FragmentPanel.class, "CreateFragmentAccessibleDesc")); // NOI18N
         panel.setDescriptor(dlg);
         dialog.show();
         String answer = dlg.getValue().toString();
