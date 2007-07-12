@@ -225,7 +225,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
 
             if ((getFileName().equals(arr[0]) || ATTR_NAME_EXT_XML.equals(arr[0]) || ATTR_NAME_EXT.equals(arr[0]))) {
                 try {
-                    deleteFile(f + "/" + arr[0]); // NOI18N
+                    this.change.delete(f + "/" + arr[0]);
                 } catch (IOException iox) {
                 }
 
