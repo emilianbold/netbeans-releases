@@ -308,6 +308,9 @@ public class GotoTest extends AbstractAction implements EditorAction {
             }
 
             if (matching != null) {
+                // I don't know how to locate the actual test yet... just use
+                // offset = -1
+                offset = -1;
                 NbUtilities.open(matching, offset, null);
             } else {
                 notFound(target);

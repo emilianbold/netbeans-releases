@@ -18,10 +18,8 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import javax.swing.AbstractAction;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -29,14 +27,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.SourceModel;
-import org.netbeans.api.gsf.SourceModelFactory;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.Arity;
-import org.netbeans.modules.ruby.AstUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -47,7 +37,6 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 
@@ -109,9 +98,16 @@ public class NbUtilities {
     private static boolean doOpen(FileObject fo, int offset, String search) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie)od.getCookie(EditorCookie.class);
-            LineCookie lc = (LineCookie)od.getCookie(LineCookie.class);
+            EditorCookie ec = od.getCookie(EditorCookie.class);
+            LineCookie lc = od.getCookie(LineCookie.class);
 
+            // If the caller hasn't specified an offset, and the document is
+            // already open, don't jump to a particular line!
+            if (offset == -1 && ec.getDocument() != null && search == null) {
+                ec.open();
+                return true;
+            }
+            
             // Simple text search if no known offset (e.g. broken/unparseable source)
             if ((ec != null) && (search != null) && (offset == -1)) {
                 StyledDocument doc = ec.openDocument();
@@ -144,7 +140,7 @@ public class NbUtilities {
                 }
             }
 
-            OpenCookie oc = (OpenCookie)od.getCookie(OpenCookie.class);
+            OpenCookie oc = od.getCookie(OpenCookie.class);
 
             if (oc != null) {
                 oc.open();
