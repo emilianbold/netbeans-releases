@@ -684,6 +684,9 @@ public class MenuEditLayer extends JPanel {
         ComponentInspector inspector = ComponentInspector.getInstance();
         Node[] selectedNodes = inspector.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
+        if(!this.isVisible()) {
+            this.setVisible(true);
+        }
         if (popup != null) {
             popup.show(this, popupPos.x, popupPos.y);
         }
