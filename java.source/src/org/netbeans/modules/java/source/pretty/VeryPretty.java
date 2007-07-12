@@ -482,23 +482,7 @@ public final class VeryPretty extends JCTree.Visitor {
                         ? out.col : out.leftMargin + cs.getContinuationIndentSize());
             }
             if (tree.body != null) {
-                boolean constructor = (tree.name == names.init);
-                List<JCStatement> stats = tree.body.stats;
-                JCTree head = stats.head;
-                if(head instanceof JCExpressionStatement) head = ((JCExpressionStatement)head).expr;
-                if(constructor && head instanceof JCMethodInvocation) {
-                    JCMethodInvocation ap = (JCMethodInvocation) head;
-                    if(ap.args.isEmpty() && ap.meth instanceof JCIdent) {
-                        JCIdent id = (JCIdent) ap.meth;
-                        Name n = id.sym==null ? id.name : id.sym.name;
-                        if(n == names.init) {
-                        /* We have an invocation of the null constructor
-                           at the beginning of a constructor: eliminate it */
-                            stats = stats.tail;
-                        }
-                    }
-                }
-                printBlock(tree.body, stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace());
+                printBlock(tree.body, tree.body.stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace());
             } else {
                 print(';');
             }
@@ -1951,12 +1935,24 @@ public final class VeryPretty extends JCTree.Visitor {
     // consider usage of TreeUtilities.isSynthethic() - currently tree utilities
     // is not available in printing class and method is insufficient for our
     // needs.
-    private static boolean isSynthetic(JCTree tree) {
-        // filter syntetic constructors
-        if (Kind.METHOD == tree.getKind() && (((JCMethodDecl) tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
-            return true;
-        // todo (#pf): original method - useless IMO, left here till all 
-        // issues with synthetic things will not be finished.
+    private boolean isSynthetic(JCTree tree) {
+        if (tree.getKind() == Kind.METHOD) {
+            //filter synthetic constructors
+            return (((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0L;
+        }        
+        //filter synthetic superconstructor calls
+        if (tree.getKind() == Kind.EXPRESSION_STATEMENT && origUnit != null) {
+            JCExpressionStatement est = (JCExpressionStatement) tree;            
+            if (est.expr.getKind() == Kind.METHOD_INVOCATION) {
+                JCMethodInvocation mit = (JCMethodInvocation) est.getExpression();                
+                if (mit.meth.getKind() == Kind.IDENTIFIER) {
+                    JCIdent it = (JCIdent) mit.getMethodSelect();                    
+                    if (it.name == names._super) {
+                        return TreeInfo.getEndPos(tree, origUnit.endPositions) < 0;
+                    }
+                }
+            }
+        }
 	return false;
     }
     
