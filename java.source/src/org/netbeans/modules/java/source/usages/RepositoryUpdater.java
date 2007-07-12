@@ -1447,8 +1447,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                         _rt.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,_rt),
                         added.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,added));
+                }
             }
-        }
         
         private void updateFolder(final URL folder, final URL root, boolean clean, final ProgressHandle handle) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -1615,9 +1615,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 _at.removeAll(removed);
                 _rt.removeAll(added);
                 added.retainAll(removed);                                                                   //Changed
-                uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
-                        _rt.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,_rt), 
-                        added.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,added));                
+                if (!closed.get()) {
+                    uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
+                            _rt.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,_rt), 
+                            added.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,added));                
+                }
             }
             
             return result;
@@ -1676,7 +1678,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     sa.delete(s);
                 }
                 sa.store();
-                uqImpl.typesEvent(null,new ClassIndexImplEvent(uqImpl, removed), null);
+                if (!closed.get()) {
+                    uqImpl.typesEvent(null,new ClassIndexImplEvent(uqImpl, removed), null);
+                }
             }
             
             return toReparse;
