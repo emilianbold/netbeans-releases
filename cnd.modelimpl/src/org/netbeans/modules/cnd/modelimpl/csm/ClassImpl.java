@@ -61,7 +61,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             super((FileImpl) ClassImpl.this.getContainingFile());
         }
         
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
+        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
             ClassImpl.this.addMember(field);
             return field;
@@ -129,6 +129,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // other members
                     case CPPTokenTypes.CSM_CTOR_DEFINITION:
                     case CPPTokenTypes.CSM_CTOR_DECLARATION:
+                    case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
+                    case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION:
                         addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_DTOR_DEFINITION:
@@ -160,6 +162,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
 			child = token.getFirstChild();
 			if( child != null) {
@@ -189,6 +192,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                    case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
 		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
 			child = token.getFirstChild();
 			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
@@ -444,7 +448,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     public String getDisplayName() {
-	return isTemplate() ? getName() + "<>" : getName();
+	return isTemplate() ? getName() + "<>" : getName(); // NOI18N
     }
 
     public List<CsmTemplateParameter> getTemplateParameters() {

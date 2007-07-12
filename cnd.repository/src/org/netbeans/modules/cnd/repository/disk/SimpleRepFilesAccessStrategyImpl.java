@@ -38,16 +38,14 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy {
     
-    
-    private String theRepositoryBase;
     private RepositoryFilesHelperCacheStrategy theCache;
     
     /** Creates a new instance of SimpleRepositoryFilesHelper */
     public SimpleRepFilesAccessStrategyImpl(int openFilesLimit) {
-        theCache = new SimpleRepositoryHelperCacheImpl(openFilesLimit);
+        theCache = SimpleRepositoryHelperCacheImpl.getInstance(openFilesLimit);
     }
     
-    public ConcurrentFileRWAccess getFileForObj(Key id, boolean read) throws FileNotFoundException, IOException {
+    public ConcurrentFileRWAccess getFileForObj(Key id, boolean read) throws IOException {
         assert id != null;
         
         String fileName = resolveFileName(id);
@@ -71,9 +69,7 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
                     keepLocked = true;
                     break;
                 }
-            }  catch (Exception ex) {
-                ex.printStackTrace();
-            } finally {
+            }  finally {
                 if (!keepLocked) {
                     if (read) {
                         aFile.readLock().unlock();
@@ -88,7 +84,7 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
         return aFile;
     }
     
-    public void removeObjForKey(Key id) {
+    public void removeObjForKey(Key id) throws IOException{
         
         String fileName = resolveFileName( id);
         assert fileName != null;
@@ -101,14 +97,11 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
     }
     
     //
-    public void setRepositoryBase(String aBaseDir) {
-        theRepositoryBase = aBaseDir;
-    }
     
     private final static char START_CHAR = 'z';
     private final static char SEPARATOR_CHAR = '-';
     
-    protected String resolveFileName(Key id) {
+    protected String resolveFileName(Key id) throws IOException {
         assert id != null;
         int size = id.getDepth();
         
@@ -132,12 +125,7 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
             
             fileName = nameBuffer.toString();
             
-            try {
-                fileName = URLEncoder.encode(fileName, Stats.ENCODING);
-            } catch (UnsupportedEncodingException ex) {
-                // we use system default encoding, it can't be missed
-                ex.printStackTrace();
-            }
+            fileName = URLEncoder.encode(fileName, Stats.ENCODING);
             
             fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
                     StorageAllocator.getInstance().reduceString(fileName);
@@ -148,45 +136,35 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
         return fileName;
     }
     
-    protected ConcurrentFileRWAccess getFileByName(String fileName, boolean create) {
+    protected ConcurrentFileRWAccess getFileByName(String fileName, boolean create) throws IOException {
         assert fileName != null;
         
         ConcurrentFileRWAccess aFile = theCache.lookupInCacheFile(fileName);
         
-        try {
-            if (aFile == null) {
-                File fileToCreate = new File(fileName);
-                if (fileToCreate.exists()) {
+        if (aFile == null) {
+            File fileToCreate = new File(fileName);
+            if (fileToCreate.exists()) {
+                aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
+                theCache.putCacheFile(fileName, aFile);
+            } else if (create) {
+                String aDirName = fileToCreate.getParent();
+                File  aDir = new File(aDirName);
+                
+                if (aDir.exists() || aDir.mkdirs()) {
                     aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
                     theCache.putCacheFile(fileName, aFile);
-                    fileToCreate = null;
-                } else if (create) {
-                    String aDirName = fileToCreate.getParent();
-                    File  aDir = new File(aDirName);
-                    
-                    if (aDir.exists() || aDir.mkdirs()) {
-                        aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-                        theCache.putCacheFile(fileName, aFile);
-                    }
-                    aDir = null;
-                    fileToCreate = null;
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
-        
         
         return aFile;
     }
     
     
-    public void setOpenFilesLimit(int limit) {
+    public void setOpenFilesLimit(int limit) throws IOException {
         theCache.adjustCapacity(limit);
     }
     
     public void closeUnit(String unitName) {
     }
-    
- 
 }

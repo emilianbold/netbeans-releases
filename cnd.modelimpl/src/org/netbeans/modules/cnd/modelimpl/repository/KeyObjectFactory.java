@@ -96,6 +96,14 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_INCLUDE_KEY;
         } else if (object instanceof OffsetableDeclarationKey) {
             aHandle = KEY_DECLARATION_KEY;
+        } else if (object instanceof ProjectSettingsValidatorKey) {
+            aHandle = KEY_PRJ_VALIDATOR_KEY;
+        } else if (object instanceof DeclarationContainerKey) {
+            aHandle = KEY_DECLARATION_CONTAINER_KEY;
+        } else if (object instanceof FileContainerKey) {
+            aHandle = KEY_FILE_CONTAINER_KEY;
+        } else if (object instanceof GraphContainerKey) {
+            aHandle = KEY_GRAPH_CONTAINER_KEY;
         } else {
             throw new IllegalArgumentException("The Key is an instance of the unknown final class " + object.getClass().getName());  // NOI18N
         }
@@ -125,6 +133,18 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_DECLARATION_KEY:
                 aKey = new OffsetableDeclarationKey(aStream);
                 break;
+	    case KEY_PRJ_VALIDATOR_KEY:
+		aKey = new ProjectSettingsValidatorKey(aStream);
+		break;
+	    case KEY_DECLARATION_CONTAINER_KEY:
+		aKey = new DeclarationContainerKey(aStream);
+		break;
+	    case KEY_FILE_CONTAINER_KEY:
+		aKey = new FileContainerKey(aStream);
+		break;
+	    case KEY_GRAPH_CONTAINER_KEY:
+		aKey = new GraphContainerKey(aStream);
+		break;
             default:
                 throw new IllegalArgumentException("Unknown hander was provided: " + handler);  // NOI18N
         }
@@ -143,8 +163,13 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
     public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
     public static final int KEY_DECLARATION_KEY = KEY_INCLUDE_KEY + 1;
+    public static final int KEY_PRJ_VALIDATOR_KEY = KEY_DECLARATION_KEY + 1;
+    
+    public static final int KEY_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;
+    public static final int KEY_FILE_CONTAINER_KEY = KEY_DECLARATION_CONTAINER_KEY + 1;
+    public static final int KEY_GRAPH_CONTAINER_KEY = KEY_FILE_CONTAINER_KEY    + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX    
-    public static final int LAST_INDEX          = KEY_DECLARATION_KEY;
+    public static final int LAST_INDEX          = KEY_GRAPH_CONTAINER_KEY;
 }

@@ -33,6 +33,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     private String cCompilerName;
     private String cppCompilerName;
     private String fortranCompilerName;
+    private String gdbPath;
     private boolean gdbEnabled;
     private boolean gdbRequired;
     private boolean cRequired;
@@ -44,6 +45,7 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
         cCompilerName = null;
         cppCompilerName = null;
         fortranCompilerName = null;
+        gdbPath = null;
         gdbEnabled = super.isGdbEnabled();
         gdbRequired = CppSettings.getDefault().isGdbRequired();
         cRequired = CppSettings.getDefault().isCRequired();
@@ -105,6 +107,14 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     protected void setFortranCompilerName(String name) {
         fortranCompilerName = name;
+    }
+    
+    public String getGdbPath() {
+        return gdbPath;
+    }
+    
+    public void setGdbPath(String gdbPath) {
+        this.gdbPath = gdbPath;
     }
     
     public boolean isGdbRequired() {

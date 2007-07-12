@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -44,20 +45,22 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * Storage for include graph.
  * @author Alexander Simon
  */
-public class GraphContainer implements Persistent, SelfPersistent {
+public class GraphContainer extends ProjectComponent implements Persistent, SelfPersistent {
     
     /** Creates a new instance of GraphContainer */
-    public GraphContainer() {
+    public GraphContainer(ProjectBase project) {
+	super(new GraphContainerKey(project.getQualifiedName()));
         if (TraceFlags.USE_REPOSITORY) {
             graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
+	    put();
         } else {
             graphOld = new HashMap<CsmFile,NodeLinkOld>();
         }
     }
     
     public GraphContainer (final DataInput input) throws IOException {
+	super(input);
         assert input != null;
-        
         graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
         readUIDToNodeLinkMap(input, graph);
     }
@@ -74,7 +77,7 @@ public class GraphContainer implements Persistent, SelfPersistent {
         }
     }
     
-    private void putFileNew(CsmFile master){
+    private void putFileNew(CsmFile master) {
         CsmUID<CsmFile> key = UIDCsmConverter.fileToUID(master);
         if (key != null) {
             synchronized (graph){
@@ -107,6 +110,7 @@ public class GraphContainer implements Persistent, SelfPersistent {
                 }
             }
         }
+	put();
     }
     
     private void putFileOld(CsmFile master){
@@ -152,7 +156,7 @@ public class GraphContainer implements Persistent, SelfPersistent {
         }
     }
     
-    private void removeFileNew(CsmFile master){
+    private void removeFileNew(CsmFile master) {
         CsmUID<CsmFile> key = UIDCsmConverter.fileToUID(master);
         if (key != null) {
             synchronized (graph){
@@ -178,6 +182,7 @@ public class GraphContainer implements Persistent, SelfPersistent {
                 }
             }
         }
+	put();
     }
     
     private void removeFileOld(CsmFile master){
@@ -405,6 +410,7 @@ public class GraphContainer implements Persistent, SelfPersistent {
             synchronized (graph){
                 graph.clear();
             }
+	    put();
         } else {
             synchronized (graphOld){
                 graphOld.clear();
@@ -413,7 +419,10 @@ public class GraphContainer implements Persistent, SelfPersistent {
     }
 
     public void write(DataOutput output) throws IOException {
-        writeUIDToNodeLinkMap(output, graph);
+	super.write(output);
+	synchronized (graph){
+	    writeUIDToNodeLinkMap(output, graph);
+	}
     }
     
     private static void writeUIDToNodeLinkMap (

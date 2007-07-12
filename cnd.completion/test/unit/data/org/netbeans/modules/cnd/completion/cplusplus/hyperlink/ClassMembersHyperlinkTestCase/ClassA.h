@@ -1,4 +1,4 @@
-
+typedef int myInt;
 class ClassA {
 public:
     virtual ~ClassA(); // in test testDestructors
@@ -72,4 +72,4 @@ public:
     friend void friendFoo();
 };
 
-typedef int myInt;
+

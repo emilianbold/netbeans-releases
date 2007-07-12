@@ -43,7 +43,7 @@ public class ParserQueue {
         private Entry(FileImpl file, APTPreprocHandler.State ppState) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
                 System.err.println("creating entry for " + file.getAbsolutePath() +
-                        " as " + tracePreprocState(ppState));            
+                        " as " + tracePreprocState(ppState)); // NOI18N
             }
             this.file = file;
             this.ppState = ppState;
@@ -79,7 +79,7 @@ public class ParserQueue {
 
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
                 System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() +
-                        " as " + tracePreprocState(ppState) + " with current " + tracePreprocState(this.ppState));
+                        " as " + tracePreprocState(ppState) + " with current " + tracePreprocState(this.ppState)); // NOI18N
             }
             if (file.isNeedReparse(this.ppState, ppState)){
                 this.ppState = ppState;                    
@@ -89,22 +89,23 @@ public class ParserQueue {
     
     /*package*/static String tracePreprocState(APTPreprocHandler.State ppState) {
         if (ppState == null) {
-            return "null";
+            return "null"; // NOI18N
         } else {
-            StringBuilder msg = new StringBuilder("[");
+            StringBuilder msg = new StringBuilder("["); // NOI18N
             if (!ppState.isCleaned()) {
-                msg.append("not");
+                msg.append("not"); // NOI18N
             }
-            msg.append(" cleaned, ");
+            msg.append(" cleaned, "); // NOI18N
             if (!ppState.isStateCorrect()) {
-                msg.append("not");
+                msg.append("not"); // NOI18N
             }
-            msg.append(" correct State]");
+            msg.append(" correct State]"); // NOI18N
             return msg.toString();
         }
     }
     
     private static class Queue {
+	
         private Map<FileImpl,Entry> storage = new HashMap<FileImpl,Entry>();
         private Entry head;
         private Entry tail;
@@ -152,14 +153,24 @@ public class ParserQueue {
             if( tail == e ) {
                 tail = e.prev;
             }
+	    // clear enthry in case someone holds a reference to it
+	    e.prev = e.next = null;
         }
         
         public void removeAll(Collection/*<FileImple>*/ files) {
-            for( Entry curr = head; curr != null; curr = curr.next ) {
+//            for( Entry curr = head; curr != null; curr = curr.next ) {
+//                if( files.contains(curr.getFile()) ) {
+//                    remove(curr);
+//                }
+//            }
+	    Entry curr = head;
+	    while(curr != null) {
+		Entry next = curr.next; // after removal curr.next will be null!
                 if( files.contains(curr.getFile()) ) {
                     remove(curr);
                 }
-            }
+		curr = next;
+	    }
         }
         
         public void clear() {

@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.completion.cplusplus.utils;
 
 import org.netbeans.editor.TokenID;
+import org.netbeans.editor.TokenItem;
 
 /**
  * simple token to present one element of document
@@ -27,10 +28,14 @@ import org.netbeans.editor.TokenID;
  */
 public final class Token {
     
-    private int tokenLen;
-    private int tokenStart;
-    private TokenID tokenID;
-    private String text;
+    private final int tokenLen;
+    private final int tokenStart;
+    private final TokenID tokenID;
+    private final String text;
+    
+    public Token(TokenItem item) {
+        this(item.getOffset(), item.getImage().length(), item.getTokenID(), item.getImage());
+    }
     
     public Token(int start, int len, TokenID tokenID, String text) {
         this.tokenStart = start;

@@ -29,14 +29,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -50,7 +44,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
-import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -81,7 +75,6 @@ public class ModelSupport implements PropertyChangeListener {
 
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
-    private volatile boolean masterIndexIsLoaded = false;
     
     private ModelSupport() {
         modifiedListener = new FileChangeListener();
@@ -93,6 +86,10 @@ public class ModelSupport implements PropertyChangeListener {
 //            instance = new ModelSupport();
 //        }
         return instance;
+    }
+    
+    public static int getTabSize() {
+        return 8;
     }
     
     public File locateFile(String fileName) {
@@ -136,29 +133,29 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (TRACE_STARTUP) System.out.println("Model support event:"+evt.getPropertyName());
-        if(!postponeParse  && evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS");
-            openProjects();
-        } else if (postponeParse && evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED");
-            postponeParse = false;
-            TopComponent.getRegistry().removePropertyChangeListener(this);
-            RequestProcessor.getDefault().post(new Runnable(){
-                public void run() {
-                    openProjects();
-                }
-            });
-        }
+	try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
+	    if (TRACE_STARTUP) System.out.println("Model support event:"+evt.getPropertyName());
+	    if(!postponeParse  && evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
+		if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS");
+		openProjects();
+	    } else if (postponeParse && evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
+		if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED");
+		postponeParse = false;
+		TopComponent.getRegistry().removePropertyChangeListener(this);
+		RequestProcessor.getDefault().post(new Runnable(){
+		    public void run() {
+			openProjects();
+		    }
+		});
+	    }
+	}
+	catch( Exception e) {
+	    e.printStackTrace(System.err); 
+	}
     }
     
     private void openProjects() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        
-        if (!masterIndexIsLoaded) {
-            masterIndexIsLoaded = true;
-            model.readMasterIndex();
-        }
         
         synchronized (openedProjects){
             Set nowOpened = new HashSet();
@@ -181,6 +178,16 @@ public class ModelSupport implements PropertyChangeListener {
                 closeProject((Project) iter.next());
             }
         }
+    }
+
+    public boolean needParseOrphan(final Object platformProject) {
+        if (!ModelImpl.isStandalone()) {
+            Project project = ModelImpl.findProjectByNativeProject(instance().getNativeProject(platformProject));
+            if (project != null) {
+                return new CodeAssistanceOptions(project,true).getParseOrphanEnabled().booleanValue();
+            }
+        }
+        return true;
     }
     
     private NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
@@ -223,6 +230,10 @@ public class ModelSupport implements PropertyChangeListener {
                 filesPropertiesChanged(project.getAllSourceFiles());
             }
         }
+	
+	public void projectDeleted(NativeProject nativeProject) {
+	    RepositoryUtils.onProjectDeleted(nativeProject);
+	}
         
         private Collection<List<NativeFileItem>> divideByProjects(List<NativeFileItem> fileItems){
             Map<NativeProject,List<NativeFileItem>> res = new HashMap<NativeProject,List<NativeFileItem>>();
@@ -399,7 +410,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void dumpNativeProject(NativeProject nativeProject) {
-        List/*<NativeFileItem>*/ headers = nativeProject.getAllHeaderFiles();
+        List<NativeFileItem> headers = nativeProject.getAllHeaderFiles();
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
         for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) System.err.println("    " + it.next());
@@ -409,7 +420,7 @@ public class ModelSupport implements PropertyChangeListener {
         for (Iterator it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) System.err.println("    " + it.next());
         System.err.println("\nUser macros");
         for (Iterator it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();)   System.err.println("    " + it.next());
-        List/*<NativeFileItem>*/ files;
+        List<NativeFileItem> files;
         files = nativeProject.getAllSourceFiles();
         System.err.println("\nSources: (" + files.size() + " files )");
         for (Iterator it = files.iterator(); it.hasNext();) {
@@ -472,8 +483,8 @@ public class ModelSupport implements PropertyChangeListener {
                 trace(elem);
             }
             Diagnostic.trace("+++ Headers:"); // NOI18N
-            for (Iterator it = nativeProject.getAllHeaderFiles().iterator(); it.hasNext();) {
-                NativeFileItem elem = (NativeFileItem) it.next();
+            for (Iterator<NativeFileItem> it = nativeProject.getAllHeaderFiles().iterator(); it.hasNext();) {
+                NativeFileItem elem = it.next();
                 trace(elem);
             }
         }
@@ -516,35 +527,7 @@ public class ModelSupport implements PropertyChangeListener {
 //        }
 //        return nativeProjects;
     }
-    
-    /** gets a key, which uniquely identifies the project */
-    public static String getProjectKey(CsmProject project) {
-	return getProjectKey(project.getPlatformProject(), project.getName());
-    }
-    
-    /** gets a key, which uniquely identifies the project */
-    public static String getProjectKey(Object platformProject, String defaultValue) {
-        assert platformProject != null;
-        String key = getProjectObjectKey(platformProject);
-        if (key == null) {
-            key = defaultValue;
-        }
-        return key;
-    }    
-    
-    public static String getProjectObjectKey(Object platformProject) {
-        if( platformProject instanceof Project ) {
-            Project p = (Project) platformProject;
-            return p.getProjectDirectory().getPath();
-        } else if (platformProject instanceof NativeProject) {
-            return ((NativeProject)platformProject).getProjectRoot();
-        } else if( platformProject instanceof File ) {
-            return ((File) platformProject).getAbsolutePath();
-        } else {
-            return null;
-        }
-    }    
-    
+
     public FileBuffer getFileBuffer(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if( fo != null ) {
@@ -659,12 +642,12 @@ public class ModelSupport implements PropertyChangeListener {
                             Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
 			    NativeFileItemSet set = (NativeFileItemSet) curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
 			    if( set == null ) {
-				Diagnostic.trace("NativeFileItemSet == null");
+				Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
 			    }
 			    else {
-				Diagnostic.trace("NativeFileItemSet:");
+				Diagnostic.trace("NativeFileItemSet:"); // NOI18N
 				for( NativeFileItem item : set ) {
-				    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName());
+				    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
 				}
 			    }
                             EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);

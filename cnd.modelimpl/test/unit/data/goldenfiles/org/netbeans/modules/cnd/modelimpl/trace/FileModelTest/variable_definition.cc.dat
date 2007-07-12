@@ -1,0 +1,52 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE variable_definition.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+CLASS A (A ) [1:1/0-4:3/40] lcurly=8
+    BASE CLASSES:
+    MEMBERS:
+        FIELD public static  int TEXT=int  [3:5/22-3:15/32] var [3:5/22-3:20/37]
+            DEFINITION: var [6:1/42-6:15/56] type: int TEXT=int  [6:1/42-6:4/45] init: text='10'
+VARIABLE DEFINITION var [6:1/42-6:15/56] type: int TEXT=int  [6:1/42-6:4/45] init: text='10'
+    DECLARATION: var [3:5/22-3:20/37] type: int TEXT=int  [3:5/22-3:15/32] init: null
+FUNCTION DEFINITION main  [8:1/58-12:2/116] FunctionDDImpl
+    SIGNATURE main(int)
+    UNIQUE NAME f:main(int)
+    DECLARATION: main  [8:1/58-12:2/116]
+    PARAMETERS:
+        argv [8:10/67-8:18/75] type: int TEXT=int  [8:10/67-8:13/70] init: null
+    RETURNS int TEXT=int  [8:1/58-8:4/61]
+    STATEMENT Compound  [8:20/77-12:2/116]
+        STATEMENT Declaration  [9:5/83-9:9/87]
+            VARIABLE a [9:5/83-9:9/87] type: A TEXT=A  [9:5/83-9:6/84] init: null
+        STATEMENT Expression  [10:5/92-10:12/99] text: 'a.var=4'
+        STATEMENT Return  [11:5/105-11:14/114] text: 'return 1;'
+
+========== Dumping model of PROJECT DummyProject
+CLASS A (A ) [1:1/0-4:3/40] lcurly=8
+    BASE CLASSES:
+    MEMBERS:
+        FIELD public static  int TEXT=int  [3:5/22-3:15/32] var [3:5/22-3:20/37]
+            DEFINITION: var [6:1/42-6:15/56] type: int TEXT=int  [6:1/42-6:4/45] init: text='10'
+FUNCTION DEFINITION main  [8:1/58-12:2/116] FunctionDDImpl
+    SIGNATURE main(int)
+    UNIQUE NAME f:main(int)
+    DECLARATION: main  [8:1/58-12:2/116]
+    PARAMETERS:
+        argv [8:10/67-8:18/75] type: int TEXT=int  [8:10/67-8:13/70] init: null
+    RETURNS int TEXT=int  [8:1/58-8:4/61]
+    STATEMENT Compound  [8:20/77-12:2/116]
+        STATEMENT Declaration  [9:5/83-9:9/87]
+            VARIABLE a [9:5/83-9:9/87] type: A TEXT=A  [9:5/83-9:6/84] init: null
+        STATEMENT Expression  [10:5/92-10:12/99] text: 'a.var=4'
+        STATEMENT Return  [11:5/105-11:14/114] text: 'return 1;'
+

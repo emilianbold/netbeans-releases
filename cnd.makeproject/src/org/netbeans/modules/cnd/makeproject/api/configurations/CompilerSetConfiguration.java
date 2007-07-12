@@ -27,8 +27,8 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 
 public class CompilerSetConfiguration extends IntConfiguration implements CompilerSetChangeListener {
     
+    private ArrayList<String> displayNames = new ArrayList();
     private ArrayList<String> names = new ArrayList();
-    private ArrayList<String> options = new ArrayList();
     private CompilerSetConfiguration master;
     private int def;
     private int value;
@@ -40,15 +40,15 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
      *
      * @param master ???
      * @param def The default value
-     * @param names An array of compiler set display names
+     * @param displayNames An array of compiler set display names
      * @param optoins An array of compiler set names
      */
-    public CompilerSetConfiguration(CompilerSetConfiguration master, int def, String[] names, String[] options) {
+    public CompilerSetConfiguration(CompilerSetConfiguration master, int def, String[] displayNames, String[] names) {
         CompilerSetManager.getDefault().addCompilerSetChangeListener(this);
         
-        for (int i = 0; i < names.length; i++) {
+        for (int i = 0; i < displayNames.length; i++) {
+            this.displayNames.add(displayNames[i]);
             this.names.add(names[i]);
-            this.options.add(options[i]);
         }
         this.master = master;
         this.def = def;
@@ -58,7 +58,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
     }
     
     public void setValue(int value) {
-        if (value >= 0 && value <= names.size()) {
+        if (value >= 0 && value <= displayNames.size()) {
             this.value = value;
         }
         if (master != null) {
@@ -71,7 +71,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
     public void setValue(String s) {
 	if (s != null) {
             int i = 0;
-            for (String csname : names) {
+            for (String csname : displayNames) {
                 if (s.equals(csname)) {
                     setValue(i);
                     return;
@@ -79,7 +79,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
                 i++;
             }
             i = 0;
-            for (String csname : options) {
+            for (String csname : names) {
                 if (s.equals(csname)) {
                     setValue(i);
                     return;
@@ -116,20 +116,20 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
     }
 
     public String getName() {
-        if (getValue() >= 0 && getValue() < names.size()) {
-	    return names.get(getValue());
+        if (getValue() >= 0 && getValue() < displayNames.size()) {
+	    return displayNames.get(getValue());
         } else {
 	    return "";
         }
     }
     
     public String[] getNames() {
-        return names.toArray(new String[0]);
+        return displayNames.toArray(new String[0]);
     }
 
     public String getOption() {
-        if (getValue() >= 0 && getValue() <= options.size()) {
-            return options.get(getValue());
+        if (getValue() >= 0 && getValue() <= names.size()) {
+            return names.get(getValue());
         } else {
             return "";
         }
@@ -147,7 +147,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
 
     public Object clone() {
 	CompilerSetConfiguration clone = new CompilerSetConfiguration(master, 
-                def, names.toArray(new String[0]), options.toArray(new String[0]));
+                def, displayNames.toArray(new String[0]), names.toArray(new String[0]));
 	clone.setValue(getValue());
 	clone.setModified(getModified());
 	return clone;
@@ -155,17 +155,17 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
     
     public void compilerSetChange(CompilerSetEvent ev) {
         CompilerSetManager csm = (CompilerSetManager) ev.getSource();
-        String defdname = names.get(def);
-        String curdname = value >= 0 ? names.get(value) : "xxx"; // NOI18N - want non-matching string
-        String savename = options.get(value);
-        ArrayList<String> nuoptions = new ArrayList();
-        ArrayList<String> nunames = new ArrayList();
+        String defdname = displayNames.get(def);
+        String curdname = value >= 0 ? displayNames.get(value) : "xxx"; // NOI18N - want non-matching string
+        String savename = names.get(value);
+        ArrayList<String> newNames = new ArrayList();
+        ArrayList<String> newDisplayNames = new ArrayList();
         def = value = -1;
         
         int i = 0;
         for (CompilerSet cs : csm.getCompilerSets()) {
-            nuoptions.add(cs.getName());
-            nunames.add(cs.getDisplayName());
+            newNames.add(cs.getName());
+            newDisplayNames.add(cs.getDisplayName());
             if (cs.getDisplayName().equals(defdname)) {
                 def = i;
             }
@@ -173,17 +173,17 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
                 value = i;
             }
         }
-        names = nunames;
-        options = nuoptions;
+        displayNames = newDisplayNames;
+        names = newNames;
         
         // Save old name in case the selected compiler set gets removed from the user's path. This
         // lets it get restored during build or open validation
         if (oldname != null) {
-            if (options.contains(oldname)) {
-                value = options.indexOf(oldname);
+            if (names.contains(oldname)) {
+                value = names.indexOf(oldname);
                 oldname = null;
             }
-        } else if (!options.contains(savename)) {
+        } else if (!names.contains(savename)) {
             oldname = savename;
         }
         

@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -645,7 +646,7 @@ public class CsmUtilities {
      * @return signature of the function
      */
     public static String getSignature(CsmFunction fun, boolean showParamNames) {
-        StringBuilder sb = new StringBuilder(fun.getName());
+        StringBuilder sb = new StringBuilder(fun.isTemplate() ? ((CsmTemplate)fun).getDisplayName() : fun.getName());
         sb.append('(');
         boolean addComma = false;
         for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {

@@ -74,7 +74,7 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
     // index map content support
     
     protected String getIndexKey(Object obj) {
-        return ModelSupport.instance().getProjectKey((CsmProject) obj);
+        return ((CsmProject) obj).getQualifiedName();
     }  
 
     protected String getBaseCacheName(Object obj) {

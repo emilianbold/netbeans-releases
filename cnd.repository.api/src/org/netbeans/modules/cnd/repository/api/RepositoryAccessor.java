@@ -32,25 +32,48 @@ public class RepositoryAccessor
 {
     private RepositoryAccessor() {};
    
-    private static Repository instance;
+    private static Repository repository;
+    private static RepositoryTranslation translator;
+    
     private static final Object lock = new Object();
 
     /**
-     * Default way for clients to get instance
-     * @return instance of Repository
+     * Default way for clients to get repository
+     * 
+     * @return repository of Repository
      */
     public static Repository getRepository() {
-        if (instance == null) {
+        if (repository == null) {
             synchronized (lock) {
                 // double check is necessary because 
                 // it is possible to have concurrent creators serialized on lock
-                if (instance == null) {
-                    instance = (Repository)Lookup.getDefault().lookup(Repository.class);
+                if (repository == null) {
+                    repository = (Repository)Lookup.getDefault().lookup(Repository.class);
                 }
             }
-            assert(instance != null);
+            assert(repository != null);
         }
         
-        return instance;
+        return repository;
     }
+    
+    /**
+     * Default way for clients to get translator
+     * 
+     * @return repository of Repository
+     */
+    public static RepositoryTranslation getTranslator() {
+        if (translator == null) {
+            synchronized (lock) {
+                // double check is necessary because 
+                // it is possible to have concurrent creators serialized on lock
+                if (translator == null) {
+                    translator = (RepositoryTranslation)Lookup.getDefault().lookup(RepositoryTranslation.class);
+                }
+            }
+            assert(translator != null);
+        }
+        
+        return translator;
+    }    
 }

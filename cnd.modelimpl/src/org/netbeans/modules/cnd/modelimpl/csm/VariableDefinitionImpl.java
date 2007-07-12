@@ -34,12 +34,14 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
@@ -62,10 +64,11 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 
     /** Creates a new instance of VariableDefinitionImpl */
     public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name) {
-        super(ast, file, type, getLastname(name), true);
+        super(ast, file, type, getLastname(name), false);
         classOrNspNames = getClassOrNspNames(ast);
+        registerInProject();
     }
-
+    
     private static String getLastname(String name){
         int i = name.lastIndexOf("::"); // NOI18N
         if (i >=0){

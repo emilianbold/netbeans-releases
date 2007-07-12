@@ -131,14 +131,16 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         
         File output = new File(workDir, goldenDataFileName);
         PrintStream streamOut = new PrintStream(output);
-        File error = new File(workDir, goldenErrFileName);
-        PrintStream streamErr = new PrintStream(error);
+        File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
+        PrintStream streamErr = goldenErrFileName == null ? null : new PrintStream(error);
         try {
             doTest(testFile, streamOut, streamErr, params);
         } finally {
             // restore err and out
             streamOut.close();
-            streamErr.close();
+            if (streamErr != null) {
+                streamErr.close();
+            }
         }
         //System.out.println("finished testing " + testFile);    
         

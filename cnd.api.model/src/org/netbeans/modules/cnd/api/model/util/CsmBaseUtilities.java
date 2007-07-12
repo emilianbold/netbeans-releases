@@ -19,13 +19,19 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
  *
@@ -37,13 +43,13 @@ public class CsmBaseUtilities {
     private CsmBaseUtilities() {
     }
 
-    public static boolean isStaticContext(CsmFunctionDefinition funDef) {
-        assert (funDef != null) : "must be not null";
+    public static boolean isStaticContext(CsmFunction fun) {
+        assert (fun != null) : "must be not null";
         // static context is in global functions and static methods
-        if (CsmKindUtilities.isGlobalFunction(funDef)) {
+        if (CsmKindUtilities.isGlobalFunction(fun)) {
             return true;
         } else {
-            CsmFunction funDecl = funDef.getDeclaration();
+            CsmFunction funDecl = getFunctionDeclaration(fun);
             if (CsmKindUtilities.isClassMember(funDecl)) {
                 return ((CsmMember)funDecl).isStatic();
             }
@@ -97,11 +103,56 @@ public class CsmBaseUtilities {
     }      
     
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        // FIXUP: after fixing IZ# the code shold be changed to simple loop
         assert orig != null;
         CsmClassifier out = orig;
+        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
+        set.add(orig);
         while (CsmKindUtilities.isTypedef(out)) {
-            out = ((CsmTypedef)out).getType().getClassifier();
+            orig = ((CsmTypedef)out).getType().getClassifier();
+            if (orig == null) {
+                break;
+            }
+            if (set.contains(orig)) {
+                // try to recover from this error
+                CsmClassifier cls = findOtherClassifier(out);
+                out = cls == null ? out : cls;
+                break;
+            }
+            set.add(orig);
+            out = orig;
         }
         return out;
     }     
+
+
+    private static CsmClassifier findOtherClassifier(CsmClassifier out) {
+        CsmNamespace ns = getNamespaceScope(out);
+        CsmClassifier cls = null;
+        if (ns != null) {
+            CsmUID uid = out.getUID();
+            String fqn = out.getQualifiedName();
+            for (CsmDeclaration decl : ns.getDeclarations()) {
+                if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
+                    if (!decl.getUID().equals(uid)) {
+                        cls = (CsmClassifier)decl;
+                        break;
+                    }
+                }
+            }
+        }        
+        return cls;
+    }
+    
+
+    private static CsmNamespace getNamespaceScope(CsmClassifier out) {
+        CsmScope scope = out.getScope();
+        if (CsmKindUtilities.isClassifier(scope)) {
+            return getNamespaceScope((CsmClassifier)scope);
+        } else if (CsmKindUtilities.isNamespace(scope)) {
+            return (CsmNamespace)scope;
+        } else {
+            return null;
+        }
+    }    
 }

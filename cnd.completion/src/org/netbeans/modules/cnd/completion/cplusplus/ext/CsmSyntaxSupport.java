@@ -423,7 +423,12 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         if (fromCls.equals(toCls)) {
             return true; // equal classes
         }
-        
+        String tfrom = from.getCanonicalText().replaceAll("const", "").trim(); // NOI18N
+        String tto = to.getCanonicalText().replaceAll("const", "").trim(); // NOI18N
+            
+        if (tfrom.equals(tto)) {
+            return true;
+        }
 //        if (CsmInheritanceUtilities.isAssignableFrom(toCls, fromCls)) {
 //            return true;
 //        }
@@ -515,7 +520,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                     CsmType mpt = methodParms[j].getType();
                     CsmType t = (CsmType)parmTypeList.get(j);
                     if (t != null) {
-                        if (!t.equals(mpt)) {
+                        if (!equalTypes(t, mpt)) {
                             bestMatch = false;
                             if (!isAssignable(t, mpt)) {
                                 accept = false;
@@ -1217,5 +1222,17 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             }
         }      
         return showCompletion;
+    }
+
+    private boolean equalTypes(CsmType t, CsmType mpt) {
+        assert t != null;
+        if (t.equals(mpt)) {
+            return true;
+        } else if (mpt != null) {
+            String t1 = t.getCanonicalText();
+            String t2 = mpt.getCanonicalText();
+            return t1.equals(t2);
+        }
+        return false;
     }
 }

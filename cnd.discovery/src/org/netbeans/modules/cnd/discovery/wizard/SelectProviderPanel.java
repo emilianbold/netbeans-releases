@@ -322,6 +322,11 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void projectParsingFinished(CsmProject project) {
         wizard.stateChanged(null);
     }
+    
+    public void projectLoaded(CsmProject project) {
+        wizard.stateChanged(null);
+    }
+    
 
     public void projectParsingCancelled(CsmProject project) {
     }

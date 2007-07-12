@@ -43,8 +43,8 @@ import org.netbeans.modules.cnd.apt.support.*;
     private static final int INCLUDES_FOLD = CppFoldRecord.INCLUDES_FOLD;
 
     private APTFoldingCommentFilter filter = null;
-    private List/*<CppFoldRecord>*/ includeFolds = new ArrayList();
-    private List/*<CppFoldRecord>*/ ifdefFolds = new ArrayList();
+    private List<CppFoldRecord> includeFolds = new ArrayList<CppFoldRecord>();
+    private List<CppFoldRecord> ifdefFolds = new ArrayList<CppFoldRecord>();
     
     public APTFoldingWalker(APTFile apt) {
         super(apt, null);
@@ -61,9 +61,9 @@ import org.netbeans.modules.cnd.apt.support.*;
         return filter;
     }        
 
-    public List/*<CppFoldRecord>*/ getFolders() {
-        List filterFolds = filter.getFolders();
-        List out = new ArrayList(filterFolds.size() + includeFolds.size() + ifdefFolds.size());   
+    public List<CppFoldRecord> getFolders() {
+        List<CppFoldRecord> filterFolds = filter.getFolders();
+        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(filterFolds.size() + includeFolds.size() + ifdefFolds.size());   
         out.addAll(filterFolds);
         out.addAll(includeFolds);
         out.addAll(ifdefFolds);
@@ -122,7 +122,7 @@ import org.netbeans.modules.cnd.apt.support.*;
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
-    private Stack/*<APT>*/ ppStartDirectives = new Stack();
+    private Stack<APT> ppStartDirectives = new Stack<APT>();
         
     private boolean onStartPreprocNode(APT apt) {
         filter.onPreprocNode(apt);

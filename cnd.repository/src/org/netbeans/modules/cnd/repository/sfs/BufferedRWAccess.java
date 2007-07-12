@@ -56,15 +56,19 @@ public class BufferedRWAccess implements FileRWAccess {
 	}
     }
     
-    private File file;
     private RandomAccessFile randomAccessFile;
     protected FileChannel channel;
     private ByteBuffer writeBuffer;
     private int bufSize;
     
     public BufferedRWAccess(File file) throws IOException {
-	this.file = file;
 	this.bufSize = Stats.bufSize > 0 ? Stats.bufSize : 32*1024;
+        File parent = new File(file.getParent());
+        
+        if (!parent.exists()) {
+            parent.mkdirs();
+        }
+        
 	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N
 	channel = randomAccessFile.getChannel();
 	writeBuffer.allocateDirect(bufSize);

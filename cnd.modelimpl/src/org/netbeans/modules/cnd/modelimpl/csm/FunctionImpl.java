@@ -44,7 +44,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * @param T
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
-public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements CsmFunction<T>, Disposable, RawNamable {
+public class FunctionImpl<T> extends OffsetableDeclarationBase<T> 
+        implements CsmFunction<T>, Disposable, RawNamable, CsmTemplate {
     
     private String name;
     private final CsmType returnType;
@@ -84,6 +85,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         rawName = AstUtil.getRawNameInChildren(ast);
         _const = initConst(ast);
         returnType = initReturnType(ast);
+        initTemplate(ast);
         
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
@@ -112,11 +114,109 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
     
+    private boolean template;
+    private String templateSuffix;
+    protected String classTemplateSuffix;
+    
+    private void initTemplate(AST node) {
+        boolean template = false, specialization = false;
+        switch(node.getType()) {
+            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
+            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION: 
+            case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION: 
+            case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:  
+                template = true;
+                break;
+            case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
+            case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                template = true;
+                specialization = true;
+                break;
+        }
+
+        if (template) {
+            AST templateNode = node.getFirstChild();
+            assert ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
+            // 0. our grammar can't yet differ template-class's method from template-method
+            // so we need to check here if we has template-class or not
+            boolean templateClass = false;
+            AST qIdToken = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+            // 1. check for definition of template class's method
+            // like template<class A> C<A>:C() {}
+            AST startTemplateSign = qIdToken != null ? AstUtil.findChildOfType(qIdToken, CPPTokenTypes.LESSTHAN) : null;
+            if (startTemplateSign != null) {
+                // TODO: fix parsing of inline definition of template operator <
+                // like template<class T, class P> bool operator<(T x, P y) {return x<y};
+                // workaround is next validation
+                AST endTemplateSign = null;//( startTemplateSign.getNextSibling() != null ? startTemplateSign.getNextSibling().getNextSibling() : null);
+                for( AST sibling = startTemplateSign.getNextSibling(); sibling != null; sibling = sibling.getNextSibling() ) {
+                    if( sibling.getType() == CPPTokenTypes.GREATERTHAN ) {
+                        endTemplateSign = sibling;
+                        break;
+                    }
+                }
+                if (endTemplateSign != null) {
+                    AST scopeSign = endTemplateSign.getNextSibling();
+                    if (scopeSign != null && scopeSign.getType() == CPPTokenTypes.SCOPE) {
+                        // 2. we have template class, we need to determine, is it specialization definition or not
+                        if (specialization) { 
+                            // we need to initialize classTemplateSuffix in this case
+                            // to avoid mixing different specialization (IZ92138)
+                            this.classTemplateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
+                        }     
+                        // but there is still a chance to have template-method of template-class
+                        // e.g.: template<class A> template<class B> C<A>::C(B b) {}
+                        AST templateSiblingNode = templateNode.getNextSibling();
+                        if ( templateSiblingNode != null && templateSiblingNode.getType() == CPPTokenTypes.LITERAL_template ) {
+                            // it is template-method of template-class
+                            templateNode = templateSiblingNode;
+                        } else {
+                            // we have no template-method at all
+                            template = false;
+                        }
+                    }
+                }
+            }
+            
+            if (template) {
+                // 3. We are sure now what we have template-method, 
+                // let's check is it specialization template or not
+                if (specialization) { 
+                    // 3a. specialization
+                    if (qIdToken == null) {
+                        // malformed template specification
+                        templateSuffix = "<>"; //NOI18N
+                    } else {
+                        templateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
+                    }
+                } else {
+                    // 3b. no specialization, plain and simple template-method
+                    StringBuilder sb  = new StringBuilder();
+                    TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb);
+                    templateSuffix = '<' + sb.toString() + '>';
+                }
+            }
+        }
+        this.template = template;
+    }
+    
+    protected String getScopeSuffix() {
+        return classTemplateSuffix != null ? classTemplateSuffix : "";
+    }
+
     protected String initName(AST node) {
         return findFunctionName(node);
     }
     
-    protected boolean isVoidParameterList(){
+    public String getDisplayName() {
+        return isTemplate() ? getName() + templateSuffix : getName();
+    }
+    
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        return Collections.EMPTY_LIST;
+    }    
+    
+    public boolean isVoidParameterList(){
         return isVoidParameterList;
     }
     
@@ -194,7 +294,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
             String scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return scopeQName + "::" + getQualifiedNamePostfix(); // NOI18N
+                return scopeQName + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
             } else {
                 return getName();
             }
@@ -207,7 +307,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public String getUniqueNameWithoutPrefix() {
-        return getQualifiedName() + getSignature().substring(getName().length());
+        return getQualifiedName() + (template ? templateSuffix : "") + getSignature().substring(getName().length());
     }
     
     public Kind getKind() {
@@ -227,42 +327,37 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @return definition
      */
     public CsmFunctionDefinition getDefinition() {
-        String uname = CsmDeclaration.Kind.FUNCTION_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmProject prj = getContainingFile().getProject();
-        CsmDeclaration def = prj.findDeclaration(uname);
+        CsmFunctionDefinition def = findDefinition(prj, uname);
         if (def == null) {
-            for (Iterator i = prj.getLibraries().iterator(); i.hasNext();){
-                CsmProject lib = (CsmProject)i.next();
-                def = lib.findDeclaration(uname);
+            for (CsmProject lib : prj.getLibraries()){
+                def = findDefinition(lib, uname);
                 if (def != null) {
                     break;
                 }
             }
         }
-        if (def == null) {
-            for (Iterator i = CsmModelAccessor.getModel().projects().iterator(); i.hasNext();){
-                CsmProject p = (CsmProject)i.next();
-                if (p != prj){
-                    def = p.findDeclaration(uname);
-                    if (def != null) {
-                        break;
-                    }
+        if (def == null && (prj instanceof ProjectBase)) {
+            for(CsmProject dependent : ((ProjectBase)prj).getDependentProjects()){
+                def = findDefinition(dependent, uname);
+                if (def != null) {
+                    break;
                 }
             }
         }
-        if (def == null) {
-            def = findDefinition();
-        }
-        return (def == null) ? null : (CsmFunctionDefinition) def;
+        return def;
     }
     
-    private CsmFunctionDefinition findDefinition(){
+    private CsmFunctionDefinition findDefinition(CsmProject prj, String uname){
+        CsmDeclaration res = prj.findDeclaration(uname);
+        if (res instanceof CsmFunctionDefinition) {
+            return (CsmFunctionDefinition)res;
+        }
         if (getParameters().size()==0 && !isVoidParameterList()) {
             CsmScope scope = getScope();
             if (CsmKindUtilities.isNamespace(scope) && ((CsmNamespace)scope).isGlobal()) {
-                CsmProject prj = getContainingFile().getProject();
                 if (prj instanceof ProjectBase) {
-                    String uname = CsmDeclaration.Kind.FUNCTION_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
                     String from = uname.substring(0, uname.indexOf('(')+1);
                     Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
                     for(CsmOffsetableDeclaration decl : decls){
@@ -282,7 +377,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @return flag indicated if function is template
      */
     public boolean isTemplate() {
-        return false;
+        return template;
     }
     
     /**
@@ -503,6 +598,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeBoolean(isVoidParameterList);
+    }
+
+    public List<CsmScopeElement> getScopeElements() {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        l.addAll(getParameters());
+        return l;
     }
 
     public FunctionImpl(DataInput input) throws IOException {

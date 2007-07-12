@@ -227,8 +227,8 @@ public class CsmContextUtilities {
                 if (!includeFileLocal) {
                     assert (includeFunctionVars);
                     // if it wasn't necessary to include all file local variables, but now 
-                    // we jump in function definition => mark that from now include all
-                    if (CsmKindUtilities.isFunctionDefinition(entry.getScope())) {
+                    // we jump in function => mark that from now include all
+                    if (CsmKindUtilities.isFunction(entry.getScope())) {
                         incAll = include = true;
                     }
                 } else if (!includeFunctionVars) {
@@ -423,8 +423,8 @@ public class CsmContextUtilities {
         }        
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
-            CsmFunctionDefinition funDef = getFunctionDefinition(context);
-            clazz = funDef == null ? null : CsmBaseUtilities.getFunctionClass(funDef);
+            CsmFunction fun = getFunction(context);
+            clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
         }
         return clazz;
     }    
@@ -437,7 +437,7 @@ public class CsmContextUtilities {
                 fun = (CsmFunction)elem.getScope();
                 break;
             }
-        }        
+        }
         return fun;
     }    
     
@@ -457,4 +457,14 @@ public class CsmContextUtilities {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
         return (funDef == null) ? false : CsmOffsetUtilities.isInObject(funDef.getBody(), offset);
     }   
+    
+    public static boolean isInFunction(CsmContext context, int offset) {
+        CsmFunction fun = getFunction(context);
+        return fun != null;
+    }     
+    
+    public static boolean isInType(CsmContext context, int offset) {
+        CsmObject last = context.getLastObject();
+        return CsmKindUtilities.isType(last) && CsmOffsetUtilities.isInObject(last, offset);
+    }    
 }

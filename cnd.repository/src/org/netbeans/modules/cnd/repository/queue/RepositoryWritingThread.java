@@ -22,6 +22,8 @@ package org.netbeans.modules.cnd.repository.queue;
 import java.io.IOException;
 import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
+import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
  *
@@ -39,7 +41,7 @@ public class RepositoryWritingThread implements Runnable {
         this.rwLock = rwLock;
     }
 
-    private void waitReady() throws IOException, InterruptedException {
+    private void waitReady() throws InterruptedException {
         if( Stats.maintenanceInterval > 0 ) {
             if( Stats.allowMaintenance && 
                 (++numOfSpareCycles >= NUM_SPARE_TIMES_TO_ALLOW_MAINTENANCE)
@@ -51,7 +53,11 @@ public class RepositoryWritingThread implements Runnable {
                 // there should be no maintenance if the writing is blocked
                 try {
                     rwLock.readLock().lock();
-                    maintenanceIsNeeded = writer.maintenance(Stats.maintenanceInterval);
+                    try {
+                        maintenanceIsNeeded = writer.maintenance(Stats.maintenanceInterval);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 } finally {
                     rwLock.readLock().unlock();
                 }
@@ -85,13 +91,12 @@ public class RepositoryWritingThread implements Runnable {
             try {
                 try {
                     rwLock.readLock().lock();
-                    entry = queue.poll();
-                    while (entry != null) {
+                    while (queue.isReady()) {
+                        entry = queue.poll();
                         numOfSpareCycles = 0;
                         maintenanceIsNeeded = true;
                         if( Stats.queueTrace ) System.err.printf("%s: writing %s\n", getName(), entry.getKey()); // NOI18N
                         writer.write(entry.getKey(), entry.getValue());
-                        entry = queue.poll();
                     }
                 }  finally {
                     rwLock.readLock().unlock();
@@ -103,14 +108,9 @@ public class RepositoryWritingThread implements Runnable {
                     if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N
                     break;
                 }
-                
-            } catch( InterruptedException e ) {
-                if( Stats.queueTrace ) System.err.printf("%s: interrupted\n", getName()); // NOI18N
-                break;
-            } catch( IOException e ) {
-                e.printStackTrace(System.err);
-            } catch( Exception e ) {
-                e.printStackTrace(System.err);
+            } catch( Throwable e ) {
+                RepositoryListenersManager.getInstance().fireAnException(null, 
+                        new RepositoryExceptionImpl(e));
             }
         }
     }

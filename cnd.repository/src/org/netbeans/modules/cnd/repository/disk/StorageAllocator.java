@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
@@ -40,9 +41,8 @@ public class StorageAllocator {
             long index = 0;
             diskRepositoryPath = System.getProperty("java.io.tmpdir");
             
-            diskRepositoryPath += File.separator+ 
-                    "repository-caches"  + File.separator +         //NOI18N
-                    System.getProperty("user.name") + "-" + index;  //NOI18N
+            diskRepositoryPath += File.separator +         //NOI18N
+                    System.getProperty("user.name") + "-" + index + "-repository-caches";  //NOI18N
             
             File diskRepositoryFile = new File(diskRepositoryPath);
             // find name for directory which is not occupied by file
@@ -64,7 +64,7 @@ public class StorageAllocator {
         return instance;
     }
     
-    private Map<String, String> unit2path = new HashMap<String, String>();
+    private Map<String, String> unit2path = new ConcurrentHashMap<String, String>();
     
     public String getCachePath() {
         return diskRepositoryPath;
@@ -108,23 +108,29 @@ public class StorageAllocator {
         unit2path.remove(unitName);
     }
     
-    public void deleteUnitFiles (String unitName) {
+    public void deleteUnitFiles (String unitName, boolean removeUnitFolder) {
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
-        deleteDirectory(pathFile);
+        deleteDirectory(pathFile, removeUnitFolder);
     }
     
-    private void deleteDirectory(File path) {
+    private void deleteDirectory(File path, boolean deleteDir) {
         if( path.exists() ) {
             File[] files = path.listFiles();
             for(int i=0; i<files.length; i++) {
                 if(files[i].isDirectory()) {
-                    deleteDirectory(files[i]);
+                    deleteDirectory(files[i], true);
                 } else {
                     files[i].delete();
                 }
             }
         }
-        path.delete() ;
+        if (deleteDir) {
+            path.delete() ;
+        }
+    }
+    public void cleanRepositoryCaches() {
+        File repositoryPath = new File(diskRepositoryPath);
+        deleteDirectory(repositoryPath, false);
     }
 }

@@ -30,8 +30,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -41,6 +43,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -95,6 +99,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private Tool cppCommandSelection = null;
     private Tool fortranCommandSelection = null;
     
+    private static ToolsPanel instance = null;
+    
     /** The default (or previously selected) C compiler for each CompilerSet */
     private HashMap<String, String> cSelections;
     
@@ -106,12 +112,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     private JFileChooser addDirectoryChooser;
     private CompilerSetManager csm;
+    private CompilerSet currentCompilerSet;
     
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
         changed = false;
+        instance = this;
+        currentCompilerSet = null;
     }
     
     public ToolsPanel(ToolsPanelModel model) {
@@ -125,7 +134,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             model = new GlobalToolsPanelModel();
         }
         dirlist = model.getPath();
-        csm = CompilerSetManager.getDefault();
+        if (csm == null) {
+            csm = CompilerSetManager.getDefault();
+        }
         gdbEnabled = model.isGdbEnabled();
         
         cSelections = new HashMap();
@@ -485,6 +496,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
         }
         changingCompilerSet = false;
+        currentCompilerSet = cs;
+        fireCompilerSetChange();
         dataValid();
     }
     
@@ -639,24 +652,42 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
         }
         
-        // the following don't set changed if changed
-        if (model.isGdbRequired() != cbGdbRequired.isSelected()) {
-            model.setGdbRequired(cbGdbRequired.isSelected());
+        if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
+            // the following don't set changed if changed
+            if (model.isGdbRequired() != cbGdbRequired.isSelected()) {
+                model.setGdbRequired(cbGdbRequired.isSelected());
+            }
+            if (model.isCRequired() != cbCRequired.isSelected()) {
+                model.setCRequired(cbCRequired.isSelected());
+            }
+            if (model.isCppRequired() != cbCppRequired.isSelected()) {
+                model.setCppRequired(cbCppRequired.isSelected());
+            }
+            if (model.isFortranRequired() != cbFortranRequired.isSelected()) {
+                model.setFortranRequired(cbFortranRequired.isSelected());
+            }
         }
-        if (model.isCRequired() != cbCRequired.isSelected()) {
-            model.setCRequired(cbCRequired.isSelected());
-        }
-        if (model.isCppRequired() != cbCppRequired.isSelected()) {
-            model.setCppRequired(cbCppRequired.isSelected());
-        }
-        if (model.isFortranRequired() != cbFortranRequired.isSelected()) {
-            model.setFortranRequired(cbFortranRequired.isSelected());
-        }
+        instance = null; // remove the global instance
     }
     
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
         changed = false;
+    }
+    
+    public static ToolsPanel getToolsPanel() {
+        return instance;
+    }
+    
+    public CompilerSetManager getCompilerSetManager() {
+        if (csm == null) {
+            csm = CompilerSetManager.getDefault();
+        }
+        return csm;
+    }
+    
+    public CompilerSet getCurrentCompilerSet() {
+        return currentCompilerSet;
     }
     
     /**
@@ -672,7 +703,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             boolean csmValid = csm.getCompilerSets().size() > 0;
             boolean makeValid = !tfMakePath.getText().equals(NbBundle.getMessage(
                     ToolsPanel.class, "ERR_NotFound")); // NOI18N
-            boolean gdbValid = (gdbEnabled && cbCRequired.isSelected()) ? !tfCPath.getText().equals(
+            boolean gdbValid = (gdbEnabled && cbGdbRequired.isSelected()) ? !tfGdbPath.getText().equals(
                     NbBundle.getMessage(ToolsPanel.class, "ERR_NotFound")) : true; // NOI18N
             boolean cValid = cbCRequired.isSelected() ? tfCPath.getText().length() > 0 : true;
             boolean cppValid = cbCppRequired.isSelected() ? tfCppPath.getText().length() > 0 : true;
@@ -686,7 +717,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 valid = !valid;
                 firePropertyChange(PROP_VALID, !valid, valid);
             }
-        return valid;
+            return valid;
         }
     }
     
@@ -778,6 +809,23 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
         }
         jc.addItemListener(this);
+    }
+    
+    Set<ChangeListener> listener = new HashSet();
+    
+    public void addCompilerSetChangeListener(ChangeListener l) {
+        listener.add(l);
+    }
+    
+    public void removeCompilerSetChangeListener(ChangeListener l) {
+        listener.remove(l);
+    }
+    
+    public void fireCompilerSetChange() {
+        ChangeEvent ev = new ChangeEvent(currentCompilerSet);
+        for (ChangeListener l : listener) {
+            l.stateChanged(ev);
+        }
     }
     
     // implement ActionListener

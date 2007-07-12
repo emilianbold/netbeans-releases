@@ -173,7 +173,7 @@ public class Diagnostic {
             int i = 0;
             for( String s = br.readLine(); s != null; s = br.readLine() ) {
                 if (i == 0){
-                    buf.append("  in thread "+Thread.currentThread().getName());
+                    buf.append("  in thread "+Thread.currentThread().getName()); // NOI18N
                     buf.append('\n');
                 }
                 buf.append(s);

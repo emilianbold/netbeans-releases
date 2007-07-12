@@ -67,9 +67,6 @@ final class CppFoldManager extends CppFoldManagerBase
 
     private FoldOperation operation;
 
-    /** Fold for includes sectin */
-    private Fold includesFold;
-
     /** Fold for the initial comment in the file */
     private Fold initialCommentFold;
 
@@ -136,12 +133,25 @@ final class CppFoldManager extends CppFoldManagerBase
         this.initialCommentFold = initialCommentFold;
     }
     
-    Fold getIncludesFold() {
-        return includesFold;
+    private IncludesFoldInfo findIncludesFoldInfo(String id) {
+	if (id == null) {
+	    return null;
+	}
+        return (IncludesFoldInfo) path2FoldInfo.get(id);
     }
     
-    void setIncludesFold(Fold includesFold) {
-        this.includesFold = includesFold;
+    private void removeIncludesFoldInfo(String id) {
+	if (id == null) {
+	    return;
+	}
+        path2FoldInfo.remove(id);
+    }
+    
+    private void putIncludesFoldInfo(String id, IncludesFoldInfo info) {
+	if (id == null) {
+	    return;
+	}
+        path2FoldInfo.put(id, info);
     }
     
     private BlockFoldInfo findBlockFoldInfo(String id) {
@@ -248,15 +258,15 @@ final class CppFoldManager extends CppFoldManagerBase
 	try {
             // initial comment fold
             request.setInitialCommentFoldInfo(cpf.getInitialCommentFold());
-	    // The first Includes section
-	    request.setIncludesFoldInfo(cpf.getIncludesFold());
-
-	    // Classes
+            
+	    // The Includes sections
+            for (CppFoldRecord rec : cpf.getIncludesFolds()) {
+                request.addIncludesFoldInfo(rec);
+            }
 
 	    // Functions/methods
-	    List list = cpf.getBlockFolds();
-	    for (Iterator it = list.iterator(); it.hasNext();) {
-		request.addBlockFoldInfo((CppFoldRecord) it.next());
+	    for (CppFoldRecord rec : cpf.getBlockFolds()) {
+		request.addBlockFoldInfo(rec);
 	    }
 	} finally {
 	    adoc.readUnlock();
@@ -265,8 +275,8 @@ final class CppFoldManager extends CppFoldManagerBase
     }
 
     /** Process the fold updates in the request */
-    private void processUpdateFoldRequest(UpdateFoldsRequest request,
-		    FoldHierarchyTransaction transaction) {
+    private void processUpdateFoldRequest(UpdateFoldsRequest request, FoldHierarchyTransaction transaction) {
+            Map obsoletePath2FoldInfo = (Map) path2FoldInfo.clone();
 
 	if (request.isValid()) {
 	    log.log(Level.FINE, "CFM.processUpdateFoldRequest: Processing " + getShortName() +
@@ -279,8 +289,7 @@ final class CppFoldManager extends CppFoldManagerBase
             if (icInfo != null) {
                 if (icInfo.isUpdateNecessary(origFold)) {
                     boolean collapsed = (origFold != null)
-                        ? origFold.isCollapsed()
-                        : (documentModified ? false : foldInitialCommentsPreset);
+                        ? origFold.isCollapsed() : (documentModified ? false : foldInitialCommentsPreset);
                         
                     // Remove original fold first
                     if (origFold != null) {
@@ -295,7 +304,6 @@ final class CppFoldManager extends CppFoldManagerBase
                         ErrorManager.getDefault().notify(e);
                     }
                 }
-                
             } else { // no new fold
                 // Remove original fold only
                 if (origFold != null) {
@@ -304,39 +312,26 @@ final class CppFoldManager extends CppFoldManagerBase
                 }
             }
             
-            // the first set of includes
-            
-            origFold = getIncludesFold();
-            IncludesFoldInfo impsInfo = request.getIncludesFoldInfo();
+            // The set of includes
+            List<IncludesFoldInfo> impsInfo = request.getIncludesFoldInfos();
             if (impsInfo != null) {
-                if (impsInfo.isUpdateNecessary(origFold)) {
-                    boolean collapsed = (origFold != null)
-                        ? origFold.isCollapsed()
-                        : (documentModified ? false : foldIncludesPreset);
-                        
+                for (IncludesFoldInfo info : impsInfo) {
+                    String id = info.getId();
+                    IncludesFoldInfo orig = findIncludesFoldInfo(id);   
+                    
                     // Remove original fold first
-                    if (origFold != null) {
-                        removeFoldFromHierarchy(origFold, transaction);
-                        setIncludesFold(null);
+                    if (orig != null) {
+                        orig.removeFromHierarchy(transaction);
                     }
 
                     // Add new fold
                     try {
-                        impsInfo.updateHierarchy(transaction, collapsed);
+                        info.updateHierarchy(transaction, orig);
                     } catch (BadLocationException e) {
                         ErrorManager.getDefault().notify(e);
                     }
                 }
-                    
-            } else { // no new fold
-                // Remove original fold only
-                if (origFold != null) {
-                    removeFoldFromHierarchy(origFold, transaction);
-                    setIncludesFold(null);
-                }
             }
-            
-            Map obsoletePath2FoldInfo = (Map) path2FoldInfo.clone();
 
             List infoList = request.getBlockFoldInfos();
 	    if (infoList != null) {
@@ -530,11 +525,11 @@ final class CppFoldManager extends CppFoldManagerBase
         /** Fold for the initial comment in the file */
         private InitialCommentFoldInfo initialCommentFoldInfo;
         
-        /** Fold for includes section. */
-        private IncludesFoldInfo includesFoldInfo;
+        /** Folds for includes sections */
+        private List<IncludesFoldInfo> includesFoldInfos;
 
         /** List of the code block folds (methods, functions, compound statements etc.) */
-        private List blockFoldInfos;
+        private List<BlockFoldInfo> blockFoldInfos;
         
         UpdateFoldsRequest() {
             creationTimeDoc = getDocument();
@@ -562,20 +557,20 @@ final class CppFoldManager extends CppFoldManagerBase
             }
         }
         
-        IncludesFoldInfo getIncludesFoldInfo() {
-            return includesFoldInfo;
+        List getIncludesFoldInfos() {
+            return includesFoldInfos;
         }
         
-        void setIncludesFoldInfo(CppFoldRecord includesFold) {
-            BaseDocument bdoc = (BaseDocument)creationTimeDoc;   
-            try {
-            this.includesFoldInfo = includesFold == null ? null : 
-                new IncludesFoldInfo(
-                    bdoc.createPosition(includesFold.getStartOffset()), 
-                    bdoc.createPosition(includesFold.getEndOffset()));
-            } catch (BadLocationException ex) {
-                // skip it
+        void addIncludesFoldInfo(CppFoldRecord foldInfo) {
+            if (includesFoldInfos == null) {
+                includesFoldInfos = new ArrayList();
             }
+	    try {
+		includesFoldInfos.add(new IncludesFoldInfo(foldInfo, (AbstractDocument) creationTimeDoc));
+	    } catch (BadLocationException ex) {
+		log.log(Level.FINE, "CFM.addIncludesFoldInfo: Got BadLocationException\n    " + // NOI18N
+			 ex.getMessage());
+	    }
         }
         
         List getBlockFoldInfos() {
@@ -587,10 +582,9 @@ final class CppFoldManager extends CppFoldManagerBase
                 blockFoldInfos = new ArrayList();
             }
 	    try {
-		blockFoldInfos.add(new BlockFoldInfo(foldInfo,
-			    (AbstractDocument) creationTimeDoc));
+		blockFoldInfos.add(new BlockFoldInfo(foldInfo, (AbstractDocument) creationTimeDoc));
 	    } catch (BadLocationException ex) {
-		log.log(Level.FINE, "CFM.addFunctionFoldInfo: Got BadLocationException\n    " + // NOI18N
+		log.log(Level.FINE, "CFM.addBlockFoldInfo: Got BadLocationException\n    " + // NOI18N
 			 ex.getMessage());
 	    }
         }
@@ -677,41 +671,82 @@ final class CppFoldManager extends CppFoldManagerBase
     
     private final class IncludesFoldInfo {
         
+        private Fold fold;
         private Position includesStartPos;
         private Position includesEndPos;
+	private String id;
 
-        IncludesFoldInfo(Position includesStartPos, Position includesEndPos) {
-            this.includesStartPos = includesStartPos;
-            this.includesEndPos = includesEndPos;
+        IncludesFoldInfo(CppFoldRecord fi, AbstractDocument doc) throws BadLocationException {
+            includesStartPos = doc.createPosition(fi.getStartOffset());
+            includesEndPos = doc.createPosition(fi.getEndOffset());
+            
+            // TODO: our lexer don't provide enough information about folds
+            // it produces. NB java ids based on MOFID are more reliable.
+            id = "" + fi.getType() + ":" + fi.getStartOffset(); // NOI18N
         }
 
-        public boolean isUpdateNecessary(Fold origIncludesFold) {
-            return (origIncludesFold == null
-                || origIncludesFold.getStartOffset() != includesStartPos.getOffset()
-                || origIncludesFold.getEndOffset() != includesEndPos.getOffset()
-            );
+        public boolean isUpdateNecessary(IncludesFoldInfo orig) {
+            boolean update = false;
+            
+            if (orig == null) {
+                update = true;
+            } else {
+                Fold origFold = orig.getFold();
+                if (includesStartPos != null && (origFold == null
+                            || includesStartPos.getOffset() != origFold.getStartOffset()
+                            || includesEndPos.getOffset() != origFold.getEndOffset())) {
+                    update = true;
+                }
+            }
+            return update;
         }
 
-        public void updateHierarchy(FoldHierarchyTransaction transaction,
-			boolean collapsed) throws BadLocationException {
+        public void updateHierarchy(FoldHierarchyTransaction transaction, IncludesFoldInfo origInfo)
+                        throws BadLocationException {
             int startOffset = includesStartPos.getOffset();
             int endOffset = includesEndPos.getOffset();
 
             if (FoldOperation.isBoundsValid(startOffset, endOffset,
 			CppFoldManager.INCLUDES_FOLD_TEMPLATE.getStartGuardedLength(),
 			CppFoldManager.INCLUDES_FOLD_TEMPLATE.getEndGuardedLength())) {
-                Fold fold = getOperation().addToHierarchy(
+                fold = getOperation().addToHierarchy(
                     CppFoldManager.INCLUDES_FOLD_TEMPLATE.getType(),
                     CppFoldManager.INCLUDES_FOLD_TEMPLATE.getDescription(), 
-                    collapsed,
-                    startOffset,  endOffset,
+                    false, startOffset,  endOffset,
                     CppFoldManager.INCLUDES_FOLD_TEMPLATE.getStartGuardedLength(),
                     CppFoldManager.INCLUDES_FOLD_TEMPLATE.getEndGuardedLength(),
                     this,
                     transaction
                 );
-                setIncludesFold(fold);
             }
+        }
+
+	public String getId() {
+	    return id;
+	}
+
+	public void removeFromHierarchy(FoldHierarchyTransaction transaction) {
+            if (fold != null) {
+                FoldOperation fo = getOperation();
+                if (fo.isAddedOrBlocked(fold))
+                    fo.removeFromHierarchy(fold, transaction);
+            }
+        }
+            
+        public Fold getFold() {
+            return fold;
+        }
+
+	public void removeFoldNotify(Fold removedFold) {
+            if (removedFold == fold) {
+                fold = null;
+            } else {
+                assert false; // Invalid fold supplied
+            }
+        }
+
+	public String toString() {
+            return "fold=" + fold; // NOI18N
         }
     }
 
@@ -724,8 +759,7 @@ final class CppFoldManager extends CppFoldManagerBase
         private Position blockStartPos;
         private Position blockEndPos;
         
-        public BlockFoldInfo(CppFoldRecord fi, AbstractDocument doc)
-			throws BadLocationException {
+        public BlockFoldInfo(CppFoldRecord fi, AbstractDocument doc) throws BadLocationException {
             blockStartPos = doc.createPosition(fi.getStartOffset());
             blockEndPos = doc.createPosition(fi.getEndOffset());
             switch (fi.getType()) {
@@ -773,8 +807,8 @@ final class CppFoldManager extends CppFoldManagerBase
 	    return id;
 	}
 
-	public void updateHierarchy(FoldHierarchyTransaction transaction,
-			BlockFoldInfo origInfo) throws BadLocationException {
+	public void updateHierarchy(FoldHierarchyTransaction transaction, BlockFoldInfo origInfo)
+                        throws BadLocationException {
             
             if (blockStartPos != null) {
                 int startOffset = blockStartPos.getOffset();

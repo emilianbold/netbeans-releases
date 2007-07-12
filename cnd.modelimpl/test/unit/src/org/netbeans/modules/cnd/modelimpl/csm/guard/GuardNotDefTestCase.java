@@ -63,7 +63,7 @@ public class GuardNotDefTestCase extends TraceModelTestBase {
         assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists());
         performModelTest(testFile, System.out, System.err);
         boolean checked = false;
-        for(FileImpl file : getProject().getFileList()){
+        for(FileImpl file : getProject().getAllFiles()){
             if ("cstdlib.h".equals(file.getName())){
                 assertTrue("Guard guard block defined", file.getMacros().size()==2);
                 String guard = file.testGetGuardState().testGetGuardName();

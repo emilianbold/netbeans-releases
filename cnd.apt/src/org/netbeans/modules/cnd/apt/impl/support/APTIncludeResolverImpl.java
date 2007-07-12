@@ -19,13 +19,13 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 
 /**
  * implementation of include resolver
@@ -51,11 +51,11 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.baseFileIncludeDir = baseFileIncludeDir;
     }       
 
-    public String resolveInclude(APTInclude apt, APTMacroCallback callback) {
+    public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
     }
 
-    public String resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
+    public ResolvedPath resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
     }
 
@@ -66,18 +66,18 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details    
         
-    private String resolveFilePath(String file, boolean system, boolean includeNext) {
-        String result = null;
+    private ResolvedPath resolveFilePath(String file, boolean system, boolean includeNext) {
+        ResolvedPath result = null;
         if (file != null && (file.length() > 0)) {
             if (!system) {
                 // for system current dir has lowest priority
                 result = APTIncludeUtils.resolveFilePath(file, baseFile);
             }
             if (result == null) {
-                result = APTIncludeUtils.resolveFilePath(file, system ? systemIncludePaths : userIncludePaths, baseFile, includeNext);
+                result = APTIncludeUtils.resolveFilePath(file, userIncludePaths, baseFile, includeNext);
             }
             if (result == null) {
-                result = APTIncludeUtils.resolveFilePath(file, system ? userIncludePaths : systemIncludePaths, baseFile, includeNext);
+                result = APTIncludeUtils.resolveFilePath(file, systemIncludePaths, baseFile, includeNext);
             }
             if ( result == null && system) {
                 // system was skipped above

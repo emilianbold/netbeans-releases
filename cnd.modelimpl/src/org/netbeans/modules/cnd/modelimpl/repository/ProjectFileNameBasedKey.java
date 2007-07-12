@@ -38,7 +38,7 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     protected ProjectFileNameBasedKey(String prjName, String fileName) {
 	super(prjName);
 	assert fileName != null;
-	this.fileNameIndex = KeyUtilities.getUnitFileNames(unitIndex).getId(fileName);
+	this.fileNameIndex = KeyUtilities.getFileIdByName(unitIndex, fileName);
     }
     
     protected ProjectFileNameBasedKey(CsmFile file) {
@@ -78,16 +78,12 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     }
     
     protected String getFileName() {
-	final IntToStringCache fileNames = KeyUtilities.getUnitFileNames(unitIndex);
-	final String fileName = fileNames.getValueById(this.fileNameIndex);
-	return fileName;
+	return KeyUtilities.getFileNameById(unitIndex, this.fileNameIndex);
     }
     
     /** A special safe method, mainly for toString / tracing */
     protected String getFileNameSafe() {
-	final IntToStringCache fileNames = KeyUtilities.getUnitFileNames(unitIndex);
-	final String fileName = fileNames.containsId(this.fileNameIndex) ? fileNames.getValueById(this.fileNameIndex) : "?";
-	return fileName;
+	return KeyUtilities.getFileNameByIdSafe(unitIndex, this.fileNameIndex);
     }
     
     public int getDepth() {

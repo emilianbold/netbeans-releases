@@ -25,6 +25,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 
 /**
@@ -41,11 +42,11 @@ public class APTHandlersSupportImpl {
         return new APTPreprocHandlerImpl(macroMap, inclHandler, stateCorrect);
     }
 
-    public static APTPreprocHandler createEmptyPreprocHandler(String file) {
+    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
         return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false);
     }
 
-    public static APTIncludeHandler createIncludeHandler(String startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
     }
 

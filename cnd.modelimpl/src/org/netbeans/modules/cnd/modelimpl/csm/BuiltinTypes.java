@@ -26,6 +26,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -56,7 +57,7 @@ public class BuiltinTypes {
         }
 
         public String getUniqueName() {
-            return getKind().toString() + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName();
+            return Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName();
         }
         
         public String getName() {
@@ -93,7 +94,7 @@ public class BuiltinTypes {
         }
 
         public String toString() {
-            return "" + getKind() + " " +  getQualifiedName();
+            return "" + getKind() + " " +  getQualifiedName(); // NOI18N
         }
         
         

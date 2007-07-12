@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 //import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -99,6 +100,10 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     
     public void notifyDeleted() throws IOException {
         project.getAntProjectHelper().notifyDeleted();
+	NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+	if( nativeProject instanceof NativeProjectProvider ) {
+	    ((NativeProjectProvider) nativeProject).fireProjectDeleted();
+	}
     }
     
     public void notifyCopying() {

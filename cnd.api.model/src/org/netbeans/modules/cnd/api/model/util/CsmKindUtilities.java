@@ -29,6 +29,7 @@ import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -45,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 
@@ -463,10 +465,14 @@ public class CsmKindUtilities {
         return false;
     }     
     
+    public static boolean isExpression(CsmObject obj) {
+        return obj instanceof CsmExpression;
+    }
+    
     public static boolean isMacro(CsmObject obj) {
         return obj instanceof CsmMacro;
     }
-
+    
     public static boolean isInclude(CsmObject obj) {
         return obj instanceof CsmInclude;
     }
@@ -501,5 +507,13 @@ public class CsmKindUtilities {
             return ((CsmVariable)decl).isExtern();
         }
         return false;
+    }
+    
+    public static boolean isIdentifiable(Object obj) {
+        if (obj instanceof CsmIdentifiable) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

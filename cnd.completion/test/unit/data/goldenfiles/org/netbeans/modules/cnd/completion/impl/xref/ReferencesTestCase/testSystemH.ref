@@ -1,0 +1,150 @@
+'defined', tokenID=identifier, offset=876 [20:6/876-20:13/883]
+--OWNER:
+    null
+--RESOLVED TO:
+    null
+==============================================================
+'SYSTEM_H', tokenID=identifier, offset=884 [20:14/884-20:22/892]
+--OWNER:
+    null
+--RESOLVED TO:
+    MACROS #define 'SYSTEM_H' [21:1/893-21:17/909]
+==============================================================
+'SYSTEM_H', tokenID=identifier, offset=901 [21:9/901-21:17/909]
+--OWNER:
+    MACROS #define 'SYSTEM_H' [21:1/893-21:17/909]
+--RESOLVED TO:
+    MACROS #define 'SYSTEM_H' [21:1/893-21:17/909]
+==============================================================
+'"module.h"', tokenID=user-include, offset=920 [23:10/920-23:20/930]
+--OWNER:
+    INCLUDE "module.h" [23:1/911-23:20/930]
+--RESOLVED TO:
+    FILE ReferencesTestCase/module.h
+==============================================================
+'std', tokenID=identifier, offset=968 [26:17/968-26:20/971]
+--OWNER:
+    USING_DIRECTIVE std [26:1/952-26:20/971] ReferencesTestCase/system.h
+--RESOLVED TO:
+    null
+==============================================================
+'System', tokenID=identifier, offset=1018 [30:7/1018-30:13/1024]
+--OWNER:
+    CLASS System [30:1/1012-46:3/1382] ReferencesTestCase/system.h
+--RESOLVED TO:
+    CLASS System [30:1/1012-46:3/1382] ReferencesTestCase/system.h
+==============================================================
+'System', tokenID=identifier, offset=1039 [32:5/1039-32:11/1045]
+--OWNER:
+    FUNCTION System()  [32:5/1039-32:14/1048] ReferencesTestCase/system.h
+--RESOLVED TO:
+    FUNCTION System()  [32:5/1039-32:14/1048] ReferencesTestCase/system.h
+==============================================================
+'System', tokenID=identifier, offset=1053 [33:5/1053-33:11/1059]
+--OWNER:
+    FUNCTION System(const System&)  [33:5/1053-33:31/1079] ReferencesTestCase/system.h
+--RESOLVED TO:
+    FUNCTION System(const System&)  [33:5/1053-33:31/1079] ReferencesTestCase/system.h
+==============================================================
+'System', tokenID=identifier, offset=1066 [33:18/1066-33:24/1072]
+--OWNER:
+    TYPE const &System TEXT=const System&  [33:12/1060-33:25/1073] ReferencesTestCase/system.h
+--RESOLVED TO:
+    CLASS System [30:1/1012-46:3/1382] ReferencesTestCase/system.h
+==============================================================
+'obj', tokenID=identifier, offset=1074 [33:26/1074-33:29/1077]
+--OWNER:
+    VARIABLE obj [33:12/1060-33:29/1077] ReferencesTestCase/system.h type: const &System TEXT=const System&  [33:12/1060-33:25/1073] init: null
+--RESOLVED TO:
+    VARIABLE obj [33:12/1060-33:29/1077] ReferencesTestCase/system.h type: const &System TEXT=const System&  [33:12/1060-33:25/1073] init: null
+==============================================================
+'Module', tokenID=identifier, offset=1112 [35:5/1112-35:11/1118]
+--OWNER:
+    TYPE &Module TEXT=Module&  [35:5/1112-35:12/1119] ReferencesTestCase/system.h
+--RESOLVED TO:
+    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+==============================================================
+'GetModule', tokenID=identifier, offset=1120 [35:13/1120-35:22/1129]
+--OWNER:
+    FUNCTION GetModule(int) const  [35:5/1112-35:40/1147] ReferencesTestCase/system.h
+--RESOLVED TO:
+    FUNCTION GetModule(int) const  [35:5/1112-35:40/1147] ReferencesTestCase/system.h
+==============================================================
+'index', tokenID=identifier, offset=1134 [35:27/1134-35:32/1139]
+--OWNER:
+    VARIABLE index [35:23/1130-35:32/1139] ReferencesTestCase/system.h type: int TEXT=int  [35:23/1130-35:26/1133] init: null
+--RESOLVED TO:
+    VARIABLE index [35:23/1130-35:32/1139] ReferencesTestCase/system.h type: int TEXT=int  [35:23/1130-35:26/1133] init: null
+==============================================================
+'AddModule', tokenID=identifier, offset=1157 [36:10/1157-36:19/1166]
+--OWNER:
+    FUNCTION AddModule(Module*)  [36:5/1152-36:36/1183] ReferencesTestCase/system.h
+--RESOLVED TO:
+    FUNCTION AddModule(Module*)  [36:5/1152-36:36/1183] ReferencesTestCase/system.h
+==============================================================
+'Module', tokenID=identifier, offset=1167 [36:20/1167-36:26/1173]
+--OWNER:
+    TYPE *Module TEXT=Module*  [36:20/1167-36:27/1174] ReferencesTestCase/system.h
+--RESOLVED TO:
+    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+==============================================================
+'module', tokenID=identifier, offset=1175 [36:28/1175-36:34/1181]
+--OWNER:
+    VARIABLE module [36:20/1167-36:34/1181] ReferencesTestCase/system.h type: *Module TEXT=Module*  [36:20/1167-36:27/1174] init: null
+--RESOLVED TO:
+    VARIABLE module [36:20/1167-36:34/1181] ReferencesTestCase/system.h type: *Module TEXT=Module*  [36:20/1167-36:27/1174] init: null
+==============================================================
+'GetModuleCount', tokenID=identifier, offset=1201 [38:9/1201-38:23/1215]
+--OWNER:
+    FUNCTION GetModuleCount() const  [38:5/1197-38:32/1224] ReferencesTestCase/system.h
+--RESOLVED TO:
+    FUNCTION GetModuleCount() const  [38:5/1197-38:32/1224] ReferencesTestCase/system.h
+==============================================================
+'GetSupportMetric', tokenID=identifier, offset=1233 [39:9/1233-39:25/1249]
+--OWNER:
+    FUNCTION GetSupportMetric() const  [39:5/1229-39:34/1258] ReferencesTestCase/system.h
+--RESOLVED TO:
+    FUNCTION GetSupportMetric() const  [39:5/1229-39:34/1258] ReferencesTestCase/system.h
+==============================================================
+'vector', tokenID=identifier, offset=1273 [42:5/1273-42:11/1279]
+--OWNER:
+    TYPE $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] ReferencesTestCase/system.h
+--RESOLVED TO:
+    null
+==============================================================
+'Module', tokenID=identifier, offset=1281 [42:13/1281-42:19/1287]
+--OWNER:
+    TYPE $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] ReferencesTestCase/system.h
+--RESOLVED TO:
+    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+==============================================================
+'moduleList', tokenID=identifier, offset=1290 [42:22/1290-42:32/1300]
+--OWNER:
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+--RESOLVED TO:
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+==============================================================
+'supportMetric', tokenID=identifier, offset=1310 [43:9/1310-43:22/1323]
+--OWNER:
+    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h type: int TEXT=int  [43:5/1306-43:8/1309] init: null
+--RESOLVED TO:
+    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h type: int TEXT=int  [43:5/1306-43:8/1309] init: null
+==============================================================
+'ostream', tokenID=identifier, offset=1333 [45:8/1333-45:15/1340]
+--OWNER:
+    TYPE &$unresolved$::ostream TEXT=ostream&  [45:8/1333-45:16/1341] ReferencesTestCase/system.h
+--RESOLVED TO:
+    null
+==============================================================
+'ostream', tokenID=identifier, offset=1354 [45:29/1354-45:36/1361]
+--OWNER:
+    TYPE &$unresolved$::ostream TEXT=ostream&  [45:29/1354-45:36/1361] ReferencesTestCase/system.h
+--RESOLVED TO:
+    null
+==============================================================
+'System', tokenID=identifier, offset=1370 [45:45/1370-45:51/1376]
+--OWNER:
+    VARIABLE  [45:39/1364-45:52/1377] ReferencesTestCase/system.h type: const &System TEXT=const System&  [45:39/1364-45:44/1369] init: null
+--RESOLVED TO:
+    CLASS System [30:1/1012-46:3/1382] ReferencesTestCase/system.h
+==============================================================

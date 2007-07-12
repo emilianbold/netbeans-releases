@@ -12,7 +12,8 @@ import java.util.Hashtable;
 
 import antlr.collections.impl.BitSet;
 import antlr.collections.impl.Vector;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 /**Generate MyParser.java, MyLexer.java and MyParserTokenTypes.java */
 public class JavaCodeGenerator extends CodeGenerator {
@@ -33,6 +34,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     private int syntacticPredId = 0;
     //vk--
     
+    //vv++
+    public static final boolean RECOVER_AST = true;
+    //vv--
     protected int syntacticPredLevel = 0;
 
     // Are we generating ASTs (for parsers and tree parsers) right now?
@@ -3199,6 +3203,34 @@ public class JavaCodeGenerator extends CodeGenerator {
 		}
     }
     
+    private void findBuildASTActions(AlternativeBlock block, List<ActionElement> out) {
+        ActionElement action = null;
+        //println("// altBlock.analysisAlt is " + block.analysisAlt);
+        if (block.analysisAlt >= 0) {
+            Alternative a = block.getAlternativeAt(block.analysisAlt);
+            AlternativeElement e = a.head;
+            while (e != null) {
+                //println("// alternative is " + e.getLabel() + " class:" + e.getClass());
+                if (e instanceof ActionElement) {
+                    //println(" // found action element");
+                    action = (ActionElement)e;
+                    ActionTransInfo tInfo = new ActionTransInfo();
+                    String actionStr = processActionForSpecialSymbols(action.actionText,
+                                                                      action.getLine(),
+                                                                      currentRule,
+                                                                      tInfo);
+                    if (tInfo.refRuleRoot != null) {
+                        out.add(action);
+                    }
+                } else if (e instanceof AlternativeBlock) {
+                    //println(" // analyze next block element");
+                    findBuildASTActions((AlternativeBlock)e, out);
+                }
+                e = e.next;
+            } 
+        }
+    }
+    
     private void genRuleCatch(RuleEndElement endNode, boolean checkMatchFlag, Context context) {
         // generate nothing if catch block requested but not needed
         if (!MatchExceptionState.throwRecExceptions && !checkMatchFlag) {
@@ -3220,6 +3252,32 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
         if (!Tool.cloneGuessing || (context.guessing == Context.NO_GUESSING)) {
             String exception = (checkMatchFlag) ? "matchException" : "ex";
+            
+            //////////
+            if (JavaCodeGenerator.RECOVER_AST) {
+                List<ActionElement> actions = new ArrayList(10);
+                findBuildASTActions(endNode.block, actions);
+                for (ActionElement action : actions) {
+                    ActionTransInfo tInfo = new ActionTransInfo();
+                    String actionStr = processActionForSpecialSymbols(action.actionText,
+                                                                      action.getLine(),
+                                                                      currentRule,
+                                                                      tInfo);
+
+                    assert (tInfo.refRuleRoot != null);
+                    println("// when recover we'd like to perform any \"build AST\" actions");
+                    println("if ((" + tInfo.refRuleRoot + " == null) && (currentAST.root != null)) {");
+                    // Somebody referenced "#rule", make sure translated var is valid
+                    // assignment to #rule is left as a ref also, meaning that assignments
+                    // with no other refs like "#rule = foo();" still forces this code to be
+                    // generated (unnecessarily).
+                    println(tInfo.refRuleRoot + " = (" + labeledElementASTType + ")currentAST.root;");
+                    // dump the translated action
+                    printAction(actionStr);    
+                    println("}");
+                }
+            }
+            //////////
             println("reportError(" + exception +");");
             if (!(grammar instanceof TreeWalkerGrammar)) {
                 // Generate code to consume until token in k==1 follow set

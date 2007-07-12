@@ -25,13 +25,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
@@ -43,106 +45,134 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Storage for project declarations. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class DeclarationContainer {
+/*package-local*/ class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
+    
     private SortedMap<String, Object> declarationsOLD = Collections.synchronizedSortedMap(new TreeMap<String, Object>());
     //private Map<String, CsmUID<CsmDeclaration>> declarations = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmDeclaration>>());
-    private SortedMap<String, Object> declarations = Collections.synchronizedSortedMap(new TreeMap<String, Object>());
+    private SortedMap<String, Object> declarations = new TreeMap<String, Object>();
+    private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     
-    private Map<String, Set<CsmUID<? extends CsmFriend>>> friends = Collections.synchronizedMap(new HashMap<String, Set<CsmUID<? extends CsmFriend>>>());
-    
+    private Map<String, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<String, Set<CsmUID<? extends CsmFriend>>>();
+
     /** Creates a new instance of ProjectDeclarations */
-    public DeclarationContainer() {
+    public DeclarationContainer(ProjectBase project) {
+	super(new DeclarationContainerKey(project.getQualifiedName()));
+	put();
+    }
+    
+    public DeclarationContainer(DataInput input) throws IOException {
+	super(input);
+	read(input);
+    }
+
+    private void removeDeclarationNew(CsmDeclaration decl) {
+	String uniqueName = decl.getUniqueName();
+//	synchronized(declarations){
+	Object o = null;
+	try {
+	    declarationsLock.writeLock().lock();
+	    o = declarations.get(uniqueName);
+
+	    if (o instanceof CsmUID[]) {
+		CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[])o;
+		int size = uids.length;
+		CsmUID<CsmOffsetableDeclaration> res = null;
+		int k = size;
+		for(int i = 0; i < size; i++){
+		    CsmUID<CsmOffsetableDeclaration> uid = uids[i];
+		    if (isSameFile(uid,(CsmOffsetableDeclaration)decl)){
+			uids[i] = null;
+			k--;
+		    } else {
+			res = uid;
+		    }
+		}
+		if (k == 0) {
+		    declarations.remove(uniqueName);
+		} else if (k == 1){
+		    declarations.put(uniqueName,res);
+		} else {
+		    CsmUID<CsmOffsetableDeclaration>[] newUids = new CsmUID[k];
+		    k = 0;
+		    for(int i = 0; i < size; i++){
+			CsmUID<CsmOffsetableDeclaration> uid = uids[i];
+			if (uid != null){
+			    newUids[k]=uid;
+			    k++;
+			}
+		    }
+		    declarations.put(uniqueName,newUids);
+		}
+	    } else if (o instanceof CsmUID){
+		declarations.remove(uniqueName);
+	    }
+	} finally {
+	    declarationsLock.writeLock().unlock();
+	}
+	removeFriend(decl);
+//	}
+	put();
+    }
+    
+    private void removeDeclarationOld(CsmDeclaration decl) {
+	String uniqueName = decl.getUniqueName();
+	synchronized(declarationsOLD){
+	    Object o = declarationsOLD.get(uniqueName);
+	    if (o instanceof CsmOffsetableDeclaration[]) {
+		CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
+		int size = decls.length;
+		CsmOffsetableDeclaration res = null;
+		int k = size;
+		for(int i = 0; i < size; i++){
+		    CsmOffsetableDeclaration d = decls[i];
+		    if (isSameFile(d,(CsmOffsetableDeclaration)decl)){
+			decls[i] = null;
+			k--;
+		    } else {
+			res = d;
+		    }
+		}
+		if (k == 0) {
+		    declarationsOLD.remove(uniqueName);
+		} else if (k == 1){
+		    declarationsOLD.put(uniqueName,res);
+		} else {
+		    CsmOffsetableDeclaration[] newDecls = new CsmOffsetableDeclaration[k];
+		    k = 0;
+		    for(int i = 0; i < size; i++){
+			CsmOffsetableDeclaration d = decls[i];
+			if (d != null){
+			    newDecls[k]=d;
+			    k++;
+			}
+		    }
+		    declarationsOLD.put(uniqueName,newDecls);
+		}
+	    } else if (o instanceof CsmOffsetableDeclaration){
+		declarationsOLD.remove(uniqueName);
+	    }
+	}
     }
     
     public void removeDeclaration(CsmDeclaration decl) {
         if (TraceFlags.USE_REPOSITORY) {
-            String uniqueName = decl.getUniqueName();
-            synchronized(declarations){
-                Object o = declarations.get(uniqueName);
-                if (o instanceof CsmUID[]) {
-                    CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[])o;
-                    int size = uids.length;
-                    CsmUID<CsmOffsetableDeclaration> res = null;
-                    int k = size;
-                    for(int i = 0; i < size; i++){
-                        CsmUID<CsmOffsetableDeclaration> uid = uids[i];
-                        if (isSameFile(uid,(CsmOffsetableDeclaration)decl)){
-                            uids[i] = null;
-                            k--;
-                        } else {
-                            res = uid;
-                        }
-                    }
-                    if (k == 0) {
-                        declarations.remove(uniqueName);
-                    } else if (k == 1){
-                        declarations.put(uniqueName,res);
-                    } else {
-                        CsmUID<CsmOffsetableDeclaration>[] newUids = new CsmUID[k];
-                        k = 0;
-                        for(int i = 0; i < size; i++){
-                            CsmUID<CsmOffsetableDeclaration> uid = uids[i];
-                            if (uid != null){
-                                newUids[k]=uid;
-                                k++;
-                            }
-                        }
-                        declarations.put(uniqueName,newUids);
-                    }
-                } else if (o instanceof CsmUID){
-                    declarations.remove(uniqueName);
-                }
-                removeFriend(decl);
-            }
+	    removeDeclarationNew(decl);
         } else {
-            String uniqueName = decl.getUniqueName();
-            synchronized(declarationsOLD){
-                Object o = declarationsOLD.get(uniqueName);
-                if (o instanceof CsmOffsetableDeclaration[]) {
-                    CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
-                    int size = decls.length;
-                    CsmOffsetableDeclaration res = null;
-                    int k = size;
-                    for(int i = 0; i < size; i++){
-                        CsmOffsetableDeclaration d = decls[i];
-                        if (isSameFile(d,(CsmOffsetableDeclaration)decl)){
-                            decls[i] = null;
-                            k--;
-                        } else {
-                            res = d;
-                        }
-                    }
-                    if (k == 0) {
-                        declarationsOLD.remove(uniqueName);
-                    } else if (k == 1){
-                        declarationsOLD.put(uniqueName,res);
-                    } else {
-                        CsmOffsetableDeclaration[] newDecls = new CsmOffsetableDeclaration[k];
-                        k = 0;
-                        for(int i = 0; i < size; i++){
-                            CsmOffsetableDeclaration d = decls[i];
-                            if (d != null){
-                                newDecls[k]=d;
-                                k++;
-                            }
-                        }
-                        declarationsOLD.put(uniqueName,newDecls);
-                    }
-                } else if (o instanceof CsmOffsetableDeclaration){
-                    declarationsOLD.remove(uniqueName);
-                }
-            }
+	    removeDeclarationOld(decl);
         }
     }
-    
+
     private void removeFriend(CsmDeclaration decl){
         if (CsmKindUtilities.isFriendClass(decl)) {
             CsmFriendClass cls = (CsmFriendClass) decl;
@@ -166,80 +196,95 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
             }
         }
     }
+
+    private void putDeclarationOld(CsmDeclaration decl) {
+	String name = decl.getUniqueName();
+	CsmOffsetableDeclaration newDecl = (CsmOffsetableDeclaration)decl;
+	synchronized(declarationsOLD){
+	    Object o = declarationsOLD.get(name);
+	    if (o instanceof CsmOffsetableDeclaration[]) {
+		CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
+		boolean find = false;
+		for(int i = 0; i < decls.length; i++){
+		    if (isSameFile(decls[i], newDecl)){
+			decls[i] = newDecl;
+			find = true;
+			break;
+		    }
+		}
+		if (!find){
+		    CsmOffsetableDeclaration[] res = new CsmOffsetableDeclaration[decls.length+1];
+		    res[0]=newDecl;
+		    for(int i = 0; i < decls.length; i++){
+			res[i+1] = decls[i];
+		    }
+		    declarationsOLD.put(name, res);
+		}
+	    } else if (o instanceof CsmOffsetableDeclaration) {
+		CsmOffsetableDeclaration oldDecl = (CsmOffsetableDeclaration)o;
+		if (isSameFile(oldDecl, newDecl)) {
+		    declarationsOLD.put(name, decl);
+		} else {
+		    CsmOffsetableDeclaration[] decls = new CsmOffsetableDeclaration[]{newDecl,oldDecl};
+		    declarationsOLD.put(name, decls);
+		}
+	    } else {
+		declarationsOLD.put(name, newDecl);
+	    }
+	}
+	put();
+    }
     
+    private void putDeclarationNew(CsmDeclaration decl) {
+	String name = decl.getUniqueName();
+	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
+	assert uid != null;
+//            synchronized(declarations) {
+	try {
+	    declarationsLock.writeLock().lock();
+
+	    Object o = declarations.get(name);
+	    if (o instanceof CsmUID[]) {
+		CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[])o;
+		boolean find = false;
+		for(int i = 0; i < uids.length; i++){
+		    if (isSameFile(uids[i],uid)){
+			uids[i] = uid;
+			find = true;
+			break;
+		    }
+		}
+		if (!find){
+		    CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length+1];
+		    res[0]=uid;
+		    for(int i = 0; i < uids.length; i++){
+			res[i+1] = uids[i];
+		    }
+		    declarations.put(name, res);
+		}
+	    } else if (o instanceof CsmUID) {
+		CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>)o;
+		if (isSameFile(oldUid,uid)) {
+		    declarations.put(name, uid);
+		} else {
+		    CsmUID[] uids = new CsmUID[]{uid,oldUid};
+		    declarations.put(name, uids);
+		}
+	    } else {
+		declarations.put(name, uid);
+	    }
+	} finally {
+	    declarationsLock.writeLock().unlock();
+	}
+	putFriend(decl);
+//            }
+    }
     public void putDeclaration(CsmDeclaration decl) {
-        String name = decl.getUniqueName();
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
-            assert uid != null;
-            synchronized(declarations) {
-                Object o = declarations.get(name);
-                if (o instanceof CsmUID[]) {
-                    CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[])o;
-                    boolean find = false;
-                    for(int i = 0; i < uids.length; i++){
-                        if (isSameFile(uids[i],uid)){
-                            uids[i] = uid;
-                            find = true;
-                            break;
-                        }
-                    }
-                    if (!find){
-                        CsmUID<CsmOffsetableDeclaration>[] res = new CsmUID[uids.length+1];
-                        res[0]=uid;
-                        for(int i = 0; i < uids.length; i++){
-                            res[i+1] = uids[i];
-                        }
-                        declarations.put(name, res);
-                    }
-                } else if (o instanceof CsmUID) {
-                    CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>)o;
-                    if (isSameFile(oldUid,uid)) {
-                        declarations.put(name, uid);
-                    } else {
-                        CsmUID[] uids = new CsmUID[]{uid,oldUid};
-                        declarations.put(name, uids);
-                    }
-                } else {
-                    declarations.put(name, uid);
-                }
-                putFriend(decl);
-            }
+	    putDeclarationNew(decl);
         } else {
-            CsmOffsetableDeclaration newDecl = (CsmOffsetableDeclaration)decl;
-            synchronized(declarationsOLD){
-                Object o = declarationsOLD.get(name);
-                if (o instanceof CsmOffsetableDeclaration[]) {
-                    CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
-                    boolean find = false;
-                    for(int i = 0; i < decls.length; i++){
-                        if (isSameFile(decls[i], newDecl)){
-                            decls[i] = newDecl;
-                            find = true;
-                            break;
-                        }
-                    }
-                    if (!find){
-                        CsmOffsetableDeclaration[] res = new CsmOffsetableDeclaration[decls.length+1];
-                        res[0]=newDecl;
-                        for(int i = 0; i < decls.length; i++){
-                            res[i+1] = decls[i];
-                        }
-                        declarationsOLD.put(name, res);
-                    }
-                } else if (o instanceof CsmOffsetableDeclaration) {
-                    CsmOffsetableDeclaration oldDecl = (CsmOffsetableDeclaration)o;
-                    if (isSameFile(oldDecl, newDecl)) {
-                        declarationsOLD.put(name, decl);
-                    } else {
-                        CsmOffsetableDeclaration[] decls = new CsmOffsetableDeclaration[]{newDecl,oldDecl};
-                        declarationsOLD.put(name, decls);
-                    }
-                } else {
-                    declarationsOLD.put(name, newDecl);
-                }
-            }
-        }
+	    putDeclarationOld(decl);
+	}
     }
     
     private void putFriend(CsmDeclaration decl){
@@ -262,12 +307,14 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
             }
             set.add(fun.getUID());
         }
+	put();
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(String from, String to) {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-            synchronized(declarations) {
+            try {
+                declarationsLock.readLock().lock();
                 for (Map.Entry<String, Object> entry : declarations.subMap(from, to).entrySet()){
                     Object o = entry.getValue();
                     if (o instanceof CsmUID[]) {
@@ -279,6 +326,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
                         list.add((CsmUID)o);
                     }
                 }
+            } finally {
+                declarationsLock.readLock().unlock();
             }
             return UIDCsmConverter.UIDsToDeclarations(list);
         } else {
@@ -312,11 +361,14 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
             }
             if (name != null) {
                 List<CsmUID<? extends CsmFriend>> list = new ArrayList<CsmUID<? extends CsmFriend>>();
-                synchronized(declarations) {
+                try {
+                    declarationsLock.readLock().lock();
                     Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
                     if (set != null) {
                         list.addAll(set);
                     }
+                } finally {
+                    declarationsLock.readLock().unlock();
                 }
                 if (list.size()>0){
                     Collection<CsmFriend> res = new ArrayList<CsmFriend>();
@@ -344,7 +396,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
     public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName) {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-            synchronized(declarations) {
+            try {
+                declarationsLock.readLock().lock();
                 Object o = declarations.get(uniqueName);
                 if (o instanceof CsmUID[]) {
                     CsmUID[] uids = (CsmUID[])o;
@@ -354,6 +407,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
                 } else if (o instanceof CsmUID){
                     list.add((CsmUID)o);
                 }
+            } finally {
+                declarationsLock.readLock().unlock();
             }
             return UIDCsmConverter.UIDsToDeclarations(list);
         } else {
@@ -377,13 +432,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
         CsmDeclaration result;
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmDeclaration> uid = null;
-            synchronized(declarations) {
+            try {
+                declarationsLock.readLock().lock();
                 Object o = declarations.get(uniqueName);
                 if (o instanceof CsmUID[]) {
                     uid = ((CsmUID[])o)[0];
                 } else if (o instanceof CsmUID){
                     uid = (CsmUID)o;
                 }
+            } finally {
+                declarationsLock.readLock().unlock();
             }
             result = UIDCsmConverter.UIDtoDeclaration(uid);
             assert result != null || uid == null : "no declaration for UID " + uid;
@@ -402,7 +460,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
     
     public void clearDeclarations() {
         if (TraceFlags.USE_REPOSITORY) {
-            declarations.clear();
+            try {
+                declarationsLock.writeLock().lock();
+                declarations.clear();
+		put();
+            } finally {
+                declarationsLock.writeLock().unlock();
+            }
         } else {
             declarationsOLD.clear();
         }
@@ -410,7 +474,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
     
     
     public void write(DataOutput aStream) throws IOException {
-        UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, true);
+	super.write(aStream);
+        try {
+            declarationsLock.readLock().lock();
+            UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, false);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
     }
     
     public void read(DataInput aStream) throws IOException {

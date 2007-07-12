@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -32,8 +33,7 @@ import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-
-import org.netbeans.modules.cnd.modelimpl.platform.*;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Project implementation
@@ -65,17 +65,6 @@ public final class ProjectImpl extends ProjectBase {
 	return (ProjectImpl) instance;
     }
     
-    protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
-        assert (nativeFile != null && nativeFile.getFile() != null);
-        if( ! acceptNativeItem(nativeFile)) {
-            return;
-        }
-        File file = nativeFile.getFile();
-        APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
-	int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
-	findFile(file, fileType, preprocHandler, true, preprocHandler.getState());
-    }
-    
     protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
         // add project's file to the head
         ParserQueue.instance().addFirst(csmFile, state, true);
@@ -86,29 +75,20 @@ public final class ProjectImpl extends ProjectBase {
             return;
         }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
-        FileImpl file = getFile(buf.getFile());
-        if( file == null ) {
-            synchronized( fileContainer ) {
-                file = getFile(buf.getFile());
-                if( file == null ) {
-                    APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
-                    putFile(buf.getFile(), new FileImpl(buf, this), preprocHandler.getState());
-                }
-            }
-        }
-        if (file != null) {
-            file.setBuffer(buf); // don't enqueue here!
+	FileImpl impl = createOrFindFileImpl(buf, nativeFile);
+        if (impl != null) {
+            impl.setBuffer(buf); // don't enqueue here!
             synchronized( editedFiles ) {
-                editedFiles.add(file);
+                editedFiles.add(impl);
             }
             if (TraceFlags.USE_AST_CACHE) {
-                CacheManager.getInstance().invalidate(file);
+                CacheManager.getInstance().invalidate(impl);
             } else {
                 APTDriver.getInstance().invalidateAPT(buf);
             }
         }
     }
-    
+
     public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
         if( ! acceptNativeItem(nativeFile)) {
             return;
@@ -145,10 +125,10 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
     
-    public void onFileRemoved(File file) {
+    public void onFileRemoved(FileImpl impl) {
         try {
             //Notificator.instance().startTransaction();
-            FileImpl impl =_onFileRemoved(file);
+            onFileRemovedImpl(impl);
             if( impl != null ) {
                 DeepReparsingUtils.reparseOnRemoved(impl,this);
             }
@@ -158,15 +138,14 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
-    private FileImpl _onFileRemoved(File file) {
+    private FileImpl onFileRemovedImpl(FileImpl impl) {
         APTIncludeUtils.clearFileExistenceCache();
-        FileImpl impl = getFile(file);
         if( impl != null ) {
             synchronized( editedFiles ) {
                 editedFiles.remove(impl);
             }
             impl.dispose();
-            removeFile(file);
+            removeFile(new File(impl.getAbsolutePath()));
             if (TraceFlags.USE_AST_CACHE) {
                 CacheManager.getInstance().invalidate(impl);
             } else {
@@ -185,8 +164,9 @@ public final class ProjectImpl extends ProjectBase {
                 File file = item.getFile();
                 try {
                     //Notificator.instance().startTransaction();
-                    FileImpl impl =_onFileRemoved(file);
+		    FileImpl impl = getFile(file);
                     if( impl != null ) {
+			onFileRemovedImpl(impl);
                         toReparse.add(impl);
                     }
                 } finally {
@@ -201,29 +181,22 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     public void onFileAdded(NativeFileItem nativeFile) {
-        if( acceptNativeItem(nativeFile)) {
-	    APTIncludeUtils.clearFileExistenceCache();
-            try {
-                //Notificator.instance().startTransaction();
-                createIfNeed(nativeFile, isSourceFile(nativeFile));
-            } finally {
-                //Notificator.instance().endTransaction();
-                Notificator.instance().flush();
-            }
-            DeepReparsingUtils.reparseOnAdded(nativeFile,this);
-        }
+	onFileAddedImpl(nativeFile, true);
     }
 
-    private NativeFileItem _onFileAdded(NativeFileItem nativeFile) {
+    private NativeFileItem onFileAddedImpl(NativeFileItem nativeFile, boolean deepReparse) {
         if( acceptNativeItem(nativeFile)) {
 	    APTIncludeUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();
-                createIfNeed(nativeFile, isSourceFile(nativeFile));
+                createIfNeed(nativeFile, isSourceFile(nativeFile), null);
                 return nativeFile;
             } finally {
                 //Notificator.instance().endTransaction();
                 Notificator.instance().flush();
+		if( deepReparse ) {
+		    DeepReparsingUtils.reparseOnAdded(nativeFile,this);
+		}
             }
         }
         return null;
@@ -234,7 +207,7 @@ public final class ProjectImpl extends ProjectBase {
             ParserQueue.instance().onStartAddingProjectFiles(this);
             List<NativeFileItem> toReparse = new ArrayList<NativeFileItem>();
             for(NativeFileItem item : items) {
-                NativeFileItem done = _onFileAdded(item);
+                NativeFileItem done = onFileAddedImpl(item, false);
                 if(done != null) {
                     toReparse.add(done);
                 }
@@ -276,13 +249,17 @@ public final class ProjectImpl extends ProjectBase {
     
     private Set/*<CsmFile>*/ editedFiles = new HashSet/*<CsmFile>*/();
     
-    public ProjectBase resolveFileProject(String absPath) {
-        ProjectBase retValue = super.resolveFileProject(absPath);
+    public ProjectBase findFileProject(String absPath) {
+        ProjectBase retValue = super.findFileProject(absPath);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
         if (ParserThreadManager.instance().isStandalone()) {
             retValue = absPath.startsWith("/usr") ? retValue : this; // NOI18N
         }
         return retValue;
+    }
+
+    public boolean isArtificial() {
+        return false;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -290,9 +267,18 @@ public final class ProjectImpl extends ProjectBase {
     
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
+        UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
+	// we don't need this since ProjectBase persists fqn 
+        //aFactory.writeUID(getUID(), aStream);
+        LibraryManager.getInsatnce().write(getUID(),aStream);
     }
-    
+
     public ProjectImpl(DataInput input) throws IOException {
         super(input);
+        UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
+	// we don't need this since ProjectBase persists fqn 
+        //CsmUID uid = aFactory.readUID(input);
+        //LibraryManager.getInsatnce().read(uid, input);
+	LibraryManager.getInsatnce().read(getUID(), input);
     }
 }

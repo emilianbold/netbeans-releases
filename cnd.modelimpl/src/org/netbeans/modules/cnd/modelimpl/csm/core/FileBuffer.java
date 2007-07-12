@@ -44,4 +44,6 @@ public interface FileBuffer extends APTFileBuffer {
     public int getLength();
     
     public boolean isFileBased();
+    
+    public long lastModified();
 }

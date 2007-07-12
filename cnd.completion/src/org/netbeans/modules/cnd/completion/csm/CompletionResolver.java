@@ -83,7 +83,11 @@ public interface CompletionResolver {
     
     public static final int RESOLVE_GLOB_NAMESPACES        = 1 << 18;
     
-    public static final int RESOLVE_LIB_NAMESPACES    = 1 << 19;
+    public static final int RESOLVE_LIB_NAMESPACES         = 1 << 19;
+    
+    public static final int RESOLVE_CLASS_ENUMERATORS      = 1 << 20;
+
+    public static final int RESOLVE_CLASS_NESTED_CLASSIFIERS= 1 << 21;
     
     public static final int RESOLVE_MACROS                 = RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS |
                                                                 RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;

@@ -7,3 +7,7 @@ int boo(int aa, double bb) {
     }
     return res;
 }
+
+void method_name_with_underscore() {
+    method_name_with_underscore();
+}

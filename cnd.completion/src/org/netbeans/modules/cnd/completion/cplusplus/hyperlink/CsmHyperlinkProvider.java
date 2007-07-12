@@ -56,12 +56,16 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
     
     protected boolean isValidToken(Token token) {
+        return isSupportedToken(token);
+    }
+    
+    public static boolean isSupportedToken(Token token) {
         if ((token != null) && (token.getTokenID() == CCTokenContext.IDENTIFIER ||
                 token.getTokenID() == CCTokenContext.OPERATOR)) {
             return true;
         } else {
             return false;
-        }
+        }        
     }
     
     public boolean goToDeclaration(BaseDocument doc, JTextComponent target, int offset) {
@@ -71,8 +75,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         Token jumpToken = getJumpToken();
         CsmOffsetable item = findTargetObject(target, doc, jumpToken, offset);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
-    }    
-
+    }
+    
     /*package*/ CsmOffsetable findTargetObject(final JTextComponent target, final BaseDocument doc, final Token jumpToken, final int offset) {
         CsmOffsetable item = null;
         assert jumpToken != null;
@@ -109,6 +113,19 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                         item = definition;
                     }
                 }
+            }else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+                CsmFunctionDefinition definition = (CsmFunctionDefinition)csmObject;
+                if (csmFile == definition.getContainingFile() &&
+                        (definition.getStartOffset() <= offset &&
+                        offset <= definition.getBody().getStartOffset())
+                        ) {
+                    // it is ok to jump to declaration
+                    if (definition.getDeclaration() != null) {
+                        item = definition.getDeclaration();
+                    } else if (definition != csmObject) {
+                        item = (CsmOffsetable)csmObject;
+                    }
+                }                
             } else if (CsmKindUtilities.isVariableDeclaration(csmObject)) {
                 // check if we are in function definition name => go to declaration
                 // else it is more useful to jump to definition of function

@@ -46,7 +46,11 @@ public class MacrosListModel implements ListModel {
     
     public Object getElementAt(int index) {
         String key = names.get(index);
-        return key+"="+map.get(key); // NOI18N
+        String value = map.get(key);
+        if (value != null) {
+            return key+"="+value; // NOI18N
+        }
+        return key;
     }
     
     public NodeConfigurationImpl getNodeConfiguration(){

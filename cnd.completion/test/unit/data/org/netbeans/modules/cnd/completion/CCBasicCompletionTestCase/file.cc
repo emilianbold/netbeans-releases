@@ -39,5 +39,9 @@ int main(int argc, char** argv) {
      // <- test text is inserted here
     printf("%d\n", *pointer);
     void* pExtra;
+    A a;
+     // 
+    for (int i = 0; i < 10; i++) {
+    }
     return (0);
 }

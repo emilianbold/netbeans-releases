@@ -28,6 +28,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 
@@ -57,13 +58,13 @@ public class APTWalkerTest extends APTAbstractWalker {
         super.onIncludeNext(apt);
     }
 
-    protected void include(String resolvedPath, APTInclude aptInclude) {
+    protected void include(ResolvedPath resolvedPath, APTInclude aptInclude) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath, aptInclude.getToken().getLine())) {
+        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude.getToken().getLine())) {
             APTFile apt;
             boolean res = false;
             try {
-                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath)));
+                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath())));
                 APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                 walker.visit();
                 resolvingTime += walker.resolvingTime;

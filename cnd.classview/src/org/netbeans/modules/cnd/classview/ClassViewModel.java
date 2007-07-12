@@ -65,6 +65,9 @@ import  org.netbeans.modules.cnd.api.model.*;
             root = createRoot();
             //return;
         }
+        if (!isShowLibs() && project.isArtificial()){
+            return;
+        }
         ProjectsKeyArray children = (ProjectsKeyArray)root.getChildren();
         children.openProject(project);
     }

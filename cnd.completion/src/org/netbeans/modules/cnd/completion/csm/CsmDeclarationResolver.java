@@ -32,6 +32,8 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 
 /**
  *
@@ -82,44 +84,49 @@ public class CsmDeclarationResolver {
         return null;
     }
     
-    public static CsmDeclaration findInnerFileDeclaration(CsmFile file, int offset, CsmContext context) {
+    public static CsmObject findInnerFileObject(CsmFile file, int offset, CsmContext context) {
         assert (file != null) : "can't be null file in findTopFileDeclaration";
         // add file scope to context
         CsmContextUtilities.updateContext(file, offset, context);
-        List/*<CsmDeclaration>*/ decls = file.getDeclarations();
+        // check file declarations
+        CsmObject lastObject = findInnerDeclaration(file.getDeclarations().iterator(), context, offset);
+        // check includes if needed
+        lastObject = lastObject != null ? lastObject : CsmOffsetUtilities.findObject(file.getIncludes(), context, offset);
+        // check macros if needed
+        lastObject = lastObject != null ? lastObject : CsmOffsetUtilities.findObject(file.getMacros(), context, offset);
+        return lastObject;
+    }
+    
+    private static CsmDeclaration findInnerDeclaration(final Iterator<? extends CsmDeclaration> it, final CsmContext context, final int offset) {
         CsmDeclaration innerDecl = null;
-        for (Iterator it = decls.iterator(); it.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) it.next();
-            assert (decl != null) : "can't be null declaration";
-            if (CsmOffsetUtilities.isInObject(decl, offset)) {
-                // add declaration scope to context
-                CsmContextUtilities.updateContext(decl, offset, context);
-                // we are inside declaration, but try to search deeper
-                innerDecl = findInnerDeclaration(decl, offset, context);
-                innerDecl = innerDecl != null ? innerDecl : decl;
-                // we can break loop, because list of declarations is sorted
-                // by offset and we found already one of container declaration
-                break;
+        if (it != null) {
+            // continue till has next and not yet found
+            while (it.hasNext()) {
+                CsmDeclaration decl = (CsmDeclaration) it.next();
+                assert (decl != null) : "can't be null declaration";
+                if (CsmOffsetUtilities.isInObject(decl, offset)) {
+                    if (!CsmKindUtilities.isFunction(decl) || CsmOffsetUtilities.isInFunctionScope((CsmFunction)decl, offset)) {
+                        // add declaration scope to context
+                        CsmContextUtilities.updateContext(decl, offset, context);
+                        // we are inside declaration, but try to search deeper
+                        innerDecl = findInnerDeclaration(decl, offset, context);
+                    } else {
+                        context.setLastObject(decl);
+                    }
+                    innerDecl = innerDecl != null ? innerDecl : decl;
+                    // we can break loop, because list of declarations is sorted
+                    // by offset and we found already one of container declaration
+                    break;
+                }
             }
-//            if (CsmOffsetUtilities.isAfterObject(decl, offset)) {
-//                break;
-//            }            
         }
         return innerDecl;
     }
-    
-//    private static final int INFINITE_DEEP = -1;
-//    protected static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset) {
-//        assert (outDecl != null) : "outer declaration must not be null";
-//        return findInnerDeclaration(outDecl, offset, INFINITE_DEEP);
-//    }
-//  
-    
+        
     // must check before call, that offset is inside outDecl
-    protected static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset, CsmContext context) {
+    private static CsmDeclaration findInnerDeclaration(CsmDeclaration outDecl, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(outDecl, offset)) : "must be in outDecl object!";
-        Iterator it = null;
-        CsmDeclaration innerDecl = null;
+        Iterator<? extends CsmDeclaration> it = null;
         if (CsmKindUtilities.isNamespace(outDecl)) { 
             CsmNamespace ns = (CsmNamespace)outDecl;
             it = ns.getDeclarations().iterator();
@@ -133,28 +140,10 @@ public class CsmDeclarationResolver {
                 list.addAll(cl.getFriends());
             }
             it = list.iterator();
+        } else if (CsmKindUtilities.isEnum(outDecl)) {
+            CsmEnum en = (CsmEnum)outDecl;
+            it = en.getEnumerators().iterator();
         }
-        if (it != null) {
-            // continue till has next and not yet found
-            while (it.hasNext()) {
-                CsmDeclaration decl = (CsmDeclaration) it.next();
-                assert (decl != null) : "can't be null declaration";
-                if (CsmOffsetUtilities.isInObject(decl, offset)) {
-                    // add declaration scope to context
-                    CsmContextUtilities.updateContext(decl, offset, context);
-                    // we are inside declaration, but try to search deeper
-                    innerDecl = findInnerDeclaration(decl, offset, context);
-                    innerDecl = innerDecl != null ? innerDecl : decl;
-                    // we can break loop, because list of declarations is sorted
-                    // by offset and we found already one of container declaration
-                    break;
-                }
-//                if (CsmOffsetUtilities.isAfterObject(decl, offset)) {
-//                    break;
-//                }
-            }
-        }
-        return innerDecl;
-    }    
-    
+        return findInnerDeclaration(it, context, offset);
+    }     
 }

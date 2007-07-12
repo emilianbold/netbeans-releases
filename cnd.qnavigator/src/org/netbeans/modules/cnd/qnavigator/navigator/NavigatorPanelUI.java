@@ -96,6 +96,8 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
     void selectNode(Node node){
         try {
             explorerManager.setSelectedNodes(new Node[] {node});
+        } catch (IllegalArgumentException ex) {
+            // FIXUP me
         } catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }

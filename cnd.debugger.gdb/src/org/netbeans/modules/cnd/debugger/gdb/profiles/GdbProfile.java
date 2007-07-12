@@ -21,6 +21,11 @@ package org.netbeans.modules.cnd.debugger.gdb.profiles;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
@@ -28,7 +33,12 @@ import org.openide.nodes.PropertySupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 public class GdbProfile implements ConfigurationAuxObject {
 
@@ -58,7 +68,9 @@ public class GdbProfile implements ConfigurationAuxObject {
     }
     
     public void initialize() {
-        gdb_command = "gdb"; // NOI18N
+        if (gdb_command == null) {
+            gdb_command = CppSettings.getDefault().getGdbName();
+        }
     }
 
     public boolean shared() {
@@ -86,6 +98,66 @@ public class GdbProfile implements ConfigurationAuxObject {
                 pcs.firePropertyChange(PROP_GDB_COMMAND, this.gdb_command, gdb_command);
             }
             this.gdb_command = gdb_command;
+        }
+    }
+    
+    /**
+     * Find the path to gdb. Start with the name/path stored in the project. If that doesn't resolve,
+     * bring up a Build Tools window. If that doesn't resolve then return null (at which point the
+     * debug action will be terminated).
+     *
+     * @param ev What we need to get the GdbProfile
+     * @return Either an absolute path to gdb or null
+     */
+    public String getGdbPath(String name, String dir) {
+        File file;
+        
+        if (name.charAt(0) == '.') {
+            file = new File(dir, name);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+        } else if ((Utilities.isUnix() && name.charAt(0) == '/') ||
+                (Utilities.isWindows() && name.charAt(1) == ':')) {
+            file = new File(name);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+        } else {
+            StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                String d = tok.nextToken();
+                file = new File(d, name);
+                if (file.exists()) {
+                    return file.getAbsolutePath();
+                }
+                if (Utilities.isWindows()) {
+                    file = new File(d, name + ".exe");
+                    if (file.exists()) {
+                        return file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        
+        // No gdb in $PATH and non-absolute name in project. So post a Build Tools window and
+        // force the user to add a directory with gdb or cancel
+        ToolsPanelModel model = new LocalToolsPanelModel();
+        model.setGdbName(name);
+        model.setGdbRequired(true);
+        model.setGdbEnabled(true);
+        model.setCRequired(false);
+        model.setCppRequired(false);
+        model.setFortranRequired(false);
+        BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
+        bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
+        if (bt.initBuildTools(model, new ArrayList())) {
+            if (!name.equals(model.getGdbName())) {
+                setGdbCommand(model.getGdbName());
+            }
+            return model.getGdbPath();
+        } else {
+            return null;
         }
     }
     

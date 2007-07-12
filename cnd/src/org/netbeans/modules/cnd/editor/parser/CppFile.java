@@ -79,9 +79,7 @@ public class CppFile {
     private CppFoldRecord initialCommentFoldRecord;
 
     /** record of includes block fold information */
-    // TODO: now we support only the first set of includes
-    // needs List to support all
-    private CppFoldRecord includesFoldRecord;
+    private List<CppFoldRecord> includesFoldRecords = new ArrayList();
 
     /** record of class/struct/union definition fold information */
 //    private ArrayList/*<CppFoldRecord>*/ classFoldRecords;
@@ -135,7 +133,7 @@ public class CppFile {
 //            classFoldRecords.clear();
             blockFoldRecords.clear();
             initialCommentFoldRecord = null;
-            includesFoldRecord = null;
+            includesFoldRecords.clear();
             List/**/ folds = null;
             try {
                 String name = (String) doc.getProperty(Document.TitleProperty);
@@ -201,11 +199,11 @@ public class CppFile {
         return this.initialCommentFoldRecord;
     }
     
-    public CppFoldRecord getIncludesFold() {
-        return includesFoldRecord;
+    public List<CppFoldRecord> getIncludesFolds() {
+	return includesFoldRecords;
     }
     
-    public List getBlockFolds() {
+    public List<CppFoldRecord> getBlockFolds() {
 	return blockFoldRecords;
     }
 
@@ -234,9 +232,7 @@ public class CppFile {
                         }
                         break;
                     case INCLUDES_FOLD:
-                        if (includesFoldRecord == null) {
-                            includesFoldRecord = fold;
-                        }
+                        includesFoldRecords.add(fold);
                         break;
 
                     case CLASS_FOLD:

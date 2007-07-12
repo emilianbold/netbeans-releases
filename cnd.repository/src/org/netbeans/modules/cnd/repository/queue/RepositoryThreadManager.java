@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.repository.queue;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.util.RequestProcessor;
@@ -35,9 +36,8 @@ public class RepositoryThreadManager {
     private static final String threadNameBase = "Repository writer"; // NOI18N
     private RequestProcessor processor;
     
-    private Object theadsLock = new String("theadsLock"); // NOI18N
-    private Set<Thread> threads = new HashSet<Thread>();
-    private Object threadsWaitLock = new String("threadsWaitLock"); // NOI18N
+    private Set<Thread> threads = new CopyOnWriteArraySet<Thread>();
+    private Object threadsWaitLock = "threadsWaitLock"; // NOI18N
     private boolean finished = false;
     
     private int currThread = 0;
@@ -58,21 +58,16 @@ public class RepositoryThreadManager {
         public void run() {
             try {
                 Thread.currentThread().setName(threadNameBase + ' ' + currThread++);
-		synchronized( theadsLock) {
-		    threads.add(Thread.currentThread());
-		}
+                threads.add(Thread.currentThread());
                 delegate.run();
-            }
-            finally {
-		synchronized( theadsLock) {
-		    threads.remove(Thread.currentThread());
-		    if( threads.isEmpty() ) {
-			finished = true;
-			synchronized (threadsWaitLock) {
-			    threadsWaitLock.notifyAll();
-			}
-		    }
-		}
+            } finally {
+                threads.remove(Thread.currentThread());
+                if( threads.isEmpty() ) {
+                    finished = true;
+                    synchronized (threadsWaitLock) {
+                        threadsWaitLock.notifyAll();
+                    }
+                }
             }
         }
     }
@@ -80,6 +75,7 @@ public class RepositoryThreadManager {
     public RepositoryThreadManager(RepositoryWriter writer, ReadWriteLock rwLock) {
 	this.writer = writer;
         this.rwLock = rwLock;
+        queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();        
     }
 
     public RepositoryQueue startup() {
@@ -90,7 +86,6 @@ public class RepositoryThreadManager {
         }
 
         processor = new RequestProcessor(threadNameBase, threadCount);
-        queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
         for (int i = 0; i < threadCount; i++) {
             Runnable r = new Wrapper(new RepositoryWritingThread(writer, queue, rwLock));
                 processor.post(r);

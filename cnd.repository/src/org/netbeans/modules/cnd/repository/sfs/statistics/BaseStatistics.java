@@ -64,7 +64,7 @@ public abstract class BaseStatistics<K> {
 	sum += value;
 	if( values != null ) {
 	    Integer count = values.get(value);
-	    values.put(key, new Integer((count == null) ? 1 : count.intValue() + 1));
+	    values.put(key, Integer.valueOf((count == null) ? 1 : count.intValue() + 1));
 	}
     }    
 

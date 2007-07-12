@@ -93,7 +93,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
     
     private CsmFunction findDeclaration(Resolver parent) {
-        String uname = CsmDeclaration.Kind.FUNCTION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
 	if( def == null ) {
 	    CsmObject owner = findOwner(parent);
@@ -138,8 +138,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     public List<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        l.addAll(getParameters());
+        List<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }

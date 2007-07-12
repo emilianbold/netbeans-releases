@@ -48,11 +48,6 @@ public final class TokenUtilities {
         
         try {
             BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent target = Utilities.getFocusedComponent();
-            
-            if (target != null && target.getDocument() != bdoc) {
-                return null;
-            }
             
             SyntaxSupport sup = bdoc.getSyntaxSupport();
             NbCsmSyntaxSupport nbSyntaxSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);

@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
@@ -94,7 +95,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return ProjectUtils.getInformation(project).getDisplayName();
     }
     
-    public List getAllSourceFiles() {
+    public List<NativeFileItem> getAllSourceFiles() {
         ArrayList list = new ArrayList();
         if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
             return list;
@@ -107,7 +108,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return list;
     }
     
-    public List getAllHeaderFiles() {
+    public List<NativeFileItem> getAllHeaderFiles() {
         ArrayList list = new ArrayList();
         if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
             return list;
@@ -122,6 +123,20 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 }
             } else if (hlist.isRegistered(items[i].getPath())) {
                 list.add(items[i]);
+            }
+        }
+        return list;
+    }
+    
+    public List<NativeProject> getDependences(){
+        List<NativeProject> list = new ArrayList<NativeProject>();
+        if (getMakeConfiguration() != null) {
+            for (Object lib : getMakeConfiguration().getSubProjects()){
+                Project prj = (Project)lib;
+                NativeProject nativeProject = (NativeProject)prj.getLookup().lookup(NativeProject.class);
+                if (nativeProject != null){
+                    list.add(nativeProject);
+                }
             }
         }
         return list;
@@ -149,12 +164,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         //System.out.println("fireFileAdded ");
         ArrayList actualList = new ArrayList();
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
-        List<NativeProjectItemsListener> copyListeners;
-        synchronized (listeners) {
-            if (listeners.size() == 0)
-                return;
-            copyListeners = new ArrayList<NativeProjectItemsListener>(listeners);
-        }
         // Remove non C/C++ items
         Iterator iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
@@ -167,7 +176,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         // Fire NativeProject change event
         if (actualList.size() > 0) {
-            for (NativeProjectItemsListener listener : copyListeners) {
+            for (NativeProjectItemsListener listener : getListenersCopy()) {
                 if (actualList.size() == 1)
                     listener.fileAdded((NativeFileItem)actualList.get(0));
                 else
@@ -180,12 +189,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         //System.out.println("fireFilesRemoved ");
         ArrayList actualList = new ArrayList();
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
-        List<NativeProjectItemsListener> copyListeners;
-        synchronized (listeners) {
-            if (listeners.size() == 0)
-                return;
-            copyListeners = new ArrayList<NativeProjectItemsListener>(listeners);
-        }
         // Remove non C/C++ items
         Iterator iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
@@ -200,7 +203,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         // Fire NativeProject change event
         if (actualList.size() > 0) {
-            for (NativeProjectItemsListener listener : copyListeners) {
+            for (NativeProjectItemsListener listener : getListenersCopy()) {
                 if (actualList.size() == 1)
                     listener.fileRemoved((NativeFileItem)actualList.get(0));
                 else
@@ -210,53 +213,42 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFileRenamed(String oldPath, NativeFileItem newNativeFileIetm) {
-        List<NativeProjectItemsListener> copyListeners;
-        synchronized (listeners) {
-            if (listeners.size() == 0)
-                return;
-            copyListeners = new ArrayList<NativeProjectItemsListener>(listeners);
-        }
-        for (NativeProjectItemsListener listener : copyListeners) {
+        for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.fileRenamed(oldPath, newNativeFileIetm);
         }
     }
 
     public void fireFilePropertiesChanged(NativeFileItem nativeFileIetm) {
         //System.out.println("fireFilePropertiesChanged " + nativeFileIetm.getFile());
-        List<NativeProjectItemsListener> copyListeners;
-        synchronized (listeners) {
-            if (listeners.size() == 0)
-                return;
-            copyListeners = new ArrayList<NativeProjectItemsListener>(listeners);
-        }
-        for (NativeProjectItemsListener listener : copyListeners) {
+        for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filePropertiesChanged(nativeFileIetm);
         }
     }
     
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems) {
         //System.out.println("fireFilesPropertiesChanged " + fileItems);
-        List<NativeProjectItemsListener> copyListeners;
-        synchronized (listeners) {
-            if (listeners.size() == 0)
-                return;
-            copyListeners = new ArrayList<NativeProjectItemsListener>(listeners);
-        }
-        for (NativeProjectItemsListener listener : copyListeners) {
+        for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filesPropertiesChanged(fileItems);
         }
     }
     
     public void fireFilesPropertiesChanged() {
         //System.out.println("fireFilesPropertiesChanged ");
-        List<NativeProjectItemsListener> copyListeners;
-        synchronized (listeners) {
-            if (listeners.size() == 0)
-                return;
-            copyListeners = new ArrayList<NativeProjectItemsListener>(listeners);
-        }
-        for (NativeProjectItemsListener listener : copyListeners) {
+        for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filesPropertiesChanged();
+        }
+    }
+    
+    public void fireProjectDeleted() {
+        //System.out.println("fireProjectDeleted ");
+        for (NativeProjectItemsListener listener : getListenersCopy()) {
+            listener.projectDeleted(this);
+        }
+    }
+    
+    private List<NativeProjectItemsListener> getListenersCopy() {
+        synchronized (listeners) {
+	    return (listeners.size() == 0) ? Collections.EMPTY_LIST : new ArrayList<NativeProjectItemsListener>(listeners);
         }
     }
     
@@ -485,7 +477,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     /*
      * Return C++ settings
      **/
-    public List/*<String>*/ getSystemIncludePaths() {
+    public List<String> getSystemIncludePaths() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
@@ -508,7 +500,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     /*
      * Return C++ settings
      **/
-    public List/*<String>*/ getUserIncludePaths() {
+    public List<String> getUserIncludePaths() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
@@ -533,7 +525,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     /*
      * Return C++ settings
      **/
-    public List/*<String>*/ getSystemMacroDefinitions() {
+    public List<String> getSystemMacroDefinitions() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
@@ -555,7 +547,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     /*
      * Return C++ settings
      **/
-    public List/*<String>*/ getUserMacroDefinitions() {
+    public List<String> getUserMacroDefinitions() {
         ArrayList vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         //Platform platform = Platforms.getPlatform(makeConfiguration.getPlatform().getValue());

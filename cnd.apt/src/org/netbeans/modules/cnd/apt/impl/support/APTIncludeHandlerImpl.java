@@ -31,14 +31,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
-import javax.print.attribute.Size2DSyntax;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -52,16 +54,16 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private Map<String, Integer> recurseIncludes = null;
     private static final int MAX_INCLUDE_DEEP = 5;    
     private Stack<IncludeInfo> inclStack = null;
-    private String startFile;
+    private StartEntry startFile;
     
-    /*package*/ APTIncludeHandlerImpl(String startFile) {
+    /*package*/ APTIncludeHandlerImpl(StartEntry startFile) {
         this(startFile, new ArrayList<String>(), new ArrayList<String>());
     }
     
-    public APTIncludeHandlerImpl(String startFile, 
+    public APTIncludeHandlerImpl(StartEntry startFile,
                                     List<String> systemIncludePaths,
                                     List<String> userIncludePaths) {
-        this.startFile = FilePathCache.getString(startFile);
+        this.startFile =startFile;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;        
     }
@@ -78,10 +80,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return new APTIncludeResolverImpl(path, systemIncludePaths, userIncludePaths);
     }
     
-    public String getStartFile() {
+    public StartEntry getStartEntry() {
         return startFile;
     }
-    
+
     private String getCurPath() {
         assert (inclStack != null);
         IncludeInfo info = inclStack.peek();
@@ -110,7 +112,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         // for now just remember lists
         private final List<String> systemIncludePaths;
         private final List<String> userIncludePaths;    
-        private final String           startFile;
+        private final StartEntry   startFile;
         
         private final Map<String, Integer> recurseIncludes;
         private final Stack<IncludeInfo> inclStack;
@@ -171,12 +173,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
 
         public String toString() {
-            return APTIncludeHandlerImpl.toString(startFile, systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
+            return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
         }
         
         public void write(DataOutput output) throws IOException {
             assert output != null;
-            output.writeUTF(startFile);
+            startFile.write(output);
             
             assert systemIncludePaths != null;
             assert userIncludePaths != null;
@@ -235,7 +237,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             assert input != null;
             final APTStringManager pathManager = FilePathCache.getManager();
             
-            startFile = input.readUTF();
+            startFile = new StartEntry(input);
 
             systemIncludePaths = new ArrayList<String>();
             int size = input.readInt();
@@ -418,7 +420,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
     
     public String toString() {
-        return APTIncludeHandlerImpl.toString(startFile, systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
+        return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
     }    
     
     private static String toString(String startFile, 

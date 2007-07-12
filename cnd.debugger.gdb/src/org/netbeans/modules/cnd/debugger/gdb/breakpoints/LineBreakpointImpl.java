@@ -19,15 +19,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.debugger.Session;
-
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
 * Implementation of breakpoint on method.
@@ -56,14 +50,13 @@ public class LineBreakpointImpl extends BreakpointImpl {
     }
     
     protected void setRequests() {
-        int token;
-        
-        //Performance measurements: 93-114 mls (2006/08/29)
-        //getDebugger().getGdbProxy().globalStartTimeSetBreakpoint = System.currentTimeMillis(); // DEBUG
-	if (breakpoint.getState() == GdbBreakpoint.UNVALIDATED) {
+        if (getDebugger().getState() == GdbDebugger.STATE_RUNNING) {
+            getDebugger().setSilentStop();
+        }
+        if (breakpoint.getState() == GdbBreakpoint.UNVALIDATED) {
 	    lineNumber = breakpoint.getLineNumber();
 	    String path = getDebugger().getProjectRelativePath(breakpoint.getPath());
-	    token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
+	    int token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
             breakpoint.setID(token);
 	    breakpoint.setPending();
 	} else {

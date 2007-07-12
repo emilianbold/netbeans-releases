@@ -1,0 +1,132 @@
+'MEMORY_H', tokenID=identifier, offset=879 [20:9/879-20:17/887]
+--OWNER:
+    null
+--RESOLVED TO:
+    MACROS #define 'MEMORY_H' [21:1/888-21:17/904]
+==============================================================
+'MEMORY_H', tokenID=identifier, offset=896 [21:9/896-21:17/904]
+--OWNER:
+    MACROS #define 'MEMORY_H' [21:1/888-21:17/904]
+--RESOLVED TO:
+    MACROS #define 'MEMORY_H' [21:1/888-21:17/904]
+==============================================================
+'"module.h"', tokenID=user-include, offset=914 [22:10/914-22:20/924]
+--OWNER:
+    INCLUDE "module.h" [22:1/905-22:20/924]
+--RESOLVED TO:
+    FILE ReferencesTestCase/module.h
+==============================================================
+'Memory', tokenID=identifier, offset=932 [24:7/932-24:13/938]
+--OWNER:
+    CLASS Memory [24:1/926-35:3/1280] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    CLASS Memory [24:1/926-35:3/1280] ReferencesTestCase/memory.h
+==============================================================
+'Module', tokenID=identifier, offset=948 [24:23/948-24:29/954]
+--OWNER:
+     [24:16/941-24:29/954] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+==============================================================
+'MemoryType', tokenID=identifier, offset=974 [26:10/974-26:20/984]
+--OWNER:
+    ENUM Memory::MemoryType [26:5/969-26:48/1012] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUM Memory::MemoryType [26:5/969-26:48/1012] ReferencesTestCase/memory.h
+==============================================================
+'STANDARD', tokenID=identifier, offset=987 [26:23/987-26:31/995]
+--OWNER:
+    ENUMERATOR Memory::MemoryType::STANDARD [26:23/987-26:31/995] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::STANDARD [26:23/987-26:31/995] ReferencesTestCase/memory.h
+==============================================================
+'FAST', tokenID=identifier, offset=998 [26:34/998-26:38/1002]
+--OWNER:
+    ENUMERATOR Memory::MemoryType::FAST [26:34/998-26:38/1002] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::FAST [26:34/998-26:38/1002] ReferencesTestCase/memory.h
+==============================================================
+'ULTRA', tokenID=identifier, offset=1005 [26:41/1005-26:46/1010]
+--OWNER:
+    ENUMERATOR Memory::MemoryType::ULTRA [26:41/1005-26:46/1010] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::ULTRA [26:41/1005-26:46/1010] ReferencesTestCase/memory.h
+==============================================================
+'MemoryCategory', tokenID=identifier, offset=1024 [27:10/1024-27:24/1038]
+--OWNER:
+    ENUM Memory::MemoryCategory [27:5/1019-27:49/1063] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUM Memory::MemoryCategory [27:5/1019-27:49/1063] ReferencesTestCase/memory.h
+==============================================================
+'SMALL', tokenID=identifier, offset=1041 [27:27/1041-27:32/1046]
+--OWNER:
+    ENUMERATOR Memory::MemoryCategory::SMALL [27:27/1041-27:32/1046] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryCategory::SMALL [27:27/1041-27:32/1046] ReferencesTestCase/memory.h
+==============================================================
+'MEDIUM', tokenID=identifier, offset=1049 [27:35/1049-27:41/1055]
+--OWNER:
+    ENUMERATOR Memory::MemoryCategory::MEDIUM [27:35/1049-27:41/1055] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryCategory::MEDIUM [27:35/1049-27:41/1055] ReferencesTestCase/memory.h
+==============================================================
+'BIG', tokenID=identifier, offset=1058 [27:44/1058-27:47/1061]
+--OWNER:
+    ENUMERATOR Memory::MemoryCategory::BIG [27:44/1058-27:47/1061] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryCategory::BIG [27:44/1058-27:47/1061] ReferencesTestCase/memory.h
+==============================================================
+'Memory', tokenID=identifier, offset=1075 [29:5/1075-29:11/1081]
+--OWNER:
+    FUNCTION Memory(int,int,int)  [29:5/1075-29:68/1138] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    FUNCTION Memory(int,int,int)  [29:5/1075-29:68/1138] ReferencesTestCase/memory.h
+==============================================================
+'type', tokenID=identifier, offset=1086 [29:16/1086-29:20/1090]
+--OWNER:
+    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h type: int TEXT=int  [29:12/1082-29:15/1085] init: text='STANDARD'
+--RESOLVED TO:
+    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h type: int TEXT=int  [29:12/1082-29:15/1085] init: text='STANDARD'
+==============================================================
+'STANDARD', tokenID=identifier, offset=1093 [29:23/1093-29:31/1101]
+--OWNER:
+    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h type: int TEXT=int  [29:12/1082-29:15/1085] init: text='STANDARD'
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::STANDARD [26:23/987-26:31/995] ReferencesTestCase/memory.h
+==============================================================
+'size', tokenID=identifier, offset=1107 [29:37/1107-29:41/1111]
+--OWNER:
+    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h type: int TEXT=int  [29:33/1103-29:36/1106] init: text='MEDIUM'
+--RESOLVED TO:
+    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h type: int TEXT=int  [29:33/1103-29:36/1106] init: text='MEDIUM'
+==============================================================
+'MEDIUM', tokenID=identifier, offset=1114 [29:44/1114-29:50/1120]
+--OWNER:
+    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h type: int TEXT=int  [29:33/1103-29:36/1106] init: text='MEDIUM'
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryCategory::MEDIUM [27:35/1049-27:41/1055] ReferencesTestCase/memory.h
+==============================================================
+'units', tokenID=identifier, offset=1127 [29:57/1127-29:62/1132]
+--OWNER:
+    VARIABLE units [29:53/1123-29:66/1136] ReferencesTestCase/memory.h type: int TEXT=int  [29:53/1123-29:56/1126] init: text='1'
+--RESOLVED TO:
+    VARIABLE units [29:53/1123-29:66/1136] ReferencesTestCase/memory.h type: int TEXT=int  [29:53/1123-29:56/1126] init: text='1'
+==============================================================
+'GetType', tokenID=identifier, offset=1163 [30:25/1163-30:32/1170]
+--OWNER:
+    FUNCTION GetType() const  [30:5/1143-30:41/1179] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    FUNCTION GetType() const  [30:5/1143-30:41/1179] ReferencesTestCase/memory.h
+==============================================================
+'GetCategory', tokenID=identifier, offset=1204 [31:25/1204-31:36/1215]
+--OWNER:
+    FUNCTION GetCategory() const  [31:5/1184-31:45/1224] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    FUNCTION GetCategory() const  [31:5/1184-31:45/1224] ReferencesTestCase/memory.h
+==============================================================
+'ComputeSupportMetric', tokenID=identifier, offset=1254 [34:10/1254-34:30/1274]
+--OWNER:
+    FUNCTION ComputeSupportMetric()  [34:5/1249-34:33/1277] ReferencesTestCase/memory.h
+--RESOLVED TO:
+    FUNCTION ComputeSupportMetric()  [34:5/1249-34:33/1277] ReferencesTestCase/memory.h
+==============================================================

@@ -19,20 +19,23 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
 /**
  *
@@ -41,6 +44,11 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 public class RepositoryUtils {
     
     private static final boolean TRACE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.trace.repository", false);
+
+    /**
+     * the version of the persistency mechanism
+     */
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 6;
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }
@@ -50,6 +58,12 @@ public class RepositoryUtils {
     private static volatile int counter = 0;
     public static <T extends CsmIdentifiable> T get(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
+        Persistent out = get(key);
+        assert out == null || (out instanceof CsmIdentifiable);
+        return (T)out;
+    }
+    
+    public static Persistent get(Key key) {
         assert key != null;
         long time = 0;
         int index = 0;
@@ -63,8 +77,7 @@ public class RepositoryUtils {
             time = System.currentTimeMillis() - time;
             System.err.println(index + ":got in " + time + "ms the key " + key);
         }
-        assert out == null || (out instanceof CsmIdentifiable);
-        return (T)out;
+	return out;
     }
     
     private static synchronized int nextIndex() {
@@ -106,22 +119,26 @@ public class RepositoryUtils {
             uid = csmObj.getUID();
             assert uid != null;
             Key key = UIDtoKey(uid);
-            if (key != null) {
-                long time = 0;
-                int index = 0;
-                if (TRACE_REPOSITORY_ACCESS) {
-                    index = nextIndex();
-                    time = System.currentTimeMillis();
-                    System.err.println(index + ":putting key " + key);
-                }
-                RepositoryAccessor.getRepository().put(key, (Persistent)csmObj);
-                if (TRACE_REPOSITORY_ACCESS) {
-                    time = System.currentTimeMillis() - time;
-                    System.err.println(index + ":put in " + time + "ms the key " + key);
-                }
-            }
+	    put(key, (Persistent) csmObj);
         }
         return uid;
+    }    
+    
+    public static void put(Key key, Persistent obj) {
+	if (key != null) {
+	    long time = 0;
+	    int index = 0;
+	    if (TRACE_REPOSITORY_ACCESS) {
+		index = nextIndex();
+		time = System.currentTimeMillis();
+		System.err.println(index + ":putting key " + key);
+	    }
+	    RepositoryAccessor.getRepository().put(key, obj);
+	    if (TRACE_REPOSITORY_ACCESS) {
+		time = System.currentTimeMillis() - time;
+		System.err.println(index + ":put in " + time + "ms the key " + key);
+	    }
+	}
     }
     
     public static void hang(CsmIdentifiable csmObj) {
@@ -159,7 +176,7 @@ public class RepositoryUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     //
-    private static Key UIDtoKey(CsmUID uid) {
+    public static Key UIDtoKey(CsmUID uid) {
         if (uid instanceof KeyHolder) {
             return ((KeyHolder)uid).getKey();
         } else {
@@ -175,34 +192,86 @@ public class RepositoryUtils {
         return unitName;
     }
     
-    public static void writeUnitFilesCache(CsmUID uid, DataOutput aStream) throws IOException {
-        Key key = UIDtoKey(uid);
-        assert key != null;
-        String unitName = key.getUnit();
-        KeyUtilities.writeUnitFilesCache(unitName, aStream);
+    public static void startup() {
+	Repository repository = RepositoryAccessor.getRepository();
+	repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
+	repository.unregisterRepositoryListener(RepositoryListenerImpl.instance());
+	repository.registerRepositoryListener(RepositoryListenerImpl.instance());
     }
-    
-   public static void readUnitFilesCache(CsmUID uid, DataInput aStream) throws IOException {
-        Key key = UIDtoKey(uid);
-        assert key != null;
-        String unitName = key.getUnit();
-        KeyUtilities.readUnitFilesCache(unitName, aStream);
-    }
-
     
     public static void shutdown() {
+	// we intentionally do not unregister listener here since it will be automatically 
+	// unregistered as soon as shutdown (which is async.) finishes
         RepositoryAccessor.getRepository().shutdown();
     }
+    
+    public static void cleanCashes() {
+        RepositoryAccessor.getRepository().cleanCaches();
+    }
 
-    public static void closeUnit(CsmUID uid, boolean cleanRepository) {
-        closeUnit(UIDtoKey(uid), cleanRepository);
+    public static void closeUnit(CsmUID uid, Set<String> requiredUnits, boolean cleanRepository) {
+        closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
     
-    public static void closeUnit(Key key, boolean cleanRepository) {
+    /**
+     * @deprecated use closeUnit(Key, Set<String>, boolean) instead 
+     */
+    public static void closeUnit(String unitName, boolean cleanRepository) {
+	RepositoryListenerImpl.instance().onExplicitClose(unitName);
+        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository, Collections.EMPTY_SET);
+    }
+
+    public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
         assert key != null;
         String unitName = key.getUnit();
-        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository);
-        KeyUtilities.closeUnit(unitName);
+        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository, requiredUnits);
     }
+    
+    public static void onProjectDeleted(NativeProject nativeProject) {
+	Key key = KeyUtilities.createProjectKey(nativeProject.getProjectRoot());
+	RepositoryAccessor.getRepository().removeUnit(key.getUnit());
+    }
+
+    public static void openUnit(ProjectBase project) {
+	CsmUID uid = project.getUID();
+	assert uid != null;
+	Key key = UIDtoKey(uid);
+	openUnit(key);
+    }
+    
+    public static void openUnit(Key key) {
+	openUnit(key.getUnit());
+    }
+    
+    private static void openUnit(String unitName) {
+	RepositoryListenerImpl.instance().onExplicitOpen(unitName);
+	// TODO explicit open should be called here: 
+	// RepositoryAccess.getRepository().open(unitName);
+    }
+    
+    public static void unregisterRepositoryListener(RepositoryListener listener) {
+        RepositoryAccessor.getRepository().unregisterRepositoryListener(listener);
+    }    
+
+    static int getUnitId(String unitName) {
+        return RepositoryAccessor.getTranslator().getUnitId(unitName);
+    }
+
+    static String getUnitName(int unitIndex) {
+        return RepositoryAccessor.getTranslator().getUnitName(unitIndex);
+    }
+
+    static int getFileIdByName(int unitId, String fileName) {
+        return RepositoryAccessor.getTranslator().getFileIdByName(unitId, fileName);
+    }
+
+    static String getFileNameByIdSafe(int unitId, int fileId) {
+        return RepositoryAccessor.getTranslator().getFileNameByIdSafe(unitId, fileId);
+    }
+
+    static String getFileNameById(int unitId, int fileId) {
+        return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
+    }
+
 }
 

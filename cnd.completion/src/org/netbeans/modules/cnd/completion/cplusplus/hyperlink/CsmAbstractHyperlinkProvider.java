@@ -113,7 +113,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
             String key;
             String name;
             String itemDesc = CsmUtilities.getElementJumpName(item);
-            if (itemDesc != null) {
+            if (itemDesc != null && itemDesc.length() > 0) {
                 key = "goto_source_source_not_found"; // NOI18N
                 name = itemDesc;
             } else {

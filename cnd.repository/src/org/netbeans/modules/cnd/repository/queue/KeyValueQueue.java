@@ -153,14 +153,10 @@ public class KeyValueQueue<K, V> extends BaseQueue {
         synchronized ( lock ) {
             while( active && !isReady() ) {
 		if( needsTrace() ) System.err.printf("%s: waitReady() ...\n", getTraceName());
-                _waitReady();
+                lock.wait();
 		if( needsTrace() ) System.err.printf("%s: waiting finished\n", getTraceName());
             }
         }
-    }
-    
-    protected void _waitReady() throws InterruptedException {
-        lock.wait();
     }
     
     public boolean isReady()  {

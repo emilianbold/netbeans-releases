@@ -97,8 +97,11 @@ abstract public class CsmCompletion extends Completion {
     public static final BaseType CLASS_TYPE = new BaseType(CLASS_CLASS, 0);
 
     public static final SimpleClass STRING_CLASS
-    = new SimpleClass("java.lang.String", "java.lang".length(), true); // NOI18N
-    public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 0);
+    = new SimpleClass("char", 0, true); // NOI18N
+    public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 1, false, 0);
+    public static final SimpleClass CONST_STRING_CLASS
+    = new SimpleClass("const char", 0, true); // NOI18N
+    public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, false, 0);
 
     /** @deprecated flag that is used for backward compatibility only. 
      *  Modifier.INTERFACE has been used instead. 
@@ -131,13 +134,14 @@ abstract public class CsmCompletion extends Completion {
 
         // initialize predefined types cache
         types = new BaseType[] {
-            NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE
+            NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
             String typeName = types[i].getClassifier().getName();
             str2PredefinedType.put(typeName, types[i]);
             str2PredefinedType.put(types[i].getClassifier().getQualifiedName(), types[i]);
+            str2PredefinedType.put(types[i].format(true), types[i]);
         }
     }
 
@@ -737,6 +741,11 @@ abstract public class CsmCompletion extends Completion {
         public String format(boolean useFullName) {
             StringBuilder sb = new StringBuilder(useFullName ? getClassifier().getQualifiedName()
                                                : getClassifier().getName());
+            int pd = pointerDepth;
+            while (pd > 0) {
+                sb.append("*"); // NOI18N
+                pd--;
+            }
             int ad = arrayDepth;
             while (ad > 0) {
                 sb.append("[]"); // NOI18N
@@ -773,13 +782,7 @@ abstract public class CsmCompletion extends Completion {
         }
 
         public String toString() {
-            StringBuilder sb = new StringBuilder(clazz.toString());
-            int ad = arrayDepth;
-            while (ad > 0) {
-                sb.append("[]"); // NOI18N
-                ad--;
-            }
-            return sb.toString();
+            return format(true);
         }
 
         public CsmClassifier getClassifier() {

@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.test;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JEditorPane;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
@@ -130,4 +131,36 @@ public abstract class BaseTestCase extends NbTestCase {
     protected Class getTestCaseDataClass() {
         return this.getClass();
     }
+    
+    /** Compares golden file and reference log. If both files are the
+     * same, test passes. If files differ, test fails and diff file is
+     * created (diff is created only when using native diff, for details
+     * see JUnit module documentation)
+     * @param testFilename reference log file name
+     * @param goldenFilename golden file name
+     */
+    public void compareReferenceFiles(String testFilename, String goldenFilename) {
+        try {
+            File goldenFile = getGoldenFile(goldenFilename);
+            File testFile = new File(getWorkDir(),testFilename);
+            
+            if (CndCoreTestUtils.diff(testFile, goldenFile, null)) {
+                // copy golden
+                File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden");
+                CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); // NOI18N
+                fail("Files differ; check " + goldenDataFileCopy);
+            }             
+        } catch (IOException ioe) {
+            fail("Could not obtain working direcory " + ioe);
+        }
+    }    
+    
+    /** Compares default golden file and default reference log. If both files are the
+     * same, test passes. If files differ, test fails and default diff (${methodname}.diff)
+     * file is created (diff is created only when using native diff, for details
+     * see JUnit module documentation)
+     */
+    public void compareReferenceFiles() {
+        compareReferenceFiles(this.getName()+".ref",this.getName()+".ref");
+    }    
 }

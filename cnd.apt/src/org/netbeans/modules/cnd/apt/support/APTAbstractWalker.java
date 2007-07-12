@@ -51,7 +51,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
-            String resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
+            ResolvedPath resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
@@ -70,7 +70,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
-            String resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
+            ResolvedPath resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
@@ -86,7 +86,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
-    abstract protected void include(String resolvedPath, APTInclude aPTInclude);
+    abstract protected void include(ResolvedPath resolvedPath, APTInclude aPTInclude);
    
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;

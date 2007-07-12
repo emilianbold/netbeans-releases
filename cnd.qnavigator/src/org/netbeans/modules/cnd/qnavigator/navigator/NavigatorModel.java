@@ -292,13 +292,26 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     public void fileParsingStarted(CsmFile file) {
     }
     
+    public void projectLoaded(CsmProject project) {
+	CsmFile file = getCsmFile();
+	if( file != null && project.equals(file.getProject()) ) {
+	    if( file.isParsed() ) {
+		fileParsedOrProjectLoaded(file); 
+	    }
+	}
+    }    
+    
     public void fileParsingFinished(CsmFile file) {
         if (file == getCsmFile()) {
-            stopTimers();
-            update(file);
-            ui.newContentReady();
-            restartTimers();
+	    fileParsedOrProjectLoaded(file);
         }
+    }
+    
+    private void fileParsedOrProjectLoaded(CsmFile file) {
+	stopTimers();
+	update(file);
+	ui.newContentReady();
+	restartTimers();
     }
     
     public void parserIdle() {

@@ -292,6 +292,8 @@ abstract class CommonConfigurationXMLCodec
 	writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
 	writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
 	writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+	if (makeConfiguration.getLinkerConfiguration() != null)
+	    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
 	xes.elementClose(MAKETOOL_ELEMENT);
 	xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }

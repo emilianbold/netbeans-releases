@@ -40,4 +40,10 @@ int main(int argc, char** argv) {
     return 0;
 }
  
-
+void castChecks() {
+    void* a;
+    ((ClassB)*a).*myPtr;
+    ((ClassB*)a)->*myPtr;
+    ((ClassB)*a).myVal;
+    ((ClassB*)a)->myVal;
+}

@@ -51,24 +51,31 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     public CsmFunction getDeclaration() {
-        String uname = CsmDeclaration.Kind.FUNCTION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-        CsmDeclaration decl = getContainingFile().getProject().findDeclaration(uname);
+        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        CsmProject prj = getContainingFile().getProject();
+        CsmDeclaration decl = findDeclaration(prj, uname);
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
             return (CsmFunction) decl;
         }
-        decl = findDeclaration(uname);
-        if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
-            return (CsmFunction) decl;
+        for (CsmProject lib : prj.getLibraries()){
+            CsmFunction def = findDeclaration(lib, uname);
+            if (def != null) {
+                return def;
+            }
         }
         return this;
     }
     
-    private CsmFunction findDeclaration(String uname){
+    private CsmFunction findDeclaration(CsmProject prj, String uname){
+        CsmDeclaration decl = prj.findDeclaration(uname);
+        if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+            return (CsmFunction) decl;
+        }
         if (getParameters().size()!=0){
             CsmFile file = getContainingFile();
             if (!ProjectBase.isCppFile(file)){
                 uname = uname.substring(0,uname.indexOf('('))+"()"; // NOI18N
-                CsmDeclaration decl = file.getProject().findDeclaration(uname);
+                decl = prj.findDeclaration(uname);
                 if( (decl instanceof FunctionImpl) &&
                         !((FunctionImpl)decl).isVoidParameterList()) {
                     return (CsmFunction) decl;
@@ -77,15 +84,13 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         }
         return null;
     }
-
     
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
     
     public List<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        l.addAll(getParameters());
+        List<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }

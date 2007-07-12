@@ -14,7 +14,7 @@ Macros:
 FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl
     DEFINITION: null
     SIGNATURE fun1(int,int)
-    UNIQUE NAME FUNCTION:fun1(int,int)
+    UNIQUE NAME F:fun1(int,int)
     PARAMETERS:
          [1:10/9-1:13/12] type: int TEXT=int  [1:10/9-1:13/12] init: null
          [1:15/14-1:18/17] type: int TEXT=int  [1:15/14-1:18/17] init: null
@@ -25,7 +25,7 @@ VARIABLE fppp_fun1 [4:1/92-4:42/133] type: int TEXT=int(***)(int,int)  [4:1/92-4
 FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl
     DEFINITION: null
     SIGNATURE fun2(int,int)
-    UNIQUE NAME FUNCTION:fun2(int,int)
+    UNIQUE NAME F:fun2(int,int)
     PARAMETERS:
          [6:11/145-6:14/148] type: int TEXT=int  [6:11/145-6:14/148] init: null
          [6:16/150-6:19/153] type: int TEXT=int  [6:16/150-6:19/153] init: null
@@ -38,7 +38,7 @@ VARIABLE fppp_fun2 [9:1/230-9:43/272] type: *int TEXT=int*(***)(int,int)  [9:1/2
 FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl
     DEFINITION: null
     SIGNATURE fun1(int,int)
-    UNIQUE NAME FUNCTION:fun1(int,int)
+    UNIQUE NAME F:fun1(int,int)
     PARAMETERS:
          [1:10/9-1:13/12] type: int TEXT=int  [1:10/9-1:13/12] init: null
          [1:15/14-1:18/17] type: int TEXT=int  [1:15/14-1:18/17] init: null
@@ -49,7 +49,7 @@ VARIABLE fppp_fun1 [4:1/92-4:42/133] type: int TEXT=int(***)(int,int)  [4:1/92-4
 FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl
     DEFINITION: null
     SIGNATURE fun2(int,int)
-    UNIQUE NAME FUNCTION:fun2(int,int)
+    UNIQUE NAME F:fun2(int,int)
     PARAMETERS:
          [6:11/145-6:14/148] type: int TEXT=int  [6:11/145-6:14/148] init: null
          [6:16/150-6:19/153] type: int TEXT=int  [6:16/150-6:19/153] init: null

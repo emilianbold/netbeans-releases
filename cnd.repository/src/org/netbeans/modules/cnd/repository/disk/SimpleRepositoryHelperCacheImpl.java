@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.repository.disk.api.RepositoryFilesHelperCacheStrategy;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -28,10 +30,27 @@ import org.netbeans.modules.cnd.repository.util.RepositoryCacheMap;
 
 
 class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrategy { 
+    private static volatile SimpleRepositoryHelperCacheImpl instance;
+    private static Lock     lock = new ReentrantLock();
     
     private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
-    public void adjustCapacity(int newCapacity) {
+    public static SimpleRepositoryHelperCacheImpl getInstance(int newCapacity) {
+        
+        if (instance == null) {
+            try {
+                lock.lock();
+                if (instance == null) {
+                    instance =new SimpleRepositoryHelperCacheImpl(newCapacity);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        return instance;
+    }
+    
+    public void adjustCapacity(int newCapacity) throws IOException {
         Set<ConcurrentFileRWAccess> removedFiles = nameToFileCache.adjustCapacity(newCapacity);
         
         if (removedFiles == null)
@@ -41,22 +60,17 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
             try {
                 fileToRemove.writeLock().lock();
                 
-                try {
-                    if (fileToRemove.getFD().valid()) {
-                        fileToRemove.close();
-                    }
-                }  catch (IOException ex) {
-                    ex.printStackTrace();
+                if (fileToRemove.getFD().valid()) {
+                    fileToRemove.close();
                 }
                 
             } finally {
                 fileToRemove.writeLock().unlock();
-            }            
+            }
         }
-        
     }
     
-    SimpleRepositoryHelperCacheImpl (int openFilesLimit) {
+    protected SimpleRepositoryHelperCacheImpl (int openFilesLimit) {
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(openFilesLimit);
     }
     
@@ -68,7 +82,7 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
         return nameToFileCache.get(fileName);
     }
     
-    public void cacheNameRemove(String fileName) {
+    public void cacheNameRemove(String fileName) throws IOException {
         ConcurrentFileRWAccess removedFile = nameToFileCache.remove(fileName);
         if (removedFile != null) {
             try {
@@ -77,32 +91,25 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
                 if (removedFile.getFD().valid() )
                     removedFile.close();
                 
-            }  catch (Exception ex) {
-                ex.printStackTrace();
             }  finally {
                 removedFile.writeLock().unlock();
             }
         }
     }
     
-       public void putCacheFile(String fileName, ConcurrentFileRWAccess aFile) {
+    public void putCacheFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
         ConcurrentFileRWAccess removedFile = nameToFileCache.put(fileName, aFile);
         if (removedFile != null) {
             try {
-                
                 removedFile.writeLock().lock();
                 if (removedFile.getFD().valid()) {
                     removedFile.close();
                 }
                 
-            }  catch (Exception ex) {
-                ex.printStackTrace();
             } finally {
                 removedFile.writeLock().unlock();
             }
-            removedFile = null;
         }
-        
     }
 
     public void putCacheName(Key id, String fileName) {

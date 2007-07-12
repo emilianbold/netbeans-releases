@@ -54,10 +54,18 @@ public final class ParameterImpl extends VariableImpl<CsmParameter> implements C
     public void write(DataOutput output) throws IOException {
         super.write(output);      
         output.writeBoolean(this.varArg);
+        // write UID for unnamed parameter
+        if (getName().length() == 0) {
+            super.writeUID(output);
+        }
     }  
     
     public ParameterImpl(DataInput input) throws IOException {
         super(input);
         this.varArg = input.readBoolean();
+        // restore UID for unnamed parameter
+        if (getName().length() == 0) {
+            super.readUID(input);
+        }        
     } 
 }

@@ -52,6 +52,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 6, 17, "main.c", 5, 10); // ii in "res *= ii;"
     }
 
+    public void testNameWithUnderscore() throws Exception {
+        performTest("main.c", 12, 6, "main.c", 11, 1); // method_name_with_underscore();
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
     

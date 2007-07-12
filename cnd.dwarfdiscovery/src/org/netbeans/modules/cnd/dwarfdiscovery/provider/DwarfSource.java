@@ -348,8 +348,22 @@ public class DwarfSource implements SourceFileProperties{
                     userMacros.put(PathCache.getString(macro), null);
                 }
             } else if (option.startsWith("-I")){ // NOI18N
-                String include = PathCache.getString(option.substring(2));
+                String path = option.substring(2);
+                if (path.length()==0 && st.hasMoreTokens()){
+                    path = st.nextToken();
+                }
+                String include = PathCache.getString(path);
                 userIncludes.add(include);
+            } else if (option.startsWith("-Y")){ // NOI18N
+                String defaultSearchPath = option.substring(2);
+                if (defaultSearchPath.length()==0 && st.hasMoreTokens()){
+                    defaultSearchPath = st.nextToken();
+                }
+                if (defaultSearchPath.startsWith("I,")){ // NOI18N
+                    defaultSearchPath = defaultSearchPath.substring(2);
+                    String include = PathCache.getString(defaultSearchPath);
+                    userIncludes.add(include);
+                }
             }
         }
     }
@@ -441,9 +455,6 @@ public class DwarfSource implements SourceFileProperties{
             }
             if (Utilities.isWindows()) {
                 fullName = fullName.replace('\\', '/');
-            }
-            if (fullName.contains("t/decimal.c")){
-                System.out.println(fullName);
             }
             list = grepSourceFile(fullName);
             for(String included : list){

@@ -221,7 +221,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                         if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                             try {
                                 rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
-                                pae.getProfile().getEnvironment().putenv("NBCND_RC=" + rcfile); // NOI18N
                             } catch (IOException ex) {
                             }
                             if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
@@ -236,7 +235,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                                 }
                                 args = b.toString();
                             }
-                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), exe, args);
+                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args);
                             exe = pae.getProfile().getTerminalPath();
                         }
                     }

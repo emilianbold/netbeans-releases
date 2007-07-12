@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.folding;
 
 import java.io.Reader;
 import java.util.List;
+import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 
 /**
@@ -35,8 +36,8 @@ public class APTFoldingProvider implements FoldingParser {
     public APTFoldingProvider() {
     }
 
-    public List/*<CppFoldRecord>*/ parse(String name, Reader source) {
-        List/*<CppFoldRecord>*/ res = APTFoldingParser.parse(name, source);
+    public List<CppFoldRecord> parse(String name, Reader source) {
+        List<CppFoldRecord> res = APTFoldingParser.parse(name, source);
         return res;
     }    
 }

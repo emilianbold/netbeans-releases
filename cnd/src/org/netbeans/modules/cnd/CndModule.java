@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd;
 
 import java.io.File;
 import java.io.IOException;
-import org.openide.util.Utilities;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.builds.OutputWindowOutputStream;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
@@ -38,10 +37,12 @@ import org.netbeans.modules.cnd.editor.shell.ShellKit;
 import org.netbeans.modules.cnd.editor.shell.ShellPrintOptions;
 import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
 import org.openide.ErrorManager;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
+import org.openide.util.Utilities;
 
 public class CndModule extends ModuleInstall {
 

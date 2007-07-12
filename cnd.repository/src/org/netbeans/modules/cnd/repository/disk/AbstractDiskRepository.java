@@ -34,7 +34,7 @@ public abstract class AbstractDiskRepository implements RepositoryWriter {
     
     public abstract void remove(Key id) throws IOException;
     
-    public abstract void closeUnit(String unitName, boolean cleanRepository) throws IOException;
+    public abstract void close() throws IOException;
     
-    public abstract void shutdown(boolean clean) throws IOException;
+    abstract public int getFragmentationPercentage() throws IOException;    
 }

@@ -50,7 +50,14 @@ public final class Unresolved implements Disposable {
         public UnresolvedClass(String name, NamespaceImpl namespace, CsmFile file) {
             super(name, file, null);
 	    init(namespace, null);
-            register(namespace);
+	    // we don't need registering in project here.
+	    // so we just register in namespace and in repository
+            if (namespace != null) {
+                ((MutableDeclarationsContainer)namespace).addDeclaration(this);
+            }
+	    if (TraceFlags.USE_REPOSITORY) {
+		RepositoryUtils.put(this);
+	    }
         }
         public boolean isTemplate() {
             return false;
@@ -97,7 +104,7 @@ public final class Unresolved implements Disposable {
     
     private final static class UnresolvedNamespace extends NamespaceImpl {
         private UnresolvedNamespace(ProjectBase project) {
-            super(project, null, "$unresolved$","$unresolved$");
+            super(project, null, "$unresolved$","$unresolved$"); // NOI18N
         }
 
         protected void notifyCreation() {

@@ -139,6 +139,10 @@ public class FileBufferFile extends AbstractFileBuffer {
         return true;
     }
     
+    public long lastModified() {
+	return getFile().lastModified();
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

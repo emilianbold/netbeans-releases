@@ -38,9 +38,9 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmOb
     private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
     private final CsmUID<CsmFile> fileUID;
     
-    private final LineColOffsPositionImpl startPosition;
-    private final LineColOffsPositionImpl endPosition;
-
+    private final int startPosition;
+    private final int endPosition;
+    
     protected OffsetableBase(AST ast, CsmFile file) {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
@@ -51,26 +51,18 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmOb
         }
         //this.ast = ast;
         CsmAST startAST = getStartAst(ast);
-        startPosition = (startAST == null) ? 
-            new LineColOffsPositionImpl(0,0,0) :
-            new LineColOffsPositionImpl(startAST.getLine(), startAST.getColumn(), startAST.getOffset());
+        startPosition = (startAST == null) ? 0 : startAST.getOffset();
         CsmAST endAST = getEndAst(ast);
-        endPosition = (endAST == null) ? 
-            new LineColOffsPositionImpl(0,0,0) : 
-            new LineColOffsPositionImpl(endAST.getEndLine(), endAST.getEndColumn(), endAST.getEndOffset());
-    }
-    
-    protected OffsetableBase(CsmFile file) {
-        this(null, file);
+        endPosition = (endAST == null) ? 0 : endAST.getEndOffset();
     }
     
     protected OffsetableBase(CsmFile containingFile, CsmOffsetable pos) {
         this(containingFile, 
-             pos != null ? pos.getStartPosition() : null, 
-             pos != null ? pos.getEndPosition() : null);
+                pos != null ? pos.getStartOffset() : 0,
+                pos != null ? pos.getEndOffset() : 0);      
     }
     
-    protected OffsetableBase(CsmFile file, CsmOffsetable.Position start, CsmOffsetable.Position end) {
+    protected OffsetableBase(CsmFile file, int start, int end) {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.fileUID = UIDCsmConverter.fileToUID(file);
             this.fileRef = null;// to prevent error with "final"
@@ -78,24 +70,24 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmOb
             this.fileRef = file;
             this.fileUID = null;// to prevent error with "final"
         }        
-        this.startPosition = new LineColOffsPositionImpl(start);
-        this.endPosition = new LineColOffsPositionImpl(end);
+        this.startPosition = start;
+        this.endPosition = end;
     }
     
     public int getStartOffset() {
-        return getStartPosition().getOffset();
-    }
-    
-    public int getEndOffset() {
-        return getEndPosition().getOffset();
-    }
-
-    public Position getStartPosition() {
         return startPosition;
     }
     
-    public Position getEndPosition() {
+    public int getEndOffset() {
         return endPosition;
+    }
+
+    public Position getStartPosition() {
+        return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), startPosition);
+    }
+    
+    public Position getEndPosition() {
+        return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), endPosition);
     }
     
     private CsmAST getStartAst(AST node) {
@@ -162,16 +154,16 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmOb
     }
 
     protected void write(DataOutput output) throws IOException {
-        startPosition.toStream(output);
-        endPosition.toStream(output);     
+        output.writeInt(startPosition);
+        output.writeInt(endPosition);
         // not null UID
         assert this.fileUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.fileUID, output);
     }
     
     protected OffsetableBase(DataInput input) throws IOException {
-        startPosition = new LineColOffsPositionImpl(input);
-        endPosition = new LineColOffsPositionImpl(input);
+        startPosition = input.readInt();
+        endPosition = input.readInt();
 
         this.fileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
@@ -183,6 +175,6 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmOb
     
     // test trace method
     protected String getOffsetString() {
-        return "[" + getStartOffset() + "-" + getEndOffset() + "]";
+        return "[" + getStartOffset() + "-" + getEndOffset() + "]"; // NOI18N
     }
 }

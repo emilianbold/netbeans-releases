@@ -19,10 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -65,6 +61,11 @@ public class KeyUtilities {
         return new OffsetableDeclarationKey(obj);
     }
     
+    public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
+        assert obj != null;
+        return new OffsetableDeclarationKey(obj, index);
+    }
+    
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);
@@ -77,137 +78,25 @@ public class KeyUtilities {
     
     ////////////////////////////////////////////////////////////////////////////
     
-    ////////////////////////////////////////////////////////////////////////////
-    // impl details
-    
-    private static class UnitsCache extends IntToStringCache {
-        private static ArrayList<IntToStringCache> fileNamesCaches = new ArrayList<IntToStringCache>();
-        
-        public void read(DataInput stream) throws IOException {
-            assert stream != null;
-            assert cache != null;
-            
-            cache.clear();
-            fileNamesCaches.clear();
-            
-            int size = stream.readInt();
-            
-            for (int i = 0; i < size; i++) {
-                String value = stream.readUTF();
-                if (value.equals("")) {
-                    cache.add(null);
-                } else {
-                    cache.add(value);
-                }
-                fileNamesCaches.add(new IntToStringCache());
-            }
-        }
-        
-        public void insertUnitFileCache (String name, IntToStringCache filesCache) {
-            int index = cache.indexOf(name);
-            if (index == -1) {
-                index = super.makeId(name);
-            }
-            fileNamesCaches.set(index, filesCache);
-        }
-        
-        
-        public IntToStringCache removeFileNames(String unitName) {
-            synchronized (cache) {
-                IntToStringCache fileNames = null;
-                int index = cache.indexOf(unitName);
-                if (index != -1) {
-                    fileNames = fileNamesCaches.get(index);
-                    fileNamesCaches.set(index, new IntToStringCache());
-                }
-                return fileNames;
-            }
-        }
-    
-        public int remove(String value) {
-            synchronized (cache) {
-                int index = cache.indexOf(value);
-                if (index != -1) {
-                    cache.set(index, null);
-                    fileNamesCaches.set(index, null);
-                }
-                return index;
-            }
-        }
-        
-        /**
-         * synchronization is controlled by calling getId() method
-         */
-        protected int makeId(String value) {
-            int id = cache.indexOf(null);
-            if (id == -1) {
-                id = super.makeId(value);
-                //fileNamesCaches.ensureCapacity(id+1);
-                //fileNamesCaches.set(id, new IntToStringCache());
-                fileNamesCaches.add(new IntToStringCache());
-            } else {
-                cache.set(id, value);
-                fileNamesCaches.set(id, new IntToStringCache());
-            }
-            return id;
-        }
-        
-        /**
-         * no synchronization is set to speed up processing
-         * this call is safe due to add-only way of work with
-         * List
-         */
-        public IntToStringCache getFileNames(int unitId) {
-            return fileNamesCaches.get(unitId);
-        }
-    }
-    
-    private static UnitsCache unitNamesCache = new UnitsCache();
-    
-    public static IntToStringCache getUnitFileNames(int unitId) {
-	return unitNamesCache.getFileNames(unitId);
-    }
-    
-    public static int getUnitId(String unitName) {
-	return unitNamesCache.getId(unitName);
+     public static int getUnitId(String unitName) {
+	return RepositoryUtils.getUnitId(unitName);
     }
     
     public static String getUnitName(int unitIndex) {
-	return unitNamesCache.getValueById(unitIndex);
+	return RepositoryUtils.getUnitName(unitIndex);
     }
     
-    public static void readUnitsCache(DataInput stream) throws IOException {
-        assert stream != null;
-        
-        unitNamesCache.read(stream);
+    public static int getFileIdByName(final int unitId, final String fileName){
+        return RepositoryUtils.getFileIdByName(unitId, fileName);
     }
     
-    public static void writeUnitsCache(DataOutput stream) throws IOException {
-        assert stream != null;
-        
-        unitNamesCache.write(stream);
+    public static String getFileNameById(final int unitId, final int fileId){
+        return RepositoryUtils.getFileNameById(unitId, fileId);
     }
-    
-    public static void readUnitFilesCache(String name, DataInput stream) throws IOException {
-        assert name != null;
-        assert stream != null;
-        
-        IntToStringCache filesCache = new IntToStringCache(stream);
-        unitNamesCache.insertUnitFileCache(name, filesCache);
-    }
-    
-    public static void writeUnitFilesCache (String unitName, DataOutput stream) throws IOException {
-        assert unitName != null;
-        assert stream != null;
-        
-        int unitId = unitNamesCache.getId(unitName);
-        IntToStringCache cache = unitNamesCache.getFileNames(unitId);
-        cache.write(stream);
-    }
-    
-    public static void closeUnit(String unitName) {
-        unitNamesCache.removeFileNames(unitName);
-    }
+    public static String getFileNameByIdSafe(final int unitId, final int fileId){
+        return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
+    }    
+ 
     
     // have to be public or UID factory does not work
 

@@ -70,9 +70,8 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 	    super((FileImpl) getContainingFile());
 	}
 	
-	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-	    VariableImpl var = new VariableImpl<CsmVariable>(offsetAst, file, type, name, true);
-	    var.setStatic(_static);
+	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+	    VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2);
 	    declarators.add(var);
 	    return var;
 	}
@@ -126,9 +125,8 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 				    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
 				}
 				String name = next.getText();
-				VariableImpl var = new VariableImpl<CsmVariable>(next, getContainingFile(), type, name, true);
-				// we ignore both currentNamespace and container
-				declarators.add(var);
+				VariableImpl var = createVariable(next, getContainingFile(), type, name, false, currentNamespace, container);
+				// we ignore both currentNamespace and container; <= WHY?
 				// eat all tokens up to the comma that separates the next decl
 				next = next.getNextSibling();
 				if( next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
@@ -162,7 +160,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 		    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
 		}
 		String name = next.getText();
-		VariableImpl var = new VariableImpl<CsmVariable>(next, getContainingFile(), type, name, true);
+		VariableImpl var = new VariableImpl(next, getContainingFile(), type, name, true);
 		// we ignore both currentNamespace and container
 		declarators.add(var);
 		// eat all tokens up to the comma that separates the next decl

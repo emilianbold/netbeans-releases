@@ -54,7 +54,7 @@ public class WriteStatistics {
 	    writeCount += increment;
 	} 
 	else {
-	    int currentWPS = (int) (writeCount * 1000 / (currTime - writeStatIntervalStart));
+	    int currentWPS = (int) (1000L * writeCount / (currTime - writeStatIntervalStart));
 	    writeStatIntervalStart = currTime;
 //	    for( int i = 1; i < writesPerInterval.length; i++ ) {
 //		writesPerInterval[i-1] = writesPerInterval[i];

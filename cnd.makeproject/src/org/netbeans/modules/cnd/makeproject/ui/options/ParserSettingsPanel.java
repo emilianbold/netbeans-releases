@@ -19,24 +19,26 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.util.NbBundle;
 
-public class ParserSettingsPanel extends JPanel {
+public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener {
     
-    private ActionListener collectionActionListener;
     private HashMap predefinedPanels = new HashMap();
     private boolean updating = false;
+    private ToolsPanel tp;
     /**
      * Creates new form ParserSettingsPanel
      */
@@ -44,16 +46,7 @@ public class ParserSettingsPanel extends JPanel {
         setName("TAB_CodeAssistanceTab");// NOI18N
         initComponents();
         
-        collectionActionListener = new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if (!updating) {
-                    updateTabs();
-                }
-            }
-        };
-        update();
         //infoTextArea.setBackground(collectionPanel.getBackground());
-        
         //setPreferredSize(new java.awt.Dimension(600, 700));
         
         // Accessible Description
@@ -61,17 +54,26 @@ public class ParserSettingsPanel extends JPanel {
         compilerCollectionComboBox.getAccessibleContext().setAccessibleDescription(getString("COMPILER_COLLECTION_AD"));
         tabbedPane.getAccessibleContext().setAccessibleDescription(getString("COMPILERS_TABBEDPANE_AD"));
         tabbedPane.getAccessibleContext().setAccessibleName(getString("COMPILERS_TABBEDPANE_AN"));
+        tp = ToolsPanel.getToolsPanel();
+        if (tp != null) {
+            tp.addCompilerSetChangeListener(this);
+        }
     }
     
-    private void updateCompilerCollections() {
+    public void actionPerformed(ActionEvent evt) {
+        if (!updating && isShowing()) {
+            updateTabs();
+        }
+    }
+    
+    private void updateCompilerCollections(CompilerSet cs) {
         compilerCollectionComboBox.removeAllItems();
-        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
-            compilerCollectionComboBox.addItem(cs);
+        for (CompilerSet cs2 : tp.getCompilerSetManager().getCompilerSets()) {
+            compilerCollectionComboBox.addItem(cs2);
         }
         
-        CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CppSettings.getDefault().getCompilerSetName());
         if (cs == null) {
-            cs = CompilerSetManager.getDefault().getCompilerSet(0);
+            cs = tp.getCompilerSetManager().getCompilerSet(0);
         }
         if (cs != null) {
             compilerCollectionComboBox.setSelectedItem(cs);
@@ -102,6 +104,15 @@ public class ParserSettingsPanel extends JPanel {
             if (npv != null) {
                 npv.fireFilesPropertiesChanged();
             }
+        }
+    }
+    
+    public void stateChanged(ChangeEvent ev) {
+        Object o = ev.getSource();
+        if (o instanceof CompilerSet) {
+            updateCompilerCollections((CompilerSet) o);
+        } else {
+            updateCompilerCollections(null);
         }
     }
     
@@ -185,9 +196,9 @@ public class ParserSettingsPanel extends JPanel {
         if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("update for ParserSettingsPanel");
         try {
             updating = true;
-            compilerCollectionComboBox.removeActionListener(collectionActionListener);
-            updateCompilerCollections();
-            compilerCollectionComboBox.addActionListener(collectionActionListener);
+            compilerCollectionComboBox.removeActionListener(this);
+            updateCompilerCollections(tp.getCurrentCompilerSet());
+            compilerCollectionComboBox.addActionListener(this);
             PredefinedPanel[] viewedPanels = getPredefinedPanels();
             for (int i = 0; i < viewedPanels.length; i++) {
                 viewedPanels[i].update();

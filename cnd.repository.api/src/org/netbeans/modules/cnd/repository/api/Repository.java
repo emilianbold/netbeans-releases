@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.cnd.repository.api;
 
+import java.util.Set;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
 /**
  *
@@ -60,7 +62,13 @@ public interface Repository {
      * store all objects to permanent location 
      * should be called during IDE shutdown 
      */
-    void debugClear();     
+    void debugClear();  
+    
+    /**
+     * Prepare repositoty and tells the version of the persistent mechanism
+     * @param verison 
+     */
+    void startup(int persistMechanismVersion);
     
     /**
      * Shuts down repository.
@@ -72,5 +80,28 @@ public interface Repository {
      * Close Repository Unit, e.g. Project for IDE
      * @param unitName the name of unit
      */
-    void closeUnit(String unitName, boolean cleanRepository);
+    void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits);
+    
+    /**
+     * Removes repository unit from disk
+     */
+    void removeUnit(String unitName);
+    
+    /**
+     * clean the disk caches of all repositories
+     */
+    void cleanCaches();
+    
+    /**
+     * add a listener to the repository
+     * @param aListener the listener
+     */
+    void registerRepositoryListener(final RepositoryListener aListener);
+    
+    /**
+     * remove a listener from the repository
+     * @param aListener the listener
+     */
+    void unregisterRepositoryListener(final RepositoryListener aListener);
+
 }

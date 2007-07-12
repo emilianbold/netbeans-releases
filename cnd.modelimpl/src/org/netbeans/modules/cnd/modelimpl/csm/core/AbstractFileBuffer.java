@@ -53,6 +53,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public abstract String getText() throws IOException;
     public abstract InputStream getInputStream() throws IOException;
     public abstract boolean isFileBased();
+    public abstract long lastModified();
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

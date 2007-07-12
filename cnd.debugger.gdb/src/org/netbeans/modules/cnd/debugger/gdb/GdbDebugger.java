@@ -29,9 +29,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.spi.debugger.ContextProvider;
-//import org.netbeans.modules.cnd.debugger.Variable;
-//import org.netbeans.modules.cnd.debugger.event.CndBreakpointEvent;
-
 
 /**
  * Represents one Cnd debugger session.
@@ -64,6 +61,7 @@ public abstract class GdbDebugger {
     public static final String             STATE_READY = "state_ready"; // NOI18N
     public static final String             STATE_RUNNING = "state_running"; // NOI18N
     public static final String             STATE_STOPPED = "state_stopped"; // NOI18N
+    public static final String             STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
     public static final String             STATE_EXITED  = "state_exited"; // NOI18N
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */

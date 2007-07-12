@@ -57,19 +57,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param file 
      * @param type 
      * @param name 
-     */
-    public <T> VariableImpl(AST ast, CsmFile file, CsmType type, String name) {
-        this(ast, file, type, name, true);
-    }
-    
-    /** Creates a new instance of VariableImpl 
-     * @param ast 
-     * @param file 
-     * @param type 
-     * @param name 
      * @param registerInProject 
      */
-    public <T> VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
         super(ast, file);
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -81,7 +71,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
     
-    private void registerInProject() {
+    protected final void registerInProject() {
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
             ((ProjectBase) project).registerDeclaration(this);
@@ -238,7 +228,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }    
     
     public CsmVariableDefinition getDefinition() {
-        String uname = CsmDeclaration.Kind.VARIABLE_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getQualifiedName();
+        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE_DEFINITION) + UNIQUE_NAME_SEPARATOR + getQualifiedName();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
         return (def == null) ? null : (CsmVariableDefinition) def;
     }

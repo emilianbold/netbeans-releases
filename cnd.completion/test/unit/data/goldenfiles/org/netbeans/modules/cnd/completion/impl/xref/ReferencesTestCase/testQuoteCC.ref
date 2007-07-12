@@ -1,0 +1,1416 @@
+'"customer.h"', tokenID=user-include, offset=942 [24:10/942-24:22/954]
+--OWNER:
+    INCLUDE "customer.h" [24:1/933-24:22/954]
+--RESOLVED TO:
+    FILE ReferencesTestCase/customer.h
+==============================================================
+'"system.h"', tokenID=user-include, offset=964 [25:10/964-25:20/974]
+--OWNER:
+    INCLUDE "system.h" [25:1/955-25:20/974]
+--RESOLVED TO:
+    FILE ReferencesTestCase/system.h
+==============================================================
+'"disk.h"', tokenID=user-include, offset=984 [26:10/984-26:18/992]
+--OWNER:
+    INCLUDE "disk.h" [26:1/975-26:18/992]
+--RESOLVED TO:
+    FILE ReferencesTestCase/disk.h
+==============================================================
+'"cpu.h"', tokenID=user-include, offset=1002 [27:10/1002-27:17/1009]
+--OWNER:
+    INCLUDE "cpu.h" [27:1/993-27:17/1009]
+--RESOLVED TO:
+    FILE ReferencesTestCase/cpu.h
+==============================================================
+'"memory.h"', tokenID=user-include, offset=1019 [28:10/1019-28:20/1029]
+--OWNER:
+    INCLUDE "memory.h" [28:1/1010-28:20/1029]
+--RESOLVED TO:
+    FILE ReferencesTestCase/memory.h
+==============================================================
+'list', tokenID=identifier, offset=1047 [31:5/1047-31:9/1051]
+--OWNER:
+    TYPE $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1052 [31:10/1052-31:18/1060]
+--OWNER:
+    TYPE $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'customers', tokenID=identifier, offset=1062 [31:20/1062-31:29/1071]
+--OWNER:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'outCustomersList', tokenID=identifier, offset=1083 [33:10/1083-33:26/1099]
+--OWNER:
+    FUNCTION_DEFINITION outCustomersList()  [33:5/1078-42:6/1427] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    FUNCTION_DEFINITION outCustomersList()  [33:5/1078-42:6/1427] ReferencesTestCase/quote.cc
+==============================================================
+'cout', tokenID=identifier, offset=1112 [34:9/1112-34:13/1116]
+--OWNER:
+    STMT Expression text='cout << "Customer list (" << customers.size() << " customer(s)):" << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'customers', tokenID=identifier, offset=1141 [34:38/1141-34:47/1150]
+--OWNER:
+    STMT Expression text='cout << "Customer list (" << customers.size() << " customer(s)):" << endl'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'size', tokenID=identifier, offset=1151 [34:48/1151-34:52/1155]
+--OWNER:
+    STMT Expression text='cout << "Customer list (" << customers.size() << " customer(s)):" << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=1181 [34:78/1181-34:82/1185]
+--OWNER:
+    STMT Expression text='cout << "Customer list (" << customers.size() << " customer(s)):" << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=1195 [35:9/1195-35:13/1199]
+--OWNER:
+    STMT Expression text='cout << "--------------------------------------" << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=1247 [35:61/1247-35:65/1251]
+--OWNER:
+    STMT Expression text='cout << "--------------------------------------" << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'list', tokenID=identifier, offset=1270 [37:13/1270-37:17/1274]
+--OWNER:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1275 [37:18/1275-37:26/1283]
+--OWNER:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'iterator', tokenID=identifier, offset=1286 [37:29/1286-37:37/1294]
+--OWNER:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1295 [37:38/1295-37:40/1297]
+--OWNER:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+--RESOLVED TO:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+==============================================================
+'customers', tokenID=identifier, offset=1300 [37:43/1300-37:52/1309]
+--OWNER:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'begin', tokenID=identifier, offset=1310 [37:53/1310-37:58/1315]
+--OWNER:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1319 [37:62/1319-37:64/1321]
+--OWNER:
+     [37:62/1319-37:83/1340] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+==============================================================
+'customers', tokenID=identifier, offset=1325 [37:68/1325-37:77/1334]
+--OWNER:
+     [37:62/1319-37:83/1340] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'end', tokenID=identifier, offset=1335 [37:78/1335-37:81/1338]
+--OWNER:
+     [37:62/1319-37:83/1340] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1344 [37:87/1344-37:89/1346]
+--OWNER:
+    EXPR null text='++it'
+--RESOLVED TO:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+==============================================================
+'cout', tokenID=identifier, offset=1362 [38:13/1362-38:17/1366]
+--OWNER:
+    STMT Expression text='cout << (*it) << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1372 [38:23/1372-38:25/1374]
+--OWNER:
+    STMT Expression text='cout << (*it) << endl'
+--RESOLVED TO:
+    VARIABLE it [37:13/1270-37:61/1318] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [37:13/1270-37:37/1294] init: text='customers'
+==============================================================
+'endl', tokenID=identifier, offset=1379 [38:30/1379-38:34/1383]
+--OWNER:
+    STMT Expression text='cout << (*it) << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=1408 [41:9/1408-41:13/1412]
+--OWNER:
+    STMT Expression text='cout << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=1416 [41:17/1416-41:21/1420]
+--OWNER:
+    STMT Expression text='cout << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'fetchCustomersList', tokenID=identifier, offset=1438 [44:10/1438-44:28/1456]
+--OWNER:
+    FUNCTION_DEFINITION fetchCustomersList()  [44:5/1433-53:6/1847] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    FUNCTION_DEFINITION fetchCustomersList()  [44:5/1433-53:6/1847] ReferencesTestCase/quote.cc
+==============================================================
+'customers', tokenID=identifier, offset=1598 [48:9/1598-48:18/1607]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("John", 10))'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'push_back', tokenID=identifier, offset=1608 [48:19/1608-48:28/1617]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("John", 10))'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1618 [48:29/1618-48:37/1626]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("John", 10))'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'customers', tokenID=identifier, offset=1649 [49:9/1649-49:18/1658]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Mike", 0))'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'push_back', tokenID=identifier, offset=1659 [49:19/1659-49:28/1668]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Mike", 0))'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1669 [49:29/1669-49:37/1677]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Mike", 0))'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'customers', tokenID=identifier, offset=1699 [50:9/1699-50:18/1708]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Peter", 13))'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'push_back', tokenID=identifier, offset=1709 [50:19/1709-50:28/1718]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Peter", 13))'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1719 [50:29/1719-50:37/1727]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Peter", 13))'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'customers', tokenID=identifier, offset=1751 [51:9/1751-51:18/1760]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Ann", 11))'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'push_back', tokenID=identifier, offset=1761 [51:19/1761-51:28/1770]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Ann", 11))'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1771 [51:29/1771-51:37/1779]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Ann", 11))'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'customers', tokenID=identifier, offset=1801 [52:9/1801-52:18/1810]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Tom", 9))'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'push_back', tokenID=identifier, offset=1811 [52:19/1811-52:28/1820]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Tom", 9))'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1821 [52:29/1821-52:37/1829]
+--OWNER:
+    STMT Expression text='customers.push_back(Customer("Tom", 9))'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'getDiscountFor', tokenID=identifier, offset=1857 [55:9/1857-55:23/1871]
+--OWNER:
+    FUNCTION_DEFINITION getDiscountFor(string)  [55:5/1853-63:6/2119] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    FUNCTION_DEFINITION getDiscountFor(string)  [55:5/1853-63:6/2119] ReferencesTestCase/quote.cc
+==============================================================
+'string', tokenID=identifier, offset=1872 [55:24/1872-55:30/1878]
+--OWNER:
+    TYPE $unresolved$::string TEXT=string  [55:24/1872-55:30/1878] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    null
+==============================================================
+'name', tokenID=identifier, offset=1879 [55:31/1879-55:35/1883]
+--OWNER:
+    VARIABLE name [55:24/1872-55:35/1883] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [55:24/1872-55:30/1878] init: null
+--RESOLVED TO:
+    VARIABLE name [55:24/1872-55:35/1883] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [55:24/1872-55:30/1878] init: null
+==============================================================
+'list', tokenID=identifier, offset=1899 [56:13/1899-56:17/1903]
+--OWNER:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1904 [56:18/1904-56:26/1912]
+--OWNER:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'iterator', tokenID=identifier, offset=1915 [56:29/1915-56:37/1923]
+--OWNER:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1924 [56:38/1924-56:40/1926]
+--OWNER:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+--RESOLVED TO:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+==============================================================
+'customers', tokenID=identifier, offset=1929 [56:43/1929-56:52/1938]
+--OWNER:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'begin', tokenID=identifier, offset=1939 [56:53/1939-56:58/1944]
+--OWNER:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1948 [56:62/1948-56:64/1950]
+--OWNER:
+     [56:62/1948-56:83/1969] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+==============================================================
+'customers', tokenID=identifier, offset=1954 [56:68/1954-56:77/1963]
+--OWNER:
+     [56:62/1948-56:83/1969] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE customers [31:5/1047-31:30/1072] ReferencesTestCase/quote.cc type: $unresolved$::list TEXT=list < Customer >  [31:5/1047-31:19/1061] init: null
+==============================================================
+'end', tokenID=identifier, offset=1964 [56:78/1964-56:81/1967]
+--OWNER:
+     [56:62/1948-56:83/1969] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    null
+==============================================================
+'it', tokenID=identifier, offset=1973 [56:87/1973-56:89/1975]
+--OWNER:
+    EXPR null text='++it'
+--RESOLVED TO:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+==============================================================
+'it', tokenID=identifier, offset=1997 [57:19/1997-57:21/1999]
+--OWNER:
+     [57:17/1995-57:40/2018] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+==============================================================
+'GetName', tokenID=identifier, offset=2001 [57:23/2001-57:30/2008]
+--OWNER:
+     [57:17/1995-57:40/2018] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    null
+==============================================================
+'name', tokenID=identifier, offset=2014 [57:36/2014-57:40/2018]
+--OWNER:
+     [57:17/1995-57:40/2018] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE name [55:24/1872-55:35/1883] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [55:24/1872-55:30/1878] init: null
+==============================================================
+'it', tokenID=identifier, offset=2047 [58:26/2047-58:28/2049]
+--OWNER:
+    STMT Return text='return (*it).GetDiscount();'
+--RESOLVED TO:
+    VARIABLE it [56:13/1899-56:61/1947] ReferencesTestCase/quote.cc type: $unresolved$::list::iterator TEXT=list < Customer > :: iterator  [56:13/1899-56:37/1923] init: text='customers'
+==============================================================
+'GetDiscount', tokenID=identifier, offset=2051 [58:30/2051-58:41/2062]
+--OWNER:
+    STMT Return text='return (*it).GetDiscount();'
+--RESOLVED TO:
+    null
+==============================================================
+'readNumberOf', tokenID=identifier, offset=2129 [65:9/2129-65:21/2141]
+--OWNER:
+    FUNCTION_DEFINITION readNumberOf(const char*,int,int)  [65:5/2125-87:6/2878] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    FUNCTION_DEFINITION readNumberOf(const char*,int,int)  [65:5/2125-87:6/2878] ReferencesTestCase/quote.cc
+==============================================================
+'item', tokenID=identifier, offset=2154 [65:34/2154-65:38/2158]
+--OWNER:
+    VARIABLE item [65:22/2142-65:38/2158] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [65:22/2142-65:33/2153] init: null
+--RESOLVED TO:
+    VARIABLE item [65:22/2142-65:38/2158] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [65:22/2142-65:33/2153] init: null
+==============================================================
+'min', tokenID=identifier, offset=2164 [65:44/2164-65:47/2167]
+--OWNER:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+--RESOLVED TO:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+==============================================================
+'max', tokenID=identifier, offset=2173 [65:53/2173-65:56/2176]
+--OWNER:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+--RESOLVED TO:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+==============================================================
+'cout', tokenID=identifier, offset=2188 [66:9/2188-66:13/2192]
+--OWNER:
+    STMT Expression text='cout << "Enter number of " << item << " (" << min << " <= N <= " << max << "): "'
+--RESOLVED TO:
+    null
+==============================================================
+'item', tokenID=identifier, offset=2218 [66:39/2218-66:43/2222]
+--OWNER:
+    STMT Expression text='cout << "Enter number of " << item << " (" << min << " <= N <= " << max << "): "'
+--RESOLVED TO:
+    VARIABLE item [65:22/2142-65:38/2158] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [65:22/2142-65:33/2153] init: null
+==============================================================
+'min', tokenID=identifier, offset=2234 [66:55/2234-66:58/2237]
+--OWNER:
+    STMT Expression text='cout << "Enter number of " << item << " (" << min << " <= N <= " << max << "): "'
+--RESOLVED TO:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+==============================================================
+'max', tokenID=identifier, offset=2256 [66:77/2256-66:80/2259]
+--OWNER:
+    STMT Expression text='cout << "Enter number of " << item << " (" << min << " <= N <= " << max << "): "'
+--RESOLVED TO:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+==============================================================
+'string', tokenID=identifier, offset=2283 [68:9/2283-68:15/2289]
+--OWNER:
+    VARIABLE s [68:9/2283-68:18/2292] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [68:9/2283-68:15/2289] init: null
+--RESOLVED TO:
+    null
+==============================================================
+'s', tokenID=identifier, offset=2290 [68:16/2290-68:17/2291]
+--OWNER:
+    VARIABLE s [68:9/2283-68:18/2292] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [68:9/2283-68:15/2289] init: null
+--RESOLVED TO:
+    VARIABLE s [68:9/2283-68:18/2292] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [68:9/2283-68:15/2289] init: null
+==============================================================
+'getline', tokenID=identifier, offset=2301 [69:9/2301-69:16/2308]
+--OWNER:
+    STMT Expression text='getline(cin, s)'
+--RESOLVED TO:
+    null
+==============================================================
+'cin', tokenID=identifier, offset=2309 [69:17/2309-69:20/2312]
+--OWNER:
+    STMT Expression text='getline(cin, s)'
+--RESOLVED TO:
+    null
+==============================================================
+'s', tokenID=identifier, offset=2314 [69:22/2314-69:23/2315]
+--OWNER:
+    STMT Expression text='getline(cin, s)'
+--RESOLVED TO:
+    VARIABLE s [68:9/2283-68:18/2292] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [68:9/2283-68:15/2289] init: null
+==============================================================
+'amount', tokenID=identifier, offset=2330 [70:13/2330-70:19/2336]
+--OWNER:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+--RESOLVED TO:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+==============================================================
+'strtol', tokenID=identifier, offset=2339 [70:22/2339-70:28/2345]
+--OWNER:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+--RESOLVED TO:
+    null
+==============================================================
+'s', tokenID=identifier, offset=2346 [70:29/2346-70:30/2347]
+--OWNER:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+--RESOLVED TO:
+    VARIABLE s [68:9/2283-68:18/2292] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [68:9/2283-68:15/2289] init: null
+==============================================================
+'c_str', tokenID=identifier, offset=2348 [70:31/2348-70:36/2353]
+--OWNER:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=2378 [72:9/2378-72:13/2382]
+--OWNER:
+    STMT Expression text='cout << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=2386 [72:17/2386-72:21/2390]
+--OWNER:
+    STMT Expression text='cout << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'amount', tokenID=identifier, offset=2409 [74:13/2409-74:19/2415]
+--OWNER:
+     [74:13/2409-74:25/2421] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+==============================================================
+'min', tokenID=identifier, offset=2418 [74:22/2418-74:25/2421]
+--OWNER:
+     [74:13/2409-74:25/2421] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+==============================================================
+'cout', tokenID=identifier, offset=2437 [75:13/2437-75:17/2441]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be less than " << min << '.' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'item', tokenID=identifier, offset=2461 [75:37/2461-75:41/2465]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be less than " << min << '.' << endl'
+--RESOLVED TO:
+    VARIABLE item [65:22/2142-65:38/2158] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [65:22/2142-65:33/2153] init: null
+==============================================================
+'min', tokenID=identifier, offset=2496 [75:72/2496-75:75/2499]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be less than " << min << '.' << endl'
+--RESOLVED TO:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+==============================================================
+'endl', tokenID=identifier, offset=2510 [75:86/2510-75:90/2514]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be less than " << min << '.' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=2528 [76:13/2528-76:17/2532]
+--OWNER:
+    STMT Expression text='cout << min << " item is taken" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'min', tokenID=identifier, offset=2536 [76:21/2536-76:24/2539]
+--OWNER:
+    STMT Expression text='cout << min << " item is taken" << endl << endl'
+--RESOLVED TO:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+==============================================================
+'endl', tokenID=identifier, offset=2563 [76:48/2563-76:52/2567]
+--OWNER:
+    STMT Expression text='cout << min << " item is taken" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=2571 [76:56/2571-76:60/2575]
+--OWNER:
+    STMT Expression text='cout << min << " item is taken" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'amount', tokenID=identifier, offset=2598 [78:13/2598-78:19/2604]
+--OWNER:
+    STMT Expression text='amount = min'
+--RESOLVED TO:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+==============================================================
+'min', tokenID=identifier, offset=2607 [78:22/2607-78:25/2610]
+--OWNER:
+    STMT Expression text='amount = min'
+--RESOLVED TO:
+    VARIABLE min [65:40/2160-65:47/2167] ReferencesTestCase/quote.cc type: int TEXT=int  [65:40/2160-65:43/2163] init: null
+==============================================================
+'amount', tokenID=identifier, offset=2631 [79:20/2631-79:26/2637]
+--OWNER:
+     [79:20/2631-79:32/2643] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+==============================================================
+'max', tokenID=identifier, offset=2640 [79:29/2640-79:32/2643]
+--OWNER:
+     [79:20/2631-79:32/2643] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+==============================================================
+'cout', tokenID=identifier, offset=2659 [80:13/2659-80:17/2663]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be more than " << max << '.' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'item', tokenID=identifier, offset=2683 [80:37/2683-80:41/2687]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be more than " << max << '.' << endl'
+--RESOLVED TO:
+    VARIABLE item [65:22/2142-65:38/2158] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [65:22/2142-65:33/2153] init: null
+==============================================================
+'max', tokenID=identifier, offset=2718 [80:72/2718-80:75/2721]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be more than " << max << '.' << endl'
+--RESOLVED TO:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+==============================================================
+'endl', tokenID=identifier, offset=2732 [80:86/2732-80:90/2736]
+--OWNER:
+    STMT Expression text='cout << "number of " << item << " cannot be more than " << max << '.' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=2750 [81:13/2750-81:17/2754]
+--OWNER:
+    STMT Expression text='cout << max << " items is taken" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'max', tokenID=identifier, offset=2758 [81:21/2758-81:24/2761]
+--OWNER:
+    STMT Expression text='cout << max << " items is taken" << endl << endl'
+--RESOLVED TO:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+==============================================================
+'endl', tokenID=identifier, offset=2786 [81:49/2786-81:53/2790]
+--OWNER:
+    STMT Expression text='cout << max << " items is taken" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=2794 [81:57/2794-81:61/2798]
+--OWNER:
+    STMT Expression text='cout << max << " items is taken" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'amount', tokenID=identifier, offset=2821 [83:13/2821-83:19/2827]
+--OWNER:
+    STMT Expression text='amount = max'
+--RESOLVED TO:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+==============================================================
+'max', tokenID=identifier, offset=2830 [83:22/2830-83:25/2833]
+--OWNER:
+    STMT Expression text='amount = max'
+--RESOLVED TO:
+    VARIABLE max [65:49/2169-65:56/2176] ReferencesTestCase/quote.cc type: int TEXT=int  [65:49/2169-65:52/2172] init: null
+==============================================================
+'amount', tokenID=identifier, offset=2865 [86:16/2865-86:22/2871]
+--OWNER:
+    STMT Return text='return amount;'
+--RESOLVED TO:
+    VARIABLE amount [70:9/2326-70:47/2364] ReferencesTestCase/quote.cc type: int TEXT=int  [70:9/2326-70:12/2329] init: text='strtol'
+==============================================================
+'readChar', tokenID=identifier, offset=2889 [89:10/2889-89:18/2897]
+--OWNER:
+    FUNCTION_DEFINITION readChar(const char*,char)  [89:5/2884-98:6/3128] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    FUNCTION_DEFINITION readChar(const char*,char)  [89:5/2884-98:6/3128] ReferencesTestCase/quote.cc
+==============================================================
+'prompt', tokenID=identifier, offset=2910 [89:31/2910-89:37/2916]
+--OWNER:
+    VARIABLE prompt [89:19/2898-89:37/2916] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [89:19/2898-89:30/2909] init: null
+--RESOLVED TO:
+    VARIABLE prompt [89:19/2898-89:37/2916] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [89:19/2898-89:30/2909] init: null
+==============================================================
+'defaultAnswer', tokenID=identifier, offset=2923 [89:44/2923-89:57/2936]
+--OWNER:
+    VARIABLE defaultAnswer [89:39/2918-89:57/2936] ReferencesTestCase/quote.cc type: char TEXT=char  [89:39/2918-89:43/2922] init: null
+--RESOLVED TO:
+    VARIABLE defaultAnswer [89:39/2918-89:57/2936] ReferencesTestCase/quote.cc type: char TEXT=char  [89:39/2918-89:43/2922] init: null
+==============================================================
+'cout', tokenID=identifier, offset=2948 [90:9/2948-90:13/2952]
+--OWNER:
+    STMT Expression text='cout << prompt << ": [" << (char)toupper(defaultAnswer) << "] "'
+--RESOLVED TO:
+    null
+==============================================================
+'prompt', tokenID=identifier, offset=2956 [90:17/2956-90:23/2962]
+--OWNER:
+    STMT Expression text='cout << prompt << ": [" << (char)toupper(defaultAnswer) << "] "'
+--RESOLVED TO:
+    VARIABLE prompt [89:19/2898-89:37/2916] ReferencesTestCase/quote.cc type: const *char TEXT=const char*  [89:19/2898-89:30/2909] init: null
+==============================================================
+'toupper', tokenID=identifier, offset=2981 [90:42/2981-90:49/2988]
+--OWNER:
+    STMT Expression text='cout << prompt << ": [" << (char)toupper(defaultAnswer) << "] "'
+--RESOLVED TO:
+    null
+==============================================================
+'defaultAnswer', tokenID=identifier, offset=2989 [90:50/2989-90:63/3002]
+--OWNER:
+    STMT Expression text='cout << prompt << ": [" << (char)toupper(defaultAnswer) << "] "'
+--RESOLVED TO:
+    VARIABLE defaultAnswer [89:39/2918-89:57/2936] ReferencesTestCase/quote.cc type: char TEXT=char  [89:39/2918-89:43/2922] init: null
+==============================================================
+'string', tokenID=identifier, offset=3026 [92:9/3026-92:15/3032]
+--OWNER:
+    VARIABLE s [92:9/3026-92:18/3035] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [92:9/3026-92:15/3032] init: null
+--RESOLVED TO:
+    null
+==============================================================
+'s', tokenID=identifier, offset=3033 [92:16/3033-92:17/3034]
+--OWNER:
+    VARIABLE s [92:9/3026-92:18/3035] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [92:9/3026-92:15/3032] init: null
+--RESOLVED TO:
+    VARIABLE s [92:9/3026-92:18/3035] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [92:9/3026-92:15/3032] init: null
+==============================================================
+'getline', tokenID=identifier, offset=3044 [93:9/3044-93:16/3051]
+--OWNER:
+    STMT Expression text='getline(cin, s)'
+--RESOLVED TO:
+    null
+==============================================================
+'cin', tokenID=identifier, offset=3052 [93:17/3052-93:20/3055]
+--OWNER:
+    STMT Expression text='getline(cin, s)'
+--RESOLVED TO:
+    null
+==============================================================
+'s', tokenID=identifier, offset=3057 [93:22/3057-93:23/3058]
+--OWNER:
+    STMT Expression text='getline(cin, s)'
+--RESOLVED TO:
+    VARIABLE s [92:9/3026-92:18/3035] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [92:9/3026-92:15/3032] init: null
+==============================================================
+'cout', tokenID=identifier, offset=3074 [95:9/3074-95:13/3078]
+--OWNER:
+    STMT Expression text='cout << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=3082 [95:17/3082-95:21/3086]
+--OWNER:
+    STMT Expression text='cout << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'toupper', tokenID=identifier, offset=3108 [97:16/3108-97:23/3115]
+--OWNER:
+    STMT Return text='return toupper(s[0]);'
+--RESOLVED TO:
+    null
+==============================================================
+'s', tokenID=identifier, offset=3116 [97:24/3116-97:25/3117]
+--OWNER:
+    STMT Return text='return toupper(s[0]);'
+--RESOLVED TO:
+    VARIABLE s [92:9/3026-92:18/3035] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [92:9/3026-92:15/3032] init: null
+==============================================================
+'main', tokenID=identifier, offset=3166 [101:5/3166-101:9/3170]
+--OWNER:
+    FUNCTION_DEFINITION main(int,char**)  [101:1/3162-210:2/6489] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    FUNCTION_DEFINITION main(int,char**)  [101:1/3162-210:2/6489] ReferencesTestCase/quote.cc
+==============================================================
+'argc', tokenID=identifier, offset=3175 [101:14/3175-101:18/3179]
+--OWNER:
+    VARIABLE argc [101:10/3171-101:18/3179] ReferencesTestCase/quote.cc type: int TEXT=int  [101:10/3171-101:13/3174] init: null
+--RESOLVED TO:
+    VARIABLE argc [101:10/3171-101:18/3179] ReferencesTestCase/quote.cc type: int TEXT=int  [101:10/3171-101:13/3174] init: null
+==============================================================
+'argv', tokenID=identifier, offset=3188 [101:27/3188-101:31/3192]
+--OWNER:
+    VARIABLE argv [101:20/3181-101:31/3192] ReferencesTestCase/quote.cc type: **char TEXT=char**  [101:20/3181-101:26/3187] init: null
+--RESOLVED TO:
+    VARIABLE argv [101:20/3181-101:31/3192] ReferencesTestCase/quote.cc type: **char TEXT=char**  [101:20/3181-101:26/3187] init: null
+==============================================================
+'cout', tokenID=identifier, offset=3200 [102:5/3200-102:9/3204]
+--OWNER:
+    STMT Expression text='cout << "Support metric quote program" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=3242 [102:47/3242-102:51/3246]
+--OWNER:
+    STMT Expression text='cout << "Support metric quote program" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=3250 [102:55/3250-102:59/3254]
+--OWNER:
+    STMT Expression text='cout << "Support metric quote program" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'fetchCustomersList', tokenID=identifier, offset=3265 [104:5/3265-104:23/3283]
+--OWNER:
+    STMT Expression text='fetchCustomersList()'
+--RESOLVED TO:
+    FUNCTION_DEFINITION fetchCustomersList()  [44:5/1433-53:6/1847] ReferencesTestCase/quote.cc
+==============================================================
+'discount', tokenID=identifier, offset=3300 [106:9/3300-106:17/3308]
+--OWNER:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+--RESOLVED TO:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+==============================================================
+'string', tokenID=identifier, offset=3319 [107:5/3319-107:11/3325]
+--OWNER:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+--RESOLVED TO:
+    null
+==============================================================
+'customerName', tokenID=identifier, offset=3326 [107:12/3326-107:24/3338]
+--OWNER:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'outCustomersList', tokenID=identifier, offset=3362 [110:9/3362-110:25/3378]
+--OWNER:
+    STMT Expression text='outCustomersList()'
+--RESOLVED TO:
+    FUNCTION_DEFINITION outCustomersList()  [33:5/1078-42:6/1427] ReferencesTestCase/quote.cc
+==============================================================
+'cout', tokenID=identifier, offset=3390 [111:9/3390-111:13/3394]
+--OWNER:
+    STMT Expression text='cout << "Enter customer name: "'
+--RESOLVED TO:
+    null
+==============================================================
+'getline', tokenID=identifier, offset=3431 [112:9/3431-112:16/3438]
+--OWNER:
+    STMT Expression text='getline(cin, customerName)'
+--RESOLVED TO:
+    null
+==============================================================
+'cin', tokenID=identifier, offset=3439 [112:17/3439-112:20/3442]
+--OWNER:
+    STMT Expression text='getline(cin, customerName)'
+--RESOLVED TO:
+    null
+==============================================================
+'customerName', tokenID=identifier, offset=3444 [112:22/3444-112:34/3456]
+--OWNER:
+    STMT Expression text='getline(cin, customerName)'
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'discount', tokenID=identifier, offset=3467 [113:9/3467-113:17/3475]
+--OWNER:
+    STMT Expression text='discount = getDiscountFor(customerName)'
+--RESOLVED TO:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+==============================================================
+'getDiscountFor', tokenID=identifier, offset=3478 [113:20/3478-113:34/3492]
+--OWNER:
+    STMT Expression text='discount = getDiscountFor(customerName)'
+--RESOLVED TO:
+    FUNCTION_DEFINITION getDiscountFor(string)  [55:5/1853-63:6/2119] ReferencesTestCase/quote.cc
+==============================================================
+'customerName', tokenID=identifier, offset=3493 [113:35/3493-113:47/3505]
+--OWNER:
+    STMT Expression text='discount = getDiscountFor(customerName)'
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'discount', tokenID=identifier, offset=3529 [115:13/3529-115:21/3537]
+--OWNER:
+     [115:13/3529-115:27/3543] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+==============================================================
+'cout', tokenID=identifier, offset=3559 [116:13/3559-116:17/3563]
+--OWNER:
+    STMT Expression text='cout << "Cannot get discount value for customer " << customerName << '.' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'customerName', tokenID=identifier, offset=3612 [116:66/3612-116:78/3624]
+--OWNER:
+    STMT Expression text='cout << "Cannot get discount value for customer " << customerName << '.' << endl'
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'endl', tokenID=identifier, offset=3635 [116:89/3635-116:93/3639]
+--OWNER:
+    STMT Expression text='cout << "Cannot get discount value for customer " << customerName << '.' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=3653 [117:13/3653-117:17/3657]
+--OWNER:
+    STMT Expression text='cout << "Please choose customer from list." << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=3700 [117:60/3700-117:64/3704]
+--OWNER:
+    STMT Expression text='cout << "Please choose customer from list." << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'discount', tokenID=identifier, offset=3733 [120:12/3733-120:20/3741]
+--OWNER:
+     [120:12/3733-120:26/3747] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+==============================================================
+'System', tokenID=identifier, offset=3821 [123:5/3821-123:11/3827]
+--OWNER:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+--RESOLVED TO:
+    CLASS System [30:1/1012-46:3/1382] ReferencesTestCase/system.h
+==============================================================
+'MySystem', tokenID=identifier, offset=3828 [123:12/3828-123:20/3836]
+--OWNER:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+--RESOLVED TO:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+==============================================================
+'cout', tokenID=identifier, offset=3842 [124:5/3842-124:9/3846]
+--OWNER:
+    STMT Expression text='cout << "Customer " << customerName << " has discount " << discount << '%' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'customerName', tokenID=identifier, offset=3865 [124:28/3865-124:40/3877]
+--OWNER:
+    STMT Expression text='cout << "Customer " << customerName << " has discount " << discount << '%' << endl'
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'discount', tokenID=identifier, offset=3901 [124:64/3901-124:72/3909]
+--OWNER:
+    STMT Expression text='cout << "Customer " << customerName << " has discount " << discount << '%' << endl'
+--RESOLVED TO:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+==============================================================
+'endl', tokenID=identifier, offset=3920 [124:83/3920-124:87/3924]
+--OWNER:
+    STMT Expression text='cout << "Customer " << customerName << " has discount " << discount << '%' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=3930 [125:5/3930-125:9/3934]
+--OWNER:
+    STMT Expression text='cout << "Now, let's configure system for " << customerName << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'customerName', tokenID=identifier, offset=3976 [125:51/3976-125:63/3988]
+--OWNER:
+    STMT Expression text='cout << "Now, let's configure system for " << customerName << endl'
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'endl', tokenID=identifier, offset=3992 [125:67/3992-125:71/3996]
+--OWNER:
+    STMT Expression text='cout << "Now, let's configure system for " << customerName << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'response', tokenID=identifier, offset=4012 [127:10/4012-127:18/4020]
+--OWNER:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+--RESOLVED TO:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+==============================================================
+'readChar', tokenID=identifier, offset=4023 [127:21/4023-127:29/4031]
+--OWNER:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+--RESOLVED TO:
+    FUNCTION_DEFINITION readChar(const char*,char)  [89:5/2884-98:6/3128] ReferencesTestCase/quote.cc
+==============================================================
+'type', tokenID=identifier, offset=4113 [129:9/4113-129:13/4117]
+--OWNER:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'response', tokenID=identifier, offset=4140 [131:13/4140-131:21/4148]
+--OWNER:
+     [131:13/4140-131:21/4148] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+==============================================================
+'type', tokenID=identifier, offset=4273 [136:13/4273-136:17/4277]
+--OWNER:
+    STMT Expression text='type = Cpu::HIGH'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Cpu', tokenID=identifier, offset=4280 [136:20/4280-136:23/4283]
+--OWNER:
+    STMT Expression text='type = Cpu::HIGH'
+--RESOLVED TO:
+    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+==============================================================
+'HIGH', tokenID=identifier, offset=4285 [136:25/4285-136:29/4289]
+--OWNER:
+    STMT Expression text='type = Cpu::HIGH'
+--RESOLVED TO:
+    ENUMERATOR Cpu::CpuType::HIGH [27:33/998-27:37/1002] ReferencesTestCase/cpu.h
+==============================================================
+'type', tokenID=identifier, offset=4373 [141:13/4373-141:17/4377]
+--OWNER:
+    STMT Expression text='type = Cpu::MEDIUM'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Cpu', tokenID=identifier, offset=4380 [141:20/4380-141:23/4383]
+--OWNER:
+    STMT Expression text='type = Cpu::MEDIUM'
+--RESOLVED TO:
+    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+==============================================================
+'MEDIUM', tokenID=identifier, offset=4385 [141:25/4385-141:31/4391]
+--OWNER:
+    STMT Expression text='type = Cpu::MEDIUM'
+--RESOLVED TO:
+    ENUMERATOR Cpu::CpuType::MEDIUM [27:24/989-27:30/995] ReferencesTestCase/cpu.h
+==============================================================
+'amount', tokenID=identifier, offset=4431 [145:9/4431-145:15/4437]
+--OWNER:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+--RESOLVED TO:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+==============================================================
+'readNumberOf', tokenID=identifier, offset=4440 [145:18/4440-145:30/4452]
+--OWNER:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+--RESOLVED TO:
+    FUNCTION_DEFINITION readNumberOf(const char*,int,int)  [65:5/2125-87:6/2878] ReferencesTestCase/quote.cc
+==============================================================
+'Cpu', tokenID=identifier, offset=4478 [147:5/4478-147:8/4481]
+--OWNER:
+    VARIABLE MyCpu [147:5/4478-147:32/4505] ReferencesTestCase/quote.cc type: Cpu TEXT=Cpu  [147:5/4478-147:8/4481] init: null
+--RESOLVED TO:
+    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+==============================================================
+'MyCpu', tokenID=identifier, offset=4482 [147:9/4482-147:14/4487]
+--OWNER:
+    VARIABLE MyCpu [147:5/4478-147:32/4505] ReferencesTestCase/quote.cc type: Cpu TEXT=Cpu  [147:5/4478-147:8/4481] init: null
+--RESOLVED TO:
+    VARIABLE MyCpu [147:5/4478-147:32/4505] ReferencesTestCase/quote.cc type: Cpu TEXT=Cpu  [147:5/4478-147:8/4481] init: null
+==============================================================
+'type', tokenID=identifier, offset=4488 [147:15/4488-147:19/4492]
+--OWNER:
+    VARIABLE MyCpu [147:5/4478-147:32/4505] ReferencesTestCase/quote.cc type: Cpu TEXT=Cpu  [147:5/4478-147:8/4481] init: null
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'amount', tokenID=identifier, offset=4497 [147:24/4497-147:30/4503]
+--OWNER:
+    VARIABLE MyCpu [147:5/4478-147:32/4505] ReferencesTestCase/quote.cc type: Cpu TEXT=Cpu  [147:5/4478-147:8/4481] init: null
+--RESOLVED TO:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+==============================================================
+'MySystem', tokenID=identifier, offset=4543 [149:5/4543-149:13/4551]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyCpu)'
+--RESOLVED TO:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+==============================================================
+'AddModule', tokenID=identifier, offset=4552 [149:14/4552-149:23/4561]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyCpu)'
+--RESOLVED TO:
+    FUNCTION AddModule(Module*)  [36:5/1152-36:36/1183] ReferencesTestCase/system.h
+==============================================================
+'MyCpu', tokenID=identifier, offset=4563 [149:25/4563-149:30/4568]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyCpu)'
+--RESOLVED TO:
+    VARIABLE MyCpu [147:5/4478-147:32/4505] ReferencesTestCase/quote.cc type: Cpu TEXT=Cpu  [147:5/4478-147:8/4481] init: null
+==============================================================
+'response', tokenID=identifier, offset=4622 [151:5/4622-151:13/4630]
+--OWNER:
+    STMT Expression text='response = readChar("Enter disk module type: (S for single disks, R for RAID; Q - exit)", 'S')'
+--RESOLVED TO:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+==============================================================
+'readChar', tokenID=identifier, offset=4633 [151:16/4633-151:24/4641]
+--OWNER:
+    STMT Expression text='response = readChar("Enter disk module type: (S for single disks, R for RAID; Q - exit)", 'S')'
+--RESOLVED TO:
+    FUNCTION_DEFINITION readChar(const char*,char)  [89:5/2884-98:6/3128] ReferencesTestCase/quote.cc
+==============================================================
+'response', tokenID=identifier, offset=4735 [153:13/4735-153:21/4743]
+--OWNER:
+     [153:13/4735-153:21/4743] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+==============================================================
+'type', tokenID=identifier, offset=4871 [158:13/4871-158:17/4875]
+--OWNER:
+    STMT Expression text='type = Disk::RAID'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Disk', tokenID=identifier, offset=4878 [158:20/4878-158:24/4882]
+--OWNER:
+    STMT Expression text='type = Disk::RAID'
+--RESOLVED TO:
+    CLASS Disk [24:1/922-35:3/1302] ReferencesTestCase/disk.h
+==============================================================
+'RAID', tokenID=identifier, offset=4884 [158:26/4884-158:30/4888]
+--OWNER:
+    STMT Expression text='type = Disk::RAID'
+--RESOLVED TO:
+    ENUMERATOR Disk::DiskType::RAID [26:30/988-26:34/992] ReferencesTestCase/disk.h
+==============================================================
+'type', tokenID=identifier, offset=4972 [163:13/4972-163:17/4976]
+--OWNER:
+    STMT Expression text='type = Disk::SINGLE'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Disk', tokenID=identifier, offset=4979 [163:20/4979-163:24/4983]
+--OWNER:
+    STMT Expression text='type = Disk::SINGLE'
+--RESOLVED TO:
+    CLASS Disk [24:1/922-35:3/1302] ReferencesTestCase/disk.h
+==============================================================
+'SINGLE', tokenID=identifier, offset=4985 [163:26/4985-163:32/4991]
+--OWNER:
+    STMT Expression text='type = Disk::SINGLE'
+--RESOLVED TO:
+    ENUMERATOR Disk::DiskType::SINGLE [26:21/979-26:27/985] ReferencesTestCase/disk.h
+==============================================================
+'amount', tokenID=identifier, offset=5027 [167:5/5027-167:11/5033]
+--OWNER:
+    STMT Expression text='amount = readNumberOf("disks", 1, 10)'
+--RESOLVED TO:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+==============================================================
+'readNumberOf', tokenID=identifier, offset=5036 [167:14/5036-167:26/5048]
+--OWNER:
+    STMT Expression text='amount = readNumberOf("disks", 1, 10)'
+--RESOLVED TO:
+    FUNCTION_DEFINITION readNumberOf(const char*,int,int)  [65:5/2125-87:6/2878] ReferencesTestCase/quote.cc
+==============================================================
+'Disk', tokenID=identifier, offset=5075 [169:5/5075-169:9/5079]
+--OWNER:
+    VARIABLE MyDisk [169:5/5075-169:34/5104] ReferencesTestCase/quote.cc type: Disk TEXT=Disk  [169:5/5075-169:9/5079] init: null
+--RESOLVED TO:
+    CLASS Disk [24:1/922-35:3/1302] ReferencesTestCase/disk.h
+==============================================================
+'MyDisk', tokenID=identifier, offset=5080 [169:10/5080-169:16/5086]
+--OWNER:
+    VARIABLE MyDisk [169:5/5075-169:34/5104] ReferencesTestCase/quote.cc type: Disk TEXT=Disk  [169:5/5075-169:9/5079] init: null
+--RESOLVED TO:
+    VARIABLE MyDisk [169:5/5075-169:34/5104] ReferencesTestCase/quote.cc type: Disk TEXT=Disk  [169:5/5075-169:9/5079] init: null
+==============================================================
+'type', tokenID=identifier, offset=5087 [169:17/5087-169:21/5091]
+--OWNER:
+    VARIABLE MyDisk [169:5/5075-169:34/5104] ReferencesTestCase/quote.cc type: Disk TEXT=Disk  [169:5/5075-169:9/5079] init: null
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'amount', tokenID=identifier, offset=5096 [169:26/5096-169:32/5102]
+--OWNER:
+    VARIABLE MyDisk [169:5/5075-169:34/5104] ReferencesTestCase/quote.cc type: Disk TEXT=Disk  [169:5/5075-169:9/5079] init: null
+--RESOLVED TO:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+==============================================================
+'MySystem', tokenID=identifier, offset=5137 [170:5/5137-170:13/5145]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyDisk)'
+--RESOLVED TO:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+==============================================================
+'AddModule', tokenID=identifier, offset=5146 [170:14/5146-170:23/5155]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyDisk)'
+--RESOLVED TO:
+    FUNCTION AddModule(Module*)  [36:5/1152-36:36/1183] ReferencesTestCase/system.h
+==============================================================
+'MyDisk', tokenID=identifier, offset=5157 [170:25/5157-170:31/5163]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyDisk)'
+--RESOLVED TO:
+    VARIABLE MyDisk [169:5/5075-169:34/5104] ReferencesTestCase/quote.cc type: Disk TEXT=Disk  [169:5/5075-169:9/5079] init: null
+==============================================================
+'response', tokenID=identifier, offset=5217 [172:5/5217-172:13/5225]
+--OWNER:
+    STMT Expression text='response = readChar("Enter memory module type: (S for standard, F for fast, U for ultra; Q - exit)", 'S')'
+--RESOLVED TO:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+==============================================================
+'readChar', tokenID=identifier, offset=5228 [172:16/5228-172:24/5236]
+--OWNER:
+    STMT Expression text='response = readChar("Enter memory module type: (S for standard, F for fast, U for ultra; Q - exit)", 'S')'
+--RESOLVED TO:
+    FUNCTION_DEFINITION readChar(const char*,char)  [89:5/2884-98:6/3128] ReferencesTestCase/quote.cc
+==============================================================
+'response', tokenID=identifier, offset=5341 [174:13/5341-174:21/5349]
+--OWNER:
+     [174:13/5341-174:21/5349] ReferencesTestCase/quote.cc
+--RESOLVED TO:
+    VARIABLE response [127:5/4007-127:97/4099] ReferencesTestCase/quote.cc type: char TEXT=char  [127:5/4007-127:9/4011] init: text='readChar'
+==============================================================
+'type', tokenID=identifier, offset=5477 [179:13/5477-179:17/5481]
+--OWNER:
+    STMT Expression text='type = Memory::FAST'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Memory', tokenID=identifier, offset=5484 [179:20/5484-179:26/5490]
+--OWNER:
+    STMT Expression text='type = Memory::FAST'
+--RESOLVED TO:
+    CLASS Memory [24:1/926-35:3/1280] ReferencesTestCase/memory.h
+==============================================================
+'FAST', tokenID=identifier, offset=5492 [179:28/5492-179:32/5496]
+--OWNER:
+    STMT Expression text='type = Memory::FAST'
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::FAST [26:34/998-26:38/1002] ReferencesTestCase/memory.h
+==============================================================
+'type', tokenID=identifier, offset=5563 [183:13/5563-183:17/5567]
+--OWNER:
+    STMT Expression text='type = Memory::ULTRA'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Memory', tokenID=identifier, offset=5570 [183:20/5570-183:26/5576]
+--OWNER:
+    STMT Expression text='type = Memory::ULTRA'
+--RESOLVED TO:
+    CLASS Memory [24:1/926-35:3/1280] ReferencesTestCase/memory.h
+==============================================================
+'ULTRA', tokenID=identifier, offset=5578 [183:28/5578-183:33/5583]
+--OWNER:
+    STMT Expression text='type = Memory::ULTRA'
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::ULTRA [26:41/1005-26:46/1010] ReferencesTestCase/memory.h
+==============================================================
+'type', tokenID=identifier, offset=5667 [188:13/5667-188:17/5671]
+--OWNER:
+    STMT Expression text='type = Memory::STANDARD'
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'Memory', tokenID=identifier, offset=5674 [188:20/5674-188:26/5680]
+--OWNER:
+    STMT Expression text='type = Memory::STANDARD'
+--RESOLVED TO:
+    CLASS Memory [24:1/926-35:3/1280] ReferencesTestCase/memory.h
+==============================================================
+'STANDARD', tokenID=identifier, offset=5682 [188:28/5682-188:36/5690]
+--OWNER:
+    STMT Expression text='type = Memory::STANDARD'
+--RESOLVED TO:
+    ENUMERATOR Memory::MemoryType::STANDARD [26:23/987-26:31/995] ReferencesTestCase/memory.h
+==============================================================
+'amount', tokenID=identifier, offset=5727 [192:5/5727-192:11/5733]
+--OWNER:
+    STMT Expression text='amount = readNumberOf("sub-modules", 1, 10)'
+--RESOLVED TO:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+==============================================================
+'readNumberOf', tokenID=identifier, offset=5736 [192:14/5736-192:26/5748]
+--OWNER:
+    STMT Expression text='amount = readNumberOf("sub-modules", 1, 10)'
+--RESOLVED TO:
+    FUNCTION_DEFINITION readNumberOf(const char*,int,int)  [65:5/2125-87:6/2878] ReferencesTestCase/quote.cc
+==============================================================
+'Memory', tokenID=identifier, offset=5781 [194:5/5781-194:11/5787]
+--OWNER:
+    VARIABLE MyMemory [194:5/5781-194:38/5814] ReferencesTestCase/quote.cc type: Memory TEXT=Memory  [194:5/5781-194:11/5787] init: null
+--RESOLVED TO:
+    CLASS Memory [24:1/926-35:3/1280] ReferencesTestCase/memory.h
+==============================================================
+'MyMemory', tokenID=identifier, offset=5788 [194:12/5788-194:20/5796]
+--OWNER:
+    VARIABLE MyMemory [194:5/5781-194:38/5814] ReferencesTestCase/quote.cc type: Memory TEXT=Memory  [194:5/5781-194:11/5787] init: null
+--RESOLVED TO:
+    VARIABLE MyMemory [194:5/5781-194:38/5814] ReferencesTestCase/quote.cc type: Memory TEXT=Memory  [194:5/5781-194:11/5787] init: null
+==============================================================
+'type', tokenID=identifier, offset=5797 [194:21/5797-194:25/5801]
+--OWNER:
+    VARIABLE MyMemory [194:5/5781-194:38/5814] ReferencesTestCase/quote.cc type: Memory TEXT=Memory  [194:5/5781-194:11/5787] init: null
+--RESOLVED TO:
+    VARIABLE type [129:5/4109-129:18/4122] ReferencesTestCase/quote.cc type: int TEXT=int  [129:5/4109-129:8/4112] init: text='0'
+==============================================================
+'amount', tokenID=identifier, offset=5806 [194:30/5806-194:36/5812]
+--OWNER:
+    VARIABLE MyMemory [194:5/5781-194:38/5814] ReferencesTestCase/quote.cc type: Memory TEXT=Memory  [194:5/5781-194:11/5787] init: null
+--RESOLVED TO:
+    VARIABLE amount [145:5/4427-145:46/4468] ReferencesTestCase/quote.cc type: int TEXT=int  [145:5/4427-145:8/4430] init: text='readNumberOf'
+==============================================================
+'MySystem', tokenID=identifier, offset=5849 [195:5/5849-195:13/5857]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyMemory)'
+--RESOLVED TO:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+==============================================================
+'AddModule', tokenID=identifier, offset=5858 [195:14/5858-195:23/5867]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyMemory)'
+--RESOLVED TO:
+    FUNCTION AddModule(Module*)  [36:5/1152-36:36/1183] ReferencesTestCase/system.h
+==============================================================
+'MyMemory', tokenID=identifier, offset=5869 [195:25/5869-195:33/5877]
+--OWNER:
+    STMT Expression text='MySystem.AddModule(&MyMemory)'
+--RESOLVED TO:
+    VARIABLE MyMemory [194:5/5781-194:38/5814] ReferencesTestCase/quote.cc type: Memory TEXT=Memory  [194:5/5781-194:11/5787] init: null
+==============================================================
+'metric', tokenID=identifier, offset=6015 [200:9/6015-200:15/6021]
+--OWNER:
+    VARIABLE metric [200:5/6011-200:46/6052] ReferencesTestCase/quote.cc type: int TEXT=int  [200:5/6011-200:8/6014] init: text='MySystem'
+--RESOLVED TO:
+    VARIABLE metric [200:5/6011-200:46/6052] ReferencesTestCase/quote.cc type: int TEXT=int  [200:5/6011-200:8/6014] init: text='MySystem'
+==============================================================
+'MySystem', tokenID=identifier, offset=6024 [200:18/6024-200:26/6032]
+--OWNER:
+    VARIABLE metric [200:5/6011-200:46/6052] ReferencesTestCase/quote.cc type: int TEXT=int  [200:5/6011-200:8/6014] init: text='MySystem'
+--RESOLVED TO:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+==============================================================
+'GetSupportMetric', tokenID=identifier, offset=6033 [200:27/6033-200:43/6049]
+--OWNER:
+    VARIABLE metric [200:5/6011-200:46/6052] ReferencesTestCase/quote.cc type: int TEXT=int  [200:5/6011-200:8/6014] init: text='MySystem'
+--RESOLVED TO:
+    FUNCTION GetSupportMetric() const  [39:5/1229-39:34/1258] ReferencesTestCase/system.h
+==============================================================
+'cout', tokenID=identifier, offset=6057 [201:5/6057-201:9/6061]
+--OWNER:
+    STMT Expression text='cout << MySystem << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'MySystem', tokenID=identifier, offset=6065 [201:13/6065-201:21/6073]
+--OWNER:
+    STMT Expression text='cout << MySystem << endl'
+--RESOLVED TO:
+    VARIABLE MySystem [123:5/3821-123:21/3837] ReferencesTestCase/quote.cc type: System TEXT=System  [123:5/3821-123:11/3827] init: null
+==============================================================
+'endl', tokenID=identifier, offset=6077 [201:25/6077-201:29/6081]
+--OWNER:
+    STMT Expression text='cout << MySystem << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=6123 [204:5/6123-204:9/6127]
+--OWNER:
+    STMT Expression text='cout << "Overall Quote Support Metric for configured system for customer " << customerName << ':' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'customerName', tokenID=identifier, offset=6201 [204:83/6201-204:95/6213]
+--OWNER:
+    STMT Expression text='cout << "Overall Quote Support Metric for configured system for customer " << customerName << ':' << endl'
+--RESOLVED TO:
+    VARIABLE customerName [107:5/3319-107:25/3339] ReferencesTestCase/quote.cc type: $unresolved$::string TEXT=string  [107:5/3319-107:11/3325] init: null
+==============================================================
+'endl', tokenID=identifier, offset=6224 [204:106/6224-204:110/6228]
+--OWNER:
+    STMT Expression text='cout << "Overall Quote Support Metric for configured system for customer " << customerName << ':' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=6234 [205:5/6234-205:9/6238]
+--OWNER:
+    STMT Expression text='cout << "-----------------------------------------------------------------------" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=6319 [205:90/6319-205:94/6323]
+--OWNER:
+    STMT Expression text='cout << "-----------------------------------------------------------------------" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=6327 [205:98/6327-205:102/6331]
+--OWNER:
+    STMT Expression text='cout << "-----------------------------------------------------------------------" << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=6337 [206:5/6337-206:9/6341]
+--OWNER:
+    STMT Expression text='cout << "Quote Discount: " << discount << '%' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'discount', tokenID=identifier, offset=6367 [206:35/6367-206:43/6375]
+--OWNER:
+    STMT Expression text='cout << "Quote Discount: " << discount << '%' << endl'
+--RESOLVED TO:
+    VARIABLE discount [106:5/3296-106:23/3314] ReferencesTestCase/quote.cc type: int TEXT=int  [106:5/3296-106:8/3299] init: text='-'
+==============================================================
+'endl', tokenID=identifier, offset=6386 [206:54/6386-206:58/6390]
+--OWNER:
+    STMT Expression text='cout << "Quote Discount: " << discount << '%' << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'cout', tokenID=identifier, offset=6396 [207:5/6396-207:9/6400]
+--OWNER:
+    STMT Expression text='cout << "Quote Support Metric: " << metric << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'metric', tokenID=identifier, offset=6432 [207:41/6432-207:47/6438]
+--OWNER:
+    STMT Expression text='cout << "Quote Support Metric: " << metric << endl << endl'
+--RESOLVED TO:
+    VARIABLE metric [200:5/6011-200:46/6052] ReferencesTestCase/quote.cc type: int TEXT=int  [200:5/6011-200:8/6014] init: text='MySystem'
+==============================================================
+'endl', tokenID=identifier, offset=6442 [207:51/6442-207:55/6446]
+--OWNER:
+    STMT Expression text='cout << "Quote Support Metric: " << metric << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'endl', tokenID=identifier, offset=6450 [207:59/6450-207:63/6454]
+--OWNER:
+    STMT Expression text='cout << "Quote Support Metric: " << metric << endl << endl'
+--RESOLVED TO:
+    null
+==============================================================
+'EXIT_SUCCESS', tokenID=identifier, offset=6473 [209:13/6473-209:25/6485]
+--OWNER:
+    STMT Return text='return (EXIT_SUCCESS);'
+--RESOLVED TO:
+    null
+==============================================================

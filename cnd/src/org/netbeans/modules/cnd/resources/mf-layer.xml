@@ -290,28 +290,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- IndentEngine -->
     </folder>	<!-- Services -->
 
-    <folder name="UI">
-	<folder name="Services">
-	    <folder name="Building">
-		<file name="org-netbeans-modules-cnd-MakeSettings.shadow">
-		    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-settings-MakeSettings.settings"/>
-		</file>
-	    </folder> <!-- Building -->
-
-	    <folder name="Editing">
-		<file name="org-netbeans-modules-cnd-CppSettings.shadow">
-		    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-settings-CppSettings.settings"/>
-		</file>
-	    </folder> <!-- Editing -->
-
-	    <folder name="DebuggingAndExecuting">
-		<file name="org-netbeans-modules-cnd-ShellSettings.shadow">
-		    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-settings-ShellSettings.settings"/>
-		</file>
-	    </folder> <!-- Editing -->
-	</folder> <!-- Services -->
-    </folder> <!-- UI -->
-
     <folder name="Templates">
         <folder name="cFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>

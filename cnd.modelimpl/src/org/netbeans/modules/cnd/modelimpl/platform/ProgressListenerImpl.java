@@ -56,6 +56,11 @@ public class ProgressListenerImpl implements CsmProgressListener {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectParsingFinished " + project.getName());
 	done(project);
     }
+    
+    public void projectLoaded(CsmProject project) {
+        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectLoaded " + project.getName());
+    }    
+    
 
     public void projectParsingCancelled(CsmProject project) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ProgressListenerImpl.projectParsingCancelled " + project.getName());

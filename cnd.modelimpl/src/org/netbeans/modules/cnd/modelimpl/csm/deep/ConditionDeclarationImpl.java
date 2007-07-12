@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
@@ -28,8 +27,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements condition of kind CsmCondition.Kind.DECLARATION
@@ -50,8 +47,8 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     
     private void initDeclaration(AST node) {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-                declaration = super.createVariable(offsetAst, file, type, name, _static);
+            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+                ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, file, type, name, _static, container1, container2);
                 return declaration;
             }
         };

@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -36,6 +37,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  * utilities to create CsmUID for CsmObjects
@@ -90,11 +92,13 @@ public class UIDUtilities {
             new CsmTracer().dumpModel(decl);
         }
         if (decl instanceof CsmClassifier) {
-            return new UnnamedClassifierUID(decl);
+            return new UnnamedClassifierUID(decl, UnnamedID.incrementAndGet());
         } else {
-            return new UnnamedOffsetableDeclarationUID(decl);
+            return new UnnamedOffsetableDeclarationUID(decl, UnnamedID.incrementAndGet());
         }
     }
+    
+    private static AtomicInteger UnnamedID = new AtomicInteger(0);
     //////////////////////////////////////////////////////////////////////////
     // impl details
     
@@ -142,7 +146,11 @@ public class UIDUtilities {
      */
     private static abstract class OffsetableDeclarationUIDBase<T extends CsmOffsetableDeclaration> extends KeyBasedUID<T> {
         public OffsetableDeclarationUIDBase(T declaration) {
-            super(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase)declaration));       
+            this(KeyUtilities.createOffsetableDeclarationKey((OffsetableDeclarationBase)declaration));       
+        }
+        
+        protected OffsetableDeclarationUIDBase(Key key) {
+            super(key);
         }
         
         /* package */ OffsetableDeclarationUIDBase (DataInput aStream) throws IOException {
@@ -233,12 +241,6 @@ public class UIDUtilities {
     /* package */ static final class ClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
         public ClassifierUID(T classifier) {
             super(classifier);
-//            assert classifier instanceof RegistarableDeclaration;
-//            if (!((RegistarableDeclaration)classifier).isRegistered()) {
-//                System.err.print("\n\nunregistered declaration'" + classifier.getUniqueName() + "'");
-//                new CsmTracer().dumpModel(classifier);
-//            }
-//            assert ((RegistarableDeclaration)classifier).isRegistered();
         }
         
         /* package */ ClassifierUID( DataInput aStream) throws IOException {
@@ -255,8 +257,8 @@ public class UIDUtilities {
      * UID for CsmClassifier with empty getName()
      */    
     /* package */ static final class UnnamedClassifierUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
-        public UnnamedClassifierUID(T classifier) {
-            super(classifier);
+        public UnnamedClassifierUID(T classifier, int index) {
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase)classifier, index));
         }
 
         /* package */ UnnamedClassifierUID (DataInput aStream) throws IOException {
@@ -272,8 +274,8 @@ public class UIDUtilities {
      * UID for CsmDeclaration with empty getName()
      */    
     /* package */ static final class UnnamedOffsetableDeclarationUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
-        public UnnamedOffsetableDeclarationUID(T decl) {
-            super(decl);
+        public UnnamedOffsetableDeclarationUID(T decl, int index) {
+            super(KeyUtilities.createUnnamedOffsetableDeclarationKey((OffsetableDeclarationBase)decl, index));
         }
 
         /* package */ UnnamedOffsetableDeclarationUID (DataInput aStream) throws IOException {
@@ -283,5 +285,5 @@ public class UIDUtilities {
         protected String getToStringPrefix() {
             return "<UNNAMED OFFS-DECL UID>"; // NOI18N
         }        
-    }    
+    } 
 }

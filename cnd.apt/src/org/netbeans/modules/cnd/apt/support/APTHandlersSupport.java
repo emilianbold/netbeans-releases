@@ -24,6 +24,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -40,11 +41,11 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, stateCorrect);
     }
     
-    public static APTPreprocHandler createEmptyPreprocHandler(String file) {
+    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
         return APTHandlersSupportImpl.createEmptyPreprocHandler(file);
     }
 
-    public static APTIncludeHandler createIncludeHandler(String startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
         return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths);
     }
     

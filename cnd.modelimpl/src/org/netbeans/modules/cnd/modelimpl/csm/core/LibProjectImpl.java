@@ -26,7 +26,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.platform.*;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  * @author Vladimir Kvasihn
@@ -38,12 +38,13 @@ public final class LibProjectImpl extends ProjectBase {
     private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, new File(includePathName), includePathName);
         this.includePath = includePathName;
-        
-        // RepositoryUtils.put(this);
+        this.projectRoots.fixFolder(includePathName);
+        assert this.includePath != null;
     }
     
     public static LibProjectImpl createInstance(ModelImpl model, String includePathName) {
 	ProjectBase instance = null;
+        assert includePathName != null;
 	if( TraceFlags.PERSISTENT_REPOSITORY ) {
 	    try {
 		instance = readInstance(model, includePathName, includePathName);
@@ -58,8 +59,15 @@ public final class LibProjectImpl extends ProjectBase {
 	if( instance == null ) {
 	   instance = new LibProjectImpl(model, includePathName);
 	}
+        if (instance instanceof LibProjectImpl) {
+           assert ((LibProjectImpl)instance).includePath != null;
+        }
 	return (LibProjectImpl) instance;
 	
+    }
+    
+    protected String getPath(){
+        return includePath;
     }
     
     protected void ensureFilesCreated() {
@@ -69,17 +77,16 @@ public final class LibProjectImpl extends ProjectBase {
         return true;
     }
     
-    protected void createIfNeed(NativeFileItem file, boolean isSourceFile) {
-	// NB: for those who decide to implement this: don't forget to check the language
+    protected Collection<Key> getLibrariesKeys() {
+        return Collections.EMPTY_SET;
     }
-    
     
     /** override parent to avoid inifinite recursion */
     public Collection<CsmProject> getLibraries() {
         return Collections.EMPTY_SET;
     }
     
-    public void onFileRemoved(File file) {}
+    public void onFileRemoved(FileImpl file) {}
     public void onFileRemoved(List<NativeFileItem> file) {}
     public void onFileAdded(NativeFileItem file) {}
     public void onFileAdded(List<NativeFileItem> file) {}
@@ -93,11 +100,11 @@ public final class LibProjectImpl extends ProjectBase {
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+    public FileImpl onFileIncluded(FileImpl base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         if( ONLY_LEX_SYS_INCLUDES ) {
-            return super.onFileIncluded(file, preprocHandler, GATHERING_MACROS);
+            return super.onFileIncluded(base, file, preprocHandler, GATHERING_MACROS);
         } else {
-            return super.onFileIncluded(file, preprocHandler, mode);
+            return super.onFileIncluded(base, file, preprocHandler, mode);
         }
     }
     
@@ -106,31 +113,9 @@ public final class LibProjectImpl extends ProjectBase {
         // add library file to the tail
         ParserQueue.instance().addLast(csmFile, state);
     }
-    
-    public ProjectBase resolveFileProject(String absPath, boolean onInclude, Collection paths) {
-        // FIXUP: now accept all /usr/ files
-        // FIXUP: now accept cygwin files; this is a temporary solution we need to be able to measure performance on Windows
-        //if (absPath.startsWith("/usr/") || absPath.startsWith("C:\\cygwin")) {
-        //    return this;
-        //} else {
-        //    return null;
-        //}
-        
-        File file = new File(absPath);
-        List dirs = new ArrayList();
-        while((file=file.getParentFile())!= null){
-            dirs.add(file);
-        }
-        for (Iterator i = paths.iterator(); i.hasNext();){
-            File path = new File((String)i.next());
-            for(int j = 0; j < dirs.size(); j++){
-                file = (File)dirs.get(j);
-                if (file.equals(path)){
-                    return this;
-                }
-            }
-        }
-        return null;
+
+    public boolean isArtificial() {
+        return true;
     }
     
     ////////////////////////////////////////////////////////////////////////////

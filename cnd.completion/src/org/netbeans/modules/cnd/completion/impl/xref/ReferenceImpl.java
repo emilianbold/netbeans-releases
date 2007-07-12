@@ -22,7 +22,6 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 
@@ -33,23 +32,27 @@ import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final Token token;
     private CsmObject target = null;
+    private CsmObject owner = null;
+    private final int offset;
     
-    public ReferenceImpl(CsmFile file, Token token, BaseDocument doc) {
-        super(doc, file, token.getStartOffset());
+    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
+        super(doc, file, offset);
         this.token = token;
+        this.offset = offset;
     }
 
     public CsmObject getReferencedObject() {
-        synchronized (this) {
-            if (target == null) {
-                target = ReferencesSupport.findReference(super.getContainingFile(), super.getDocument(), super.getStartOffset(), token);
-            }
+        if (target == null) {
+            target = ReferencesSupport.findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return target;
     }
 
-    public CsmOffsetable getOwner() {
-        return null;
+    public CsmObject getOwner() {
+        if (owner == null) {
+            owner = ReferencesSupport.findOwnerObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+        }
+        return owner;
     }
 
     public String getText() {
@@ -58,7 +61,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText()) // NOI18N
-               + "', tokenID=" + token.getTokenID() 
-               + ", offset=" + getStartOffset(); // NOI18N
+               + "', tokenID=" + this.token.getTokenID() 
+               + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
     }    
 }

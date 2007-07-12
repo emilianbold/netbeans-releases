@@ -44,10 +44,12 @@ public class TickingRepositoryQueue extends RepositoryQueue {
     }
     
     protected void doReplaceAddLast(Key key, Persistent value, Entry existent) {
-        super.doReplaceAddLast(key, value, existent);
-        queue.remove(existent);
-        queue.addLast(existent);
-        ((TickingEntry)existent).setTick(currentTick);
+        if (existent instanceof TickingEntry) {
+            super.doReplaceAddLast(key, value, existent);
+            queue.remove(existent);
+            queue.addLast(existent);
+            ((TickingEntry)existent).setTick(currentTick);
+        }
     }
     
     protected void doPostPoll(Entry polled) {

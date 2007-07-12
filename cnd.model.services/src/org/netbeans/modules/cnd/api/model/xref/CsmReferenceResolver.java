@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -65,6 +69,23 @@ public abstract class CsmReferenceResolver {
      */
 //    public abstract CsmReference findReference(CsmFile file, int line, int column);
 
+    /**
+     * default implementation of method based on Node
+     */
+    public CsmReference findReference(Node activatedNode) {
+        EditorCookie c = (EditorCookie) activatedNode.getCookie(EditorCookie.class);
+        if (c != null) {
+            JEditorPane[] panes = c.getOpenedPanes();
+            if (panes != null && panes.length>0) {
+                int offset = panes[0].getCaret().getDot();
+                CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
+                if (file != null){
+                    return findReference(file, offset);
+                }
+            }
+        }
+        return null;
+    }
     //
     // Implementation of the default resolver
     //

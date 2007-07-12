@@ -26,6 +26,68 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
         super(testName);
+    }        
+        
+    public void testInnerSelfDeclaration() throws Exception {
+        performTest("ClassB.h", 8, 20, "ClassB.h", 8, 17); // "MEDIUM" in enum type { MEDIUM,  HIGH };
+        performTest("ClassB.h", 8, 28, "ClassB.h", 8, 26); // "HIGH" in enum type { MEDIUM,  HIGH };
+        performTest("ClassB.h", 8, 12, "ClassB.h", 8, 5); // "type" in enum type { MEDIUM,  HIGH };
+        performTest("ClassB.h", 30, 15, "ClassB.h", 30, 5); // "myPtr" in void* myPtr;
+    }
+    
+    public void testOverloads() throws Exception {
+        performTest("ClassB.h", 34, 15, "ClassB.h", 34, 5); // setDescription in void setDescription(const char* description);
+        performTest("ClassB.h", 36, 15, "ClassB.h", 36, 5); // setDescription in void setDescription(const char* description, const char* vendor, int type, int category, int units);
+        performTest("ClassB.h", 38, 15, "ClassB.h", 38, 5); // setDescription in void setDescription(const ClassB& obj);
+    }
+    
+    public void testFunParamInHeader() throws Exception {
+        performTest("ClassB.h", 34, 40, "ClassB.h", 34, 25); // description in void setDescription(const char* description);
+        performTest("ClassB.h", 16, 30, "ClassB.h", 16, 23); //"type1" in ClassB(int type1, int type2 = HIGH);
+        performTest("ClassB.h", 16, 20, "ClassB.h", 16, 12); //"type2" in ClassB(int type1, int type2 = HIGH);
+        performTest("ClassB.cc", 5, 22, "ClassB.cc", 5, 16); // type1 in ClassB::ClassB(int type1, int type2 /* = HIGH*/) :
+        performTest("ClassB.cc", 5, 35, "ClassB.cc", 5, 27); // type2 in ClassB::ClassB(int type1, int type2 /* = HIGH*/) :
+    }  
+        
+    public void testConstructorInitializerListInHeader() throws Exception {
+        performTest("ClassB.h", 13, 42, "ClassB.h", 13, 12); // second "type" in ClassB(int type = MEDIUM) : ClassA(type), myType2(HIGH) {
+        performTest("ClassB.h", 13, 25, "ClassB.h", 8, 17); // "MEDIUM" in ClassB(int type = MEDIUM) : ClassA(type), myType2(HIGH) {
+        performTest("ClassB.h", 13, 35, "ClassA.cc", 12, 1); // "ClassA" in ClassB(int type = MEDIUM) : ClassA(type), myType2(HIGH) {
+        performTest("ClassB.h", 13, 50, "ClassB.h", 27, 5); // "myType2" in ClassB(int type = MEDIUM) : ClassA(type), myType2(HIGH) {
+        performTest("ClassB.h", 13, 56, "ClassB.h", 8, 26); // "HIGH" in ClassB(int type = MEDIUM) : ClassA(type), myType2(HIGH) {
+    }
+    
+    public void testConstructorInitializerListInSource() throws Exception {
+        performTest("ClassB.cc", 6, 5, "ClassA.cc", 12, 1); // "ClassA" in ClassA(type1), myType2(type2), myType1(MEDIUM)
+        performTest("ClassB.cc", 6, 10, "ClassB.cc", 5, 16); // "type1" in ClassA(type1), myType2(type2), myType1(MEDIUM)
+        performTest("ClassB.cc", 6, 20, "ClassB.h", 27, 5); // "myType2" in ClassA(type1), myType2(type2), myType1(MEDIUM)
+        performTest("ClassB.cc", 6, 25, "ClassB.cc", 5, 27); // "type2" in ClassA(type1), myType2(type2), myType1(MEDIUM)
+        performTest("ClassB.cc", 6, 35, "ClassB.h", 26, 5); // "myType1" in ClassA(type1), myType2(type2), myType1(MEDIUM)
+        performTest("ClassB.cc", 6, 45, "ClassB.h", 8, 17); // "MEDIUM" in ClassA(type1), myType2(type2), myType1(MEDIUM)
+    }    
+
+    public void testClassNameInFuncsParams() throws Exception {
+        performTest("ClassA.h", 12, 25, "ClassA.h", 2, 1); //ClassA in void publicFoo(ClassA a);
+        performTest("ClassA.h", 13, 30, "ClassA.h", 2, 1); //ClassA in void publicFoo(const ClassA &a)
+        performTest("ClassA.h", 23, 30, "ClassA.h", 2, 1); //ClassA in void void protectedFoo(const ClassA* const ar[]);
+        performTest("ClassA.h", 31, 30, "ClassA.h", 2, 1); //ClassA in void privateFoo(const ClassA *a);
+        performTest("ClassA.h", 52, 35, "ClassA.h", 2, 1); //second ClassA in  ClassA& operator= (const ClassA& obj);
+    }
+    
+    public void testClassNameInFuncRetType() throws Exception {
+        performTest("ClassA.h", 52, 10, "ClassA.h", 2, 1); //first ClassA in  ClassA& operator= (const ClassA& obj);
+    }
+    
+    public void testStringFuncsParams() throws Exception {
+        performTest("ClassB.cc", 8, 10, "ClassB.h", 20, 5); // "method" in method("string");
+        performTest("ClassB.cc", 9, 10, "ClassB.h", 24, 5); // "method" in method("string", "string");
+    }
+    
+    public void testCastsAndPtrs() throws Exception {
+        performTest("main.cc", 45, 20, "ClassB.h", 30, 5); // myPtr in ((ClassB)*a).*myPtr;
+        performTest("main.cc", 46, 21, "ClassB.h", 30, 5); // myPtr in ((ClassB*)a)->*myPtr;
+        performTest("main.cc", 47, 20, "ClassB.h", 31, 5); // myVal in ((ClassB)*a).myVal;
+        performTest("main.cc", 48, 20, "ClassB.h", 31, 5); // myVal in ((ClassB*)a)->myVal;     
     }
     
     public void testFromMainToClassDecl() throws Exception {
@@ -181,12 +243,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // declaration do definition
         performTest("ClassA.h", 64, 20, "ClassA.cc", 94, 1); // myInt classMethodRetMyInt();
         // type name in return type to typedef
-        performTest("ClassA.h", 64, 7, "ClassA.h", 75, 1); // myInt classMethodRetMyInt();
+        performTest("ClassA.h", 64, 7, "ClassA.h", 1, 1); // myInt classMethodRetMyInt();
         
         // definition to declaration
         performTest("ClassA.cc", 94, 25, "ClassA.h", 64, 5); // myInt ClassA::classMethodRetMyInt() {
         // type name in return type to typedef
-        performTest("ClassA.cc", 94, 5, "ClassA.h", 75, 1); // myInt ClassA::classMethodRetMyInt() {
+        performTest("ClassA.cc", 94, 5, "ClassA.h", 1, 1); // myInt ClassA::classMethodRetMyInt() {
         // class name in method name to class
         performTest("ClassA.cc", 94, 10, "ClassA.h", 2, 1); // myInt ClassA::classMethodRetMyInt() {
     }
@@ -206,7 +268,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // from definition to declaration
         performTest("ClassA.cc", 102, 15, "ClassA.h", 69, 5); // ostream& operator <<(ostream& output, const ClassA& item) {
     }
-    
+
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {
@@ -263,7 +325,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         public void testMyInnerInt2() throws Exception {
             // type name in return type to typedef
             performTest("ClassA.cc", 98, 5, "ClassA.h", 62, 5); // myInnerInt ClassA::classMethodRetMyInnerInt() {
-        }        
+        }         
+        
+        public void testOverloadFuncs() throws Exception {
+            performTest("ClassB.h", 18, 15, "ClassB.h", 18, 5); //void method(int a);
+            performTest("ClassB.h", 20, 15, "ClassB.h", 20, 5); //void method(const char*);
+            performTest("ClassB.h", 12, 15, "ClassB.h", 22, 5); //void method(char*, double);
+            performTest("ClassB.h", 24, 15, "ClassB.h", 24, 5); //void method(char*, char*);
+        }
     }
         
 }

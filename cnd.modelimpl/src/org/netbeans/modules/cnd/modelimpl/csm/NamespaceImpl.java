@@ -22,6 +22,9 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
@@ -54,16 +57,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final String qualifiedName;
     
     /** maps namespaces FQN to namespaces */
-    private Map<String, CsmNamespace> nestedMapOLD = Collections.synchronizedMap(new HashMap<String, CsmNamespace>());
-    private Map<String, CsmUID<CsmNamespace>> nestedMap = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmNamespace>>());
+    private Map<String, CsmNamespace> nestedMapOLD = new ConcurrentHashMap<String, CsmNamespace>();
+    private Map<String, CsmUID<CsmNamespace>> nestedMap = new ConcurrentHashMap<String, CsmUID<CsmNamespace>>();
     
-    private Map<String,CsmOffsetableDeclaration> declarationsOLD = Collections.synchronizedMap(new HashMap<String,CsmOffsetableDeclaration>());
-    private Map<String,CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedMap(new HashMap<String,CsmUID<CsmOffsetableDeclaration>>());
+    private Map<String,CsmOffsetableDeclaration> declarationsOLD = new ConcurrentHashMap<String,CsmOffsetableDeclaration>();
+    private Map<String,CsmUID<CsmOffsetableDeclaration>> declarations = new ConcurrentHashMap<String,CsmUID<CsmOffsetableDeclaration>>();
     //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
     private Map<String,CsmNamespaceDefinition> definitionsOLD = Collections.synchronizedSortedMap(new TreeMap<String,CsmNamespaceDefinition>());
-    private Map<String,CsmUID<CsmNamespaceDefinition>> nsDefinitions = Collections.synchronizedSortedMap(new TreeMap<String,CsmUID<CsmNamespaceDefinition>>());
+    private Map<String,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<String,CsmUID<CsmNamespaceDefinition>>();
+    private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     
     private final boolean global;
     
@@ -371,7 +375,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public Collection<CsmNamespaceDefinition> getDefinitions()  {
 //        return definitions;
         if (TraceFlags.USE_REPOSITORY) {
-            List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>(nsDefinitions.values());
+            List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>();
+            try {
+                nsDefinitionsLock.readLock().lock();
+                uids.addAll(nsDefinitions.values());
+            } finally {
+                nsDefinitionsLock.readLock().unlock();
+            }
             List<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
             return defs;
         } else {
@@ -382,7 +392,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public void addNamespaceDefinition(CsmNamespaceDefinition def) {
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmNamespaceDefinition> uid = RepositoryUtils.put(def);
-            nsDefinitions.put(getSortKey(def), uid);
+            try {
+                nsDefinitionsLock.writeLock().lock();
+                nsDefinitions.put(getSortKey(def), uid);
+            } finally {
+                nsDefinitionsLock.writeLock().unlock();
+            }
             // update repository
             RepositoryUtils.put(this);
         } else {
@@ -394,12 +409,23 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert !this.isGlobal();
         boolean remove = false;
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespaceDefinition> uid = nsDefinitions.remove(getSortKey(def));
+            CsmUID<CsmNamespaceDefinition> uid = null;
+            try {
+                nsDefinitionsLock.writeLock().lock();
+                uid = nsDefinitions.remove(getSortKey(def));
+            } finally {
+                nsDefinitionsLock.writeLock().unlock();
+            }
             // does not remove unregistered declaration from repository, it's responsibility of physical container
             if (false) RepositoryUtils.remove(uid);
             // update repository about itself
             RepositoryUtils.put(this);
-            remove =  (nsDefinitions.size() == 0);
+            try {
+                nsDefinitionsLock.readLock().lock();
+                remove =  (nsDefinitions.size() == 0);
+            } finally {
+                nsDefinitionsLock.readLock().unlock();
+            }
         } else {
             definitionsOLD.remove(getSortKey(def));
             remove = (definitionsOLD.size() == 0);
@@ -469,7 +495,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         StringBuilder sb = new StringBuilder(getName());
         sb.append(' ');
         sb.append(getQualifiedName());
-        sb.append(" NamespaceImpl @");
+        sb.append(" NamespaceImpl @"); // NOI18N
         sb.append(hashCode());
         return sb.toString();
     }
@@ -494,7 +520,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         output.writeUTF(this.qualifiedName);
         theFactory.writeStringToUIDMap(this.nestedMap, output, true);
         theFactory.writeStringToUIDMap(this.declarations, output, true);
-        theFactory.writeStringToUIDMap(this.nsDefinitions, output, true);
+        try {
+            nsDefinitionsLock.readLock().lock();
+            theFactory.writeStringToUIDMap(this.nsDefinitions, output, false);
+        } finally {
+            nsDefinitionsLock.readLock().unlock();
+        }
     }
     
     public NamespaceImpl(DataInput input) throws IOException {

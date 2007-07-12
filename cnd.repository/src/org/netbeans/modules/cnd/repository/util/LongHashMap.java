@@ -458,25 +458,25 @@ public class LongHashMap<K>
      * check for comodification, etc.  It calls createEntry rather than
      * addEntry.
      */
-    private void putForCreate(K key, long value) {
-        K k = maskNull(key);
-        int hash = hash(k.hashCode());
-        int i = indexFor(hash, table.length);
-
-        /**
-         * Look for preexisting entry for key.  This will never happen for
-         * clone or deserialize.  It will only happen for construction if the
-         * input Map is a sorted map whose ordering is inconsistent w/ equals.
-         */
-        for (Entry<K> e = table[i]; e != null; e = e.next) {
-            if (e.hash == hash && eq(k, e.key)) {
-                e.value = value;
-                return;
-            }
-        }
-
-        createEntry(hash, k, value, i);
-    }
+//    private void putForCreate(K key, long value) {
+//        K k = maskNull(key);
+//        int hash = hash(k.hashCode());
+//        int i = indexFor(hash, table.length);
+//
+//        /**
+//         * Look for preexisting entry for key.  This will never happen for
+//         * clone or deserialize.  It will only happen for construction if the
+//         * input Map is a sorted map whose ordering is inconsistent w/ equals.
+//         */
+//        for (Entry<K> e = table[i]; e != null; e = e.next) {
+//            if (e.hash == hash && eq(k, e.key)) {
+//                e.value = value;
+//                return;
+//            }
+//        }
+//
+//        createEntry(hash, k, value, i);
+//    }
 
     /**
      * Rehashes the contents of this map into a new array with a

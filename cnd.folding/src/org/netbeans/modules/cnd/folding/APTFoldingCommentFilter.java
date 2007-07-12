@@ -54,8 +54,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     // folds
     private CppFoldRecord initialCommentFold = null;
-    private List/*<CppFoldRecord>*/ blockCommentFolds = new ArrayList();
-    private List/*<CppFoldRecord>*/ lineCommentFolds = new ArrayList();
+    private List<CppFoldRecord> blockCommentFolds = new ArrayList<CppFoldRecord>();
+    private List<CppFoldRecord> lineCommentFolds = new ArrayList<CppFoldRecord>();
         
     /** Creates a new instance of APTCommentsFilter */
     public APTFoldingCommentFilter(TokenStream orig) {
@@ -113,8 +113,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
     }
 
-    public List/*<CppFoldRecord>*/ getFolders() {
-        List out = new ArrayList(blockCommentFolds.size() + lineCommentFolds.size() + 1);
+    public List<CppFoldRecord> getFolders() {
+        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(blockCommentFolds.size() + lineCommentFolds.size() + 1);
         if (initialCommentFold != null) {
             out.add(initialCommentFold);
         }

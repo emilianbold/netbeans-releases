@@ -45,6 +45,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
     private Document doc;
     private EventListenerList listeners = new EventListenerList();
     private DocumentListener docListener;
+    private long lastModified;
     
     private static class StringInputStream extends InputStream {
         
@@ -110,9 +111,15 @@ public class FileBufferDoc extends AbstractFileBuffer {
     public FileBufferDoc(File file, Document doc) {
         super(file);
         this.doc = doc;
+	resetLastModified();
+    }
+    
+    private void resetLastModified() {
+	this.lastModified = System.currentTimeMillis();
     }
     
     private void fireDocumentChanged() {
+	resetLastModified();
         EventListener[] list = listeners.getListeners(ChangeListener.class);
         if( list.length > 0 ) {
             ChangeEvent ev = new ChangeEvent(this);
@@ -204,4 +211,9 @@ public class FileBufferDoc extends AbstractFileBuffer {
     public boolean isFileBased() {
         return false;
     }
+
+    public long lastModified() {
+	return lastModified;
+    }
+    
 }

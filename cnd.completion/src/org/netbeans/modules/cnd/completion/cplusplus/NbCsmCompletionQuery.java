@@ -90,9 +90,11 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 
     protected boolean isProjectBeeingParsed(boolean openingSource) {
         if (!openingSource) {
-            CsmFile file = getFinder().getCsmFile();
-            if (file != null && file.getProject() != null) {
-                return !file.getProject().isStable(file);
+            if (getFinder() != null) {
+                CsmFile file = getFinder().getCsmFile();
+                if (file != null && file.getProject() != null) {
+                    return !file.getProject().isStable(file);
+                }
             }
         }
         return false;

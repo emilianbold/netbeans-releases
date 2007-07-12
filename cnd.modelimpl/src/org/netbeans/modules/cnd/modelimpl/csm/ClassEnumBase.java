@@ -31,7 +31,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
-import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -209,6 +208,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 	
         assert this.visibility != null;
         PersistentUtils.writeVisibility(this.visibility, output);
+        
+        // write UID for unnamed classifier
+        if (getName().length() == 0) {
+            super.writeUID(output);
+        }
     }  
     
     protected ClassEnumBase(DataInput input) throws IOException {
@@ -230,5 +234,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         assert this.visibility != null;
                 
         assert TraceFlags.USE_REPOSITORY;
+        
+        // restore UID for unnamed classifier
+        if (getName().length() == 0) {
+            super.readUID(input);
+        }
+        
     }
 }

@@ -22,12 +22,13 @@ package org.netbeans.modules.cnd.editor.parser;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -42,9 +43,9 @@ public class CppMetaModel implements PropertyChangeListener {
     private int reparseDelay = 1000;
     
     /** map of all files we're interested in */
-    private Map<String,CppFile> map = Collections.synchronizedMap(new HashMap<String,CppFile>());
+    private Map<String,CppFile> map = new ConcurrentHashMap<String,CppFile>();
 
-    private Set<ParsingListener> listeners = new HashSet<ParsingListener>();
+    private Collection<ParsingListener> listeners = new ConcurrentLinkedQueue<ParsingListener>();
 
     private static CppMetaModel instance;
 
@@ -166,8 +167,8 @@ public class CppMetaModel implements PropertyChangeListener {
     
     private void fireObjectParsed(Document doc)
     {
-        synchronized (listeners)
-        {
+//        synchronized (listeners)
+//        {
 	    Object o = doc.getProperty(Document.StreamDescriptionProperty);
             DataObject dobj = (o instanceof DataObject) ? (DataObject) o : null;
 //            for(Iterator it = listeners.iterator(); it.hasNext();)
@@ -182,7 +183,7 @@ public class CppMetaModel implements PropertyChangeListener {
             }
             // vk--
             
-        }        
+//        }        
     }
 
     private String getShortName(Document doc) {
@@ -202,19 +203,19 @@ public class CppMetaModel implements PropertyChangeListener {
 
     public void addParsingListener(ParsingListener listener) {
 	//log.log(Level.FINE, "CppMetaModel: addParsingListener");
-	synchronized (listeners) {
+//	synchronized (listeners) {
 	    listeners.add(listener);
-	}
+//	}
     }
 
     public void removeParsingListener(ParsingListener listener) {
 	//log.log(Level.FINE, "CppMetaModel: removeParsingListener");
-	synchronized (listeners) {
+//	synchronized (listeners) {
 	    listeners.remove(listener);
-	}
+//	}
     }
 
-    private synchronized void fireParsingEvent(ParsingEvent evt) {
+    private /*synchronized*/ void fireParsingEvent(ParsingEvent evt) {
         List<ParsingListener> list = new ArrayList<ParsingListener>(listeners);
 	for (ParsingListener listener : list) {
 	    listener.objectParsed(evt);

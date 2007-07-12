@@ -171,10 +171,7 @@ public class DiscoveryProjectGenerator {
             }
         }
         if (needAdd.size()>0) {
-            // Fix IZ#104651:Newly found file extensions are not suggested to be included into known object type list        
-            // depend on IZ#94935:File disappears from project when user is adding new extension
-            // and temporary commented
-            //addNewExtension(needAdd);
+            addNewExtension(needAdd);
             AbstractRoot additional = UnusedFactory.createRoot(needAdd);
             addAdditionalFolder(folder, additional);
         }

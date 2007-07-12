@@ -23,6 +23,8 @@ import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
@@ -32,6 +34,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
@@ -42,9 +45,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
@@ -82,13 +87,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * It's a map since we need to eliminate duplications 
      */
     private Map/*<String, CsmOffsetableDeclaration>*/ declarationsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String, CsmOffsetableDeclaration>*/());
-    private Map<String, CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedSortedMap(new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>());
+    private Map<String, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
+    private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
     private Set<CsmInclude> includesOLD = Collections.synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
-    private Set<CsmUID<CsmInclude>> includes = Collections.synchronizedSortedSet(new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR));
+    private Set<CsmUID<CsmInclude>> includes = new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
+    private ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
     private Set<CsmMacro> macrosOLD = Collections.synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
-    private Set<CsmUID<CsmMacro>> macros = Collections.synchronizedSortedSet(new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR));    
+    private Set<CsmUID<CsmMacro>> macros = new TreeSet<CsmUID<CsmMacro>>(UID_START_OFFSET_COMPARATOR);    
+    private ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     
     private int errorCount = 0;
     
@@ -99,7 +107,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	BEING_PARSED 
     }
     
-    private State state = State.INITIAL;
+    private State state;
 
     private int fileType = UNDEFINED_FILE;
     
@@ -108,13 +116,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private Object stateLock = new Object();
     
     private Collection/*<FunctionDefinitionImpl>*/ fakeRegistrationsOLD = new ArrayList();
-    private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new ArrayList();
+    private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList();
     
     private final Object fakeLock;
 
     private final GuardBlockState guardState;
+    
+    private long lastParsed = Long.MIN_VALUE;
+    
+    /** Cache the hash code */
+    private int hash; // Default to 0
+    
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocHandler preprocHandler) {
+	state = State.INITIAL;
         setBuffer(fileBuffer);
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -172,7 +187,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
-    private APTLanguageFilter getLanguageFilter() {        
+    public APTLanguageFilter getLanguageFilter() {        
         String lang  = APTLanguageSupport.GNU_CPP;
         String name =  getName();
                       
@@ -191,8 +206,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             preprocHandler = getProjectImpl().getPreprocHandler(fileBuffer.getFile());
         }
         // otherwise create default
-        if (preprocHandler == null) {
-            preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(getAbsolutePath());
+        if (preprocHandler == null && getProject() != null) {
+            StartEntry startEntry = new StartEntry(getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+            preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(startEntry);
         }
         return preprocHandler;
     }
@@ -231,6 +247,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
     }   
     
+    public boolean validate() {
+	synchronized (changeStateLock) {
+	    if( state == State.PARSED ) {
+		if( getBuffer().lastModified() > lastParsed ) {
+		    state = State.MODIFIED;
+		    return false;
+		}
+	    }
+	    return true;
+	}
+    }
+    
     private Object changeStateLock = new Object();
     public void stateChanged(javax.swing.event.ChangeEvent e) {
         stateChanged(false);
@@ -238,7 +266,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public void stateChanged(boolean invalidateCache) {
         synchronized (changeStateLock) {
-            state = State.MODIFIED;
+	    if( state != State.INITIAL ) {
+		state = State.MODIFIED;
+	    }
             if (invalidateCache) {
                 if (TraceFlags.USE_AST_CACHE) {
                     CacheManager.getInstance().invalidate(this);
@@ -342,14 +372,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         //for( Iterator iter = declarations.values().iterator(); iter.hasNext(); ) {
         if (TraceFlags.USE_REPOSITORY) {
             Collection<CsmUID<CsmOffsetableDeclaration>> uids;
-            synchronized (declarations) {
+            try {
+                declarationsLock.writeLock().lock();
                 uids = declarations.values();
-                declarations = Collections.synchronizedSortedMap(new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>());
-                if (clearNonDisposable) {
-                    _clearIncludes();
-                    _clearMacros();
-                }
-            }       
+                declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
+            }   finally {
+                declarationsLock.writeLock().unlock();
+            }
+            
+            if (clearNonDisposable) {
+                _clearIncludes();
+                _clearMacros();
+            }
             List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
             Utils.disposeAll(arr);          
             RepositoryUtils.remove(uids);
@@ -464,7 +498,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
-        APTParseFileWalker walker = new APTParseFileWalker(apt, this, preprocHandler);
+        APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartFile(preprocHandler.getIncludeHandler()), apt, this, preprocHandler);
         return walker.getFilteredTokenStream(getLanguageFilter());
     }
     
@@ -514,7 +548,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert (aptLight != null);
             boolean skip = TraceFlags.CACHE_SKIP_APT_VISIT;
             if (!skip) {
-                APTParseFileWalker walker = new APTParseFileWalker(aptLight, this, preprocHandler);
+                APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartFile(preprocHandler.getIncludeHandler()), aptLight, this, preprocHandler);
                 walker.addMacroAndIncludes(true);
                 walker.visit();          
             } else {
@@ -530,7 +564,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // init guard info
             setGuardState(preprocHandler, aptFull);
             // make real parse
-            APTParseFileWalker walker = new APTParseFileWalker(aptFull, this, preprocHandler);
+            APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartFile(preprocHandler.getIncludeHandler()), aptFull, this, preprocHandler);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
@@ -578,6 +612,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 getProjectImpl().cleanPreprocStateAfterParse(this, oldState);
             }
         }
+	lastParsed = System.currentTimeMillis();
         return ast;
     }
 
@@ -603,7 +638,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmInclude> uid = RepositoryUtils.put(includeImpl);
             assert uid != null;
-            includes.add(uid);
+            try {
+                includesLock.writeLock().lock();
+                includes.add(uid);
+            } finally {
+                includesLock.writeLock().unlock();
+            }
         } else {
             includesOLD.add(includeImpl);
         }
@@ -691,8 +731,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public List<CsmInclude> getIncludes() {
         if (TraceFlags.USE_REPOSITORY) {
             List out;
-            synchronized (includes) {
+            try {
+                includesLock.readLock().lock();
                 out = UIDCsmConverter.UIDsToIncludes(includes);
+            } finally {
+                includesLock.readLock().unlock();
             }
             return out;
         } else {
@@ -706,9 +749,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fixFakeRegistrations();
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmOffsetableDeclaration> decls;
-            synchronized (declarations) {
+            try {
+                declarationsLock.readLock().lock();
                 Collection<CsmUID<CsmOffsetableDeclaration>> uids = declarations.values();
                 decls = UIDCsmConverter.UIDsToDeclarations(uids);
+            } finally {
+                declarationsLock.readLock().unlock();
             }
             return decls;
         } else {
@@ -722,7 +768,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmMacro> uid = RepositoryUtils.put(macro);
             assert uid != null;
-            macros.add(uid);
+            try {
+                macrosLock.writeLock().lock();
+                macros.add(uid);
+            } finally {
+                macrosLock.writeLock().unlock();
+            }
         } else {
             macrosOLD.add(macro);
         }
@@ -731,8 +782,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public List<CsmMacro> getMacros() {
         if (TraceFlags.USE_REPOSITORY) {
             List out;
-            synchronized (macros) {
+           try {
+                macrosLock.readLock().lock();
                 out = UIDCsmConverter.UIDsToMacros(macros);
+            } finally {
+                macrosLock.readLock().unlock();
             }
             return out;
         } else {
@@ -756,7 +810,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private void _addDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
-            declarations.put(getSortKey(decl), uid);
+            try {
+                declarationsLock.writeLock().lock();
+                declarations.put(getSortKey(decl), uid);
+            } finally {
+                declarationsLock.writeLock().unlock();
+            }
         } else {
             declarationsOLD.put(getSortKey(decl), decl);
         }
@@ -786,7 +845,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private void _removeDeclaration(CsmOffsetableDeclaration declaration) {
         if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = declarations.remove(getSortKey(declaration));
+            CsmUID<CsmOffsetableDeclaration> uid;
+            try {
+                declarationsLock.writeLock().lock();
+                uid = declarations.remove(getSortKey(declaration));
+            } finally {
+                declarationsLock.writeLock().unlock();
+            }
             RepositoryUtils.remove(uid);
             // update repository
             RepositoryUtils.put(this);
@@ -819,6 +884,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public String getAbsolutePath() {
         return fileBuffer.getFile().getAbsolutePath();
+    }
+    
+    public File getFile() {
+	return fileBuffer.getFile();
     }
 
     public List<CsmScopeElement> getScopeElements() {
@@ -893,9 +962,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void onFakeRegisration(FunctionImplEx decl) {
         if (TraceFlags.USE_REPOSITORY) {
             CsmUID<FunctionImplEx> uid = UIDCsmConverter.declarationToUID(decl);
-            synchronized( fakeLock ) {
                 fakeRegistrationUIDs.add(uid);
-            }
         } else {
             synchronized( fakeLock ) {
                 fakeRegistrationsOLD.add(decl);
@@ -907,14 +974,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (!isValid()) {
             return;
         }
-        Collection fakes;
+        Collection<FunctionImplEx> fakes = Collections.EMPTY_SET;
+        
         if (TraceFlags.USE_REPOSITORY) {
-            Collection<CsmUID<FunctionImplEx>> fakeUIDs;
-            synchronized ( fakeLock ) {
-                fakeUIDs = fakeRegistrationUIDs;
-                fakeRegistrationUIDs = new ArrayList();
+            if (fakeRegistrationUIDs.size() > 0) {
+                fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeRegistrationUIDs);
+                fakeRegistrationUIDs.clear();
             }
-            fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeUIDs);
         } else {
             synchronized( fakeLock ) {
                 // Right now we do not need to make a copy, fakeRegistrations is cleared anyway
@@ -923,8 +989,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 fakeRegistrationsOLD = new ArrayList();
             }
         }
-	for (Iterator iter = fakes.iterator(); iter.hasNext();) {
-            FunctionImplEx curElem = (FunctionImplEx)iter.next();
+	for (FunctionImplEx curElem: fakes) {
 	    curElem.fixFakeRegistration();
 	}
     }
@@ -947,17 +1012,34 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void write(DataOutput output) throws IOException {
         PersistentUtils.writeBuffer(this.fileBuffer, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeStringToUIDMap(this.declarations, output, true);
-        factory.writeUIDCollection(this.includes, output, true);
-        factory.writeUIDCollection(this.macros, output, true);
+        try {
+            declarationsLock.readLock().lock();
+            factory.writeStringToUIDMap(this.declarations, output, false);
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        try {
+            includesLock.readLock().lock();
+            factory.writeUIDCollection(this.includes, output, false);
+        } finally {
+            includesLock.readLock().unlock();
+        }
+        try {
+            macrosLock.readLock().lock();
+            factory.writeUIDCollection(this.macros, output, false);
+        } finally {
+            macrosLock.readLock().unlock();
+        }
         factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
-        output.writeUTF(state.toString());
+        //output.writeUTF(state.toString());
         output.writeInt(fileType);
         
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
         guardState.write(output);
+	output.writeLong(lastParsed);
+	output.writeUTF(state.toString());
     }
     
     public FileImpl(DataInput input) throws IOException {
@@ -968,7 +1050,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.macros, input);
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
-        state = State.valueOf(input.readUTF());
+        //state = State.valueOf(input.readUTF());
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -980,14 +1062,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         assert fileBuffer.isFileBased();
         fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N 
         guardState = new GuardBlockState(input);
-
+	lastParsed = input.readLong();
+        state = State.valueOf(input.readUTF());
         assert TraceFlags.USE_REPOSITORY;
     }
 
     public int hashCode() {
-        int retValue;
-        retValue = getIdentityHashPath(this).hashCode();
-        return retValue;
+	if( hash == 0 ) {   // we don't need sync here - at worst, we'll calculate the same value twice
+	    hash = getIdentityHashPath(this).hashCode();
+	}
+        return hash;
     }
 
     public boolean equals(Object obj) {
@@ -1001,7 +1085,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private static String getIdentityHashPath(CsmFile file) {
-	return file.getProject().getQualifiedName() + "*" + file.getAbsolutePath();
+	return file.getProject().getQualifiedName() + "*" + file.getAbsolutePath(); // NOI18N
     }
 
     private GuardBlockState getGuardState() {
@@ -1040,14 +1124,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private boolean isNeedReparseGuardBlock(APTPreprocHandler.State preprocState){
-        APTPreprocHandler preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(getAbsolutePath());
+        StartEntry startEntry = new StartEntry(getAbsolutePath(), RepositoryUtils.UIDtoKey(getProject().getUID()));
+        APTPreprocHandler preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(startEntry);
         preprocHandler.setState(preprocState);
         return getGuardState().isNeedReparse(preprocHandler);
     }
     
     public int getOffset(int line, int column) {
         if (line <= 0 || column <= 0) {
-            throw new IllegalArgumentException("line and column are 1-based");
+            throw new IllegalArgumentException("line and column are 1-based"); // NOI18N
         }
         int offset = 0;
         int curLine = 1;
@@ -1060,12 +1145,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         // check line
         if (curLine < line) {
-            throw new IllegalStateException("no line with index " + line + " in file " + getAbsolutePath());
+            throw new IllegalStateException("no line with index " + line + " in file " + getAbsolutePath()); // NOI18N
         }
         int outOffset = offset + (column - 1);
         // check that column is valid: not on the next line
         if (text.length() < outOffset || (text.substring(offset, outOffset).indexOf('\n') >= 0))  { // NOI18N
-            throw new IllegalStateException("no column with index " + column + " in file " + getAbsolutePath());
+            throw new IllegalStateException("no column with index " + column + " in file " + getAbsolutePath()); // NOI18N
         }
         return outOffset;
     }
@@ -1080,18 +1165,28 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         int startLineOffset = 0;
         String text = getText();
         if (text.length() < offset) {
-            throw new IllegalArgumentException("offset is out of file length");
+            throw new IllegalArgumentException("offset is out of file length; " + // NOI18N
+                    (getBuffer().isFileBased() ? "file based" : "document based") + // NOI18N
+                    " file=" + this.getAbsolutePath() + // NOI18N
+                    ";length=" + text.length() + "; offset=" + offset); // NOI18N
         }        
+        final int TABSIZE = ModelSupport.getTabSize();
         // find line and column
         for (int curOffset = 0; curOffset < offset; curOffset++) {
-            if ( text.charAt(curOffset) == '\n') {
+            char curChar = text.charAt(curOffset);
+            if ( curChar == '\n') {
                 // just increase line number
                 lineCol[0] = lineCol[0]+1;
                 startLineOffset = curOffset+1;
+                lineCol[1] = 1;
+            } else if (curChar == '\t') {
+                int col = lineCol[1];
+                int newCol = ( ((col-1)/TABSIZE) + 1) * TABSIZE + 1;         
+                lineCol[1] = newCol;
+            } else {
+                lineCol[1]++;
             }
         }        
-        // column
-        lineCol[1] = (offset - startLineOffset) + 1;
         return lineCol;
     }
 }

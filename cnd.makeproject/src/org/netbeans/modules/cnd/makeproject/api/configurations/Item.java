@@ -176,14 +176,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (evt.getPropertyName().equals("name")) { // NOI18N
             // File has been renamed
             rename((String)evt.getNewValue());
-        }
-        else if (evt.getPropertyName().equals("valid")) { // NOI18N
+        } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
-            if (!((Boolean)evt.getNewValue()).booleanValue()) {
-              getFolder().removeItemAction(this);
-    }
-        }
-        else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
+            // Do nothing (IZ 94935 )
+//            if (!((Boolean)evt.getNewValue()).booleanValue()) {
+//                getFolder().removeItemAction(this);
+//            }
+        } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
             // File has been moved
             FileObject fo = (FileObject)evt.getNewValue();
             String newPath = FileUtil.toFile(fo).getPath();
@@ -202,7 +201,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public File getFile() {
         return FileUtil.normalizeFile(new File(getAbsPath()));
     }
-
+    
     public File getCanonicalFile() {
         if (file == null) {
             try {
@@ -326,9 +325,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
-	    if( compiler != null ) {
-		vec.addAll(compiler.getSystemIncludeDirectories(platform));
-	    }
+            if( compiler != null ) {
+                vec.addAll(compiler.getSystemIncludeDirectories(platform));
+            }
         }
         return vec;
     }
@@ -376,10 +375,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-	    if( compiler != null ) {
-		// Get macro definitions from compiler
-		vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
-	    }
+            if( compiler != null ) {
+                // Get macro definitions from compiler
+                vec.addAll(compiler.getSystemPreprocessorSymbols(platform));
+            }
         }
         return vec;
     }
@@ -409,7 +408,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return vec;
     }
-
+    
     public boolean isHeaderFile() {
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         if (hlist.isRegistered(getPath())) {
@@ -429,13 +428,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null)
             itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
-            
+        
         if (itemConfiguration != null)
             tool = itemConfiguration.getTool();
         else
             tool = getDefaultTool();
-            
-        if (tool == Tool.CCompiler) 
+        
+        if (tool == Tool.CCompiler)
             language = NativeFileItem.Language.C;
         else if (tool == Tool.CCCompiler)
             language = NativeFileItem.Language.CPP;
@@ -445,7 +444,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             language = NativeFileItem.Language.C_HEADER;
         else
             language = NativeFileItem.Language.OTHER;
-            
+        
         return language;
     }
     
@@ -455,7 +454,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public LanguageFlavor getLanguageFlavor() {
         return NativeFileItem.LanguageFlavor.GENERIC;
     }
-
+    
     /**
      * NativeFileItem interface
      **/

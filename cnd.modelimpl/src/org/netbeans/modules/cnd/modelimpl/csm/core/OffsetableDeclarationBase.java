@@ -39,12 +39,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         super(ast, file);
     }
     
-    public OffsetableDeclarationBase(CsmFile file) {
-        super(file);
-    }
-    
     public String getUniqueName() {
-        return getKind().toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        return Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
     }
     
     public String getUniqueNameWithoutPrefix() {

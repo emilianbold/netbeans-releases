@@ -61,13 +61,9 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         super(childrenUpdater, namespace.getProject(),PersistentKey.createKey(namespace));
         CsmProject project = namespace.getProject();
         if (namespace == project.getGlobalNamespace()){
-            for(Object o : CsmModelAccessor.getModel().projects()){
-                // ignore library
-                if (o == project) {
-                    CsmModelAccessor.getModel().addProgressListener(this);
-                    isRootNamespase = true;
-                    break;
-                }
+            if (!project.isArtificial()) {
+                CsmModelAccessor.getModel().addProgressListener(this);
+                isRootNamespase = true;
             }
         }
     }
@@ -250,9 +246,13 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
     }
     
     public void projectParsingFinished(CsmProject project) {
-        onPprojectParsingFinished(project); // NOI18N
+        onPprojectParsingFinished(project);
     }
     
+    public void projectLoaded(CsmProject project) {
+	onPprojectParsingFinished(project);
+    }
+
     public void projectParsingCancelled(CsmProject project) {
     }
 

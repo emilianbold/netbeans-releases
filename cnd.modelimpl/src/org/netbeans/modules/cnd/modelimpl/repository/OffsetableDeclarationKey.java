@@ -40,6 +40,11 @@ final class OffsetableDeclarationKey extends OffsetableKey {
 	// and name is fixed value
     }
     
+    public OffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
+	super(obj, obj.getKind().toString(), Integer.toString(index));
+	// we use index for unnamed objects
+    }
+    
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
     }

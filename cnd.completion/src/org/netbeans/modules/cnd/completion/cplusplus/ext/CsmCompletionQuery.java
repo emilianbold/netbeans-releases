@@ -665,7 +665,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             result = null;
                             break;
                         }
-                        String searchPkg = lastNamespace.getName() + '.';
+                        String searchPkg = (lastNamespace.isGlobal() ? "" : lastNamespace.getName()) + CsmCompletion.SCOPE;
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
@@ -739,7 +739,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
                                                 exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed());
                     } else { // Found package (otherwise ok would be false)
-                        String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE;
+                        String searchPkg = (lastNamespace.isGlobal() ? "" : lastNamespace.getName()) + CsmCompletion.SCOPE;
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
@@ -982,7 +982,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                  isProjectBeeingParsed());
                                 }
                             } else { // currently package
-                                String searchName = lastNamespace.getName() + CsmCompletion.SCOPE + var;
+                                String searchName = (lastNamespace.isGlobal() ? "" : lastNamespace.getName()) + CsmCompletion.SCOPE + var;
                                 if (findType || !last) {
                                     lastNamespace = finder.getExactNamespace(searchName);
                                     if (lastNamespace == null) { // package doesn't exist
@@ -996,7 +996,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     }
                                 } else { // last and searching for completion output
                                     if (last) { // get all matching fields/methods/packages
-                                        String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE + var;
+                                        String searchPkg = (lastNamespace.isGlobal() ? "" : lastNamespace.getName()) + CsmCompletion.SCOPE + var;
                                         List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                         res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false)); // matching classes
                                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed());
@@ -1172,7 +1172,35 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
                 
             case CsmCompletionExpression.TYPE:
-                lastType = CsmCompletion.getPredefinedType(item.getType());
+                if (findType) {
+                    lastType = CsmCompletion.getPredefinedType(item.getType());
+                }
+                if (!findType || lastType == null) {
+                    // this is the case of code completion on parameter or unresolved predefined type
+                    int nrTokens = item.getTokenCount();
+                    if (nrTokens > 1) {
+                        String varName = item.getTokenText(nrTokens - 1);
+                        int varPos = item.getTokenOffset(nrTokens - 1);
+                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES | CompletionResolver.RESOLVE_CLASSES);
+                        if (compResolver.refresh() && compResolver.resolve(varPos, varName, false)) {
+                            res = compResolver.getResult();
+                            if (findType) {
+                                CsmClassifier cls = null;
+                                Iterator it = res.getProjectClassesifiersEnums().iterator();
+                                if (!it.hasNext()) {
+                                    it = res.getLibClassifiersEnums().iterator();
+                                }
+                                if (it.hasNext()) {
+                                    cls = (CsmClassifier) it.next();
+                                }
+                                if (cls != null) {
+                                    lastType = CsmCompletion.getType(cls, 0);
+                                }
+                            }
+                            result = new CsmCompletionResult(component, getBaseDocument(), res, varName + '*', item, varPos, 0, 0, isProjectBeeingParsed());
+                        }                  
+                    }
+                }
                 break;
 
             case CsmCompletionExpression.PARENTHESIS:
@@ -1225,7 +1253,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         cls = sup.getClassFromName(mtdName, true);
                     } else { // not first
 //                        if ((last)&&(lastNamespace != null)) { // valid package
-//                            cls = JCUtilities.getExactClass(finder, mtdName, lastNamespace.getName());
+//                            cls = JCUtilities.getExactClass(finder, mtdName, (lastNamespace.isGlobal() ? "" : lastNamespace.getName()));
 //                        } else if (lastType != null) { 
 //                            if(last){ // inner class
 //                                cls = JCUtilities.getExactClass(finder, mtdName,

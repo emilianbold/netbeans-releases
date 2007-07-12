@@ -114,6 +114,9 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         cleanCache();
     }
     
+    public void projectLoaded(CsmProject project) {
+    }
+    
     public void parserIdle() {
     }
     

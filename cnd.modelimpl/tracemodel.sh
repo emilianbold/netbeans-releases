@@ -17,6 +17,10 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
+XREF=""
+ERROR=""
+QUITE=""
+
 function classpath() {
 
     local nbdist=${NBDIST-"../../../../latest-netbeans"}
@@ -71,21 +75,77 @@ function classpath() {
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-repository-api.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-repository.jar
 
-    local error=""
+    XREF_CP=""
+    if [ -n "${XREF}" ]; then
+        # update classpath needed for xref
+        XREF_CP=${XREF_CP}${path_sep}${cnddist}/../../../core/build/test/unit/classes
+        
+        XREF_CP=${XREF_CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-completion.jar
+        XREF_CP=${XREF_CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelutil.jar
+        XREF_CP=${XREF_CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-model-services.jar
 
-    for F in `echo ${CP} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+        XREF_CP=${XREF_CP}${path_sep}${platform}/core/org-openide-filesystems.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/core/core.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/lib/boot.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-core.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-modules-masterfs.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-execution.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-loaders.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-dialogs.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-awt.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-options.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-windows.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-text.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-modules-settings.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-mimelookup.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-settings.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-lib.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-plain-lib.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-plain.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-settings-storage.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-structure.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-util.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-options-editor.jar
+        XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-completion.jar
+    fi
+
+    if [ -z ${QUITE} ]; then
+	trace_classpath ${CP}
+    fi
+
+    if [ -n "${ERROR}" ]; then
+	CP=""
+    else
+        if [ -n "${XREF_CP}" ]; then
+	    if [ -z ${QUITE} ]; then
+		trace_classpath ${XREF_CP}
+	    fi
+            if [ -n "${ERROR}" ]; then
+                CP=""
+            else
+                CP=${CP}${path_sep}${XREF_CP}
+            fi
+        fi
+    fi    
+}
+
+function trace_classpath() {
+    local paths=$@
+    local ERROR=""
+    for F in `echo ${paths} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	if [ ! -r ${F} ]; then
 	    echo "File ${F} doesn't exist"
-	    error="y"
+	    ERROR="y"
 	fi
     done
 
-    if [ -n "${error}" ]; then
-	CP=""
+    if [ -n "${ERROR}" ]; then
+	echo "incorrect classpaths"
     else
 	#print classpath
 	echo "Using classpath:"
-	for F in `echo ${CP} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+	for F in `echo ${paths} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	    echo $F
 	done
     fi
@@ -142,6 +202,14 @@ function params() {
 		    DEFS="${DEFS} -Dcnd.modelimpl.use.repository=true -Dcnd.repository.use.dev=true -Dcnd.repository.1file=true -Dcnd.repository.threading=false"
 		    PARAMS="${PARAMS} --cleanrepository"
 		    ;;
+            --xref*) 
+                    echo "testing xRef Repository";
+                    PARAMS="${PARAMS} $1"
+                    XREF="y"
+                    ;;
+            --quite|--q*) 
+                    QUITE="y"
+                    ;;
 	    *)
 		    PARAMS="${PARAMS} $1"
 		    ;;
@@ -200,9 +268,14 @@ function main() {
     STAT="${STAT} -S/tmp/stat"
     STAT=""
 
-    MAIN="org.netbeans.modules.cnd.modelimpl.trace.TraceModel"
-
     params $@
+
+    if [ -n "${XREF}" ]; then
+        # update main class used for testing xref
+        MAIN="org.netbeans.modules.cnd.modelimpl.trace.TraceXRef"
+    else
+        MAIN="org.netbeans.modules.cnd.modelimpl.trace.TraceModel"
+    fi    
 
     classpath
     if [ -z "${CP}" ]; then
@@ -210,8 +283,10 @@ function main() {
 	return
     fi
 
-    echo "Java: " ${JAVA}
-    ${JAVA} -version
+    if [ -z ${QUITE} ]; then
+	echo "Java: " ${JAVA}
+	${JAVA} -version
+    fi
 
     #set -x
     ${JAVA} -enableassertions ${DEBUG_PROFILE} -cp ${CP} ${DEFS} ${MAIN} ${STAT} ${INCL} ${PARAMS}

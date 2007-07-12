@@ -22,18 +22,34 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Editors">
        <folder name="text">
             <folder name="x-c">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow/goto" boolvalue="true"/>
+                </folder>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-modelimpl-platform-CppUpToDateStatusProviderFactory.instance">
                     </file>
                 </folder>
             </folder>
             <folder name="x-c++">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow/goto" boolvalue="true"/>
+                </folder>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-modelimpl-platform-CppUpToDateStatusProviderFactory.instance">
                     </file>

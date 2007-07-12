@@ -80,6 +80,7 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
                     FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
                     //fi.setScope(currentNamespace);
@@ -87,12 +88,14 @@ public class AstRenderer {
                     currentNamespace.addDeclaration(fi);
                     break;
                 case CPPTokenTypes.CSM_CTOR_DEFINITION:
+                case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                     container.addDeclaration(new ConstructorDefinitionImpl(token, file, null));
                     break;
                 case CPPTokenTypes.CSM_DTOR_DEFINITION:
                     container.addDeclaration(new DestructorDefinitionImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
 		case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
                     if( isMemberDefinition(token) ) {
                         container.addDeclaration(new FunctionDefinitionImpl(token, file, null));
@@ -234,7 +237,7 @@ public class AstRenderer {
                         }
                         if (name != null) {
                             CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file);
-                            VariableImpl var = createVariable(token, file, type, name, false);
+                            VariableImpl var = createVariable(token, file, type, name, false, container1, container2);
                             if( container2 != null ) {
                                 container2.addDeclaration(var);
                             }
@@ -811,7 +814,7 @@ public class AstRenderer {
                 container2.addDeclaration(var);
             }
         } else {
-            VariableImpl var = createVariable(offsetAst, file, type, name, _static);
+            VariableImpl var = createVariable(offsetAst, file, type, name, _static, container1, container2);
             if( container2 != null ) {
                 container2.addDeclaration(var);
             }
@@ -822,8 +825,8 @@ public class AstRenderer {
         }
     }
     
-    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-        VariableImpl var = new VariableImpl(offsetAst, file, type, name);
+    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+        VariableImpl var = new VariableImpl(offsetAst, file, type, name, (container1 != null) || (container2 != null));
         var.setStatic(_static);
         return var;
     }
@@ -846,10 +849,10 @@ public class AstRenderer {
     public static boolean isVoidParameter(AST ast) {
         if( ast != null && ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ) {
             AST token = ast.getFirstChild();
-            if( token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {
+            if( token != null && token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {
                 AST firstChild = token.getFirstChild();
                 if( firstChild != null ) {
-                    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN & firstChild.getNextSibling() == null ) {
+                    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN && firstChild.getNextSibling() == null ) {
                         AST grandChild = firstChild.getFirstChild();
                         if( grandChild != null && grandChild.getType() == CPPTokenTypes.LITERAL_void ) {
                             return true;
@@ -867,7 +870,7 @@ public class AstRenderer {
 	    if( firstChild.getType() == CPPTokenTypes.ELLIPSIS ) {
 		return new ParameterImpl(ast.getFirstChild(), file, null, "..."); // NOI18N
 	    }
-	    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN & firstChild.getNextSibling() == null ) {
+	    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN && firstChild.getNextSibling() == null ) {
 		AST grandChild = firstChild.getFirstChild();
 		if( grandChild != null && grandChild.getType() == CPPTokenTypes.LITERAL_void ) {
 		    return null;
@@ -879,7 +882,7 @@ public class AstRenderer {
 	    public AstRendererEx() {
 		super((FileImpl) file);
 	    }
-	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
+	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
 		parameter = new ParameterImpl(offsetAst, file, type, name);
 		return parameter;
 	    }

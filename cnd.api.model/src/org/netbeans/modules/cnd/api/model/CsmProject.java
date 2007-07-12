@@ -93,4 +93,9 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      * if param is not null => project is stable even if skipFile not parsed     
      */
     boolean isStable(CsmFile skipFile);
+
+    /**
+     * return true for auto created projects for included standard headers.
+     */
+    boolean isArtificial();
 }

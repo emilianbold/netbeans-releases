@@ -34,6 +34,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
     
+    public void testRecoveryBeforeFoo() throws Exception {
+        super.performTest("file.cc", 43, 5, "a.");
+    }
+    
     public void testExtraDeclarationOnTypeInsideFun() throws Exception {
         super.performTest("file.cc", 39, 5, "p");
     }

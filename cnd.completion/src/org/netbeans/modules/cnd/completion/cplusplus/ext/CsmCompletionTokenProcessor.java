@@ -250,8 +250,26 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             int top2ID = getValidExpID(top2);
             int topID = getValidExpID(top);
             switch (topID) {
-            case CONSTANT:
             case VARIABLE:
+                boolean stop = false;
+                switch (top2ID) {
+                    case METHOD_OPEN:
+                        switch (tokenID.getNumericID()) {
+                            case CCTokenContext.MUL_ID:
+                            case CCTokenContext.AND_ID:
+                            case CCTokenContext.CONST_ID:
+                            case CCTokenContext.IDENTIFIER_ID:
+                                top.setExpID(TYPE);
+                                stop = true;
+                                break;
+                        }
+                        break;
+                }
+                if (stop) {
+                    break;
+                }
+                // nobreak;
+            case CONSTANT:                
             case METHOD:
             case CONSTRUCTOR:
             case ARRAY:
@@ -261,6 +279,16 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             case PARENTHESIS:
             case OPERATOR: // operator on top of stack
                 switch (top2ID) {
+                    case METHOD_OPEN:
+                        switch (tokenID.getNumericID()) {
+                            case CCTokenContext.MUL_ID:
+                            case CCTokenContext.AND_ID:
+                            case CCTokenContext.CONST_ID:
+                            case CCTokenContext.IDENTIFIER_ID:
+                                top.setExpID(TYPE);
+                                break;
+                        }
+                        break;
                     case UNARY_OPERATOR:
                         switch (tokenID.getNumericID()) {
                             case CCTokenContext.DOT_ID:
@@ -673,7 +701,6 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                    case CCTokenContext.ASSERT_ID:
                     case CCTokenContext.BREAK_ID:
                     case CCTokenContext.CATCH_ID:
-                    case CCTokenContext.CONST_ID:
                     case CCTokenContext.CONTINUE_ID:
                     case CCTokenContext.DEFAULT_ID:
                     case CCTokenContext.DO_ID:
@@ -736,10 +763,23 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case TYPE:
                             case VARIABLE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
+                                    //top.setExpID(VARIABLE);
                                     addTokenTo(top);
+                                    //pushExp(createTokenExp(VARIABLE));
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
                                     break;
-                                }
+                                }  
+                            case TYPE_REFERENCE:
+                                if (getValidExpID(peekExp2()) == METHOD_OPEN) {
+                                    //top.setExpID(VARIABLE);
+                                    //addTokenTo(top);
+                                    popExp(); // top
+                                    CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                    var.addParameter(top);
+                                    pushExp(var);
+                                    // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
+                                    break;
+                                }                                
                             default:
                                 errorState = true;
                                 break;
@@ -772,6 +812,16 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 // member pointer operator
                                 CsmCompletionExpression opExp = createTokenExp(MEMBER_POINTER_OPEN);
                                 pushExp(opExp); // add operator as new exp
+                                pointer = true;
+                                break;
+                            case TYPE:
+                            case TYPE_REFERENCE:
+                                // we have type or type reference and then * or &, 
+                                // join into TYPE_REFERENCE
+                                popExp();
+                                CsmCompletionExpression exp = createTokenExp(TYPE_REFERENCE);
+                                exp.addParameter(top);
+                                pushExp(exp); 
                                 pointer = true;
                                 break;
                         }
@@ -1267,6 +1317,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case ARROW:
                             case SCOPE:
                             case TYPE:
+                            case TYPE_REFERENCE:
                             case CONSTANT:
                             case VARIABLE: // can be "List<String" plus "," state
                             case CONSTRUCTOR:
@@ -1636,7 +1687,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 
                     case CCTokenContext.STRING_LITERAL_ID:
                         constExp = createTokenExp(CONSTANT);
-                        constExp.setType("java.lang.String"); // NOI18N
+                        constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N
                         break;
 
                     case CCTokenContext.INT_LITERAL_ID:
@@ -1660,7 +1711,10 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("double"); // NOI18N
                         break;
-
+                    case CCTokenContext.CONST_ID:
+                        // only type has const
+                        kwdType = "const"; // NOI18N
+                        break;
                 } // end of testing keyword type
             }
         }
@@ -1708,7 +1762,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             case PARENTHESIS_OPEN: // conversion
             {
                 CsmCompletionExpression kwdExp = createTokenExp(TYPE);
-                addTokenTo(kwdExp);
+                //addTokenTo(kwdExp);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
                 errorState = false;
@@ -1718,12 +1772,28 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             {
                 // TODO: we know, this is method declaration/definition
                 CsmCompletionExpression kwdExp = createTokenExp(TYPE);
-                addTokenTo(kwdExp);
+                //addTokenTo(kwdExp);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
                 errorState = false;
                 break;
             }
+            case TYPE:
+            {
+                CsmCompletionExpression kwdExp = top;
+                addTokenTo(kwdExp);
+                kwdExp.setType(kwdExp.getType() + " " + kwdType);
+                errorState = false;
+                break;
+            }     
+            case TYPE_REFERENCE:
+            {
+                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
+                kwdExp.setType(kwdType);
+                top.addParameter(kwdExp);
+                errorState = false;
+                break;
+            }     
             default: // otherwise not recognized
                 errorState = true;
                 break;

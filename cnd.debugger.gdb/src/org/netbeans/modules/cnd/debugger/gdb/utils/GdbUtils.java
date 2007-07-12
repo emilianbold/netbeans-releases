@@ -190,8 +190,8 @@ public class GdbUtils {
      *  @param info A string of key/value pairs
      *  @return A HashMap containing each key/value
      */
-    public static Map createMapFromString(String info) {
-        HashMap map = new HashMap();
+    public static Map<String, String> createMapFromString(String info) {
+        HashMap<String, String> map = new HashMap();
         String key, value;
         int tstart, tend;
         int len = info.length();

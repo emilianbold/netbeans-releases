@@ -20,8 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.util.RequestProcessor;
 
@@ -35,7 +34,7 @@ public class ParserThreadManager  {
     
     private static final String threadNameBase = "Code Model Parser"; // NOI18N
     private RequestProcessor processor;
-    private Set<Wrapper> wrappers = Collections.synchronizedSet(new HashSet<Wrapper>());
+    private Set<Wrapper> wrappers = new CopyOnWriteArraySet<Wrapper>();
     private int currThread = 0;
     
     private class Wrapper implements Runnable {
@@ -87,7 +86,7 @@ public class ParserThreadManager  {
 //        int threadCount = Integer.getInteger("cnd.modelimpl.parser.wrappers",
 //                Math.max(Runtime.getRuntime().availableProcessors()-1, 1)).intValue();
 
-        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads",
+        int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
 		Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
 
 	threadCount = Math.min(threadCount, 4);
@@ -112,15 +111,18 @@ public class ParserThreadManager  {
     // package-local
     void shutdown() {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== ParserThreadManager.shutdown");
+            
         for (Wrapper wrapper : wrappers) {
             wrapper.stop();
-        }  
+        }
+        
 	ParserQueue.instance().shutdown();
     }
     
     public boolean isParserThread() {
         if( isStandalone() ) {
             Thread current = Thread.currentThread();
+            
             for (Wrapper wrapper : wrappers) {
                 if (wrapper.thread == current) {
                     return true;

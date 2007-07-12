@@ -25,13 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -40,6 +40,7 @@ import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -51,21 +52,30 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * Storage for files and states. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class FileContainer implements Persistent, SelfPersistent {
+/*package-local*/ class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private final Object lock = new Object();
-    private Map<String, MyFile> myFiles = Collections.synchronizedMap(new HashMap<String, MyFile>());
-    private Map<String, Object/*String or String[]*/> canonicFiles = Collections.synchronizedMap(new HashMap<String, Object/*String or String[]*/>());
-    
+    private Map<String, MyFile> myFiles = new ConcurrentHashMap<String, MyFile>();
+    private Map<String, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<String, Object/*String or String[]*/>();
     
     /** Creates a new instance of FileContainer */
-    public FileContainer() {
+    public FileContainer(ProjectBase project) {
+	super(new FileContainerKey(project.getQualifiedName()));
+	put();
     }
     
     public FileContainer (DataInput input) throws IOException {
+	super(input);
         readStringToMyFileMap(input, myFiles);
         readStringToStringsArrMap(input, canonicFiles);
+	//trace(canonicFiles, "Read in ctor:");
+    }
     
+    private void trace(Map<String, Object/*String or String[]*/> map, String title) {
+	System.err.printf("%s\n", title);
+	for( Map.Entry<String, Object> entry : map.entrySet() ) {
+	    System.err.printf("%s ->\n%s\n\n", entry.getKey(), entry.getValue());
+	}
     }
     
     public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
@@ -78,30 +88,32 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             newEntry = new MyFile(impl, state, path);
         }
         MyFile old;
-        synchronized (myFiles) {
-            old = myFiles.put(path, newEntry);
-            addAlternativeFileKey(path, newEntry.canonical);
-        }
+
+        old = myFiles.put(path, newEntry);
+        addAlternativeFileKey(path, newEntry.canonical);
+
         if (old != null){
             System.err.println("Replace file "+file.getAbsoluteFile());
         }
+	put();
     }
     
     public void removeFile(File file) {
         String path = getFileKey(file, false);
         MyFile f;
-        synchronized (myFiles) {
-            f = myFiles.remove(path);
-            if (f != null) {
-                removeAlternativeFileKey(f.canonical, path);
-            }
+
+        f = myFiles.remove(path);
+        if (f != null) {
+            removeAlternativeFileKey(f.canonical, path);
         }
+        
         if (f != null && TraceFlags.USE_REPOSITORY) {
             if (f.fileNew != null){
                 // clean repository
                 if (false) RepositoryUtils.remove(f.fileNew);
             }
         }
+	put();
     }
     
     public FileImpl getFile(File file) {
@@ -188,19 +200,16 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     public void clearState(){
         List<MyFile> files;
-        synchronized( myFiles ) {
-            files = new ArrayList<MyFile>(myFiles.values());
-        }
+        files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
             file.state = null;
         }
+	put();
     }
     
     public List<FileImpl> getFiles() {
         List<MyFile> files;
-        synchronized( myFiles ) {
-            files = new ArrayList<MyFile>(myFiles.values());
-        }
+        files = new ArrayList<MyFile>(myFiles.values());
         List<FileImpl> res = new ArrayList<FileImpl>(files.size());
         for(MyFile f : files){
             FileImpl file = null;
@@ -217,6 +226,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     public void clear(){
         myFiles.clear();
+	put();
     }
     
     public int getSize(){
@@ -224,9 +234,11 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     public void write(DataOutput aStream) throws IOException {
+	super.write(aStream);
+	// maps are concurrent, so we don't need synchronization here
         writeStringToMyFileMap(aStream, myFiles);
         writeStringToStringsArrMap(aStream, canonicFiles);
- 
+	//trace(canonicFiles, "Wrote in write()");
     }
     
     public void read(DataInput aStream) throws IOException {
@@ -457,15 +469,20 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             final int arraySize = input.readInt();
             assert arraySize != 0;
             
-            final String[] value = new String[arraySize];
-            
-            for (int j = 0; j < arraySize; j++) {
-                String path = input.readUTF();
-                path = pathManager == null ? path : pathManager.getString(path);
-                assert path != null;
-                
-                value[j] = path;
-            }
+	    if( arraySize == 1 ) {
+		aMap.put(key, input.readUTF());
+	    }
+	    else {
+		final String[] value = new String[arraySize];
+		for (int j = 0; j < arraySize; j++) {
+		    String path = input.readUTF();
+		    path = pathManager == null ? path : pathManager.getString(path);
+		    assert path != null;
+
+		    value[j] = path;
+		}
+		aMap.put(key, value);
+	    }
         }
     }
     

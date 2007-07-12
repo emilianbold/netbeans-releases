@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
@@ -92,6 +93,10 @@ public class CompletionUtilities {
         return out;
     }
     
+    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
+        return findItemAtCaretPos(target, null, CsmCompletionProvider.getCompletionQuery(), dotPos);
+    }
+
     public static CsmObject findItemAtCaretPos(JTextComponent target, BaseDocument doc, CsmCompletionQuery query, int dotPos){
         try {
             doc = doc != null ? doc : (BaseDocument)target.getDocument();
@@ -102,11 +107,13 @@ public class CompletionUtilities {
                 idFunBlk = new int[] { dotPos, dotPos };
             }
             
+            boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
                 CompletionQuery.Result result = query.query(target, doc, idFunBlk[ind], sup, true, false);
                 if (result != null && result.getData().size() > 0) {
-                    CsmObject itm = getAssociatedObject(result.getData().get(0));
-                    if (result.getData().size() > 1 && (CsmKindUtilities.isFunction(itm))) {
+                    List<CsmObject> filter = getAssociatedObjects(result.getData(), searchFuncsOnly);
+                    CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getData().get(0));
+                    if (filter.size() > 1 && searchFuncsOnly) {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(doc, idFunBlk[ind]-1);
                         if (endOfMethod > -1){
@@ -124,17 +131,32 @@ public class CompletionUtilities {
         return null;
     }
     
-    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
-        return findItemAtCaretPos(target, null, CsmCompletionProvider.getCompletionQuery(), dotPos);
-    }
-
+    private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly) {
+        List<CsmObject> out = new ArrayList();
+        List<CsmObject> funcs = new ArrayList();
+        
+        for (Object item : items) {
+            if (item instanceof CsmResultItem){
+                CsmObject ret = getAssociatedObject(item);
+                boolean isFunc = CsmKindUtilities.isFunction(ret);
+                if (isFunc) {
+                    funcs.add(ret);
+                } else {
+                    out.add(ret);
+                }
+            }
+        }
+        if (!wantFuncsOnly) {
+            out.addAll(funcs);
+        } else {
+            out = funcs;
+        }
+        return out;        
+    }    
+    
     private static CsmObject getAssociatedObject(Object item) {
         if (item instanceof CsmResultItem){
             CsmObject ret = (CsmObject) ((CsmResultItem)item).getAssociatedObject();
-//            // for constructors return class
-//            if (CsmKindUtilities.isConstructor(ret)) {
-//                ret = ((CsmConstructor)ret).getContainingClass();
-//            }
             if (ret != null) {
                 return ret;
             }
@@ -162,4 +184,5 @@ public class CompletionUtilities {
         }
     }    
    
+
 }

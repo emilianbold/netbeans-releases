@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     //private int curCurlyLevel = 0;
     
-    private List parserFolders = new ArrayList();
+    private List<CppFoldRecord> parserFolders = new ArrayList<CppFoldRecord>();
         
     private APTFoldingWalker walker = null;
     
@@ -75,9 +75,9 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
     }
     
-    protected List getFolders() {
-        List walkerFolds = walker.getFolders();
-        List out = new ArrayList(walkerFolds.size() + parserFolders.size());
+    protected List<CppFoldRecord> getFolders() {
+        List<CppFoldRecord> walkerFolds = walker.getFolders();
+        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(walkerFolds.size() + parserFolders.size());
         out.addAll(walkerFolds);
         out.addAll(parserFolders);
         return out;
@@ -111,8 +111,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         return parser;
     }
     
-    public static List parse(String name, Reader source) {
-        List folds = new ArrayList();
+    public static List<CppFoldRecord> parse(String name, Reader source) {
+        List<CppFoldRecord> folds = new ArrayList<CppFoldRecord>();
         try {
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source);
             APTFoldingParser parser = getParser(name, lexer);

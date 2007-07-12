@@ -107,7 +107,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	CsmObject owner = findOwner(null);
 	if( owner instanceof CsmQualifiedNamedElement  ) {
 	    qualifiedNameIsFake = false;
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
+	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
 	}
 	else {
 	    qualifiedNameIsFake = true;
@@ -128,6 +128,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	    if( sb.length() == 0 ) {
 		sb.append("unknown>"); // NOI18N
 	    }
+            sb.append(getScopeSuffix());
 	    sb.append("::"); // NOI18N
 	    sb.append(getQualifiedNamePostfix());
 	    return sb.toString();
@@ -144,10 +145,11 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public void fixFakeRegistration() {
 	String newQname = findQualifiedName();
 	if( ! newQname.equals(qualifiedName) ) {
-	    ((FileImpl) getContainingFile()).getProjectImpl().unregisterDeclaration(this);
+	    ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl();
+            aProject.unregisterDeclaration(this);
             this.cleanUID();
 	    qualifiedName = newQname;
-	    ((FileImpl) getContainingFile()).getProjectImpl().registerDeclaration(this);
+	    aProject.registerDeclaration(this);
 	}
     }
     

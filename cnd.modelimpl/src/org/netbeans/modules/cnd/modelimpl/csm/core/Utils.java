@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -121,5 +122,32 @@ public class Utils {
                 }
             }            
         }
+    }
+    
+    public static String getCsmDeclarationKindkey(CsmDeclaration.Kind kind) {
+	switch( kind ) {
+	    case BUILT_IN:		    return "B"; // NOI18N
+	    case CLASS:			    return "C"; // NOI18N
+	    case UNION:			    return "U"; // NOI18N
+	    case STRUCT:		    return "S"; // NOI18N
+	    case ENUM:			    return "E"; // NOI18N
+	    case ENUMERATOR:		    return "e"; // NOI18N
+	    case MACRO:			    return "M"; // NOI18N
+	    case VARIABLE:		    return "V"; // NOI18N
+	    case VARIABLE_DEFINITION:	    return "v"; // NOI18N
+	    case FUNCTION:		    return "F"; // NOI18N
+	    case FUNCTION_DEFINITION:	    return "f"; // NOI18N
+	    case TEMPLATE_SPECIALIZATION:   return "s"; // NOI18N
+	    case TYPEDEF:		    return "t"; // NOI18N
+	    case ASM:			    return "A"; // NOI18N
+	    case TEMPLATE_DECLARATION:	    return "T"; // NOI18N
+	    case NAMESPACE_DEFINITION:	    return "N"; // NOI18N
+	    case NAMESPACE_ALIAS:	    return "a"; // NOI18N
+	    case USING_DIRECTIVE:	    return "U"; // NOI18N
+	    case USING_DECLARATION:	    return "u"; // NOI18N
+	    case CLASS_FORWARD_DECLARATION: return "w"; // NOI18N
+	    case CLASS_FRIEND_DECLARATION:  return "r"; // NOI18N
+	    default:	throw new IllegalArgumentException("Unexpected value of CsmDeclaration.Kind"); //NOI18N
+	}
     }
 }

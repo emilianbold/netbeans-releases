@@ -44,8 +44,10 @@ public class TemplateUtils {
 	return sb.toString();
     }
     
-    private static void addSpecializationSuffix(AST firstChild, StringBuilder sb) {
+    public static void addSpecializationSuffix(AST firstChild, StringBuilder sb) {
+        int depth = 0;
 	for( AST child = firstChild; child != null; child = child.getNextSibling() ) {
+            if (child.getType() == CPPTokenTypes.LESSTHAN) depth ++;
 	    if( CPPTokenTypes.CSM_START <= child.getType() && child.getType() <= CPPTokenTypes.CSM_END ) {
 		AST grandChild = child.getFirstChild();
 		if( grandChild != null ) {
@@ -57,13 +59,18 @@ public class TemplateUtils {
 		assert text != null;
 		assert text.length() > 0;
 		if( sb.length() > 0 ) {
-		    if( Character.isLetterOrDigit(sb.charAt(sb.length() - 1)) ) {
-			if( Character.isLetterOrDigit(text.charAt(0)) ) {
-			    sb.append(' ');
+		    if( Character.isJavaIdentifierPart(sb.charAt(sb.length() - 1)) ) {
+			if( Character.isJavaIdentifierPart(text.charAt(0)) ) {
+			    sb.append(' '); 
 			}
 		    }
 		}
 		sb.append(text);
+                if (child.getType() == CPPTokenTypes.GREATERTHAN) {
+                    depth--;
+                    if (depth==0)
+                        break;
+                }
 	    }
 	}
     }

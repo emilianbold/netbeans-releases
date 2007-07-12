@@ -243,7 +243,8 @@ public class APTSerializeUtils {
     // persist snapshots
     
     public static void writeSnapshot(APTMacroMapSnapshot snap, DataOutput output) throws IOException {
-        if (snap == null) {
+        // FIXUP: we do not support yet writing snapshots!
+        if (snap == null || true) {
             output.writeInt(NULL_POINTER);
         } else {
             output.writeInt(MACRO_MAP_SNAPSHOT);

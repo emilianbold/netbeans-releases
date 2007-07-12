@@ -63,8 +63,7 @@ public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements C
     }
     
     public List<CsmScopeElement> getScopeElements() {
-        java.util.List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        l.addAll(getParameters());
+        List<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }

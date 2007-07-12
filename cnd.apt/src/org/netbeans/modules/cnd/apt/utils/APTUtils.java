@@ -301,6 +301,57 @@ public class APTUtils {
         }
     }
     
+    public static boolean isOpenBracket(Token token) {
+        assert (token != null);
+        return isOpenBracket(token.getType());
+    }
+    
+    public static boolean isOpenBracket(int ttype) {
+        switch (ttype) {
+            case APTTokenTypes.LCURLY:
+            case APTTokenTypes.LPAREN:
+            case APTTokenTypes.LSQUARE:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
+    public static boolean isCloseBracket(Token token) {
+        assert (token != null);
+        return isCloseBracket(token.getType());
+    }
+    
+    public static boolean isCloseBracket(int ttype) {
+        switch (ttype) {
+            case APTTokenTypes.RCURLY:
+            case APTTokenTypes.RPAREN:
+            case APTTokenTypes.RSQUARE:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
+    public static int getMatchBracket(int ttype) {
+        switch (ttype) {
+            case APTTokenTypes.RCURLY:
+                return APTTokenTypes.LCURLY;
+            case APTTokenTypes.RPAREN:
+                return APTTokenTypes.LPAREN;
+            case APTTokenTypes.RSQUARE:
+                return APTTokenTypes.LSQUARE;
+            case APTTokenTypes.LCURLY:
+                return APTTokenTypes.RCURLY;
+            case APTTokenTypes.LPAREN:
+                return APTTokenTypes.RPAREN;
+            case APTTokenTypes.LSQUARE:
+                return APTTokenTypes.RSQUARE;
+            default:
+                return APTUtils.EOF_TOKEN.EOF_TYPE;
+        }
+    }    
+    
     public static boolean isEndDirectiveToken(int ttype) {
         switch(ttype) {
             case APTTokenTypes.END_PREPROC_DIRECTIVE:

@@ -26,9 +26,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 import org.netbeans.modules.cnd.completion.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * base class for hyperlink tests
@@ -78,16 +75,9 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
      * @param destGoldenColumn start column of expected destination object (1-based)
      */
     protected void performTest(String source, int lineIndex, int colIndex, String destGoldenFile, int destGoldenLine, int destGoldenColumn) throws Exception {
-        File workDir = getWorkDir();
-        File testSourceFile = getDataFile(source);
         String goldenFileAbsPath = getDataFile(destGoldenFile).getAbsolutePath();
-        
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
-        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
-        DataObject testDataObject = DataObject.find(testFileObject);
-        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
-        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        assertNotNull("Unresolved document for data object " + testDataObject, testDataObject);//NOI18N
+        File testSourceFile = getDataFile(source);
+        BaseDocument doc = getBaseDocument(testSourceFile);
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
         Token jumpToken = getJumpToken(doc, offset);
         assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N

@@ -41,6 +41,7 @@ public class CodeAssistanceOptions {
     
     private static final String CodeAssistanceData = "code-assistance-data"; //NOI18N
     private static final String CodeModelEnabled = "code-model-enabled"; //NOI18N
+    private static final String ParseOrphanEnabled = "parse-orphan-enabled"; //NOI18N
     
     private final String namespace;
     private final boolean shared;
@@ -63,11 +64,20 @@ public class CodeAssistanceOptions {
     
     public Boolean getCodeAssistanceEnabled() {
         String value = doLoad(CodeModelEnabled);
-        return value != "" && value != null ? new Boolean(value) : Boolean.TRUE;
+        return !value.equals("") && value != null ? new Boolean(value) : Boolean.TRUE;
     }
     
     public void setCodeAssistanceEnabled(Boolean enabled) {
         doSave(CodeModelEnabled, enabled.toString());
+    }
+
+    public Boolean getParseOrphanEnabled() {
+        String value = doLoad(ParseOrphanEnabled);
+        return !value.equals("") && value != null ? new Boolean(value) : Boolean.TRUE;
+    }
+    
+    public void setParseOrphanEnabled(Boolean enabled) {
+        doSave(ParseOrphanEnabled, enabled.toString());
     }
     
     // private methods
@@ -85,10 +95,10 @@ public class CodeAssistanceOptions {
     }
     
     private Element getNode(Element configurationFragment, String name) {
-        NodeList nodes = configurationFragment.getElementsByTagNameNS(namespace, CodeModelEnabled);
+        NodeList nodes = configurationFragment.getElementsByTagNameNS(namespace, name);
         Element node;
         if (nodes.getLength() == 0) {
-            node = configurationFragment.getOwnerDocument().createElementNS(namespace, CodeModelEnabled);
+            node = configurationFragment.getOwnerDocument().createElementNS(namespace, name);
             configurationFragment.appendChild(node);
         } else {
             node = (Element)nodes.item(0);
@@ -103,7 +113,7 @@ public class CodeAssistanceOptions {
                 if (configurationFragment == null) {
                     return null;
                 }
-                return getNode(configurationFragment, CodeModelEnabled).getTextContent();
+                return getNode(configurationFragment, name).getTextContent();
             }
         });
     }

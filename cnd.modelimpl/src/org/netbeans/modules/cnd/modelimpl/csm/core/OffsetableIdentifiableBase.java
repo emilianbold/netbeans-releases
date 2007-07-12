@@ -27,6 +27,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -43,17 +44,9 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         super(ast, file);
     }
     
-    protected OffsetableIdentifiableBase(CsmFile file) {
-        super(file);
-    }
-    
     protected OffsetableIdentifiableBase(CsmFile containingFile, CsmOffsetable pos) {
         super(containingFile, pos);
-    }
-    
-    protected OffsetableIdentifiableBase(CsmFile file, CsmOffsetable.Position start, CsmOffsetable.Position end) {
-        super(file, start, end);
-    }    
+    }  
     
     protected abstract CsmUID createUID();
     
@@ -79,5 +72,15 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     
     protected OffsetableIdentifiableBase(DataInput input) throws IOException {
         super(input);
-    }    
+    } 
+    
+    protected final void writeUID(DataOutput output) throws IOException {
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        factory.writeUID(uid, output);
+    }
+    
+    protected final void readUID(DataInput input) throws IOException {
+        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+        this.uid = factory.readUID(input);
+    }
 }

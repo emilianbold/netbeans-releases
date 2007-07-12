@@ -18,12 +18,12 @@ CLASS A (A ) [1:1/0-4:3/37] lcurly=12
         FUNCTION foo [2:5/18-2:16/29] MethodImpl
             DEFINITION: foo  [6:1/42-9:2/74]
             SIGNATURE foo()
-            UNIQUE NAME FUNCTION:A::foo()
+            UNIQUE NAME F:A::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [2:5/18-2:9/22]
 FUNCTION DEFINITION foo  [6:1/42-9:2/74] FunctionDefinitionImpl
     SIGNATURE foo()
-    UNIQUE NAME FUNCTION_DEFINITION:A::foo()
+    UNIQUE NAME f:A::foo()
     DECLARATION: foo  [2:5/18-2:16/29]
     PARAMETERS:
     RETURNS void TEXT=void  [6:1/42-6:5/46]
@@ -39,7 +39,7 @@ CLASS A (A ) [1:1/0-4:3/37] lcurly=12
         FUNCTION foo [2:5/18-2:16/29] MethodImpl
             DEFINITION: foo  [6:1/42-9:2/74]
             SIGNATURE foo()
-            UNIQUE NAME FUNCTION:A::foo()
+            UNIQUE NAME F:A::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [2:5/18-2:9/22]
 

@@ -31,12 +31,10 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 public class SimpleRWAccess implements FileRWAccess {
     
-    private File file;
     private RandomAccessFile randomAccessFile;
     private Object lock = new Object();
 
     public SimpleRWAccess(File file) throws IOException {
-	this.file = file;
 	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N
     }
 

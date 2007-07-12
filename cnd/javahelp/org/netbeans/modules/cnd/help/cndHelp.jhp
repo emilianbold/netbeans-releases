@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/net/techpubs/export/set/techpubs4/Work/arice/cndHelp/org/netbeans/modules/cnd/help">
+		<directory title="/net/techpubs/export/set/techpubs4/Work/arice/CND1Help/cnd/core/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -68,11 +68,13 @@
 				<file title="CreatingCodeTemplates.html"/>
 				<file title="DisablingAutoCodeCompletion.html"/>
 				<file title="EditingSourceFiles.html"/>
+				<file title="GoToDeclaration.html"/>
 				<file title="SettingCompletionBoxDelay.html"/>
 				<file title="UsingAbbreviations.html"/>
 				<file title="UsingClassView.html"/>
 				<file title="UsingCodeCompletion.html"/>
 				<file title="UsingHyperlinks.html"/>
+				<file title="UsingNavigator.html"/>
 				<file title="UsingPairCompletion.html"/>
 			</directory>
 			<directory title="GettingStarted">
@@ -146,6 +148,7 @@
 				<file title="CodeAssistanceWizardP3.html"/>
 				<file title="CodeAssistanceWizardP4.html"/>
 				<file title="CodeAssistanceWizardP5.html"/>
+				<file title="CodeAssistanceWizardP6.html"/>
 				<file title="ConfiguringBuildTools.html"/>
 				<file title="ConfiguringParsingSettings.html"/>
 				<file title="ConfiguringProjectSettings.html"/>
@@ -161,6 +164,7 @@
 				<file title="NewMakeWizardP4.html"/>
 				<file title="NewMakeWizardP5.html"/>
 				<file title="NewStaticLibWizard.html"/>
+				<file title="ProjectPropsArchiverGeneral.html"/>
 				<file title="ProjectPropsCommandLine.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
 				<file title="ProjectPropsDebugging.html"/>

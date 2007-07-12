@@ -151,8 +151,8 @@ public class RunProfile implements ConfigurationAuxObject {
             list.add(term);
             termPaths.put(term, "start"); // NOI18N
             termPaths.put(def, "start"); // NOI18N
-            termOptions.put(term, "sh \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
-            termOptions.put(def,  "sh \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+            termOptions.put(term, "sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
+            termOptions.put(def,  "sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
         } else {
             // Start with the user's $PATH. Append various other directories and look
             // for gnome-terminal, konsole, and xterm.
@@ -166,20 +166,22 @@ public class RunProfile implements ConfigurationAuxObject {
                 list.add(name); 
                 termPaths.put(name, termPath);
                 termPaths.put(def, termPath);
-                termOptions.put(name, "--disable-factory --hide-menubar " + "--title=\"{0} {1}\" " + // NOI18N
-                        "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
-                termOptions.put(def,  "--disable-factory --hide-menubar " + "--title=\"{0} {1}\" " + // NOI18N
-                       "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
+                termOptions.put(name, "--disable-factory --hide-menubar " + "--title=\"{1} {2}\" " + // NOI18N
+                        "-e \"\\\"" + dorun + "\\\" -p \\\"" + getString("LBL_RunPrompt") + "\\\" " + // NOI18N
+                        "-f \\\"{0}\\\" {1} {2}\""); // NOI18N
+                termOptions.put(def,  "--disable-factory --hide-menubar " + "--title=\"{1} {2}\" " + // NOI18N
+                        "-e \"\\\"" + dorun + "\\\" -p \\\"" + getString("LBL_RunPrompt") + "\\\" " + // NOI18N
+                        "-f \\\"{0}\\\" {1} {2}\""); // NOI18N
             }
             termPath = searchPath(path, "konsole"); // NOI18N
             if (termPath != null) {
                 name = getString("TerminalType_KDE"); // NOI18N
                 list.add(name); 
                 termPaths.put(name, termPath);
-                termOptions.put(name, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                termOptions.put(name,    "-e \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 if (termPaths.get(def) == null) {
                     termPaths.put(def, termPath);
-                    termOptions.put(def, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                    termOptions.put(def, "-e \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 }
             }
             termPath = searchPath(path, "xterm", Utilities.getOperatingSystem() == Utilities.OS_SOLARIS ? // NOI18N
@@ -188,10 +190,10 @@ public class RunProfile implements ConfigurationAuxObject {
                 name = getString("TerminalType_XTerm"); // NOI18N
                 list.add(name); 
                 termPaths.put(name, termPath);
-                termOptions.put(name, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                termOptions.put(name,    "-e \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 if (termPaths.get(def) == null) {
                     termPaths.put(def, termPath);
-                    termOptions.put(def, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                    termOptions.put(def, "-e \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + "\" -f \"{0}\" {1} {2}"); // NOI18N
                 }
             }
             if (termPaths.get(def) == null) {

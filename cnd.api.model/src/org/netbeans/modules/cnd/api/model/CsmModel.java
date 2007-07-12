@@ -83,6 +83,13 @@ public interface CsmModel {
      * Find project that contains file.
      * Returns CsmFile if project is found.
      *
+     * This function might be costly (this depends on the model state).
+     *
+     * CAUTION: this method should never be called directly from the thread, 
+     * in which model notificatios (either CsmModelListener or CsmProgressListener) come.
+     * These notifications come directly in parser thread or project initialization thread.
+     * Calling findFile from these threads may cause deadlock.
+     *
      * @param absPath absolute file path
      */
     CsmFile findFile(String absPath);

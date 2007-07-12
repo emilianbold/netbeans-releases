@@ -24,6 +24,10 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 
 /**
  * utilities method for working with offsets of Csm objects
@@ -76,18 +80,49 @@ public class CsmOffsetUtilities {
     }
     
     // list is ordered by offsettable elements
-    public static CsmObject findObject(List/*<CsmObject>*/ list, int offset) {
+    public static <T extends CsmObject> T findObject(List<T> list, CsmContext context, int offset) {
         assert (list != null) : "expect not null list";
-        for (Iterator it = list.iterator(); it.hasNext();) {
-            Object obj = it.next();
+        for (Iterator<T> it = list.iterator(); it.hasNext();) {
+            T obj = it.next();
             assert (obj != null) : "can't be null declaration";
-            if (CsmKindUtilities.isCsmObject(obj)) {
-                if (CsmOffsetUtilities.isInObject((CsmObject)obj, offset)) {
-                    // we are inside csm element
-                    return (CsmObject)obj;
-                }
+            if (CsmOffsetUtilities.isInObject((CsmObject)obj, offset)) {
+                // we are inside csm element
+                CsmContextUtilities.updateContextObject(obj, offset, context);
+                return obj;
             }
         }
         return null;
     }
+    
+    public static boolean isInFunctionScope(final CsmFunction fun, final int offset) {
+        boolean inScope = false;
+        if (fun != null) {
+            inScope = true;
+            // in function, but check that not in return type
+            // check if offset in return value
+            CsmType retType = fun.getReturnType();
+            if (CsmOffsetUtilities.isInObject(retType, offset)) {
+                return false;
+            }
+            // check if offset is before parameters
+            List<CsmParameter> params = fun.getParameters();
+            if (params.size() > 0) {
+                CsmParameter firstParam = params.get(0);
+                if (CsmOffsetUtilities.isBeforeObject(firstParam, offset)) {
+                    return false;
+                }
+            } else {
+                // check initializer list for constructors
+                
+                // for function definitions check body
+                if (CsmKindUtilities.isFunctionDefinition(fun)) {
+                    CsmFunctionDefinition funDef = (CsmFunctionDefinition)fun;
+                    if (CsmOffsetUtilities.isBeforeObject(funDef.getBody(), offset)) {
+                        return false;
+                    }
+                }
+            }
+        }              
+        return inScope;
+    }    
 }

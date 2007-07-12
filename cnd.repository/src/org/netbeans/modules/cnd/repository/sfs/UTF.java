@@ -70,15 +70,7 @@ public class UTF {
 	    throw new UTFDataFormatException(
                 "encoded string too long: " + utflen + " bytes"); // NOI18N
 
-        byte[] bytearr = null;
-//        if (out instanceof DataOutputStream) {
-//            DataOutputStream dos = (DataOutputStream)out;
-//            if(dos.bytearr == null || (dos.bytearr.length < (utflen+2)))
-//                dos.bytearr = new byte[(utflen*2) + 2];
-//            bytearr = dos.bytearr;
-//        } else {
-            bytearr = new byte[utflen+2];
-//        }
+        byte[]  bytearr = new byte[utflen+2];
      
 	bytearr[count++] = (byte) ((utflen >>> 8) & 0xFF);
 	bytearr[count++] = (byte) ((utflen >>> 0) & 0xFF);  

@@ -57,7 +57,7 @@ public class DocOffsetableImpl implements CsmOffsetable {
     }
 
     public CsmOffsetable.Position getEndPosition() {
-        return pos;
+        return new DocOffsPositionImpl(getDocument(),  getEndOffset());
     }
 
     public String getText() {

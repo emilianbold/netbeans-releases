@@ -16,7 +16,7 @@ CLASS Cls<> (Cls ) [1:1/0-2:3/32] lcurly=28
     MEMBERS:
 FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl
     SIGNATURE min(T,T)
-    UNIQUE NAME FUNCTION_DEFINITION:min(T,T)
+    UNIQUE NAME f:min<class T>(T,T)
     DECLARATION: min  [6:1/60-8:2/119]
     PARAMETERS:
         x [6:25/84-6:28/87] type: $unresolved$::T TEXT=T  [6:25/84-6:26/85] init: null
@@ -31,7 +31,7 @@ CLASS Cls<> (Cls ) [1:1/0-2:3/32] lcurly=28
     MEMBERS:
 FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl
     SIGNATURE min(T,T)
-    UNIQUE NAME FUNCTION_DEFINITION:min(T,T)
+    UNIQUE NAME f:min<class T>(T,T)
     DECLARATION: min  [6:1/60-8:2/119]
     PARAMETERS:
         x [6:25/84-6:28/87] type: $unresolved$::T TEXT=T  [6:25/84-6:26/85] init: null

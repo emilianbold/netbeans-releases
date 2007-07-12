@@ -23,14 +23,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -189,63 +190,77 @@ public class CompletionResolverImpl implements CompletionResolver {
         
         if (needLocalVars(context, offset)) {
             fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);            
-            CsmFunctionDefinition funDef = CsmContextUtilities.getFunctionDefinition(context);
-            if (funDef != null) {
-                boolean staticContext = CsmBaseUtilities.isStaticContext(funDef);
-                // get local variables from context
-                
-                // function variables
-                if (needFunctionVars(context, offset)) {
-                    List<CsmDeclaration> decls = contResolver.findFunctionLocalDeclarations(context, strPrefix, match);
-                    // separate local classes/structs/enums/unions and variables
-                    localVars = new ArrayList<CsmDeclaration>(decls.size());
-                    for (CsmDeclaration elem : decls) {
-                        if (CsmKindUtilities.isVariable(elem)) {
-                            localVars.add(elem);
-                        } if (needClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
-                            if (classesEnumsTypedefs == null) {
-                                classesEnumsTypedefs = new ArrayList<CsmDeclaration>();
-                            }
-                            classesEnumsTypedefs.add(elem);
-                        } if (CsmKindUtilities.isEnumerator(elem)) {
-                            if (fileLocalEnumerators == null) {
-                                fileLocalEnumerators = new ArrayList<CsmDeclaration>();
-                            }
-                            fileLocalEnumerators.add(elem);
+            CsmFunction fun = CsmContextUtilities.getFunction(context);
+            boolean staticContext = fun == null ? true : CsmBaseUtilities.isStaticContext(fun);
+            // get local variables from context
+
+            // function variables
+            if (needFunctionVars(context, offset)) {
+                List<CsmDeclaration> decls = contResolver.findFunctionLocalDeclarations(context, strPrefix, match);
+                // separate local classes/structs/enums/unions and variables
+                localVars = new ArrayList<CsmDeclaration>(decls.size());
+                for (CsmDeclaration elem : decls) {
+                    if (CsmKindUtilities.isVariable(elem)) {
+                        localVars.add(elem);
+                    } if (needClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
+                        if (classesEnumsTypedefs == null) {
+                            classesEnumsTypedefs = new ArrayList<CsmDeclaration>();
                         }
-                    }                   
-                }
-                
-                // file local variables
-                if (needFileLocalVars(context, offset)) {
-                    fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match);
-                }
-                
-                CsmClass clazz = CsmBaseUtilities.getFunctionClass(funDef);
+                        classesEnumsTypedefs.add(elem);
+                    } if (CsmKindUtilities.isEnumerator(elem)) {
+                        if (fileLocalEnumerators == null) {
+                            fileLocalEnumerators = new ArrayList<CsmDeclaration>();
+                        }
+                        fileLocalEnumerators.add(elem);
+                    }
+                }                   
+            }
+
+            // file local variables
+            if (needFileLocalVars(context, offset)) {
+                fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match);
+            }
+
+            if (needClassElements(context, offset)) {
+                CsmClass clazz = CsmBaseUtilities.getFunctionClass(fun);
                 if (clazz != null) {
                     // get class variables visible in this method
-                    classFields = contResolver.getFields(clazz, funDef, strPrefix, staticContext, match, true);
-                    
+                    classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true);
+
                     // get class enumerators visible in this method
-                    classEnumerators = contResolver.getEnumerators(clazz, funDef, strPrefix, match, true);
-                    
+                    classEnumerators = contResolver.getEnumerators(clazz, fun, strPrefix, match, true);
+
                     // get class methods visible in this method
-                    classMethods = contResolver.getMethods(clazz, funDef, strPrefix, staticContext, match, true);
+                    classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true);
                 }
             }
-        } else if (needClassMethods(context, offset)) {
-            CsmFunctionDefinition funDef = CsmContextUtilities.getFunctionDefinition(context);
-            if (funDef == null || !CsmContextUtilities.isInFunctionBody(context, offset)) {
-                funDef = null;
-            }            
-            CsmClass clazz = funDef == null ? null : CsmBaseUtilities.getFunctionClass(funDef);
+        } else if (needClassElements(context, offset)) {
+            CsmFunction fun = CsmContextUtilities.getFunction(context);
+            CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
             clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
             if (clazz != null) {
                 boolean staticContext = false;
                 // get class methods visible in this method
-                CsmOffsetableDeclaration contextDeclaration = funDef != null ? funDef : CsmContextUtilities.getClass(context, false);
-                classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true);
-            }            
+                CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : CsmContextUtilities.getClass(context, false);
+                if (needClassMethods(context, offset)) {
+                    if (clazz != null) {
+                        classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true);
+                    }
+                }
+                if (needClassFields(context, offset)) {
+                    // get class variables visible in this context
+                    classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true);
+                }
+                if (needClassEnumerators(context, offset)) {
+                    // get class enumerators visible in this context
+                    classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true);
+                }
+                if (needNestedClassifiers(context, offset)) {
+                    // get class nested classifiers visible in this context
+                    List<CsmClassifier> innerCls = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, true);
+                    classesEnumsTypedefs.addAll(innerCls);
+                }
+            }
         }
         if (needFileLocalMacros(context, offset)) {
             fileLocalMacros = contResolver.getFileLocalMacros(context, strPrefix, match);
@@ -446,10 +461,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
-    private Collection getGlobalVariables(CsmProject prj, String strPrefix, boolean match, int offset) {
-//        CsmNamespace globNS = prj.getGlobalNamespace();
-        // add global variables
-//        List res = contResolver.getNamespaceVariables(globNS, strPrefix, match, false);     
+    private Collection getGlobalVariables(CsmProject prj, String strPrefix, boolean match, int offset) {    
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
@@ -465,12 +477,6 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private Collection getGlobalEnumerators(CsmProject prj, String strPrefix, boolean match, int offset) {
-//        if (prj == null) {
-//            return null;
-//        }
-//        CsmNamespace globNS = prj.getGlobalNamespace();
-//        List res = contResolver.getNamespaceEnumerators(globNS, strPrefix, match, false);
-//        return res;
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
@@ -481,10 +487,6 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private Collection getGlobalFunctions(CsmProject prj, String strPrefix, boolean match, int offset) {
-//        CsmNamespace globNS = prj.getGlobalNamespace();
-//        // add global variables
-//        List res = contResolver.getNamespaceFunctions(globNS, strPrefix, match, false);        
-//        return res;
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
@@ -501,9 +503,6 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private Collection getGlobalNamespaces(CsmProject prj, String strPrefix, boolean match, int offset) {
-//        CsmNamespace globNS = prj.getGlobalNamespace();
-//        List res = contResolver.getNestedNamespaces(globNS, strPrefix, match);
-//        return res;
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
@@ -545,26 +544,17 @@ public class CompletionResolverImpl implements CompletionResolver {
         boolean need = false;
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT) {
             assert (context != null);
-            if (CsmContextUtilities.isInFunctionBody(context, offset)) {
+            if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
                 resolveTypes |= RESOLVE_CLASSES;
-                
-                // some other info to remember in this context
-                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
-                resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
-                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
-                resolveTypes |= RESOLVE_LIB_CLASSES;
-                resolveTypes |= RESOLVE_LIB_VARIABLES;
-                resolveTypes |= RESOLVE_LIB_ENUMERATORS;
-                resolveTypes |= RESOLVE_LIB_FUNCTIONS;
-                resolveTypes |= RESOLVE_LIB_NAMESPACES;
+                updateResolveTypesInFunction(offset, context);
                 need = true;
-            } else if (CsmContextUtilities.getClass(context, true) != null) {
+            } else if (CsmContextUtilities.getClass(context, false) != null) {
                 // for speed up remember result
                 resolveTypes |= RESOLVE_CLASSES;
-                
+                resolveTypes |= RESOLVE_CLASS_FIELDS;
+                resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
+                resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
                 need = true;
             } else {
                 // resolve classes always
@@ -590,6 +580,30 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         return false;
     }
+
+    private void updateResolveTypesInFunction(final int offset, final CsmContext context) {
+        
+        if (!CsmContextUtilities.isInType(context, offset)) {
+            // some other info to remember in this context
+            resolveTypes |= RESOLVE_LOCAL_VARIABLES;
+            resolveTypes |= RESOLVE_CLASS_METHODS;
+            resolveTypes |= RESOLVE_CLASS_FIELDS;
+            resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
+            resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
+        }
+        if (CsmContextUtilities.isInFunctionBody(context, offset)) {
+            // some other info to remember in this context
+            resolveTypes |= RESOLVE_GLOB_VARIABLES;
+            resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
+            resolveTypes |= RESOLVE_LIB_VARIABLES;
+            resolveTypes |= RESOLVE_LIB_ENUMERATORS;
+            resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
+            resolveTypes |= RESOLVE_GLOB_NAMESPACES;
+            resolveTypes |= RESOLVE_LIB_CLASSES;
+            resolveTypes |= RESOLVE_LIB_FUNCTIONS;
+            resolveTypes |= RESOLVE_LIB_NAMESPACES;
+        }
+    }
     
     private boolean needFileLocalVars(CsmContext context, int offset) {
         if ((hideTypes & resolveTypes & RESOLVE_FILE_LOCAL_VARIABLES) == RESOLVE_LOCAL_VARIABLES) {
@@ -598,21 +612,12 @@ public class CompletionResolverImpl implements CompletionResolver {
         boolean need = false;
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT) {
             assert (context != null);
-            if (CsmContextUtilities.isInFunctionBody(context, offset)) {
+            if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember some results
                 resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
                 
-                // some other info to remember in this context
-                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
-                resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
-                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
-                resolveTypes |= RESOLVE_LIB_CLASSES;
-                resolveTypes |= RESOLVE_LIB_VARIABLES;
-                resolveTypes |= RESOLVE_LIB_ENUMERATORS;
-                resolveTypes |= RESOLVE_LIB_FUNCTIONS;
-                resolveTypes |= RESOLVE_LIB_NAMESPACES;
+                updateResolveTypesInFunction(offset, context);
+                
                 need = true;
             }
         }
@@ -629,21 +634,12 @@ public class CompletionResolverImpl implements CompletionResolver {
         boolean need = false;
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT) {
             assert (context != null);
-            if (CsmContextUtilities.isInFunctionBody(context, offset)) {
+            if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember some results
                 resolveTypes |= RESOLVE_LOCAL_VARIABLES;
                 
-                // some other info to remember in this context
-                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
-                resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
-                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
-                resolveTypes |= RESOLVE_LIB_CLASSES;
-                resolveTypes |= RESOLVE_LIB_VARIABLES;
-                resolveTypes |= RESOLVE_LIB_ENUMERATORS;
-                resolveTypes |= RESOLVE_LIB_FUNCTIONS;
-                resolveTypes |= RESOLVE_GLOB_NAMESPACES;
+                updateResolveTypesInFunction(offset, context);
+                
                 need = true;
             }
         }
@@ -762,6 +758,38 @@ public class CompletionResolverImpl implements CompletionResolver {
         return false;
     }
     
+    private boolean needClassFields(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_CLASS_FIELDS) == RESOLVE_CLASS_FIELDS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean needClassEnumerators(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_CLASS_ENUMERATORS) == RESOLVE_CLASS_ENUMERATORS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean needNestedClassifiers(CsmContext context, int offset) {
+        if ((hideTypes & resolveTypes & RESOLVE_CLASS_NESTED_CLASSIFIERS) == RESOLVE_CLASS_NESTED_CLASSIFIERS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean needClassElements(CsmContext context, int offset) {
+        if (((hideTypes & resolveTypes & RESOLVE_CLASS_METHODS) == RESOLVE_CLASS_METHODS) ||
+            ((hideTypes & resolveTypes & RESOLVE_CLASS_FIELDS) == RESOLVE_CLASS_FIELDS) ||
+            ((hideTypes & resolveTypes & RESOLVE_CLASS_NESTED_CLASSIFIERS) == RESOLVE_CLASS_NESTED_CLASSIFIERS) ||
+            ((hideTypes & resolveTypes & RESOLVE_CLASS_ENUMERATORS) == RESOLVE_CLASS_ENUMERATORS)) {
+            return true;
+        }
+        return false;
+    }
+    
+
     // ====================== Debug support ===================================
     
     private static int trace(Collection/*<CsmObject*/ list, String msg) {

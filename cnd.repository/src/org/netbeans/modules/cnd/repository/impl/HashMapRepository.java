@@ -22,9 +22,11 @@ package org.netbeans.modules.cnd.repository.impl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
 /**
  * hash map based Repository
@@ -66,8 +68,26 @@ public class HashMapRepository implements Repository {
         map.clear();
     }
 
-    public void closeUnit(String unitName, boolean cleanRepository) {
+    public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
         // do nothing
+    }
+    
+    public void removeUnit(String unitName) {
+    }
+
+    public void cleanCaches() {
+        // do nothing
+    }
+
+    public void registerRepositoryListener(RepositoryListener aListener) {
+        // do nothing
+    }
+
+    public void unregisterRepositoryListener(RepositoryListener aListener) {
+        // do nothing
+    }
+
+    public void startup(int persistMechanismVersion) {
     }
     
 }

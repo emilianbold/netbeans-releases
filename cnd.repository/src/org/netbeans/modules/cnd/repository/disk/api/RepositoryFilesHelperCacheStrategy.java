@@ -19,17 +19,18 @@
 
 package org.netbeans.modules.cnd.repository.disk.api;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 
 public interface RepositoryFilesHelperCacheStrategy {
     
-    void                        adjustCapacity (int newCapacity);
+    void                        adjustCapacity (int newCapacity) throws IOException ;
     String                      lookupInCacheName(Key id);
     ConcurrentFileRWAccess      lookupInCacheFile(String fileName);
-    void                        cacheNameRemove(String fileName);
+    void                        cacheNameRemove(String fileName) throws IOException;
     void                        cacheFileRemove(ConcurrentFileRWAccess aFile);
-    void                        putCacheFile(String fileName, ConcurrentFileRWAccess aFile);
+    void                        putCacheFile(String fileName, ConcurrentFileRWAccess aFile)  throws IOException ;
     void                        putCacheName(Key id, String fileName);
 }

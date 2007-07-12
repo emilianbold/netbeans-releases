@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.text.NumberFormat;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -228,6 +230,7 @@ public class TraceModel {
 	private int lap = 0;
 	
 	public TraceModel() {
+            RepositoryUtils.cleanCashes();            
             model =  (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
             if( model == null ) {
                 model = new ModelImpl();
@@ -239,12 +242,13 @@ public class TraceModel {
         
         /*package*/ final void shutdown() {
             model.shutdown();
+            RepositoryUtils.cleanCashes();
         }
         
 	private void initProject() {
 		if( getProject() != null ) {
 			Object platformProject = getProject().getPlatformProject();
-			getProject().dispose();
+			getProject().dispose(true);
 			((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
 		}
 		setProject(model.addProject("DummyPrjId", "DummyProject", true)); // NOI18N
@@ -358,7 +362,7 @@ public class TraceModel {
 		return argHasBeenEaten;
 	}
 	
-	private void processFlag(String flag) {
+	protected void processFlag(String flag) {
 		if( "dumplib".equals(flag) ) { // NOI18N
 			dumpLib = true;
 		} else if( "relpath".equals(flag) ) { // NOI18N
@@ -376,7 +380,7 @@ public class TraceModel {
 			doCleanRepository = true;
 		} else if ( "folding".equals(flag)) { // NOI18N
 			testFolding = true;
-		} else if ( "clean4dump".equals(flag)) {
+		} else if ( "clean4dump".equals(flag)) { // NOI18N
                         dumpModelAfterCleaningCache = true;
                 }
 	}
@@ -519,7 +523,7 @@ public class TraceModel {
 			}
 		}
 		
-		if( showTime ) {
+		if( isShowTime() ) {
 			
 			int maxLen = 0;
 			for (int i = 0; i<CPPParserEx.MAX_GUESS_IDX;i++) {
@@ -541,8 +545,8 @@ public class TraceModel {
 			}
 			if( listFilesAtEnd ) {
 				print("\n========== User project files =========="); // NOI18N
-				List l = new ArrayList(getProject().getFileList().size());
-				for (Iterator it = getProject().getFileList().iterator(); it.hasNext();) {
+				List l = new ArrayList(getProject().getAllFiles().size());
+				for (Iterator it = getProject().getAllFiles().iterator(); it.hasNext();) {
 					CsmFile file = (CsmFile) it.next();
 					l.add(file.getAbsolutePath());
 				}
@@ -555,7 +559,7 @@ public class TraceModel {
 				l = new ArrayList();
 				for (Iterator it1 = getProject().getLibraries().iterator(); it1.hasNext();) {
 					ProjectBase lib = (ProjectBase) it1.next();
-					for (Iterator it2 = lib.getFileList().iterator(); it2.hasNext();) {
+					for (Iterator it2 = lib.getAllFiles().iterator(); it2.hasNext();) {
 						CsmFile file = (CsmFile) it2.next();
 						l.add(file.getAbsolutePath());
 					}
@@ -597,7 +601,7 @@ public class TraceModel {
 				print("\nTotal guessing time: " + guessingTime + "ms " + "(" + ((total.getTime() != 0) ? guessingTime*100/total.getTime() : -1) + "% of total parse time)"); // NOI18N
 			}
 		}
-		if( showTime || testRawPerformance ) {
+		if( isShowTime() || testRawPerformance ) {
 			print("Total parsing time: " + total.getTime() + "ms"); // NOI18N
 			//print("Average LPS: " + total.getLPS());
 			calculateAverageLPS(total, ! testRawPerformance);
@@ -612,7 +616,7 @@ public class TraceModel {
 		if( showMemoryUsage ) {
 			showMemoryUsage(memUsed);
 		}
-		if( showTime || showMemoryUsage || dumpModel || dumpFileOnly || dumpPPState) {
+		if( isShowTime() || showMemoryUsage || dumpModel || dumpFileOnly || dumpPPState) {
                     print("\n"); // NOI18N
 		}
 		if (dumpStatistics) {
@@ -650,7 +654,7 @@ public class TraceModel {
 		}
 	}
 
-        private void processArguments(final String[] args) {
+        /*package*/ void processArguments(final String[] args) {
             for( int i = 0; i < args.length; i++ ) {
                     if( args[i].startsWith("--") ) { // NOI18N
                             processFlag(args[i].substring(2));
@@ -762,7 +766,7 @@ public class TraceModel {
             boolean wasWait = false;
             project.waitParse();
             if (false && TraceFlags.USE_REPOSITORY) {
-                for (Iterator it = project.getFileList().iterator(); it.hasNext();) {
+                for (Iterator it = project.getAllFiles().iterator(); it.hasNext();) {
                     FileImpl file = (FileImpl) it.next();
                     if (!file.isParsed()) {
                         wasWait = true;
@@ -800,7 +804,9 @@ public class TraceModel {
 				qInc.add(path);
 			}
 		}
-		return APTHandlersSupport.createIncludeHandler(file.getAbsolutePath(), sysIncludes, qInc);
+                StartEntry startEntry = new StartEntry(file.getAbsolutePath(),
+                        RepositoryUtils.UIDtoKey(getProject().getUID()));
+		return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludes, qInc);
 	}
 	
 	private APTMacroMap getMacroMap(File file) {
@@ -1171,7 +1177,7 @@ public class TraceModel {
 				}
 			}
 			time = System.currentTimeMillis() - time;
-			if( showTime ) {
+			if( isShowTime() ) {
 				print("APT Lexing " + file.getName() + " took " + time + " ms"); // NOI18N
 			}
 			return time;
@@ -1196,7 +1202,7 @@ public class TraceModel {
 		walker.visit();
 		time = System.currentTimeMillis() - time;
 		
-		if( showTime ) {
+		if( isShowTime() ) {
 			print("Visiting APT "+ (cleanAPT ? "with cleaning APT in driver":"") + " took " + time + " ms"); // NOI18N
 			print(" resolving include paths took " + walker.getIncludeResolvingTime() + " ms"); // NOI18N
 		}
@@ -1244,9 +1250,12 @@ public class TraceModel {
 			}
                         lastLine = t.getLine();
 		}
+                if (printTokens && lastLine > 0) {
+                    print("", true);
+                }
 		time = System.currentTimeMillis() - time;
 		
-		if( showTime ) {
+		if( isShowTime() ) {
 			print("Getting" + (expand?" expanded":"") + (filter?" filtered":"") + " APT token stream "+ (cleanAPT ? "with cleaning APT in driver":"") + " took " + time + " ms"); // NOI18N
 			print(" resolving include paths took " + walker.getIncludeResolvingTime() + " ms"); // NOI18N
 		}
@@ -1274,7 +1283,7 @@ public class TraceModel {
 		}
 		time = System.currentTimeMillis() - time;
 		
-		if( showTime ) {
+		if( isShowTime() ) {
 			print("Parsing" + (cleanAPT ? " with cleaning APT in driver":"") + " took " + time + " ms"); // NOI18N
 		}
 		return time;
@@ -1345,7 +1354,7 @@ public class TraceModel {
 				maxAPTParsing = Math.max(maxAPTParsing, val);
 			}
 		}
-		if( showTime ) {
+		if( isShowTime() ) {
 			print("APT BEST/WORST results for " + file.getAbsolutePath()); // NOI18N
 			if (minLexer != Long.MAX_VALUE) {
 				print(minLexer  + " ms BEST Plain lexer"); // NOI18N
@@ -1408,7 +1417,7 @@ public class TraceModel {
 		APTFile apt = APTDriver.getInstance().findAPT(buffer);
 		time = System.currentTimeMillis() - time;
 		long newMem = usedMemory();
-		if( showTime ) {
+		if( isShowTime() ) {
 			minDriver = Math.min(minDriver, time);
 			maxDriver = Math.max(maxDriver, time);
 			print("Building APT for " + file.getName() + "\n SIZE OF FILE:" + file.length()/1024 + "Kb\n TIME: took " + time + " ms\n MEMORY: changed from " + // NOI18N
@@ -1503,7 +1512,7 @@ public class TraceModel {
 			dumpMacroMap(preprocHandler.getMacroMap());
 		}
 		time = System.currentTimeMillis() - time;
-		if( showTime ) {
+		if( isShowTime() ) {
 			result.setTime(time);
 			result.setLineCount(countLines(fileImpl));
 			if( ! quiet ) {
@@ -1662,7 +1671,7 @@ public class TraceModel {
 	}
 	
 	private int countUserFiles() {
-		return getProject().getFileList().size();
+		return getProject().getAllFiles().size();
 	}
 	
 	private int countSystemHeaders() {
@@ -1678,7 +1687,7 @@ public class TraceModel {
 		if( processedProjects.contains(prj) ) {
 			return 0;	// already counted
 		}
-		int cnt = prj.getFileList().size();
+		int cnt = prj.getAllFiles().size();
 		for (Iterator it = prj.getLibraries().iterator(); it.hasNext();) {
 			cnt += countFiles((ProjectBase) it.next(), processedProjects);
 		}
@@ -1687,14 +1696,14 @@ public class TraceModel {
 	
 	private void calculateAverageLPS(TestResult total, boolean includeLibs) {
 		total.lineCount = 0;
-		for (Iterator it = getProject().getFileList().iterator(); it.hasNext();) {
+		for (Iterator it = getProject().getAllFiles().iterator(); it.hasNext();) {
 			CsmFile file = (CsmFile) it.next();
 			total.lineCount += countLines(file, true);
 		}
 		if( includeLibs ) {
 			for (Iterator it1 = getProject().getLibraries().iterator(); it1.hasNext();) {
 				ProjectBase lib = (ProjectBase) it1.next();
-				for (Iterator it2 = lib.getFileList().iterator(); it2.hasNext();) {
+				for (Iterator it2 = lib.getAllFiles().iterator(); it2.hasNext();) {
 					CsmFile file = (CsmFile) it2.next();
 					total.lineCount += countLines(file, true);
 				}
@@ -1772,4 +1781,7 @@ public class TraceModel {
         return model;
     }
 
+    boolean isShowTime() {
+        return showTime;
+    }
 }

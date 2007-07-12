@@ -28,29 +28,40 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandler;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 public class GdbActionHandler implements CustomProjectActionHandler {
+    
     private ArrayList listeners = new ArrayList();
     
     public void execute(final ProjectActionEvent ev, InputOutput io) {
-        executionStarted();
-        Runnable loadProgram = new Runnable() {
-            public void run() {
-                if (ev.getID() == ProjectActionEvent.DEBUG) {
-                    DebuggerManager.getDebuggerManager().startDebugging(
-                            DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
-                } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
-                    DebuggerManager.getDebuggerManager().startDebugging(
-                            DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+        GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
+        String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
+        if (gdb != null) {
+            executionStarted();
+            Runnable loadProgram = new Runnable() {
+                public void run() {
+                    if (ev.getID() == ProjectActionEvent.DEBUG) {
+                        DebuggerManager.getDebuggerManager().startDebugging(
+                                DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+                    } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                        DebuggerManager.getDebuggerManager().startDebugging(
+                                DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+                    }
                 }
-            }
-        };
-        SwingUtilities.invokeLater(loadProgram);
-        
-        // XXX - Temporary. Once we're actually debugging, we shouldn't do this call until we're
-        // really done.
-        executionFinished(0);
+            };
+            SwingUtilities.invokeLater(loadProgram);
+
+            executionFinished(0);
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
+
+        }
     }
     
     public void addExecutionListener(ExecutionListener l) {

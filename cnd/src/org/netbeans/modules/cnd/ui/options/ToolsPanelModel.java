@@ -61,15 +61,19 @@ public abstract class ToolsPanelModel {
         CppSettings.getDefault().setMakePath(dir);
     }
     
-    protected String getGdbName() {
+    public String getGdbName() {
         return CppSettings.getDefault().getGdbName();
     }
     
-    protected void setGdbName(String name) {
+    public void setGdbName(String name) {
         CppSettings.getDefault().setGdbName(name);
     }
     
-    protected void setGdbPath(String dir) {
+    public String getGdbPath() {
+        return null;
+    }
+    
+    public void setGdbPath(String dir) {
         CppSettings.getDefault().setGdbPath(dir);
     }
     

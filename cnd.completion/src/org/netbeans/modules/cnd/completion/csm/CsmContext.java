@@ -115,13 +115,18 @@ public class CsmContext {
         return context.iterator();
     }
 
+    public int getStartOffset() {
+        return this.offset;
+    }
+    
     /**
      * Returns a string representation of the object. 
      * @return  a string representation of the object.
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append("context for offset ").append(offset); //NOI18N
+        buf.append("\nlast element is " + csmLastObject);
+        buf.append("\ncontext for offset ").append(offset); //NOI18N
         if (isEmpty()) {
             buf.append(" empty"); //NOI18N
         } else {

@@ -30,12 +30,12 @@ CLASS A (A ) [14:1/92-16:3/124] lcurly=104
         FUNCTION foo [15:5/110-15:16/121] MethodImpl
             DEFINITION: foo  [18:1/126-20:2/152]
             SIGNATURE foo()
-            UNIQUE NAME FUNCTION:A::foo()
+            UNIQUE NAME F:A::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [15:5/110-15:9/114]
 FUNCTION DEFINITION foo  [18:1/126-20:2/152] FunctionDefinitionImpl
     SIGNATURE foo()
-    UNIQUE NAME FUNCTION_DEFINITION:A::foo()
+    UNIQUE NAME f:A::foo()
     DECLARATION: foo  [15:5/110-15:16/121]
     PARAMETERS:
     RETURNS void TEXT=void  [18:1/126-18:5/130]
@@ -58,7 +58,7 @@ CLASS A (A ) [14:1/92-16:3/124] lcurly=104
         FUNCTION foo [15:5/110-15:16/121] MethodImpl
             DEFINITION: foo  [18:1/126-20:2/152]
             SIGNATURE foo()
-            UNIQUE NAME FUNCTION:A::foo()
+            UNIQUE NAME F:A::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [15:5/110-15:9/114]
 NAMESPACE DEFINITIONS for N (N) 

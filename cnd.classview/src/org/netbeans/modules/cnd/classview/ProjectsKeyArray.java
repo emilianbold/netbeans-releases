@@ -67,9 +67,11 @@ public class ProjectsKeyArray extends Children.Keys {
     }
     
     private Set<CsmProject> getProjects(){
-        Set<CsmProject> projects = gatherProjects();
-        Set<CsmProject> libs = gatherLibs(projects);
-        projects.addAll(libs);
+        Set<CsmProject> projects = new HashSet<CsmProject>();
+        for (Iterator iter = CsmModelAccessor.getModel().projects().iterator(); iter.hasNext(); ) {
+            CsmProject p = (CsmProject) iter.next();
+            projects.add(p);
+        }
         return projects;
     }
     
@@ -95,11 +97,6 @@ public class ProjectsKeyArray extends Children.Keys {
             return;
         }
         myProjects.put(project,getSortedName(project,false));
-        for(CsmProject lib : gatherLibs(myProjects.keySet())){
-            if (!myProjects.containsKey(lib)){
-                myProjects.put(lib,getSortedName(lib,true));
-            }
-        }
         resetKeys();
     }
     
@@ -141,11 +138,6 @@ public class ProjectsKeyArray extends Children.Keys {
         for(CsmProject p : newProjects){
             myProjects.put(p,getSortedName(p,false));
         }
-        for(CsmProject lib : gatherLibs(myProjects.keySet())){
-            if (!myProjects.containsKey(lib)){
-                myProjects.put(lib,getSortedName(lib,true));
-            }
-        }
         resetKeys();
     }
     
@@ -167,24 +159,6 @@ public class ProjectsKeyArray extends Children.Keys {
         super.destroyNodes(node);
     }
     
-    private Set<CsmProject> gatherProjects() {
-        Set<CsmProject> projects = new HashSet<CsmProject>();
-        for (Iterator iter = CsmModelAccessor.getModel().projects().iterator(); iter.hasNext(); ) {
-            CsmProject p = (CsmProject) iter.next();
-            projects.add(p);
-        }
-        return projects;
-    }
-    
-    private Set<CsmProject> gatherLibs(Set<CsmProject> projects) {
-        Set<CsmProject> libs = new HashSet<CsmProject>();
-        if (ClassViewModel.isShowLibs() ) {
-            for(CsmProject p : projects) {
-                libs.addAll(p.getLibraries());
-            }
-        }
-        return libs;
-    }
     
     protected void addNotify() {
         myProjects = new HashMap<CsmProject,SortedName>();

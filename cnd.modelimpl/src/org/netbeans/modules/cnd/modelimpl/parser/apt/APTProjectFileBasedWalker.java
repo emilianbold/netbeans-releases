@@ -23,12 +23,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.openide.filesystems.FileUtil;
 
@@ -38,27 +41,31 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final FileImpl file;
+    private final FileImpl startFile;
     private int mode;
     
-    public APTProjectFileBasedWalker(APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
+    public APTProjectFileBasedWalker(FileImpl startFile, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler);
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
+        this.startFile = startFile;
+        assert startFile != null;
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
     
-    protected void include(String path, APTInclude apt) {
+    protected void include(ResolvedPath resolvedPath, APTInclude apt) {
         FileImpl included = null;
-        if (path != null) {
-            if (path.indexOf("..") > 0) {
+        if (resolvedPath != null) {
+            String path = resolvedPath.getPath();
+            if (path.indexOf("..") > 0) { // NOI18N
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine())) {
-                ProjectBase curProject = file.getProjectImpl();
-                if (curProject != null) {
-                    ProjectBase inclFileOwner = curProject.resolveFileProjectOnInclude(path);
+                ProjectBase startProject = getStartFile().getProjectImpl();
+                if (startProject != null) {
+                    ProjectBase inclFileOwner = LibraryManager.getInsatnce().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);
                     try {
                         included = includeAction(inclFileOwner, path, mode, apt);
                     } catch (FileNotFoundException ex) {
@@ -82,6 +89,10 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     
     protected FileImpl getFile() {
         return this.file;
+    }
+
+    protected FileImpl getStartFile() {
+        return this.startFile;
     }
     
     protected void setMode(int mode) {

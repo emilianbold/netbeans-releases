@@ -37,6 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 
 public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
+    private static final long serialVersionUID = 7249069246763182397L;
     private final TreeMap<K, RepositoryCacheValue<V>>   keyToValueStorage;
     private final TreeMap<RepositoryCacheValue<V>, K>   valueToKeyStorage;
     private AtomicInteger                         capacity;
@@ -44,7 +45,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
     private static final int                      DEFAULT_CACHE_CAPACITY  = 20;
     private static AtomicInteger currentBornStamp = new AtomicInteger(0);
     
-    private final class CacheEntry<K,V> implements Map.Entry<K,V> {
+    static private final class CacheEntry<K,V> implements Map.Entry<K,V> {
         private K key;
         private V value;
         
@@ -71,7 +72,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
     }
     
     
-    private final class RepositoryCacheValue<V>  implements Comparable{
+    static private final class RepositoryCacheValue<V>  implements Comparable{
         
         public AtomicInteger       frequency;
         public V                   value;
@@ -240,10 +241,11 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
             
             readWriteLock.writeLock().lock();
             RepositoryCacheValue<V> entry = (RepositoryCacheValue<V> )keyToValueStorage.remove(key);
-            valueToKeyStorage.remove(entry);
             
-            if (entry != null)
+            if (entry != null) {
+                valueToKeyStorage.remove(entry);
                 retValue = entry.value;
+            }
             
         } finally {
             readWriteLock.writeLock().unlock();

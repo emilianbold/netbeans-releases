@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -28,8 +27,9 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
  * resolve file objects under offset
@@ -76,49 +76,58 @@ public class CsmOffsetResolver {
             // create dummy context
             context = new CsmContext(offset);
         }
-        CsmDeclaration decl = CsmDeclarationResolver.findInnerFileDeclaration(file, offset, context);
-        last = decl;
+        CsmObject lastObj = CsmDeclarationResolver.findInnerFileObject(file, offset, context);
+        last = lastObj;
         // for functions search deeper
-        if (CsmKindUtilities.isFunction(decl)) {
-            CsmFunction fun = (CsmFunction)decl;
+        if (CsmKindUtilities.isFunction(lastObj)) {
+            CsmFunction fun = (CsmFunction)lastObj;
             // check if offset in return value
             CsmType retType = fun.getReturnType();
             if (CsmOffsetUtilities.isInObject(retType, offset)) {
+                context.setLastObject(retType);
                 return retType;
             }
             // check if offset in parameters
-            List/*<CsmParameter>*/ params = fun.getParameters();
-            CsmObject csmObj = CsmOffsetUtilities.findObject(params, offset);
-            if (csmObj != null) {
-                return csmObj;
-            }            
+            List<CsmParameter> params = fun.getParameters();
+            CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
+            if (param != null) {
+                CsmType type = param.getType();
+                if (CsmOffsetUtilities.isInObject(type, offset)) {
+                    context.setLastObject(type);
+                    return type;
+                }
+                return param;
+            }   
+            
+            // check for constructor initializers
+            // ....
+            
             // for function definition search deeper in body's statements
-            if (CsmKindUtilities.isFunctionDefinition(decl)) {
-                CsmFunctionDefinition funDef = (CsmFunctionDefinition)decl;
+            if (CsmKindUtilities.isFunctionDefinition(lastObj)) {
+                CsmFunctionDefinition funDef = (CsmFunctionDefinition)lastObj;
                 if (CsmOffsetUtilities.isInObject(funDef.getBody(), offset)) {
                     last = null;
                     // offset is in body, try to find inners statement
                     if (CsmStatementResolver.findInnerObject(funDef.getBody(), offset, context)) {
                         // if found exact object => return it, otherwise return last found scope
-                        last = (context.getLastObject() != null) ? context.getLastObject() : context.getLastScope();
+                        last = context.getLastObject();
                     }
                 }
             }
-        } else if (CsmKindUtilities.isClass(decl)) {
+        } else if (CsmKindUtilities.isClass(lastObj)) {
             // check if in inheritance part
-            CsmClass clazz = (CsmClass)decl;
-            List/*<CsmInheritance>*/ inherits = clazz.getBaseClasses();
-            for (int i = 0; i < inherits.size(); i++) {
-                CsmInheritance inh = (CsmInheritance)inherits.get(i);
-                if (CsmOffsetUtilities.isInObject(inh, offset)) {
-                    CsmContextUtilities.updateContextObject(inh, offset, context);
-                    last = inh;
-                    break;
-                } 
-//                if (CsmOffsetUtilities.isAfterObject(inh, offset)) {
-//                    break;
-//                }
-            }
+            CsmClass clazz = (CsmClass)lastObj;
+            List<CsmInheritance> inherits = clazz.getBaseClasses();
+            CsmInheritance inh = CsmOffsetUtilities.findObject(inherits, context, offset);
+            if (inh != null) {
+                last = inh;
+            }             
+        } else if (CsmKindUtilities.isVariable(lastObj)) {
+            CsmType type = ((CsmVariable)lastObj).getType();
+            if (CsmOffsetUtilities.isInObject(type, offset)) {
+                context.setLastObject(type);
+                last = type;
+            }            
         }
         return last;
     }    

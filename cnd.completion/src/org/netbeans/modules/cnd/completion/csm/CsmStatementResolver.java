@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
-import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -160,10 +161,10 @@ public class CsmStatementResolver {
     private static boolean findInner(CsmDeclarationStatement stmt, int offset, CsmContext context) {
         // XXX: search deeper?
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in declaration statement when called"; //NOI18N
-        CsmObject declObject = CsmOffsetUtilities.findObject(stmt.getDeclarators(), offset);
+        List<CsmDeclaration> decls = stmt.getDeclarators();
+        CsmDeclaration declObject = CsmOffsetUtilities.findObject(decls, context, offset);
         if (declObject != null) {
             print("we have declarator " + declObject); //NOI18N
-            CsmContextUtilities.updateContextObject(declObject, offset, context);
             return true;
         }
         return false;

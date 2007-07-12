@@ -23,7 +23,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -46,6 +48,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
 /**
@@ -96,6 +99,19 @@ public class PersistentUtils {
             }
         }
     }
+
+    public static void writeCollectionStrings(Collection<String> arr, DataOutput output) throws IOException {
+        if (arr == null) {
+            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else {
+            int len = arr.size();
+            output.writeInt(len);
+            for (String s : arr) {
+                assert s != null;
+                output.writeUTF(s);
+            }
+        }
+    }
     
     public static String[] readStrings(DataInput input, APTStringManager manager) throws IOException {
         String[] arr = null;
@@ -106,6 +122,24 @@ public class PersistentUtils {
                 String str = input.readUTF();
                 assert str != null;
                 arr[i] = manager.getString(str);
+            }
+        }
+        return arr;
+    }   
+
+    public static Collection<String> readCollectionStrings(DataInput input, APTStringManager manager) throws IOException {
+        List<String> arr = null;
+        int len = input.readInt();
+        if (len != AbstractObjectFactory.NULL_POINTER) {
+            arr = new ArrayList<String>(len);
+            for (int i = 0; i < len; i++) {
+                String str = input.readUTF();
+                assert str != null;
+                if (manager != null) {
+                    arr.add(manager.getString(str));
+                } else {
+                    arr.add(str);
+                }
             }
         }
         return arr;
@@ -340,6 +374,9 @@ public class PersistentUtils {
         } else if (body instanceof EmptyCompoundStatementImpl) {
             output.writeInt(EMPTY_COMPOUND_STATEMENT_IMPL);
             ((EmptyCompoundStatementImpl)body).write(output);
+        } else if (body instanceof CompoundStatementImpl) {
+            output.writeInt(COMPOUND_STATEMENT_IMPL);
+            ((CompoundStatementImpl)body).write(output);
         } else {
             throw new IllegalArgumentException("unknown compound statement " + body);  //NOI18N
         }
@@ -426,8 +463,9 @@ public class PersistentUtils {
     // compound statements
     private static final int LAZY_COMPOUND_STATEMENT_IMPL = PREPROC_STATE_STATE_IMPL + 1;
     private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
+    private static final int COMPOUND_STATEMENT_IMPL = EMPTY_COMPOUND_STATEMENT_IMPL + 1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX              = EMPTY_COMPOUND_STATEMENT_IMPL;
+    public static final int LAST_INDEX              = COMPOUND_STATEMENT_IMPL;
 }

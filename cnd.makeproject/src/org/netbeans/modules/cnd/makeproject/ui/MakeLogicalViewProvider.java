@@ -1288,12 +1288,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         
         // The node will be removed when the Item gets notification that the file has been destroyed.
         // No need to do it here.
-//        public void destroy() {
+        public void destroy() throws IOException {
 //            File file = new File(item.getAbsPath());
 //            if (file.exists())
 //                file.delete();
-//            folder.removeItem(item);
-//        }
+            folder.removeItem(item);
+            super.destroy();
+        }
         
         public Object getValue(String valstring) {
             if (valstring == null)

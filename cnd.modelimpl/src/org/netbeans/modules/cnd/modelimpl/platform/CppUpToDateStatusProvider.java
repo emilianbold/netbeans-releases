@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -29,6 +30,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
@@ -44,28 +46,35 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     private CsmUID<CsmFile> uid;
     private BaseDocument document;
     private UpToDateStatus current = UpToDateStatus.UP_TO_DATE_OK;
+    private static String threadName = "Up to date status provider thread"; //NOI18N
     
     /** Creates a new instance of CppUpToDateStatusProvider */
     public CppUpToDateStatusProvider(BaseDocument document) {
         this.document = document;
         CsmModelAccessor.getModel().addProgressListener(this);
         CsmModelAccessor.getModel().addModelListener(this);
-        CsmFile file = getCsmFile(null);
-        if (file == null){
-            current = UpToDateStatus.UP_TO_DATE_DIRTY;
-        } else {
-            if (file.isParsed()){
-                current = UpToDateStatus.UP_TO_DATE_OK;
-            } else {
-                current = UpToDateStatus.UP_TO_DATE_PROCESSING;
-            }
-        }
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.ctor\n");
+	current = UpToDateStatus.UP_TO_DATE_DIRTY;
+	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    public void run() {
+		CsmFile file = getCsmFile(null);
+		if (file == null){
+		    current = UpToDateStatus.UP_TO_DATE_DIRTY;
+		} else {
+		    if (file.isParsed()){
+			current = UpToDateStatus.UP_TO_DATE_OK;
+		    } else {
+			current = UpToDateStatus.UP_TO_DATE_PROCESSING;
+		    }
+		}
+	    }
+	}, threadName);
     }
     
     public UpToDateStatus getUpToDate() {
         return current;
     }
-    
+        
     private CsmFile getCsmFile(CsmProject project) {
         CsmFile csmFile = null;
         if (uid == null) {
@@ -112,32 +121,81 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     }
     
     public void projectParsingStarted(CsmProject project) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.projectParsingStarted %s\n", project);
     }
 
     public void projectFilesCounted(CsmProject project, int filesCount) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.projectFilesCounted %s\n", project);
     }
 
     public void projectParsingFinished(CsmProject project) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.projectParsingFinished %s\n", project);
     }
 
     public void projectParsingCancelled(CsmProject project) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.projectParsingCancelled %s\n", project);
     }
 
-    public void fileInvalidated(CsmFile file) {
-        if (getCsmFile(null) == file) {
-            changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
+    private boolean mightBeMine(CsmFile file) {
+	return getPath().endsWith(file.getName());
+    }
+    
+    private boolean mightBeMine(Collection<CsmFile> files) {
+	for( CsmFile file : files ) {
+	    if( mightBeMine(file) ) {
+		return true;
+	    }
+	}
+	return false;
+    }
+    
+    public void fileInvalidated(final CsmFile file) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.fileInvalidated %s\n", file);
+        if (mightBeMine(file) ) {
+            final CsmProject project = file.getProject();
+	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+		public void run() {
+		    if (getCsmFile(project) == file) {
+			changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
+		    }
+		}
+	    }, threadName);
         }
     }
 
-    public void fileParsingStarted(CsmFile file) {
-        if (getCsmFile(null) == file) {
-            changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
+    public void fileParsingStarted(final CsmFile file) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.fileParsingStarted %s\n", file);
+        if (mightBeMine(file) ) {
+            final CsmProject project = file.getProject();
+	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+		public void run() {
+		    if (getCsmFile(project) == file) {
+			changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
+		    }
+		}
+	    }, threadName);
         }
     }
-
-    public void fileParsingFinished(CsmFile file) {
-        if (getCsmFile(null) == file) {
-            changeStatus(UpToDateStatus.UP_TO_DATE_OK);
+    
+    public void projectLoaded(CsmProject project) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.projectLoaded %s\n", project);
+	CsmFile file = getCsmFile(project);
+	if( file != null) {
+	    changeStatus(file.isParsed() ? UpToDateStatus.UP_TO_DATE_OK : UpToDateStatus.UP_TO_DATE_DIRTY);
+	}
+    }    
+    
+    public void fileParsingFinished(final CsmFile file) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.fileParsingFinished %s\n", file);
+        if (mightBeMine(file) ) {
+            final CsmProject project = file.getProject();
+	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+		public void run() {
+		    if (getCsmFile(project) == file) {
+			changeStatus(UpToDateStatus.UP_TO_DATE_OK);
+		    }
+		}
+	    }, threadName);
         }
     }
 
@@ -156,13 +214,27 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     }
 
     public void projectClosed(CsmProject project) {
-        CsmFile file = getCsmFile(project);
-        if (file == null || file.getProject() == project) {
-            changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
+        if (uid != null) {
+            CsmFile file = getCsmFile(project);
+            if (file == null || file.getProject() == project) {
+                changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
+            }
         }
     }
 
-    public void modelChanged(CsmChangeEvent e) {
+    public void modelChanged(final CsmChangeEvent e) {
+        if (uid != null) {
+            if (mightBeMine(e.getRemovedFiles()) ) {
+                CsmModelAccessor.getModel().enqueue(new Runnable() {
+                    public void run() {
+                        modelChanged2(e);
+                    }
+                }, threadName);
+            }
+        }
+    }
+    
+    private void modelChanged2(CsmChangeEvent e) {
         CsmFile file = null;
         for (CsmFile f : e.getRemovedFiles()){
             if (file == null) {

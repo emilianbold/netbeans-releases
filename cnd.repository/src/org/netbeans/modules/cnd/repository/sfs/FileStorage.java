@@ -22,44 +22,27 @@ package org.netbeans.modules.cnd.repository.sfs;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import org.netbeans.modules.cnd.repository.disk.AbstractDiskRepository;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class FileStorage {
+public abstract class FileStorage extends AbstractDiskRepository {
     
-    public static FileStorage create(String path) throws IOException {
-	return  Stats.doubleFileStorage ? new DoubleFileStorage(path) : new SingleFileStorage(path);
+    public static FileStorage create(String unitName) throws IOException {
+        return  Stats.doubleFileStorage ? new DoubleFileStorage(unitName) : new SingleFileStorage(unitName);
     }
-    
-     public static FileStorage create(File file) throws IOException {
-	return  Stats.doubleFileStorage ? new DoubleFileStorage(file) : new SingleFileStorage(file);
-    }
-    
-    abstract public void close() throws IOException;
-    
-    abstract public void defragment() throws IOException;
-    
-    abstract public boolean defragment(long timeout) throws IOException;
     
     abstract public void dump(PrintStream ps) throws IOException;
     
     abstract public void dumpSummary(PrintStream ps) throws IOException;
     
-    abstract public Persistent get(Key key) throws IOException;
-    
-    abstract public int getFragmentationPercentage() throws IOException;
-    
-    abstract public void put(Key key, Persistent object) throws IOException;
-    
-    abstract public void remove(Key key) throws IOException;
-    
     abstract public long getSize() throws IOException;
 
-    abstract public int getObjectsCount();
-    
+    abstract public int getObjectsCount() throws IOException;
 }

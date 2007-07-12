@@ -32,15 +32,12 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 public interface RepFilesAccessStrategy {
     
     /** Returns the file access for the object identified by the id */
-    ConcurrentFileRWAccess getFileForObj(Key id,  boolean read)  throws FileNotFoundException, IOException;
+    ConcurrentFileRWAccess getFileForObj(Key id,  boolean read)  throws IOException;
     
     /** Remove the record */
-    void removeObjForKey (Key id);
-    
-    /** Sets the path to the repository */
-    void setRepositoryBase(String aBaseDir);
+    void removeObjForKey (Key id) throws IOException;
 
-    void setOpenFilesLimit(int limit);
+    void setOpenFilesLimit(int limit) throws IOException;
     
-    void closeUnit(String unitName);
+    void closeUnit(String unitName) throws IOException;
 }

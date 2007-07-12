@@ -23,12 +23,12 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.CorruptedIndexedFile;
 
 /**
  * Stores Persistent objects in two files;
@@ -47,31 +47,29 @@ public class DoubleFileStorage extends FileStorage {
     private IndexedStorageFile cache_1_dataFile;
     
     private boolean defragmenting = false;
-    private boolean cache_1_dataFileIsActive = false;
+    private AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean(false);
+
+    private boolean getFlag () {
+        return cache_1_dataFileIsActive.get();
+    }
     
-    private ReadWriteLock  rwLock;
+    private IndexedStorageFile getFileByFlag(boolean flag) {
+        return (flag? cache_1_dataFile : cache_0_dataFile);
+    }
     
     private IndexedStorageFile getActive() {
-        return (cache_1_dataFileIsActive ? cache_1_dataFile : cache_0_dataFile);
+        return (cache_1_dataFileIsActive.get() ? cache_1_dataFile : cache_0_dataFile);
     }
     
     private IndexedStorageFile getPassive() {
-        return (cache_1_dataFileIsActive ? cache_0_dataFile : cache_1_dataFile) ;
+        return (cache_1_dataFileIsActive.get() ? cache_0_dataFile : cache_1_dataFile) ;
     }
     
-    private Lock readLock() {
-        return rwLock.readLock();
+    public DoubleFileStorage(final String unitName) throws IOException {
+        this(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));        
     }
     
-    private Lock writeLock() {
-        return rwLock.writeLock();
-    }
-    
-    public DoubleFileStorage(final String basePath) throws IOException {
-        this(new File(basePath));
-    }
-    
-    public DoubleFileStorage(final File basePath) throws IOException {
+    protected DoubleFileStorage(final File basePath) throws IOException {
         this (basePath, false);
     }
     /**
@@ -80,66 +78,54 @@ public class DoubleFileStorage extends FileStorage {
      * @param basePath  A File representing path to the storage
      * @param createCleanExistent    A flag if the storage should be created, not opened
      */
-    protected DoubleFileStorage (final File basePath, final boolean createCleanExistent) throws IOException {
+    protected DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
         this.basePath = basePath;
-        rwLock = new ReentrantReadWriteLock(true);
+
         cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent); // NOI18N
+        
         cache_1_dataFile = new IndexedStorageFile(basePath, "cache-1", createCleanExistent); // NOI18N
 
-        //
         if ((cache_0_dataFile.getDataFileUsedSize() == 0 ) &&
             (cache_1_dataFile.getDataFileUsedSize() == 0)) {
-            cache_1_dataFileIsActive = false;
+            cache_1_dataFileIsActive.set(false);
         } else if ((cache_0_dataFile.getDataFileUsedSize() != 0 ) &&
                     (cache_1_dataFile.getDataFileUsedSize() != 0)) {
-            cache_1_dataFileIsActive = 
-             (cache_0_dataFile.getFragmentationPercentage() < cache_1_dataFile.getFragmentationPercentage())?false:true;
+            cache_1_dataFileIsActive.set( 
+             (cache_0_dataFile.getFragmentationPercentage() < cache_1_dataFile.getFragmentationPercentage())?false:true);
         } else {
-            cache_1_dataFileIsActive = (cache_0_dataFile.getDataFileUsedSize() == 0)?false:true;
+            cache_1_dataFileIsActive.set((cache_0_dataFile.getDataFileUsedSize() == 0)?false:true);
         }
     }
     
-    public void close() throws IOException {
-        try {
-            rwLock.writeLock().lock();
-            cache_0_dataFile.close();
-            cache_1_dataFile.close();
-        } finally {
-            rwLock.writeLock().unlock();
-        }
+    public void close() throws IOException{
+       cache_0_dataFile.close();
+       cache_1_dataFile.close();
     }
     
     public Persistent get(final Key key) throws IOException {
         if( Stats.hardFickle && key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             return fickleMap.get(key);
         }
-        Persistent object = null;
-        try {
-            readLock().lock();
-            object = getActive().get(key);
-            if( object == null ) {
-                object = getPassive().get(key);
-            }
-        } finally {
-            readLock().unlock();
+        
+        boolean activeFlag = getFlag();
+        Persistent object = getFileByFlag(activeFlag).get(key);
+        if( object == null ) {
+            object = getFileByFlag(!activeFlag).get(key);
         }
         return object;
+        
     }
     
-    public void put(final Key key, final Persistent object) throws IOException {
+    public void write(final Key key, final Persistent object) throws IOException {
         WriteStatistics.instance().update(1);
         if( Stats.hardFickle &&  key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             fickleMap.put(key, object);
             return;
         }
-        
-        try {
-            writeLock().lock();
-            getActive().put(key, object);
-            getPassive().remove(key);
-        } finally {
-            writeLock().unlock();
-        }
+
+        boolean activeFlag = getFlag();
+        getFileByFlag(activeFlag).write(key,object);
+        getFileByFlag(!activeFlag).remove(key);
     }
     
     public void remove(final Key key) throws IOException {
@@ -147,21 +133,13 @@ public class DoubleFileStorage extends FileStorage {
             fickleMap.remove(key);
             return;
         }
-        try {
-            writeLock().lock();
-            getActive().remove(key);
-            getPassive().remove(key);
-        } finally {
-            writeLock().unlock();
-        }
         
+        boolean activeFlag = getFlag();
+        getFileByFlag(activeFlag).remove(key);
+        getFileByFlag(!activeFlag).remove(key);
     }
     
-    public void defragment() throws IOException {
-        defragment(0);
-    }
-    
-    public boolean defragment(final long timeout) throws IOException {
+    public boolean maintenance(final long timeout) throws IOException {
         
         boolean needMoreTime = false;
         
@@ -182,22 +160,16 @@ public class DoubleFileStorage extends FileStorage {
             }
         }
         
-        try {
-            writeLock().lock();
-            
-            if( ! defragmenting ) {
-                defragmenting = true;
-                cache_1_dataFileIsActive = !cache_1_dataFileIsActive;
-            }
-            
-            needMoreTime = _defragment(timeout);
-            
-            if( getPassive().getObjectsCount() == 0 ) {
-                defragmenting = false;
-            }
-            
-        } finally {
-            writeLock().unlock();
+        
+        if( ! defragmenting ) {
+            defragmenting = true;
+            cache_1_dataFileIsActive.set(!cache_1_dataFileIsActive.get());
+        }
+        
+        needMoreTime = _defragment(timeout);
+        
+        if( getPassive().getObjectsCount() == 0 ) {
+            defragmenting = false;
         }
         
         if( Stats.traceDefragmentation ) {
@@ -215,20 +187,17 @@ public class DoubleFileStorage extends FileStorage {
         final long time = ((timeout > 0) || Stats.traceDefragmentation) ? System.currentTimeMillis() : 0;
         
         int cnt = 0;
-        Iterator<Key> it = getPassive().getKeySetIterator();
+        boolean activeFlag = getFlag();        
+        Iterator<Key> it = getFileByFlag(!activeFlag).getKeySetIterator();
+
         while( it.hasNext() ) {
-            try {
-                writeLock().lock();
-                Key key = it.next();
-                ChunkInfo chunk = getPassive().getChunkInfo(key);
-                int size = chunk.getSize();
-                long newOffset = getActive().getSize();
-                getActive().moveDataFromOtherFile(getPassive().getDataFile(), chunk.getOffset(), size, newOffset, key);
-                it.remove();
-                cnt++;
-            } finally {
-                writeLock().unlock();
-            }
+            Key key = it.next();
+            ChunkInfo chunk = getFileByFlag(!activeFlag).getChunkInfo(key);
+            int size = chunk.getSize();
+            long newOffset = getFileByFlag(activeFlag).getSize();
+            getFileByFlag(activeFlag).moveDataFromOtherFile(getFileByFlag(!activeFlag).getDataFile(), chunk.getOffset(), size, newOffset, key);
+            it.remove();
+            cnt++;
             
             if( (timeout > 0) && (cnt % 10 == 0) ) {
                 if( System.currentTimeMillis()-time >= timeout ) {
@@ -239,7 +208,11 @@ public class DoubleFileStorage extends FileStorage {
         }
         if( Stats.traceDefragmentation ) {
             String text = it.hasNext() ? " finished by timeout" : " completed"; // NOI18N
-            System.out.printf("\t # defragmentinging %s %s; moved: %d remaining: %d \n", getPassive().getDataFileName(), text, cnt, getPassive().getObjectsCount()); // NOI18N
+            System.out.printf("\t # defragmentinging %s %s; moved: %d remaining: %d \n", 
+                    getFileByFlag(!activeFlag).getDataFileName(), 
+                    text, 
+                    cnt, 
+                    getFileByFlag(!activeFlag).getObjectsCount()); // NOI18N
         }
         return needMoreTime;
     }
@@ -248,15 +221,11 @@ public class DoubleFileStorage extends FileStorage {
         ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
         ps.printf("\nActive file:\n"); // NOI18N
         
-        try {
-            readLock().lock();
-            getActive().dump(ps);
-            ps.printf("\nPassive file:\n"); // NOI18N
-            getPassive().dump(ps);
+        boolean activeFlag = getFlag();
+        getFileByFlag(activeFlag).dump(ps);
+        ps.printf("\nPassive file:\n"); // NOI18N
+        getFileByFlag(!activeFlag).dump(ps);
             
-        } finally {
-            readLock().unlock();
-        }
         ps.printf("\n"); // NOI18N
     }
     
@@ -264,15 +233,11 @@ public class DoubleFileStorage extends FileStorage {
         ps.printf("\nDumping DoubleFileStorage; baseFile %s\n", basePath.getAbsolutePath()); // NOI18N
         ps.printf("\nActive file:\n"); // NOI18N
         
-        try {
-            readLock().lock();
-            getActive().dumpSummary(ps);
-            ps.printf("\nPassive file:\n"); // NOI18N
-            getPassive().dumpSummary(ps);
-            
-        } finally {
-            readLock().unlock();
-        }
+        boolean activeFlag = getFlag();
+        getFileByFlag(activeFlag).dumpSummary(ps);
+        ps.printf("\nPassive file:\n"); // NOI18N
+        getFileByFlag(!activeFlag).dumpSummary(ps);
+        
         ps.printf("\n"); // NOI18N
     }
     
@@ -280,32 +245,20 @@ public class DoubleFileStorage extends FileStorage {
         final long fileSize;
         final float delta;
         
-        try {
-            readLock().lock();
-            fileSize = getActive().getSize() + getPassive().getSize();
-            delta = fileSize - (getActive().getDataFileUsedSize() + getPassive().getDataFileUsedSize());
-        } finally {
-            readLock().unlock();
-        }
+        boolean activeFlag = getFlag();
+        fileSize = getFileByFlag(activeFlag).getSize() + getFileByFlag(!activeFlag).getSize();
+        delta = fileSize - (getFileByFlag(activeFlag).getDataFileUsedSize() + getFileByFlag(!activeFlag).getDataFileUsedSize());
         final float percentage = delta * 100 / fileSize;
         return Math.round(percentage);
     }
     
     public long getSize() throws IOException {
-        try {
-            readLock().lock();
-            return getActive().getSize() + getPassive().getSize();
-        } finally {
-            readLock().unlock();
-        }
+        boolean activeFlag = getFlag();
+        return getFileByFlag(activeFlag).getSize() + getFileByFlag(!activeFlag).getSize();
     }
     
     public int getObjectsCount() {
-        try {
-            readLock().lock();
-            return getActive().getObjectsCount() + getPassive().getObjectsCount();
-        } finally {
-            readLock().unlock();
-        }
+        boolean activeFlag = getFlag();
+        return getFileByFlag(activeFlag).getObjectsCount() + getFileByFlag(!activeFlag).getObjectsCount();
     }
 }

@@ -25,7 +25,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +38,7 @@ import org.netbeans.modules.cnd.repository.sfs.statistics.RangeStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.CorruptedIndexedFile;
 
 /**
  * Represents the data file with the indexed access
@@ -61,17 +61,24 @@ class IndexedStorageFile extends FileStorage {
         fileStatistics = new FileStatistics();
         boolean filesExists = (dataFile.exists() && indexFile.exists());
         fileRWAccess = createFileRWAccess(dataFile);
+        boolean recreate = create || !filesExists;
         
-        if ( ! create && filesExists) {
-            loadIndex();
+        if (!recreate) {
+            try {
+                loadIndex();
+            } catch (IOException e) {
+                recreate = true;
+            }
+            
             recalcUsedSize();
             indexFile.delete();
             
             if (usedSize == 0) {
                 fileRWAccess.truncate(0);
             }
-            
-        } else {            
+        } 
+        
+        if (recreate) {            
             //index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();            
             index = new SimpleFileIndex();            
             fileRWAccess.truncate(0);
@@ -96,7 +103,7 @@ class IndexedStorageFile extends FileStorage {
         return object;
     }
     
-    public void put(final Key key, final Persistent object) throws IOException {
+    public void write(final Key key, final Persistent object) throws IOException {
         final long offset;
         final int size;
         final int oldSize;
@@ -285,8 +292,10 @@ class IndexedStorageFile extends FileStorage {
         switch( Stats.fileRWAccess ) {
             case 0:
                 result = new BufferedRWAccess(file);
+                break;
             case 1:
                 result = new SimpleRWAccess(file);
+                break;
             default:
                 result = new BufferedRWAccess(file);
         }
@@ -295,36 +304,41 @@ class IndexedStorageFile extends FileStorage {
     }
 
     private void loadIndex() throws IOException {
-        final InputStream in;
+        InputStream in, bin;
+        DataInputStream din = null;
+        
         try {
             in = new FileInputStream(indexFile);
-            final BufferedInputStream bin = new BufferedInputStream(in);
-            final DataInputStream din = new DataInputStream(bin);
+            bin = new BufferedInputStream(in);
+            din = new DataInputStream(bin);
             
             index = FileIndexFactory.getDefaultFactory().readIndex(din);
-            din.close();
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            
+        } finally {
+            if (din != null){
+               din.close();
+            }
         }
     }
 
     private void storeIndex() throws IOException {
+        OutputStream out, bos;
+        DataOutputStream dos = null;
+        
         try {
-            final OutputStream out = new FileOutputStream(indexFile);
-            final BufferedOutputStream bos = new BufferedOutputStream(out, 1024);
-            final DataOutputStream dos = new DataOutputStream(bos);
+            out = new FileOutputStream(indexFile);
+            bos = new BufferedOutputStream(out, 1024);
+            dos = new DataOutputStream(bos);
             
             FileIndexFactory.getDefaultFactory().writeIndex(index, dos);
-            dos.close();
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } 
+        } finally {
+            if (dos != null){
+                dos.close();
+            }
+        }
     }
 
-    public void defragment() throws IOException {
-    }
-
-    public boolean defragment(long timeout) throws IOException {
+    public boolean maintenance(long timeout) throws IOException {
         return false;
     }
 

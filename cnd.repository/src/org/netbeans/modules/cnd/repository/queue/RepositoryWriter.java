@@ -33,11 +33,11 @@ public interface RepositoryWriter {
      * @param key object key
      * @param object object to write
      */
-    public void write(Key key, Persistent object) throws IOException;
+    public void write(Key key, Persistent object)  throws IOException ;
 
     /**
      * Performes necessary maintenance (such as defragmentation) during the goven timeout
      * @return true if maintenance was finished by timeout and needs more time to be completed
      */
-    public boolean maintenance(long timeout) throws IOException;
+    public boolean maintenance(long timeout)  throws IOException ;
 }

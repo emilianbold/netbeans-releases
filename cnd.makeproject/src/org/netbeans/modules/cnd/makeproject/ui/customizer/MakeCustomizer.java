@@ -563,8 +563,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         if (includeMakefileDescription)
             descriptions.add(createMakefileDescription(project));
-        if (includeNewDescription)
-            descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration));
+        if (includeNewDescription) {
+            if (!includeLinkerDescription) {
+                CustomizerNode librariesNode = new LibrariesGeneralCustomizerNode("Libraries", getString("LBL_DEPENDENCIES"), null); // NOI18N
+               descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, librariesNode));
+            } else {
+                descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
+            }
+        }
         if (includeLinkerDescription)
             descriptions.add(createLinkerDescription());
         if (includeArchiveDescription)
@@ -640,11 +646,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         descriptions[index++] = createGeneralItemDescription(project, item);
         if (tool >= 0) {
             if (tool == Tool.CCompiler)
-                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, null, isCompileConfiguration);
+                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, null, isCompileConfiguration, null);
             else if (tool == Tool.CCCompiler)
-                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, null, isCompileConfiguration);
+                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, null, isCompileConfiguration, null);
             else if (tool == Tool.FortranCompiler)
-                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, null, isCompileConfiguration);
+                descriptions[index++] = createNewDescription(project, compilerSet, tool, item, null, isCompileConfiguration, null);
             else if (tool == Tool.CustomTool)
                 descriptions[index++] = createCustomBuildItemDescription(project, item);
             else
@@ -682,7 +688,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         descriptions = new Vector(); //new CustomizerNode[2];
         descriptions.add(createGeneralFolderDescription(project, folder));
         if (compilerSet >= 0)
-            descriptions.add(createNewDescription(project, compilerSet, -1, null, folder, isCompileConfiguration));
+            descriptions.add(createNewDescription(project, compilerSet, -1, null, folder, isCompileConfiguration, null));
         
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), (CustomizerNode[])descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
@@ -807,7 +813,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     
     // C/C++/Fortran Node
-    private CustomizerNode createNewDescription(Project project, int compilerSetIdx, int tool, Item item, Folder folder, boolean isCompilerConfiguration) {
+    private CustomizerNode createNewDescription(Project project, int compilerSetIdx, int tool, Item item, Folder folder, boolean isCompilerConfiguration, CustomizerNode linkerNode ) {
         ResourceBundle bundle = NbBundle.getBundle( MakeCustomizer.class );
         
         Vector descriptions = new Vector();
@@ -823,6 +829,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             nodeLabel = CppSettings.getDefault().isFortranEnabled() ? getString("LBL_CCPPFORTRAN_NODE") : getString("LBL_CCPP_NODE");
         } else {
             nodeLabel = getString("LBL_PARSER_NODE");
+        }
+        if (linkerNode != null) {
+            descriptions.add(linkerNode);
         }
         
         CustomizerNode rootDescription = new CustomizerNode(

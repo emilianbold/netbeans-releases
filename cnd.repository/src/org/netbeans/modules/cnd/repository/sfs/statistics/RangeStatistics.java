@@ -63,7 +63,7 @@ public class RangeStatistics extends BaseStatistics<Integer> {
     }
     
 
-    private class Range { 
+    static private class Range { 
 
 	/** range start (inclusive) */
 	public int from;

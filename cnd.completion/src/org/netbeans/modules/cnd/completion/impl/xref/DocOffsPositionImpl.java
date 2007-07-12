@@ -73,7 +73,7 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
     public int getLine(boolean create) {
         if (create && this.line == -1 && this.doc != null) {
             try {
-                this.line = Utilities.getLineOffset(this.doc, this.offset);
+                this.line = Utilities.getLineOffset(this.doc, this.offset) + 1;
             } catch (BadLocationException ex) {
                 this.line = -1;
             }
@@ -84,7 +84,7 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
     public int getColumn(boolean create) {
         if (create && this.col == -1 && this.doc != null) {
             try {
-                this.col = Utilities.getVisualColumn(this.doc, this.offset);
+                this.col = Utilities.getVisualColumn(this.doc, this.offset) + 1;
             } catch (BadLocationException ex) {
                 this.col = -1;
             }

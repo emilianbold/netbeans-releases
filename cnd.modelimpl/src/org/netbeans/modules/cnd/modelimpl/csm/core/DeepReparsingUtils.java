@@ -45,7 +45,13 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void reparseOnEdit(FileImpl fileImpl, ProjectImpl project) {
+    public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project) {
+	reparseOnEdit(fileImpl, project, true);
+    }
+    /**
+     * Reparse including/included files at fileImpl content changed.
+     */
+    public static void reparseOnEdit(FileImpl fileImpl, ProjectBase project, boolean scheduleParsing) {
         Set<CsmFile> topParents = project.getGraph().getTopParentFiles(fileImpl);
         if (topParents.size()>0){
             Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(fileImpl);
@@ -54,16 +60,20 @@ public final class DeepReparsingUtils {
                     invalidateFileAndPreprocState(project, parent);
                 }
             }
-            addToReparse(project, topParents, false);
+	    if( scheduleParsing ) {
+		addToReparse(project, topParents, false);
+	    }
         } else {
-            ParserQueue.instance().addFirst(fileImpl, project.getPreprocHandler(fileImpl.getBuffer().getFile()).getState(), false);
+	    if( scheduleParsing ) {
+		ParserQueue.instance().addFirst(fileImpl, project.getPreprocHandler(fileImpl.getBuffer().getFile()).getState(), false);
+	    }
         }
     }
     
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(NativeFileItem nativeFile, ProjectImpl project) {
+    public static void reparseOnPropertyChanged(NativeFileItem nativeFile, ProjectBase project) {
         FileImpl file = project.getFile(nativeFile.getFile());
         if( file == null ) {
             return;
@@ -87,7 +97,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectImpl project) {
+    public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectBase project) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(project);
             if (TraceFlags.USE_DEEP_REPARSING) {
@@ -136,7 +146,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse included files at file added.
      */
-    public static void reparseOnAdded(NativeFileItem nativeFile, ProjectImpl project){
+    public static void reparseOnAdded(NativeFileItem nativeFile, ProjectBase project){
         if (!TraceFlags.USE_DEEP_REPARSING){
             return;
         }
@@ -166,7 +176,7 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectImpl project) {
+    static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectBase project) {
         if (!TraceFlags.USE_DEEP_REPARSING){
             return;
         }
@@ -214,7 +224,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file removed.
      */
-    public static void reparseOnRemoved(FileImpl impl, ProjectImpl project) {
+    public static void reparseOnRemoved(FileImpl impl, ProjectBase project) {
         if (!TraceFlags.USE_DEEP_REPARSING){
             return;
         }
@@ -233,7 +243,7 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnRemoved(List<FileImpl> toReparse, ProjectImpl project) {
+    static void reparseOnRemoved(List<FileImpl> toReparse, ProjectBase project) {
         if (!TraceFlags.USE_DEEP_REPARSING){
             return;
         }
@@ -256,7 +266,7 @@ public final class DeepReparsingUtils {
         }
     }
     
-    private static void addToReparse(final ProjectImpl project, final Set<CsmFile> topParents, boolean invalidateCache) {
+    private static void addToReparse(final ProjectBase project, final Set<CsmFile> topParents, boolean invalidateCache) {
         boolean progress = false;
         try {
             if (topParents.size()>5) {
@@ -278,15 +288,15 @@ public final class DeepReparsingUtils {
         }
     }
 
-    private static void addToReparse(final ProjectImpl project, final FileImpl parentImpl, final boolean invalidateCache) {
+    private static void addToReparse(final ProjectBase project, final FileImpl parentImpl, final boolean invalidateCache) {
         parentImpl.stateChanged(invalidateCache);
         ParserQueue.instance().addFirst(parentImpl, project.getPreprocHandler(parentImpl.getBuffer().getFile()).getState(), false);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-            System.out.println("Add file to reparse "+parentImpl.getAbsolutePath());
+            System.out.println("Add file to reparse "+parentImpl.getAbsolutePath()); // NOI18N
         }
     }
     
-    private static void addToReparse(final ProjectImpl project, final NativeFileItem nativeFile, final FileImpl file) {
+    private static void addToReparse(final ProjectBase project, final NativeFileItem nativeFile, final FileImpl file) {
         file.stateChanged(true);
         APTPreprocHandler.State state;
         //if (file.isSourceFile()) {
@@ -295,19 +305,19 @@ public final class DeepReparsingUtils {
         //    state = project.getPreprocHandler(nativeFile.getFile()).getState();
         //}
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-            System.out.println("Add file to reparse "+file.getAbsolutePath());
+            System.out.println("Add file to reparse "+file.getAbsolutePath()); // NOI18N
         }
         ParserQueue.instance().addFirst(file, state, false);
     }
     
     
-    private static void invalidateFileAndPreprocState(final ProjectImpl project, final CsmFile parent) {
+    private static void invalidateFileAndPreprocState(final ProjectBase project, final CsmFile parent) {
         if (parent.getProject() == project){
             FileImpl parentImpl = (FileImpl) parent;
             project.invalidatePreprocState(parentImpl.getBuffer().getFile());
             parentImpl.stateChanged(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                System.out.println("Invalidate file to reparse "+parent.getAbsolutePath());
+                System.out.println("Invalidate file to reparse "+parent.getAbsolutePath()); // NOI18N
             }
         }
     }

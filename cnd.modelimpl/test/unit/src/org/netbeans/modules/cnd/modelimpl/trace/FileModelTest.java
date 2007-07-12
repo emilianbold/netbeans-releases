@@ -19,11 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-
 /**
  * pre-integration tests for parser
  * @author Vladimir Voskresensky
@@ -105,6 +100,31 @@ public class FileModelTest extends TraceModelTestBase {
     public void testUsingExtern() throws Exception {
         performTest("using_extern.h");
     }     
+
+    public void testPartialSpeciazationsAndOperatorLess() throws Exception {
+        performTest("partial_specializations.cc");
+    }     
+    
+    public void testFuncDeclPrefixAttributes() throws Exception {
+        performTest("func_decl_prefix_attributes.cc");
+    }
+    
+    public void testVariableDefinition() throws Exception {
+        performTest("variable_definition.cc"); // NOI18N
+    }
+
+    public void testFunctionPointerAsReturnType () throws Exception {
+        performTest("function_pointer_as_return_type.cc"); // NOI18N
+    }  
+    
+    public void testFunctionPointerAsTypeCast() throws Exception {
+        performTest("function_pointer_as_type_cast.cc"); // NOI18N
+    }
+    
+    public void testFunExpandedUnnamedParams() throws Exception {
+        performTest("function_expanded_unnamed_params.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -124,13 +144,8 @@ public class FileModelTest extends TraceModelTestBase {
 	    return FileModelTest.class;
 	}
 	
-
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-	}
-
-	public void testFunctionPointerAsReturnType () throws Exception {
-	    performTest("function_pointer_as_return_type.cc"); // NOI18N
 	}
 	
 	protected void postSetUp() {

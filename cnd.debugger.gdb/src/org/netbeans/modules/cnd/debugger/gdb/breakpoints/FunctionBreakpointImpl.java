@@ -19,15 +19,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.debugger.Session;
-
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
  * Implementation of breakpoint on function.
@@ -51,37 +45,22 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
         set();
     }
     
-//    void fixed() {
-//        functionName = breakpoint.getFunctionName();
-//        super.fixed();
-//    }
-    
     protected void setRequests() {
-        synchronized (breakpoint) {
-            int bps = breakpoint.getState();
-            // If state is UNVALIDATED - set breakpoint
-            if (bps == GdbBreakpoint.UNVALIDATED) {
-                int token;
-                
-                //Performance measurements: 91-107 mls (2006/08/29)
-                //getDebugger().getGdbProxy().globalStartTimeSetBreakpoint = System.currentTimeMillis(); // DEBUG
-                functionName = breakpoint.getFunctionName();
-                token = getDebugger().getGdbProxy().break_insert(functionName);
-                breakpoint.setID(token);
-                breakpoint.setPending();
-                return;
-            }
-            // Actions below require a valid breakpoint number ( > 0 )
-            int bpn = breakpoint.getBreakpointNumber();
-            if (bpn <= 0) return;
-	    if (bps == GdbBreakpoint.DELETION_PENDING) {
-		getDebugger().getGdbProxy().break_delete(bpn);
-                return;
-	    }
-            if (breakpoint.isEnabled()) {
-		getDebugger().getGdbProxy().break_enable(bpn);
-	    } else {
-		getDebugger().getGdbProxy().break_disable(bpn);
+        if (getDebugger().getState() == GdbDebugger.STATE_RUNNING) {
+            getDebugger().setSilentStop();
+        }
+        if (breakpoint.getState() == GdbBreakpoint.UNVALIDATED) {
+            functionName = breakpoint.getFunctionName();
+            int token = getDebugger().getGdbProxy().break_insert(functionName);
+            breakpoint.setID(token);
+            breakpoint.setPending();
+        } else {
+            if (breakpoint.getState() == GdbBreakpoint.DELETION_PENDING) {
+                getDebugger().getGdbProxy().break_delete(breakpoint.getBreakpointNumber());
+            } else if (breakpoint.isEnabled()) {
+                getDebugger().getGdbProxy().break_enable(breakpoint.getBreakpointNumber());
+            } else {
+                getDebugger().getGdbProxy().break_disable(breakpoint.getBreakpointNumber());
             }
         }
     }

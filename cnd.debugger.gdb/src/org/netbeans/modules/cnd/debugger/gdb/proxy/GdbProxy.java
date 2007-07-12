@@ -261,7 +261,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * with sending a signal "INT" (Unix) or signal TSTP (Windows).
      */
     public int exec_interrupt() {
-        if (debugger.getState() == GdbDebugger.STATE_RUNNING) {
+        if (debugger.getState() == GdbDebugger.STATE_RUNNING ||
+                debugger.getState() == GdbDebugger.STATE_SILENT_STOP) {
             if (Utilities.isWindows()) {
                 debugger.kill(18);
             } else {
@@ -292,7 +293,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command inserts a regular breakpoint in all functions
      * whose names match the given name.
      *
-     * @param name - a function name
+     * @param flags One or more flags aout this breakpoint
+     * @param name A function name
      * @return token number
      */
     public int break_insert(int flags, String name) {

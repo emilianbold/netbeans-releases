@@ -123,8 +123,13 @@ tokens {
 	CSM_ENUM_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_NAMESPACE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_CTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_CTOR_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FUNCTION_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FUNCTION_RET_FUN_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FUNCTION_RET_FUN_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FUNCTION_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -139,6 +144,7 @@ tokens {
 	CSM_DTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_CTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_USER_TYPE_CAST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_USER_TYPE_CAST_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
@@ -216,6 +222,7 @@ tokens {
 
         // cast
         CSM_CAST_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_FUN_TYPE_CAST_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
         // function call
         CSM_FUNCALL_EXPRESSION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -720,7 +727,7 @@ external_declaration_template { K_and_R = false; }
 			// Class template definition
 			(class_head)=>
 			{if (statementTrace>=1) 
-				printf("external_declaration_1b[%d]: Class template definition\n",
+				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
 			}                           
 			declaration
@@ -731,7 +738,7 @@ external_declaration_template { K_and_R = false; }
 				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
 			//{beginTemplateDeclaration();}
 			{ if (statementTrace>=1) 
-				printf("external_declaration_10[%d]: Class template declaration\n",
+				printf("external_declaration_template_10[%d]: Class template declaration\n",
 					LT(1).getLine());
 			}
 			declaration_specifiers
@@ -746,7 +753,7 @@ external_declaration_template { K_and_R = false; }
                                 ctor_declarator[false] (EOF|SEMICOLON)
                         )=>
                         {if (statementTrace>=1) 
-                                printf("external_declaration_11a[%d]: Constructor declarator\n",
+                                printf("external_declaration_template_11a[%d]: Constructor declarator\n",
                                         LT(1).getLine());
                         }
                         (template_head)?   // :)
@@ -756,7 +763,7 @@ external_declaration_template { K_and_R = false; }
                         // below is a workaround for know infinite loop bug in ANTLR 
                         // see http://www.jguru.com/faq/view.jsp?EID=271922
                         //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                        #external_declaration_template= #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"],  #external_declaration_template); //end_of_stmt();
+                        #external_declaration_template= #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #external_declaration_template); //end_of_stmt();
                         }   
 
                   |   
@@ -768,30 +775,30 @@ external_declaration_template { K_and_R = false; }
 				{qualifiedItemIsOneOf(qiCtor)}?
 			)=>
 			{if (statementTrace>=1) 
-				printf("external_declaration_11b[%d]: Template constructor " +
+				printf("external_declaration_template_11b[%d]: Template constructor " +
 					"definition\n", LT(1).getLine());
 			}
                         (template_head)?   // :)
 			ctor_definition
-			{ #external_declaration_template = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration_template); }
+			{ #external_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
 		|
 			// Templated function declaration
 			(declaration_specifiers function_declarator[false] SEMICOLON)=> 
 			{if (statementTrace>=1) 
-				printf("external_declaration_11c[%d]: Function template " +
+				printf("external_declaration_template_11c[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
 			}
 			declaration
-			{ #external_declaration_template = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration_template); }
+			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|  
 			// Templated function definition
 			((template_head)? declaration_specifiers function_declarator[true] LCURLY)=> 
 			{if (statementTrace>=1) 
-				printf("external_declaration_11d[%d]: Function template " +
+				printf("external_declaration_template_11d[%d]: Function template " +
 					"definition\n", LT(1).getLine());
 			}
 			(template_head)? function_definition
-			{ #external_declaration_template = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration_template); }
+			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
 
 		)
 		{endTemplateDefinition(); /*#external_declaration_template = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration_template);*/}
@@ -885,12 +892,12 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #external_declaration); }
 	|   
 		// Function declaration
-		((LITERAL___extension__)? declaration_specifiers function_declarator[false] (EOF|SEMICOLON))=> 
+		((LITERAL___extension__)? (function_attribute_specification)? declaration_specifiers function_declarator[false] (EOF|SEMICOLON))=> 
 		{if (statementTrace>=1) 
 			printf("external_declaration_7[%d]: Function prototype\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration
+		(LITERAL___extension__!)? (function_attribute_specification!)? declaration
 		{ #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
 	|
 		// Function definition with return value
@@ -922,6 +929,23 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		}
 		function_definition
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
+        |       // function declaration with function as return type
+		((LITERAL___extension__)? declaration_specifiers function_declarator_with_fun_as_ret_type[false] (EOF|SEMICOLON))=> 
+		{if (statementTrace>=1) 
+			printf("external_declaration_7a[%d]: Function prototype with function as return type\n",
+				LT(1).getLine());
+		}
+		function_declaration_with_fun_as_ret_type
+		{ #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DECLARATION, "CSM_FUNCTION_RET_FUN_DECLARATION"], #external_declaration); }
+                
+        |       // function definition with function as return type
+                ((LITERAL___extension__)? declaration_specifiers function_declarator_with_fun_as_ret_type[true] LCURLY)=> 
+		{if (statementTrace>=1) 
+			printf("external_declaration_8b[%d]: Function definition with function as return type\n",
+				LT(1).getLine());
+		}
+		function_definition_with_fun_as_ret_type
+		{ #external_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #external_declaration); }
 	|  
 		{isCPlusPlus()}?
 		{if (statementTrace>=1) 
@@ -987,7 +1011,7 @@ decl_namespace
 // it's a caller's responsibility to check isCPlusPlus
 //
 member_declaration_template
-	{String q; boolean definition;}
+	{String q; boolean definition=false;}
 	:
 		{beginTemplateDefinition();}
 		template_head
@@ -1031,7 +1055,7 @@ member_declaration_template
                         // below is a workaround for know infinite loop bug in ANTLR 
                         // see http://www.jguru.com/faq/view.jsp?EID=271922
                         //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                        #member_declaration_template = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"],  #member_declaration_template); //end_of_stmt();
+                        #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #member_declaration_template); //end_of_stmt();
                         }   
 
                   |
@@ -1047,7 +1071,7 @@ member_declaration_template
 					"definition\n", LT(1).getLine());
 			}
 			ctor_definition
-			{ #member_declaration_template = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration_template); }
+			{ #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #member_declaration_template); }
 		|
 			// Templated function declaration
 			(declaration_specifiers function_declarator[false] SEMICOLON)=>
@@ -1056,7 +1080,7 @@ member_declaration_template
 					"declaration\n", LT(1).getLine());
 			}
 			declaration
-			{ #member_declaration_template = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration_template); }
+			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #member_declaration_template); }
 		|  
 			// Templated function definition
 			// Function definition DW 2/6/97
@@ -1066,7 +1090,7 @@ member_declaration_template
 					    "definition\n", LT(1).getLine());
 			}
 			function_definition
-			{ #member_declaration_template = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration_template); }
+			{ #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
 		|
 			{if (statementTrace>=1) 
 				printf("member_declaration_13d[%d]: Templated operator " +
@@ -1271,6 +1295,28 @@ function_definition_no_ret_type
 	)
 	//{endFunctionDefinition();}
 	;
+
+function_declarator_with_fun_as_ret_type  [boolean definition]
+        :
+                LPAREN function_declarator[definition] RPAREN function_params
+        ;
+    
+function_declaration_with_fun_as_ret_type
+        :
+            declaration_specifiers function_declarator_with_fun_as_ret_type[false] (EOF!|SEMICOLON)
+        ;
+
+function_definition_with_fun_as_ret_type
+        :
+		declaration_specifiers function_declarator_with_fun_as_ret_type[true]
+		(	options{warnWhenFollowAmbig = false;}:
+			//(declaration)*	// Possible for K & R definition
+                        (function_K_R_parameter_list)?
+			{in_parameter_list = false;}
+		)?
+		compound_statement
+
+        ;
 
 protected
 function_K_R_parameter_list
@@ -1785,7 +1831,7 @@ declarator_suffixes
  * TER: warning: seems that "ID::" will always bypass and go to 2nd alt :(
  */
 function_declarator [boolean definition]
-	:	
+	:
 		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
 		(ptr_operator)=> ptr_operator function_declarator[definition]
 	|	
@@ -1808,7 +1854,7 @@ function_direct_declarator [boolean definition]
                 (function_attribute_specification)?
                 (asm_block!)?
 	;
-
+        
 protected
 function_direct_declarator_2 [boolean definition] 
 	{String q; CPPParser.TypeQualifier tq;}
@@ -1847,6 +1893,27 @@ function_direct_declarator_2 [boolean definition]
 		}
 		RPAREN
 	;
+
+protected
+function_params
+        :
+		LPAREN
+		{
+		    //functionParameterList();
+		    if (K_and_R == false) {
+			    in_parameter_list = true;
+		    }
+		}
+		(parameter_list)? 
+		{
+		    if (K_and_R == false) {
+	  		in_parameter_list = false;
+		    } else {
+			in_parameter_list = true;
+		    }
+		}
+		RPAREN
+        ;
 
 ctor_definition 
 	:
@@ -2531,7 +2598,7 @@ throw_statement
 	;
 
 using_declaration
-	{String qid;}
+	{String qid="";}
 	:	u:LITERAL_using
 		(LITERAL_namespace qid = qualified_id	// Using-directive
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
@@ -2762,6 +2829,13 @@ cast_expression
 		 cast_expression_type_specifier cast_expression
                  {#cast_expression = #(#[CSM_CAST_EXPRESSION, "CSM_CAST_EXPRESSION"], #cast_expression);}
 	|
+                (cast_fun_type_specifier) => 
+		{if (statementTrace>=1) 
+			printf("cast_expression_2[%d]: Cast to function type expression\n", LT(1).getLine());
+		}
+		 cast_fun_type_specifier cast_expression
+                 {#cast_expression = #(#[CSM_FUN_TYPE_CAST_EXPRESSION, "CSM_FUN_TYPE_CAST_EXPRESSION"], #cast_expression);}
+        |
 		unary_expression	// handles outer (...) of "(T(expr))"
 	;
 
@@ -2776,6 +2850,19 @@ cast_expression_type_specifier
                 (LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum)? 
                 ts = simple_type_specifier 
                 (ptr_operator)*
+            RPAREN
+        ;
+
+protected
+cast_fun_type_specifier
+        :
+            // cast like (double (*)(UDF_INIT *, UDF_ARGS *, uchar *, uchar *)) 
+            LPAREN
+                declaration_specifiers
+                LPAREN
+                ptr_operator
+                RPAREN
+                function_params
             RPAREN
         ;
 

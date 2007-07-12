@@ -94,7 +94,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof FileContainer ) {
             aHandler = FILES_CONTAINER;
         } else if (object instanceof GraphContainer) {
-            aHandler = GRAPTH_CONTAINER;
+            aHandler = GRAPH_CONTAINER;
         } else if (object instanceof FileImpl) {
             aHandler = FILE_IMPL;
         } else if (object instanceof Unresolved.UnresolvedFile) {
@@ -194,6 +194,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = MACRO_IMPL;
         } else if (object instanceof FriendClassImpl) {
             aHandler = FRIEND_CLASS_IMPL;
+	} else if (object instanceof DeclarationContainer) {
+	    aHandler = DECLARATION_CONTAINER;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -216,7 +218,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FileContainer(stream);
                 break;
                 
-            case GRAPTH_CONTAINER:
+            case GRAPH_CONTAINER:
                 obj = new GraphContainer(stream);
                 break;
                 
@@ -363,7 +365,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case FRIEND_FUNCTION_DEF_DECL_IMPL:
                 obj = new FriendFunctionDDImpl(stream);
                 break;
-
+		
+            case DECLARATION_CONTAINER:
+		obj = new DeclarationContainer(stream);
+		break;
+		
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -390,8 +396,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int PROJECT_IMPL                   = FIRST_INDEX;
     private static final int LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
     private static final int FILES_CONTAINER                = LIB_PROJECT_IMPL + 1;
-    private static final int GRAPTH_CONTAINER               = FILES_CONTAINER + 1;
-    private static final int FILE_IMPL                      = GRAPTH_CONTAINER + 1;
+    private static final int GRAPH_CONTAINER               = FILES_CONTAINER + 1;
+    private static final int DECLARATION_CONTAINER	    = GRAPH_CONTAINER + 1;
+    private static final int FILE_IMPL                      = DECLARATION_CONTAINER + 1;
     private static final int ENUM_IMPL                      = FILE_IMPL + 1;
     private static final int CLASS_IMPL                     = ENUM_IMPL + 1;
     private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
@@ -444,5 +451,5 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = MACRO_IMPL;    
+    public static final int LAST_INDEX = MACRO_IMPL;
 }

@@ -18,7 +18,7 @@ ENUM op_type [1:1/0-1:36/35]
     DIV
 FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl
     SIGNATURE add(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:add(int,int)
+    UNIQUE NAME f:add(int,int)
     DECLARATION: add  [3:1/38-3:40/77]
     PARAMETERS:
         a [3:9/46-3:14/51] type: int TEXT=int  [3:9/46-3:12/49] init: null
@@ -28,7 +28,7 @@ FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl
         STATEMENT Return  [3:25/62-3:38/75] text: 'return a + b;'
 FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl
     SIGNATURE sub(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:sub(int,int)
+    UNIQUE NAME f:sub(int,int)
     DECLARATION: sub  [4:1/78-4:40/117]
     PARAMETERS:
         a [4:9/86-4:14/91] type: int TEXT=int  [4:9/86-4:12/89] init: null
@@ -38,7 +38,7 @@ FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl
         STATEMENT Return  [4:25/102-4:38/115] text: 'return a - b;'
 FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl
     SIGNATURE mul(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:mul(int,int)
+    UNIQUE NAME f:mul(int,int)
     DECLARATION: mul  [5:1/118-5:40/157]
     PARAMETERS:
         a [5:9/126-5:14/131] type: int TEXT=int  [5:9/126-5:12/129] init: null
@@ -48,7 +48,7 @@ FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl
         STATEMENT Return  [5:25/142-5:38/155] text: 'return a * b;'
 FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl
     SIGNATURE div(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:div(int,int)
+    UNIQUE NAME f:div(int,int)
     DECLARATION: div  [6:1/158-6:40/197]
     PARAMETERS:
         a [6:9/166-6:14/171] type: int TEXT=int  [6:9/166-6:12/169] init: null
@@ -61,7 +61,7 @@ VARIABLE curr_op [10:1/229-10:31/259] type: int TEXT=int(*)(int,int)  [10:1/229-
 FUNCTION call_op [12:1/261-12:48/308] FunctionImpl
     DEFINITION: null
     SIGNATURE call_op(int(*)(int,int),int,int)
-    UNIQUE NAME FUNCTION:call_op(int(*)(int,int),int,int)
+    UNIQUE NAME F:call_op(int(*)(int,int),int,int)
     PARAMETERS:
         op [12:13/273-12:32/292] type: int TEXT=int(*)(int,int)  [12:13/273-12:19/279] init: null
         a [12:34/294-12:39/299] type: int TEXT=int  [12:34/294-12:37/297] init: null
@@ -72,7 +72,7 @@ VARIABLE all_ops_2 [16:1/351-16:56/406] type: int[] TEXT=int[](*)(int,int)  [16:
 FUNCTION f0 [19:1/409-19:18/426] FunctionImpl
     DEFINITION: null
     SIGNATURE f0(int,int)
-    UNIQUE NAME FUNCTION:f0(int,int)
+    UNIQUE NAME F:f0(int,int)
     PARAMETERS:
          [19:8/416-19:11/419] type: int TEXT=int  [19:8/416-19:11/419] init: null
          [19:13/421-19:16/424] type: int TEXT=int  [19:13/421-19:16/424] init: null
@@ -80,7 +80,7 @@ FUNCTION f0 [19:1/409-19:18/426] FunctionImpl
 FUNCTION f1 [20:1/427-20:19/445] FunctionImpl
     DEFINITION: null
     SIGNATURE f1(int,int)
-    UNIQUE NAME FUNCTION:f1(int,int)
+    UNIQUE NAME F:f1(int,int)
     PARAMETERS:
          [20:9/435-20:12/438] type: int TEXT=int  [20:9/435-20:12/438] init: null
          [20:14/440-20:17/443] type: int TEXT=int  [20:14/440-20:17/443] init: null
@@ -88,7 +88,7 @@ FUNCTION f1 [20:1/427-20:19/445] FunctionImpl
 FUNCTION f2 [21:1/446-21:20/465] FunctionImpl
     DEFINITION: null
     SIGNATURE f2(int,int)
-    UNIQUE NAME FUNCTION:f2(int,int)
+    UNIQUE NAME F:f2(int,int)
     PARAMETERS:
          [21:10/455-21:13/458] type: int TEXT=int  [21:10/455-21:13/458] init: null
          [21:15/460-21:18/463] type: int TEXT=int  [21:15/460-21:18/463] init: null
@@ -96,7 +96,7 @@ FUNCTION f2 [21:1/446-21:20/465] FunctionImpl
 FUNCTION f3 [22:1/466-22:21/486] FunctionImpl
     DEFINITION: null
     SIGNATURE f3(int,int)
-    UNIQUE NAME FUNCTION:f3(int,int)
+    UNIQUE NAME F:f3(int,int)
     PARAMETERS:
          [22:11/476-22:14/479] type: int TEXT=int  [22:11/476-22:14/479] init: null
          [22:16/481-22:19/484] type: int TEXT=int  [22:16/481-22:19/484] init: null
@@ -125,7 +125,7 @@ ENUM op_type [1:1/0-1:36/35]
     DIV
 FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl
     SIGNATURE add(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:add(int,int)
+    UNIQUE NAME f:add(int,int)
     DECLARATION: add  [3:1/38-3:40/77]
     PARAMETERS:
         a [3:9/46-3:14/51] type: int TEXT=int  [3:9/46-3:12/49] init: null
@@ -135,7 +135,7 @@ FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl
         STATEMENT Return  [3:25/62-3:38/75] text: 'return a + b;'
 FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl
     SIGNATURE sub(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:sub(int,int)
+    UNIQUE NAME f:sub(int,int)
     DECLARATION: sub  [4:1/78-4:40/117]
     PARAMETERS:
         a [4:9/86-4:14/91] type: int TEXT=int  [4:9/86-4:12/89] init: null
@@ -145,7 +145,7 @@ FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl
         STATEMENT Return  [4:25/102-4:38/115] text: 'return a - b;'
 FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl
     SIGNATURE mul(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:mul(int,int)
+    UNIQUE NAME f:mul(int,int)
     DECLARATION: mul  [5:1/118-5:40/157]
     PARAMETERS:
         a [5:9/126-5:14/131] type: int TEXT=int  [5:9/126-5:12/129] init: null
@@ -155,7 +155,7 @@ FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl
         STATEMENT Return  [5:25/142-5:38/155] text: 'return a * b;'
 FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl
     SIGNATURE div(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:div(int,int)
+    UNIQUE NAME f:div(int,int)
     DECLARATION: div  [6:1/158-6:40/197]
     PARAMETERS:
         a [6:9/166-6:14/171] type: int TEXT=int  [6:9/166-6:12/169] init: null
@@ -168,7 +168,7 @@ VARIABLE curr_op [10:1/229-10:31/259] type: int TEXT=int(*)(int,int)  [10:1/229-
 FUNCTION call_op [12:1/261-12:48/308] FunctionImpl
     DEFINITION: null
     SIGNATURE call_op(int(*)(int,int),int,int)
-    UNIQUE NAME FUNCTION:call_op(int(*)(int,int),int,int)
+    UNIQUE NAME F:call_op(int(*)(int,int),int,int)
     PARAMETERS:
         op [12:13/273-12:32/292] type: int TEXT=int(*)(int,int)  [12:13/273-12:19/279] init: null
         a [12:34/294-12:39/299] type: int TEXT=int  [12:34/294-12:37/297] init: null
@@ -179,7 +179,7 @@ VARIABLE all_ops_2 [16:1/351-16:56/406] type: int[] TEXT=int[](*)(int,int)  [16:
 FUNCTION f0 [19:1/409-19:18/426] FunctionImpl
     DEFINITION: null
     SIGNATURE f0(int,int)
-    UNIQUE NAME FUNCTION:f0(int,int)
+    UNIQUE NAME F:f0(int,int)
     PARAMETERS:
          [19:8/416-19:11/419] type: int TEXT=int  [19:8/416-19:11/419] init: null
          [19:13/421-19:16/424] type: int TEXT=int  [19:13/421-19:16/424] init: null
@@ -187,7 +187,7 @@ FUNCTION f0 [19:1/409-19:18/426] FunctionImpl
 FUNCTION f1 [20:1/427-20:19/445] FunctionImpl
     DEFINITION: null
     SIGNATURE f1(int,int)
-    UNIQUE NAME FUNCTION:f1(int,int)
+    UNIQUE NAME F:f1(int,int)
     PARAMETERS:
          [20:9/435-20:12/438] type: int TEXT=int  [20:9/435-20:12/438] init: null
          [20:14/440-20:17/443] type: int TEXT=int  [20:14/440-20:17/443] init: null
@@ -195,7 +195,7 @@ FUNCTION f1 [20:1/427-20:19/445] FunctionImpl
 FUNCTION f2 [21:1/446-21:20/465] FunctionImpl
     DEFINITION: null
     SIGNATURE f2(int,int)
-    UNIQUE NAME FUNCTION:f2(int,int)
+    UNIQUE NAME F:f2(int,int)
     PARAMETERS:
          [21:10/455-21:13/458] type: int TEXT=int  [21:10/455-21:13/458] init: null
          [21:15/460-21:18/463] type: int TEXT=int  [21:15/460-21:18/463] init: null
@@ -203,7 +203,7 @@ FUNCTION f2 [21:1/446-21:20/465] FunctionImpl
 FUNCTION f3 [22:1/466-22:21/486] FunctionImpl
     DEFINITION: null
     SIGNATURE f3(int,int)
-    UNIQUE NAME FUNCTION:f3(int,int)
+    UNIQUE NAME F:f3(int,int)
     PARAMETERS:
          [22:11/476-22:14/479] type: int TEXT=int  [22:11/476-22:14/479] init: null
          [22:16/481-22:19/484] type: int TEXT=int  [22:16/481-22:19/484] init: null

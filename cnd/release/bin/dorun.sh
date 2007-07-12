@@ -17,6 +17,10 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
+file=$NBCND_RC
+prompt="[Enter] "
+pgm=true
+
 if [ -x /usr/ucb/echo ]
 then
     # Solaris' echo doesn't support the -n option, so use an alaternate echo
@@ -25,22 +29,40 @@ else
     ECHO=echo
 fi
 
-prompt="$1"
-pgm="$2"
-shift 2
+while [ -n "$1" ]
+do
+    case "$1" in
+    -p)
+        prompt="$2"
+        shift
+        ;;
 
-# Ensure we work for users who don't have "." in their path.
-case "$pgm" in
-/*|./*|[a-zA-Z]:/*) ;;
-*)  pgm="./$pgm" ;;
-esac
+    -f)
+        file="$2"
+        shift
+        ;;
+
+    /*|./*|[a-zA-Z]:/*)
+        pgm="$1"
+        shift
+        break;
+        ;;
+
+    *)
+        pgm="./$1"
+        shift
+        break
+        ;;
+    esac
+    shift
+done
 
 "$pgm" "$@"
 rc=$?
 
-if [ -n "$NBCND_RC" ]
+if [ -n "$file" ]
 then
-    echo $rc > "$NBCND_RC"
+    echo $rc > "$file"
 fi
 
 $ECHO -n "$prompt"

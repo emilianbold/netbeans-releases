@@ -28,6 +28,7 @@ import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
@@ -46,10 +47,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTDriverImpl {
     /** map of active creators */
-    private static Map<String, APTSyncCreator> file2creator = new HashMap<String, APTSyncCreator>();
+    private static Map<String, APTSyncCreator> file2creator = new ConcurrentHashMap<String, APTSyncCreator>();
     /** static shared sync map */
-    private static Map<String, Reference<APTFile>> file2ref2apt = Collections.synchronizedMap(new HashMap<String, Reference<APTFile>>());
-    private static Map<String, APTFile> file2apt = Collections.synchronizedMap(new HashMap<String, APTFile>());
+    private static Map<String, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<String, Reference<APTFile>>();
+    private static Map<String, APTFile> file2apt = new ConcurrentHashMap<String, APTFile>();
     
     /** instance fields */
     
@@ -62,12 +63,14 @@ public class APTDriverImpl {
         String path = file.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
-            APTSyncCreator creator = null;
-            synchronized (file2creator) {
-                creator = file2creator.get(path);
-                if (creator == null) {
-                    creator = new APTSyncCreator();
-                    file2creator.put(path, creator);
+            APTSyncCreator creator = file2creator.get(path);
+            if (creator == null) {
+                synchronized (file2creator) {
+                    creator = file2creator.get(path);
+                    if (creator == null) {
+                        creator = new APTSyncCreator();
+                        file2creator.put(path, creator);
+                    }
                 }
             }
             assert (creator != null);

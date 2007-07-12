@@ -55,21 +55,8 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
         queue.addLast(existent);
     }
     
-    private Maintainer maintainer;
-    
-    public void registerMaintenancer(Maintainer maintenancer) {
-        assert (maintenancer == null);
-        this.maintainer = this.maintainer;
-        throw new UnsupportedOperationException();
-    }
-    
-
     public void onIdle() {
         // do nothing
-    }
-    
-    private static String getName() {
-        return Thread.currentThread().getName();
     }
     
     public void clearQueue (Validator validator) {

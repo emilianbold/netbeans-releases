@@ -1,0 +1,168 @@
+'"customer.h"', tokenID=user-include, offset=880 [20:10/880-20:22/892]
+--OWNER:
+    INCLUDE "customer.h" [20:1/871-20:22/892]
+--RESOLVED TO:
+    FILE ReferencesTestCase/customer.h
+==============================================================
+'Customer', tokenID=identifier, offset=894 [22:1/894-22:9/902]
+--OWNER:
+    FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'Customer', tokenID=identifier, offset=904 [22:11/904-22:19/912]
+--OWNER:
+    FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    FUNCTION Customer(const string,int)  [29:9/994-29:59/1044] ReferencesTestCase/customer.h
+==============================================================
+'string', tokenID=identifier, offset=919 [22:26/919-22:32/925]
+--OWNER:
+    TYPE const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    null
+==============================================================
+'initName', tokenID=identifier, offset=926 [22:33/926-22:41/934]
+--OWNER:
+    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc type: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] init: null
+--RESOLVED TO:
+    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc type: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] init: null
+==============================================================
+'initDiscount', tokenID=identifier, offset=940 [22:47/940-22:59/952]
+--OWNER:
+    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc type: int TEXT=int  [22:43/936-22:46/939] init: null
+--RESOLVED TO:
+    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc type: int TEXT=int  [22:43/936-22:46/939] init: null
+==============================================================
+'name', tokenID=identifier, offset=960 [23:5/960-23:9/964]
+--OWNER:
+    FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+==============================================================
+'initName', tokenID=identifier, offset=965 [23:10/965-23:18/973]
+--OWNER:
+    FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc type: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] init: null
+==============================================================
+'discount', tokenID=identifier, offset=980 [24:5/980-24:13/988]
+--OWNER:
+    FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+==============================================================
+'initDiscount', tokenID=identifier, offset=989 [24:14/989-24:26/1001]
+--OWNER:
+    FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc type: int TEXT=int  [22:43/936-22:46/939] init: null
+==============================================================
+'Customer', tokenID=identifier, offset=1016 [27:5/1016-27:13/1024]
+--OWNER:
+    FUNCTION_DEFINITION GetDiscount() const  [27:1/1012-29:2/1070] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'GetDiscount', tokenID=identifier, offset=1026 [27:15/1026-27:26/1037]
+--OWNER:
+    FUNCTION_DEFINITION GetDiscount() const  [27:1/1012-29:2/1070] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    FUNCTION GetDiscount() const  [31:9/1085-31:33/1109] ReferencesTestCase/customer.h
+==============================================================
+'discount', tokenID=identifier, offset=1059 [28:12/1059-28:20/1067]
+--OWNER:
+    STMT Return text='return discount;'
+--RESOLVED TO:
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+==============================================================
+'string', tokenID=identifier, offset=1072 [31:1/1072-31:7/1078]
+--OWNER:
+    TYPE $unresolved$::string TEXT=string  [31:1/1072-31:7/1078] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    null
+==============================================================
+'Customer', tokenID=identifier, offset=1079 [31:8/1079-31:16/1087]
+--OWNER:
+    FUNCTION_DEFINITION GetName() const  [31:1/1072-33:2/1125] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'GetName', tokenID=identifier, offset=1089 [31:18/1089-31:25/1096]
+--OWNER:
+    FUNCTION_DEFINITION GetName() const  [31:1/1072-33:2/1125] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    FUNCTION GetName() const  [30:9/1053-30:32/1076] ReferencesTestCase/customer.h
+==============================================================
+'name', tokenID=identifier, offset=1118 [32:12/1118-32:16/1122]
+--OWNER:
+    STMT Return text='return name;'
+--RESOLVED TO:
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+==============================================================
+'ostream', tokenID=identifier, offset=1127 [35:1/1127-35:8/1134]
+--OWNER:
+    TYPE &$unresolved$::ostream TEXT=ostream&  [35:1/1127-35:9/1135] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    null
+==============================================================
+'ostream', tokenID=identifier, offset=1148 [35:22/1148-35:29/1155]
+--OWNER:
+    TYPE &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    null
+==============================================================
+'output', tokenID=identifier, offset=1157 [35:31/1157-35:37/1163]
+--OWNER:
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+--RESOLVED TO:
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+==============================================================
+'Customer', tokenID=identifier, offset=1171 [35:45/1171-35:53/1179]
+--OWNER:
+    TYPE const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] ReferencesTestCase/customer.cc
+--RESOLVED TO:
+    CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
+==============================================================
+'customer', tokenID=identifier, offset=1181 [35:55/1181-35:63/1189]
+--OWNER:
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+--RESOLVED TO:
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+==============================================================
+'output', tokenID=identifier, offset=1197 [36:5/1197-36:11/1203]
+--OWNER:
+    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+--RESOLVED TO:
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+==============================================================
+'customer', tokenID=identifier, offset=1207 [36:15/1207-36:23/1215]
+--OWNER:
+    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+--RESOLVED TO:
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+==============================================================
+'name', tokenID=identifier, offset=1216 [36:24/1216-36:28/1220]
+--OWNER:
+    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+--RESOLVED TO:
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+==============================================================
+'customer', tokenID=identifier, offset=1244 [36:52/1244-36:60/1252]
+--OWNER:
+    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+--RESOLVED TO:
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+==============================================================
+'discount', tokenID=identifier, offset=1253 [36:61/1253-36:69/1261]
+--OWNER:
+    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+--RESOLVED TO:
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+==============================================================
+'output', tokenID=identifier, offset=1281 [37:12/1281-37:18/1287]
+--OWNER:
+    STMT Return text='return output;'
+--RESOLVED TO:
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+==============================================================

@@ -45,8 +45,8 @@ public class CastUtils {
     public static String getFunctionName(AST ast) {
 	assert isCast(ast);
 	AST operator = AstUtil.findChildOfType(ast, CPPTokenTypes.LITERAL_OPERATOR);
-	assert(operator != null);
 	if( operator == null ) {
+            // error in AST
 	    return "operator ???"; // NOI18N
 	}
 	StringBuilder sb = new StringBuilder(operator.getText());
@@ -111,6 +111,7 @@ public class CastUtils {
 		    switch( next.getType() ) {
 			case CPPTokenTypes.ID:
 			    l.add(next.getText());
+                            break;
 			case CPPTokenTypes.SCOPE:
 			    break; // do nothing
 			default:

@@ -19,14 +19,14 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.disk.api.RepFilesAccessStrategy;
-import org.netbeans.modules.cnd.repository.impl.*;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
+import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
  * The implementation of the repository, which uses HDD
@@ -34,23 +34,19 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
     
-    public static int    defaultRepositoryOpenFilesLimit = 20; 
+    final public static int    DEFAULT_REPOSITORY_OPEN_FILES_LIMIT = 20; 
     
     private RepFilesAccessStrategy theFilesHelper;
-    private int openFilesLimit = defaultRepositoryOpenFilesLimit;
+    private int openFilesLimit = DEFAULT_REPOSITORY_OPEN_FILES_LIMIT;
     
     /** Creates a new instance of BaseDiskRepository */
     public BaseDiskRepositoryImpl() {
         super();
         // use the simple helper implementation
-        theFilesHelper = new SimpleRepFilesAccessStrategyImpl(defaultRepositoryOpenFilesLimit);
+        theFilesHelper = new SimpleRepFilesAccessStrategyImpl(DEFAULT_REPOSITORY_OPEN_FILES_LIMIT);
     }
     
-    public void setRepositoryBaseDirectory (String aBaseDir) {
-        theFilesHelper.setRepositoryBase(aBaseDir);
-    }
-    
-    public void setOpenFilesLimit (int limit) {
+    public void setOpenFilesLimit (int limit) throws IOException {
         openFilesLimit = limit;
         theFilesHelper.setOpenFilesLimit(openFilesLimit);
     }
@@ -64,24 +60,31 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
         theFilesHelper = aNavigator;
     }
     
-    public void write(Key id, final Persistent obj) throws IOException  {
+    public void write(Key id, final Persistent obj) {
         assert id != null;
         assert obj != null;
         
         // get the factory
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
-	ConcurrentFileRWAccess fos = theFilesHelper.getFileForObj(id, false);
-	if (fos != null) {
-            int size = fos.write(theFactory, obj,0);
-            fos.truncate(size);
-            fos.writeLock().unlock();
-	} else {
-            throw new FileNotFoundException("Failed to create disk cache"); // NOI18N
+        ConcurrentFileRWAccess fos = null;
+        try {
+            fos = theFilesHelper.getFileForObj(id, false);
+            if (fos != null) {
+                int size = fos.write(theFactory, obj,0);
+                fos.truncate(size);
+            } 
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    id.getUnit(), new RepositoryExceptionImpl(ex));
+        } finally {
+            if (fos != null) {
+                fos.writeLock().unlock();
+            }
         }
     }
     
-    public boolean maintenance(long timeout) throws IOException {
+    public boolean maintenance(long timeout) {
 	return false;
     }
     
@@ -92,35 +95,43 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
         // get the factory
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
+        ConcurrentFileRWAccess fis = null;
         try {
-            ConcurrentFileRWAccess fis = theFilesHelper.getFileForObj(id, true);
+            fis = theFilesHelper.getFileForObj(id, true);
 
             if (fis != null) {
                 // read
                 long size = fis.size();
                 obj = fis.read(theFactory, 0, (int)size);
+            }
+        }  catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    id.getUnit(), new RepositoryExceptionImpl(ex));
+        } finally {
+            if (fis != null) {
                 fis.readLock().unlock();
             }
-        }  catch (Exception ex) {
-            ex.printStackTrace();
-        } 
+        }
         
         return obj;
     }
     
     public void remove(Key id) {
         assert id != null;
-        
+        try {
         theFilesHelper.removeObjForKey(id);
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    id.getUnit(), new RepositoryExceptionImpl(ex));
+        }
     }
 
-    public void closeUnit(final String unitName, final boolean clean) {
+    public void close() throws IOException {
         theFilesHelper.setOpenFilesLimit(0);
         theFilesHelper.setOpenFilesLimit(openFilesLimit);        
     }
 
-    public void shutdown(final boolean clean) {
-        theFilesHelper.setOpenFilesLimit(0);
-        theFilesHelper.setOpenFilesLimit(openFilesLimit);
+    public int getFragmentationPercentage() {
+        return 0;
     }
 }

@@ -65,7 +65,7 @@ public class FriendTestCase extends TraceModelTestBase {
         assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists());
         performModelTest(testFile, System.out, System.err);
         checkFriend();
-        for(FileImpl file : getProject().getFileList()){
+        for(FileImpl file : getProject().getAllFiles()){
             file.stateChanged(true);
             file.scheduleParsing(true);
         }
@@ -148,43 +148,43 @@ public class FriendTestCase extends TraceModelTestBase {
         for(CsmOffsetableDeclaration decl : declarations){
             String uName = decl.getUniqueName();
             System.out.println(uName + " \t" + getClassName(decl.getClass()));
-            if ("FUNCTION:moo2(int)".equals(uName)){
+            if ("F:moo2(int)".equals(uName)){
                 assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION_DEFINITION:moo(int)".equals(uName)){
+            } else if ("f:moo(int)".equals(uName)){
                 assertTrue("moo(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            }  else if ("struct:S2".equals(uName)){
+            }  else if ("S:S2".equals(uName)){
                 assertFalse("S2 is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:S2::soo()".equals(uName)){
+            } else if ("F:S2::soo()".equals(uName)){
                 assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION_DEFINITION:S2::soo2()".equals(uName)){
+            } else if ("f:S2::soo2()".equals(uName)){
                 assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:S2::soo3()".equals(uName)){
+            } else if ("F:S2::soo3()".equals(uName)){
                 assertTrue("S2::soo3() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("class:A2".equals(uName)){
+            } else if ("C:A2".equals(uName)){
                 assertTrue("A2 is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:A2::foo()".equals(uName)){
+            } else if ("F:A2::foo()".equals(uName)){
                 assertTrue("A2::foo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION_DEFINITION:A2::foo()".equals(uName)){
+            } else if ("f:A2::foo()".equals(uName)){
                 assertTrue("A2::foo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:ccStyle()".equals(uName)){
+            } else if ("F:ccStyle()".equals(uName)){
                 assertFalse("ccStyle() is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("class:B".equals(uName)){
+            } else if ("C:B".equals(uName)){
                 assertFalse("B is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("TYPEDEF:B::xxx".equals(uName)){
+            } else if ("t:B::xxx".equals(uName)){
                 assertFalse("B::xxx is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("CLASS_FRIEND_DECLARATION:B::A2".equals(uName)){
+            } else if ("r:B::A2".equals(uName)){
                 assertFalse("B::A2 is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:B::boo()".equals(uName)){
+            } else if ("F:B::boo()".equals(uName)){
                 assertFalse("B::boo() is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION_DEFINITION:moo2(int)".equals(uName)){
+            } else if ("f:moo2(int)".equals(uName)){
                 assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:moo(int)".equals(uName)){
+            } else if ("F:moo(int)".equals(uName)){
                 assertTrue("moo(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION_DEFINITION:S2::soo()".equals(uName)){
+            } else if ("f:S2::soo()".equals(uName)){
                 assertTrue("S2::soo() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION:S2::soo2()".equals(uName)){
+            } else if ("F:S2::soo2()".equals(uName)){
                 assertTrue("S2::soo2() is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
-            } else if ("FUNCTION_DEFINITION:ccStyle(int)".equals(uName)){
+            } else if ("f:ccStyle(int)".equals(uName)){
                 assertFalse("ccStyle(int) is friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB));
             } else {
                 assertTrue("Inexpected declaration "+uName, false);
@@ -195,23 +195,23 @@ public class FriendTestCase extends TraceModelTestBase {
         assertTrue("Not all declaration found in project", set.size()==18);
     }
 /*
-int moo2(int);                          //FUNCTION:moo2(int)                    FunctionImpl
-int moo(int){return 0;}                 //FUNCTION_DEFINITION:moo(int)          FunctionDDImpl
-struct S2 {                             //struct:S2                             ClassImpl
-    int soo();                          //FUNCTION:S2::soo()                    MethodImpl
-    int soo2(){return 0;} };            //FUNCTION_DEFINITION:S2::soo2() 	MethodDDImpl
-class A2{                               //class:A2                              ClassImpl
-    int foo(); };                       //FUNCTION:A2::foo()                    MethodImpl
-int A2::foo(){ return 0; }              //FUNCTION_DEFINITION:A2::foo() 	FunctionDefinitionImpl
-int ccStyle();                          //FUNCTION:ccStyle()                    FunctionImpl
-class B{                                //class:B                               ClassImpl
-    typedef int xxx;                    //TYPEDEF:B::xxx                        ClassImpl$MemberTypedef
-    friend class A2;                    //CLASS_FRIEND_DECLARATION:B::A2 	FriendClassImpl
-    int boo();                          //FUNCTION:B::boo()                     MethodImpl
-    friend int moo2(int) { return 0; }; //FUNCTION_DEFINITION:moo2(int) 	FriendFunctionDDImpl
-    friend int moo(int);                //FUNCTION:moo(int)                     FriendFunctionImpl
-    friend int S2::soo(){ return 0; }   //FUNCTION_DEFINITION:S2::soo() 	FriendFunctionDefinitionImpl
-    friend int S2::soo2(); };           //FUNCTION:S2::soo2()                   FriendFunctionImplEx
-int ccStyle(int){ return 0; }           //FUNCTION_DEFINITION:ccStyle(int) 	FunctionDDImpl
+int moo2(int);                          //F:moo2(int)                    FunctionImpl
+int moo(int){return 0;}                 //f:moo(int)          FunctionDDImpl
+struct S2 {                             //S:S2                             ClassImpl
+    int soo();                          //F:S2::soo()                    MethodImpl
+    int soo2(){return 0;} };            //f:S2::soo2() 	MethodDDImpl
+class A2{                               //C:A2                              ClassImpl
+    int foo(); };                       //F:A2::foo()                    MethodImpl
+int A2::foo(){ return 0; }              //f:A2::foo() 	FunctionDefinitionImpl
+int ccStyle();                          //F:ccStyle()                    FunctionImpl
+class B{                                //C:B                               ClassImpl
+    typedef int xxx;                    //t:B::xxx                        ClassImpl$MemberTypedef
+    friend class A2;                    //r:B::A2 	FriendClassImpl
+    int boo();                          //F:B::boo()                     MethodImpl
+    friend int moo2(int) { return 0; }; //f:moo2(int) 	FriendFunctionDDImpl
+    friend int moo(int);                //F:moo(int)                     FriendFunctionImpl
+    friend int S2::soo(){ return 0; }   //f:S2::soo() 	FriendFunctionDefinitionImpl
+    friend int S2::soo2(); };           //F:S2::soo2()                   FriendFunctionImplEx
+int ccStyle(int){ return 0; }           //f:ccStyle(int) 	FunctionDDImpl
 */
 }
