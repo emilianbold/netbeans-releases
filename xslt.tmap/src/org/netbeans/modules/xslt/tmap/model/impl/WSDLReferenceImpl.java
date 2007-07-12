@@ -31,8 +31,10 @@ import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class WSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
-    AbstractNamedComponentReference<T> implements NamedComponentReference<T>, WSDLReference<T> {
+public class WSDLReferenceImpl<T extends ReferenceableWSDLComponent>
+    extends AbstractNamedComponentReference<T> 
+    implements NamedComponentReference<T>, WSDLReference<T> 
+{
 
 
     WSDLReferenceImpl( T target, Class<T> type, AbstractDocumentComponent parent ,
@@ -96,6 +98,6 @@ public class WSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
     public AttrType getAttributeType() {
         return AttrType.NCNAME;
     }
-    
+
     private WSDLReferenceBuilder.WSDLResolver myResolver;
 }

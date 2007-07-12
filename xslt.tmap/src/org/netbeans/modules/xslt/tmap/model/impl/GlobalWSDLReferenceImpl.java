@@ -18,14 +18,9 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
-import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.WSDLComponentBase;
-import org.netbeans.modules.xml.wsdl.model.visitor.FindReferencedVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
 
@@ -34,8 +29,9 @@ import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent> extends
-    AbstractNamedComponentReference<T> implements NamedComponentReference<T>, WSDLReference<T>
+public class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent> 
+        extends AbstractNamedComponentReference<T> 
+        implements NamedComponentReference<T>, WSDLReference<T>
 {
 
 ////    public GlobalWSDLReferenceImpl(
@@ -162,6 +158,6 @@ public class GlobalWSDLReferenceImpl<T extends ReferenceableWSDLComponent> exten
     public AttrType getAttributeType() {
         return AttrType.QNAME;
     }
-    
+
     private WSDLReferenceBuilder.WSDLResolver myResolver;
 }

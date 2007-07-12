@@ -21,6 +21,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -36,6 +37,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
@@ -44,6 +46,8 @@ import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -51,10 +55,17 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
  * @version 1.0
  */
 public class WSDLReferenceBuilder {
-    private WSDLReferenceBuilder() {
+    
+    private static final WSDLReferenceBuilder INSTANCE = new WSDLReferenceBuilder();
+    private static Collection<? extends ExternalModelRetriever> myRetrievers;
+    private Collection<WSDLReferenceFactory> myCollection;
 
+    private WSDLReferenceBuilder() {
+        Result<ExternalModelRetriever> result = Lookup.getDefault().lookup(
+            new Lookup.Template<ExternalModelRetriever>(ExternalModelRetriever.class));
+        myRetrievers = result.allInstances();
+        
         myCollection = new LinkedList<WSDLReferenceFactory>();
-// TODO m | r        
         myCollection.add( new PartnerLinkTypeResolver() );
         myCollection.add( new RoleResolver() );
         myCollection.add( new OperationResolver() );
@@ -147,21 +158,15 @@ public class WSDLReferenceBuilder {
     {
         Collection<WSDLModel> ret = new LinkedList<WSDLModel>();
         
-        Collection<WSDLModel> collection 
-                = ExternalModelRetriever.getWSDLModels(model, namespace);
-        ret.addAll(collection);
-        
-// TODO m | r        
-//////        if ( myRetrievers.size() == 1) {
-//////            return ((ExternalModelRetriever)myRetrievers.iterator().next()).
-//////                getWSDLModels(model, namespace);
-//////        }
-//////        for ( Object obj : myRetrievers ) {
-//////            ExternalModelRetriever retriever = (ExternalModelRetriever)obj;
-//////            Collection<WSDLModel> collection = 
-//////                retriever.getWSDLModels(model, namespace);
-//////            ret.addAll( collection );
-//////        }
+        if ( myRetrievers.size() == 1) {
+            return myRetrievers.iterator().next().getWSDLModels(model, namespace);
+        }
+        for ( ExternalModelRetriever retriever : myRetrievers ) {
+            Collection<WSDLModel> collection = 
+                retriever.getWSDLModels(model, namespace);
+            ret.addAll( collection );
+        }
+
         return ret;
     }
     
@@ -169,13 +174,6 @@ public class WSDLReferenceBuilder {
         <T extends ReferenceableWSDLComponent> T resolve(
                 AbstractNamedComponentReference<T> reference );
     }
-        
-//////
-    private static final WSDLReferenceBuilder INSTANCE = new WSDLReferenceBuilder();
-//////    
-//////    private static Collection myRetrievers;
-//////    
-    private Collection<WSDLReferenceFactory> myCollection;
 
 //////
 ///////*
@@ -228,7 +226,6 @@ abstract class AbstractGlobalReferenceFactory implements WSDLReferenceFactory {
     public AttributesType.AttrType getAttributeType() {
         return AttributesType.AttrType.QNAME;
     }    
-    
 }
 
 /**
@@ -306,7 +303,7 @@ class PartnerLinkTypeResolver extends AbstractGlobalReferenceFactory {
         }
         return null;
     }
-    
+
 }
 
 class RoleResolver extends AbstractNamedReferenceFactory {
