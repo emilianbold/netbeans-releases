@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import org.apache.tools.ant.BuildListener;
@@ -132,6 +133,17 @@ final class ModuleListParser {
                                 break;
                             }
                         }
+                        if (doFastScan) {
+                            @SuppressWarnings("unchecked") Set<String> storedStandardModules = (Set) oi.readObject();
+                            if (!standardModules.equals(storedStandardModules)) {
+                                Set<String> added = new TreeSet<String>(standardModules);
+                                added.removeAll(storedStandardModules);
+                                Set<String> removed = new TreeSet<String>(storedStandardModules);
+                                removed.removeAll(standardModules);
+                                project.log("Cache ignored due to changes in modules among standard clusters: + " + added + " - " + removed);
+                                matches = false;
+                            }
+                        }
                         if (matches) {
                             @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
                             entries = _entries;
@@ -142,11 +154,7 @@ final class ModuleListParser {
                     } finally {
                         is.close();
                     }
-                } catch (IOException x) {
-                    if (project != null) {
-                        project.log("Error loading " + scanCache + ": " + x, Project.MSG_WARN);
-                    }
-                } catch (ClassNotFoundException x) {
+                } catch (Exception x) {
                     if (project != null) {
                         project.log("Error loading " + scanCache + ": " + x, Project.MSG_WARN);
                     }
@@ -182,6 +190,9 @@ final class ModuleListParser {
                 try {
                     ObjectOutput oo = new ObjectOutputStream(os);
                     oo.writeObject(timestampsAndSizes);
+                    if (doFastScan) {
+                        oo.writeObject(standardModules);
+                    }
                     oo.writeObject(entries);
                     oo.flush();
                 } finally {
