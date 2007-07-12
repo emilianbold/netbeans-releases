@@ -1052,7 +1052,7 @@ public class CasaWrapperModel extends CasaModelImpl {
 //        return null;
     }
     
-    public boolean isDummyPortType(PortType portType) {
+    public static boolean isDummyPortType(PortType portType) {
         return portType.getName().equals(DUMMY_PORTTYPE_NAME);
     }
     
