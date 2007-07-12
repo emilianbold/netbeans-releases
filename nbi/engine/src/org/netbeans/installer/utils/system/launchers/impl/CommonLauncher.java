@@ -168,9 +168,22 @@ public abstract class CommonLauncher extends Launcher {
         LogManager.log(ErrorLevel.DEBUG, "Checking JVMs...");
         for(LauncherResource file: jvms) {
             if(file.isBundled()) {
-                if(file.getInputStream() == null) {
-                    throw new IOException("JVM file " + file.getPath() + " not found");
+                InputStream is = null;
+                try {
+                    is = file.getInputStream();
+                    if(is == null) {
+                        throw new IOException("JVM file " + file.getPath() + " not found");
+                    }
+                } finally {
+                    if(is!=null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            LogManager.log(e);
+                        }
+                    }
                 }
+                
             }}
     }
     
@@ -242,7 +255,6 @@ public abstract class CommonLauncher extends Launcher {
     protected void checkTestJVMFile()   throws IOException {
         LogManager.log(ErrorLevel.DEBUG, "Checking testJVM file...");
         if(testJVMFile==null) {
-            //final File testJVM = FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI, true);
             testJVMFile = new LauncherResource(JavaUtils.TEST_JDK_RESOURCE);
         }
     }
