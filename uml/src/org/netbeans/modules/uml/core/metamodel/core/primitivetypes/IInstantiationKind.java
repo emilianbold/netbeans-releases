@@ -33,7 +33,7 @@ public interface IInstantiationKind
     public static final int IK_DIRECT = 0;
 
     // This value indicates that the Component is instantiated indirectly,
-    // through the instantiation of one or more of its Parts (e.g. a «focus» Class inside the Component).
+    // through the instantiation of one or more of its Parts (e.g. a focus Class inside the Component).
     public static final int IK_INDIRECT = 1;
 
     // This value indicates that no instances of the Component will exist.

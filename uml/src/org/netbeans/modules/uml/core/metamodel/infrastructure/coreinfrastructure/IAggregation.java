@@ -62,12 +62,12 @@ public interface IAggregation extends IAssociation
 	public void setPartEnd2( IClassifier newVal );
 
 	/**
-	 * Indicates the nature of the aggregation. If false, the classifier at the aggregate end represents a shared aggregate, and the instance specified by the classifier at the part end may be contained in other aggregates. If true, the classifier at the aggregate enIÒ?
+	 * Indicates the nature of the aggregation. If false, the classifier at the aggregate end represents a shared aggregate, and the instance specified by the classifier at the part end may be contained in other aggregates. If true, the classifier at the aggregate
 	*/
 	public boolean getIsComposite();
 
 	/**
-	 * Indicates the nature of the aggregation. If false, the classifier at the aggregate end represents a shared aggregate, and the instance specified by the classifier at the part end may be contained in other aggregates. If true, the classifier at the aggregate enIÒ?
+	 * Indicates the nature of the aggregation. If false, the classifier at the aggregate end represents a shared aggregate, and the instance specified by the classifier at the part end may be contained in other aggregates. If true, the classifier at the aggregate
 	*/
 	public void setIsComposite( boolean value );
 

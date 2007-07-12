@@ -41,12 +41,12 @@ public interface IClass extends IEncapsulatedClassifier
 	public ETList<IReception> getReceptions();
 
 	/**
-	 * Determines whether an object specified by this class is active or not. An active object is an object that, as a direct concsequence of its creation, commences to execute its behavior specification, and does not cease until either the complete specification is ?É?
+	 * Determines whether an object specified by this class is active or not. An active object is an object that, as a direct concsequence of its creation, commences to execute its behavior specification, and does not cease until either the complete specification is
 	*/
 	public boolean getIsActive();
 
 	/**
-	 * Determines whether an object specified by this class is active or not. An active object is an object that, as a direct concsequence of its creation, commences to execute its behavior specification, and does not cease until either the complete specification is ?É?
+	 * Determines whether an object specified by this class is active or not. An active object is an object that, as a direct concsequence of its creation, commences to execute its behavior specification, and does not cease until either the complete specification is
 	*/
 	public void setIsActive( boolean value );
 

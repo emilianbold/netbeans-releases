@@ -60,7 +60,7 @@ public interface ICreationFactory
 	public Object retrieveEmptyMetaType( String typeName, Object outer );
 
 	/**
-	 * Retrieve the type specified by the type name, e.g. Class. The type is a shell. No initialization has been done.  The location is the stop under the hive where the type can be found (ie ReverseEngineering will equate to [HKEY_CURRENT_USERSoftwareEmbarcaderoDesc?¿?
+	 * Retrieve the type specified by the type name, e.g. Class. The type is a shell. No initialization has been done.  The location is the stop under the hive where the type can be found (ie ReverseEngineering will equate to [HKEY_CURRENT_USERSoftwareEmbarcaderoDesc
 	*/
 	public Object retrieveEmptyMetaType( String subKey, String typeName, Object outer );
 

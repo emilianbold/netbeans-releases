@@ -163,7 +163,7 @@ public interface ITypeManager
 	public INamedElement getCachedTypeByName( String nameOfType );
 
 	/**
-	 * Retrieves the element with the passed in name by searching the Project's list of referenced libraries. If more than one element has the name, the first one found is returned. filter should be white-space delimited list of typenames, such as 'Class Interface St?Ô?
+	 * Retrieves the element with the passed in name by searching the Project's list of referenced libraries. If more than one element has the name, the first one found is returned. filter should be white-space delimited list of typenames, such as 'Class Interface St
 	*/
 	public INamedElement getElementFromLibrariesByNameAndType( String name, String filter );
 
