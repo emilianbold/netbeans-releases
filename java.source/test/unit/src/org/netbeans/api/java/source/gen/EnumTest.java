@@ -42,6 +42,8 @@ public class EnumTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(EnumTest.class);
+//        suite.addTest(new EnumTest("testConstantRename"));
+//        suite.addTest(new EnumTest("testAddMethodAfterConstants"));
         return suite;
     }
     
@@ -149,7 +151,7 @@ public class EnumTest extends GeneratorTest {
             "\n" +
             "public enum Test {\n" +
             "    A, B, C;\n" +
-            "    \n" +
+            "\n" +
             "    public void enumMethod() {\n" +
             "    }\n" +
             "}\n";
