@@ -32,7 +32,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -170,7 +172,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             super(ConfFilesChildren.forProject(prj), createLookup(prj));
 	    this.project = prj;
             setName("configurationFiles"); // NOI18N
-            
+                        
             FileObject projectDir = prj.getProjectDirectory();
             try {
                 DataObject projectDo = DataObject.find(projectDir);
@@ -193,12 +195,25 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private Image computeIcon(boolean opened, int type) {
             if (projectNode == null)
                 return null;
-
-            Image image = opened ? projectNode.getOpenedIcon(type) : projectNode.getIcon(type);
+            Image image = opened?icon2image("Tree.openIcon"):icon2image("Tree.closedIcon"); //NOI18N
             image = Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
             return image;
         }
         
+        private static Image icon2image(String key) {
+        Object obj = UIManager.get(key);
+        if (obj instanceof Image) {
+            return (Image)obj;
+        }
+        
+        if (obj instanceof Icon) {
+            Icon icon = (Icon)obj;
+            return Utilities.icon2Image(icon);
+        }
+        
+        return null;
+    }  
+         
         public String getDisplayName() {
             return NbBundle.getMessage(ConfFilesNodeFactory.class, "LBL_Node_Config"); //NOI18N
         }
