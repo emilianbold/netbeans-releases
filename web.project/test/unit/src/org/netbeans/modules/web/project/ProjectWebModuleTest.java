@@ -49,9 +49,9 @@ public class ProjectWebModuleTest extends NbTestCase {
     public void testMetadataModel() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/WebApplication1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
-        assertNotNull(j2eeModule.getDeploymentDescriptor(WebAppMetadata.class));
-        assertNotNull(j2eeModule.getDeploymentDescriptor(WebservicesMetadata.class));
+        assertNotNull(j2eeModule.getMetadataModel(WebAppMetadata.class));
+        assertNotNull(j2eeModule.getMetadataModel(WebservicesMetadata.class));
     }
 }
