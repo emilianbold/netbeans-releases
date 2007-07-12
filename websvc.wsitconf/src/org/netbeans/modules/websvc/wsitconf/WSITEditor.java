@@ -23,7 +23,6 @@ import java.util.Collection;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -52,8 +51,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -302,67 +299,44 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
     public static FileObject getClientConfigFolder(Project p) {
         FileObject folder = null;
         Sources sources = ProjectUtils.getSources(p);
-
-        J2eeModuleProvider mp = p.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp == null) {
-            if (sources != null) {
-                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if ((sourceGroups != null) || (sourceGroups.length > 0)) {
-                    folder = sourceGroups[0].getRootFolder();
-                    if (folder != null) {
-                        folder = folder.getFileObject("META-INF");
-                    }
-                    if ((folder == null) || (!folder.isValid())) {
-                        try {
-                            folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
-                        } catch (IOException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
-            }
-        }
-
-        WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
-        if (wm != null) {
-            if (sources != null) {
-                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if ((sourceGroups != null) || (sourceGroups.length > 0)) {
-                    folder = sourceGroups[0].getRootFolder();
-                    if (folder != null) {
-                        folder = folder.getFileObject("META-INF");
-                    }
-                    if ((folder == null) || (!folder.isValid())) {
-                        try {
-                            folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
-                        } catch (IOException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
-            }
-        }
-
-        EjbJar ejb = EjbJar.getEjbJar(p.getProjectDirectory());
-        if (ejb != null) {
-            if (sources != null) {
-                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if ((sourceGroups != null) || (sourceGroups.length > 0)) {
-                    folder = sourceGroups[0].getRootFolder().getParent();
-                    if (folder != null) {
-                        folder = folder.getFileObject("conf");
-                    }
-                    if ((folder == null) || (!folder.isValid())) {
-                        try {
-                            folder = sourceGroups[0].getRootFolder().createFolder("conf");
-                        } catch (IOException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
-            }
-        }
+        if (sources == null) return null;
+        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
+        Util.ProjectType pt = Util.getProjectType(p);
+        switch(pt) {             
+            case UNKNOWN: 
+            case CLIENT:
+            case WEB: {
+                    if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                        folder = sourceGroups[0].getRootFolder();
+                        if (folder != null) {
+                            folder = folder.getFileObject("META-INF");
+                        }
+                        if ((folder == null) || (!folder.isValid())) {
+                            try {
+                                folder = sourceGroups[0].getRootFolder().createFolder("META-INF");
+                            } catch (IOException ex) {
+                                logger.log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+                } break;            
+            case EJB: {
+                    if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                        folder = sourceGroups[0].getRootFolder().getParent();
+                        if (folder != null) {
+                            folder = folder.getFileObject("conf");
+                        }
+                        if ((folder == null) || (!folder.isValid())) {
+                            try {
+                                folder = sourceGroups[0].getRootFolder().createFolder("conf");
+                            } catch (IOException ex) {
+                                logger.log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+                } break;
+        }
         return folder;
     }
     
