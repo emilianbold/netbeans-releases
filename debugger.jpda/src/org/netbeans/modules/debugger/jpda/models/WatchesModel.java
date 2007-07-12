@@ -355,6 +355,7 @@ public class WatchesModel implements TreeModel {
                 }
                 synchronized (this) {
                     if (evaluatedWatch != null) {
+                        if (watchRef != null) watchRef[0] = evaluatedWatch;
                         return evaluatedWatch.getValue();
                     }
                 }
