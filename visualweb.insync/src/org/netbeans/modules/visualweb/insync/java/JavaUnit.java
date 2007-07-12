@@ -19,8 +19,12 @@
 package org.netbeans.modules.visualweb.insync.java;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -29,6 +33,9 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 
 import javax.swing.event.DocumentEvent;
 import javax.tools.Diagnostic;
@@ -162,11 +169,18 @@ public class JavaUnit extends SourceUnit {
     public String getPackageName() {
        return (String)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
-                return cinfo.getCompilationUnit().getPackageName().toString();
+                return getPackageName(cinfo);
             }
         }, fobj);
     }
 
+    private String getPackageName(CompilationInfo cinfo) {
+        Element e = cinfo.getTrees().getElement(new TreePath(cinfo.getCompilationUnit()));
+        if (e != null && e.getKind() == ElementKind.PACKAGE) {
+            return ((PackageElement) e).getQualifiedName().toString();
+        }
+        return null;
+    }
 
     /*
      * @see org.netbeans.modules.visualweb.insync.Unit#getErrors()
@@ -223,15 +237,32 @@ public class JavaUnit extends SourceUnit {
         return (Boolean)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {        
                 for (ImportTree importTree : cinfo.getCompilationUnit().getImports()) {
-                    String importName = importTree.getQualifiedIdentifier().toString();
-                    if (fqn.equals(importName)) {
-                        return true;
-                    } 
+                    if(importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
+                        MemberSelectTree memSelectTree = (MemberSelectTree)importTree.getQualifiedIdentifier();
+                        if(getFQN(cinfo, memSelectTree).equals(fqn)) {
+                            return true;
+                        }
+                    }
                 }
                 return false;
             }
         }, getFileObject());
     }
+    
+    /**
+     * @return computes the fqn for ExpressionTree taking multi byte character into account
+     * toString() on trees do not support multi-byte characters, therefore this method is added
+     */
+    private String getFQN(CompilationInfo cinfo, ExpressionTree tree) {
+        if(tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree memSelectTree = (MemberSelectTree)tree;
+            return getFQN(cinfo, memSelectTree.getExpression()) + "." + memSelectTree.getIdentifier().toString();
+        }else if(tree.getKind() == Tree.Kind.IDENTIFIER) {
+            return ((IdentifierTree)tree).getName().toString();
+        }
+        return tree.toString();
+    }
+    
     
     /**
      * @return needed if the import is required for the class
@@ -250,8 +281,9 @@ public class JavaUnit extends SourceUnit {
             pkgName = fqn.substring(0, index);
             className = fqn.substring(index+1);
         }
+        
         //check if they belong to same package
-        String currentPkgName = cinfo.getCompilationUnit().getPackageName().toString();
+        String currentPkgName = getPackageName(cinfo);
         if(pkgName == null || pkgName.equals(currentPkgName)) {
             return ImportStatus.not_needed;
         }
@@ -262,23 +294,20 @@ public class JavaUnit extends SourceUnit {
         }
         
         for (ImportTree importTree : cinfo.getCompilationUnit().getImports()) {
-            String importName = importTree.getQualifiedIdentifier().toString();
-            //FQN match
-            if(importName.equals(fqn)) {
-                return ImportStatus.exists;
-            }
-            
-            index = importName.indexOf(".");
-            if(index != -1) {
+            if(importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
+                MemberSelectTree memSelectTree = (MemberSelectTree)importTree.getQualifiedIdentifier();
+                String importClassName = memSelectTree.getIdentifier().toString();
+                //FQN match
+                if(getFQN(cinfo, memSelectTree).equals(fqn)) {
+                    return ImportStatus.exists;
+                }
                 //Check for wild card imports
-                if(importName.substring(index+1).equals("*")) {
-                    String importPkgName = importName.substring(0, index);
-                    if (importPkgName.equals(pkgName)) {
+                if(importClassName.equals("*")) {
+                    if(getFQN(cinfo, memSelectTree.getExpression()).equals(pkgName)) {
                         return ImportStatus.exists;
                     }
                 }else {
                     //Check if the import is not allowed because of name clash
-                    String importClassName = fqn.substring(index+1);
                     if(importClassName.equals(className)){
                         return ImportStatus.not_allowed;
                     }
