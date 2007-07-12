@@ -470,10 +470,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     PasteType paste = getPaste(dictionary);
                     FileObject tar=getTarget(dictionary);
                     if (selectedElements.length == 1) {
-                        try {
-                            return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles);
-                        } catch (DataObjectNotFoundException ex) {
-                            throw (RuntimeException) new RuntimeException().initCause(ex);
+                        if (!selectedElements[0].isFolder()) {
+                            try {
+                                return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles);
+                            } catch (DataObjectNotFoundException ex) {
+                                throw (RuntimeException) new RuntimeException().initCause(ex);
+                            }
+                        } else {
+                            Set s = new HashSet();
+                            s.addAll(Arrays.asList(selectedElements));
+                            return new MoveClassesUI(s, tar, paste);
                         }
                     } else {
                         Set s = new HashSet();

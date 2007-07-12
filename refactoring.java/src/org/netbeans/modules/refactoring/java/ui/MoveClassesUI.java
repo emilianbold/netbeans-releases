@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -45,8 +45,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -164,15 +166,23 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     private final Vector getNodes() {
-        Vector result = new Vector(javaObjects.size());
-        for(Iterator i = javaObjects.iterator(); i.hasNext();) {
+        Vector<Node> result = new Vector(javaObjects.size());
+        LinkedList<FileObject> q = new LinkedList<FileObject>(javaObjects);
+        while (!q.isEmpty()) {
+            FileObject f = q.removeFirst();
             DataObject d = null;
             try {
-                d = DataObject.find((FileObject) i.next());
+                d = DataObject.find(f);
             } catch (DataObjectNotFoundException ex) {
                 ex.printStackTrace();
             }
-            result.add(d.getNodeDelegate());
+            if (d instanceof DataFolder) {
+                for (DataObject o:((DataFolder) d).getChildren()) {
+                    q.addLast(o.getPrimaryFile());
+                }
+            } else {
+                result.add(d.getNodeDelegate());
+            }
         }
         return result;
     }
