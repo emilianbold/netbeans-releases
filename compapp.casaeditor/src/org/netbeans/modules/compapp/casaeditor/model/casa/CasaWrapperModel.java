@@ -1127,7 +1127,12 @@ public class CasaWrapperModel extends CasaModelImpl {
     public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
             boolean internal, int x, int y) {
         String projName = getUniqueUnknownServiceEngineServiceUnitName();
-        return addServiceEngineServiceUnit(projName, "", internal, true, x, y); // NOI18N
+        return addServiceEngineServiceUnit(projName, 
+                "",   // component name unknown       // NOI18N
+                null, // use default service unit description
+                internal, 
+                true, // unknown
+                x, y); 
     }
     
     private String getUniqueUnknownServiceEngineServiceUnitName() {
@@ -1147,7 +1152,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     public CasaServiceEngineServiceUnit addServiceEngineServiceUnit(
-            String projName, String compName, 
+            String projName, String compName, String description,
             boolean internal, boolean unknown,
             int x, int y) {
         
@@ -1161,8 +1166,9 @@ public class CasaWrapperModel extends CasaModelImpl {
         seSU.setDefined(false);
         seSU.setName(projName);
         seSU.setUnitName(projName);
-        seSU.setDescription(NbBundle.getMessage(this.getClass(), 
-                    "TXT_SERVICE_UNIT_DESCRIPTION")); // NOI18N
+        seSU.setDescription(description == null ? 
+            NbBundle.getMessage(this.getClass(), "TXT_SERVICE_UNIT_DESCRIPTION") : // NOI18N
+            description); 
         seSU.setComponentName(compName);
         seSU.setArtifactsZip(projName + ".jar"); // NOI18N
         
@@ -2063,6 +2069,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         
         addServiceEngineServiceUnit(projectName, type, 
+                null,  // use default description
                 true,  // is internal SESU
                 false, // is known
                 x, y);

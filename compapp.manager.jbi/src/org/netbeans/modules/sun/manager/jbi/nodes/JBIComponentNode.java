@@ -278,10 +278,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         firePropertySetsChange(null, null);
     }
     
-    private AdministrationService getAdminService() {
-        return getAppserverJBIMgmtController().getJBIAdministrationService();
-    }
-    
     //========================== Startable =====================================
     
     /**

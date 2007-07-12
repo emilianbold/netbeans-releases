@@ -119,7 +119,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 } 
             } else if(dfo instanceof List) {
                 List dfoList = (List) dfo;
-                if(dfoList.size() == 3 &&
+                if(dfoList.size() == 5 &&
                     dfoList.get(0) instanceof String &&
                     dfoList.get(0).equals("JBIMGR_SU_TRANSFER")) {
                     region = getScene().getExternalRegion();
@@ -225,20 +225,24 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 mModel.addInternalJBIModule(p, type, point.x, point.y);
             } else if(dfo instanceof List) {
                 List dfoList = (List) dfo;
-                if (dfoList.size() == 3 &&
+                if (dfoList.size() == 5 &&
                     dfoList.get(0) instanceof String &&
-                    dfoList.get(0).equals("JBIMGR_SU_TRANSFER")) {
+                    dfoList.get(0).equals("JBIMGR_SU_TRANSFER")) { // NOI18N
                 
                     final JBIServiceUnitTransferObject suTransfer =
                             new JBIServiceUnitTransferObject(
                             (String) dfoList.get(1),
-                            (String) dfoList.get(2));
+                            (String) dfoList.get(2),
+                            (String) dfoList.get(3),
+                            (String) dfoList.get(4));
 
                     point = getScene().getExternalRegion().convertSceneToLocal(point);
                     String suName = suTransfer.getServiceUnitName();
+                    String suDescription = suTransfer.getServiceUnitDescription();
+                    String compName = suTransfer.getComponentName();
                     final CasaServiceEngineServiceUnit seSU = 
                             mModel.addServiceEngineServiceUnit(
-                            suName, "", false, false, point.x, point.y); // NOI18N // FIXME
+                            suName, compName, suDescription, false, false, point.x, point.y); 
 
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {  

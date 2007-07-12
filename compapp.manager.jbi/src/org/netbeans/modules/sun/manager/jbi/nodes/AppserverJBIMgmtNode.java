@@ -27,6 +27,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtNode;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.JBIPropertySupportFactory;
 import org.openide.nodes.Children;
@@ -157,6 +158,10 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
         }
         return supports; 
     }
+    
+    protected AdministrationService getAdminService() {
+        return getAppserverJBIMgmtController().getJBIAdministrationService();
+    }  
     
     
     /**

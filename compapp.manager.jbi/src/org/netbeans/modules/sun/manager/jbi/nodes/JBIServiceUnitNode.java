@@ -33,6 +33,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
@@ -42,6 +43,7 @@ import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.util.datatransfer.ExTransferable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
@@ -52,6 +54,8 @@ import org.xml.sax.InputSource;
 public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
     
     private static final String NODE_TYPE = NodeTypes.SERVICE_UNIT;
+    
+    private String componentName;
     
     public JBIServiceUnitNode(final AppserverJBIMgmtController controller,
             final String name,
@@ -85,10 +89,8 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
      * @return
      */
     private JBIServiceUnitStatus getServiceUnitStatus() {
-        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         String assemblyName = getParentNode().getName();
-        return controller.getJBIAdministrationService().
-                getServiceUnitStatus(assemblyName, getName());
+        return getAdminService().getServiceUnitStatus(assemblyName, getName());
     }
     
     /**
@@ -123,15 +125,17 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
     public Transferable drag() throws IOException {
         ExTransferable retValue = ExTransferable.create( super.drag() );
         //add the 'data' into the Transferable
-        final String descriptor = getDeploymentDescriptor();
+        String saDD = getSADeploymentDescriptor();
+        final String suDD = getSUDeploymentDescriptor();
         
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new InputSource(new StringReader(descriptor)));
-            Element services = (Element) doc.getElementsByTagName("services").item(0);
+            // parse SU DD
+            Document suDoc = builder.parse(new InputSource(new StringReader(suDD)));
+            Element services = (Element) suDoc.getElementsByTagName("services").item(0);
             boolean isBC = services.getAttribute("binding-component").equals("true");
             
             if (!isBC) {
@@ -139,8 +143,10 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
                     protected Object getData() throws IOException, UnsupportedFlavorException {
                         List<String> ret = new ArrayList<String>();
                         ret.add("JBIMGR_SU_TRANSFER"); // NOI18N
-                        ret.add(getName());
-                        ret.add(descriptor);
+                        ret.add(getName()); // service unit name
+                        ret.add(getComponentName()); 
+                        ret.add(getShortDescription());
+                        ret.add(suDD);
                         return ret;
                     }
                 });
@@ -169,13 +175,48 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
         return retValue;
     }
     
-    private String getDeploymentDescriptor() {
-        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+    private String getSUDeploymentDescriptor() {
         String assemblyName = getParentNode().getName();
-        String descriptor = controller.getJBIAdministrationService().
-                getServiceUnitDeploymentDescriptor(assemblyName, getName());
-        return descriptor;
+        String suDD = getAdminService().getServiceUnitDeploymentDescriptor(assemblyName, getName());
+        return suDD;
     }
     
+    private String getSADeploymentDescriptor() {
+        String assemblyName = getParentNode().getName();
+        String saDD = getAdminService().getServiceAssemblyDeploymentDescriptor(assemblyName);
+        return saDD;
+    }
+    
+    private String getComponentName() {
+        if (componentName == null) {
+            String saDD = getSADeploymentDescriptor();
+            String myName = getName();
+            
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            try {
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                
+                // parse SA DD
+                Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
+                NodeList sus = saDoc.getElementsByTagName("service-unit");
+                for (int i = 0; i < sus.getLength(); i++) {
+                    Element su = (Element) sus.item(i);
+                    String name = ((Element)su.getElementsByTagName("name").item(0)).getFirstChild().getNodeValue(); // identification/name
+                    if (name.equals(myName)) {
+                        componentName = ((Element)su.getElementsByTagName("component-name").item(0)).getFirstChild().getNodeValue(); // target/component-name
+                        break;
+                    }
+                }                
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            
+            if (componentName == null) {
+                componentName = "?";
+            }
+        }
+        return componentName;
+    }
     
 }

@@ -98,8 +98,7 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
     
     public void refresh() {
         // clear the cache first
-        AdministrationService adminService = 
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         adminService.clearServiceAssemblyStatusCache();
         
         super.refresh();
@@ -120,8 +119,7 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
      */
     public void deploy() {
         
-        AdministrationService adminService =
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
             

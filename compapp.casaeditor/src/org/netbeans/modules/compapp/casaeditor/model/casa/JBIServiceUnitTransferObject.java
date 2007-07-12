@@ -41,13 +41,20 @@ public class JBIServiceUnitTransferObject {
 //    };
     
     private String serviceUnitName;
+    private String serviceUnitDescription;
+    private String componentName;
     private boolean isBC;
     private Document doc;
     private List<Endpoint> providesList;
     private List<Endpoint> consumesList;     
         
-    public JBIServiceUnitTransferObject(String serviceUnitName, String descriptor) {
+    public JBIServiceUnitTransferObject(String serviceUnitName, 
+            String componentName,
+            String serviceUnitDescription, 
+            String descriptor) {
         this.serviceUnitName = serviceUnitName;
+        this.componentName = componentName;
+        this.serviceUnitDescription = serviceUnitDescription;
         
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -68,6 +75,14 @@ public class JBIServiceUnitTransferObject {
     
     public String getServiceUnitName() {
         return serviceUnitName;
+    }
+    
+    public String getServiceUnitDescription() {
+        return serviceUnitDescription;
+    }
+    
+    public String getComponentName() {
+        return componentName;
     }
     
     public List<Endpoint> getProvidesEndpoints() {

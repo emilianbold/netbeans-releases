@@ -111,8 +111,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     
     public void refresh() {
         // clear the cache first
-        AdministrationService adminService = 
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         adminService.clearJBIComponentStatusCache(getComponentType());
         
         super.refresh();
@@ -140,8 +139,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
      */
     public void install() {
         
-        AdministrationService adminService =
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
             JFileChooser chooser = getJFileChooser();
@@ -255,10 +253,6 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         return ret;
     }
     
-    protected AdministrationService getJBIAdministrationService() {
-        return getAppserverJBIMgmtController().getJBIAdministrationService();
-    }
-    
     private JFileChooser getJFileChooser(){
         JFileChooser chooser = new JFileChooser();
         
@@ -325,7 +319,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         }
         
         protected String installJBIComponent(String jarFilePath) {
-            AdministrationService adminService = getJBIAdministrationService();
+            AdministrationService adminService = getAdminService();
             return adminService.installComponent(jarFilePath);
         }
         
@@ -383,7 +377,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         }
         
         protected String installJBIComponent(String jarFilePath) {
-            AdministrationService adminService = getJBIAdministrationService();
+            AdministrationService adminService = getAdminService();
             return adminService.installComponent(jarFilePath);
         }
                 
@@ -441,7 +435,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         }
         
         protected String installJBIComponent(String jarFilePath) {
-            AdministrationService adminService = getJBIAdministrationService();
+            AdministrationService adminService = getAdminService();
             return adminService.installSharedLibrary(jarFilePath);
         }        
         

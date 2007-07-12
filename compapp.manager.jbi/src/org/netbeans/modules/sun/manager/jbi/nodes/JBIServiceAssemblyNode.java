@@ -136,8 +136,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     
     public void refresh() {
         // clear the cache first
-        AdministrationService adminService = 
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         adminService.clearServiceAssemblyStatusCache();
         
         super.refresh();
@@ -174,10 +173,6 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         setSheet(sheet);
         firePropertySetsChange(null, null);
     }
-    
-    private AdministrationService getAdminService() {
-        return getAppserverJBIMgmtController().getJBIAdministrationService();
-    }    
     
     //========================== Startable =====================================
     
