@@ -88,6 +88,9 @@ import org.openide.util.Exceptions;
  */
 class WebActionProvider implements ActionProvider {
     
+    // property definitions
+    private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
+
     // Definition of commands
     
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
@@ -226,6 +229,7 @@ class WebActionProvider implements ActionProvider {
         
         // RUN-SINGLE
         if (command.equals(COMMAND_RUN_SINGLE)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupTestSingle(p, files);
@@ -330,6 +334,7 @@ class WebActionProvider implements ActionProvider {
 
         // RUN, REDEPLOY
         } else if (command.equals(COMMAND_RUN) || command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupTestSingle(p, files);
@@ -356,6 +361,7 @@ class WebActionProvider implements ActionProvider {
 
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupDebugTestSingle(p, files);
@@ -457,6 +463,7 @@ class WebActionProvider implements ActionProvider {
 
         //DEBUG
         } else if (command.equals (COMMAND_DEBUG)) {
+            setDirectoryDeploymentProperty(p);
             if (!isSelectedServer ()) {
                 return null;
             }
@@ -541,6 +548,7 @@ class WebActionProvider implements ActionProvider {
             }
 
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findJavaSources(context);
             String path = null;
             if (files != null) {
@@ -587,12 +595,15 @@ class WebActionProvider implements ActionProvider {
 
         //TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupTestSingle(p, files);
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+            setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
         } else if ( command.equals( RestSupport.COMMAND_TEST_RESTBEANS ) ) {
+            setDirectoryDeploymentProperty(p);
             setupTestRestBeans(p);
         } else {
             if (targetNames == null) {
@@ -1142,7 +1153,16 @@ class WebActionProvider implements ActionProvider {
         return null;
     }
 
-    
-    
-    
+    private void setDirectoryDeploymentProperty(Properties p) {
+        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        if (instance != null) {
+            J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+            String sdi = jmp.getServerInstanceID();
+            J2eeModule mod = jmp.getJ2eeModule();
+            if (sdi != null && mod != null) {
+                boolean cFD = Deployment.getDefault().canFileDeploy(instance, mod);
+                p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, "" + cFD); // NOI18N
+            }
+        }
+    }
 }

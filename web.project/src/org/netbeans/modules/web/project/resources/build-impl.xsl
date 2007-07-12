@@ -211,6 +211,26 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
+                <!--
+                    #97118
+                    used to determine the build strategy for run
+                -->
+                <condition property="package.tmp.war.with.custom.manifest">
+                    <and>
+                        <isfalse value="${{war.package}}"/>
+                        <isset property="has.custom.manifest"/>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                    </and>
+                </condition>
+                <condition property="package.tmp.war.without.custom.manifest">
+                    <and>
+                        <isfalse value="${{war.package}}"/>
+                        <not>
+                            <isset property="has.custom.manifest"/>
+                        </not>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                    </and>
+                </condition>
             </target>
             
             <target name="-post-init">
@@ -942,6 +962,28 @@ introduced by support for multiple source roots. -jglick
                 </jar>
             </target>
             
+            <!--
+                #97118
+                target to do war build, if the project is not going to be
+                directory deployed. used by run-deploy as part of 'run'
+            -->
+            <target name="-package-tmp-war-with-manifest" if="package.tmp.war.with.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.web.dir.real}}"/>
+                </jar>
+            </target>
+            <target name="-package-tmp-war-without-manifest" if="package.tmp.war.without.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.web.dir.real}}"/>
+                </jar>
+            </target>
+
             <target name="do-dist">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest</xsl:attribute>
             </target>
@@ -1192,7 +1234,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist,-package-tmp-war-without-manifest,-package-tmp-war-with-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
@@ -1304,7 +1346,7 @@ introduced by support for multiple source roots. -jglick
             
             <target name="debug">
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-                <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist</xsl:attribute>
+                <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist,-package-tmp-war-without-manifest,-package-tmp-war-with-manifest</xsl:attribute>
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
                 <antcall target="connect-debugger"/>
