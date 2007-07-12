@@ -61,6 +61,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -479,7 +480,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 jlPkg.setText(td.getContextName());
                 jlPrj.setText(td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
-                rendererComponent.setToolTipText( FileUtil.getFileDisplayName(td.getFileObject()));
+                FileObject fo = td.getFileObject();
+                if (fo != null) {
+                    rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fo));
+                }
                 LOGGER.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
             }
             else {

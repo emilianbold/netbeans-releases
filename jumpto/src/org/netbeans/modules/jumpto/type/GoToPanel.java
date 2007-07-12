@@ -41,6 +41,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -424,7 +425,12 @@ public class GoToPanel extends javax.swing.JPanel {
         public void valueChanged(ListSelectionEvent ev) {
             TypeDescriptor selectedValue = ((TypeDescriptor) dialog.matchesList.getSelectedValue());
             if ( selectedValue != null ) {
-                dialog.jTextFieldLocation.setText( FileUtil.getFileDisplayName(selectedValue.getFileObject()) );
+                String fileName = "";
+                FileObject fo = selectedValue.getFileObject();
+                if (fo != null) {
+                    fileName = FileUtil.getFileDisplayName(fo);
+                }
+                dialog.jTextFieldLocation.setText(fileName);
             }
             else {
                 dialog.jTextFieldLocation.setText("");
