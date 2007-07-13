@@ -31,14 +31,13 @@ import java.util.List;
 import org.netbeans.modules.visualweb.api.complib.ComplibException;
 
 /**
- * Represents a component library consisting of a collection of components. This
- * is either a built-in or an extension component library provided by a third
- * party.
+ * Represents a component library consisting of a collection of components. This is either a
+ * built-in or an extension component library provided by a third party.
  * 
  * 
  * @author Edwin Goei
  */
-public abstract class Complib {
+public abstract class Complib implements Comparable<Complib> {
     /**
      * Represents an identifier for a Component Library.
      * 
@@ -110,16 +109,16 @@ public abstract class Complib {
         }
 
         /*
-         * For debugging, not necessarily used for persistence so this can
-         * change in the future if desired.
+         * For debugging, not necessarily used for persistence so this can change in the future if
+         * desired.
          */
         public String toString() {
             return asString();
         }
 
         /**
-         * Both this URI and version must be non-null and correspondingly equal
-         * to that contained in formal argument.
+         * Both this URI and version must be non-null and correspondingly equal to that contained in
+         * formal argument.
          */
         public boolean equals(Object anObject) {
             if (this == anObject) {
@@ -128,8 +127,7 @@ public abstract class Complib {
             if (anObject instanceof Identifier) {
                 Identifier anotherId = (Identifier) anObject;
                 if (uri.equals(anotherId.uri)
-                        && getVersionString().equals(
-                                anotherId.getVersionString())) {
+                        && getVersionString().equals(anotherId.getVersionString())) {
                     return true;
                 }
             }
@@ -141,18 +139,15 @@ public abstract class Complib {
         }
 
         /**
-         * @return String representation of this identifier object used for
-         *         persistence
+         * @return String representation of this identifier object used for persistence
          */
         public String asString() {
-            return "(uri=" + getNamespaceUriString() + ", version="
-                    + getVersionString() + ")";
+            return "(uri=" + getNamespaceUriString() + ", version=" + getVersionString() + ")";
         }
     }
 
     /**
-     * For initial palette, represents a container that can contain
-     * InitialPaletteItem children.
+     * For initial palette, represents a container that can contain InitialPaletteItem children.
      * 
      * @author Edwin Goei
      */
@@ -170,9 +165,9 @@ public abstract class Complib {
     }
 
     /**
-     * For initial palette, represents a container that can contain either
-     * InitialPaletteItem-s or other InitialPaletteFolder-s. Possibly empty.
-     * Note: 2005-03-10 restricted to only contain InitialPaletteItem-s.
+     * For initial palette, represents a container that can contain either InitialPaletteItem-s or
+     * other InitialPaletteFolder-s. Possibly empty. Note: 2005-03-10 restricted to only contain
+     * InitialPaletteItem-s.
      * 
      * @author Edwin Goei
      */
@@ -188,8 +183,8 @@ public abstract class Complib {
         }
 
         /**
-         * Returns the localized display name of this initial folder or the key
-         * if resource is not found
+         * Returns the localized display name of this initial folder or the key if resource is not
+         * found
          * 
          * @return
          */
@@ -200,10 +195,9 @@ public abstract class Complib {
     }
 
     /**
-     * For initial palette, represents a container that can only contain other
-     * InitialPaletteItem-s. Possibly empty. InitialPaletteItems-s containing
-     * other InitialPaletteItems-s may be used to organize the palette
-     * hierarchically.
+     * For initial palette, represents a container that can only contain other InitialPaletteItem-s.
+     * Possibly empty. InitialPaletteItems-s containing other InitialPaletteItems-s may be used to
+     * organize the palette hierarchically.
      * 
      * @author Edwin Goei
      */
@@ -235,9 +229,8 @@ public abstract class Complib {
     private List<File> helpPath;
 
     /**
-     * Note: to fully initialize a Complib subclass requires these steps and
-     * occur in the following order: 1) calling the constructor 2)
-     * initCompLibManifest() 3) initPaths().
+     * Note: to fully initialize a Complib subclass requires these steps and occur in the following
+     * order: 1) calling the constructor 2) initCompLibManifest() 3) initPaths().
      * 
      * TODO Figure out how to clean this up
      */
@@ -258,34 +251,29 @@ public abstract class Complib {
     }
 
     /**
-     * This method converts relative paths from the compLibConfig and turns them
-     * into absolute file paths in the expanded complib form.
+     * This method converts relative paths from the compLibConfig and turns them into absolute file
+     * paths in the expanded complib form.
      * 
      * @throws ComplibException
      */
     protected void initPaths() throws ComplibException {
-        this.runtimePath = convertConfigPathToFileList(compLibManifest
-                .getRuntimePath());
+        this.runtimePath = convertConfigPathToFileList(compLibManifest.getRuntimePath());
         this.designTimePath = convertConfigPathToFileList(compLibManifest
                 .getDeclaredDesignTimePath());
-        this.javadocPath = convertConfigPathToFileList(compLibManifest
-                .getJavadocPath());
-        this.sourcePath = convertConfigPathToFileList(compLibManifest
-                .getSourcePath());
-        this.webResourcePath = convertConfigPathToFileList(compLibManifest
-                .getWebResourcePath());
-        this.helpPath = convertConfigPathToFileList(compLibManifest
-                .getHelpPath());
+        this.javadocPath = convertConfigPathToFileList(compLibManifest.getJavadocPath());
+        this.sourcePath = convertConfigPathToFileList(compLibManifest.getSourcePath());
+        this.webResourcePath = convertConfigPathToFileList(compLibManifest.getWebResourcePath());
+        this.helpPath = convertConfigPathToFileList(compLibManifest.getHelpPath());
     }
 
     /**
-     * Convert from a ComponentLibraryConfiguration path containing relative
-     * File-s, ie. a List<String> each representing a path element within a
-     * component library into a List<File> with absolute File-s.
+     * Convert from a ComponentLibraryConfiguration path containing relative File-s, ie. a List<String>
+     * each representing a path element within a component library into a List<File> with absolute
+     * File-s.
      * 
      * @param path
-     *            List<String> each String representing a path element.
-     *            Possibly empty, may not be null.
+     *            List<String> each String representing a path element. Possibly empty, may not be
+     *            null.
      * @return
      * @throws ComplibException
      *             if not valid
@@ -312,8 +300,7 @@ public abstract class Complib {
     }
 
     /**
-     * Returns the localized Title if it has been localized appended with a
-     * version
+     * Returns the localized Title if it has been localized appended with a version
      * 
      * @return
      */
@@ -376,8 +363,8 @@ public abstract class Complib {
     }
 
     /**
-     * Return the help set file. Null means none found. "/" separated path to
-     * HelpSet file relative to helpPath. eg. "help/my-help.hs"
+     * Return the help set file. Null means none found. "/" separated path to HelpSet file relative
+     * to helpPath. eg. "help/my-help.hs"
      * 
      * @return the help set file. Null means none found.
      */
@@ -405,14 +392,13 @@ public abstract class Complib {
     }
 
     /**
-     * Main entry point to get list of components organized into
-     * InitialPaletteFolder-s for this complib.
+     * Main entry point to get list of components organized into InitialPaletteFolder-s for this
+     * complib.
      * 
      * @return
      * @throws ComplibException
      */
-    public List<InitialPaletteFolder> getComponentItemsInFolders()
-            throws ComplibException {
+    public List<InitialPaletteFolder> getComponentItemsInFolders() throws ComplibException {
         return compLibManifest.getInitialPalette();
     }
 
@@ -424,8 +410,8 @@ public abstract class Complib {
      * @throws ClassNotFoundException
      * @throws IntrospectionException
      */
-    abstract BeanInfo getBeanInfo(String className)
-            throws ClassNotFoundException, IntrospectionException;
+    abstract BeanInfo getBeanInfo(String className) throws ClassNotFoundException,
+            IntrospectionException;
 
     /**
      * Returns true iff this bean should be hidden
@@ -446,9 +432,9 @@ public abstract class Complib {
     }
 
     /**
-     * Returns a ClassLoader that can be used to obtain design-time metadata for
-     * a component library. Typically, both the runtime and design-time classes
-     * are accessible as well as JavaHelp jars.
+     * Returns a ClassLoader that can be used to obtain design-time metadata for a component
+     * library. Typically, both the runtime and design-time classes are accessible as well as
+     * JavaHelp jars.
      * 
      * @return ClassLoader
      */
@@ -472,5 +458,17 @@ public abstract class Complib {
     @Override
     public int hashCode() {
         return getIdentifier().hashCode();
+    }
+
+    public int compareTo(Complib aComplib) {
+        URI myNamespace = getIdentifier().getNamespaceUri();
+        URI otherNamespace = aComplib.getIdentifier().getNamespaceUri();
+        if (!myNamespace.equals(otherNamespace)) {
+            return myNamespace.compareTo(otherNamespace);
+        }
+
+        Version myVersion = getIdentifier().getVersion();
+        Version otherVersion = aComplib.getIdentifier().getVersion();
+        return myVersion.compareTo(otherVersion);
     }
 }
