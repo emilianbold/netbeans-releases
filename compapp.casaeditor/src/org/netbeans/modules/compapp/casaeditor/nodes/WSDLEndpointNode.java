@@ -132,17 +132,19 @@ public class WSDLEndpointNode extends CasaNode {
         // Add all concrete child properties, as a convenience to the user.
         for (Node child : getChildren().getNodes()) {
             if (child instanceof PortNode) {
-                addPortChildrenProperties(sheet, child.getChildren());
+                addPortChildrenProperties(sheet, child.getChildren(), isEditable());
                 break;
             }
         }
     }
     
-    private static void addPortChildrenProperties(Sheet sheet, Children children) {
+    private static void addPortChildrenProperties(Sheet sheet, Children children, boolean bEditable) {
         if (children == null) {
             return;
         }
-        for (Node child : children.getNodes()) {
+        Node child;
+        for (Node origChild : children.getNodes()) {
+            child = bEditable ? origChild : new ReadOnlyFilterNode(origChild);
             Sheet.Set portProperties = new Sheet.Set();
             portProperties.setName(child.getDisplayName());
             sheet.put(portProperties);
@@ -153,7 +155,7 @@ public class WSDLEndpointNode extends CasaNode {
                     portProperties.put(propertySet.getProperties());
                 }
             }
-            addPortChildrenProperties(sheet, child.getChildren());
+            addPortChildrenProperties(sheet, child.getChildren(), bEditable);
         }
     }
     
@@ -226,7 +228,15 @@ public class WSDLEndpointNode extends CasaNode {
         }
         return false;
     }
-    
+
+    public boolean isEditable() {
+        CasaPort port = (CasaPort) getData();
+        if (port != null) {
+            return getModel().isEditable(port);
+        }
+        return false;
+    }
+
     public boolean isDeletable() {
         CasaPort port = (CasaPort) getData();
         if (port != null) {
