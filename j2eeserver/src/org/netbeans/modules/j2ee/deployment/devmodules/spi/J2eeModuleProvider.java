@@ -80,6 +80,13 @@ public abstract class J2eeModuleProvider {
 	return confSupp;
     }
     
+    // Do not remove this method! It is a helper for the Maven support project to 
+    // workaround the issue #109507. Please keep in mind that this is a hack, so
+    // keep it private! No one else should use it.
+    private synchronized void resetConfigSupport() {
+        configSupportImpl = null;
+    }
+    
     /**
      * Return server debug info.
      * Note: if server is not running and needs to be up for retrieving debug info, 
