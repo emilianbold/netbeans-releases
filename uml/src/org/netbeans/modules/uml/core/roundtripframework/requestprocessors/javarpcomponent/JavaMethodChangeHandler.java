@@ -2593,85 +2593,13 @@ public class JavaMethodChangeHandler extends JavaChangeHandler implements IJavaM
             {
                 // before we query, let's see if pOperation is actually redefining
                 // anything.
-                //				redefinedOps =m_Utilities.collectRedefinedOps(pOperation);
                 if ( redefinedOps != null )
                 {
                     int count = redefinedOps.size();
                     if ( count > 0 )
                     {
-                        if (getSilent())
-                        {
-                            // use the silent answer. We really need to make this one
-                            // of the new queries so that we have a way to do this.
-                            // For now, the silent answer is always true.
-                            renameUp = true;
-                        }
-                        else
-                        {
-                            // Ok, we are really changing the name of an operation in the
-                            // middle of a hierarchy.  Now, the user may mean to create a new
-                            // operation, not rename all instances. This would simply mean
-                            // break the redefinition link going up. We still need to rename
-                            // down though.
-                            
-                            //MethodChangeVerificationDialog diag;
-                            //diag.SetText ( textID );
-                            //diag.DoModal ();
-                            //renameUp = diag.ChangeAll ();
-                            
-                            ICoreMessenger  pMessenger = m_Utilities.getMessenger();
-                            if ( pMessenger != null )
-                            {
-                                RoundTripModifyMethodVerificationDialog  pDiag =
-                                        new RoundTripModifyMethodVerificationDialog();
-                                if ( pDiag != null )
-                                {
-                                    pDiag.setText(textID);
-                                    String prefKey = m_Utilities.getPreferenceKey();
-                                    String prefPath = m_Utilities.getPreferencePath();
-                                    String prefName = "UML_MODIFY_REDEFINING_METHOD";
-                                    pDiag.setAutoUpdatePreference(true);
-                                    pDiag.display3( true, prefKey, prefPath, prefName,0);
-                                    boolean diagRetvalue = pDiag.getOptionSelect();
-                                    //									diagRetval = pDiag.getOptionSelect();
-                                    diagRetval = diagRetvalue;
-                                    if (diagRetvalue == true )
-                                        renameUp = true;
-                                }
-                            }
-                            if ( renameUp == false )
-                            {
-                                // since we got the operations, we can break the redefinition
-                                // now.
-                                int idx = 0;
-                                while ( idx < count )
-                                {
-                                    IOperation pRedefinedOp = redefinedOps.get(idx++);
-                                    if ( pRedefinedOp != null )
-                                    {
-                                        //_VH ( pRedefinedOp->RemoveRedefiningElement ( pOperation ) );
-                                        //_VH ( pOperation->RemoveRedefinedElement ( pRedefinedOp ) );
-                                        //pRedefinedOp->RemoveRedefiningElement ( pOperation );
-                                        //pOperation->RemoveRedefinedElement ( pRedefinedOp );
-                                        m_Utilities.breakRedefinition(pRedefinedOp, pOperation);
-                                        // If the formerly redefined operation is abstract, the derived class
-                                        // must become abstract
-                                        boolean isAbstract = pRedefinedOp.getIsAbstract();
-                                        if ( isAbstract == true )
-                                        {
-                                            IClassifier  pDerivedClass =
-                                                    pOperation.getFeaturingClassifier();
-                                            if ( pDerivedClass != null )
-                                            {
-                                                pDerivedClass.setIsAbstract(true);
-                                                // TODO: Need to go down and figure all classes that
-                                                // do not redefine the op.  They become abstract as well.
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        renameUp = true;
+                        diagRetval = true ;
                     }
                 }
             }

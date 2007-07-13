@@ -65,6 +65,7 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbPreferences;
 
 
@@ -212,7 +213,7 @@ public class PreferenceControlledInputDialog extends JCenterDialog
                  // Set the preference file information
                  preferenceInformation(sPreferenceKey, sPreferencePath,
                          sPreferenceName, true);
-                 String bsPreferenceValue = getPreferenceValue();
+                 String bsPreferenceValue = getPreferenceValue("true");
                  if ( ! bsPreferenceValue.equals("true")) return ;
                  
                  // Set the preference strings
@@ -406,11 +407,11 @@ public class PreferenceControlledInputDialog extends JCenterDialog
             boolean autoUpdate =  getAutoUpdatePreference();
             if ( autoUpdate ) {
                 
-                Preferences prefs = NbPreferences.forModule(PreferenceControlledInputDialog.class) ;
+                Preferences prefs = NbPreferences.forModule(DummyCorePreference.class) ;
                 
-                String testVal = prefs.get (m_PrefName, null) ;
+                String testVal = prefs.get (m_PrefName, "null") ;
                 
-                if (testVal.equals("true") || testVal.equals("false")) {
+                if (!testVal.equals("null") && (testVal.equals("true") || testVal.equals("false"))) {
                     
                     boolean tmp = false ;
                     if (sVal.equals("PSK_YES")) tmp = true;
@@ -423,8 +424,8 @@ public class PreferenceControlledInputDialog extends JCenterDialog
 
         }
 
-	public String getPreferenceValue() {
-            return NbPreferences.forModule(PreferenceControlledInputDialog.class).get(m_PrefName, null) ;
+	public String getPreferenceValue(String def) {
+            return NbPreferences.forModule(PreferenceControlledInputDialog.class).get(m_PrefName, def) ;
         }
 		
 	public void preferenceInformation( String sKey,
