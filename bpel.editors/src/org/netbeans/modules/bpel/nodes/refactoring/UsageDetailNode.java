@@ -54,22 +54,9 @@ public class UsageDetailNode extends UsageFilterNode {
         return originalNode.getDisplayName();
     }
 
-// TODO r | m
-//    public String getHtmlDisplayName() {
-//        Object ref = originalNode.getReference();
-//        if (ref instanceof BpelEntity) {
-//            return Util.getTextForBpelEntity((BpelEntity)ref);
-//        }
-//        return "";// NOI18N
-//    }
-    
     public boolean canRename() {
         return false;
     }
-//[vlv]
-//  public java.awt.Image getIcon(int type) {
-//      return org.netbeans.modules.bpel.design.nodes.NodeType.UNKNOWN_TYPE.getImage();
-//  }
 
     public String getShortDescription() {
         return ""; // NOI18N

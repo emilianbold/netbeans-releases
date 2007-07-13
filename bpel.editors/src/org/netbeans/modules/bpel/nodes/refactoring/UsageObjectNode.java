@@ -55,31 +55,7 @@ public class UsageObjectNode extends UsageFilterNode {
         return false;
     }
     
-// TODO r | m
-//    public String getHtmlDisplayName() {
-//        Object ref = originalNode.getReference();
-//        if (ref instanceof BpelEntity) {
-//            return Util.getTextForBpelEntity((BpelEntity)ref);
-//        }
-//        return "";// NOI18N
-//    }
-
-    
-//[vlv]
-//  public java.awt.Image getIcon(int type) {
-//      return org.netbeans.modules.bpel.design.nodes.NodeType.UNKNOWN_TYPE.getImage();
-//  }
-
     public String getShortDescription() {
-//        String shortDescription = "";
-//        NodeType nodeType = originalNode.getNodeType();
-//        switch(nodeType) {
-//            case VARIABLE :
-//            case CORRELATION_SET :
-//                break;
-//            default : 
-//                shortDescription = originalNode.getShortDescription();
-//        }
         return "";// NOI18N
     }
 }
