@@ -107,8 +107,8 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jPanel7" max="32767" attributes="0"/>
-                                  <Component id="tooltipField" alignment="0" pref="221" max="32767" attributes="2"/>
-                                  <Component id="textField" alignment="0" pref="221" max="32767" attributes="2"/>
+                                  <Component id="tooltipField" alignment="0" pref="222" max="32767" attributes="2"/>
+                                  <Component id="textField" alignment="0" pref="222" max="32767" attributes="2"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -125,7 +125,7 @@
                                       <Component id="iconButtonSmall" min="-2" max="-2" attributes="1"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="67" max="32767" attributes="0"/>
+                              <EmptySpace pref="68" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="setIconButtonSmall" min="-2" max="-2" attributes="0"/>
                                   <Component id="setIconButtonLarge" min="-2" max="-2" attributes="0"/>

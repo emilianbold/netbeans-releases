@@ -50,6 +50,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * This is the actual dialog used for editing actions. It lets the user set
@@ -1239,7 +1240,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newMethodName.matches("^\\d.*")) { //NOI18N
             return true;
         }
-        if(!newMethodName.matches("^[a-zA-Z]\\w*")) {
+        if(!Utilities.isJavaIdentifier(newMethodName)) {
             return true;
         }
         return false;
