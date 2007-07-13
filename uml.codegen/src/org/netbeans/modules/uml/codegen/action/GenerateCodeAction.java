@@ -31,6 +31,7 @@ import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
@@ -45,6 +46,7 @@ import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.util.AbstractNBTask;
+import org.netbeans.modules.uml.util.StringTokenizer2;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -243,6 +245,9 @@ public class GenerateCodeAction extends CookieAction
             return;
         }
         
+        else
+            selElements = removeImportedElements(selElements);
+        
         final ETList<IElement> ecElements = selElements;
         
         RequestProcessor processor = 
@@ -275,6 +280,29 @@ public class GenerateCodeAction extends CookieAction
         // createJavaProject(ProjectUtil.getOpenJavaProjects()[0]);
     }
 
+    private final static String COLON_COLON = "::";
+    
+    private ETList<IElement> removeImportedElements(ETList<IElement> elements)
+    {
+        String parentProjectName = parentProject.getName();
+        ETList<IElement> noImports = new ETArrayList<IElement>();
+        
+        for (IElement ele: elements)
+        {
+            String eleName = ((INamedElement)ele).getFullyQualifiedName(true);
+            
+            int end = eleName.indexOf(COLON_COLON);
+            String realPrjOwner = eleName;
+            
+            if (end != -1)
+                realPrjOwner = eleName.substring(0, end);
+            
+            if (realPrjOwner.equals(parentProjectName))
+                noImports.add(ele);
+        }
+        
+        return noImports;
+    }
     
     private boolean displayDialogDescriptor(
         GenerateCodePanel gcPanel, boolean templatesEnabled)
