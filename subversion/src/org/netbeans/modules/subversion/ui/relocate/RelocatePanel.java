@@ -52,14 +52,17 @@ public class RelocatePanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         tfNewURL = new javax.swing.JTextField();
 
+        jLabel1.setLabelFor(tfWorkingCopy);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.jLabel1.text")); // NOI18N
 
         tfWorkingCopy.setEditable(false);
 
+        jLabel2.setLabelFor(tfCurrentURL);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.jLabel2.text")); // NOI18N
 
         tfCurrentURL.setEditable(false);
 
+        jLabel3.setLabelFor(tfNewURL);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.jLabel3.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -96,6 +99,16 @@ public class RelocatePanel extends javax.swing.JPanel {
                     .add(tfNewURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        tfWorkingCopy.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.tfWorkingCopy.AccessibleContext.accessibleName")); // NOI18N
+        tfWorkingCopy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.tfWorkingCopy.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.jLabel2.AccessibleContext.accessibleDescription")); // NOI18N
+        tfCurrentURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.tfCurrentURL.AccessibleContext.accessibleName")); // NOI18N
+        tfCurrentURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.tfCurrentURL.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.jLabel3.AccessibleContext.accessibleDescription")); // NOI18N
+        tfNewURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.tfNewURL.AccessibleContext.accessibleName")); // NOI18N
+        tfNewURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RelocatePanel.class, "RelocatePanel.tfNewURL.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
