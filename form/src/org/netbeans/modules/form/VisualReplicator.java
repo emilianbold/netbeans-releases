@@ -930,7 +930,8 @@ public class VisualReplicator { //implements VisualMapper
             Class compClass = component.getClass();
             Class convClass = null;
             if (designRestrictions) { // convert windows and AWT menus for design view
-                if (RootPaneContainer.class.isAssignableFrom(compClass)
+                if ((RootPaneContainer.class.isAssignableFrom(compClass)
+                            && Window.class.isAssignableFrom(compClass))
                         || Frame.class.isAssignableFrom(compClass)) {
                     convClass = JRootPane.class;
                 } else if (Window.class.isAssignableFrom(compClass)
