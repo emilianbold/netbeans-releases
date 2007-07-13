@@ -48,7 +48,7 @@ public class QueryBuilderTable extends JTable {
         super();
         super.setModel( model );
 
-	Log.getLogger().entering("QueryBuilderTable", "constructor", model); // NOI18N
+        Log.getLogger().entering("QueryBuilderTable", "constructor", model); // NOI18N
 
         this.setAutoResizeMode (JTable.AUTO_RESIZE_OFF);
 
@@ -97,7 +97,7 @@ public class QueryBuilderTable extends JTable {
                 {
                     comp = table.getDefaultRenderer(model.getColumnClass(i)).
                         getTableCellRendererComponent(
-                            table, getValueAt(j, 2),
+                            table, getValueAt(j, i),
                             false, false, 0, i);
                     int tmpCellWidth = comp.getPreferredSize().width;
 
