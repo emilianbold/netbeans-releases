@@ -24,27 +24,15 @@ import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.logging.Level;
 import javax.swing.JButton;
-import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.*;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -56,6 +44,7 @@ public class InstallerReadPageTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -66,6 +55,7 @@ public class InstallerReadPageTest extends NbTestCase {
     }
     
 
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
@@ -82,6 +72,7 @@ public class InstallerReadPageTest extends NbTestCase {
         MockServices.setServices(DD.class);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
