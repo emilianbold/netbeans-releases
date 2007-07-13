@@ -101,20 +101,13 @@ that the correct value is entered by a user. If the conditions defined by the va
     <p>If you want to code a validate method rather than choosing a JavaServer Faces validator for the <code>validatorExpression</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, you might also want to select the <code>required</code> property to ensure that the user enters a value.</p>
     <ul class="note">
       <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you could lose the connection to your validate method.</li>
-      </ul>
+    </ul>
   </li>
 </ul>
 <h3>Behavior</h3>
 <ul>
   <li><b>disabled.</b><code> Type: boolean</code><br>
     If selected, indicates that the component should never receive focus or be included in a submit. Use this property when the component does not apply to the page. See the note under the <code>readOnly</code> property concerning the effects of using the <code>disabled</code> property versus the effects of using the <code>readOnly</code> property.</li>
-  <li><b>readOnly.</b><code> Type: boolean</code><br>
-    If selected, makes it impossible for the user to select items, but still makes it possible for the component's value to be submitted.
-Use this property when the component does apply but must not be changed.       
-      <ul class="note">
-        <li>A readonly field is included when the page is submitted, in contrast to a disabled field, which is not included when the page is submitted.  If you use the <code>disabled</code> property, JavaServer Faces does not detect that any value at all was submitted.</li>
-      </ul>
-  </li>
   <li><b>toolTip.</b><code> Type: String</code><br>
     Advisory title information about the component, which is readable by a screen reader and can be displayed as a tool tip.
   <ul class="note">

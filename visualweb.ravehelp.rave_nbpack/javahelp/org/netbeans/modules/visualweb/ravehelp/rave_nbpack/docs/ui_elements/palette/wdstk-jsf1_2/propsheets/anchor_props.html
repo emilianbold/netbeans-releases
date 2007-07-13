@@ -29,15 +29,15 @@
 		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
 		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
 <p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
-	        <ul class="note">
+    <ul class="note">
           <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
-	        </ul>
+    </ul>
 
 	  <p>For a list of CSS2 style attributes, see the web page at<br>
         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
 	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
-        </p>
+    </p>
   </li>
 	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
       <ul class="note">
@@ -110,10 +110,39 @@
 </ul>
 <h3>Advanced</h3>
 <ul>
+  <li><b>charset.</b><code> Type: String</code><br>
+The character encoding of the document or resource indicated by the <code>url</code> property. Equivalent to the HTML attribute <code>charset</code> of the <code>&lt;a&gt;</code> tag. You can see a list of encodings at the following web page:<br>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+  <param name="content" value="http://www.iana.org/assignments/character-sets">
+  <param name="text" value="http://www.iana.org/assignments/character-sets">
+</object>
+.</li>
+  <li><b>rel.</b><code> Type: String</code><br>
+  Specifies the relationship between the current document and the target document indicated by the <code>url</code> property. This property is the equivalent of the <code>rel</code> attribute of the HTML <code>&lt;a&gt;</code> tag. The property can take any of the following values:
+  <ul>
+      <li><b>Alternate.</b> Substitute versions for the document in which the link occurs. When used with the lang attribute, it means that the substitute is a translated version of the document.</li>
+      <li><b>Appendix. </b>An appendix in a collection of documents. </li>
+      <li><b>Bookmark.</b> A link to an entry point in a document. </li>
+      <li><b>Chapter. </b>A chapter in a collection of documents. </li>
+      <li><b>Contents. </b>A table of contents. </li>
+      <li><b>Copyright</b>. A copyright for the current document. </li>
+      <li><b>Glossary.</b> A glossary of terms for the current document. </li>
+      <li><b>Help. </b>A help document. </li>
+      <li><b> Index.</b> An index for the current document. </li>
+      <li><b>Next.</b> The next document in a sequence of documents.</li>
+      <li><b> Prev. </b>The previous document in a sequence of documents.</li>
+      <li><b>Section. </b>A section in a collection of documents. </li>
+      <li><b>Start.</b> The first document in a collection of documents: the starting point of the collection. </li>
+      <li><b>Stylesheet.</b> Refers to an external style sheet. Used with the link type Alternate to provide for user-selectable alternate style sheets. </li>
+      <li><b>Subsection. </b>A subsection in a collection of documents. </li>
+  </ul>
+  </li>
   <li><b>rendered.</b><code> Type: boolean</code><br>
-  If selected, the anchor is to be rendered and processed on any subsequent page submission. If not selected, the hyperlink does not appear on the page at all, not even as a hidden component. </li>
+    If selected, the anchor is to be rendered and processed on any subsequent page submission. If not selected, the hyperlink does not appear on the page at all, not even as a hidden component. </li>
+  <li><b>rev.</b><code> Type: String</code><br>
+Specifies a <i>reverse link</i>, the relationship between a target document indicated by the <code>url</code> property and this document. This property is the equivalent of the <code>rev</code> attribute of the HTML <code>&lt;a&gt;</code> tag. It takes the same values as the <code>rel</code> property, described above.</li>
   <li><b>type.</b><code> Type: String</code><br>
-  The content type of the resource to which this anchor links, useful when the <code>url</code> property is set. Equivalent to the HTML attribute <code>type</code>, which is a MIME type, such as <code>text/html</code>, <code>image/png</code>, <code>image/gif</code>, <code>video/mpeg</code>, <code>text/css</code>, or <code>audio/basic</code>.</li>
+    The content type of the resource to which this anchor links, useful when the <code>url</code> property is set. Equivalent to the HTML attribute <code>type</code>, which is a MIME type, such as <code>text/html</code>, <code>image/png</code>, <code>image/gif</code>, <code>video/mpeg</code>, <code>text/css</code>, or <code>audio/basic</code>.</li>
   <li><b>urlLang.</b><code> Type: String</code><br>
   Code describing the language used in the resource referred to by the <code>url</code> property. Equivalent to the <code>hreflang</code> attribute of the HTML <code>&lt;a&gt;</code> tag. To choose a language code, you can click the ellipsis button (...) to open the property editor. Some examples:
   <ul>
