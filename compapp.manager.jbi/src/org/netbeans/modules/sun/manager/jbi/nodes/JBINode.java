@@ -27,7 +27,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
-import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.actions.PropertiesAction;

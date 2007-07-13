@@ -39,7 +39,7 @@ import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UninstallAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
-import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;

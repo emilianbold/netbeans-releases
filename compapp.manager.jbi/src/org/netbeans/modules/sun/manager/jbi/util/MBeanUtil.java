@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.management.Attribute;
-import javax.management.AttributeList;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;

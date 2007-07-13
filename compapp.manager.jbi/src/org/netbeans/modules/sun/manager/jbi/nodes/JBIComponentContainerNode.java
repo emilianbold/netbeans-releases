@@ -46,8 +46,8 @@ import org.netbeans.modules.sun.manager.jbi.actions.InstallAction;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
-import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.ArchiveFileFilter;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.DialogDisplayer;
@@ -267,7 +267,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         chooser.setMultiSelectionEnabled(true);
         
         chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-        chooser.addChoosableFileFilter(ArchiveFileFilter.getInstance());        
+        chooser.addChoosableFileFilter(FileFilters.ArchiveFileFilter.getInstance());        
         
         chooser.setApproveButtonToolTipText(
                 bundle.getString("LBL_Install_JBI_Component_Button")); //NOI18N

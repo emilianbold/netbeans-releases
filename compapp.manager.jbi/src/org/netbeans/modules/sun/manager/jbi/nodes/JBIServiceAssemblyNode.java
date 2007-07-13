@@ -41,7 +41,7 @@ import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
-import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;

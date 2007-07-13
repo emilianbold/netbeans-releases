@@ -21,7 +21,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import javax.swing.Action;
 
-import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
