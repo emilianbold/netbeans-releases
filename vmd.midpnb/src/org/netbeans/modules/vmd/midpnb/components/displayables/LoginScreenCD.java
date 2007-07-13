@@ -115,13 +115,14 @@ public final class LoginScreenCD extends ComponentDescriptor {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
             .addParameters(MidpParameter.create(PROP_BGK_COLOR, PROP_FRG_COLOR, PROP_USERNAME, PROP_PASSWORD, PROP_LOGIN_TITLE, PROP_USE_LOGIN_BUTTON))
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            .addSetters(MidpSetter.createSetter("setBGColor", MidpVersionable.MIDP).addParameters(PROP_BGK_COLOR))
-            .addSetters(MidpSetter.createSetter("setFGColor", MidpVersionable.MIDP).addParameters(PROP_FRG_COLOR))
-            .addSetters(MidpSetter.createSetter("setPassword", MidpVersionable.MIDP).addParameters(PROP_PASSWORD))
-            .addSetters(MidpSetter.createSetter("setUsername", MidpVersionable.MIDP).addParameters(PROP_USERNAME))
-            .addSetters(MidpSetter.createSetter("setLoginTitle", MidpVersionable.MIDP).addParameters(PROP_PASSWORD))
-            .addSetters(MidpSetter.createSetter("setUseLoginButton", MidpVersionable.MIDP).addParameters(PROP_USE_LOGIN_BUTTON));
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2)
+            .addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
+            .addSetters(MidpSetter.createSetter("setBGColor", MidpVersionable.MIDP).addParameters(PROP_BGK_COLOR)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setFGColor", MidpVersionable.MIDP).addParameters(PROP_FRG_COLOR)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setPassword", MidpVersionable.MIDP).addParameters(PROP_PASSWORD)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setUsername", MidpVersionable.MIDP).addParameters(PROP_USERNAME)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setLoginTitle", MidpVersionable.MIDP).addParameters(PROP_PASSWORD)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setUseLoginButton", MidpVersionable.MIDP).addParameters(PROP_USE_LOGIN_BUTTON)); //NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

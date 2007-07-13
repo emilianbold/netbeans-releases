@@ -14,7 +14,7 @@
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved.OOOO
  */
 
 package org.netbeans.modules.vmd.api.properties;
@@ -138,7 +138,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         return supportsDefaultValue[0];
     }
     
-    /*
+    /**
      * Returns value used to restore this property to its default value, if supported. In the default
      * implementation, returns defaultValue of PropertyValue.
      * @return default value specifed in the model for this property
@@ -158,7 +158,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         return  newAdvancedValue;
     }
     
-    /*
+    /**
      * This method is called by the property sheet to pass the environment to the property editor.
      * The typical use case is for the ExPropertyEditor to call env.getFeatureDescriptor().getValue
      * (String key) to retrieve any hints the Property object may supply regarding how
