@@ -32,6 +32,8 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -69,6 +71,35 @@ public class ExpressionUtils {
         try {
             if(isLiteral(valueExpr)){
                 value = ((LiteralTree)valueExpr).getValue();
+            }else if(valueExpr.getKind() == Tree.Kind.MEMBER_SELECT) {
+                //Handles static field access in expression
+                MemberSelectTree memSelTree = (MemberSelectTree)valueExpr;
+                Object object = null;
+                Class cls = null;
+                if(memSelTree.getExpression().getKind() != Tree.Kind.MEMBER_SELECT) {
+                    //Ex: new Color(0,0,0).
+                    object = getValue(cinfo, memSelTree.getExpression());
+                    if(object != null) {
+                        cls = object.getClass();
+                    }
+                }else {
+                    //Ex: Color.BLACK.
+                    try {
+                        cls = getClass(cinfo, memSelTree.getExpression());
+                    }catch(ClassNotFoundException cnfe) {
+                        object = getValue(cinfo, memSelTree.getExpression());
+                        if(object != null) {
+                            cls = object.getClass();
+                        }
+                    }
+                }   
+                if(cls != null) {
+                    Field f = cls.getField(memSelTree.getIdentifier().toString());
+                    if(f != null && (object != null || (f.getModifiers() & Modifier.STATIC) > 0)) {
+                        value = f.get(object);
+                    }
+                }
+                return value;
             }else if(valueExpr.getKind() == Tree.Kind.METHOD_INVOCATION) {
                 MethodInvocationTree mInvoke = (MethodInvocationTree)valueExpr;
                 ExpressionTree selectTree = mInvoke.getMethodSelect();
@@ -87,8 +118,15 @@ public class ExpressionUtils {
                 String cname = null;
                 
                 Element elem = cinfo.getTrees().getElement(cinfo.getTrees().getPath(cinfo.getCompilationUnit(), memSelTree));
+                Object object = null;
                 if(elem instanceof ExecutableElement) {
-                    cls = getClass(cinfo, memSelTree.getExpression());
+                    //Check for static field access(ex: Color.BLACK.toString())
+                    object = getValue(cinfo, memSelTree.getExpression());
+                    if(object != null) {
+                        cls = object.getClass();
+                    }else {
+                        cls = getClass(cinfo, memSelTree.getExpression());
+                    }
                     if(cls != null) {
                         ExecutableElement execElem = (ExecutableElement)elem;
                         List<? extends VariableElement> actualParams = execElem.getParameters();
@@ -100,9 +138,8 @@ public class ExpressionUtils {
                         m = cls.getMethod(mname, argvt);
                     }
                 }
-                if(m != null) {
-                    if((m.getModifiers() & java.lang.reflect.Modifier.STATIC) > 0)
-                        value = m.invoke(null, argv);
+                if(m != null && (object != null || (m.getModifiers() & Modifier.STATIC) > 0)) {
+                    value = m.invoke(object, argv);
                 }
             }else if(valueExpr instanceof NewClassTree) {
                 NewClassTree newClassTree = (NewClassTree) valueExpr;
@@ -159,8 +196,8 @@ public class ExpressionUtils {
      * Internal utility method to obtain a class given the type tree
      */
     private static Class getClass(CompilationInfo cinfo, Tree tree) throws ClassNotFoundException{
-        String elemTypeName = TreeUtils.getFQN(cinfo, tree);
-        return ClassUtil.getClass(elemTypeName);
+        String typeName = TreeUtils.getFQN(cinfo, tree);
+        return ClassUtil.getClass(typeName);
     }
     
     public static String getArgumentSource(CompilationInfo cinfo, ExpressionTree exprTree) {
