@@ -96,6 +96,8 @@ public class StringSelector extends javax.swing.JPanel {
             public Object getElementAt(int i) { return strings[i]; }
         });
         jScrollPane.setViewportView(listValues);
+        listValues.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StringSelector.class, "ACSN_StringSelectorMessages")); // NOI18N
+        listValues.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StringSelector.class, "ACSD_StringSelectorMessages")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -108,7 +110,7 @@ public class StringSelector extends javax.swing.JPanel {
                         .add(jScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(promptLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
+                        .add(promptLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                         .add(96, 96, 96))))
         );
         layout.setVerticalGroup(
