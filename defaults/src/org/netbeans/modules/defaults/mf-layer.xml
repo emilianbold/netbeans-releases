@@ -352,6 +352,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="C-X K.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
             </file>
+            <file name="OS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+            <file name="D-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
+            </file>
         </folder>
         <folder name="NetBeans55">
             <file name="CS-8.shadow">
@@ -649,6 +655,12 @@ Microsystems, Inc. All Rights Reserved.
             </file>-->
             <file name="D-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            </file>
+            <file name="OS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
+            </file>
+            <file name="OS-L.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
             <file name="D-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
@@ -1110,6 +1122,12 @@ Microsystems, Inc. All Rights Reserved.
 <!--            <file name="AS-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-ChangeParametersAction.instance"/>
             </file>-->
+            <file name="OS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+            <file name="D-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
+            </file>
         </folder>
     </folder>
     <folder name="Editors">

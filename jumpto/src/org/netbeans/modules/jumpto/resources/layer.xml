@@ -55,13 +55,15 @@ Contributor(s): Andrei Badea, Leon Chiver
     </folder>
       
     <!-- Install the action shortcuts -->
-    <folder name="Shortcuts">
-        <file name="OS-O.shadow">
-            <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
-        </file>
-        <file name="D-O.shadow">
-            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
-        </file>        
+    <folder name="Keymaps">
+        <folder name="NetBeans">
+            <file name="OS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+            <file name="D-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
+            </file>
+        </folder>
     </folder>
 
     <!-- folder name="Editors">
