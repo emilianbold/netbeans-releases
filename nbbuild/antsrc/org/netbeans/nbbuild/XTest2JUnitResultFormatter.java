@@ -113,6 +113,7 @@ public class XTest2JUnitResultFormatter extends Task {
                     failure.setAttribute("message", message);
                 }
                 NodeList nl = unitTestCase.getChildNodes();
+                boolean foundStack = false;
                 for (int i = 0; i < nl.getLength(); i++) {
                     if (nl.item(i).getNodeType() == Node.CDATA_SECTION_NODE) {
                         String stack = ((CDATASection) nl.item(i)).getData();
@@ -121,7 +122,14 @@ public class XTest2JUnitResultFormatter extends Task {
                             failure.setAttribute("type", m.group(1));
                         }
                         failure.appendChild(out.createTextNode(stack));
+                        foundStack = true;
                     }
+                }
+                if (!foundStack) {
+                    if (message.length() == 0) {
+                        message = "(unknown error)";
+                    }
+                    failure.appendChild(out.createTextNode(message));
                 }
             } else if (!result.equals("pass")) {
                 throw new IllegalArgumentException("Unexpected result attribute: '" + result + "'");
