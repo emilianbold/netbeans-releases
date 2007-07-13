@@ -61,6 +61,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("testAddArrayMember"));
 //        suite.addTest(new ClassMemberTest("testAddCharMember"));
 //        suite.addTest(new ClassMemberTest("testRenameReturnTypeInAbstract"));
+//        suite.addTest(new ClassMemberTest("testAddInitToVar"));
         return suite;
     }
 
@@ -1142,6 +1143,48 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    //
+    public void testAddInitToVar() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    boolean prefix;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    boolean prefix = true;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree vetecko = (VariableTree) classTree.getMembers().get(1);
+                VariableTree copy = make.Variable(
+                        vetecko.getModifiers(),
+                        vetecko.getName(),
+                        vetecko.getType(),
+                        make.Literal(Boolean.TRUE)
+                );
+                workingCopy.rewrite(vetecko, copy);
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
