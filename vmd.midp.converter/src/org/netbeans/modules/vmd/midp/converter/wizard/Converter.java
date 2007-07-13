@@ -62,7 +62,7 @@ public class Converter {
 
             final Node rootNode = XMLUtil.getRootNode (inputDesignFile);
             if (! "1.3".equals (XMLUtil.getAttributeValue (rootNode, "version"))) { // NOI18N
-                errors.add ("Unsupported version of the design file. The design has to saved in NetBeans 5.5 or newer.");
+                Debug.warning ("Unsupported version of the design file. The design has to saved in NetBeans 5.5 or newer."); // NOI18N
                 return errors;
             }
             final List<ConverterItem> items = getConverterItems (rootNode);
