@@ -104,6 +104,11 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             ProxyAction.BlockingType.APPLICATION };
         blockingType.setModel(new DefaultComboBoxModel(vals));
         blockingType.setSelectedItem(ProxyAction.BlockingType.NONE);
+        blockingType.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                actionPropertiesUpdated = true;
+            }
+        });
         
         DocumentListener dirtyListener = new DirtyDocumentListener();
         textField.getDocument().addDocumentListener(dirtyListener);
@@ -1407,7 +1412,12 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     }
     
     boolean isActionPropertiesUpdated() {
-        return this.actionPropertiesUpdated;
+        boolean task_changed = false;
+        if(getSelectedAction() != null && getSelectedAction().isTaskEnabled() != backgroundTaskCheckbox.isSelected()) {
+            task_changed = true;
+        }
+
+        return this.actionPropertiesUpdated || task_changed;
     }
     
     
