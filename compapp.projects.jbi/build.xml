@@ -53,7 +53,7 @@
     
     <target name="catd-extra" depends="init">
         <mkdir dir="build/catdclasses"/>
-        <javac srcdir="catdsrc" destdir="build/catdclasses" source="1.4" debug="true" deprecation="true">
+        <javac srcdir="catdsrc" destdir="build/catdclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
                 <pathelement location="${compapp.external}/xmlunit1.0.jar"/>

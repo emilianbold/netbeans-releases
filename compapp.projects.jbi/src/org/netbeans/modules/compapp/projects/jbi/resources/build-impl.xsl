@@ -642,6 +642,7 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     </classpath>
+                    <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <!-- 
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence
@@ -688,6 +689,7 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     </classpath>
+                    <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <!-- 
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence

@@ -35,7 +35,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.io.LineNumberReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -61,7 +60,6 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.soap.SOAPConnectionFactory;
 import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 import javax.xml.soap.SOAPException;
@@ -76,7 +74,7 @@ import junit.framework.TestResult;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
-import org.custommonkey.xmlunit.XMLUnit;
+import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -90,6 +88,7 @@ import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
 //import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.compapp.catd.jbimanager.EnvironmentVariableHandler;
 
 /**
  * Test the HTTP SOAP processing
@@ -143,16 +142,15 @@ public class ConfiguredTest extends TestCase {
     public String getName() {
         return mName;
     }
+    
     /**
      * Sets the name of a TestCase
      * @param name The name to set
      */
-    public void setName(String name) {
-        
-        mName= name;
-        
+    public void setName(String name) {        
+        mName= name;        
     }
-    
+        
     protected void setUp() throws java.lang.Exception {
         // Set up the mConnection and factories
         mSoapConnFactory = SOAPConnectionFactory.newInstance();
@@ -1886,7 +1884,13 @@ public class ConfiguredTest extends TestCase {
      * @param expectedHttpStatus expected http status code or null if success is expected
      * @return reply soap message
      */
-    SOAPMessage sendMessage(String logPrefix, boolean logDetails, String destination, SOAPMessage message, String expectedHttpStatus, String expectedHttpWarning, String soapAction) throws SOAPException {
+    SOAPMessage sendMessage(String logPrefix, 
+            boolean logDetails, 
+            String destination, 
+            SOAPMessage message, 
+            String expectedHttpStatus, 
+            String expectedHttpWarning, 
+            String soapAction) throws SOAPException, Exception {
         
         // Add soapAction if not null
         if (soapAction != null) {
@@ -1911,6 +1915,20 @@ public class ConfiguredTest extends TestCase {
         long start = 0;
         if (logDetails) {
             start = System.currentTimeMillis();
+        }
+        
+        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
+            try {
+                destination = EnvironmentVariableHandler.translate(destination);
+            } catch (Exception ex) {
+                if (stdErr != null) {
+                    System.setErr(origErr);
+                    stdErr.flush();
+                    stdErr.close();
+                    origErr.print(bufferedErr.toString());
+                }
+                throw ex;
+            }
         }
         
         boolean httpSuccess = true;
@@ -3258,7 +3276,7 @@ public class ConfiguredTest extends TestCase {
     }
 
     
-    public final static void main3(String[] args) {
+    public final static void main(String[] args) {
         //new ConfiguredTest("testInboundSOAPRequest").run();
         //new ConfiguredTest("testInboundSOAPRequest", "testInboundSOAPRequest").run();
         //System.out.println("Hello");
@@ -3273,14 +3291,14 @@ public class ConfiguredTest extends TestCase {
     
     
     
-    public final static void main(String[] args) throws Exception {
+    public final static void main1(String[] args) throws Exception {
         Properties props = System.getProperties();
         System.out.println(props);
 
         System.out.println("@@@@@@@@@@@Current path : " + System.getProperty("user.dir"));
         
-        //String path = "C:\\Alaska\\jbicomps\\test\\bpelse\\correlation\\correlationJBI\\";
-        String path = args[0]; //"C:\\Alaska_DriverTest\\catdsrc\\";
+        String path = "C:\\Documents and Settings\\jqian\\Desktop\\108234\\AssignNamespacesJBI\\";
+        //String path = args[0]; //"C:\\Alaska_DriverTest\\catdsrc\\";
         
         Properties testcasesProps = loadProperties(path + "test/selected-tests.properties");
         String testCasesCSV = (String)testcasesProps.get("testcases");
