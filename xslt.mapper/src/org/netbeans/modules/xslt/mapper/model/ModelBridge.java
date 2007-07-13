@@ -142,12 +142,15 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         
         //check if owner node has graph connected
         if (!owner.getPreviousNodes().isEmpty()){
-            /*
-             * If yes, accept visitor on root element of this graph.
-             * Visitor will perform recursion over the whole subtree and return
-             * expression as result
-             */
-            owner.getPreviousNodes().get(0).accept(visitor_ge);
+            Node rootNode = owner.getPreviousNodes().get(0);
+            if (rootNode != null) {
+                /*
+                 * If yes, accept visitor on root element of this graph.
+                 * Visitor will perform recursion over the whole subtree and return
+                 * expression as result
+                 */
+                rootNode.accept(visitor_ge);
+            }
         }
         
         

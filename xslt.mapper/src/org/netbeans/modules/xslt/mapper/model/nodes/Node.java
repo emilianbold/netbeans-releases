@@ -101,6 +101,10 @@ public abstract class Node {
         }
         return buildNodeList(mapperNodes);
     }
+    
+    // TODO A documentation is strongly required for this method.
+    // Sometimes it returns not empty list with a null element.
+    // It looks strange, and it comes to many NPEs.
     public List<Node> getPreviousNodes(){
         IMapperNode node = getMapperNode();
         

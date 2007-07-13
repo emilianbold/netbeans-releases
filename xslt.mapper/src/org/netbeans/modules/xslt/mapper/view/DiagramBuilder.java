@@ -107,14 +107,14 @@ public class DiagramBuilder {
         
         
         if (!upstreams.isEmpty()){
-            
             Node upstream = upstreams.get(0);
-            
-            BuildExpressionVisitor visitor_be =
-                    new BuildExpressionVisitor(mapper.getContext());
-            
-            upstreams.get(0).accept(visitor_be);
-            current_expr = visitor_be.getResult();
+            if (upstream != null) {
+                BuildExpressionVisitor visitor_be =
+                        new BuildExpressionVisitor(mapper.getContext());
+
+                upstream.accept(visitor_be);
+                current_expr = visitor_be.getResult();
+            }
         }
         
         if (current_expr != null){
@@ -140,7 +140,9 @@ public class DiagramBuilder {
         List<Node> upstreams = node.getPreviousNodes();
         
         for(Node upstream: upstreams){
-            
+            if (upstream == null) {
+                continue;
+            }
             
             IBasicViewModel model =
                     mapper.getMapperViewManager().getMapperModel().getSelectedViewModel();
