@@ -55,7 +55,6 @@ public class RubyUtils {
         return isRubyFile(f) || isRhtmlFile(f);
     }
     
-    /** @todo Find a better home for this method */
     public static String camelToUnderlinedName(String name) {
         // TODO - convert :: to /
         StringBuilder sb = new StringBuilder();
@@ -81,7 +80,6 @@ public class RubyUtils {
     public static String underlinedNameToCamel(String name) {
         StringBuilder sb = new StringBuilder();
         boolean upperCaseNext = true;
-        boolean lastWasUnderline = false;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
             if (c == '_') {
@@ -114,7 +112,13 @@ public class RubyUtils {
         }
         
         for (int i = 1; i < name.length(); i++) {
-            if (!isIdentifierChar(name.charAt(i))) {
+            char c = name.charAt(i);
+            if (!isStrictIdentifierChar(c)) {
+                return false;
+            }
+            
+            if (c == '!' || c == '=' || c == '?') {
+                // Not allowed in constant names
                 return false;
             }
             
@@ -143,7 +147,7 @@ public class RubyUtils {
 
         for (int i = 1; i < name.length(); i++) {
             // Identifier char isn't really accurate - I can have a function named "[]" etc.
-            // so just look for -obvios- mistakes
+            // so just look for -obvious- mistakes
             if (Character.isWhitespace(name.charAt(i))) {
                 return false;
             }
@@ -188,10 +192,17 @@ public class RubyUtils {
         return "#"; // NOI18N
     }
 
+    /** Includes things you'd want selected as a unit when double clicking in the editor */
     public static boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) || (// Globals, fields and parameter prefixes (for blocks and symbols)
         c == '$') || (c == '@') || (c == '&') || (c == ':') || (// Function name suffixes
         c == '!') || (c == '?') || (c == '=');
+    }
+
+    /** Includes things you'd want selected as a unit when double clicking in the editor */
+    public static boolean isStrictIdentifierChar(char c) {
+        return Character.isJavaIdentifierPart(c) ||
+                (c == '!') || (c == '?') || (c == '=');
     }
     
     public static final String[] RUBY_KEYWORDS =
