@@ -21,7 +21,20 @@ package org.netbeans.modules.uml.propertysupport.options.panels;
 
 import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
+import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.netbeans.modules.uml.ui.support.QuestionResponse;
+import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
+import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
+import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
+import org.netbeans.modules.uml.ui.support.drawingproperties.DrawingPropertyResource;
 import org.netbeans.modules.uml.ui.support.drawingproperties.FontColorDialogs.ApplicationColorsAndFonts;
+import org.netbeans.modules.uml.ui.support.drawingproperties.IDrawingPropertyProvider;
+import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
+import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -67,7 +80,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
 
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
 
-        prefs.putBoolean("UML_Display_Empty_Lists", showAlias.isSelected());
+        prefs.putBoolean("UML_Show_Aliases", showAlias.isSelected());
         prefs.putBoolean("UML_Prompt_to_Save_Project", promptToSaveCB.isSelected());
         prefs.putBoolean("UML_Open_Project_Diagrams", openProjectDiagramsCB.isSelected());
 
@@ -80,6 +93,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         prefs.putBoolean("UML_Resize_with_Show_Aliases_Mode", resizeCB.isSelected());
         prefs.putBoolean("UML_Show_Stereotype_Icons", showStereotype.isSelected());
         prefs.putBoolean("UML_Ask_Before_Layout", askLayoutCB.isSelected());
+
 
     }
 
@@ -375,6 +389,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         showFontsAndColorsDialog();
 }//GEN-LAST:event_jButton1ActionPerformed
