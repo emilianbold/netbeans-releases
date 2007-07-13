@@ -21,18 +21,19 @@
 
 ########### grammar ############################################################
 
-SKIP:BLOCK_COMMENT
+#SKIP:BLOCK_COMMENT
 SKIP:WS
 SKIP:DECLARATION
 
 S = tags;
-tags = ( tag | etext )*;
+tags = ( tag | etext | comment )*;
 
 etext = <TEXT> | <CHARACTER> | <SCRIPT>;
 
 tag = <TAG_OPEN_SYMBOL> ( startTag | endTag );
 startTag = <TAG_OPEN> (attribute)* <TAG_CLOSE_SYMBOL>;
 endTag = <TAG_CLOSE> <TAG_CLOSE_SYMBOL>;
+comment = (<BLOCK_COMMENT>)*;
 
 attribute = <ARGUMENT>;
 attribute = <VALUE>;
@@ -119,10 +120,15 @@ COLOR:endTag: {
 
 FOLD:tag: {
     fold_display_name:"<$startTag.TAG_OPEN$>...</$startTag.TAG_OPEN$>";
-    expand_type_action_name:"Expand HTML Tag";
-    collapse_type_action_name:"Collapse HTML Tag";
+    expand_type_action_name:"LBL_Expand_HTML_Tag";
+    collapse_type_action_name:"LBL_Collapse_HTML_Tag";
 }
 
+FOLD:comment: {
+    fold_display_name:"<!-- -->";
+    expand_type_action_name:"LBL_Expand_HTML_Comment";
+    collapse_type_action_name:"LBL_Collapse_HTML_Comment";
+}
 
 ########### navigator ##########################################################
 
