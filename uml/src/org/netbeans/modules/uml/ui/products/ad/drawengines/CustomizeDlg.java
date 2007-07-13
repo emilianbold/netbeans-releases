@@ -272,6 +272,9 @@ class CustomizeDlgInnerPane extends JPanel implements ActionListener {
                     boolean enableChild = !listCompartment.getCollapsed();
                     
                     groupNode = new CompartmentNode(listCompartment, false, true, false);
+                    // Fixed 88833. Checked the group node  according to the 
+                    // 'collapsed' flag of the compartment.
+                    ((CompartmentNode)groupNode).setSelected(enableChild);
                     
                     m_Model.insertNodeInto(groupNode, m_RootNode, m_RootNode.getChildCount());
                     
