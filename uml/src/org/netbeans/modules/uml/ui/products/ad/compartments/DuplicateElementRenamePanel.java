@@ -60,6 +60,10 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
         newNameText.getDocument().addDocumentListener(this);
         newNameText.setText(dupeName);
         
+        enable = false;
+        valid = false;
+        notifyPropertyListeners();
+        
         messageLabel.setText(NbBundle.getMessage(
             DuplicateElementRenamePanel.class, 
             "MSG_DuplicateElementRenameMessage", dupeName));
@@ -186,7 +190,6 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
         
         if (doc == newNameText.getDocument())
         {
-            String projectName = newNameText.getText();
             updateValidStatus();
         }
     }
@@ -238,13 +241,17 @@ public class DuplicateElementRenamePanel extends javax.swing.JPanel
     private boolean notifyPropertyListeners()
     {
         firePropertyChange(
-            NotifyDescriptor.PROP_VALID, valid, enable);
+            NotifyDescriptor.PROP_VALID, !enable, enable);
 
-        if (!statusMsg.equals(" "))
-            statusMsg = NbBundle.getMessage(
-                DuplicateElementRenamePanel.class, statusMsg);
-
-        statusLabel.setText(statusMsg);
+        if (!statusMsg.trim().equals(""))
+        {
+            statusLabel.setText(NbBundle.getMessage(
+                DuplicateElementRenamePanel.class, statusMsg));
+        }
+        
+        else
+            statusLabel.setText(statusMsg);
+        
         valid = enable;
         return valid;
 
