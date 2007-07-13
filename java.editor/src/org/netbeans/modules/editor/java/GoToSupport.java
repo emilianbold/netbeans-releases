@@ -223,7 +223,14 @@ public class GoToSupport {
                                 if (startPos <= offset && offset <= endPos) {
                                     CALLER.beep();
                                 } else {
-                                    CALLER.open(fo, (int) startPos);
+                                    //#71272: it is necessary to translate the offset:
+                                    int targetOffset = controller.getPositionConverter().getOriginalPosition((int) startPos);
+                                    
+                                    if (targetOffset >= 0) {
+                                        CALLER.open(fo, targetOffset);
+                                    } else {
+                                        CALLER.beep();
+                                    }
                                 }
                             } else {
                                 CALLER.beep();
