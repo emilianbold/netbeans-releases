@@ -283,8 +283,10 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         doc.addDocumentListener(new ELDrawLayerFactory.LParenWatcher());
         
-        //listen on the HTML parser and recolor after changes
+        //listen on the HTML parser and create javascript and css embeddings
         SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
+        //initialize JSP embedding updater
+        JspColoringUpdater.init(doc);
     }
     
     private void initLexerColoringListener(Document doc) {

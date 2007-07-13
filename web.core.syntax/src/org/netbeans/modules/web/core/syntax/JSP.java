@@ -78,45 +78,45 @@ public class JSP {
     // private methods .........................................................
     
     private static ASTNode clone (String mimeType, String nt, int offset, List children) {
-        Iterator it = children.iterator ();
-        List l = new ArrayList ();
-        while (it.hasNext ()) {
-            Object o = it.next ();
-            if (o instanceof ASTToken)
-                l.add (clone ((ASTToken) o));
-            else
-                l.add (clone ((ASTNode) o));
-        }
-        return ASTNode.create (mimeType, nt, l, offset);
+//        Iterator it = children.iterator ();
+//        List l = new ArrayList ();
+//        while (it.hasNext ()) {
+//            Object o = it.next ();
+//            if (o instanceof ASTToken)
+//                l.add (clone ((ASTToken) o));
+//            else
+//                l.add (clone ((ASTNode) o));
+//        }
+        return ASTNode.create (mimeType, nt, children, offset);
     }
     
     private static ASTNode clone (ASTNode n) {
         return clone (n.getMimeType (), n.getNT (), n.getOffset (), n.getChildren ());
     }
     
-    private static ASTToken clone (ASTToken token) {
-        List<ASTItem> children = new ArrayList ();
-        Iterator<ASTItem> it = token.getChildren ().iterator ();
-        while (it.hasNext ()) {
-            ASTItem item = it.next ();
-            if (item instanceof ASTNode) {
-                ASTNode n = (ASTNode)item;
-                if(!n.getNT().equals("S") && n.getMimeType().equals("text/html")) {
-                    children.add (clone ((ASTNode) item)); //do not clone html nodes
-                }
-            } else {
-                children.add (clone ((ASTToken) item));
-            }
-        }
-        return ASTToken.create (
-            token.getMimeType (),
-            token.getType (),
-            token.getIdentifier (),
-            token.getOffset (),
-            token.getLength (),
-            children
-        );
-    }
+//    private static ASTToken clone (ASTToken token) {
+//        List<ASTItem> children = new ArrayList ();
+//        Iterator<ASTItem> it = token.getChildren ().iterator ();
+//        while (it.hasNext ()) {
+//            ASTItem item = it.next ();
+//            if (item instanceof ASTNode) {
+//                ASTNode n = (ASTNode)item;
+//                if(!n.getNT().equals("S") && n.getMimeType().equals("text/html")) {
+//                    children.add (clone ((ASTNode) item)); //do not clone html nodes
+//                }
+//            } else {
+//                children.add (clone ((ASTToken) item));
+//            }
+//        }
+//        return ASTToken.create (
+//            token.getMimeType (),
+//            token.getType (),
+//            token.getIdentifier (),
+//            token.getOffset (),
+//            token.getLength (),
+//            children
+//        );
+//    }
     
     private static ASTNode clone (ASTNode n, String nt) {
         return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren ());
@@ -160,6 +160,11 @@ public class JSP {
     }
     
     private static ASTNode resolveRoot(ASTNode n, Stack s, List l, boolean findUnpairedTags) {
+        //find java code blocks in jsp document
+        ArrayList<Pair> javaBlocks = new ArrayList<Pair>(5);
+        findJavaEmbeddings(n, new Stack(), javaBlocks);
+        java_code_blocks = javaBlocks;
+        
         //find all html root nodes (S nonterminal node) and join their content into one html root node
         List<ASTItem> nodes = new ArrayList();
         collectHtmlNodes(nodes, n);
@@ -240,19 +245,26 @@ public class JSP {
         }
     }
     
-    private static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
+    //workaround - if there wasn't the hack for Schlieman inability to reasonably merge
+    //the html and jsp together the produced AST tree could be accessed via Schalieman
+    //API and searched for the java declaring tags.
+    
+    //synchronization not necessary since the client always listens to ParserManager
+    //and is called after the AST processing finishes
+    static List<Pair> java_code_blocks;
+    
+    private static void findJavaEmbeddings (ASTNode n, Stack<NodeInfo> s, ArrayList<Pair> javaBlocks) {
         Iterator<ASTItem> it = n.getChildren ().iterator ();
         while (it.hasNext ()) {
             ASTItem item = it.next ();
             if (item instanceof ASTToken) {
-                l.add (clone ((ASTToken) item));
                 continue;
             }
             ASTNode node = (ASTNode) item;
             if (node.getNT ().equals ("startTag")) {
                 ASTToken tagCloseSymbolToken = node.getTokenType ("SYMBOL");
                 if (tagCloseSymbolToken != null && "/>".equals(tagCloseSymbolToken.getIdentifier())) {
-                    l.add (clone (node, "simpleTag"));
+                    //ignore simple (empty) tags
                 } else {
                     String name = node.getTokenTypeIdentifier ("TAG");
                     if (name == null) 
@@ -265,14 +277,8 @@ public class JSP {
                             name = name.substring(0, name.length() -1 ); 
                         }
                     }
-                    s.add (name);
-                    s.add (new Integer (l.size ()));
-                    if (findUnpairedTags)
-                        l.add (clone (node, "unpairedStartTag"));
-                    else
-                        l.add (clone (node, "startTag"));
+                    s.add (new NodeInfo(name, node));
                 }
-                continue;
             } else
             if (node.getNT ().equals ("endTag")) {
                 String name = node.getTokenTypeIdentifier ("ENDTAG");
@@ -280,35 +286,50 @@ public class JSP {
                     name = "";
                 else
                     name = name.toLowerCase ().substring(2); //cut off the leading '</' chars;
-                int indexS = s.lastIndexOf (name); //find last 'name' element in the stack
+                int indexS = s.lastIndexOf (new NodeInfo(name, null)); //find last 'name' element in the stack
                 if (indexS >= 0) {
-                    int indexL = ((Integer) s.get (indexS + 1)).intValue (); //gets an index to ll for the indexS
-                    List ll = l.subList (indexL, l.size ()); //get everyting from the position of the coresponding starttag
-                    ll.set (0, clone ((ASTNode) ll.get (0), "startTag")); //reset unfinished to normal tag
-                    List ll1 = new ArrayList (ll);
-                    ll1.add (node);
-                    ASTNode tag = clone (
-                        node.getMimeType (),
-                        "tag",
-                        ((ASTNode) ll1.get (0)).getOffset (),
-                        ll1
-                    ); //create an AST node with ll as children
-                    ll.clear ();//clear the unassigned elements
+                    //found matching tag
+                    NodeInfo ni = s.get(indexS);
                     s.subList (indexS, s.size ()).clear (); //clear the stack above indexS
-                    l.add (tag);
-                } else
-                    l.add (clone (node, "unpairedEndTag"));
-                continue;
+                    if("jsp:scriptlet".equalsIgnoreCase(name) 
+                            || "jsp:declaration".equalsIgnoreCase(name)
+                            || "jsp:expression".equalsIgnoreCase(name)) { //NOI18N
+                        int scriptletStart = ni.node.getOffset() + ni.name.length() + 1;
+                        int scriptletEnd = node.getOffset();
+                        javaBlocks.add(new Pair(scriptletStart, scriptletEnd));
+                    }
+                }
             } else
             if (node.getNT ().equals ("tags")) {
-                resolve (node, s, l, findUnpairedTags);
-                continue;
+                findJavaEmbeddings (node, s, javaBlocks);
             }
             if (node.getNT ().equals ("tag")) {
-                resolve (node, s, l, findUnpairedTags);
-                continue;
+                findJavaEmbeddings (node, s, javaBlocks);
+            } 
+        }
+    }
+    
+    static class Pair {
+        int a,b;
+        private Pair(int a, int b) {
+            this.a = a;
+            this.b = b;
+        }
+    }
+    
+    private static class NodeInfo  {
+        String name;
+        ASTNode node;
+        private NodeInfo(String nodeName, ASTNode node) {
+            this.name = nodeName;
+            this.node = node;
+        }
+        public boolean equals(Object o) {
+            if(!(o instanceof NodeInfo)) {
+                throw new ClassCastException();
+            } else {
+                return ((NodeInfo)o).name.equals(name);
             }
-            l.add (clone (node));
         }
     }
 }
