@@ -1413,11 +1413,18 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     
     boolean isActionPropertiesUpdated() {
         boolean task_changed = false;
-        if(getSelectedAction() != null && getSelectedAction().isTaskEnabled() != backgroundTaskCheckbox.isSelected()) {
-            task_changed = true;
-        }
 
-        return this.actionPropertiesUpdated || task_changed;
+        boolean accel_changed = false;
+        
+        if(getSelectedAction() != null) {
+            if(getSelectedAction().isTaskEnabled() != backgroundTaskCheckbox.isSelected()) {
+                task_changed = true;
+            }
+            if(!acceleratorListener.getCurrentKeyStroke().equals(getSelectedAction().getValue(Action.ACCELERATOR_KEY))) {
+                accel_changed = true;
+            }
+        }
+        return this.actionPropertiesUpdated || task_changed || accel_changed;
     }
     
     
