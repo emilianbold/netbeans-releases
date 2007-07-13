@@ -114,8 +114,10 @@ public class CodeResolver implements DesignDocumentAwareness {
 
             if (regenerateSourceCode) {
                 pane = findEditorPane ();
-                foldHierarchy = FoldHierarchy.get (pane);
-                foldStates = new HashMap<String, Boolean> ();
+                if (pane != null) {
+                    foldHierarchy = FoldHierarchy.get (pane);
+                    foldStates = new HashMap<String, Boolean> ();
+                }
             }
 
             if (pane != null) {
