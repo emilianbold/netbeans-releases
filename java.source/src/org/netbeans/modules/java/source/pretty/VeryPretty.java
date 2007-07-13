@@ -492,10 +492,9 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitVarDef(JCVariableDecl tree) {
- 	if ((tree.mods.flags & ENUM) != 0)
-	    print(tree.name);
-	else {
-            printAnnotations(tree.mods.annotations);
+        boolean notEnumConst = (tree.mods.flags & Flags.ENUM) == 0;
+        printAnnotations(tree.mods.annotations);
+        if (notEnumConst) {
             printFlags(tree.mods.flags);
             if ((tree.mods.flags & VARARGS) != 0) {
                 // Variable arity method. Expecting  ArrayType, print ... instead of [].
@@ -505,9 +504,11 @@ public final class VeryPretty extends JCTree.Visitor {
             } else {
                 print(tree.vartype, null);
             }
-            needSpace();
-            print(tree.name);
-            if (tree.init != null) {
+        }
+        needSpace();
+        print(tree.name);
+        if (tree.init != null) {
+            if (notEnumConst) {
                 if (cs.spaceAroundAssignOps())
                     print(' ');
                 print('=');
@@ -528,10 +529,29 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
                 }
                 printNoParenExpr(tree.init);
+            } else {
+                JCNewClass newClsTree = (JCNewClass) tree.init;
+                if (newClsTree.args.nonEmpty()) {
+                    print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
+                    if (cs.spaceWithinMethodCallParens())
+                        print(' ');
+                    wrapTrees(newClsTree.args,
+                            cs.wrapMethodCallArgs(),
+                            cs.alignMultilineCallArgs() ? out.col : out.leftMargin + cs.getContinuationIndentSize()
+                    );
+                    print(cs.spaceWithinMethodCallParens() ? " )" : ")");
+                }
+                if (newClsTree.def != null) {
+                    Name enclClassNamePrev = enclClassName;
+                    enclClassName = newClsTree.def.name;
+                    printBlock(null, newClsTree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace());
+                    enclClassName = enclClassNamePrev;
+                }
             }
-            if (prec == TreeInfo.notExpression)
-                print(';');
-	}
+        }
+        if ((prec == TreeInfo.notExpression) && notEnumConst) {
+            print(';');
+        }
     }
 
     @Override
