@@ -1471,12 +1471,18 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                         javacLock.lock();
                                         try {
                                             boolean shouldCall;
-                                            JSCancelService.getDefault().active = true;
+                                            final JSCancelService cancelService = JSCancelService.instance(ci.getJavacTask().getContext());
+                                            if (cancelService != null) {
+                                                cancelService.active = true;
+                                            }
+
                                             try {
                                                 final Phase phase = JavaSource.moveToPhase (r.phase, ci, true);
                                                 shouldCall = phase.compareTo(r.phase)>=0;
                                             } finally {
-                                                JSCancelService.getDefault().active = false;
+                                                if (cancelService != null) {
+                                                    cancelService.active = false;
+                                                }
                                             }                                            
                                             if (shouldCall) {
                                                 synchronized (js) {
@@ -2149,13 +2155,16 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     }
     
     private static class JSCancelService extends CancelService {
-        
-        private static JSCancelService instance;
-        
+                        
         boolean active;
         
+        public static JSCancelService instance (final Context context) {
+            final CancelService cancelService = CancelService.instance(context);
+            return (cancelService instanceof JSCancelService) ? (JSCancelService) cancelService : null;
+        }
+        
         static void preRegister(final Context context) {
-            context.put(cancelServiceKey, getDefault());
+            context.put(cancelServiceKey, new JSCancelService());
         }
         
         @Override
@@ -2163,13 +2172,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             final boolean res =  active && currentRequest.isInterruptJavac();
             return res;
         }
-        
-        static synchronized JSCancelService getDefault () {
-            if (instance == null) {
-                instance = new JSCancelService();
-            }
-            return instance;
-        }
+               
     }
     
     /**
