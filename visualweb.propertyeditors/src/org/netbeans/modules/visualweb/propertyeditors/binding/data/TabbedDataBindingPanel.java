@@ -121,7 +121,9 @@ public class TabbedDataBindingPanel extends DataBindingPanel implements BindingT
             int selectedIndex = 0;
             for (int i = 0; i < bindingPanels.size(); i++) {
                 DataBindingPanel bp = (DataBindingPanel)bindingPanels.get(i);
-                tabs.add(bp, bp.getDataBindingTitle());
+                tabs.add(bp, bp.getDataBindingTitle());                
+                tabs.getAccessibleContext().setAccessibleDescription(bp.getDataBindingTitle());
+                tabs.getAccessibleContext().setAccessibleName(bp.getDataBindingTitle());
                 if (shouldShowBindToObjectPanel &&  bp.getClass().isAssignableFrom(BindValueToObjectPanel.class)){
                     selectedIndex = i;
                 }

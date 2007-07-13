@@ -148,9 +148,11 @@ public class BindValueToDataProviderPanel extends DataBindingPanel implements De
         
         dpLabel.setLabelFor(dpCombo);
         dpCombo.getAccessibleContext().setAccessibleName(bundle.getMessage("DP_COMBO_ACCESS_NAME"));
+        dpCombo.getAccessibleContext().setAccessibleDescription(bundle.getMessage("DP_COMBO_ACCESS_DESC"));
         addDataProviderButton.getAccessibleContext().setAccessibleName(bundle.getMessage("ADD_DP_BUTTON_ACCESS_NAME"));
         valueListLabel.setLabelFor(fieldList);
         fieldList.getAccessibleContext().setAccessibleName(bundle.getMessage("FIELD_LIST_ACCESS_NAME"));
+        fieldList.getAccessibleContext().setAccessibleDescription(bundle.getMessage("FIELD_LIST_ACCESS_DESC"));
         addDataProviderButton.setMnemonic(bundle.getMessage("ADD_DP_BUTTON_MNEMONIC").charAt(0));
         designProperty = prop;
         dpCombo.addItem(bundle.getMessage("dpRetrievingMessage"));
