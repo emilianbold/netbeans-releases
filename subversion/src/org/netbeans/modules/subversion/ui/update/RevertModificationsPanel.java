@@ -88,7 +88,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         jLabel10.setText(bundle.getString("CTL_RevertPanel_EmptyHint")); // NOI18N
 
-        revertNewFilesCheckBox.setText(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "CTL_RevertPanel_RevertNewFiles")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(revertNewFilesCheckBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "CTL_RevertPanel_RevertNewFiles")); // NOI18N
         revertNewFilesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         revertNewFilesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -99,6 +99,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(revertNewFilesCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)
                     .add(moreCommitsRadioButton)
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
@@ -125,8 +126,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .add(localChangesRadioButton)
                     .add(layout.createSequentialGroup()
                         .add(141, 141, 141)
-                        .add(jLabel9))
-                    .add(revertNewFilesCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 257, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(jLabel9)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -171,6 +171,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         oneCommitRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertSingle")); // NOI18N
         jLabel4.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_SingleRevision")); // NOI18N
         oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search1")); // NOI18N
+        revertNewFilesCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "ASCN_RevertPanel_RevertNewFiles")); // NOI18N
+        revertNewFilesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "ASCD_RevertPanel_RevertNewFiles")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
