@@ -30,7 +30,6 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.lexer.Lexer;
@@ -76,15 +75,6 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     }
     
     public Token<STokenId> nextToken () {
-        Token<STokenId> t = nextTokenIn ();
-//        if (t == null)
-//            System.out.println("nextToken (" + language.getMimeType () + "): null");
-//        else
-//            System.out.println("nextToken (" + language.getMimeType () + "): " + t.id ().name ());
-        return t;
-    }
-    
-    private Token<STokenId> nextTokenIn () {
         if (state instanceof Marenka) {
             return createToken ((Marenka) state);
         }
@@ -94,16 +84,6 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             return createToken (index);
         ASTToken token = null;
         token = parser.read (this, input, language.getMimeType ());
-        if (language != null && 
-            tokenProperties != null &&
-            tokenProperties.getType ("call") != Type.NOT_SET
-        ) {
-            input.setIndex (index);
-            Object[] r = (Object[]) tokenProperties.getValue ("call", new Object[] {input});
-            token = (ASTToken) r [0];
-            if (r [1] != null)
-                setState (parser.getState((String) r [1]));
-        }
         
         if (token == null) {
             if (input.getIndex () > (index + 1))
@@ -117,7 +97,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             index == input.getIndex ()
         )
             // 0 length token (<script></script>
-            return nextTokenIn ();
+            return nextToken ();
         return createToken (token.getType (), index);
     }
 

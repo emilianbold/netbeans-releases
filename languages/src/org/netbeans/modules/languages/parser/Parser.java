@@ -23,6 +23,7 @@ import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
 import java.util.*;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language.TokenType;
 
 
@@ -89,18 +90,29 @@ public class Parser {
         if (tokenType == null) {
             return null;
         }
-        cookie.setProperties (tokenType.getProperties ());
+        Feature tokenProperties = tokenType.getProperties ();
+        cookie.setProperties (tokenProperties);
         String endState = tokenType.getEndState ();
         int state = -1;
         if (endState != null)
             state = getState (endState);
         cookie.setState (state);
-        return ASTToken.create (
+        ASTToken token = ASTToken.create (
             mimeType,
             tokenType.getType (),
             input.getString (originalIndex, input.getIndex ()),
             originalIndex
         );
+        if (tokenProperties != null &&
+            tokenProperties.getType ("call") != Type.NOT_SET
+        ) {
+            input.setIndex(originalIndex);
+            Object[] r = (Object[]) tokenProperties.getValue ("call", new Object[] {input});
+            token = (ASTToken) r [0];
+            if (r [1] != null)
+                cookie.setState (getState((String) r [1]));
+        }
+        return token;
     }
     
     public int getState (String stateName) {
