@@ -707,6 +707,10 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             List<ErrorDescription> validatedErrors = new ArrayList<ErrorDescription>();
             
             for (ErrorDescription ed : errors) {
+                if (ed == null) {
+                    Logger.getLogger(AnnotationHolder.class.getName()).log(Level.WARNING, "'null' ErrorDescription in layer {0}.", layer); //NOI18N
+                }
+                
                 if (ed.getRange() == null)
                     continue;
                 
