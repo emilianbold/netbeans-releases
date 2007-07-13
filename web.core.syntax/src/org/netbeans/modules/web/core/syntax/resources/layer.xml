@@ -224,6 +224,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="x-jsp" url="JSPExample"/>
+                <file name="x-tag" url="JSPExample"/>
+                <file name="x-el" url="ELExample"/>
             </folder>
         </folder>
     </folder>
