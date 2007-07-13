@@ -23,7 +23,7 @@
                     <code-name-base>org.netbeans.api.gsf</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.33.0</specification-version>
+                        <specification-version>0.34.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -37,14 +37,14 @@
                     <code-name-base>org.netbeans.modules.gsf</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.60.0</specification-version>
+                        <specification-version>0.61.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.ruby</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.74</specification-version>
+                        <specification-version>0.75</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

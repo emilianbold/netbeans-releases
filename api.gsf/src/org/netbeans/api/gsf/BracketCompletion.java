@@ -20,8 +20,8 @@ package org.netbeans.api.gsf;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.annotations.NonNull;
 
@@ -49,11 +49,11 @@ public interface BracketCompletion {
      *
      * XXX Fix javadoc.
      */
-    boolean beforeCharInserted(Document doc, int caretOffset, Caret caret, char ch)
+    boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException;
 
     /** @todo Rip out the boolean return value? What does it mean? */
-    boolean afterCharInserted(Document doc, int caretOffset, Caret caret, char ch)
+    boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException;
 
     /**
@@ -67,7 +67,7 @@ public interface BracketCompletion {
      */
 
     /** @todo Split into before and after? */
-    public boolean charBackspaced(Document doc, int caretOffset, Caret caret, char ch)
+    public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException;
 
     /**
@@ -79,7 +79,7 @@ public interface BracketCompletion {
      * @todo rip out return value
      * @todo Document why both caretOffset and caret is passed in!
      */
-    int beforeBreak(Document doc, int caretOffset, Caret caret)
+    int beforeBreak(Document doc, int caretOffset, JTextComponent caret)
         throws BadLocationException;
 
     /**

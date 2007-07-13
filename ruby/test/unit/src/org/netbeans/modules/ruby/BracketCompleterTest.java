@@ -81,7 +81,7 @@ public class BracketCompleterTest extends RubyTestBase {
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(insertOffset);
-        int newOffset = bc.beforeBreak(doc, insertOffset, caret);
+        int newOffset = bc.beforeBreak(doc, insertOffset, ta);
         doc.atomicLock();
         DocumentUtilities.setTypingModification(doc, true);
 
@@ -112,6 +112,10 @@ public class BracketCompleterTest extends RubyTestBase {
     }
 
     private void insertChar(String original, char insertText, String expected) throws BadLocationException {
+        insertChar(original, insertText, expected, null);
+    }
+
+    private void insertChar(String original, char insertText, String expected, String selection) throws BadLocationException {
         int insertOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
         original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
@@ -124,17 +128,28 @@ public class BracketCompleterTest extends RubyTestBase {
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(insertOffset);
+        if (selection != null) {
+            int start = original.indexOf(selection);
+            assertTrue(start != -1);
+            assertTrue("Ambiguous selection - multiple occurrences of selection string",
+                    original.indexOf(selection, start+1) == -1);
+            ta.setSelectionStart(start);
+            ta.setSelectionEnd(start+selection.length());
+            insertOffset = caret.getDot();
+        }
 
         doc.atomicLock();
         DocumentUtilities.setTypingModification(doc, true);
 
         try {
-        
-            boolean handled = bc.beforeCharInserted(doc, insertOffset, caret, insertText);
+            boolean handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
             if (!handled) {
+                if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
+                    doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
+                }
                 doc.insertString(caret.getDot(), ""+insertText, null);
                 caret.setDot(insertOffset+1);
-                bc.afterCharInserted(doc, insertOffset, caret, insertText);
+                bc.afterCharInserted(doc, insertOffset, ta, insertText);
             }
             String formatted = doc.getText(0, doc.getLength());
             assertEquals(expected, formatted);
@@ -170,7 +185,7 @@ public class BracketCompleterTest extends RubyTestBase {
         try {
             doc.remove(dot - 1, 1);
             caret.setDot(dot-1);
-            boolean handled = bc.charBackspaced(doc, dot-1, caret, ch);
+            boolean handled = bc.charBackspaced(doc, dot-1, ta, ch);
             String formatted = doc.getText(0, doc.getLength());
             assertEquals(expected, formatted);
             if (finalCaretPos != -1) {
@@ -521,6 +536,14 @@ public class BracketCompleterTest extends RubyTestBase {
     public void testNoInsertPercentElsewhere() throws Exception {
         insertChar("x = ^", '#', "x = #^");
     }
+    
+    public void testReplaceSelection1() throws Exception {
+        insertChar("x = foo^", 'y', "x = y^", "foo");
+    }
+
+    public void testReplaceSelection2() throws Exception {
+        insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
+    }
 
     // TODO: Test
     // - backspace deletion
@@ -534,5 +557,4 @@ public class BracketCompleterTest extends RubyTestBase {
         // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
     }
-
 }

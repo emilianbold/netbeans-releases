@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
@@ -117,8 +118,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     }
 
     /** Newline inserted: consider adding missing "end", "}" and "=end" markers, etc. */
-    public int beforeBreak(Document document, int offset, Caret caret)
+    public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
+        Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
         
         int lineBegin = Utilities.getRowStart(doc,offset);
@@ -426,8 +428,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         return false;
     }
 
-    public boolean beforeCharInserted(Document document, int caretOffset, Caret caret, char ch)
+    public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
+        Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
         //dumpTokens(doc, caretOffset);
@@ -436,6 +439,21 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         // be used in Ruby string like the %x!! form.
         if (caretOffset == 0) {
             return false;
+        }
+        
+        if (target.getSelectionStart() != -1) {
+            if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
+                // Bracket the selection
+                String selection = target.getSelectedText();
+                if (selection != null && selection.length() > 0 && selection.charAt(0) != ch) {
+                    int start = target.getSelectionStart();
+                    doc.remove(start, target.getSelectionEnd()-start);
+                    doc.insertString(start, ch + selection + matching(ch), null);
+                    target.getCaret().setDot(start+selection.length()+2);
+                
+                    return true;
+                }
+            }
         }
 
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, caretOffset);
@@ -583,14 +601,16 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
      * completion ()[]'"{} and other conditions and optionally performs
      * changes to the doc and or caret (complets braces, moves caret,
      * etc.)
-     * @param doc the document where the change occurred
+     * @param document the document where the change occurred
      * @param dotPos position of the character insertion
-     * @param caret caret
+     * @param target The target
      * @param ch the character that was inserted
+     * @return Whether the insert was handled
      * @throws BadLocationException if dotPos is not correct
      */
-    public boolean afterCharInserted(Document document, int dotPos, Caret caret, char ch)
+    public boolean afterCharInserted(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
+        Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
         // See if our automatic adjustment of indentation when typing (for example) "end" was
@@ -847,7 +867,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     * @param caret caret
     * @param ch the character that was deleted
     */
-    public boolean charBackspaced(Document document, int dotPos, Caret caret, char ch)
+    public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
         

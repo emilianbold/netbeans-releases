@@ -73,10 +73,6 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.NbGenerateGoToPopupAction;
 import org.netbeans.modules.editor.retouche.InstantRenameAction;
-import org.netbeans.modules.gsf.GsfDocument;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.retouche.editor.GsfFormatter;
 import org.netbeans.modules.retouche.editor.hyperlink.GoToSupport;
 import org.openide.awt.Mnemonics;
@@ -169,6 +165,7 @@ public class GsfEditorKitFactory {
             });
         }
 
+        @Override
         public String getContentType() {
             return language.getMimeType();
         }
@@ -177,6 +174,8 @@ public class GsfEditorKitFactory {
         //        public String updateColoringName(String coloringName) {
         //            return coloringName;
         //        }
+
+        @Override
         public Document createDefaultDocument() {
             Document doc = new GsfDocument(this.getClass(), language);
 
@@ -185,9 +184,11 @@ public class GsfEditorKitFactory {
             return doc;
         }
         
+        @Override
         public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
             return new ExtSyntaxSupport(doc) {
             
+                @Override
                 public int[] findMatchingBlock(int offset, boolean simpleSearch)
                         throws BadLocationException {
                     // Do parenthesis matching, if applicable
@@ -208,6 +209,7 @@ public class GsfEditorKitFactory {
 
         
 
+        @Override
         protected void initDocument(BaseDocument doc) {
             //        doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
             //                JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
@@ -370,6 +372,15 @@ public class GsfEditorKitFactory {
         }
 
         public class GsfDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+            private JTextComponent currentTarget;
+            
+            @Override
+            public void actionPerformed(ActionEvent evt, JTextComponent target) {
+                currentTarget = target;
+                super.actionPerformed(evt, target);
+                currentTarget = null;
+            }
+
             @Override
             protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
@@ -382,12 +393,12 @@ public class GsfEditorKitFactory {
                         if (bracketCompletion != null) {
                             // TODO - check if we're in a comment etc. and if so, do nothing
                             boolean handled =
-                                bracketCompletion.beforeCharInserted(doc, dotPos, caret,
+                                bracketCompletion.beforeCharInserted(doc, dotPos, currentTarget,
                                     str.charAt(0));
 
                             if (!handled) {
                                 super.insertString(doc, dotPos, caret, str, overwrite);
-                                handled = bracketCompletion.afterCharInserted(doc, dotPos, caret,
+                                handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
                                         str.charAt(0));
                             }
 
@@ -416,6 +427,12 @@ public class GsfEditorKitFactory {
 
                             if (bracketCompletion != null) {
                                 try {
+                                    int caretPosition = caret.getDot();
+
+                                    boolean handled =
+                                        bracketCompletion.beforeCharInserted(doc, caretPosition,
+                                            target, insertedChar);
+
                                     int p0 = Math.min(caret.getDot(), caret.getMark());
                                     int p1 = Math.max(caret.getDot(), caret.getMark());
 
@@ -423,23 +440,13 @@ public class GsfEditorKitFactory {
                                         doc.remove(p0, p1 - p0);
                                     }
 
-                                    int caretPosition = caret.getDot();
-
-                                    // XXX Change this to logic above with pre and after. If it's not
-                                    // handled keep going.
-                                    boolean handled =
-                                        bracketCompletion.beforeCharInserted(doc, caretPosition,
-                                            caret, insertedChar);
-
                                     if (!handled) {
                                         if ((str != null) && (str.length() > 0)) {
                                             doc.insertString(p0, str, null);
                                         }
 
                                         bracketCompletion.afterCharInserted(doc, caret.getDot() - 1,
-                                            caret, insertedChar);
-                                    } else {
-                                        caret.setDot(caretPosition + 1);
+                                            target, insertedChar);
                                     }
                                 } catch (BadLocationException e) {
                                     e.printStackTrace();
@@ -468,7 +475,7 @@ public class GsfEditorKitFactory {
 
                         if (bracketCompletion != null) {
                             try {
-                                int newOffset = bracketCompletion.beforeBreak(doc, caret.getDot(), caret);
+                                int newOffset = bracketCompletion.beforeBreak(doc, caret.getDot(), target);
 
                                 if (newOffset >= 0) {
                                     return new Integer(newOffset);
@@ -508,8 +515,17 @@ public class GsfEditorKitFactory {
         }
 
         public class GsfDeleteCharAction extends ExtDeleteCharAction {
+            private JTextComponent currentTarget;
+            
             public GsfDeleteCharAction(String nm, boolean nextChar) {
                 super(nm, nextChar);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent evt, JTextComponent target) {
+                currentTarget = target;
+                super.actionPerformed(evt, target);
+                currentTarget = null;
             }
 
             @Override
@@ -522,7 +538,7 @@ public class GsfEditorKitFactory {
                         BracketCompletion bracketCompletion = language.getBracketCompletion();
 
                         if (bracketCompletion != null) {
-                            boolean success = bracketCompletion.charBackspaced(doc, dotPos, caret, ch);
+                            boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
 
 //                            if (offset >= 0) {
 //                                caret.setDot(offset);
@@ -544,6 +560,7 @@ public class GsfEditorKitFactory {
         }
 
         private class GenericGenerateGoToPopupAction extends NbGenerateGoToPopupAction {
+            @Override
             public void actionPerformed(ActionEvent evt, JTextComponent target) {
             }
 
