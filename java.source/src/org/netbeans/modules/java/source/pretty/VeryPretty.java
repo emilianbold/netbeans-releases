@@ -509,26 +509,7 @@ public final class VeryPretty extends JCTree.Visitor {
         print(tree.name);
         if (tree.init != null) {
             if (notEnumConst) {
-                if (cs.spaceAroundAssignOps())
-                    print(' ');
-                print('=');
-                int rm = cs.getRightMargin();
-                switch(cs.wrapAssignOps()) {
-                case WRAP_IF_LONG:
-                    if (widthEstimator.estimateWidth(tree.init, rm - out.col) + out.col <= cs.getRightMargin()) {
-                        if(cs.spaceAroundAssignOps())
-                            print(' ');
-                        break;
-                    }
-                case WRAP_ALWAYS:
-                    toColExactly(out.leftMargin + cs.getContinuationIndentSize());
-                    break;
-                case WRAP_NEVER:
-                    if(cs.spaceAroundAssignOps())
-                        print(' ');
-                    break;
-                }
-                printNoParenExpr(tree.init);
+                printVarInit(tree);
             } else {
                 JCNewClass newClsTree = (JCNewClass) tree.init;
                 if (newClsTree.args.nonEmpty()) {
@@ -553,7 +534,30 @@ public final class VeryPretty extends JCTree.Visitor {
             print(';');
         }
     }
-
+    
+    public void printVarInit(JCVariableDecl tree) {
+        if (cs.spaceAroundAssignOps())
+            print(' ');
+        print('=');
+        int rm = cs.getRightMargin();
+        switch(cs.wrapAssignOps()) {
+        case WRAP_IF_LONG:
+            if (widthEstimator.estimateWidth(tree.init, rm - out.col) + out.col <= cs.getRightMargin()) {
+                if(cs.spaceAroundAssignOps())
+                    print(' ');
+                break;
+            }
+        case WRAP_ALWAYS:
+            toColExactly(out.leftMargin + cs.getContinuationIndentSize());
+            break;
+        case WRAP_NEVER:
+            if(cs.spaceAroundAssignOps())
+                print(' ');
+            break;
+        }
+        printNoParenExpr(tree.init);
+    }
+    
     @Override
     public void visitSkip(JCSkip tree) {
 	print(';');

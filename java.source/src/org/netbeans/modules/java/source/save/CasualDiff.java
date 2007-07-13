@@ -519,8 +519,11 @@ public class CasualDiff {
                 localPointer = endPos(oldT.init);
             }
             if (oldT.init == null && newT.init != null) {
-                copyTo(localPointer, localPointer = endPos(oldT.init));
-                printer.print(newT.init);
+                int end = endPos(oldT);
+                tokenSequence.move(end);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                copyTo(localPointer, localPointer = tokenSequence.offset());
+                printer.printVarInit(newT);
             }
         }
         copyTo(localPointer, bounds[1]);
