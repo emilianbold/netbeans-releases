@@ -55,6 +55,13 @@ public class JavaResourceHolder extends ResourceHolder {
         selectedLocale = locale;
     }
 
+    /**
+     * @return design time locale used when asked for value or comment.
+     */
+    public String getLocalization() {
+        return selectedLocale;
+    }
+
     private String getLocalizationFileName() {
         return selectedLocale != null && !selectedLocale.equals("") ? // NOI18N
                resource.getName() + selectedLocale : resource.getName();

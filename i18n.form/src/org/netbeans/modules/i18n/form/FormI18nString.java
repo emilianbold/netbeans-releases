@@ -62,6 +62,8 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
              source.getComment(), 
              source.getArguments(), 
              source.getReplaceFormat());
+        ((JavaResourceHolder)support.getResourceHolder()).setLocalization(
+                ((JavaResourceHolder)source.getSupport().getResourceHolder()).getLocalization());
     }
 
     FormI18nString(DataObject srcDataObject) {
