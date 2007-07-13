@@ -1143,7 +1143,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    //
+    // #109489
     public void testAddInitToVar() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
