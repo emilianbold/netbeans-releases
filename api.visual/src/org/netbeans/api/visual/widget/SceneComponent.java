@@ -34,8 +34,6 @@ import java.util.Map;
  */
 final class SceneComponent extends JComponent implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
 
-    private static final int AUTO_SHIFT = 32;
-
     private Scene scene;
     private Widget lockedWidget;
     private WidgetAction lockedAction;
