@@ -9,12 +9,14 @@
     <fontcolor name="COMMENT_RDOC" foreColor="0000CC" default="comment">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="COMMENT_HTMLTAG" foreColor="blue" default="default"/>
+    <fontcolor name="COMMENT_HTMLTAG" default="comment">
+        <font style="bold" />
+    </fontcolor>
     <fontcolor name="COMMENT_LINK" underline="blue" foreColor="blue" default="default"/>
-    <fontcolor name="COMMENT_ITALIC" foreColor="blue" default="default">
+    <fontcolor name="COMMENT_ITALIC" default="default">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor name="COMMENT_BOLD" foreColor="blue" default="default">
+    <fontcolor name="COMMENT_BOLD" default="default">
         <font style="bold"/>
     </fontcolor>
 </fontscolors>
