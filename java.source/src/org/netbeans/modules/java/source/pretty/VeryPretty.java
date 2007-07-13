@@ -1864,13 +1864,13 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         }
-        if (comment.indent() >= 0) {
+        if (comment.indent() >= 0 || comment.style() == Comment.Style.LINE) {
             newline();
             toLeftMargin();
-        } else if (comment.style() != Comment.Style.BLOCK) {
+        } else if (comment.style() == Comment.Style.JAVADOC) {
             newline();
         } else {
-           needSpace();
+            needSpace();
         }
     }
 
