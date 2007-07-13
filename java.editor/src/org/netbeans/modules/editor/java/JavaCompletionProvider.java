@@ -299,12 +299,13 @@ public class JavaCompletionProvider implements CompletionProvider {
         protected void filter(CompletionResultSet resultSet) {
             try {
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                    if (filterPrefix != null) {
-                        if (results != null)
+                    if (results != null) {
+                        if (filterPrefix != null) {
                             resultSet.addAllItems(getFilteredData(results, filterPrefix));
-                    } else {
-                        Completion.get().hideDocumentation();
-                        Completion.get().hideCompletion();
+                        } else {
+                            Completion.get().hideDocumentation();
+                            Completion.get().hideCompletion();
+                        }
                     }
                 } else if (queryType == TOOLTIP_QUERY_TYPE) {
                     resultSet.setToolTip(toolTip);
