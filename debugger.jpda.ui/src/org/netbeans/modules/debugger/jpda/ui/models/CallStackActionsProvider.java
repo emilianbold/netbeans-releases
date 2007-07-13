@@ -170,39 +170,45 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     }
     
     private void stackToCLBD() {
+        JPDAThread t = debugger.getCurrentThread();
+        StringBuffer frameStr = new StringBuffer(50);
+        CallStackFrame[] stack;
         try {
-            JPDAThread t = debugger.getCurrentThread();;
-            
-//            if (frame instanceof CallStackFrame )
-//                t = ((CallStackFrame)frame).getThread ();
-//            else 
-//                t = debugger.getCurrentThread();
-            
-            CallStackFrame[] stack = t.getCallStack ();
+            stack = t.getCallStack ();
+        } catch (AbsentInformationException ex) {
+            frameStr.append(NbBundle.getMessage(CallStackActionsProvider.class, "MSG_NoSourceInfo"));
+            stack = null;
+        }
+        if (stack != null) {
             int i, k = stack.length;
-            StringBuffer frameStr = new StringBuffer(50);
-            
+
             for (i = 0; i < k; i++) {
                 frameStr.append(stack[i].getClassName());
                 frameStr.append(".");
                 frameStr.append(stack[i].getMethodName());
-                frameStr.append("(");
-                frameStr.append(stack[i].getSourceName(null));
-                frameStr.append(":");
-                frameStr.append(stack[i].getLineNumber(null));
-                frameStr.append(")");
+                try {
+                    String sourceName = stack[i].getSourceName(null);
+                    frameStr.append("(");
+                    frameStr.append(sourceName);
+                    int line = stack[i].getLineNumber(null);
+                    if (line > 0) {
+                        frameStr.append(":");
+                        frameStr.append(line);
+                    }
+                    frameStr.append(")");
+                } catch (AbsentInformationException ex) {
+                    //frameStr.append(NbBundle.getMessage(CallStackActionsProvider.class, "MSG_NoSourceInfo"));
+                    // Ignore, do not provide source name.
+                }
                 if (i != k - 1) frameStr.append('\n');
-            }    
-            Clipboard systemClipboard = getClipboard();
-            Transferable transferableText =
-                    new StringSelection(frameStr.toString());
-            systemClipboard.setContents(
-                    transferableText,
-                    null);
-            
-        } catch (AbsentInformationException ex) {
-            ErrorManager.getDefault().notify(ex);
+            }
         }
+        Clipboard systemClipboard = getClipboard();
+        Transferable transferableText =
+                new StringSelection(frameStr.toString());
+        systemClipboard.setContents(
+                transferableText,
+                null);
     }
     
     private static Clipboard getClipboard() {
