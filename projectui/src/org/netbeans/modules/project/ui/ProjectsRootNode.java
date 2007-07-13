@@ -393,7 +393,7 @@ public class ProjectsRootNode extends AbstractNode {
 
                         String result = hstat.annotateNameHtml(super.getDisplayName(), Collections.singleton(fold.getPrimaryFile()));
                         //Make sure the super string was really modified
-                        if (!super.getDisplayName().equals(result)) {
+                        if (result != null && !super.getDisplayName().equals(result)) {
                            return isMain() ? "<b>" + (result) + "</b>" : result; //NOI18N
                         }
                     }
