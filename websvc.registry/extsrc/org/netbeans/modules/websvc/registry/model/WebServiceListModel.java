@@ -121,7 +121,7 @@ public class WebServiceListModel {
     /** Add the webservice data with a unique Id */
     public void addWebService(WebServiceData webService) {
         //System.out.println("WebServiceNodeModel Webservice add called - " + webService.getId());
-        if (!webservices.containsKey(webService.getId())) {
+        if (webService != null && !webservices.containsKey(webService.getId())) {
             webservices.put(webService.getId(), webService);
             fireServiceAdded(webService);
         }
@@ -219,7 +219,7 @@ public class WebServiceListModel {
     /** Add a webservice group to the model*/
     public void addWebServiceGroup(WebServiceGroup group){
         //System.out.println("WebServiceNodeModel add group called - " + group.getId());
-        if(webserviceGroups == null) return;
+        if(webserviceGroups == null || group == null) return;
         if (!webserviceGroups.containsKey(group.getId())) {
             webserviceGroups.put(group.getId(), group);
             Iterator iter = listeners.iterator();

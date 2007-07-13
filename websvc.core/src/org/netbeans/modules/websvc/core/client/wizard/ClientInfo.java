@@ -80,7 +80,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.jaxws.api.JaxWsWsdlCookie;
+import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -1279,12 +1279,9 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         explorerPanel.setDescriptor(descriptor);
         if(DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
             Node serviceNode = explorerPanel.getSelectedService();
-            JaxWsWsdlCookie wsdlCookie = (JaxWsWsdlCookie)serviceNode.getCookie(JaxWsWsdlCookie.class);
-            if (wsdlCookie!=null) return wsdlCookie.getWsdlURL();
-            else {
-// jaxrpc split
-//                JaxRpcWsdlCookie wsdl1Cookie = (JaxRpcWsdlCookie)serviceNode.getCookie(JaxRpcWsdlCookie.class);
-//                if (wsdl1Cookie!=null) return wsdl1Cookie.getWsdlURL();
+            WsWsdlCookie wsdlCookie = (WsWsdlCookie)serviceNode.getCookie(WsWsdlCookie.class);
+            if (wsdlCookie!=null){
+                return wsdlCookie.getWsdlURL();
             }
         }
         return null;

@@ -83,6 +83,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
+import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.netbeans.modules.websvc.jaxrpc.actions.RegenerateFromWsdlAction;
 import org.netbeans.modules.websvc.jaxrpc.actions.RegenerateFromWsdlCookie;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -91,7 +92,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 
-public class WebServiceNode extends AbstractNode implements WSRegisterCookie, JaxRpcWsdlCookie,
+public class WebServiceNode extends AbstractNode implements WSRegisterCookie, WsWsdlCookie,
         ConfigureHandlerCookie, OpenCookie, RegenerateFromWsdlCookie{
     Webservices webServices;
     WebserviceDescription webServiceDescription;
