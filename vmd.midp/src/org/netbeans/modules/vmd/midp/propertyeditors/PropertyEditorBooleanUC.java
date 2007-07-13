@@ -72,8 +72,14 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     @Override
     public InplaceEditor getInplaceEditor() {
         if (inplaceEditor == null) {
-            inplaceEditor = new BooleanInplaceEditor(this, new ItemListener() {
-
+            inplaceEditor = new BooleanInplaceEditor(this);
+            PropertyValue propertyValue = (PropertyValue) getValue();
+            Boolean value = (Boolean) propertyValue.getPrimitiveValue();
+            JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
+            if (value != null) {
+                checkBox.setSelected(value);
+            }
+            checkBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     if (!(inplaceEditor.getComponent() instanceof JCheckBox)) {
                         return;
@@ -169,10 +175,11 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
-            if (customEditor.getText().equals("true"))
+            if (customEditor.getText().equals("true")) {
                 updateInplaceEditorComponent(true);
-            else 
+            } else {
                 updateInplaceEditorComponent(false);
+            }
         }
     }
 
@@ -184,8 +191,9 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     @Override
     public Object getDefaultValue() {
         PropertyValue value = (PropertyValue) super.getDefaultValue();
-        if (value.getKind() == PropertyValue.Kind.VALUE && value.getPrimitiveValue() instanceof Boolean)
+        if (value.getKind() == PropertyValue.Kind.VALUE && value.getPrimitiveValue() instanceof Boolean) {
             updateInplaceEditorComponent((Boolean) value.getPrimitiveValue());
+        }
         return super.getDefaultValue();
     }
 

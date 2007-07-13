@@ -45,7 +45,7 @@ public class BooleanInplaceEditor implements InplaceEditor {
     private PropertyModel model;
     
     // Do not create this InplaceEditor in PropertyEditor constructor!!!!!! 
-    public BooleanInplaceEditor(DesignPropertyEditor propertyEditor, ItemListener itemListener) {    
+    public BooleanInplaceEditor(DesignPropertyEditor propertyEditor) {    
         this.propertyEditor = propertyEditor;
         checkBox = new JCheckBox();
         PropertyValue value = (PropertyValue) propertyEditor.getValue();
@@ -56,8 +56,6 @@ public class BooleanInplaceEditor implements InplaceEditor {
             }
         } else if (value == PropertyValue.createNull())
             checkBox.setSelected(false);
-        
-         checkBox.addItemListener(itemListener);
     }
     
     public void connect(PropertyEditor propertyEditor, PropertyEnv env) {

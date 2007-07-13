@@ -105,8 +105,14 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     @Override
     public InplaceEditor getInplaceEditor() {
         if (inplaceEditor == null) {
-            inplaceEditor = new BooleanInplaceEditor(this, new ItemListener() {
-
+            inplaceEditor = new BooleanInplaceEditor(this);
+            PropertyValue propertyValue = (PropertyValue) getValue();
+            Boolean value = (Boolean) propertyValue.getPrimitiveValue();
+            JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
+            if (value != null) {
+                checkBox.setSelected(value);
+            }
+            checkBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     executeInsideWriteTransactionUsed = true;
                     JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
