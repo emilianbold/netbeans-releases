@@ -27,12 +27,10 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
-    public static final String REST_API_PACKAGE = "com.sun.ws.rest.api.";       //NOI18N
+    public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
     
     public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
-    
-    public static final String NOT_FOUND_EXCEPTION = REST_API_PACKAGE + "NotFoundException";    //NOI18N
-    
+  
     public static final String URI_TEMPLATE = REST_API_PACKAGE + "UriTemplate";        //NOI18N
     
     public static final String HTTP_METHOD = REST_API_PACKAGE + "HttpMethod";         //NOI18N
@@ -47,13 +45,15 @@ public class Constants {
     
     public static final String QUERY_PARAM = REST_API_PACKAGE + "QueryParam";  //NOI18N
     
-    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "response.HttpResponse"; //NOI18N
+    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
     
-    public static final String CREATED = REST_API_PACKAGE + "response.Created";     //NOI18N
-    
+    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+      
     public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
     
-    public static final String RESOURCE = "javax.annotation.Resource";      //NOI18N
+    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+      
+    public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
@@ -84,8 +84,8 @@ public class Constants {
     public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
     
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
-    
-    public static final String RESOURCE_ANNOTATION = "Resource";        //NOI18N
+ 
+    public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
     
     public static final String SUB_RESOURCES_ANNOTATION = "SubResources";        //NOI18N
     
@@ -143,8 +143,9 @@ public class Constants {
         HTTP_METHOD,
         PRODUCE_MIME,
         SUB_RESOURCES,
-        CREATED,
-        RESOURCE
+        RESPONSE_BUILDER,
+        HTTP_CONTEXT,
+        URI_INFO
     };
     
     public static final String[] ITEM_IMPORTS = {
@@ -153,8 +154,9 @@ public class Constants {
         HTTP_METHOD,
         PRODUCE_MIME,
         CONSUME_MIME,
-        RESOURCE,
-        NOT_FOUND_EXCEPTION,
+        HTTP_CONTEXT,
+        URI_INFO,
+        WEB_APPLICATION_EXCEPTION,
         NO_RESULT_EXCEPTION
     };
     

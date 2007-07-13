@@ -87,8 +87,8 @@ public class PlatformImpl extends J2eePlatformImpl {
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     
     private static final String[] SWDP_JARS = new String[] {
-            "restbeans-api.jar",
-            "restbeans-impl.jar",
+            "jersey.jar",
+            "jsr311-api.jar",
             "wadl2java.jar"
     };
     

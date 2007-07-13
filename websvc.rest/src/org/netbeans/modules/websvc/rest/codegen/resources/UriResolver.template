@@ -9,8 +9,7 @@
 
 package Templates.Classes;
 
-import com.sun.ws.rest.api.NotFoundException;
-import com.sun.ws.rest.api.WebApplicationException;
+import javax.ws.rs.WebApplicationException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -76,7 +75,7 @@ public class UriResolver {
                 
                 return (T) obj;
             } else {
-                throw new NotFoundException("Resource for " + uri + " does not exist.");
+                throw new WebApplicationException(new Throwable("Resource for " + uri + " does not exist."), 404);
             }
         } catch (WebApplicationException ex) {
             throw ex;

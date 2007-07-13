@@ -9,15 +9,13 @@
 
 package Templates.Classes;
 
-import com.sun.ws.rest.api.UriTemplate;
-import com.sun.ws.rest.api.UriParam;
-import com.sun.ws.rest.api.HttpMethod;
-import com.sun.ws.rest.api.ProduceMime;
-import com.sun.ws.rest.api.ConsumeMime;
-import com.sun.ws.rest.api.core.HttpContext;
-import com.sun.ws.rest.api.response.HttpResponse;
-import com.sun.ws.rest.api.representation.Representation;
-import javax.annotation.Resource;
+import javax.ws.rs.UriTemplate;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Web Service
@@ -26,8 +24,8 @@ import javax.annotation.Resource;
  */
 
 public class __NAME__ {
-    @Resource
-    private HttpContext context;
+    @HttpContext
+    private UriInfo context;
 
     /** Creates a new instance of __NAME__ */
     public __NAME__() {
