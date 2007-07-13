@@ -201,10 +201,11 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 List<Tree> members = new ArrayList<Tree>();
                 ModifiersTree mods = maker.Modifiers(Flags.PUBLIC | Flags.STATIC | Flags.FINAL | Flags.ENUM, Collections.<AnnotationTree>emptyList());
                 IdentifierTree type = maker.Identifier(name);
-                members.add(maker.Variable(mods, "NORTH", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("NORTH")), null)));
-                members.add(maker.Variable(mods, "EAST", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("EAST")), null)));
-                members.add(maker.Variable(mods, "SOUTH", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("SOUTH")), null)));
-                members.add(maker.Variable(mods, "WEST", type, maker.NewClass(null, Collections.<ExpressionTree>emptyList(), type, Collections.singletonList(maker.Identifier("WEST")), null)));
+                List<ExpressionTree> empty = Collections.<ExpressionTree>emptyList();
+                members.add(maker.Variable(mods, "NORTH", type, maker.NewClass(null, empty, type, empty, null)));
+                members.add(maker.Variable(mods, "EAST", type, maker.NewClass(null, empty, type, empty, null)));
+                members.add(maker.Variable(mods, "SOUTH", type, maker.NewClass(null, empty, type, empty, null)));
+                members.add(maker.Variable(mods, "WEST", type, maker.NewClass(null, empty, type, empty, null)));
                 ClassTree clazz = maker.Enum(maker.Modifiers(Collections.<Modifier>emptySet()), name, Collections.<Tree>emptyList(), members);
                 if (counter[0] == 1)
                     workingCopy.rewrite(workingCopy.getCompilationUnit(), maker.CompilationUnit(maker.Identifier("hierbas.del.litoral"), Collections.<ImportTree>emptyList(), Collections.singletonList(clazz), workingCopy.getCompilationUnit().getSourceFile()));
