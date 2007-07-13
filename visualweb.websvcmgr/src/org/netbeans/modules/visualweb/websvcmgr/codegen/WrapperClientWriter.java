@@ -157,13 +157,6 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         
         // write the class instance variables.
         
-        // write a variable for the service implementation.
-        if (isJaxRpc) {
-            println("  private " + serviceName + " " + serviceVariable + ";");
-        }else {
-            println("  private " + serviceName + " " + serviceVariable + ";");
-        }
-        
         // write a variable for the port
 
         // get the Java class name for the port
@@ -191,14 +184,31 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         
         // Variable to indicate whehther it is in test mode or ot
         println("  private boolean testMode = false;");
+        println("  private boolean initialized = false;");
 
         // Write the constructor
+        println("  public " + className + "() {");
+        println("  }");
+        
+        // Now the methods
+        printOperations(port);
+        
+        // The method for turning on/off the test mode
+        println( "  public void testMode( Boolean testing) {");
+        println( "    this.testMode = testing.booleanValue();");
+        println( "  }");
+        println();
+        
+        // write the initialize method (moved from the constructor to avoid unnecessary
+        // W/S instantiation during designtime)
         if (isJaxRpc) {
-            println("  public " + className + "() {");
+            println("  public void initialize() {");
+            println("    if (initialized) return;");
             println("    System.setProperty(\"javax.xml.soap.MessageFactory\",\"com.sun.xml.messaging.saaj.soap.ver1_1.SOAPMessageFactory1_1Impl\");");
             println("    try {");
             println("      " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "_Impl();");
             println("      " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
+            println("      initialized = true;");
             println("    } catch (ServiceException se) {");
             println("      se.printStackTrace();" );
             println("    }");
@@ -223,22 +233,16 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             String namespace = wsData.getModel().getNamespaceURI();
             String qname = wsData.getName();
             
-            println("  public " + className + "() {");
+            println("  public void initialize() {");
+            println("    if (initialized) return;");
             println("    " + "java.net.URL wsdl = this.getClass().getResource(\"" + wsdlFileName + "\");");
             println("    " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "(wsdl, new javax.xml.namespace.QName(\"" + namespace + "\", \"" + qname + "\"));");
             println("    " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
+            println("    initialized = true;");
             println("  }");
             println();
         }
 
-        // Now the methods
-        printOperations(port);
-        
-        // The method for turning on/off the test mode
-        println( "  public void testMode( Boolean testing) {");
-        println( "    this.testMode = testing.booleanValue();");
-        println( "  }");
-        println();
         
         // End of class
         println("}");
@@ -340,13 +344,15 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             if(!"void".equals(methodReturnTypeName)){
                 println( "      if( Beans.isDesignTime() && !testMode )" );
                 println( "        return " + designTimeReturnValue(methodReturnTypeName) + ";" );
-                println( "      else");
-                print("         return " + portInterfaceVariable + "." + methodName + "(");
+                println( "      else {");
+                println( "         initialize();");
+                print(   "         return " + portInterfaceVariable + "." + methodName + "(");
             }else{
                 println( "      if( Beans.isDesignTime() ) " );
                 println( "        return;" );
-                println( "      else " );
-                print("         " + portInterfaceVariable + "." + methodName + "(");
+                println( "      else {" );
+                println( "        initialize();");
+                print(   "         " + portInterfaceVariable + "." + methodName + "(");
             }
             
             firstParameter = true;
@@ -359,6 +365,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 print(parameter.getName());
             }
             println(");");
+            println("      }");
             println("  }");
 
             // If this method return non-void, we'll need to generate DataProvider (readonly for now) for it
@@ -392,16 +399,19 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             String stubVar = "((Stub)" + portInterfaceVariable + ")";
             
             println("  public void setUsername(String inUserName) {");
+            println("        initialize();");
             println("        " + stubVar + "._setProperty(Stub.USERNAME_PROPERTY, inUserName);");
             println("  }");
             println();
             
             println("  public void setPassword(String inPassword) {");
+            println("        initialize();");
             println("        " + stubVar + "._setProperty(Stub.PASSWORD_PROPERTY, inPassword);");
             println("  }");
             println();
             
             println("  public void setAddress(String inAddress) {");
+            println("        initialize();");
             println("        " + stubVar + "._setProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, inAddress);");
             println("  }");
             println();
@@ -409,16 +419,19 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             String bindingVar = "((BindingProvider)" + portInterfaceVariable + ")";
             
             println("  public void setUsername(String inUserName) {");
+            println("        initialize();");
             println("        " + bindingVar + ".getRequestContext().put(BindingProvider.USERNAME_PROPERTY, inUserName);");
             println("  }");
             println();
             
             println("  public void setPassword(String inPassword) {");
+            println("        initialize();");
             println("        " + bindingVar + ".getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, inPassword);");
             println("  }");
             println();
             
             println("  public void setAddress(String inAddress) {");
+            println("        initialize();");
             println("        " + bindingVar + ".getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, inAddress);");
             println("  }");
             println();
