@@ -53,7 +53,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006")); // NOI18N
         proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_ProxyDialog")); // NOI18N
 
-        tipLabel.setText(bundle.getString("BK0007")); // NOI18N
+        tipLabel.setText("-"); // NOI18N
         tipLabel.setMaximumSize(new java.awt.Dimension(32767, 32767));
 
         removeButton.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0008")); // NOI18N
@@ -80,6 +80,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
 
         tunnelHelpLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_svn_xxx")); // NOI18N
 
+        savePasswordCheckBox.setMnemonic('v');
         savePasswordCheckBox.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0007")); // NOI18N
         savePasswordCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         savePasswordCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -177,6 +178,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
         userTextField.getAccessibleContext().setAccessibleParent(this);
         leaveBlankLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_InfoLabel")); // NOI18N
         leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
+        savePasswordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0011")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

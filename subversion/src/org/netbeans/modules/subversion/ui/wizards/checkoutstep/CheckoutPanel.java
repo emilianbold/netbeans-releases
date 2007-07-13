@@ -89,8 +89,9 @@ public class CheckoutPanel extends javax.swing.JPanel {
         atWorkingDirLevelCheckBox.setEnabled(false);
         atWorkingDirLevelCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        scanForProjectsCheckBox.setMnemonic('c');
         scanForProjectsCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(scanForProjectsCheckBox, "Scan for Netbeans Projects after Checkout");
+        org.openide.awt.Mnemonics.setLocalizedText(scanForProjectsCheckBox, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Scan_After_Checkout")); // NOI18N
         scanForProjectsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         scanForProjectsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -103,7 +104,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
                     .add(atWorkingDirLevelCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -169,6 +170,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
         jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
         searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revision Number");
         atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription("Checkout only folder contents");
+        scanForProjectsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "ACSD_Scan_After_Checkout")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
