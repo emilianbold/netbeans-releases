@@ -26,7 +26,7 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.*;   
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -146,7 +146,7 @@ class FilesystemHandler extends VCSInterceptor {
     
     public boolean beforeCreate(File file, boolean isDirectory) {
         if (svn.isAdministrative(file.getName())) {
-            if (file.isDirectory()) {
+            if (isDirectory) {  // file.isDirectory() always returns false if file does not exist
                 File f = new File(file, Subversion.INVALID_METADATA_MARKER);
                 try {
                     f.createNewFile();

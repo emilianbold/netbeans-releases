@@ -181,10 +181,11 @@ public class Subversion {
      */
     public boolean isAdministrative(File file) {
         String name = file.getName();
-        return isAdministrative(name) && file.isDirectory();
-    }
+        boolean administrative = isAdministrative(name);
+        return ( administrative && file.exists() && file.isDirectory() ) || administrative; // lets suppose it's administrative if file doesnt exist
+    }  
 
-    public boolean isAdministrative(String fileName) {
+    public boolean isAdministrative(String fileName) {        
         return fileName.equals(".svn") || fileName.equals("_svn"); // NOI18N
     }
     
