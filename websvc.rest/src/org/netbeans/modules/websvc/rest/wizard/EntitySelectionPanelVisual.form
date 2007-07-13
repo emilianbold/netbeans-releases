@@ -2,7 +2,7 @@
 
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -39,9 +39,9 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane2" pref="308" max="32767" attributes="2"/>
+                  <Component id="jScrollPane2" pref="356" max="32767" attributes="2"/>
                   <Component id="panelButtons" alignment="0" max="32767" attributes="2"/>
-                  <Component id="jScrollPane1" alignment="0" pref="308" max="32767" attributes="2"/>
+                  <Component id="jScrollPane1" alignment="0" pref="356" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
           </Group>
@@ -109,9 +109,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="labelAvailableEntities">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="MNE_AvailableEntityClasses" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="listAvailable"/>
         </Property>
@@ -119,6 +116,11 @@
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_AvailableEntities" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_AvailableEntityClasses" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Container class="javax.swing.JPanel" name="panelButtons">
 
@@ -142,7 +144,7 @@
                   <Component id="buttonAddAll" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="buttonRemoveAll" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="122" max="32767" attributes="0"/>
+                  <EmptySpace pref="170" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -150,28 +152,33 @@
       <SubComponents>
         <Component class="javax.swing.JButton" name="buttonAddAll">
           <Properties>
-            <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="MNE_AddAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_AddAll" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_AddAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="actionCommand" type="java.lang.String" value="Add A&amp;ll &gt;&gt;"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_AddAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonAddAllActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="buttonRemoveAll">
           <Properties>
-            <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="MNE_RemoveAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_RemoveAll" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_RemoveAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="actionCommand" type="java.lang.String" value="&lt;&lt; Re&amp;moveAll"/>
+            <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_RemoveAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_RemoveAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonRemoveAllActionPerformed"/>
           </Events>
@@ -180,9 +187,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="labelSelectedEntities">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="MNE_SelectedEntityClasses" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="listSelected"/>
         </Property>
@@ -190,6 +194,11 @@
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_SelectedEntities" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_SelectEntityClasses" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

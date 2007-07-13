@@ -135,23 +135,19 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
         listSelected.getAccessibleContext().setAccessibleName(null);
         listSelected.getAccessibleContext().setAccessibleDescription(null);
 
-        labelAvailableEntities.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle").getString("MNE_AvailableEntityClasses").charAt(0));
         labelAvailableEntities.setLabelFor(listAvailable);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
-        labelAvailableEntities.setText(bundle.getString("LBL_AvailableEntities")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelAvailableEntities, bundle.getString("LBL_AvailableEntities")); // NOI18N
 
-        buttonAddAll.setMnemonic(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "MNE_AddAll").charAt(0));
-        buttonAddAll.setText(bundle.getString("LBL_AddAll")); // NOI18N
-        buttonAddAll.setActionCommand("Add A&ll >>");
+        org.openide.awt.Mnemonics.setLocalizedText(buttonAddAll, org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_AddAll")); // NOI18N
         buttonAddAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonAddAllActionPerformed(evt);
             }
         });
 
-        buttonRemoveAll.setMnemonic(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "MNE_RemoveAll").charAt(0));
-        buttonRemoveAll.setText(bundle.getString("LBL_RemoveAll")); // NOI18N
-        buttonRemoveAll.setActionCommand("<< Re&moveAll");
+        org.openide.awt.Mnemonics.setLocalizedText(buttonRemoveAll, org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_RemoveAll")); // NOI18N
+        buttonRemoveAll.setActionCommand(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_RemoveAll")); // NOI18N
         buttonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonRemoveAllActionPerformed(evt);
@@ -176,12 +172,14 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                 .add(buttonAddAll)
                 .add(18, 18, 18)
                 .add(buttonRemoveAll)
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addContainerGap(170, Short.MAX_VALUE))
         );
 
-        labelSelectedEntities.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle").getString("MNE_SelectedEntityClasses").charAt(0));
+        buttonAddAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_AddAll")); // NOI18N
+        buttonRemoveAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_RemoveAll")); // NOI18N
+
         labelSelectedEntities.setLabelFor(listSelected);
-        labelSelectedEntities.setText(bundle.getString("LBL_SelectedEntities")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(labelSelectedEntities, bundle.getString("LBL_SelectedEntities")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -208,11 +206,14 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                     .add(labelAvailableEntities))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
                     .add(panelButtons, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE))
                 .add(52, 52, 52))
         );
+
+        labelAvailableEntities.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_AvailableEntityClasses")); // NOI18N
+        labelSelectedEntities.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_SelectEntityClasses")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 private void listSelectedPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_listSelectedPropertyChange
