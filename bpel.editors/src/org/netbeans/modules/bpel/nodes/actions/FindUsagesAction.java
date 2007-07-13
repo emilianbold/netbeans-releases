@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import javax.swing.JMenuItem;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.ui.WhereUsedQueryUI;
 import org.openide.nodes.Node;
@@ -35,110 +34,66 @@ import org.openide.windows.TopComponent;
  */
 public class FindUsagesAction extends CookieAction {
     private static final long serialVersionUID = 1L;
-//    public static final String FINDUSAGES_KEYSTROKE = 
-//            NbBundle.getMessage(FindUsagesAction.class,"ACT_FindUsagesAction");// NOI18N
-      
     private static final Class[] COOKIE_ARRAY =
             new Class[] { };
 
     public FindUsagesAction() {
         super();
-//        putValue(FindUsagesAction.ACCELERATOR_KEY, 
-//                KeyStroke.getKeyStroke(FINDUSAGES_KEYSTROKE));
     }
 
- //   public void performAction(Node[] nodes) {
-     //   super.performAction(nodes);
- //   }
-    
-   // @Override
     public boolean enable(Node[] nodes) {
         return nodes != null && nodes.length == 1 && nodes[0] instanceof BpelNode;
-//        return super.enable(nodes);
     }
 
-  protected Referenceable getReferenceable(Node[] nodes) {
-    if (nodes.length != 1) {
+    protected Referenceable getReferenceable(Node[] nodes) {
+      if (nodes.length != 1) {
+        return null;
+      }
+      Node node = nodes [0];
+
+      if ( !(node instanceof BpelNode)) {
+        return null;
+      }
+      Object object = ((BpelNode) node).getReference();
+
+      if (object instanceof Referenceable) {
+        return (Referenceable) object;
+      }
       return null;
     }
-    Node node = nodes [0];
 
-    if ( !(node instanceof BpelNode)) {
-      return null;
-    }
-    Object object = ((BpelNode) node).getReference();
-
-    if (object instanceof Referenceable) {
-      return (Referenceable) object;
-    }
-    return null;
-  }
-  
-    
-    /**
-     *
-     *
-     */
     public String getName() {
         return "Find Usages"; // NOI18N
     }
     
-    
-    /**
-     *
-     *
-     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
     
-    
-    /**
-     *
-     *
-     */
     protected boolean asynchronous() {
         return false;
     }
         
-    /**
-     *
-     *
-     */
     public void performAction(Node[] nodes) {
        assert nodes.length==1:
             "Length of nodes array should be 1";
         Referenceable ref = getReferenceable(nodes);
         assert ref != null:"The node's NamedReferenceable should not be null";
-        //WhereUsedView wuv = new WhereUsedView(ref);
         WhereUsedQueryUI ui = new WhereUsedQueryUI(ref);
         TopComponent activetc = TopComponent.getRegistry().getActivated();
+
         if (activetc instanceof CloneableEditorSupport.Pane) {
-           UI.openRefactoringUI(ui, activetc); // new RefactoringPanel(ui, activetc);
+           UI.openRefactoringUI(ui, activetc);
         } else {
             UI.openRefactoringUI(ui);
         }
     }
-    
  
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
 
-
-
     protected Class[] cookieClasses() {
         return COOKIE_ARRAY;
     }
-    
- 
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance members
-    ////////////////////////////////////////////////////////////////////////////
-    
-    protected JMenuItem menuItem;
 }
-
-  
-

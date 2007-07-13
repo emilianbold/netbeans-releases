@@ -43,7 +43,6 @@ public class CompensationHandlerNode extends BpelNode<CompensationHandler>
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_DIAGRAMM,
-            ActionType.FIND_USAGES,
             ActionType.SEPARATOR,
             ActionType.REMOVE
         };
