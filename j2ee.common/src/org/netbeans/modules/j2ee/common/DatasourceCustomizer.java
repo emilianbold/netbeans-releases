@@ -23,10 +23,6 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +35,6 @@ import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -171,13 +166,13 @@ class DatasourceCustomizer extends javax.swing.JPanel {
         
         boolean valid = true;
         
-        String jndiName = jndiNameField.getText().trim();
-        if (jndiName.length() == 0) {
+        String jndiNameFromField = jndiNameField.getText().trim();
+        if (jndiNameFromField.length() == 0) {
             errorLabel.setText(NbBundle.getMessage(DatasourceCustomizer.class, "ERR_JNDI_NAME_EMPTY")); // NOI18N
             valid = false;
         }
         else
-        if (datasourceAlreadyExists(jndiName)) {
+        if (datasourceAlreadyExists(jndiNameFromField)) {
             errorLabel.setText(NbBundle.getMessage(DatasourceCustomizer.class, "ERR_DS_EXISTS")); // NOI18N
             valid = false;
         }
