@@ -40,8 +40,10 @@ abstract class PropertyProcessor  {
         registerPropertyProcessor(new URLProcessor());//ProjectUISettings             
         registerPropertyProcessor(new ColorProcessor());//FormLoaderSettings
         registerPropertyProcessor(new StringPropertyProcessor());//ProxySettings
-    }
-    
+        registerPropertyProcessor(new HashSetProcessor(HashSetProcessor.CVS_PERSISTENT_HASHSET));//CvsSettings
+        registerPropertyProcessor(new HashSetProcessor(HashSetProcessor.SVN_PERSISTENT_HASHSET));//SvnSettings
+    }           
+
 
     private static void registerPropertyProcessor(PropertyProcessor instance) {
         if (clsname2Delegate.put(instance.className, instance) != null) {
