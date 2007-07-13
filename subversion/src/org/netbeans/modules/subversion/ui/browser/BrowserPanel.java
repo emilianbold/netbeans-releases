@@ -29,6 +29,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -78,7 +79,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
                 
         // title label        
         JLabel label = new JLabel();        
-        label.setLabelFor(treeView.getTree());
+        label.setLabelFor(treeView.getTable());
         label.setToolTipText(browserAcsd);
         if(labelText != null && !labelText.trim().equals("")) {
             org.openide.awt.Mnemonics.setLocalizedText(label, labelText);
@@ -155,6 +156,10 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         public JTree getTree() {            
             return tree;
         } 
+        
+        JTable getTable() {
+            return treeTable;
+        }
         
         public void startEditingAtPath(TreePath path) {            
             tree.startEditingAtPath(path);
