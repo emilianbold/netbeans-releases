@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.errors.UncaughtException;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
@@ -179,8 +180,22 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             if (logger == null || level == null) {
                 return null;
             }
-            
-            ExpressionTree etExpression = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.QualIdent(logger), "getLogger"), Collections.singletonList(make.Literal("global")));
+            // find the containing top level class
+            ClassTree containingTopLevel = null;
+            for (Tree t : statement) {
+                if (Kind.CLASS == t.getKind()) {
+                    containingTopLevel = (ClassTree) t;
+                }
+            }
+            // take it easy and make it as an identfier or literal
+            ExpressionTree arg = containingTopLevel != null ? 
+                make.Identifier(containingTopLevel.getSimpleName() + ".class.getName()") :
+                make.Literal("global"); // global should never happen
+            ExpressionTree etExpression = make.MethodInvocation(
+                    Collections.<ExpressionTree>emptyList(),
+                    make.MemberSelect(make.QualIdent(logger), "getLogger"),
+                    Collections.<ExpressionTree>singletonList(arg)
+            );
             ExpressionTree levelExpression = make.MemberSelect(make.QualIdent(level), "SEVERE");
             
             return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(etExpression, "log"), Arrays.asList(levelExpression, make.Literal(null), make.Identifier("ex"))));
