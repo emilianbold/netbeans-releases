@@ -749,7 +749,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-rest" if="rest.support.on">
-                <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.RestBeansProcessorTask">
+                <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.WebResourcesProcessorTask">
                     <classpath><path path="${{j2ee.platform.classpath}}"/></classpath>
                 </taskdef>
             </target>
