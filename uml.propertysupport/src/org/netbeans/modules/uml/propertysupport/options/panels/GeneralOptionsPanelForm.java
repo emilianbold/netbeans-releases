@@ -5,7 +5,6 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -32,149 +31,138 @@ import org.openide.util.NbPreferences;
  * @author  krichard
  */
 public class GeneralOptionsPanelForm extends javax.swing.JPanel {
-    
-    private final String PSK_ALWAYS = "PSK_ALWAYS" ;
-    private final String PSK_NEVER = "PSK_NEVER" ;
-    private  final String PSK_SELECTED = "PSK_SELECTED";
-    
+
+    private final String PSK_ALWAYS = "PSK_ALWAYS";
+    private final String PSK_NEVER = "PSK_NEVER";
+    private final String PSK_SELECTED = "PSK_SELECTED";
+
     public final String PSK_RESIZE_ASNEEDED = "PSK_RESIZE_ASNEEDED";
     public final String PSK_RESIZE_EXPANDONLY = "PSK_RESIZE_EXPANDONLY";
     public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
     public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";
-    
+
     //for menu display
-    private final String ALWAYS = NbBundle.getMessage(GeneralOptionsPanelForm.class, "ALWAYS") ;
-    private final String NEVER = NbBundle.getMessage(GeneralOptionsPanelForm.class, "NEVER") ;
-    private final String SELECTED = NbBundle.getMessage(GeneralOptionsPanelForm.class, "SELECTED") ;
-    private final String ASNEEDED = NbBundle.getMessage(GeneralOptionsPanelForm.class,"ASNEEDED");
+    private final String ALWAYS = NbBundle.getMessage(GeneralOptionsPanelForm.class, "ALWAYS");
+    private final String NEVER = NbBundle.getMessage(GeneralOptionsPanelForm.class, "NEVER");
+    private final String SELECTED = NbBundle.getMessage(GeneralOptionsPanelForm.class, "SELECTED");
+    private final String ASNEEDED = NbBundle.getMessage(GeneralOptionsPanelForm.class, "ASNEEDED");
     private final String EXPANDONLY = NbBundle.getMessage(GeneralOptionsPanelForm.class, "EXPANDONLY");
     private final String UNLESSMANUAL = NbBundle.getMessage(GeneralOptionsPanelForm.class, "UNLESSMANUAL");
     private final String RESIZE_NEVER = NbBundle.getMessage(GeneralOptionsPanelForm.class, "RESIZE_NEVER");
-    
-    private final String[] displayChoices = {ALWAYS, SELECTED, NEVER} ;
-    private final String[] mappedChoices = {PSK_ALWAYS, PSK_SELECTED, PSK_NEVER} ;
-    
-    private final String[] resizeDisplayChoices = {ASNEEDED, EXPANDONLY, UNLESSMANUAL, RESIZE_NEVER} ;
-    private final String[] resizeMappedChoices = {PSK_RESIZE_ASNEEDED, PSK_RESIZE_EXPANDONLY,
-    PSK_RESIZE_UNLESSMANUAL, PSK_RESIZE_NEVER};
-    
+
+    private final String[] displayChoices = {ALWAYS, SELECTED, NEVER};
+    private final String[] mappedChoices = {PSK_ALWAYS, PSK_SELECTED, PSK_NEVER};
+
+    private final String[] resizeDisplayChoices = {ASNEEDED, EXPANDONLY, UNLESSMANUAL, RESIZE_NEVER};
+    private final String[] resizeMappedChoices = {PSK_RESIZE_ASNEEDED, PSK_RESIZE_EXPANDONLY, PSK_RESIZE_UNLESSMANUAL, PSK_RESIZE_NEVER};
+
     /** Creates new form GeneralOptionsPanel */
     public GeneralOptionsPanelForm() {
         initComponents();
     }
-    
+
     public void store() {
-        int autoResizeIndex = autoResizeElementsComboBox.getSelectedIndex() ;
-        int displayCompartmentIndex = displayCompartmentTitlesComboBox.getSelectedIndex() ;
-        
+        int autoResizeIndex = autoResizeElementsComboBox.getSelectedIndex();
+        int displayCompartmentIndex = displayCompartmentTitlesComboBox.getSelectedIndex();
+
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
-        
-        prefs.putBoolean("UML_Display_Empty_Lists", showAlias.isSelected()) ;
-        prefs.putBoolean("UML_Prompt_to_Save_Project", promptToSaveCB.isSelected()) ;
-        prefs.putBoolean("UML_Open_Project_Diagrams", openProjectDiagramsCB.isSelected()) ;
-        
-        prefs.put("UML_Automatically_Size_Elements", resizeMappedChoices[autoResizeIndex]) ;
-        prefs.put("UML_Display_Compartment_Titles", mappedChoices[displayCompartmentIndex]) ;
-        
-        prefs.putBoolean("UML_Display_Empty_Lists", displayEmpty.isSelected()) ;
-        prefs.putBoolean("UML_Gradient_Background", gradient.isSelected()) ;
-        prefs.putBoolean("UML_Reconnect_to_Presentation_Boundary", reconnect.isSelected()) ;
-        prefs.putBoolean("UML_Resize_with_Show_Aliases_Mode", resizeCB.isSelected()) ;
-        prefs.putBoolean("UML_Show_Stereotype_Icons", showStereotype.isSelected()) ;
-        prefs.putBoolean("UML_Ask_Before_Layout", askLayoutCB.isSelected()) ;
-        
+
+        prefs.putBoolean("UML_Display_Empty_Lists", showAlias.isSelected());
+        prefs.putBoolean("UML_Prompt_to_Save_Project", promptToSaveCB.isSelected());
+        prefs.putBoolean("UML_Open_Project_Diagrams", openProjectDiagramsCB.isSelected());
+
+        prefs.put("UML_Automatically_Size_Elements", resizeMappedChoices[autoResizeIndex]);
+        prefs.put("UML_Display_Compartment_Titles", mappedChoices[displayCompartmentIndex]);
+
+        prefs.putBoolean("UML_Display_Empty_Lists", displayEmpty.isSelected());
+        prefs.putBoolean("UML_Gradient_Background", gradient.isSelected());
+        prefs.putBoolean("UML_Reconnect_to_Presentation_Boundary", reconnect.isSelected());
+        prefs.putBoolean("UML_Resize_with_Show_Aliases_Mode", resizeCB.isSelected());
+        prefs.putBoolean("UML_Show_Stereotype_Icons", showStereotype.isSelected());
+        prefs.putBoolean("UML_Ask_Before_Layout", askLayoutCB.isSelected());
+
     }
-    
+
     public void load() {
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
-        
-        if (prefs.getBoolean("UML_Show_Aliases", false)) 
+
+        if (prefs.getBoolean("UML_Show_Aliases", false)) {
             showAlias.setSelected(true);
-         else 
-            showAlias.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Prompt_to_Save_Project", false)) 
+        } else {
+            showAlias.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Prompt_to_Save_Project", false)) {
             promptToSaveCB.setSelected(true);
-        else 
-            promptToSaveCB.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Open_Project_Diagrams", true)) 
+        } else {
+            promptToSaveCB.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Open_Project_Diagrams", true)) {
             openProjectDiagramsCB.setSelected(true);
-        else 
-            openProjectDiagramsCB.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Display_Empty_Lists", true))
+        } else {
+            openProjectDiagramsCB.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Display_Empty_Lists", true)) {
             displayEmpty.setSelected(true);
-        else 
-            displayEmpty.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Gradient_Background", true))
+        } else {
+            displayEmpty.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Gradient_Background", true)) {
             gradient.setSelected(true);
-        else 
-            gradient.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Reconnect_to_Presentation_Boundary", true))
+        } else {
+            gradient.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Reconnect_to_Presentation_Boundary", true)) {
             reconnect.setSelected(true);
-        else 
-            reconnect.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", false))
+        } else {
+            reconnect.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", false)) {
             resizeCB.setSelected(true);
-        else 
-            resizeCB.setSelected(true);
-        
-        
-        
-        if (prefs.getBoolean("UML_Show_Stereotype_Icons", true))
+        } else {
+            resizeCB.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Show_Stereotype_Icons", true)) {
             showStereotype.setSelected(true);
-        else 
-            showStereotype.setSelected(true);
-        
-        
-        if (prefs.getBoolean("UML_Ask_Before_Layout", true))
+        } else {
+            showStereotype.setSelected(false);
+        }
+        if (prefs.getBoolean("UML_Ask_Before_Layout", true)) {
             askLayoutCB.setSelected(true);
-        else 
+        } else {
             askLayoutCB.setSelected(false);
-            
-        
-        String autoResizeValue = prefs.get("UML_Automatically_Size_Elements", null) ;
-        String displayCompartmentValue = prefs.get("UML_Display_Compartment_Titles", null) ;
-        
-        int autoResizeIndex = getMappedIndex(resizeMappedChoices, autoResizeValue) ;
-        int compartmentIndex = getMappedIndex(mappedChoices, displayCompartmentValue) ;
-        
-        autoResizeElementsComboBox.setSelectedIndex(autoResizeIndex) ;
-        
-        displayCompartmentTitlesComboBox.setSelectedIndex(compartmentIndex) ;
-        
+        }
+        String autoResizeValue = prefs.get("UML_Automatically_Size_Elements", null);
+        String displayCompartmentValue = prefs.get("UML_Display_Compartment_Titles", null);
+
+        int autoResizeIndex = getMappedIndex(resizeMappedChoices, autoResizeValue);
+        int compartmentIndex = getMappedIndex(mappedChoices, displayCompartmentValue);
+
+        autoResizeElementsComboBox.setSelectedIndex(autoResizeIndex);
+
+        displayCompartmentTitlesComboBox.setSelectedIndex(compartmentIndex);
     }
-    
+
     public void cancel() {
         //do nothing ;
     }
-    
+
     private int getMappedIndex(String[] a, String s) {
-        
-        int n = a.length ;
-        
+
+        int n = a.length;
+
         for (int i = 0; i < n; i++) {
-            if (a[i].equals(s)) return i;
+            if (a[i].equals(s)) {
+                return i;
+            }
         }
-        
-        return 0 ;
-        
+
+        return 0;
     }
-    
+
     public void showFontsAndColorsDialog() {
-        new ApplicationColorsAndFonts().setVisible(true) ;
+        new ApplicationColorsAndFonts().setVisible(true);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -387,9 +375,8 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    showFontsAndColorsDialog();
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        showFontsAndColorsDialog();
 }//GEN-LAST:event_jButton1ActionPerformed
 
 
@@ -416,5 +403,4 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JCheckBox showAlias;
     private javax.swing.JCheckBox showStereotype;
     // End of variables declaration//GEN-END:variables
-    
 }
