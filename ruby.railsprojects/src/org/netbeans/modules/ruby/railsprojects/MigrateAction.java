@@ -24,8 +24,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -33,6 +35,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.modules.ruby.RubyUtils;
 
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -150,50 +153,105 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
                 //menuitem.setToolTipText(target.getDescription());
                 add(menuitem);
 
-                Integer[] versions = getVersions(project);
+                Map<Integer,String> versions = getVersions(project);
 
-                if (versions.length > 0) {
+                if (!versions.isEmpty()) {
                     addSeparator();
 
-                    for (int version : versions) {
-                        menuitem = new JMenuItem(NbBundle.getMessage(MigrateAction.class,
-                                    "VersionX", version));
-                        menuitem.addActionListener(new MigrateMenuItemHandler(project, version));
-                        add(menuitem);
-                    }
+                    List<Integer> sortedList = new ArrayList<Integer>();
+                    sortedList.addAll(versions.keySet());
+                    Collections.sort(sortedList);
+
+                    buildMenu(this, 0, sortedList.size()-1, sortedList, versions);
                 }
             }
 
             return super.getPopupMenu();
         }
+        
+        private void buildMenu(JMenu menu, int startIndex, int endIndex, List<Integer> versions, Map<Integer,String> descriptions) {
+            int MAX_ITEMS = 20; // Max number of entries to show
+            int MENU_COUNT = 15; // Number of menus to create (possibly nested)
+            if (endIndex - startIndex > MAX_ITEMS) {
+                int length = endIndex - startIndex;
+                int sqrt = (int)Math.sqrt(length);
+                if (sqrt < MENU_COUNT) {
+                    MENU_COUNT = sqrt;
+                }
+                int divisions = length / MENU_COUNT;
+                
+                if (length % MENU_COUNT == 0) {
+                    // Pull the last item into the previous menu
+                    MENU_COUNT--;
+                }
 
-        private Integer[] getVersions(RailsProject project) {
+                // Split the menu up into len/max divisions
+                // Each division is a range that will have a menu item
+                for (int i = 0; i <= MENU_COUNT; i++) {
+                    int start = i*divisions;
+                    int end = (i+1)*divisions-1;
+                    if (start > endIndex) {
+                        return;
+                    }
+                    if (end > endIndex) {
+                        end = endIndex;
+                    } else if (end == endIndex-1) {
+                        // Add the last item into this menu
+                        end = endIndex;
+                    }
+                    if (end == start) {
+                        // A single item - just add it as a menu item
+                        buildMenu(menu, start, end, versions, descriptions);
+                    } else {
+                        int startVersion = versions.get(start);
+                        int endVersion = versions.get(end);
+                        JMenu submenu = new JMenu(NbBundle.getMessage(MigrateAction.class, "VersionXtoY", startVersion, endVersion));
+                        buildMenu(submenu, start, end, versions, descriptions);
+                        menu.add(submenu);
+                    }
+                }
+                
+                return;
+            }
+
+            for (int i = startIndex; i <= endIndex; i++) {
+                int version = versions.get(i);
+                String description = descriptions.get(version);
+                if (description == null) {
+                    description = "";
+                }
+                JMenuItem menuitem = new JMenuItem(NbBundle.getMessage(MigrateAction.class,
+                            "VersionX", version, description));
+                menuitem.addActionListener(new MigrateMenuItemHandler(project, version));
+                menu.add(menuitem);
+            }
+        }
+        
+        private Map<Integer,String> getVersions(RailsProject project) {
             FileObject projectDir = project.getProjectDirectory();
 
-            Set<Integer> versions = new HashSet<Integer>();
+            Map<Integer,String> versions = new HashMap<Integer,String>();
             // NOTE - FileObject.getFileObject wants / as a path separator, not File.separator!
             FileObject migrate = projectDir.getFileObject("db/migrate"); // NOI18N
 
             // Allow VERSION=0 to clear database
-            versions.add(Integer.valueOf(0));
+            versions.put(Integer.valueOf(0), "");
             
             if (migrate == null) {
-                return versions.toArray(new Integer[versions.size()]);
+                return Collections.emptyMap();
             }
 
             for (FileObject fo : migrate.getChildren()) {
+                String name = fo.getName();
                 if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE) &&
-                        fo.getName().matches("\\d\\d\\d_.*")) { // NOI18N
+                        name.matches("^\\d\\d\\d_.*")) { // NOI18N
                     int version = Integer.parseInt(fo.getName().substring(0, 3));
-                    versions.add(version);
+                    String description = RubyUtils.underlinedNameToCamel(name.substring(4));
+                    versions.put(version, "- " + description);
                 }
             }
 
-            List<Integer> sortedList = new ArrayList<Integer>();
-            sortedList.addAll(versions);
-            Collections.sort(sortedList);
-
-            return sortedList.toArray(new Integer[sortedList.size()]);
+            return versions;
         }
     }
 
