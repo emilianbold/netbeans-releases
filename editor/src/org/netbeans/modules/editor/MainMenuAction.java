@@ -182,6 +182,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         }
         
         JMenuItem presenter = getMenuPresenter();
+        assert presenter != null : "Got null return from getMenuPresenter in " + this;
         Action presenterAction = presenter.getAction();
         if (presenterAction == null){
             if (action != null){
