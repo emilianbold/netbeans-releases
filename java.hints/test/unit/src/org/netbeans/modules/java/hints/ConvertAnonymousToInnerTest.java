@@ -109,7 +109,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "            this.i = i;\n" +
                 "        }\n" + 
                 "        public void run() {\n" +
-                "            java.lang.System.err.println(i);\n" +
+                "            System.err.println(i);\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
@@ -147,7 +147,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        }\n" + 
                 "        public void run() {\n" + 
                 "            for (int cntr = 0; cntr < i; cntr++) {\n" +
-                "                java.lang.System.err.println(s);\n" +
+                "                System.err.println(s);\n" +
                 "            }\n" + 
                 "        }\n" +
                 "    }\n" +
@@ -177,7 +177,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        private RunnableImpl() {\n" + 
                 "        }\n" + 
                 "        public void run() {\n" +
-                "            java.lang.System.err.println(x);\n" +
+                "            System.err.println(x);\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");

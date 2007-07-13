@@ -460,7 +460,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodFix6() throws Exception {
         performFixTest("package test; import java.io.IOException; public class Test {public void test() throws IOException {int y = 3 + 4; throw new IOException();}}",
                        140 - 25, 164 - 25,
-                       "package test; import java.io.IOException; public class Test {public void test() throws IOException {int y = 3 + 4;name(); } private void name() throws IOException { throw new java.io.IOException(); } }",
+                       "package test; import java.io.IOException; public class Test {public void test() throws IOException {int y = 3 + 4;name(); } private void name() throws IOException { throw new IOException(); } }",
                        new DialogDisplayerImpl3("name", null, true));
     }
     
