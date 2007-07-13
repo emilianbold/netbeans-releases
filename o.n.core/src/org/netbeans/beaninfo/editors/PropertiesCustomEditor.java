@@ -66,7 +66,6 @@ public class PropertiesCustomEditor extends JPanel implements DocumentListener {
         } catch (UnsupportedEncodingException x) {
             throw new AssertionError(x);
         }
-        setBorder (new EmptyBorder (new Insets(12, 12, 0, 11)));
         HelpCtx.setHelpIDString (this, PropertiesCustomEditor.class.getName ());
         
         editorPane.getAccessibleContext().setAccessibleName(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACS_PropertiesEditorPane"));
@@ -124,6 +123,8 @@ public class PropertiesCustomEditor extends JPanel implements DocumentListener {
         
         editorPane = new JEditorPane();
         editorPane.setContentType("text/x-properties"); // NOI18N
+        // XXX pretty arbitrary! No way to set by rows & columns??
+        editorPane.setPreferredSize(new Dimension(200, 100));
         add(new JScrollPane(editorPane), BorderLayout.CENTER);
 
         warnings = new JTextField(30);

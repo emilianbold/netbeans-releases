@@ -103,11 +103,9 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         removeButton = new javax.swing.JButton();
         pathScrollPane = new javax.swing.JScrollPane();
         pathList = new javax.swing.JList();
-        pathLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.BorderLayout());
 
-        innerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         innerPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(addDirButton, getString("CTL_AddDirectory")); // NOI18N
@@ -118,7 +116,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -132,7 +130,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -147,7 +145,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -162,7 +160,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         innerPanel.add(downButton, gridBagConstraints);
@@ -176,7 +174,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
@@ -196,7 +194,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -204,13 +202,6 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         innerPanel.add(pathScrollPane, gridBagConstraints);
-
-        pathLabel.setLabelFor(pathList);
-        org.openide.awt.Mnemonics.setLocalizedText(pathLabel, getString("CTL_Classpath.Border_Title")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        innerPanel.add(pathLabel, gridBagConstraints);
 
         add(innerPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
@@ -341,7 +332,6 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
     private javax.swing.JButton addJarButton;
     private javax.swing.JButton downButton;
     private javax.swing.JPanel innerPanel;
-    private javax.swing.JLabel pathLabel;
     private javax.swing.JList pathList;
     private javax.swing.JScrollPane pathScrollPane;
     private javax.swing.JButton removeButton;

@@ -19,14 +19,11 @@
 
 package org.apache.tools.ant.module;
 
-import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorManager;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +33,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
+import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
@@ -55,6 +54,8 @@ public class AntCustomizer extends JPanel implements ActionListener {
     private boolean         changed = false;
     private boolean         listen = false;
     private File            originalAntHome;
+    private final Node.Property classpathProperty;
+    private final Node.Property propertiesProperty;
 
     public AntCustomizer() {
         initComponents();
@@ -64,18 +65,57 @@ public class AntCustomizer extends JPanel implements ActionListener {
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_info"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_verbose"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_debug"));
-        bProperties.addActionListener (this);
-        bClasspath.addActionListener (this);
         cbSaveFiles.addActionListener (this);
         cbReuseOutput.addActionListener (this);
         cbAlwaysShowOutput.addActionListener (this);
         cbVerbosity.addActionListener (this);
+        classpathProperty = new PropertySupport.ReadWrite<NbClassPath>("classpath", NbClassPath.class, null, null) {
+            public NbClassPath getValue() throws IllegalAccessException, InvocationTargetException {
+                return new NbClassPath(classpath.toArray(new File[classpath.size()]));
+            }
+            public void setValue(NbClassPath val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                String cp = val.getClassPath();
+                if (cp.startsWith("\"") && cp.endsWith("\"")) {
+                    // *@%!* NbClassPath.getClassPath semantics.
+                    cp = cp.substring(1, cp.length() - 1);
+                }
+                classpath = new ArrayList<File>();
+                for (String f : cp.split(Pattern.quote(File.pathSeparator))) {
+                    classpath.add(new File(f));
+                }
+                changed = true;
+            }
+        };
+        propertiesProperty = new PropertySupport.ReadWrite<Properties>("properties", Properties.class, null, null) {
+            public Properties getValue() throws IllegalAccessException, InvocationTargetException {
+                Properties p = new Properties();
+                p.putAll(properties);
+                return p;
+            }
+            public void setValue(Properties val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                properties = NbCollections.checkedMapByCopy(val, String.class, String.class, true);
+                changed = true;
+            }
+        };
+        setUpPropertyPanels();
+    }
+
+    private void setUpPropertyPanels() {
+        classpathPanel.removeAll();
+        PropertyPanel pp = new PropertyPanel(classpathProperty, PropertyPanel.PREF_CUSTOM_EDITOR);
+        classpathPanel.add(pp);
+        classpathLabel.setLabelFor(pp);
+        propertiesPanel.removeAll();
+        pp = new PropertyPanel(propertiesProperty, PropertyPanel.PREF_CUSTOM_EDITOR);
+        propertiesPanel.add(pp);
+        propertiesLabel.setLabelFor(pp);
     }
     
     void update () {
         listen = false;
         classpath = AntSettings.getExtraClasspath();
         properties = AntSettings.getProperties();
+        setUpPropertyPanels();
         originalAntHome = AntSettings.getAntHome();
             
         tfAntHome.setText(originalAntHome != null ? originalAntHome.toString() : null);
@@ -181,46 +221,6 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 updateAntVersion();
                 changed = true;
             }
-        } else
-        if (o == bClasspath) {
-            PropertyEditor editor = PropertyEditorManager.findEditor(NbClassPath.class);
-            editor.setValue(new NbClassPath(classpath.toArray(new File[classpath.size()])));
-            Component customEditor = editor.getCustomEditor ();
-            DialogDescriptor dd = new DialogDescriptor (
-                customEditor,
-                NbBundle.getMessage(AntCustomizer.class, "Classpath_Editor_Title")
-            );
-            Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
-            dialog.setVisible (true);
-            if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
-                String cp = ((NbClassPath) editor.getValue()).getClassPath();
-                if (cp.startsWith("\"") && cp.endsWith("\"")) {
-                    // *@%!* NbClassPath.getClassPath semantics.
-                    cp = cp.substring(1, cp.length() - 1);
-                }
-                classpath = new ArrayList<File>();
-                for (String f : cp.split(Pattern.quote(File.pathSeparator))) {
-                    classpath.add(new File(f));
-                }
-                changed = true;
-            }
-        } else
-        if (o == bProperties) {
-            PropertyEditor editor = PropertyEditorManager.findEditor(Properties.class);
-            Properties p = new Properties();
-            p.putAll(properties);
-            editor.setValue(p);
-            Component customEditor = editor.getCustomEditor ();
-            DialogDescriptor dd = new DialogDescriptor (
-                customEditor,
-                NbBundle.getMessage(AntCustomizer.class, "Properties_Editor_Title")
-            );
-            Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
-            dialog.setVisible (true);
-            if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
-                properties = NbCollections.checkedMapByCopy((Properties) editor.getValue(), String.class, String.class, true);
-                changed = true;
-            }
         }
     }
     
@@ -237,12 +237,10 @@ public class AntCustomizer extends JPanel implements ActionListener {
         cbAlwaysShowOutput = new javax.swing.JCheckBox();
         cbVerbosity = new javax.swing.JComboBox();
         javax.swing.JLabel verbosityLabel = new javax.swing.JLabel();
-        javax.swing.JPanel propertiesPanel = new javax.swing.JPanel();
-        javax.swing.JLabel propertiesLabel = new javax.swing.JLabel();
-        bProperties = new javax.swing.JButton();
-        javax.swing.JPanel classpathPanel = new javax.swing.JPanel();
-        javax.swing.JLabel classpathLabel = new javax.swing.JLabel();
-        bClasspath = new javax.swing.JButton();
+        classpathLabel = new javax.swing.JLabel();
+        classpathPanel = new javax.swing.JPanel();
+        propertiesLabel = new javax.swing.JLabel();
+        propertiesPanel = new javax.swing.JPanel();
 
         antHomeLabel.setLabelFor(tfAntHome);
         org.openide.awt.Mnemonics.setLocalizedText(antHomeLabel, NbBundle.getMessage(AntCustomizer.class, "Ant_Home")); // NOI18N
@@ -257,7 +255,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
         });
 
         lAntVersion.setBackground(java.awt.Color.white);
-        org.openide.awt.Mnemonics.setLocalizedText(lAntVersion, "<Ant version here...>");
+        org.openide.awt.Mnemonics.setLocalizedText(lAntVersion, org.openide.util.NbBundle.getMessage(AntCustomizer.class, "AntCustomizer.lAntVersion.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbSaveFiles, NbBundle.getMessage(AntCustomizer.class, "Save_Files")); // NOI18N
         cbSaveFiles.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -276,74 +274,30 @@ public class AntCustomizer extends JPanel implements ActionListener {
         verbosityLabel.setLabelFor(cbVerbosity);
         org.openide.awt.Mnemonics.setLocalizedText(verbosityLabel, NbBundle.getMessage(AntCustomizer.class, "Verbosity")); // NOI18N
 
-        propertiesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Properties_Panel"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classpathLabel, org.openide.util.NbBundle.getMessage(AntCustomizer.class, "AntCustomizer.classpathLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, NbBundle.getMessage(AntCustomizer.class, "Properties_Text_Area")); // NOI18N
+        classpathPanel.setBackground(new java.awt.Color(153, 0, 204));
+        classpathPanel.setForeground(new java.awt.Color(153, 0, 204));
+        classpathPanel.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(bProperties, NbBundle.getMessage(AntCustomizer.class, "Properties_Button")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, org.openide.util.NbBundle.getMessage(AntCustomizer.class, "AntCustomizer.propertiesLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout propertiesPanelLayout = new org.jdesktop.layout.GroupLayout(propertiesPanel);
-        propertiesPanel.setLayout(propertiesPanelLayout);
-        propertiesPanelLayout.setHorizontalGroup(
-            propertiesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(propertiesPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(propertiesLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 25, Short.MAX_VALUE)
-                .add(bProperties)
-                .addContainerGap())
-        );
-        propertiesPanelLayout.setVerticalGroup(
-            propertiesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(propertiesPanelLayout.createSequentialGroup()
-                .add(propertiesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(propertiesLabel)
-                    .add(bProperties))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        classpathPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Classpath_Panel"))); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(classpathLabel, NbBundle.getMessage(AntCustomizer.class, "Classpath_Text_Area")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(bClasspath, NbBundle.getMessage(AntCustomizer.class, "Classpath_Button")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout classpathPanelLayout = new org.jdesktop.layout.GroupLayout(classpathPanel);
-        classpathPanel.setLayout(classpathPanelLayout);
-        classpathPanelLayout.setHorizontalGroup(
-            classpathPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(classpathPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(classpathLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(bClasspath)
-                .addContainerGap())
-        );
-        classpathPanelLayout.setVerticalGroup(
-            classpathPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-            .add(classpathLabel)
-            .add(bClasspath)
-        );
+        propertiesPanel.setBackground(new java.awt.Color(255, 204, 204));
+        propertiesPanel.setLayout(new java.awt.BorderLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(propertiesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(antHomeLabel)
-                    .add(verbosityLabel))
-                .add(16, 16, 16)
+                .add(antHomeLabel)
+                .add(49, 49, 49)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(cbAlwaysShowOutput)
                         .addContainerGap())
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(lAntVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                        .add(layout.createSequentialGroup()
-                            .add(cbVerbosity, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap())
+                        .add(lAntVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
                         .add(layout.createSequentialGroup()
                             .add(cbReuseOutput)
                             .addContainerGap())
@@ -351,12 +305,23 @@ public class AntCustomizer extends JPanel implements ActionListener {
                             .add(cbSaveFiles)
                             .addContainerGap())
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                            .add(tfAntHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                            .add(tfAntHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(bAntHome)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(bAntHomeDefault)))))
-            .add(classpathPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(verbosityLabel)
+                    .add(classpathLabel)
+                    .add(propertiesLabel))
+                .add(16, 16, 16)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(propertiesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(cbVerbosity, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .add(classpathPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -374,15 +339,22 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 .add(cbReuseOutput)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbAlwaysShowOutput)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cbVerbosity, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(verbosityLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(propertiesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(classpathPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(classpathLabel)
+                    .add(classpathPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(7, 7, 7)
+                        .add(propertiesLabel))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(propertiesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -401,13 +373,15 @@ public class AntCustomizer extends JPanel implements ActionListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bAntHome;
     private javax.swing.JButton bAntHomeDefault;
-    private javax.swing.JButton bClasspath;
-    private javax.swing.JButton bProperties;
     private javax.swing.JCheckBox cbAlwaysShowOutput;
     private javax.swing.JCheckBox cbReuseOutput;
     private javax.swing.JCheckBox cbSaveFiles;
     private javax.swing.JComboBox cbVerbosity;
+    private javax.swing.JLabel classpathLabel;
+    private javax.swing.JPanel classpathPanel;
     private javax.swing.JLabel lAntVersion;
+    private javax.swing.JLabel propertiesLabel;
+    private javax.swing.JPanel propertiesPanel;
     private javax.swing.JTextField tfAntHome;
     // End of variables declaration//GEN-END:variables
     
