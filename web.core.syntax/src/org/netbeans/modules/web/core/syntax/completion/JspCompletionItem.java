@@ -22,6 +22,7 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.awt.Graphics;
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.awt.Component;
@@ -31,6 +32,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.servlet.jsp.tagext.*;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
@@ -286,17 +289,12 @@ public class JspCompletionItem {
             try {
                 doc.atomicLock();
                 value = super.substituteText(c, offset, len, fill, moveBack);
-                FileObject f = Repository.getDefault().getDefaultFileSystem().
-                        findResource("Editors/" + NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType()+"/AutoTagImportProviders");
-                if (f != null){
-                    DataFolder folder = DataFolder.findFolder(f);
-                    FolderLookup l = new FolderLookup(folder);
-                    Lookup.Result result = l.getLookup().lookup(new Lookup.Template(AutoTagImporterProvider.class));
-                    if (result != null){
-                        for(Object instance : result.allInstances()){
-                            ((AutoTagImporterProvider)instance).importLibrary(c.getDocument(),
-                                    tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
-                        }
+                String mimeType = NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType();
+                Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
+                Collection<? extends AutoTagImporterProvider> providers = mimeLookup.lookup(new Lookup.Template<AutoTagImporterProvider>(AutoTagImporterProvider.class)).allInstances();
+                if (providers != null) {
+                    for (AutoTagImporterProvider provider : providers) {
+                        provider.importLibrary(c.getDocument(), tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
                     }
                 }
             } finally {
