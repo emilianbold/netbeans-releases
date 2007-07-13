@@ -73,6 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/PackageTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodParametersTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodTypeParametersTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/ArraysTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodBodyTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodBodyTextTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/MethodThrowsTest.class"/>
