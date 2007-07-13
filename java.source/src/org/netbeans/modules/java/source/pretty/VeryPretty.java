@@ -497,14 +497,13 @@ public final class VeryPretty extends JCTree.Visitor {
 	else {
             printAnnotations(tree.mods.annotations);
             printFlags(tree.mods.flags);
-            Type type = tree.type != null ? tree.type : tree.vartype.type;
             if ((tree.mods.flags & VARARGS) != 0) {
                 // Variable arity method. Expecting  ArrayType, print ... instead of [].
                 // todo  (#pf): should we check the array type to prevent CCE?
                 printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
                 print("...");
             } else {
-                print(tree.vartype, type);
+                print(tree.vartype, null);
             }
             needSpace();
             print(tree.name);
