@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<process 
-    name="AsynchronousSampleClient" targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
-    xmlns:partnerNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
-    xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
-    xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
-    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+<process name="AsynchronousSampleClient" 
+         targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+         xmlns:partnerNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
+         xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+         xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
     
-    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" location="AsynchronousSample.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
-    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient" location="AsynchronousSampleClient.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" 
+            location="AsynchronousSample.wsdl" 
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient" 
+            location="AsynchronousSampleClient.wsdl" 
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
     
     <partnerLinks>
         <partnerLink name="partnerLinkA" 

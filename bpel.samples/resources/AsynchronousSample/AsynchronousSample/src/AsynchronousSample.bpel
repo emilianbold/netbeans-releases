@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<process 
-    name="AsynchronousSample" targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample"
-    xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
-    xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
-    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
-
-    <import location="AsynchronousSample.xsd" importType="http://www.w3.org/2001/XMLSchema" namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"/>
-    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" location="AsynchronousSample.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+<process name="AsynchronousSample" 
+         targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample"
+         xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
+         xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+    
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
+            location="AsynchronousSample.xsd" 
+            importType="http://www.w3.org/2001/XMLSchema" />
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" 
+            location="AsynchronousSample.wsdl" 
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
     
     <partnerLinks>
         <partnerLink name="partnerLinkA" 
@@ -22,7 +26,7 @@
         <variable name="inputVar" messageType="wsdlNS:requestMessage"/>
         <variable name="outputVar" messageType="wsdlNS:responseMessage"/>
     </variables>
-
+    
     <sequence>   
         <receive 
             name="start"

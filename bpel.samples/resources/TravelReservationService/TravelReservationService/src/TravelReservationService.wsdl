@@ -81,49 +81,49 @@
         propertyName="tres:ItineraryRefId"
         messageType="tres:ItineraryIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="ares:AirlineReservedIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="ares:ReserveAirlineIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="vres:VehicleReservedIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="vres:ReserveVehicleIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="hres:HotelReservedIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tres:ItineraryRefId"
         messageType="hres:ReserveHotelIn"
         part="itinerary">
-        <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
     </bpws:propertyAlias>   
     
     <plnk:partnerLinkType name="TravelReservationPartnerLinkType">
