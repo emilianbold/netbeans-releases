@@ -319,6 +319,11 @@ import org.w3c.dom.ranges.DocumentRange;
             cachedDot = DomPositionImpl.create(domDocumentImpl, domRange.getEndContainer(), domRange.getEndOffset(), empty ? dotBias : Bias.FORWARD);
         }
 
+        // XXX #109581 Prevent possible NPE. Is it OK there is a range with null start or end?
+        if (cachedDot.getNode() == null) {
+            cachedDot = DomPosition.NONE;
+        }
+
         return cachedDot;
     }
 
@@ -362,6 +367,11 @@ import org.w3c.dom.ranges.DocumentRange;
             cachedMark = DomPositionImpl.create(domDocumentImpl, domRange.getStartContainer(), domRange.getStartOffset(), empty ? markBias : Bias.FORWARD);
         }
 
+        // XXX #109581 Prevent possible NPE. Is it OK there is a range with null start or end?
+        if (cachedMark.getNode() == null) {
+            cachedMark = DomPosition.NONE;
+        }
+        
         return cachedMark;
     }
 
