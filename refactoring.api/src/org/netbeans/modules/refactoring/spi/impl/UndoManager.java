@@ -46,6 +46,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -323,6 +324,35 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
         //}
     }
     
+    private static java.lang.reflect.Field undoRedo;
+    
+    static{
+        try {
+            //obviously hack. See 108616 and 48427
+            undoRedo = org.openide.text.CloneableEditorSupport.class.getDeclaredField("undoRedo"); //NOI18N
+            undoRedo.setAccessible(true);
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void discardAllEdits(InvalidationListener l) {
+        for (CloneableEditorSupport s:listenerToCES==null||l==null?allCES:listenerToCES.get(l)) {
+            try {
+                org.openide.awt.UndoRedo.Manager manager = (org.openide.awt.UndoRedo.Manager) undoRedo.get(s);
+                manager.discardAllEdits();
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
 //    TODO: 
 //    public void pathsAdded(GlobalPathRegistryEvent event) {
 //    }
@@ -372,6 +402,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
                     // invalidate all
                     for (InvalidationListener lis:listenerToCES.keySet()) {
                         lis.invalidateObject();
+                        discardAllEdits(lis);
                     }
                     listenerToCES.clear();
                 } else {
