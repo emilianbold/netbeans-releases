@@ -21,7 +21,6 @@ package org.netbeans.modules.form.menu;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -31,13 +30,13 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +94,6 @@ public class MenuEditLayer extends JPanel {
     /* === private fields === */
     private Map<JMenu, PopupMenuUI> menuPopupUIMap;
     
-    private RADComponent selectedRADComponent = null;
-    private JComponent selectedComponent;
     public enum SelectedPortion { Icon, Text, Accelerator, All, None };
     private SelectedPortion selectedPortion = SelectedPortion.None;
     
@@ -293,7 +290,6 @@ public class MenuEditLayer extends JPanel {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
-            keyboardMenuNavigator.selectedRADComponent = this.selectedRADComponent;
         }
     }
     
@@ -360,12 +356,16 @@ public class MenuEditLayer extends JPanel {
                     if(!isAlive) return;
                     Node[] oldNodes = (Node[])evt.getOldValue();
                     Node[] newNodes = (Node[])evt.getNewValue();
+                    List<RADComponent> selectedNodes = new ArrayList<RADComponent>();
+                    
                     for(Node n : newNodes) {
                         if(n instanceof RADComponentNode) {
                             RADComponentNode radn = (RADComponentNode) n;
-                            setSelectedRADComponent(radn.getRADComponent());
+                            selectedNodes.add(radn.getRADComponent());
                         }
                     }
+                    
+                    setSelectedRADComponents(selectedNodes);
                     
                 }
                 
@@ -555,46 +555,66 @@ public class MenuEditLayer extends JPanel {
         }
     }
     
-    
-    RADComponent getSelectedRADComponent() {
-        return selectedRADComponent;
+   
+    List<RADComponent> getSelectedRADComponents() {
+        return Collections.unmodifiableList(selectedComponents);
     }
     
-    JComponent getSelectedComponent() {
-        return selectedComponent;
+    RADComponent getSingleSelectedComponent() {
+        if(selectedComponents.isEmpty()) {
+            return null;
+        }
+        if(selectedComponents.size() > 1) {
+            setSelectedRADComponent(selectedComponents.get(0));
+        }
+        return selectedComponents.get(0);
+    }
+    
+    
+    private List<RADComponent> selectedComponents = new ArrayList<RADComponent>();
+    
+    
+    boolean isComponentSelected() {
+        return !selectedComponents.isEmpty();
     }
     
     void setSelectedRADComponent(RADComponent comp) {
+        List<RADComponent> comps = new ArrayList<RADComponent>();
+        comps.add(comp);
+        setSelectedRADComponents(comps);
+        formDesigner.setSelectedComponent(comp);
+    }
+    
+    void setSelectedRADComponents(List<RADComponent> comps) {
         try {
-            if (!this.isMenuRelatedRADComponent(comp)) {
-                selectedComponent = null;
-                selectedRADComponent = null;
-                setVisible(false);
-                return;
+            //clear old bgs first
+            for(RADComponent rad : selectedComponents) {
+                JComponent c = (JComponent) formDesigner.getComponent(rad);
+                c.setBackground(getNormalBackground(c));
             }
 
-            if (selectedRADComponent == comp) {
-                return;
+            selectedComponents.clear();
+            selectedComponents.addAll(comps);
+
+            //check for non-menu comps
+            for(RADComponent c : selectedComponents) {
+                if (!isMenuRelatedRADComponent(c)) {
+                    setVisible(false);
+                    return;
+                }
             }
 
-            selectedRADComponent = comp;
-            
             registerKeyListeners();
-            keyboardMenuNavigator.selectedRADComponent = selectedRADComponent;
-            formDesigner.setSelectedComponent(selectedRADComponent);
 
-            if (selectedComponent != null) {
-                selectedComponent.setBackground(getNormalBackground(selectedComponent));
-            }
+            //josh: what do I do about this?
+            //formDesigner.setSelectedComponent(selectedRADComponent);
 
-            selectedComponent = (JComponent) formDesigner.getComponent(selectedRADComponent);
-
-            if (selectedComponent != null) {
-                selectedComponent.setBackground(SELECTED_MENU_BACKGROUND);
-                makeSureShowingOnScreen(comp, selectedComponent);
-                if (selectedComponent instanceof JMenu) {
-                    JMenu menu = (JMenu) selectedComponent;
-                    showMenuPopup(menu);
+            for(RADComponent rad : selectedComponents) {
+                JComponent c = (JComponent) formDesigner.getComponent(rad);
+                c.setBackground(SELECTED_MENU_BACKGROUND);
+                makeSureShowingOnScreen(rad, c);
+                if (c instanceof JMenu) {
+                    showMenuPopup((JMenu) c);
                 }
             }
 
@@ -639,9 +659,6 @@ public class MenuEditLayer extends JPanel {
         return color;
     }
     
-    void setSelectedComponent(JComponent c) {
-        setSelectedRADComponent(formDesigner.getMetaComponent(c));
-    }
     
     
     private void makeSureShowingOnScreen(RADComponent rad, JComponent comp) {
@@ -1184,7 +1201,7 @@ public class MenuEditLayer extends JPanel {
                     } else {
                         openMenu(rad, c);
                         glassLayer.requestFocusInWindow();
-                        setSelectedComponent(c);
+                        setSelectedRADComponent(rad);
                         if(e.isPopupTrigger()) {
                             showContextMenu(e.getPoint());
                             return;
@@ -1270,8 +1287,7 @@ public class MenuEditLayer extends JPanel {
                             selectedPortion = SelectedPortion.None;
                         }
                         glassLayer.requestFocusInWindow();
-                        setSelectedComponent(c);
-                        
+                        setSelectedRADComponent((RADComponent)formDesigner.getMetaComponent(c));
                     }
                 }
                 isEditing = false;

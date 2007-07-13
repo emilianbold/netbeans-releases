@@ -169,56 +169,60 @@ class DropTargetLayer extends JComponent {
         }
         
         // draw the menu item subselection rectangles
-        JComponent selected = canvas.getSelectedComponent();
-        
-        // draw normal border around toplevel menus
-        if(selected instanceof JMenu && selected.getParent() instanceof JMenuBar) {
-            JMenuItem menu = (JMenuItem) selected;
-            Point location = SwingUtilities.convertPoint(menu, new Point(0,0), this);
-            g2.translate(location.x,location.y);
-            g2.setStroke(SELECTION_STROKE);
-            g2.setColor(SELECTION_COLOR);
-            g2.drawRect(0,0,menu.getWidth()-1,menu.getHeight()-1);
-            g2.translate(-location.x,-location.y);
-        }
-        
-        // style only menuitems and menus that aren't also toplevel menus
-        // don't do subrect drawing if doing a drag
-        if(selected instanceof JMenuItem &&
-                !(selected.getParent() instanceof JMenuBar) &&
-                currentTargetComponent == null) { // && !(selected instanceof JMenu)) {
-            JMenuItem item = (JMenuItem) selected;
-            drawSubselectedItem(g2, item);
-        }
-        
-        // draw the drop target
-        if(currentTargetComponent != null) {
-            if(currentTargetType == DropTargetType.INTER_MENU) {
-                Point loc = SwingUtilities.convertPoint(currentTargetComponent, new Point(0,0), this);
-                int x = loc.x;
-                int y = loc.y;
-                g2.translate(x,y);
-                drawHorizontalTargetLine(g2, -10, 0, currentTargetComponent.getWidth()+20);
-                g2.translate(-x,-y);
-            }
-            
-            if(currentTargetType == DropTargetType.INTO_SUBMENU) {
-                Point loc = SwingUtilities.convertPoint(currentTargetComponent, new Point(0,0), this);
-                int x = loc.x;
-                int y = loc.y;
-                int w = currentTargetComponent.getWidth();
-                int h = currentTargetComponent.getHeight();
-                g2.translate(x,y);
-                g2.drawRect(0,0,w,h);
-                //drawVerticalTargetLine(g2, currentTargetComponent.getWidth(), -10, currentTargetComponent.getHeight()+20);
-                g2.translate(-x,-y);
-            }
+        //JComponent selected = null;//canvas.getSelectedComponent();
+        for(RADComponent rad : canvas.getSelectedRADComponents()) {
+            JComponent selected = (JComponent) canvas.formDesigner.getComponent(rad);
+            drawSelectedComponent(g2, selected);
         }
         
         g2.dispose();
     }
     
-    
+    private void drawSelectedComponent(Graphics2D g2, JComponent selected) {
+        // draw normal border around toplevel menus
+        if (selected instanceof JMenu && selected.getParent() instanceof JMenuBar) {
+            JMenuItem menu = (JMenuItem) selected;
+            Point location = SwingUtilities.convertPoint(menu, new Point(0, 0), this);
+            g2.translate(location.x, location.y);
+            g2.setStroke(SELECTION_STROKE);
+            g2.setColor(SELECTION_COLOR);
+            g2.drawRect(0, 0, menu.getWidth() - 1, menu.getHeight() - 1);
+            g2.translate(-location.x, -location.y);
+        }
+
+        // style only menuitems and menus that aren't also toplevel menus
+        // don't do subrect drawing if doing a drag
+        if (selected instanceof JMenuItem && !(selected.getParent() instanceof JMenuBar) && currentTargetComponent == null) {
+            JMenuItem item = (JMenuItem) selected;
+            drawSubselectedItem(g2, item);
+        }
+
+        // draw the drop target
+        if (currentTargetComponent != null) {
+            if (currentTargetType == DropTargetType.INTER_MENU) {
+                Point loc = SwingUtilities.convertPoint(currentTargetComponent, new Point(0, 0), this);
+                int x = loc.x;
+                int y = loc.y;
+                g2.translate(x, y);
+                drawHorizontalTargetLine(g2, -10, 0, currentTargetComponent.getWidth() + 20);
+                g2.translate(-x, -y);
+            }
+
+            if (currentTargetType == DropTargetType.INTO_SUBMENU) {
+                Point loc = SwingUtilities.convertPoint(currentTargetComponent, new Point(0, 0), this);
+                int x = loc.x;
+                int y = loc.y;
+                int w = currentTargetComponent.getWidth();
+                int h = currentTargetComponent.getHeight();
+                g2.translate(x, y);
+                g2.drawRect(0, 0, w, h);
+                //drawVerticalTargetLine(g2, currentTargetComponent.getWidth(), -10, currentTargetComponent.getHeight()+20);
+                g2.translate(-x, -y);
+            }
+        }
+    }
+
+
     private void drawSubselectedItem(Graphics2D g2, JMenuItem item) {
         Point location = SwingUtilities.convertPoint(item, new java.awt.Point(0, 0), this);
         g2.translate(location.x, location.y);
