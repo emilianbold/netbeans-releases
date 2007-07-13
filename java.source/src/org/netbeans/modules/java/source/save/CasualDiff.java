@@ -468,6 +468,20 @@ public class CasualDiff {
                 diffInfo.put(oldT.pos, "Rename enum constant " + oldT.name);
                 localPointer = oldT.pos + oldT.name.length();
             }
+            JCNewClass oldInit = (JCNewClass) oldT.init;
+            JCNewClass newInit = (JCNewClass) newT.init;
+            if (oldInit.args.nonEmpty() && newInit.args.nonEmpty()) {
+                copyTo(localPointer, localPointer = getOldPos(oldInit.args.head));
+                localPointer = diffParameterList(oldInit.args, newInit.args, null, localPointer, Measure.ARGUMENT);
+            }
+            if (oldInit.def != null && newInit.def != null) {
+                anonClass = true;
+                int[] defBounds = getBounds(oldInit.def);
+                copyTo(localPointer, bounds[0]);
+                localPointer = diffTree(oldInit.def, newInit.def, defBounds);
+                anonClass = false;
+            }
+            copyTo(localPointer, bounds[1]);
             return localPointer;
         }
         if (!matchModifiers(oldT.mods, newT.mods)) {
@@ -1661,7 +1675,9 @@ public class CasualDiff {
                     oldIndex++;
                     int[] bounds = getBounds(item.element);
                     tokenSequence.move(bounds[0]);
-                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                    if (oldIndex != 1) {
+                        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                    }
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     tokenSequence.move(bounds[1]);
