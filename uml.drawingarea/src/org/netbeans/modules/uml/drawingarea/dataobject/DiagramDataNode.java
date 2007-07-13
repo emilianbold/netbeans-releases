@@ -99,7 +99,7 @@ public class DiagramDataNode extends DataNode
                 break;
         }
         
-        return Utilities.loadImage(imageFile);
+        return Utilities.loadImage(ImageUtil.IMAGE_FOLDER + imageFile);
     }
     
     
