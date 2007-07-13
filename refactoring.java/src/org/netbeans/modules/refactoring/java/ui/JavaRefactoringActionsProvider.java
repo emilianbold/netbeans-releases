@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Dictionary;
+import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -135,6 +138,15 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
+                    if(selected.getKind()==ElementKind.PACKAGE) {
+                        List<? extends Tree> typeDecls = info.getCompilationUnit().getTypeDecls();
+                        if (typeDecls==null || typeDecls.isEmpty()) {
+                            return null;
+                        }
+                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getCompilationUnit(), typeDecls.get(0)), info);
+                    } else if (selected.getKind() == ElementKind.LOCAL_VARIABLE || selected.getKind() == ElementKind.PARAMETER || selected.getKind() == ElementKind.TYPE_PARAMETER) {
+                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getTypes().asElement(selected.asType())), info);        
+                    }
                     return new PushDownRefactoringUI(new TreePathHandle[]{selectedElement}, info);
                 }
             };
@@ -177,6 +189,16 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
+                    
+                    if(selected.getKind()==ElementKind.PACKAGE) {
+                        List<? extends Tree> typeDecls = info.getCompilationUnit().getTypeDecls();
+                        if (typeDecls==null || typeDecls.isEmpty()) {
+                            return null;
+                        }
+                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getCompilationUnit(), typeDecls.get(0)), info);
+                    } else if (selected.getKind() == ElementKind.LOCAL_VARIABLE || selected.getKind() == ElementKind.PARAMETER || selected.getKind() == ElementKind.TYPE_PARAMETER) {
+                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getTypes().asElement(selected.asType())), info);        
+                    }
                     return new PullUpRefactoringUI(new TreePathHandle[]{selectedElement}, info);
                 }
             };
