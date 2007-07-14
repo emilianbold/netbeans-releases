@@ -46,9 +46,6 @@ public final class ModuleUpdater extends Thread {
     /** Relative name of backup directory */
     private static final String BACKUP_DIR = UPDATE_DIR + FILE_SEPARATOR + "backup"; // NOI18N
 
-    /** Relative name of netbeans/lib directory */
-    private static final String NB_LIB_DIR = "lib"; // NOI18N
-
     /** The name of zip entry containing netbeans files */
     public static final String UPDATE_NETBEANS_DIR = "netbeans"; // NOI18N
 
@@ -73,8 +70,6 @@ public final class ModuleUpdater extends Thread {
     public static final char SPACE = ' ';
     public static final char QUOTE = '\"';
     
-    private File downloadDirectory = null;
-
     /** files that are supposed to be installed (when running inside the ide) */
     private Set<File> installOnly;
     /** found files in various cluster/update/download folders */
@@ -91,16 +86,9 @@ public final class ModuleUpdater extends Thread {
     private static boolean fromInstall = false;
     
     /** Creates new ModuleUpdater */
+    @Override
     public void run() {
         try {
-
-            getDownloadDirectory();
-
-            checkStop();
-
-            if ( downloadDirectory == null ) {
-                endRun();
-            }
 
             checkStop();
 
@@ -402,18 +390,6 @@ public final class ModuleUpdater extends Thread {
             }
             t.deleteUnusedFiles ();            
         }
-    }
-
-    /** The directory where to download the distribution files of modules */
-    private File getDownloadDirectory() {
-        if ( downloadDirectory == null ) {
-            downloadDirectory = new File (System.getProperty ("netbeans.user") + FILE_SEPARATOR + DOWNLOAD_DIR );
-            /*
-            if ( !downloadDirectory.isDirectory() )
-                downloadDirectory.mkdirs();
-             */
-        }
-        return downloadDirectory;
     }
 
     private void startCommand(String torun) {
@@ -748,9 +724,6 @@ public final class ModuleUpdater extends Thread {
         private final String VAR_IDE_USER = "%IDE_USER%";          // NOI18N
         private final String VAR_FILE_SEPARATOR = "%FS%";          // NOI18N        
         private final String VAR_JAVA_HOME = "%JAVA_HOME%";        // NOI18N        
-        private final String VAR_ICON_ROOT = "%ICON_ROOT%";        // NOI18N        
-        private final String ICON_ROOT = "Forte for Java";         // NOI18N
-        private final String VAR_LOGFILE = "%UPDATE_LOGFILE%";  // NOI18N
     
         /** joined all parameters of jvm java command */
         private String parameters = ""; // NOI18N
@@ -831,7 +804,7 @@ public final class ModuleUpdater extends Thread {
             original = replaceAll(original,VAR_IDE_USER,
                 org.netbeans.updater.UpdateTracking.getPlatformDir ().getPath());            
             original = replaceAll(original,VAR_FILE_SEPARATOR,
-                ModuleUpdater.this.FILE_SEPARATOR);            
+                FILE_SEPARATOR);            
             original = replaceAll(original,VAR_JAVA_HOME,
                 System.getProperty ("java.home"));
             return original;

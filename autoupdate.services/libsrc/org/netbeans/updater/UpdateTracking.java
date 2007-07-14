@@ -905,7 +905,7 @@ public final class UpdateTracking {
         
         String getL10NSpecificationVersion(String jarpath) {
             String localever = null;
-            Collections.sort( versions );
+            Collections.<Version>sort( versions );
             for (Version ver: versions) {
                 localever = ver.getLocaleVersion( jarpath );
                 if ( localever != null )
@@ -915,7 +915,7 @@ public final class UpdateTracking {
         }
     }
     
-    public class Version extends Object implements Comparable {
+    public class Version extends Object implements Comparable<Version> {
         
         /** Holds value of property version. */
         private String version;
@@ -1062,8 +1062,7 @@ public final class UpdateTracking {
             return locver;
         }
         
-        public int compareTo(Object obj) {
-            Version oth = (Version)obj;
+        public int compareTo (Version oth) {
             if ( install_time < oth.getInstall_time() )
                 return 1;
             else if ( install_time > oth.getInstall_time() )
