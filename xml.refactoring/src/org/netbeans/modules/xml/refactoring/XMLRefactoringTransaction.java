@@ -123,7 +123,7 @@ public class XMLRefactoringTransaction implements Transaction {
      * Rollbacks the refactoring changes for all the models
      */
     public void rollback() {
-        //System.out.println("ROLLBACK called");
+       // System.out.println("ROLLBACK called");
         UndoRedoProgress progress = new UndoRedoProgress();
 	progress.start();
 	try {
@@ -143,6 +143,15 @@ public class XMLRefactoringTransaction implements Transaction {
            if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
                 genericChangeUndoManager.undo();
             }
+           
+            //fix for issue 108512
+           if(undoManagers != null ){
+               Set<Model> mods = undoManagers.keySet();
+               for(Model m:mods){
+                   if(m instanceof AbstractDocumentModel)
+                       ((AbstractDocumentModel)m).getAccess().flush();
+               }
+           }
             
             if(! isLocal)
                 RefactoringUtil.save(models, targetModel, excludedFromSave);
@@ -643,6 +652,14 @@ public class XMLRefactoringTransaction implements Transaction {
             }
             if (genericChangeUndoManager != null && genericChangeUndoManager.canRedo()) {
                 genericChangeUndoManager.redo();
+            }
+            
+            if(undoManagers != null) {
+                Set<Model> mods = undoManagers.keySet();
+                for(Model m:mods){
+                    if(m instanceof AbstractDocumentModel)
+                        ((AbstractDocumentModel)m).getAccess().flush();
+                }
             }
 
             if (!isLocal) {
