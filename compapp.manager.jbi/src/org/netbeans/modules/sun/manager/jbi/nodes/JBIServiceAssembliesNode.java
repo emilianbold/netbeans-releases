@@ -21,14 +21,23 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
@@ -40,9 +49,14 @@ import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Container node for all JBI Service Assemblies.
@@ -130,6 +144,14 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
             
             if (returnValue == JFileChooser.APPROVE_OPTION){
                 File[] selectedFiles = chooser.getSelectedFiles();
+                if (selectedFiles.length > 0) {
+                    lastInstallDir = selectedFiles[0].getParent();
+                }
+                
+                List<File> files = filterSelectedFiles(selectedFiles);                
+                if (files.size() == 0) {
+                    return;
+                }
                 
                 String message =
                         NbBundle.getMessage(JBIServiceAssembliesNode.class, "LBL_Deploying_Service_Assembly");    // NOI18N
@@ -142,8 +164,8 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
                     }
                 });
                 
-                for (int i = 0; i < selectedFiles.length; i++) {
-                    final String zipFilePath = selectedFiles[i].getAbsolutePath();
+                for (File file : files) {
+                    final String zipFilePath = file.getAbsolutePath();
                     final String result = adminService.deployServiceAssembly(zipFilePath);
                     
                     SwingUtilities.invokeLater(new Runnable() {
@@ -153,10 +175,6 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
                                     zipFilePath, result);
                         }
                     });
-                    
-                    if (i == 0) {
-                        lastInstallDir = selectedFiles[0].getParent();
-                    }
                 }
                 
                 SwingUtilities.invokeLater(new Runnable() {
@@ -206,6 +224,65 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         return chooser;
     }
     
+    private List<File> filterSelectedFiles(File[] files) {
+        List<File> ret = new ArrayList<File>();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            ex.printStackTrace();
+        }
+        
+        if (docBuilder != null) {
+            for (File file : files) {
+                // do some simple validation
+                boolean isRightType = false;
+                
+                JarFile jf = null;
+                try {
+                    jf = new JarFile(file); 
+                    JarEntry je = (JarEntry) jf.getEntry("META-INF/jbi.xml"); // NOI18N
+                    if (je != null) {
+                        InputStream is = jf.getInputStream(je);
+                        Document doc = docBuilder.parse(is);
+                        isRightType = isRightJBIDocType(doc); // very basic type checking
+                    }                    
+                } catch (Exception e) {
+                    e.printStackTrace(); 
+                } finally {
+                    if (jf != null) {
+                        try {
+                            jf.close();
+                        } catch (IOException e) {
+                            ; // ignore
+                        }
+                    }                    
+                }                
+                
+                if (isRightType) {
+                    ret.add(file);
+                } else {
+                    String msg = NbBundle.getMessage(
+                            getClass(),
+                            "MSG_INVALID_SERVICE_ASSEMBLY_DEPLOYMENT", // NOI18N
+                            file.getName());
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            msg,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
+            }
+        }
+        
+        return ret;
+    }
+    
+    protected boolean isRightJBIDocType(Document jbiDoc) {
+        NodeList ns = jbiDoc.getElementsByTagName("service-assembly"); // NOI18N
+        return ns.getLength() == 1;
+    }
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JBIServiceAssembliesNode.class);
     }

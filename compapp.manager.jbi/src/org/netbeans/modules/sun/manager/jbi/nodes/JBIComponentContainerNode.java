@@ -169,8 +169,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                     }
                 });
                 
-                for (int i = 0; i < files.size(); i++) {
-                    File file = files.get(i);
+                for (File file : files) {
                     final String jarFilePath = file.getAbsolutePath();
                     final String result = installJBIComponent(jarFilePath);
                     
@@ -216,27 +215,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                         InputStream is = jf.getInputStream(je);
                         Document doc = docBuilder.parse(is);
                         isRightType = isRightJBIDocType(doc); // very basic type checking
-                    }
-                    
-                    if (isRightType) {
-                        ret.add(file);
-                    } else {
-                        String compType = NbBundle.getMessage(
-                                getClass(),
-                                getComponentTypeLabel());
-                        String msg = NbBundle.getMessage(
-                                getClass(),
-                                "MSG_INVALID_COMPONENT_INSTALLATION", // NOI18N
-                                file.getName(),
-                                compType);
-                        NotifyDescriptor d = new NotifyDescriptor.Message(
-                                msg,
-                                NotifyDescriptor.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(d);
-                    }
-                } catch (SAXException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+                    }                    
+                } catch (Exception e) {
                     e.printStackTrace(); 
                 } finally {
                     if (jf != null) {
@@ -246,6 +226,23 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                             ; // ignore
                         }
                     }                    
+                }                
+                
+                if (isRightType) {
+                    ret.add(file);
+                } else {
+                    String compType = NbBundle.getMessage(
+                            getClass(),
+                            getComponentTypeLabel());
+                    String msg = NbBundle.getMessage(
+                            getClass(),
+                            "MSG_INVALID_COMPONENT_INSTALLATION", // NOI18N
+                            file.getName(),
+                            compType);
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            msg,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
                 }
             }
         }
