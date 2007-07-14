@@ -44,9 +44,9 @@ import org.openide.explorer.propertysheet.InplaceEditor;
 
 /**
  *
- * @author devil
+ * @author Karol Harezlak
+ * @author Anton Chechel
  */
-
 public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode implements PropertyEditorElement {
 
     private String[] tags = {"true", "false"}; // NOI18N
