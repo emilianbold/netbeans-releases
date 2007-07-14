@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -69,6 +69,8 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Result;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -85,7 +87,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     private static final Icon ARCHIVE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/archive/project/resources/application_assembler_16.gif")); // NOI18N
     private final UpdateHelper updateHelper;
     
-    private HashMap nameMap;
+    private HashMap<String,String> nameMap;
     
     public ArchiveProject(AntProjectHelper helper) {
         this.helper = helper;
@@ -95,7 +97,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         lookup = new HelpfulLookup();
         this.updateHelper = new UpdateHelper(this, this.helper, this.aux, this.genFilesHelper,
                 UpdateHelper.createDefaultNotifier());
-        nameMap = new HashMap(5);
+        nameMap = new HashMap<String,String>(5);
     }
     
     public FileObject getProjectDirectory() {
@@ -132,7 +134,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -157,8 +159,8 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return (String) ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, NAME_LIT);
@@ -207,11 +209,47 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             new ArchiveProjectOperations(ArchiveProject.this),
             ArchiveProject.this,
             new MyOpenHook(),
-            new ProjectXmlSaved(),
-            
+            new ProjectXmlSaved(),            
         });
-        public Object lookup(Class clazz) {
-            Object ret = inner.lookup(clazz);
+                
+        public <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
+            Item<T> retValue;
+            
+            retValue = inner.lookupItem(template);
+            if (verbose && null == retValue && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
+                StackTraceElement[] sTEs = Thread.currentThread().getStackTrace();
+                ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
+                        NbBundle.getMessage(ArchiveProject.class,"LOOKUP_MISS",template.toString(),sTEs[3],sTEs[4]));
+            }
+            return retValue;
+        }
+
+        public <T> Lookup.Result<T> lookupResult(Class<T> clazz) {
+            Result<T> retValue;
+            
+            retValue = inner.lookupResult(clazz);
+            if (verbose && null == retValue && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
+                StackTraceElement[] sTEs = Thread.currentThread().getStackTrace();
+                ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
+                        NbBundle.getMessage(ArchiveProject.class,"LOOKUP_MISS",clazz.toString(),sTEs[3],sTEs[4]));
+            }
+            return retValue;
+        }
+
+        public <T> Collection<? extends T> lookupAll(Class<T> clazz) {
+            Collection<? extends T> retValue;
+            
+            retValue = inner.lookupAll(clazz);
+            if (verbose && null == retValue && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
+                StackTraceElement[] sTEs = Thread.currentThread().getStackTrace();
+                ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
+                        NbBundle.getMessage(ArchiveProject.class,"LOOKUP_MISS",clazz.toString(),sTEs[3],sTEs[4]));
+            }
+            return retValue;
+        }
+
+        public <T> T lookup(Class<T> clazz) {
+            T ret = inner.lookup(clazz);
             if (verbose && null == ret && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
                 StackTraceElement[] sTEs = Thread.currentThread().getStackTrace();
                 ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
@@ -219,9 +257,9 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             }
             return ret;
         }
-        
-        public Lookup.Result lookup(Lookup.Template template) {
-            Lookup.Result ret = inner.lookup(template);
+
+        public <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
+            Lookup.Result<T> ret = inner.lookup(template);
             if (verbose && null == ret && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
                 StackTraceElement[] sTEs = Thread.currentThread().getStackTrace();
                 ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
@@ -229,8 +267,6 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             }
             return ret;
         }
-        
-        
     }
     
     private final class Info implements ProjectInformation {
@@ -278,7 +314,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         List<ClassPath[]> paths = new ArrayList<ClassPath[]>();
         
         protected void projectOpened() {
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
                 public Object run() {
                     doRegeneration();
                     FileObject dir = helper.getProjectDirectory();
@@ -481,8 +517,8 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     
     /** Return configured project name. */
     public String getNamedProjectAttribute(final String attr) {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return (String) ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, attr);
@@ -499,7 +535,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     
     /** Store configured project name. */
     public void setNamedProjectAttribute(final String attr, final String value) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
