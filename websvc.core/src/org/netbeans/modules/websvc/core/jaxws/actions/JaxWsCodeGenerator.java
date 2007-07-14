@@ -40,8 +40,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -51,7 +54,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
-import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -377,21 +379,21 @@ public class JaxWsCodeGenerator {
                 argumentDeclarationPart
             };
             switch (operation.getOperationType()) {
-                case WsdlOperation.TYPE_NORMAL : {
-                    if ("void".equals(returnTypeName))
-                        invocationBody = MessageFormat.format(JSP_STATIC_STUB_VOID, args);
-                    else
-                        invocationBody = MessageFormat.format(JSP_STATIC_STUB, args);
-                    break;
-                }
-                case WsdlOperation.TYPE_ASYNC_POLLING : {
-                    invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_POLLING, args);
-                    break;
-                }
-                case WsdlOperation.TYPE_ASYNC_CALLBACK : {
-                    invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_CALLBACK, args);
-                    break;
-                }
+            case WsdlOperation.TYPE_NORMAL : {
+                if ("void".equals(returnTypeName))
+                    invocationBody = MessageFormat.format(JSP_STATIC_STUB_VOID, args);
+                else
+                    invocationBody = MessageFormat.format(JSP_STATIC_STUB, args);
+                break;
+            }
+            case WsdlOperation.TYPE_ASYNC_POLLING : {
+                invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_POLLING, args);
+                break;
+            }
+            case WsdlOperation.TYPE_ASYNC_CALLBACK : {
+                invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_CALLBACK, args);
+                break;
+            }
             }
             
             try {
@@ -427,9 +429,9 @@ public class JaxWsCodeGenerator {
                 success=true;
             } catch (javax.swing.text.BadLocationException ex) {}
         } else {
-//            
-//            // including code to java class
-//            
+            //
+            //            // including code to java class
+            //
             EditorCookie ec = (EditorCookie)dataObj.getCookie(EditorCookie.class);
             JEditorPane pane = ec.getOpenedPanes()[0];
             int pos = pane.getCaretPosition();
@@ -447,14 +449,14 @@ public class JaxWsCodeGenerator {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     CompilationUnitTree cut = controller.getCompilationUnit();
-
+                    
                     SourceUtils srcUtils = SourceUtils.newInstance(controller);
                     if (srcUtils!=null) {
                         ClassTree javaClass = srcUtils.getClassTree();
                         // find if class is Injection Target
                         TypeElement thisTypeEl = srcUtils.getTypeElement();
                         generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
-                            
+                        
                         insertServiceDef[0] = !generateWsRefInjection[0];
                         if (isServletClass(controller, javaClass)) {
                             // PENDING Need to compute pronter name from the method
@@ -477,7 +479,7 @@ public class JaxWsCodeGenerator {
                                     TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
                                     TypeElement typeEl = (TypeElement)controller.getTrees().getElement(typeTreePath);
                                     if (typeEl!=null) {
-                                        String variableType = typeEl.getQualifiedName().toString(); 
+                                        String variableType = typeEl.getQualifiedName().toString();
                                         if (serviceJavaName.equals(variableType)) {
                                             serviceFName[0]=var.getName().toString();
                                             generateWsRefInjection[0]=false;
@@ -498,13 +500,13 @@ public class JaxWsCodeGenerator {
             };
             try {
                 targetSource.runUserActionTask(task, true);
-
+                
                 // create & format inserted text
                 Document document = pane.getDocument();
                 IndentEngine eng = IndentEngine.find(document);
                 StringWriter textWriter = new StringWriter();
                 Writer indentWriter = eng.createWriter(document, pos, textWriter);
-
+                
                 // create the inserted text
                 String invocationBody = getJavaInvocationBody(
                         operation,
@@ -519,19 +521,19 @@ public class JaxWsCodeGenerator {
                         serviceFName[0],
                         printerName[0],
                         responseType);
-
+                
                 indentWriter.write(invocationBody);
                 indentWriter.close();
                 String textToInsert = textWriter.toString();
-
+                
                 try {
                     document.insertString(pos, textToInsert, null);
                 } catch (BadLocationException badLoc) {
                     document.insertString(pos + 1, textToInsert, null);
                 }
-
+                
                 // @insert WebServiceRef injection
-                if (generateWsRefInjection[0]) {                    
+                if (generateWsRefInjection[0]) {
                     if (wsdlUrl.startsWith("file:")) { //NOI18N
                         DataObject dObj = (DataObject) sourceNode.getCookie(DataObject.class);
                         if (dObj!=null)
@@ -541,9 +543,9 @@ public class JaxWsCodeGenerator {
                     CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                         public void run(WorkingCopy workingCopy) throws IOException {
                             workingCopy.toPhase(Phase.RESOLVED);
-
+                            
                             TreeMaker make = workingCopy.getTreeMaker();
-
+                            
                             SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
                             if (srcUtils!=null) {
                                 ClassTree javaClass = srcUtils.getClassTree();
@@ -556,7 +558,7 @@ public class JaxWsCodeGenerator {
                     };
                     targetSource.runModificationTask(modificationTask).commit();
                     success=true;
-                }         
+                }
             } catch (BadLocationException badLoc) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
             } catch (IOException ioe) {
@@ -592,7 +594,7 @@ public class JaxWsCodeGenerator {
      * @param type Type of the variable
      * @param targetFile FileObject containing the class that declares the type
      */
-    private static String resolveInitValue(String type, FileObject targetFile) {
+    private static String resolveInitValue(final String type, FileObject targetFile) {
         if ("int".equals(type) || "long".equals(type) || "short".equals(type) || "byte".equals(type)) //NOI18N
             return "0;"; //NOI18N
         if ("boolean".equals(type)) //NOI18N
@@ -607,46 +609,86 @@ public class JaxWsCodeGenerator {
         if (type.startsWith("javax.xml.ws.AsyncHandler")) { //NOI18N
             return "new "+type+"() {"; //NOI18N
         }
-
-// Retouche         
-//        if(targetFile != null && !isEnum(type)){
-//            JavaClass jc = JMIUtils.findClass(type, targetFile);
-//            if(jc != null){
-//                if(hasDefaultConstructor(jc) || !hasExplicitConstructor(jc)){
-//                    return "new " + type+ "();";//NOI18N
-//                }
-//            }
-//        }
+        
+        
+        ResultHolder<String> result = new ResultHolder<String>("");
+        getInitValue(type, targetFile, result);
+        String returnText = result.getResult();
+        if(!returnText.equals("")){
+            return returnText;
+        }
+        
         return "null;"; //NOI18N
     }
-// Retouche    
-//    private static boolean isEnum(String typeName){
-//        Type type = JavaModel.getDefaultExtent().getType().resolve(typeName);
-//        if(type != null){
-//            return (type instanceof JavaEnum);
-//        }
-//        return false;
-//    }
-//    
-//    /**
-//     * Determines if a Java class has an explicit constructor definition
-//     */
-//    private static boolean hasExplicitConstructor(JavaClass jc){
-//        List<ClassMember> members = jc.getContents();
-//        for(ClassMember member: members){
-//            if(member instanceof Constructor){
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//    
-//    /**
-//     * Determines if a Java class has a no-arg constructor
-//     */
-//    private static boolean hasDefaultConstructor(JavaClass jc){
-//        return jc.getConstructor(Collections.emptyList(), false) != null;
-//    }
+    
+    private static void getInitValue(final String type, FileObject targetFile, final ResultHolder<String> result){
+        if(targetFile == null) return;
+        JavaSource targetSource = JavaSource.forFileObject(targetFile);
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                if(!isEnum(controller, type)){
+                    if(hasNoArgConstructor(controller, type) ){
+                        result.setResult( "new " + type+ "();");//NOI18N
+                    }
+                }
+            }
+            public void cancel() {
+            }
+        };
+        try{
+            targetSource.runUserActionTask(task, true);
+        }catch(IOException e){
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+
+    private static boolean isEnum(CompilationController controller, String type){
+        TypeElement classEl = controller.getElements().getTypeElement(getCanonicalClassName(type));
+        if(classEl != null){
+             return classEl.getKind() == ElementKind.ENUM;
+        }
+        return false;
+    }
+    
+  
+    private static boolean hasNoArgConstructor(CompilationController controller, String type){
+        TypeElement classEl = controller.getElements().getTypeElement(getCanonicalClassName(type));
+        if(classEl != null){
+            List<ExecutableElement> constructors = ElementFilter.constructorsIn(classEl.getEnclosedElements());
+            for(ExecutableElement c: constructors){
+                if(c.getParameters().size() == 0){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /** Holder class for result
+     */
+    private static class ResultHolder<E> {
+        private E result;
+        
+        public ResultHolder(E result){
+            this.result = result;
+        }
+        public E getResult() {
+            return result;
+        }
+        
+        public void setResult(E result) {
+            this.result=result;
+        }
+    }
+
+    private static String getCanonicalClassName(String genericClassName){
+        int index = genericClassName.indexOf("<");
+        if (index != -1) {
+            return genericClassName.substring(0, index);
+        }
+        return genericClassName;
+    }
     
     private static String resolveResponseType(String argumentType) {
         int start = argumentType.indexOf("<");
@@ -738,21 +780,21 @@ public class JaxWsCodeGenerator {
                 argumentDeclarationPart
             };
             switch (operation.getOperationType()) {
-                case WsdlOperation.TYPE_NORMAL : {
-                    if ("void".equals(returnTypeName))
-                        invocationBody = MessageFormat.format(JSP_STATIC_STUB_VOID, args);
-                    else
-                        invocationBody = MessageFormat.format(JSP_STATIC_STUB, args);
-                    break;
-                }
-                case WsdlOperation.TYPE_ASYNC_POLLING : {
-                    invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_POLLING, args);
-                    break;
-                }
-                case WsdlOperation.TYPE_ASYNC_CALLBACK : {
-                    invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_CALLBACK, args);
-                    break;
-                }
+            case WsdlOperation.TYPE_NORMAL : {
+                if ("void".equals(returnTypeName))
+                    invocationBody = MessageFormat.format(JSP_STATIC_STUB_VOID, args);
+                else
+                    invocationBody = MessageFormat.format(JSP_STATIC_STUB, args);
+                break;
+            }
+            case WsdlOperation.TYPE_ASYNC_POLLING : {
+                invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_POLLING, args);
+                break;
+            }
+            case WsdlOperation.TYPE_ASYNC_CALLBACK : {
+                invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_CALLBACK, args);
+                break;
+            }
             }
             
             try {
@@ -825,7 +867,7 @@ public class JaxWsCodeGenerator {
                                 TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
                                 TypeElement typeEl = (TypeElement)controller.getTrees().getElement(typeTreePath);
                                 if (typeEl!=null) {
-                                    String variableType = typeEl.getQualifiedName().toString(); 
+                                    String variableType = typeEl.getQualifiedName().toString();
                                     if (serviceJavaName.equals(variableType)) {
                                         serviceFName[0]=var.getName().toString();
                                         generateWsRefInjection[0]=false;
@@ -845,8 +887,8 @@ public class JaxWsCodeGenerator {
             public void cancel() {}
         };
         
-
-
+        
+        
         try {
             targetSource.runUserActionTask(task, true);
             
@@ -854,7 +896,7 @@ public class JaxWsCodeGenerator {
             IndentEngine eng = IndentEngine.find(document);
             StringWriter textWriter = new StringWriter();
             Writer indentWriter = eng.createWriter(document, pos, textWriter);
-
+            
             // create the inserted text
             String invocationBody = getJavaInvocationBody(
                     operation,
@@ -869,11 +911,11 @@ public class JaxWsCodeGenerator {
                     serviceFName[0],
                     printerName[0],
                     respType);
-
+            
             indentWriter.write(invocationBody);
             indentWriter.close();
             String textToInsert = textWriter.toString();
-
+            
             try {
                 document.insertString(pos, textToInsert, null);
             } catch (BadLocationException badLoc) {
@@ -885,11 +927,11 @@ public class JaxWsCodeGenerator {
                 if (wsdlUrl.startsWith("file:")) { //NOI18N
                     wsdlUrl = findWsdlLocation(client, targetFo);
                 }
-                final String localWsdlUrl = wsdlUrl; 
+                final String localWsdlUrl = wsdlUrl;
                 CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
-
+                        
                         TreeMaker make = workingCopy.getTreeMaker();
                         
                         SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
@@ -903,7 +945,7 @@ public class JaxWsCodeGenerator {
                     public void cancel() {}
                 };
                 targetSource.runModificationTask(modificationTask).commit();
-            }         
+            }
         } catch (BadLocationException badLoc) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
         } catch (IOException ioe) {
@@ -918,16 +960,16 @@ public class JaxWsCodeGenerator {
             String fieldType,
             String wsdlUrl) {
         TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
-
+        
         AnnotationTree wsRefAnnotation = make.Annotation(
-                make.QualIdent(wsRefElement), 
+                make.QualIdent(wsRefElement),
                 Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl)))
-        );
+                );
         // create method modifier: public and no annotation
         ModifiersTree methodModifiers = make.Modifiers(
-            Collections.<Modifier>singleton(Modifier.PUBLIC),
-            Collections.<AnnotationTree>singletonList(wsRefAnnotation)
-        );       
+                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                Collections.<AnnotationTree>singletonList(wsRefAnnotation)
+                );
         TypeElement typeElement = workingCopy.getElements().getTypeElement(fieldType);
         
         // THIS is a workaround for issue 101395
@@ -941,17 +983,17 @@ public class JaxWsCodeGenerator {
         );
          */
         VariableTree var =  make.Variable(
-            methodModifiers,
-            fieldName,
-            make.Type(typeElement.asType()),
-            null
-        );
+                methodModifiers,
+                fieldName,
+                make.Type(typeElement.asType()),
+                null
+                );
         return make.Variable(
                 make.Modifiers(var.getModifiers().getFlags(), var.getModifiers().getAnnotations()),
                 var.getName(),
                 var.getType(),
                 var.getInitializer()
-        );       
+                );
     }
     
     private static String findProperServiceFieldName(Set serviceFieldNames) {
@@ -994,35 +1036,35 @@ public class JaxWsCodeGenerator {
             printerName
         };
         switch (operation.getOperationType()) {
-            case WsdlOperation.TYPE_NORMAL : {
-                if ("void".equals(returnTypeName)) { //NOI18N
-                    String body =
-                            JAVA_TRY+
-                            (insertServiceDef?JAVA_SERVICE_DEF:"")+
-                            JAVA_PORT_DEF+
-                            JAVA_VOID+
-                            JAVA_CATCH;
-                    invocationBody = MessageFormat.format(body, args);
-                } else {
-                    String body =
-                            JAVA_TRY+
-                            (insertServiceDef?JAVA_SERVICE_DEF:"")+
-                            JAVA_PORT_DEF+
-                            JAVA_RESULT+
-                            JAVA_OUT+
-                            JAVA_CATCH;
-                    invocationBody = MessageFormat.format(body, args);
-                } break;
-            }
-            case WsdlOperation.TYPE_ASYNC_POLLING : {
-                invocationBody = MessageFormat.format(JAVA_STATIC_STUB_ASYNC_POLLING, args);
-                break;
-            }
-            case WsdlOperation.TYPE_ASYNC_CALLBACK : {
-                args[7] = responseType;
-                invocationBody = MessageFormat.format(JAVA_STATIC_STUB_ASYNC_CALLBACK, args);
-                break;
-            }
+        case WsdlOperation.TYPE_NORMAL : {
+            if ("void".equals(returnTypeName)) { //NOI18N
+                String body =
+                        JAVA_TRY+
+                        (insertServiceDef?JAVA_SERVICE_DEF:"")+
+                        JAVA_PORT_DEF+
+                        JAVA_VOID+
+                        JAVA_CATCH;
+                invocationBody = MessageFormat.format(body, args);
+            } else {
+                String body =
+                        JAVA_TRY+
+                        (insertServiceDef?JAVA_SERVICE_DEF:"")+
+                        JAVA_PORT_DEF+
+                        JAVA_RESULT+
+                        JAVA_OUT+
+                        JAVA_CATCH;
+                invocationBody = MessageFormat.format(body, args);
+            } break;
+        }
+        case WsdlOperation.TYPE_ASYNC_POLLING : {
+            invocationBody = MessageFormat.format(JAVA_STATIC_STUB_ASYNC_POLLING, args);
+            break;
+        }
+        case WsdlOperation.TYPE_ASYNC_CALLBACK : {
+            args[7] = responseType;
+            invocationBody = MessageFormat.format(JAVA_STATIC_STUB_ASYNC_CALLBACK, args);
+            break;
+        }
         }
         return invocationBody;
     }
@@ -1049,34 +1091,34 @@ public class JaxWsCodeGenerator {
                 " request_1 ").replaceFirst(" response ", //NOI18N
                 " response_1 ").replaceFirst(" out "," out_1 "); //NOI18N
     }
-// Retouche    
-//    private static String findPrinter(Method m) {
-//        List childrens = m.getChildren();
-//        boolean foundPrinter=false;
-//        for (int i=0;i<childrens.size();i++) {
-//            Object o = childrens.get(i);
-//            if (o instanceof Parameter) {
-//                Parameter param = (Parameter)o;
-//                if ("java.io.PrintWriter".equals(param.getType().getName())) { //NOI18N
-//                    return param.getName();
-//                }
-//            }
-//            if (o instanceof StatementBlock) {
-//                List<Statement> statements = ((StatementBlock)o).getStatements();
-//                for (Statement st:statements) {
-//                    if (st instanceof LocalVarDeclaration) {
-//                        List<Variable> variables = ((LocalVarDeclaration)st).getVariables();
-//                        for (Variable var:variables) {
-//                            if ("java.io.PrintWriter".equals(var.getType().getName())) { //NOI18N
-//                                return var.getName();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    // Retouche
+    //    private static String findPrinter(Method m) {
+    //        List childrens = m.getChildren();
+    //        boolean foundPrinter=false;
+    //        for (int i=0;i<childrens.size();i++) {
+    //            Object o = childrens.get(i);
+    //            if (o instanceof Parameter) {
+    //                Parameter param = (Parameter)o;
+    //                if ("java.io.PrintWriter".equals(param.getType().getName())) { //NOI18N
+    //                    return param.getName();
+    //                }
+    //            }
+    //            if (o instanceof StatementBlock) {
+    //                List<Statement> statements = ((StatementBlock)o).getStatements();
+    //                for (Statement st:statements) {
+    //                    if (st instanceof LocalVarDeclaration) {
+    //                        List<Variable> variables = ((LocalVarDeclaration)st).getVariables();
+    //                        for (Variable var:variables) {
+    //                            if ("java.io.PrintWriter".equals(var.getType().getName())) { //NOI18N
+    //                                return var.getName();
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        return null;
+    //    }
     
     private static String findWsdlLocation(Client client, FileObject targetFo) {
         Project targetProject = FileOwnerQuery.getOwner(targetFo);
