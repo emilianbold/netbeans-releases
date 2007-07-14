@@ -510,35 +510,109 @@ function showViews(name) {
     var tableNode = document.getElementById('tableContent').style;
     var rawNode = document.getElementById('rawContent').style;
     var headerNode = document.getElementById('headerInfo').style;
+    var monitorNode = document.getElementById('monitorContent').style;
     var tabs1 = document.getElementById('table').style;
     var tabs2 = document.getElementById('raw').style;
     var tabs3 = document.getElementById('header').style;
+    var tabs4 = document.getElementById('monitor').style;
     if(name == 'table') {
         tableNode.display="block";
         rawNode.display="none";
         headerNode.display="none";
+        monitorNode.display="none";
         tabs1.display="block";
         tabs2.display="none";
         tabs3.display="none";
+        tabs4.display="none";
     } else if(name == 'raw') {
         tableNode.display="none";
         rawNode.display="block";
         headerNode.display="none";
+        monitorNode.display="none";
         tabs2.display="block";
         tabs3.display="none";
+        tabs4.display="none";
         tabs1.display="none";
     } else if(name == 'header') {
         tableNode.display="none";
         rawNode.display="none";
         headerNode.display="block";
+        monitorNode.display="none";
         tabs3.display="block";
+        tabs4.display="none";
         tabs1.display="none";
         tabs2.display="none";
-    }        
+    } else if(name == 'monitor') {
+        tableNode.display="none";
+        rawNode.display="none";
+        headerNode.display="none";
+        monitorNode.display="block";
+        tabs4.display="block";
+        tabs1.display="none";
+        tabs2.display="none";
+        tabs3.display="none";
+    }
 }
+
+function isResponseReady(xmlHttpReq5, param) {
+    if (xmlHttpReq5.readyState == 4) {
+        monitor(xmlHttpReq5, param);
+        return true;
+    } else
+        return false;
+}
+
+var currMonitorText = null;
+
+function monitor(xmlHttpReq, param) {
+    var nodisp = ' class="nodisp" ';
+    var rawViewStyle = ' ';
+    var headerViewStyle = nodisp;
+    var rawContent = 'Received:\n'+xmlHttpReq.responseText+'\n';
+    if(param != null && param != undefined)
+        rawContent = 'Sent:\n'+param + '\n\n' + rawContent;
+    var prev = document.getElementById('monitorText');
+    var cURL = getURL(xmlHttpReq);
+    if(cURL == null || cURL == '')
+        cURL = currentValidUrl;
+    var s = 'Request: ' + currentMethod + ' ' + cURL + 
+            '\n\nStatus: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')';
+    var prevs = '';
+    if(currMonitorText != null && currMonitorText != undefined) {
+        prevs = currMonitorText;        
+        currMonitorText = 
+            s + '\n\n' + rawContent+
+            '\n-----------------------------------------------------------------------\n\n'+
+            prevs;  
+    } else {
+        currMonitorText = s + '\n\n' + rawContent;
+    }
+}
+
+function getURL(xmlHttpReq5) {
+    var url = '';
+    try {
+        doc2 = loadXml(xmlHttpReq5.responseText);
+    } catch(e) {alert('err: '+e.name+e.message);}
+    if(doc2 != null && doc2.documentElement.nodeName != 'parsererror') {
+        try {
+            var container=doc2.documentElement;
+            if(container == null || container.nodeName == 'html')
+                return url;
+            var playListId = container.getElementsByTagName('playlistId')[0];
+            var title = container.getElementsByTagName('title')[0];                  
+            var desc = container.getElementsByTagName('description')[0];
+            return container.attributes.getNamedItem('uri').nodeValue;
+        } catch(e) {
+            alert('err: '+e.name+e.message);
+        }
+    } 
+    return url;   
+}
+
 function updateContent(xmlHttpReq) {
     try {
-        if (xmlHttpReq.readyState == 4) {
+        if (isResponseReady(xmlHttpReq)) {
             var content = xmlHttpReq.responseText;
             var ndx = content.indexOf('HTTP Status');
             var showRaw = 'false';
@@ -569,19 +643,24 @@ function updateContent(xmlHttpReq) {
                     var nodisp = ' class="nodisp" ';
                     var rawViewStyle = nodisp;
                     var headerViewStyle = nodisp;
+                    var monitorViewStyle = nodisp;
                     if(showRaw == 'true') {
                         tableViewStyle = nodisp;
                         rawViewStyle = ' ';
                         headerViewStyle = nodisp;
+                        monitorViewStyle = nodisp;
                     }
                     updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Status</span> '+ xmlHttpReq.status+' ('+xmlHttpReq.statusText+')<br/><br/>'+
                         '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+
-                        getTab('table', tableViewStyle)+getTab('raw', rawViewStyle)+getTab('header', headerViewStyle)+                        
+                        getTab('table', tableViewStyle)+getTab('raw', rawViewStyle)+
+                        getTab('header', headerViewStyle)+getTab('monitor', monitorViewStyle)+                     
                         '<div id="menu_bottom" class="stab tabsbottom"></div>'+
                         '<div id="headerInfo"'+headerViewStyle+'>'+getHeaderAsTable(xmlHttpReq)+'</div>'+
                         '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
                         '<div id="rawContent"'+rawViewStyle+'>'+
-                            '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>');  
+                            '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>'+ 
+                        '<div id="monitorContent"'+monitorViewStyle+'>'+
+                            '<textarea id="monitorText" rows=15 cols=72 align=left readonly>'+currMonitorText+'</textarea></div>');
                     if(showRaw == 'true')
                         showViews('raw');
                     else
@@ -604,10 +683,12 @@ var viewIds = new Array()
 viewIds[0] = "table"
 viewIds[1] = "raw"
 viewIds[2] = "header"
+viewIds[3] = "monitor"
 var viewNames = new Array()
 viewNames[0] = "MSG_TEST_RESBEANS_TabularView"
 viewNames[1] = "MSG_TEST_RESBEANS_RawView"
 viewNames[2] = "MSG_TEST_RESBEANS_Headers"
+viewNames[2] = "MSG_TEST_RESBEANS_Monitor"
 function getTab(id, style) {
     var c = '<div id="'+id+'"'+style+'><table class="result"><tr>';
     var style = 'otab';
