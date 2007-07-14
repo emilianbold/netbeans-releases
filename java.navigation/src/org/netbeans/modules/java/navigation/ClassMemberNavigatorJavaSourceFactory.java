@@ -68,6 +68,7 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
         if (result.size() == 1)
             return result;
 
+        // System.out.println("Nothing to show");
         return Collections.emptyList();
     }
 

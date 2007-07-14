@@ -114,7 +114,7 @@ public final class JavadocTopComponent extends TopComponent {
                 "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
     }
-    
+   
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -122,12 +122,24 @@ public final class JavadocTopComponent extends TopComponent {
     @Override
     protected void componentActivated() {
         super.componentActivated();
+        // System.out.println("JDW Activated");
         documentationPane.getViewport().getView().requestFocusInWindow();
     }
     
+    @Override
     public void componentOpened() {
+        // System.out.println("JDW Opened ");
         documentationPane.getViewport().getView().requestFocusInWindow();
     }
+
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
+        // System.out.println("JDW Showing");
+        CaretListeningFactory.runAgain();
+    }
+    
+    
     
     public void componentClosed() {
     }

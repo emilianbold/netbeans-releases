@@ -49,15 +49,20 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     private FileObject fileObject;
     private boolean canceled;
     
-    private ElementHandle<Element> lastEh;
-    private ElementHandle<Element> lastEhForNavigator;
+    private static ElementHandle<Element> lastEh;
+    private static ElementHandle<Element> lastEhForNavigator;
     
     CaretListeningTask(CaretListeningFactory whichElementJavaSourceTaskFactory,FileObject fileObject) {
         this.caretListeningFactory = whichElementJavaSourceTaskFactory;
         this.fileObject = fileObject;
     }
     
+    static void resetLastEH() {
+        lastEh = null;
+    }
+    
     public void run(CompilationInfo compilationInfo) {
+        // System.out.println("running " + fileObject);
         resume();
         
         boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
@@ -94,6 +99,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
         // Don't update when element is the same
         if ( lastEh != null && lastEh.signatureEquals(element) ) {
+            // System.out.println("  stoped because os same eh");
             return;
         }
         else {
@@ -136,6 +142,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
         // Compute and set javadoc
         if ( javadocShouldUpdate ) {
+            // System.out.println("Updating JD");
             computeAndSetJavadoc(compilationInfo, element);
         }
         
@@ -145,6 +152,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
         // Compute and set declaration
         if ( declarationShouldUpdate ) {
+            // System.out.println("Updating DECL");
             computeAndSetDeclaration(compilationInfo, element);
         }
         
@@ -188,7 +196,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         canceled = false;
     }
     
-    
+   
     private void computeAndSetJavadoc(CompilationInfo compilationInfo, Element element) {
         
         if (isCancelled()) {

@@ -158,6 +158,13 @@ public final class DeclarationTopComponent extends TopComponent {
     
     public void componentClosed() {
     }
+    
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
+        CaretListeningFactory.runAgain();
+    }
+    
          
     /** replaces this in object stream */
     public Object writeReplace() {

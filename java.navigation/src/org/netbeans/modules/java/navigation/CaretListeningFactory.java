@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.java.navigation;
 
-import org.netbeans.modules.java.navigation.CaretListeningTask;
+import java.util.List;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -34,11 +34,25 @@ import org.openide.filesystems.FileObject;
  */
 public class CaretListeningFactory extends CaretAwareJavaSourceTaskFactory {
     
+    private static CaretListeningFactory INSATNCE;
+    
     public CaretListeningFactory() {
         super(Phase.RESOLVED, Priority.LOW);
+        INSATNCE = this;
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject fileObject) {
         return new CaretListeningTask(this, fileObject);
     }
+    
+    static void runAgain() {
+        List<FileObject> fileObjects = INSATNCE.getFileObjects();
+        CaretListeningTask.resetLastEH();
+        if ( !fileObjects.isEmpty() ) {
+            // System.out.println("Rescheduling for " + fileObjects.get(0));
+            INSATNCE.reschedule(fileObjects.iterator().next());
+        }
+    }
+    
+    
 }
