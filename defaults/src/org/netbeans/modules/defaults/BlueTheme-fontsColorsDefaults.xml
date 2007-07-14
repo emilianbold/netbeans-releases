@@ -33,4 +33,16 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="operator"/>
     <fontcolor name="string" foreColor="E2CE00"/>
     <fontcolor name="whitespace"/>
+    
+    <!-- OO languages -->    
+    <fontcolor name="field" default="identifier"/>
+    <fontcolor name="method" default="identifier"/>
+    
+    <!-- Tag based languages -->
+    
+    <fontcolor name="markup-element" default="keyword"/>
+    <fontcolor name="markup-attribute" default="field"/>
+    <fontcolor name="markup-attribute-value" default="string"/>
+    <fontcolor name="entity-reference" default="default"/>
+    
 </fontscolors>
