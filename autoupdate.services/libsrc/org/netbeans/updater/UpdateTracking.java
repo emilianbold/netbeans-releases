@@ -230,7 +230,6 @@ public final class UpdateTracking {
             files.add (ud);
         }
         
-        
         String dirs = System.getProperty("netbeans.dirs"); // NOI18N
         if (dirs != null) {
             Enumeration en = new StringTokenizer (dirs, File.pathSeparator);
@@ -268,27 +267,6 @@ public final class UpdateTracking {
         }
         return false;
     }
-    
-    /** Compute the list of modules that should be installed into this 
-     * cluster.
-     * @return List<File> of nbm files
-     */
-    public List<File> getModulesToInstall () {              
-        class NbmFilter implements java.io.FilenameFilter {
-            public boolean accept( File dir, String name ) {
-                return name.endsWith (ModuleUpdater.NBM_EXTENSION);
-            }
-        }
-        
-        File idir = new File (directory, ModuleUpdater.DOWNLOAD_DIR);
-        File[] arr = idir.listFiles (new NbmFilter ());
-        if (arr == null) {
-            return Collections.emptyList();
-        } else {
-            return Arrays.asList (arr);
-        }
-    }
-
     
     //
     // Private impls

@@ -364,7 +364,9 @@ public class InstallSupportImpl {
         } catch(ExecutionException iex) {
             Exceptions.printStackTrace(iex);
         } finally {
-            getElement2Clusters ().clear ();
+            if (! retval) {
+                getElement2Clusters ().clear ();
+            }
         }
         return retval;
     }
@@ -376,11 +378,13 @@ public class InstallSupportImpl {
             currentStep = STEP.RESTART;
         }        
         Utilities.deleteInstall_Later();
+        getElement2Clusters ().clear ();
         LifecycleManager.getDefault ().exit ();
     }
     
     public void doRestartLater(Restarter restarter) {    
         Utilities.writeInstall_Later(new HashMap<UpdateElementImpl, File>(getElement2Clusters ()));
+        getElement2Clusters ().clear ();
     }
 
     public String getCertificate(Installer validator, UpdateElement uElement) {

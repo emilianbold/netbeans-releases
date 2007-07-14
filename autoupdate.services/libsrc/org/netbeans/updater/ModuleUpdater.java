@@ -41,7 +41,7 @@ public final class ModuleUpdater extends Thread {
     private static final String UPDATE_DIR = "update"; // NOI18N
 
     /** Relative name of directory where the .NBM files are downloaded */
-    static final String DOWNLOAD_DIR =UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
+    static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
 
     /** Relative name of backup directory */
     private static final String BACKUP_DIR = UPDATE_DIR + FILE_SEPARATOR + "backup"; // NOI18N
@@ -93,11 +93,8 @@ public final class ModuleUpdater extends Thread {
             checkStop();
 
             installFiles = new HashSet<File> ();
-            for (File cluster: UpdateTracking.clusters (true)) {
-                UpdateTracking ut = UpdateTracking.getTracking (cluster);
-                if (ut != null) {
-                    installFiles.addAll (ut.getModulesToInstall ());
-                }
+            for (File cluster : UpdateTracking.clusters (true)) {
+                installFiles.addAll (getModulesToInstall (cluster));
                 deleteInstall_Later (cluster);
             }
 
@@ -242,17 +239,18 @@ public final class ModuleUpdater extends Thread {
         Map<ModuleUpdate, UpdateTracking.Version> l10ns = 
                 new HashMap<ModuleUpdate, UpdateTracking.Version>();
         
-        List clusters = UpdateTracking.clusters (true);
-        Iterator clustersIterator = clusters.iterator ();
-        while (clustersIterator.hasNext ()) {
-            File cluster = (File)clustersIterator.next ();
-            UpdateTracking tracking = UpdateTracking.getTracking (cluster, false);
-            if (tracking == null) {
+        for (File cluster : UpdateTracking.clusters (true)) {
+            Set<File> nbms = getModulesToInstall (cluster);
+            if (nbms.isEmpty ()) {
                 continue;
+            }
+            
+            UpdateTracking tracking = UpdateTracking.getTracking (cluster, true);
+            if (tracking == null) {
+                throw new RuntimeException ("No update_tracking file in cluster " + cluster);
             }
             allTrackings.add (tracking);
 
-            Set<File> nbms = new HashSet<File> (tracking.getModulesToInstall ());
             nbms.retainAll (installFiles);
             
             File[] nbmFiles = nbms.toArray (new File[0]);
@@ -831,4 +829,28 @@ public final class ModuleUpdater extends Thread {
             return sb.toString();
         }
     }
+    
+    /** Compute the list of modules that should be installed into this 
+     * cluster.
+     * @param File root of cluster
+     * @return List<File> of nbm files
+     */
+    private static Set<File> getModulesToInstall (File cluster) {
+        
+        class NbmFilter implements java.io.FilenameFilter {
+            public boolean accept (File dir, String name) {
+                return name.endsWith (ModuleUpdater.NBM_EXTENSION);
+            }
+        }
+        
+        File idir = new File (cluster, ModuleUpdater.DOWNLOAD_DIR);
+        File[] arr = idir.listFiles (new NbmFilter ());
+        
+        if (arr == null) {
+            return Collections.emptySet ();
+        } else {
+            return new HashSet<File> (Arrays.asList (arr));
+        }
+    }
+
 }
