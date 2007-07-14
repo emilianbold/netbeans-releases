@@ -109,7 +109,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
 
         setLayout(new java.awt.GridBagLayout());
 
-        titleLabel.setText(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("StyleClassPropertyEditor.title"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle"); // NOI18N
+        titleLabel.setText(bundle.getString("StyleClassPropertyEditor.title")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -120,6 +121,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         add(titleLabel, gridBagConstraints);
 
         availableListScrollPane.setViewportView(availableList);
+        availableList.getAccessibleContext().setAccessibleName(bundle.getString("StyleClassPropertyEditor.availableList.AccessibleName")); // NOI18N
+        availableList.getAccessibleContext().setAccessibleDescription(bundle.getString("StyleClassPropertyEditor.availableList.AccessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -144,8 +147,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
                 handleButtonAction(evt);
             }
         });
-
         selectButtonPanel.add(selectButton);
+        selectButton.getAccessibleContext().setAccessibleDescription(bundle.getString("StyleClassPropertyEditor.addButton.AccessibleDescription")); // NOI18N
 
         deselectButton.setFont(deselectButton.getFont().deriveFont(Font.BOLD));
         deselectButton.setText("<");
@@ -158,8 +161,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
                 handleButtonAction(evt);
             }
         });
-
         selectButtonPanel.add(deselectButton);
+        deselectButton.getAccessibleContext().setAccessibleDescription(bundle.getString("StyleClassPropertyEditor.removeButton.AccessibleDescription")); // NOI18N
 
         selectAllButton.setFont(selectAllButton.getFont().deriveFont(Font.BOLD));
         selectAllButton.setText(">>");
@@ -170,8 +173,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
                 handleButtonAction(evt);
             }
         });
-
         selectButtonPanel.add(selectAllButton);
+        selectAllButton.getAccessibleContext().setAccessibleDescription(bundle.getString("StyleClassPropertyEditor.addAllButton.AccessibleDescription")); // NOI18N
 
         deselectAllButton.setFont(deselectAllButton.getFont().deriveFont(Font.BOLD));
         deselectAllButton.setText("<<");
@@ -182,8 +185,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
                 handleButtonAction(evt);
             }
         });
-
         selectButtonPanel.add(deselectAllButton);
+        deselectAllButton.getAccessibleContext().setAccessibleDescription(bundle.getString("StyleClassPropertyEditor.removeAllButton.AccessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -192,6 +195,8 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         add(selectButtonPanel, gridBagConstraints);
 
         selectedListScrollPane.setViewportView(selectedList);
+        selectedList.getAccessibleContext().setAccessibleName(bundle.getString("StyleClassPropertyEditor.selectedList.AccessibleName")); // NOI18N
+        selectedList.getAccessibleContext().setAccessibleDescription(bundle.getString("StyleClassPropertyEditor.selectedList.AccessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -203,7 +208,9 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 9);
         add(selectedListScrollPane, gridBagConstraints);
 
-        availableLabel.setText(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("StyleClassPropertyEditor.availableStyleClasses"));
+        availableLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("StyleClassPropertyEditor.availableStyleClasses.mnemonic").charAt(0));
+        availableLabel.setLabelFor(availableList);
+        availableLabel.setText(bundle.getString("StyleClassPropertyEditor.availableStyleClasses")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -212,7 +219,9 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
         add(availableLabel, gridBagConstraints);
 
-        selectedLabel.setText(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("StyleClassPropertyEditor.selectedStyleClasses"));
+        selectedLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("StyleClassPropertyEditor.selectedStyleClasses.mnemonic").charAt(0));
+        selectedLabel.setLabelFor(selectedList);
+        selectedLabel.setText(bundle.getString("StyleClassPropertyEditor.selectedStyleClasses")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -220,7 +229,6 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(selectedLabel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void handleButtonAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_handleButtonAction
