@@ -75,6 +75,12 @@ public class InstallManager {
                 if (res == null) {
                     assert firstPossible != null : "No writeable cluster found.";
                     res = firstPossible != null ? firstPossible : getUserDir ();
+                    if (ERR.isLoggable (Level.INFO)) {
+                        if (targetCluster != null) {
+                            ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
+                                    " in " + update.getUpdateElement () + " wasn't found. Will be used " + res);
+                        }
+                    }
                 }
             }
         } else {
@@ -108,6 +114,7 @@ public class InstallManager {
                 }
             }
             assert res != null : "Install cluster exists for UpdateElementImpl " + installed;
+            ERR.log (Level.FINEST, "Install dir of " + installed + " is " + res);
             
         } else {
             assert false : "Unsupported for type: " + i.getType (); // XXX

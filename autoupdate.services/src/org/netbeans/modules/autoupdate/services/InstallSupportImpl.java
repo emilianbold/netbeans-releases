@@ -79,7 +79,8 @@ public class InstallSupportImpl {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
-    private Map<UpdateElementImpl, File> element2Clusters;
+    private Map<UpdateElementImpl, File> element2Clusters = null;
+    private Set<File> downloadedFiles = null;
     private boolean isGlobal;
     private int wasDownloaded = 0;
     
@@ -100,7 +101,7 @@ public class InstallSupportImpl {
     private Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
     private Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
     
-    private ExecutorService es = Executors.newSingleThreadExecutor();
+    private ExecutorService es = null;
     
     public InstallSupportImpl (InstallSupport installSupport) {
         support = installSupport;
@@ -156,7 +157,7 @@ public class InstallSupportImpl {
         
         boolean retval =  false;
         try {
-            retval = es.submit(downloadCallable).get();
+            retval = getExecutionService ().submit (downloadCallable).get ();
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
@@ -214,7 +215,7 @@ public class InstallSupportImpl {
         };
         boolean retval =  false;
         try {
-            retval = es.submit(validationCallable).get();
+            retval = getExecutionService ().submit (validationCallable).get ();
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
@@ -295,15 +296,13 @@ public class InstallSupportImpl {
                         }
                     }
                     
-                    List<File> filesInstallNow = getFileForInstall(infos);
-                    
                     if (progress != null) progress.switchToDeterminate (moduleImpls.size ());
 
-                    if (! filesInstallNow.isEmpty()) {
+                    if (! getDownloadedFiles ().isEmpty ()) {
                         
                         // XXX: should run in single Thread
                         Thread th = org.netbeans.updater.UpdaterFrame.startFromIDE(
-                                filesInstallNow.toArray(new File [0]),
+                                getDownloadedFiles ().toArray(new File [0]),
                                 new RefreshModulesListener (progress),
                                 NbBundle.getBranding());
                         
@@ -359,11 +358,13 @@ public class InstallSupportImpl {
         
         boolean retval =  false;
         try {
-            retval = es.submit(installCallable).get();
+            retval = getExecutionService ().submit (installCallable).get ();
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
             Exceptions.printStackTrace(iex);
+        } finally {
+            getElement2Clusters ().clear ();
         }
         return retval;
     }
@@ -455,11 +456,18 @@ public class InstallSupportImpl {
         synchronized(this) {
             currentStep = STEP.CANCEL;
         }
-        for (File f : getFileForInstall (support.getContainer ().listAll ())) {
+        if (es != null) {
+            es.shutdownNow ();
+        }
+        for (File f : getDownloadedFiles ()) {
             if (f != null && f.exists ()) {
                 f.delete ();
             }
         }
+        getDownloadedFiles ().clear ();
+        
+        // also mapping elements to cluster clear because global vs. local may be changed
+        getElement2Clusters ().clear ();
     }
     
     private int doDownload (OperationInfo info, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
@@ -497,6 +505,11 @@ public class InstallSupportImpl {
     }
     
     private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
+        synchronized(this) {
+            if (currentStep == STEP.CANCEL) {
+                return -1;
+            }
+        }
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
@@ -519,6 +532,7 @@ public class InstallSupportImpl {
         // download
         try {
             String label = toUpdateImpl.getDisplayName ();
+            getDownloadedFiles ().add (dest);
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
         } catch (IOException x) {
             err.log (Level.INFO, x.getMessage (), x);
@@ -560,7 +574,6 @@ public class InstallSupportImpl {
     
     private int doValidate (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int verified) throws OperationException {
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
-        String status = null;
         
         // find target dir
         File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
@@ -750,35 +763,6 @@ public class InstallSupportImpl {
         return InstallManager.needsRestart (isUpdate, toUpdateImpl, dest);
     }
     
-    private List<File> getFileForInstall (List<? extends OperationInfo> infos) {
-        List<File> res = new ArrayList<File> ();
-        for (OperationInfo info : infos) {
-            UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
-            
-            switch (toUpdateImpl.getType ()) {
-            case MODULE :
-                res.add (getDestination ((ModuleUpdateElementImpl) toUpdateImpl));
-                break;
-            case STANDALONE_MODULE :
-            case FEATURE :
-                FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
-                Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
-                for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
-                    // skip installed element
-                    if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
-                        continue;
-                    }
-                    res.add (getDestination (moduleImpl));
-                }
-                break;
-            default:
-                // XXX: what other types
-                assert false : "Unsupported type " + toUpdateImpl;
-            }
-        }
-        return res;
-    }
-    
     private static final class RefreshModulesListener implements PropertyChangeListener  {
         private ProgressHandle handle;
         private int i;
@@ -825,5 +809,19 @@ public class InstallSupportImpl {
             element2Clusters = new HashMap<UpdateElementImpl, File> ();
         }
         return element2Clusters;
+    }
+    
+    private ExecutorService getExecutionService () {
+        if (es == null || es.isShutdown ()) {
+            es = Executors.newSingleThreadExecutor ();
+        }
+        return es;
+    }
+    
+    private Set<File> getDownloadedFiles () {
+        if (downloadedFiles == null) {
+            downloadedFiles = new HashSet<File> ();
+        }
+        return downloadedFiles;
     }
 }
