@@ -187,7 +187,11 @@ public class CmpFromDbGenerator {
             for (EntityClass entityClass : helper.getBeans()) {
                 if (helper.getTableSource().getType() == TableSource.Type.DATA_SOURCE) {
 		    try {
-                        Entity entity = findEntityForEjbClass(entityClass.getPackage() + '.' + entityClass.getClassName());
+                        String ejbClassName = entityClass.getPackage() + '.' + 
+                                ejbnames.getEntityEjbClassPrefix() + 
+                                entityClass.getClassName() + 
+                                ejbnames.getEntityEjbClassSuffix();
+                        Entity entity = findEntityForEjbClass(ejbClassName);
                         pwm.getConfigSupport().bindDatasourceReferenceForEjb(
                                 entity.getEjbName(),
                                 EnterpriseBeans.ENTITY,
