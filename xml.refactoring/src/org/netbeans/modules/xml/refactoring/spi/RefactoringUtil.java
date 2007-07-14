@@ -166,7 +166,10 @@ public class RefactoringUtil {
     }
 
     public static DataObject getDataObject(Model model) {
-        return (DataObject) model.getModelSource().getLookup().lookup(DataObject.class);
+        if(model != null)
+            return (DataObject) model.getModelSource().getLookup().lookup(DataObject.class);
+        
+        return null;
     }
     
     public static void saveTargetFile(Model target, Set<Model> all) {
