@@ -155,6 +155,8 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         addChild(upperLayer);
 
         router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer);
+        //router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
+        //router =RouterFactory.createDirectRouter();
 
         popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this, tc));
 
@@ -537,8 +539,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
 
-        public boolean isEnabled(Widget arg0) {
-            return true;
+        public boolean isEnabled(Widget widget) {            
+            NavigationCaseEdge caseNode = (NavigationCaseEdge) findObject(widget.getParentWidget());
+            return caseNode.isModifiable();
         }
 
         public String getText(Widget widget) {

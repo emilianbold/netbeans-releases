@@ -22,7 +22,6 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.IllegalComponentStateException;
 import java.awt.Image;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -31,16 +30,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleStateSet;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -96,10 +90,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
     private static final int CAPACITY = 1000;
-    
+
     private JComponent view;
-    
-    
+
+
     private static final String ACN_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACN_PageView_TC");
     private static final String ACDS_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACDS_PageView_TC");
 
@@ -114,12 +108,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //runnables = new LinkedBlockingQueue<Runnable>();
         pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
         LOG.fine("Initializing Page Flow SetupGraph");
-        
+
         setFocusable(true);
-        
-        executor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, runnables);        
+
+        executor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, runnables);
         LOG.finest("Create Executor Thread");
-        
+
         getAccessibleContext().setAccessibleDescription(ACDS_PAGEVIEW_TC);
         getAccessibleContext().setAccessibleName(ACN_PAGEVIEW_TC);
         
@@ -192,7 +186,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         setLayout(new BorderLayout());
 
         scene = new PageFlowScene(this);
-        
+
         scene.setAccessibleContext(this.getAccessibleContext());
         view = scene.createView();
 
@@ -301,9 +295,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
     }
 
-    
+
 //    private static final String ACN_PAGE = NbBundle.getMessage(PageFlowView.class, "ACN_Page");
-//    private static final String ACDS_PAGE = NbBundle.getMessage(PageFlowView.class, "ACDS_Page");    
+//    private static final String ACDS_PAGE = NbBundle.getMessage(PageFlowView.class, "ACDS_Page");
 //    private static final String ACN_PIN = NbBundle.getMessage(PageFlowView.class, "ACN_Pin");
 //    private static final String ACDS_PIN = NbBundle.getMessage(PageFlowView.class, "ACDS_Pin");
 //    private static final String ACN_EDGE = NbBundle.getMessage(PageFlowView.class, "ACN_Edge");
@@ -327,7 +321,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
 //        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
 //        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);
-
         scene.addPin(pageNode, new Pin(pageNode));
         runPinSetup(pageNode, widget);
         return widget;
@@ -336,30 +329,39 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
 
 
-    
+
     private void runPinSetup(final Page pageNode, final VMDNodeWidget widget) {
+        LOG.entering(PageFlowView.class.getName(), "runPinSetup");
         final LabelWidget loadingWidget = new LabelWidget(scene, "Loading...");
         widget.addChild(loadingWidget);
         runnables.add(new Runnable() {
+
             public void run() {
                 /* This is called in redrawPins and edges setupPinsInNode(pageNode);*/
                 /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
-                java.lang.System.out.println("    Inside Thread: " + java.util.Calendar.getInstance().getTime());
+                LOG.finest("    PFE: Inside Thread: " + java.util.Calendar.getInstance().getTime());
                 if (!pageNode.isDataNode()) {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        public void run() {
+                            widget.removeChild(loadingWidget);
+                            scene.validate();
+                        }
+                    });
                     return;
                 }
                 final java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> newPinNodes = pageNode.getPinNodes();
 
-                System.out.println("    Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
+                LOG.finest("    PFE: Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
 
                 try {
                     EventQueue.invokeAndWait(new java.lang.Runnable() {
 
                         public void run() {
-                            java.lang.System.out.println("    Starting Redraw: " + java.util.Calendar.getInstance().getTime());
+                            LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
                             java.util.Collection<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge> redrawCaseNodes = new java.util.ArrayList<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge>();
                             java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> pinNodes = new java.util.ArrayList<org.netbeans.modules.web.jsf.navigation.Pin>(scene.getPins());
-                            
+
                             widget.removeChild(loadingWidget);
                             for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : pinNodes) {
                                 if (pinNode.getPageFlowNode() == pageNode) {
@@ -381,7 +383,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                             }
                             scene.updateNodeWidgetActions(pageNode);
                             scene.validate();
-                            java.lang.System.out.println("    Ending Redraw: " + java.util.Calendar.getInstance().getTime());
+                            LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
                         }
                     });
                 } catch (InterruptedException ex) {
@@ -391,6 +393,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                 }
             }
         });
+        LOG.exiting(PageFlowView.class.getName(), "runPinSetup");
     }
 
     private void setupPinsInNode(Page pageNode) {
@@ -432,8 +435,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.addEdge(navCaseEdge);
         setEdgeSourcePin(navCaseEdge, fromPageNode);
         setEdgeTargePin(navCaseEdge, toPageNode);
-        
-        //connectionWidget.getAccessibleContext().setAccessibleName(ACN_EDGE);        
+
+        //connectionWidget.getAccessibleContext().setAccessibleName(ACN_EDGE);
         //connectionWidget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
     }
 
