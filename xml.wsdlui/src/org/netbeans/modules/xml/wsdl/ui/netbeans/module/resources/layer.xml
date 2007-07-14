@@ -32,23 +32,22 @@
             </file>
         </folder>
     </folder>
-
-    <folder name="Plugins">
-    	<folder name="XML">
-    		<folder name="GrammarQueryManagers">
-    			<file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance_hidden"/>
-
-    		</folder>
-    	</folder>
-    </folder>
-
-
+    
+    <!-- folder name="Plugins">
+        <folder name="XML">
+            <folder name="GrammarQueryManagers">
+                <file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance_hidden"/>
+            </folder>
+        </folder>
+    </folder-->
+    
+    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-wsdl+xml">
                 <folder name="Actions">
-		    <file name="org-openide-actions-EditAction.instance_hidden"/>
-		    <file name="org-openide-actions-FileSystemAction.instance_hidden"/>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-openide-actions-FileSystemAction.instance_hidden"/>
                     <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file>                 
@@ -97,16 +96,16 @@
                         <attr name="position" intvalue="1600"/>
                     </file>
                     
-                     <file name="RefactoringWhereUsed.instance">
+                    <file name="RefactoringWhereUsed.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                       <attr name="position" intvalue="1700"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
-                   
+                    
                     <file name="RefactoringAll.instance">
-                       <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                       <attr name="position" intvalue="1800"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
-                   
+                    
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1900"/>
@@ -127,14 +126,14 @@
             <file name="wsdl-validation-annotation.xml" url="../../../validation/resources/validation-annotation.xml"/>
         </folder>
         <folder name="text">
-    		<folder name="x-wsdl+xml">
-    			<folder name="Popup">
-    				<file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance">
+            <folder name="x-wsdl+xml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance">
                         <attr name="position" intvalue="4100"/>
                     </file>
-    			</folder>
-    		</folder>
-    	</folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
     <folder name="Navigator">
         <folder name="Panels">
@@ -143,37 +142,37 @@
                     <file name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
     
     <folder name="Templates">
-        <!-- Override the wsdl wizard from websvc/core -->
-    	<folder name="WebServices">
-    		<file name="WSDL.wsdl" url="WSDL.template">
-    			<attr name="position" intvalue="100"/>
+    	<!--  add wsdl wizard into webservices category -->
+        <folder name="WebServices">
+            <file name="WSDL.wsdl" url="WSDL.template">
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
-    			<attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
-    			<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
-    			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
-    			<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
-    			<attr name="templateCategory" stringvalue="wsdl"/>
-    		</file>
-    		<file name="WSDL_import.wsdl" url="WSDL_import.template"/>
-    	</folder>
-
-    	<folder name="XML">
-    		<file name="WSDL.wsdl" url="WSDL.template">
-    			<attr name="template" boolvalue="true"/>
-    			<attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
-    			<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
-    			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
-    			<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
-    			<attr name="templateCategory" stringvalue="XML"/>
-    		</file>
-    		<file name="WSDL_import.wsdl" url="WSDL_import.template"/>
-    	</folder>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
+                <attr name="templateCategory" stringvalue="wsdl"/>
+            </file>
+            <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
+        </folder>
+        
+        <folder name="XML">
+            <file name="WSDL.wsdl" url="WSDL.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+            <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
+        </folder>
     </folder>
     <folder name="Windows2">
         <folder name="Groups">
@@ -183,48 +182,48 @@
             </folder>
         </folder>
     </folder>
-
+    
     <folder name="WSDLPalette">
-    	<folder name="WSDLComponents">
-	    	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.view.grapheditor.palette.resources.Bundle"/>
-    		<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_WSDL_OPERATIONS"/>
-    		<file name="RequestReply.xml" url="../../../view/grapheditor/palette/resources/RequestReply.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_REQUESTREPLY"/>
-	    	</file>
-	    	<file name="OneWay.xml" url="../../../view/grapheditor/palette/resources/OneWay.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ONEWAYY"/>
-    		</file>
-	    	<!-- file name="Notification.xml" url="../../../view/grapheditor/palette/resources/Notification.xml"> 
+        <folder name="WSDLComponents">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.view.grapheditor.palette.resources.Bundle"/>
+            <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_WSDL_OPERATIONS"/>
+            <file name="RequestReply.xml" url="../../../view/grapheditor/palette/resources/RequestReply.xml"> 
+                <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_REQUESTREPLY"/>
+            </file>
+            <file name="OneWay.xml" url="../../../view/grapheditor/palette/resources/OneWay.xml"> 
+                <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ONEWAYY"/>
+            </file>
+            <!-- file name="Notification.xml" url="../../../view/grapheditor/palette/resources/Notification.xml"> 
     			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_NOTIFICATION" />
     		</file>    	
 	    	<file name="SolicitResponse.xml" url="../../../view/grapheditor/palette/resources/SolicitResponse.xml"> 
     			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_SOLICITRESPONSE" />
     		</file-->    	
-    		<file name="PartnerLinkType.xml" url="../../../view/grapheditor/palette/resources/PartnerLinkType.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_PARTNERLINKTYPE"/>
-    		</file>
-	    	<file name="Message.xml" url="../../../view/grapheditor/palette/resources/Message.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_MESSAGE"/>
-    		</file>
-    	</folder>
+            <file name="PartnerLinkType.xml" url="../../../view/grapheditor/palette/resources/PartnerLinkType.xml"> 
+                <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_PARTNERLINKTYPE"/>
+            </file>
+            <file name="Message.xml" url="../../../view/grapheditor/palette/resources/Message.xml"> 
+                <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_MESSAGE"/>
+            </file>
+        </folder>
     </folder>
-
+    
     <folder name="WSDLEditor">
         <file name="ws-bpel_plnktype.xsd" url="ws-bpel_plnktype.xsd">
-        <attr name="prefix" stringvalue="plink"/>
+            <attr name="prefix" stringvalue="plink"/>
         </file>
         <file name="ws-bpel_varprop.xsd" url="ws-bpel_varprop.xsd">
-        <attr name="prefix" stringvalue="vprop"/>
+            <attr name="prefix" stringvalue="vprop"/>
         </file>
         <file name="wsdl.xsd" url="wsdl.xsd">
-        <attr name="prefix" stringvalue="wsdl"/>
+            <attr name="prefix" stringvalue="wsdl"/>
         </file>
         <folder name="Definitions">
             <file name="partnerLinkType">
-            <attr name="xsdFileName" stringvalue="ws-bpel_plnktype"/>
-            <attr name="element" stringvalue="partnerLinkType"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png"/> 
+                <attr name="xsdFileName" stringvalue="ws-bpel_plnktype"/>
+                <attr name="element" stringvalue="partnerLinkType"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png"/> 
             </file>
             <folder name="MessageProperties">
                 <file name="property">
@@ -242,6 +241,6 @@
             </folder>
         </folder>
     </folder>
-
-
+    
+    
 </filesystem>
