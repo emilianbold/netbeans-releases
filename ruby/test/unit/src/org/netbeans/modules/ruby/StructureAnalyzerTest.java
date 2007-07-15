@@ -7,16 +7,17 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import javax.swing.text.Document;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.gsf.StructureItem;
 import org.netbeans.junit.NbTestCase;
 
@@ -56,7 +57,16 @@ public class StructureAnalyzerTest extends RubyTestBase {
             sb.append("\n");
             List<? extends StructureItem> children = element.getNestedItems();
             if (children != null && children.size() > 0) {
-                annotate(indent+1, sb, document, children);
+                List<? extends StructureItem> c = new ArrayList<StructureItem>(children);
+                // Sort children to make tests more stable
+                Collections.sort(c, new Comparator<StructureItem>() {
+                    public int compare(StructureItem s1, StructureItem s2) {
+                        return s1.getName().compareTo(s2.getName());
+                    }
+                    
+                });
+                
+                annotate(indent+1, sb, document, c);
             }
         }
     }
@@ -77,8 +87,6 @@ public class StructureAnalyzerTest extends RubyTestBase {
 
         CompilationInfo info = getInfo(relFilePath);
         StructureAnalyzer analyzer = new StructureAnalyzer();
-        ParserResult parserResult = info.getParserResult();
-        RubyParseResult result = (RubyParseResult)parserResult;
         HtmlFormatter formatter = new HtmlFormatter() {
             private StringBuilder sb = new StringBuilder();
             
