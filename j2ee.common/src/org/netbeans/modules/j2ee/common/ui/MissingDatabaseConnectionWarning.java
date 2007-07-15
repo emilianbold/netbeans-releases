@@ -57,7 +57,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     public static final String CANCEL_ENABLED = "cancel_enabled"; //NOI18N
     private final Border scrollPaneBorder;
     private Project project;
-    private static RequestProcessor.Task task = null;
+    private RequestProcessor.Task task = null;
     
     private MissingDatabaseConnectionWarning(Project project) {
         initComponents();
