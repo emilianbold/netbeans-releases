@@ -52,9 +52,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Pavel Buzek, John Baker
  */
-public final class MissingDatabaseConnectionWarning extends JPanel {
-    public static final String OK_ENABLED = "ok_enabled"; //NOI18N
-    public static final String CANCEL_ENABLED = "cancel_enabled"; //NOI18N
+public final class MissingDatabaseConnectionWarning extends JPanel {    
     private final Border scrollPaneBorder;
     private Project project;
     private RequestProcessor.Task task = null;
@@ -69,18 +67,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     
     private void initDatasourceList() {
         datasourceList.setCellRenderer(new DatasourceRenderer());
-        datasourceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        datasourceList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!datasourceList.isSelectionEmpty()) { // something has been selected
-                    jButtonAddConnection.setEnabled(true);
-                } else {
-                    firePropertyChange(OK_ENABLED, false, true);
-                    jButtonAddConnection.setEnabled(false);                    
-                }
-            }
-        }
-        );                
+        datasourceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);             
     }
     
     /**
@@ -96,27 +83,15 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     public static void selectDatasources(String title, String description, Project project) {
         MissingDatabaseConnectionWarning panel = new MissingDatabaseConnectionWarning(project);
         Object[] options = new Object[] {
-            DialogDescriptor.OK_OPTION,
-            DialogDescriptor.CANCEL_OPTION
+            DialogDescriptor.CLOSED_OPTION
         };
         final DialogDescriptor desc = new DialogDescriptor(panel, title, true, options,
-                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(desc);
-            dlg.getAccessibleContext().setAccessibleDescription(description);
-            panel.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(MissingDatabaseConnectionWarning.OK_ENABLED)) {
-                        Object newvalue = evt.getNewValue();
-                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                            desc.setValid(((Boolean)newvalue).booleanValue());
-                        }
-                    }
-                }
-            }
-            );
+            dlg.getAccessibleContext().setAccessibleDescription(description);            
             desc.setValid(panel.getSelectedDatasource() != null);
             panel.setSize(panel.getPreferredSize());
             dlg.pack();
