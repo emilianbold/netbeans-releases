@@ -26,8 +26,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
     getnames:METHOD:[PUBLIC]:ESCAPED{getnames}(PARAMETERS{ESCAPED{address}}):
     each_name:METHOD:[PUBLIC]:ESCAPED{each_name}(PARAMETERS{ESCAPED{address}, ESCAPED{&proc}}):
     filename:FIELD:[]:ESCAPED{filename}:
-    addr2name:FIELD:[]:ESCAPED{addr2name}:
     initialized:FIELD:[]:ESCAPED{initialized}:
+    addr2name:FIELD:[]:ESCAPED{addr2name}:
     mutex:FIELD:[]:ESCAPED{mutex}:
     name2addr:FIELD:[]:ESCAPED{name2addr}:
   DNS:CLASS:[]:ESCAPED{DNS}:
@@ -56,8 +56,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{msg}, ESCAPED{data}, ESCAPED{sock}, ESCAPED{queue}}):
         queue:ATTRIBUTE:[]:ESCAPED{queue}:
         recv:METHOD:[PUBLIC]:ESCAPED{recv}(PARAMETERS{ESCAPED{msg}}):
-        sock:FIELD:[]:ESCAPED{sock}:
         msg:FIELD:[]:ESCAPED{msg}:
+        sock:FIELD:[]:ESCAPED{sock}:
         data:FIELD:[]:ESCAPED{data}:
       UnconnectedUDP:CLASS:[]:ESCAPED{UnconnectedUDP}:
         initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}:
@@ -93,8 +93,8 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
         host:FIELD:[]:ESCAPED{host}:
       RequestError:CLASS:[]:ESCAPED{RequestError}:
       thread:FIELD:[]:ESCAPED{thread}:
-      senders:FIELD:[]:ESCAPED{senders}:
       sock:FIELD:[]:ESCAPED{sock}:
+      senders:FIELD:[]:ESCAPED{senders}:
     Config:CLASS:[]:ESCAPED{Config}:
       initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{config_info}}):
       parse_resolv_conf:METHOD:[PUBLIC, STATIC]:ESCAPED{parse_resolv_conf}(PARAMETERS{ESCAPED{filename}}):

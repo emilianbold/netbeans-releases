@@ -12,17 +12,13 @@ import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Map;
 import javax.swing.text.Document;
-import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.gsf.StructureItem;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ruby.elements.AstElement;
 
 /**
  *
@@ -73,7 +69,7 @@ public class StructureAnalyzerTest extends RubyTestBase {
     }
     
     
-    private void checkSemantic(NbTestCase test, String relFilePath) throws Exception {
+    private void checkStructure(NbTestCase test, String relFilePath) throws Exception {
         File rubyFile = new File(test.getDataDir(), relFilePath);
         if (!rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
@@ -160,23 +156,23 @@ public class StructureAnalyzerTest extends RubyTestBase {
     }
     
     public void testAnalysis() throws Exception {
-        checkSemantic(this, "testfiles/postgresql_adapter.rb");
+        checkStructure(this, "testfiles/postgresql_adapter.rb");
     }
 
     public void testAnalysis2() throws Exception {
-        checkSemantic(this, "testfiles/ape.rb");
+        checkStructure(this, "testfiles/ape.rb");
     }
 
     public void testAnalysis3() throws Exception {
-        checkSemantic(this, "testfiles/date.rb");
+        checkStructure(this, "testfiles/date.rb");
     }
 
     public void testAnalysis4() throws Exception {
-        checkSemantic(this, "testfiles/resolv.rb");
+        checkStructure(this, "testfiles/resolv.rb");
     }
 
     public void testUnused() throws Exception {
-        checkSemantic(this, "testfiles/unused.rb");
+        checkStructure(this, "testfiles/unused.rb");
     }
 
 }

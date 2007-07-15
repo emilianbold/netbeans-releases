@@ -35,8 +35,8 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   authent:FIELD:[]:ESCAPED{authent}:
   w:FIELD:[]:ESCAPED{w}:
   dianum:FIELD:[]:ESCAPED{dianum}:
-  cats:FIELD:[]:ESCAPED{cats}:
   diarefs:FIELD:[]:ESCAPED{diarefs}:
+  cats:FIELD:[]:ESCAPED{cats}:
   header:FIELD:[]:ESCAPED{header}:
   dialogs:FIELD:[]:ESCAPED{dialogs}:
   steps:FIELD:[]:ESCAPED{steps}:
