@@ -94,8 +94,10 @@
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.ruby.hints</friend>
+                <friend>org.netbeans.modules.ruby.extrahints</friend>
                 <friend>org.netbeans.modules.gototype.ruby</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
+                <friend>org.netbeans.modules.languages.erlang.platform</friend>
                 <package>org.netbeans.api.gsf</package>
                 <package>org.netbeans.api.gsf.annotations</package>
                 <package>org.netbeans.api.gsf</package>
