@@ -25,7 +25,6 @@ import javax.swing.text.Position;
 import org.netbeans.editor.*;
 import javax.swing.Action;
 import javax.swing.UIManager;
-import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.openide.util.NbBundle;
 
 import java.awt.Color;
@@ -44,18 +43,22 @@ import java.awt.event.MouseListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -72,6 +75,8 @@ import org.openide.util.Utilities;
 public final class SearchBar extends JToolBar {
 
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
+    private static final Color NOT_FOUND = new Color(220, 90, 90);
+    private static final Color INVALID_REGEXP = Color.red;
     
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
@@ -106,6 +111,7 @@ public final class SearchBar extends JToolBar {
     private JTextComponent component;
     private JButton closeButton;
     private JLabel findLabel;
+    private JComboBox incrementalSearchComboBox;
     private JTextField incrementalSearchTextField;
     private JButton findNextButton;
     private JButton findPreviousButton;
@@ -113,7 +119,7 @@ public final class SearchBar extends JToolBar {
     private JCheckBox wholeWordsCheckBox;
     private JCheckBox regexpCheckBox;
     private JCheckBox highlightCheckBox;
-    private Map findProps;
+    private Map<Object, Object> findProps;
         
     @SuppressWarnings("unchecked")
     public SearchBar(JTextComponent component) {
@@ -192,7 +198,8 @@ public final class SearchBar extends JToolBar {
         Mnemonics.setLocalizedText( findLabel, NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
         
         // configure incremental search text field
-        incrementalSearchTextField = new JTextField(10) {
+        incrementalSearchComboBox = new JComboBox()
+        {
             public Dimension getMinimumSize() {
                 return getPreferredSize();
             }
@@ -201,6 +208,8 @@ public final class SearchBar extends JToolBar {
                 return getPreferredSize();
             }
         };
+        incrementalSearchComboBox.setEditable(true);
+        incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
         
         // listen on text change
@@ -292,7 +301,7 @@ public final class SearchBar extends JToolBar {
         regexpCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Switch other checkbozes on/off
-                // matchCaseCheckBox.setEnabled(!regexpCheckBox.isSelected());
+                matchCaseCheckBox.setEnabled(!regexpCheckBox.isSelected());
                 wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
                 // Put focus back in the incremental search textField
                 incrementalSearch();
@@ -315,7 +324,7 @@ public final class SearchBar extends JToolBar {
         
 
         // configure find properties
-        findProps = new HashMap();
+        findProps = new HashMap<Object, Object>();
         findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, true);
         findProps.put(SettingsNames.FIND_WHOLE_WORDS, false);
         findProps.put(SettingsNames.FIND_WRAP_SEARCH, true);
@@ -335,7 +344,7 @@ public final class SearchBar extends JToolBar {
         add(spacer);
         
         add(findLabel);
-        add(incrementalSearchTextField);
+        add(incrementalSearchComboBox);
         addSeparator();
         add(findPreviousButton);
         add(findNextButton);
@@ -397,7 +406,6 @@ public final class SearchBar extends JToolBar {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void incrementalSearch() {
         String incrementalSearchText = incrementalSearchTextField.getText();
         boolean empty = incrementalSearchText.length() <= 0;
@@ -418,22 +426,39 @@ public final class SearchBar extends JToolBar {
         findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, false);        
         findProps.put(SettingsNames.FIND_INC_SEARCH, true);
         
-        findSupport.putFindProperty(SettingsNames.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
-        // findSupport.putFindProperties(findProps);
-        findSupport.putFindProperty(SettingsNames.FIND_WHAT, incrementalSearchText);
-        
+        findSupport.putFindProperties(findProps);
         
         // search starting at current caret position
         int caretPosition = component.getCaretPosition();
 
-        if (findSupport.incSearch(findProps, caretPosition)) {
-            // text found - reset incremental search text field's foreground
-            incrementalSearchTextField.setForeground(null);
+        if (regexpCheckBox.isSelected()) {
+            Pattern pattern;
+            try {
+                pattern = Pattern.compile(incrementalSearchText);
+            } catch (PatternSyntaxException e) {
+                pattern = null;
+            }
+            if (pattern != null) {
+                // valid regexp
+                incrementalSearchTextField.setBackground(null);
+                incrementalSearchTextField.setForeground(Color.BLACK);
+            } else {
+                // invalid regexp
+                incrementalSearchTextField.setBackground(null);
+                incrementalSearchTextField.setForeground(INVALID_REGEXP);
+            }
         } else {
-            // text not found - indicate error in incremental search
-            // text field with red foreground
-            incrementalSearchTextField.setForeground(Color.red);
-            Toolkit.getDefaultToolkit().beep();
+            if (findSupport.incSearch(findProps, caretPosition) || empty) {
+                // text found - reset incremental search text field's foreground
+                incrementalSearchTextField.setBackground(null);
+                incrementalSearchTextField.setForeground(Color.BLACK);
+            } else {
+                // text not found - indicate error in incremental search
+                // text field with red foreground
+                incrementalSearchTextField.setBackground(NOT_FOUND);
+                incrementalSearchTextField.setForeground(Color.WHITE);
+                Toolkit.getDefaultToolkit().beep();
+            }
         }
     }
 
@@ -445,26 +470,41 @@ public final class SearchBar extends JToolBar {
         find(false);
     }
 
-    @SuppressWarnings("unchecked")
     private void find(boolean next) {
         String incrementalSearchText = incrementalSearchTextField.getText();
-
+        boolean empty = incrementalSearchText.length() <= 0;
+        
+        // Add the text to the top of the list
+        for(int i = incrementalSearchComboBox.getItemCount() - 1; i >= 0; i--) {
+            String item = (String) incrementalSearchComboBox.getItemAt(i);
+            if (item.equals(incrementalSearchText)) {
+                incrementalSearchComboBox.removeItemAt(i);
+            }
+        }
+        ((MutableComboBoxModel) incrementalSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
+        incrementalSearchComboBox.setSelectedIndex(0);
+        
         // configure find properties
         FindSupport findSupport = FindSupport.getFindSupport();
 
         findProps.put(SettingsNames.FIND_WHAT, incrementalSearchText);
-        findProps.put(SettingsNames.FIND_MATCH_CASE,
-            matchCaseCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+        findProps.put(SettingsNames.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
+        findProps.put(SettingsNames.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
+        findProps.put(SettingsNames.FIND_REG_EXP, regexpCheckBox.isSelected());
         findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, Boolean.FALSE);
         findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.TRUE);
-        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+        findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
 
-        if (findSupport.find(findProps, !next)) {
+        findSupport.putFindProperties(findProps);
+        
+        if (findSupport.find(findProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
             incrementalSearchTextField.setBackground(null);
+            incrementalSearchTextField.setForeground(Color.BLACK);
         } else {
             // text not found - indicate error in incremental search text field with red foreground
-            incrementalSearchTextField.setBackground(Color.red);
+            incrementalSearchTextField.setBackground(NOT_FOUND);
+            incrementalSearchTextField.setForeground(Color.WHITE);
             Toolkit.getDefaultToolkit().beep();
         }
     }
