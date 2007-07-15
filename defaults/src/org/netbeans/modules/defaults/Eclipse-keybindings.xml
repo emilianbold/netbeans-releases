@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="expand-all-folds" key="D-MULTIPLY"/>
     <bind actionName="expand-fold" key="D-ADD"/>
     <bind actionName="fast-import" key="DS-M"/>
-    <bind actionName="find" key="FIND"/>
+    <bind actionName="incremental-search-forward" key="FIND"/>
     <bind actionName="find-next" key="D-K"/>
     <bind actionName="find-previous" key="DS-K"/>
     <bind actionName="fix-imports" key="DS-O"/>

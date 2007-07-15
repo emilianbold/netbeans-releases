@@ -73,13 +73,11 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="expand-fold" key="D-ADD"/>
     <bind actionName="expand-fold" key="D-EQUALS"/>
     <bind actionName="expand-fold" key="D-PLUS"/>
-    <bind actionName="find" key="FIND"/>
-    <bind actionName="find" key="D-F"/>
     <bind actionName="find-next" key="F3"/>
     <bind actionName="find-previous" key="S-F3"/>
     <bind actionName="find-selection" key="D-F3"/>
-    <bind actionName="incremental-search-forward" key="D-I"/>
-    <bind actionName="incremental-search-backward" key="DS-I"/>
+    <bind actionName="incremental-search-forward" key="FIND"/>
+    <bind actionName="incremental-search-forward" key="D-F"/>
     <bind actionName="format" key="OS-F"/>
     <bind actionName="goto" key="D-G"/>
     <bind actionName="insert-break" key="ENTER"/>
