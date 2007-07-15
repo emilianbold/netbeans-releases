@@ -63,6 +63,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.EditorRegistry;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Utilities;
 
@@ -521,7 +522,7 @@ public final class SearchBar extends JToolBar {
     
     @SuppressWarnings("unchecked")
     private void initBlockSearch() {
-        JTextComponent c = org.netbeans.editor.Utilities.getLastActiveComponent();
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
         String selText = null;
         int startSelection = 0;
         int endSelection = 0;
@@ -546,14 +547,19 @@ public final class SearchBar extends JToolBar {
 
             // caretPosition = bwdSearch.isSelected() ? c.getSelectionEnd() : c.getSelectionStart();
 
-            if (blockSearchVisible == false){
+            if (!blockSearchVisible){
                 selText = c.getSelectedText();
-                if (selText != null) {
+                if (selText != null && selText.length() > 0) {
                     int n = selText.indexOf( '\n' );
                     if (n >= 0 ) selText = selText.substring(0, n);
                     incrementalSearchTextField.setText(selText);
                     // findWhat.getEditor().setItem(selText);
                     // changeFindWhat(true);
+                } else {
+                    String findWhat = (String) FindSupport.getFindSupport().getFindProperty(SettingsNames.FIND_WHAT);
+                    if (findWhat != null && findWhat.length() > 0) {
+                        incrementalSearchTextField.setText(findWhat);
+                    }
                 }
             }
 
