@@ -185,10 +185,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
-                        <recursive/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.openide.dialogs</code-name-base>
                         <recursive/>
                     </test-dependency>
@@ -295,9 +291,6 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.text</code-name-base>

@@ -16,6 +16,8 @@
  */
 package org.netbeans.modules.ruby.hints.infrastructure;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,11 +28,18 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.HintsProvider;
+import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
+import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  * Class which acts on the rules and suggestions by iterating the 
@@ -68,15 +77,44 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
         
+        List<Description> descriptions = new ArrayList<Description>();
+        
         AstPath path = new AstPath();
         path.descend(root);
         
-        applyRules(NodeTypes.ROOTNODE, root, path, info, hints, result);
+        applyRules(NodeTypes.ROOTNODE, root, path, info, hints, descriptions);
         
-        scan(root, path, info, hints, result);
+        scan(root, path, info, hints, descriptions);
         path.ascend();
+        
+        if (descriptions.size() > 0) {
+            for (Description desc : descriptions) {
+                ErrorDescription errorDesc = createDescription(desc);
+                result.add(errorDesc);
+            }
+        }
     }
     
+    private ErrorDescription createDescription(Description desc) {
+        // TODO - add a hint to turn off this hint?
+        // Should be a utility or infrastructure option!
+        Rule rule = desc.getRule();
+        HintSeverity severity = RulesManager.getInstance().getSeverity(rule);
+        OffsetRange range = desc.getRange();
+        List<Fix> fixList;
+        if (desc.getFixes() != null && desc.getFixes().size() > 0) {
+            fixList = new ArrayList<Fix>(desc.getFixes().size());
+            for (org.netbeans.modules.ruby.hints.spi.Fix fix : desc.getFixes()) {
+                fixList.add(new FixWrapper(fix));
+            }
+        } else {
+            fixList = Collections.emptyList();
+        }
+        return ErrorDescriptionFactory.createErrorDescription(
+                severity.toEditorSeverity(), 
+                desc.getDescription(), fixList, desc.getFile(), range.getStart(), range.getEnd());
+        
+    }
 
     public void computeSuggestions(CompilationInfo info, List<ErrorDescription> result, int caretOffset) {
         cancelled = false;
@@ -119,6 +157,7 @@ public class RubyHintsProvider implements HintsProvider {
         }
 
         AstPath path = new AstPath(root, caretOffset);
+        List<Description> descriptions = new ArrayList<Description>();
         
         Iterator<Node> it = path.leafToRoot();
         while (it.hasNext()) {
@@ -127,32 +166,33 @@ public class RubyHintsProvider implements HintsProvider {
             }
 
             Node node = it.next();
-            applyRules(node.nodeId, node, path, info, suggestions, result);
+            applyRules(node.nodeId, node, path, info, suggestions, descriptions);
         }
         
         //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, result);
+
+        if (descriptions.size() > 0) {
+            for (Description desc : descriptions) {
+                ErrorDescription errorDesc = createDescription(desc);
+                result.add(errorDesc);
+            }
+        }
     }
 
     private void applyRules(int nodeType, Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints,
-            List<ErrorDescription> result) {
+            List<Description> result) {
         List<AstRule> rules = hints.get(nodeType);
 
         if (rules != null) {
             for (AstRule rule : rules) {
-                boolean enabled = true;
-
-                if (rule instanceof AbstractHint) {
-                    enabled = HintsSettings.isEnabled((AbstractHint)rule);
-                }
-
-                if (enabled) {
+                if (HintsSettings.isEnabled(rule)) {
                     rule.run(info, node, path, result);
                 }
             }
         }
     }
     
-    private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, List<ErrorDescription> result) {
+    private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, List<Description> result) {
         applyRules(node.nodeId, node, path, info, hints, result);
         
         @SuppressWarnings(value = "unchecked")
@@ -181,5 +221,23 @@ public class RubyHintsProvider implements HintsProvider {
     public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions) {
         this.testHints = testHints;
         this.testSuggestions = testSuggestions;
+    }
+    
+    private class FixWrapper implements Fix {
+        private org.netbeans.modules.ruby.hints.spi.Fix fix;
+        
+        FixWrapper(org.netbeans.modules.ruby.hints.spi.Fix fix) {
+            this.fix = fix;
+        }
+
+        public String getText() {
+            return fix.getDescription();
+        }
+
+        public ChangeInfo implement() throws Exception {
+            fix.implement();
+            
+            return null;
+        }
     }
 }

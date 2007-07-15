@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.ruby.hints.infrastructure;
 
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -45,6 +47,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.openide.util.NbPreferences;
 
 /** 
  * Manages rules read from the system filesystem.
@@ -94,7 +97,27 @@ public class RulesManager {
         }
         return INSTANCE;
     }
+    
+    public boolean isEnabled(Rule rule) {
+        return HintsSettings.isEnabled(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
+    }
+    
+    public HintSeverity getSeverity(Rule rule) {
+        return HintsSettings.getSeverity(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
+    }
 
+    /** Gets preferences node, which stores the options for given hint. It is not
+     * necessary to override this method unless you want to create some special
+     * behavior. The default implementation will create the the preferences node
+     * by calling <code>NbPreferences.forModule(this.getClass()).node(profile).node(getId());</code>
+     * @profile Profile to get the node for. May be null for current profile
+     * @return Preferences node for given hint.
+     */
+    public Preferences getPreferences(Rule rule, String profile) { 
+        profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
+        return NbPreferences.forModule(this.getClass()).node(profile).node(rule.getId());
+    }
+    
     public Map<String,List<ErrorRule>> getErrors() {
         return errors;
     }
@@ -110,16 +133,7 @@ public class RulesManager {
             List<AstRule> nueRules = new LinkedList<AstRule>();
             
             for (AstRule r : e.getValue()) {
-                if (!(r instanceof AbstractHint)) {
-                    if (!onLine) {
-                        nueRules.add(r);
-                    }
-                    continue;
-                }
-                
-                AbstractHint ah = (AbstractHint) r;
-                
-                Preferences p = ah.getPreferences(null);
+                Preferences p = getPreferences(r, null);
                 
                 if (p == null) {
                     if (!onLine) {
@@ -128,7 +142,7 @@ public class RulesManager {
                     continue;
                 }
                 
-                if (ah.getSeverity() == AbstractHint.HintSeverity.CURRENT_LINE_WARNING) {
+                if (getSeverity(r) == HintSeverity.CURRENT_LINE_WARNING) {
                     if (onLine) {
                         nueRules.add(r);
                     }

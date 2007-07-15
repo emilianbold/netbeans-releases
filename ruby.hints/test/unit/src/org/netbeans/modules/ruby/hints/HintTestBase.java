@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
@@ -39,10 +40,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
+import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider;
 import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -149,6 +151,12 @@ public abstract class HintTestBase extends RubyTestBase {
     }
     
     protected ComputedHints getHints(NbTestCase test, AstRule hint, String relFilePath, String caretLine) throws Exception {
+        // Make sure the hint is enabled
+        if (!HintsSettings.isEnabled(hint)) {
+            Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
+            HintsSettings.setEnabled(p, true);
+        }
+        
         File rubyFile = new File(test.getDataDir(), relFilePath);
         if (!rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
@@ -182,7 +190,7 @@ public abstract class HintTestBase extends RubyTestBase {
             testHints.put(nodeId, Collections.singletonList(hint));
         }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        if (hint instanceof AbstractHint && ((AbstractHint)hint).getSeverity() == AbstractHint.HintSeverity.CURRENT_LINE_WARNING) {
+        if (RulesManager.getInstance().getSeverity(hint) == HintSeverity.CURRENT_LINE_WARNING) {
             provider.setTestingHints(null, testHints);
             provider.computeSuggestions(info, result, caretOffset);
         } else {

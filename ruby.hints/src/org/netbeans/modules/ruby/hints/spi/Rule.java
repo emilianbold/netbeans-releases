@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.ruby.hints.spi;
 
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+
 /** Represents a rule to be run on the source.
  * Only contains the basic identification and UI properties of the rule. 
  * Instances of the rules can be placed into the system filesystem.
@@ -41,7 +44,28 @@ public interface Rule {
      */
     public String getDescription();
 
+    /** Finds out whether the rule is currently enabled.
+     * @return true if enabled false otherwise.
+     */
+    public boolean getDefaultEnabled();
+    
+    /** Gets current severiry of the hint.
+     * @return Hints severity in current profile.
+     */
+    public HintSeverity getDefaultSeverity();
+    
+    
     // XXX Add Others
     // public JPanel getCustomizer() or Hash map getParameters()
+//    /** Gets the UI description for this rule. It is fine to return null
+//     * to get the default behavior. Notice that the Preferences node is a copy
+//     * of the node returned from {link:getPreferences()}. This is in oder to permit 
+//     * canceling changes done in the options dialog.<BR>
+//     * Default implementation return null, which results in no customizer.
+//     * It is fine to return null (as default implementation does)
+//     * @param node Preferences node the customizer should work on.
+//     * @return Component which will be shown in the options dialog.
+//     */    
+    public JComponent getCustomizer(Preferences node);
 
 }

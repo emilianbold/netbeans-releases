@@ -21,15 +21,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.NodeTypes;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -38,13 +39,12 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.Formatter;
-import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
+import org.netbeans.modules.ruby.hints.spi.AstRule;
+import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.Fix;
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -69,11 +69,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class ExpandSameLineDef extends AbstractHint {
-
-    public ExpandSameLineDef() {
-        super(true, true, AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
-    }
+public class ExpandSameLineDef implements AstRule {
 
     public Set<Integer> getKinds() {
         Set<Integer> integers = new HashSet<Integer>();
@@ -83,7 +79,7 @@ public class ExpandSameLineDef extends AbstractHint {
         return integers;
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, List<ErrorDescription> result) {
+    public void run(CompilationInfo info, Node node, AstPath path, List<Description> result) {
         // Look for use of deprecated fields
         if (node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE || node.nodeId == NodeTypes.CLASSNODE) {
             ISourcePosition pos = node.getPosition();
@@ -99,8 +95,8 @@ public class ExpandSameLineDef extends AbstractHint {
                     }
                     List<Fix> fixList = Collections.<Fix>singletonList(new ExpandLineFix(info, path));
 
-                    ErrorDescription desc = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), 
-                            getDisplayName(), fixList, info.getFileObject(), pos.getStartOffset(), pos.getEndOffset());
+                    OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList);
                     result.add(desc);
                     
                     // Exit; don't process children such that a def inside a class all
@@ -142,7 +138,7 @@ public class ExpandSameLineDef extends AbstractHint {
             this.path = path;
         }
 
-        public String getText() {
+        public String getDescription() {
             String code = path.leaf().nodeId == NodeTypes.DEFNNODE ? "def" : "class";
             return NbBundle.getMessage(ExpandSameLineDef.class, "ExpandLineFix", code);
         }
@@ -172,7 +168,7 @@ public class ExpandSameLineDef extends AbstractHint {
          * so we don't get multiple newlines for places where both the AST and
          * the semicolons suggest we need newlines.
          */
-        public ChangeInfo implement() throws Exception {
+        public void implement() throws Exception {
             BaseDocument doc = (BaseDocument)info.getDocument();
             ISourcePosition pos = path.leaf().getPosition();
             int startOffset = pos.getStartOffset();
@@ -259,8 +255,26 @@ public class ExpandSameLineDef extends AbstractHint {
                     doc.atomicUnlock();
                 }
             }
-            
-            return null;
         }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 }

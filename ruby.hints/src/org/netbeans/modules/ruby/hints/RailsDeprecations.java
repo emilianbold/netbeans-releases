@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
@@ -33,10 +33,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.ruby.hints.spi.AstRule;
+import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.Fix;
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.openide.util.NbBundle;
 
 
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class RailsDeprecations extends AbstractHint {
+public class RailsDeprecations implements AstRule {
     static Set<String> deprecatedFields = new HashSet<String>();
     static Map<String,String> deprecatedMethods = new HashMap<String,String>();
     static {
@@ -98,7 +98,6 @@ public class RailsDeprecations extends AbstractHint {
     }
 
     public RailsDeprecations() {
-        super(true, true, AbstractHint.HintSeverity.WARNING);
     }
 
 
@@ -106,7 +105,7 @@ public class RailsDeprecations extends AbstractHint {
         return Collections.singleton(NodeTypes.ROOTNODE);
     }
 
-    public void run(CompilationInfo info, Node root, AstPath path, List<ErrorDescription> result) {
+    public void run(CompilationInfo info, Node root, AstPath path, List<Description> result) {
         if (root == null) {
             return;
         }
@@ -140,7 +139,7 @@ public class RailsDeprecations extends AbstractHint {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecationDesc");
     }
 
-    private void scan(CompilationInfo info, Node node, List<ErrorDescription> result) {
+    private void scan(CompilationInfo info, Node node, List<Description> result) {
         // Look for use of deprecated fields
         if (node.nodeId == NodeTypes.INSTVARNODE || node.nodeId == NodeTypes.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
@@ -173,13 +172,24 @@ public class RailsDeprecations extends AbstractHint {
         }
     }
 
-    private void addFix(CompilationInfo info, Node node, List<ErrorDescription> result, String displayName) {
+    private void addFix(CompilationInfo info, Node node, List<Description> result, String displayName) {
         OffsetRange range = AstUtilities.getNameRange(node);
 
-        ErrorDescription desc = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(),
-                displayName, Collections.<Fix>emptyList(), info.getFileObject(), range.getStart(), range.getEnd());
+        Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList());
         result.add(desc);
 
         // TODO - add a fix to turn off this hint? - Should be a utility or infrastructure option!
+    }
+
+    public boolean getDefaultEnabled() {
+        return false;
+    }
+
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 }

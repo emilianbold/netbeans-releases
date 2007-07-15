@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.ruby.hints.spi;
 
-import org.netbeans.modules.ruby.hints.spi.Rule;
 import java.util.List;
 import java.util.Set;
 import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.AstPath;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  * Represents a rule to be run on the source file, passing in some
@@ -45,5 +43,5 @@ public interface AstRule extends Rule {
      * Run the test on given CompilationUnit and return list of Errors or
      * warrnings to be shown in the editor.
      */
-    public void run(CompilationInfo compilationInfo, Node node, AstPath path, List<ErrorDescription> result);
+    public void run(CompilationInfo compilationInfo, Node node, AstPath path, List<Description> result);
 }

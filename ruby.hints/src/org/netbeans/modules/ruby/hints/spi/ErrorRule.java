@@ -22,6 +22,7 @@ package org.netbeans.modules.ruby.hints.spi;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.spi.editor.hints.Fix;
 
 /** 
@@ -41,7 +42,7 @@ public interface ErrorRule<T> extends Rule {//XXX: should ErrorRule extend Rule?
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset/*, TreePath treePath*/, Data<T> data);
+    public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, AstPath path, Data<T> data);
 
     public void cancel();
     

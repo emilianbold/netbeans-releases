@@ -47,12 +47,12 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
+import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.Rule;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-
-import static org.netbeans.modules.ruby.hints.infrastructure.AbstractHint.*;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -61,7 +61,7 @@ import static org.netbeans.modules.ruby.hints.infrastructure.AbstractHint.*;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
-    private Map<AbstractHint,ModifiedPreferences> changes;
+    private Map<Rule,ModifiedPreferences> changes;
     
     private static Map<HintSeverity,Integer> severity2index;
     
@@ -88,7 +88,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private JEditorPane descriptionTextArea;
     
     HintsPanelLogic() {
-        changes = new HashMap<AbstractHint, ModifiedPreferences>();        
+        changes = new HashMap<Rule, ModifiedPreferences>();        
     }
     
     void connect( JTree errorTree, JComboBox severityComboBox, 
@@ -125,9 +125,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     synchronized void applyChanges() {
-        for (AbstractHint hint : changes.keySet()) {
+        for (Rule hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
-            mn.store(hint.getPreferences(HintsSettings.getCurrentProfileId()));            
+            mn.store(RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId()));            
         }
     }
     
@@ -137,15 +137,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         return !changes.isEmpty();
     }
     
-    synchronized Preferences getCurrentPrefernces( AbstractHint hint ) {
+    synchronized Preferences getCurrentPrefernces( Rule hint ) {
         Preferences node = changes.get(hint);
-        return node == null ? hint.getPreferences( HintsSettings.getCurrentProfileId() ) : node;
+        return node == null ? RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId() ) : node;
     }
     
-    synchronized Preferences getPreferences4Modification( AbstractHint hint ) {        
+    synchronized Preferences getPreferences4Modification( Rule hint ) {        
         Preferences node = changes.get(hint);        
         if ( node == null ) {
-            node = new ModifiedPreferences( hint.getPreferences( HintsSettings.getCurrentProfileId() ) );
+            node = new ModifiedPreferences( RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId() ) );
             changes.put( hint, (ModifiedPreferences)node);
         }        
         return node;                
@@ -154,8 +154,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     
     static Object getUserObject( TreePath path ) {
-        if( path == null )
+        if( path == null ) {
             return null;
+        }
         DefaultMutableTreeNode tn = (DefaultMutableTreeNode)path.getLastPathComponent();
         return tn.getUserObject();
     }
@@ -168,8 +169,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for( int i = 0; i < node.getChildCount(); i++ ) {
             DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
             Object o = ch.getUserObject();
-            if ( o instanceof AbstractHint ) {
-                AbstractHint hint = (AbstractHint)o;
+            if ( o instanceof Rule ) {
+                Rule hint = (Rule)o;
                 if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint)) ) {
                     return true;
                 }
@@ -227,8 +228,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof AbstractHint ) {
-            AbstractHint hint = (AbstractHint) o;
+        if ( o instanceof Rule ) {
+            Rule hint = (Rule) o;
             
             // Enable components
             componentsSetEnabled(true);
@@ -272,8 +273,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof AbstractHint ) {
-            AbstractHint hint = (AbstractHint) o;
+        if ( o instanceof Rule ) {
+            Rule hint = (Rule) o;
             Preferences p = getPreferences4Modification(hint);
             
             if( severityComboBox.equals( e.getSource() ) )
@@ -314,8 +315,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
-        if ( o instanceof AbstractHint ) {
-            AbstractHint hint = (AbstractHint)o;
+        if ( o instanceof Rule ) {
+            Rule hint = (Rule)o;
             boolean value = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
             Preferences mn = getPreferences4Modification(hint);
             HintsSettings.setEnabled(mn, !value);
@@ -328,8 +329,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             for( int i = 0; i < node.getChildCount(); i++ ) {
                 DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);                
                 Object cho = ch.getUserObject();
-                if ( cho instanceof AbstractHint ) {
-                    AbstractHint hint = (AbstractHint)cho;
+                if ( cho instanceof Rule ) {
+                    Rule hint = (Rule)cho;
                     boolean cv = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
                     if ( cv != value ) {                    
                         Preferences mn = getPreferences4Modification(hint);

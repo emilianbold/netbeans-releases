@@ -35,9 +35,8 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
 import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
-import static org.netbeans.modules.ruby.hints.infrastructure.AbstractHint.*;
+import org.netbeans.modules.ruby.hints.spi.Rule;
 
 
 final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
@@ -251,8 +250,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             renderer.setText( getFileObjectLocalizedName(fo) );
             renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
         }
-        else if ( data instanceof AbstractHint ) {
-            AbstractHint treeRule = (AbstractHint)data;
+        else if ( data instanceof Rule ) {
+            Rule treeRule = (Rule)data;
             renderer.setText( treeRule.getDisplayName() );            
             
             Preferences node = logic.getCurrentPrefernces(treeRule);                        

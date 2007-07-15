@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
@@ -33,11 +35,10 @@ import org.netbeans.api.gsf.EditRegions;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.infrastructure.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.ruby.hints.spi.AstRule;
+import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.Fix;
+import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.openide.util.NbBundle;
 
 /**
@@ -45,13 +46,15 @@ import org.openide.util.NbBundle;
  * that already exists in scope when the block is initiated.
  * This will (-possibly- unintentionally) reassign the local variable
  * so might be something the user want to be alerted to
+ * 
+ * @todo Doesn't seem to work for params
+ * @todo Don't warn on last lines?
  *
  * @author Tor Norbye
  */
-public class BlockVarReuse extends AbstractHint {
+public class BlockVarReuse implements AstRule {
 
     public BlockVarReuse() {
-        super(true, true, AbstractHint.HintSeverity.WARNING);
     }
 
     public Set<Integer> getKinds() {
@@ -74,7 +77,7 @@ public class BlockVarReuse extends AbstractHint {
         return NbBundle.getMessage(BlockVarReuse.class, "UnintentionalSideEffectDesc");
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, List<ErrorDescription> result) {
+    public void run(CompilationInfo info, Node node, AstPath path, List<Description> result) {
         if (node.nodeId == NodeTypes.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
@@ -93,8 +96,7 @@ public class BlockVarReuse extends AbstractHint {
 
                     // TODO - add a hint to turn off this hint?
                     // Should be a utility or infrastructure option!
-                    ErrorDescription desc = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), 
-                            getDisplayName(), fixList, info.getFileObject(), range.getStart(), range.getEnd());
+                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList);
                     result.add(desc);
                 }
             }
@@ -115,7 +117,7 @@ public class BlockVarReuse extends AbstractHint {
             this.renameLocal = renameLocal;
         }
 
-        public String getText() {
+        public String getDescription() {
             if (renameLocal) {
                 return NbBundle.getMessage(BlockVarReuse.class, "ChangeLocalVarName");
             } else {
@@ -123,7 +125,7 @@ public class BlockVarReuse extends AbstractHint {
             }
         }
 
-        public ChangeInfo implement() throws Exception {
+        public void implement() throws Exception {
             // Refactoring isn't necessary here since local variables and block
             // variables are limited to the local scope, so we can accurately just
             // find their positions using the AST and let the user edit them synchronously.
@@ -139,8 +141,6 @@ public class BlockVarReuse extends AbstractHint {
 
             // Initiate synchronous editing:
             EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
-
-            return null;
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
@@ -190,5 +190,25 @@ public class BlockVarReuse extends AbstractHint {
 
             return ranges;
         }
+
+        public boolean isSafe() {
+            return false;
+        }
+
+        public boolean isInteractive() {
+            return true;
+        }
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
     }
 }
