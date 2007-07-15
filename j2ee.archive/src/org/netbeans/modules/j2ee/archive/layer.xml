@@ -54,4 +54,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         -->
     </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-j2ee-archiveproject">
+            <folder name="Lookup"/>
+        </folder>
+    </folder>
+    
 </filesystem>

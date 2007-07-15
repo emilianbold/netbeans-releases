@@ -53,6 +53,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -189,7 +190,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         
         private boolean verbose = Boolean.getBoolean("archiveproject.lookup.verbose");
         
-        Lookup inner = Lookups.fixed(new Object[] {
+        Lookup inner = LookupProviderSupport.createCompositeLookup(Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
@@ -210,7 +211,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             ArchiveProject.this,
             new MyOpenHook(),
             new ProjectXmlSaved(),            
-        });
+        }), "Projects/org-netbeans-modules-j2ee-archiveproject/Lookup");
                 
         public <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
             Item<T> retValue;
@@ -220,10 +221,10 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                 StackTraceElement[] sTEs = Thread.currentThread().getStackTrace();
                 ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
                         NbBundle.getMessage(ArchiveProject.class,"LOOKUP_MISS",template.toString(),sTEs[3],sTEs[4]));
-            }
+    }
             return retValue;
         }
-
+    
         public <T> Lookup.Result<T> lookupResult(Class<T> clazz) {
             Result<T> retValue;
             
