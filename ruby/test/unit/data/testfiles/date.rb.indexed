@@ -1,0 +1,169 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/date.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  class : Date
+  class-ig : date
+  constant : ABBR_DAYNAMES
+  constant : ABBR_MONTHNAMES
+  constant : DAYNAMES
+  constant : ENGLAND
+  constant : GREGORIAN
+  constant : ITALY
+  constant : JULIAN
+  constant : MONTHNAMES
+  field : ajd
+  field : of
+  field : sg
+  fqn : Date
+  method : +(n)
+  method : -(x)
+  method : <<(n)
+  method : <=>(other)
+  method : ===(other)
+  method : >>(n)
+  method : _dump(limit)
+  method : _load(str):s
+  method : ajd
+  method : ajd_to_amjd(ajd):s
+  method : ajd_to_jd(ajd,of):s
+  method : amjd
+  method : amjd_to_ajd(amjd):s
+  method : civil(y,m,d,sg):si
+  method : civil:i
+  method : civil_to_jd(y,m,d,sg):s
+  method : commercial(y,w,d,sg):si
+  method : commercial:i
+  method : commercial_to_jd(y,w,d,ns):s
+  method : cwday
+  method : cweek
+  method : cwyear
+  method : day_fraction
+  method : day_fraction_to_time(fr):s
+  method : downto(min,&block)
+  method : england
+  method : eql?(other)
+  method : gregorian
+  method : gregorian_leap?(y):s
+  method : hash
+  method : hour:i
+  method : initialize(ajd,of,sg):i
+  method : inspect
+  method : italy
+  method : jd
+  method : jd(jd,sg):s
+  method : jd_to_ajd(jd,fr,of):s
+  method : jd_to_civil(jd,sg):s
+  method : jd_to_commercial(jd,sg):s
+  method : jd_to_ld(jd):s
+  method : jd_to_mjd(jd):s
+  method : jd_to_ordinal(jd,sg):s
+  method : jd_to_wday(jd):s
+  method : julian
+  method : julian_leap?(y):s
+  method : ld
+  method : ld_to_jd(ld):s
+  method : leap?
+  method : mday
+  method : min:i
+  method : mjd
+  method : mjd_to_jd(mjd):s
+  method : mon
+  method : new(ajd,of,sg):is
+  method : new_offset(of):i
+  method : new_start(sg)
+  method : new_with_hash(elem,sg):s
+  method : ns?
+  method : ns?(jd,sg):s
+  method : offset:i
+  method : once(*ids):s
+  method : ordinal(y,d,sg):si
+  method : ordinal:i
+  method : ordinal_to_jd(y,d,sg):s
+  method : os?
+  method : os?(jd,sg):s
+  method : parse(str,comp,sg):s
+  method : sec:i
+  method : sec_fraction:i
+  method : start
+  method : step(limit,step)
+  method : strptime(str,fmt,sg):s
+  method : succ
+  method : time:i
+  method : time_to_day_fraction(h,min,s):s
+  method : to_s
+  method : today(sg):s
+  method : upto(max,&block)
+  method : valid_civil?(y,m,d,sg):s
+  method : valid_commercial?(y,w,d,sg):s
+  method : valid_jd?(jd,sg):s
+  method : valid_ordinal?(y,d,sg):s
+  method : wday
+  method : yday
+  method : year
+  method : zone:i
+  source : <TESTURL>/date.rb
+
+Not Indexed:
+  attrs : c
+  includes : Comparable
+  requires : rational,date/format
+
+
+Document 2
+Delete:
+Indexed:
+  class : DateTime
+  class-ig : datetime
+  extends : Date
+  fqn : DateTime
+  method : civil(y,m,d,h,min,s,of,sg):s
+  method : commercial(y,w,d,h,min,s,of,sg):s
+  method : jd(jd,h,min,s,of,sg):s
+  method : new_with_hash(elem,sg):s
+  method : now(sg):s
+  method : ordinal(y,d,h,min,s,of,sg):s
+  method : parse(str,comp,sg):s
+  method : strptime(str,fmt,sg):s
+  method : valid_time?(h,min,s):s
+  source : <TESTURL>/date.rb
+
+Not Indexed:
+  attrs : c
+  requires : rational,date/format
+
+
+Document 3
+Delete:
+Indexed:
+  class : Date
+  class-ig : date
+  fqn : Date
+  source : <TESTURL>/date.rb
+
+Not Indexed:
+  attrs : c
+  requires : rational,date/format
+
+
+Document 4
+Delete:
+Indexed:
+  class : DateTime
+  class-ig : datetime
+  extends : Date
+  fqn : DateTime
+  source : <TESTURL>/date.rb
+
+Not Indexed:
+  attrs : c
+  requires : rational,date/format

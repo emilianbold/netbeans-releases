@@ -1,0 +1,17 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/action_controller.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  source : <TESTURL>/action_controller.rb
+
+Not Indexed:
+  requires : action_controller/pagination,action_controller/mime_responds,action_controller/session_management,action_controller/layout,action_controller/deprecated_dependencies,action_controller/base,rubygems,action_controller/macros/in_place_editing,action_controller/benchmarking,action_controller/flash,action_controller/helpers,action_controller/caching,action_controller/scaffolding,action_controller/macros/auto_complete,action_controller/deprecated_redirects,action_controller/deprecated_request_methods,active_support,action_controller/verification,action_controller/streaming,action_controller/filters,action_controller/cgi_process,action_controller/components,action_controller/cookies,action_view,action_controller/rescue,action_controller/request

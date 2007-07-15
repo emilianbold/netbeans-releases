@@ -1,0 +1,17 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/action_web_service.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  source : <TESTURL>/action_web_service.rb
+
+Not Indexed:
+  requires : action_web_service/scaffolding,action_web_service/client,action_web_service/struct,action_web_service/protocol,active_support,action_controller,action_web_service/invocation,active_record,rubygems,action_web_service/casting,action_web_service/container,action_web_service/dispatcher,action_web_service/base,action_web_service/support/signature_types,action_web_service/api,action_web_service/support/class_inheritable_options

@@ -1,0 +1,17 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/action_mailer.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  source : <TESTURL>/action_mailer.rb
+
+Not Indexed:
+  requires : net/smtp,action_controller,action_mailer/helpers,tmail,action_mailer/mail_helper,action_mailer/base,rubygems,action_mailer/quoting

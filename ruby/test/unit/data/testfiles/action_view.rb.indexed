@@ -1,0 +1,17 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/action_view.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  source : <TESTURL>/action_view.rb
+
+Not Indexed:
+  requires : action_view/partials,action_view/base

@@ -1,0 +1,64 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/ape.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  class : Ape
+  class-ig : ape
+  field : authent
+  field : cats
+  field : dialogs
+  field : dianum
+  field : diarefs
+  field : footer
+  field : header
+  field : lnum
+  field : output
+  field : steps
+  field : w
+  fqn : Ape
+  method : check(uri,username,password,requested_e_coll,requested_m_coll)
+  method : check_new_entry(as_posted,new_entry,desc)
+  method : check_resource(uri,name,content_type,report)
+  method : compare1(e1,e2,e1Name,e2Name,field)
+  method : compare_entries(e1,e2,e1Name,e2Name)
+  method : end_list
+  method : error(message,crumb_key)
+  method : find_entry(feed_uri,name,id,report)
+  method : footer(message)
+  method : good(message,crumb_key)
+  method : header(uri)
+  method : info(message)
+  method : initialize(args):i
+  method : line
+  method : list_item(message)
+  method : might_fail(uri,requested_e_coll,requested_m_coll)
+  method : new(args):is
+  method : report(output)
+  method : report_html(output)
+  method : report_li(dialog,marker,text)
+  method : report_text
+  method : save_dialog(name,actor)
+  method : show_crumbs(key)
+  method : show_message(crumb,tf)
+  method : start_list(message)
+  method : step(message)
+  method : test_entry_posts(entry_collection)
+  method : test_media_linkage(coll)
+  method : test_media_posts(media_collection)
+  method : test_sorting(coll)
+  method : warning(message,crumb_key)
+  method : write_mark(mark)
+  source : <TESTURL>/ape.rb
+
+Not Indexed:
+  attrs : c
+  requires : rexml/document,html,categories,escaper,putter,feed,crumbs,rubygems,poster,getter,service,validator,builder,samples,deleter,entry,names,authent,collection

@@ -1,0 +1,1037 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/resolv.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  class : ResolvError
+  class-ig : resolverror
+  extends : StandardError
+  fqn : Resolv::ResolvError
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 2
+Delete:
+Indexed:
+  class : ResolvTimeout
+  class-ig : resolvtimeout
+  extends : TimeoutError
+  fqn : Resolv::ResolvTimeout
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 3
+Delete:
+Indexed:
+  class : Hosts
+  class-ig : hosts
+  constant : DefaultFileName
+  constant : DefaultFileName
+  field : addr2name
+  field : filename
+  field : initialized
+  field : mutex
+  field : name2addr
+  fqn : Resolv::Hosts
+  method : each_address(name,&proc)
+  method : each_name(address,&proc)
+  method : getaddress(name)
+  method : getaddresses(name)
+  method : getname(address)
+  method : getnames(address)
+  method : initialize(filename):i
+  method : lazy_initialize
+  method : new(filename):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 4
+Delete:
+Indexed:
+  attribute : queue
+  class : Sender
+  class-ig : sender
+  field : data
+  field : msg
+  field : sock
+  fqn : Resolv::DNS::Requester::Sender
+  method : initialize(msg,data,sock,queue):i
+  method : new(msg,data,sock,queue):is
+  method : recv(msg)
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 5
+Delete:
+Indexed:
+  class : Sender
+  class-ig : sender
+  extends : Requester::Sender
+  field : host
+  field : port
+  fqn : Resolv::DNS::Requester::UnconnectedUDP::Sender
+  method : initialize(msg,data,sock,host,port,queue):i
+  method : new(msg,data,sock,host,port,queue):is
+  method : send
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester::UnconnectedUDP
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 6
+Delete:
+Indexed:
+  class : UnconnectedUDP
+  class-ig : unconnectedudp
+  extends : Requester
+  field : id
+  field : sock
+  field : thread
+  fqn : Resolv::DNS::Requester::UnconnectedUDP
+  method : initialize:i
+  method : new:is
+  method : sender(msg,data,queue,host,port)
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 7
+Delete:
+Indexed:
+  class : Sender
+  class-ig : sender
+  extends : Requester::Sender
+  fqn : Resolv::DNS::Requester::ConnectedUDP::Sender
+  method : send
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester::ConnectedUDP
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 8
+Delete:
+Indexed:
+  class : ConnectedUDP
+  class-ig : connectedudp
+  extends : Requester
+  field : host
+  field : id
+  field : port
+  field : sock
+  field : thread
+  fqn : Resolv::DNS::Requester::ConnectedUDP
+  method : initialize(host,port):i
+  method : new(host,port):is
+  method : sender(msg,data,queue,host,port)
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 9
+Delete:
+Indexed:
+  class : Sender
+  class-ig : sender
+  extends : Requester::Sender
+  fqn : Resolv::DNS::Requester::TCP::Sender
+  method : send
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester::TCP
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 10
+Delete:
+Indexed:
+  class : TCP
+  class-ig : tcp
+  extends : Requester
+  field : host
+  field : id
+  field : port
+  field : senders
+  field : sock
+  field : thread
+  fqn : Resolv::DNS::Requester::TCP
+  method : initialize(host,port):i
+  method : new(host,port):is
+  method : sender(msg,data,queue,host,port)
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 11
+Delete:
+Indexed:
+  class : RequestError
+  class-ig : requesterror
+  extends : StandardError
+  fqn : Resolv::DNS::Requester::RequestError
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Requester
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 12
+Delete:
+Indexed:
+  class : Requester
+  class-ig : requester
+  field : senders
+  field : sock
+  field : thread
+  fqn : Resolv::DNS::Requester
+  method : close
+  method : delete(arg)
+  method : initialize:i
+  method : new:is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 13
+Delete:
+Indexed:
+  class : NXDomain
+  class-ig : nxdomain
+  extends : ResolvError
+  fqn : Resolv::DNS::Config::NXDomain
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Config
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 14
+Delete:
+Indexed:
+  class : OtherResolvError
+  class-ig : otherresolverror
+  extends : ResolvError
+  fqn : Resolv::DNS::Config::OtherResolvError
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Config
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 15
+Delete:
+Indexed:
+  class : Config
+  class-ig : config
+  constant : InitialTimeout
+  field : config_info
+  field : initialized
+  field : mutex
+  field : nameserver
+  field : ndots
+  field : search
+  fqn : Resolv::DNS::Config
+  method : default_config_hash(filename):s
+  method : generate_candidates(name)
+  method : generate_timeouts
+  method : initialize(config_info):i
+  method : lazy_initialize
+  method : new(config_info):is
+  method : parse_resolv_conf(filename):s
+  method : resolv(name)
+  method : single?
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 16
+Delete:
+Indexed:
+  class : OpCode
+  class-ig : opcode
+  constant : IQuery
+  constant : Notify
+  constant : Query
+  constant : Status
+  constant : Update
+  fqn : Resolv::DNS::OpCode
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : m
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 17
+Delete:
+Indexed:
+  class : RCode
+  class-ig : rcode
+  constant : BADALG
+  constant : BADKEY
+  constant : BADMODE
+  constant : BADNAME
+  constant : BADSIG
+  constant : BADTIME
+  constant : BADVERS
+  constant : FormErr
+  constant : NXDomain
+  constant : NXRRSet
+  constant : NoError
+  constant : NotAuth
+  constant : NotImp
+  constant : NotZone
+  constant : Refused
+  constant : ServFail
+  constant : YXDomain
+  constant : YXRRSet
+  fqn : Resolv::DNS::RCode
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : m
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 18
+Delete:
+Indexed:
+  class : DecodeError
+  class-ig : decodeerror
+  extends : StandardError
+  fqn : Resolv::DNS::DecodeError
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 19
+Delete:
+Indexed:
+  class : EncodeError
+  class-ig : encodeerror
+  extends : StandardError
+  fqn : Resolv::DNS::EncodeError
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 20
+Delete:
+Indexed:
+  attribute : downcase
+  attribute : string
+  class : Str
+  class-ig : str
+  fqn : Resolv::DNS::Label::Str
+  method : ==(other)
+  method : eql?(other)
+  method : hash
+  method : initialize(string):i
+  method : inspect
+  method : new(string):is
+  method : to_s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Label
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 21
+Delete:
+Indexed:
+  class : Label
+  class-ig : label
+  fqn : Resolv::DNS::Label
+  method : split(arg):s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : m
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 22
+Delete:
+Indexed:
+  class : Name
+  class-ig : name
+  field : absolute
+  field : labels
+  fqn : Resolv::DNS::Name
+  method : ==(other)
+  method : [](i)
+  method : absolute?
+  method : create(arg):s
+  method : hash
+  method : initialize(labels,absolute):i
+  method : inspect
+  method : length
+  method : new(labels,absolute):is
+  method : subdomain_of?(other)
+  method : to_a
+  method : to_s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 23
+Delete:
+Indexed:
+  class : MessageEncoder
+  class-ig : messageencoder
+  field : data
+  field : names
+  fqn : Resolv::DNS::Message::MessageEncoder
+  method : initialize:i
+  method : new:is
+  method : put_bytes(d)
+  method : put_label(d)
+  method : put_labels(d)
+  method : put_length16
+  method : put_name(d)
+  method : put_pack(template,*d)
+  method : put_string(d)
+  method : put_string_list(ds)
+  method : to_s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Message
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 24
+Delete:
+Indexed:
+  class : MessageDecoder
+  class-ig : messagedecoder
+  field : data
+  field : index
+  field : limit
+  fqn : Resolv::DNS::Message::MessageDecoder
+  method : get_bytes(len)
+  method : get_label
+  method : get_labels(limit)
+  method : get_length16
+  method : get_name
+  method : get_question
+  method : get_rr
+  method : get_string
+  method : get_string_list
+  method : get_unpack(template)
+  method : initialize(data):i
+  method : new(data):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Message
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 25
+Delete:
+Indexed:
+  attribute : aa
+  attribute : additional
+  attribute : answer
+  attribute : authority
+  attribute : id
+  attribute : opcode
+  attribute : qr
+  attribute : question
+  attribute : ra
+  attribute : rcode
+  attribute : rd
+  attribute : tc
+  class : Message
+  class-ig : message
+  field : identifier:s
+  fqn : Resolv::DNS::Message
+  method : ==(other)
+  method : add_additional(name,ttl,data)
+  method : add_answer(name,ttl,data)
+  method : add_authority(name,ttl,data)
+  method : add_question(name,typeclass)
+  method : decode(m):s
+  method : each_additional
+  method : each_answer
+  method : each_authority
+  method : each_question
+  method : each_resource
+  method : encode
+  method : initialize(id):i
+  method : new(id):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 26
+Delete:
+Indexed:
+  class : Query
+  class-ig : query
+  fqn : Resolv::DNS::Query
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 27
+Delete:
+Indexed:
+  attribute : data
+  class : Generic
+  class-ig : generic
+  extends : Resource
+  fqn : Resolv::DNS::Resource::Generic
+  method : create(type_value,class_value):s
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(data):i
+  method : new(data):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 28
+Delete:
+Indexed:
+  attribute : name
+  class : DomainName
+  class-ig : domainname
+  extends : Resource
+  fqn : Resolv::DNS::Resource::DomainName
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(name):i
+  method : new(name):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 29
+Delete:
+Indexed:
+  class : NS
+  class-ig : ns
+  constant : TypeValue
+  extends : DomainName
+  fqn : Resolv::DNS::Resource::NS
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 30
+Delete:
+Indexed:
+  class : CNAME
+  class-ig : cname
+  constant : TypeValue
+  extends : DomainName
+  fqn : Resolv::DNS::Resource::CNAME
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 31
+Delete:
+Indexed:
+  attribute : expire
+  attribute : minimum
+  attribute : mname
+  attribute : refresh
+  attribute : retry
+  attribute : rname
+  attribute : serial
+  class : SOA
+  class-ig : soa
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::SOA
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(mname,rname,serial,refresh,retry_,expire,minimum):i
+  method : new(mname,rname,serial,refresh,retry_,expire,minimum):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 32
+Delete:
+Indexed:
+  class : PTR
+  class-ig : ptr
+  constant : TypeValue
+  extends : DomainName
+  fqn : Resolv::DNS::Resource::PTR
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 33
+Delete:
+Indexed:
+  attribute : cpu
+  attribute : os
+  class : HINFO
+  class-ig : hinfo
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::HINFO
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(cpu,os):i
+  method : new(cpu,os):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 34
+Delete:
+Indexed:
+  attribute : emailbx
+  attribute : rmailbx
+  class : MINFO
+  class-ig : minfo
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::MINFO
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(rmailbx,emailbx):i
+  method : new(rmailbx,emailbx):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 35
+Delete:
+Indexed:
+  attribute : exchange
+  attribute : preference
+  class : MX
+  class-ig : mx
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::MX
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(preference,exchange):i
+  method : new(preference,exchange):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 36
+Delete:
+Indexed:
+  attribute : strings
+  class : TXT
+  class-ig : txt
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::TXT
+  method : data
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(first_string,*rest_strings):i
+  method : new(first_string,*rest_strings):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 37
+Delete:
+Indexed:
+  class : ANY
+  class-ig : any
+  constant : TypeValue
+  extends : Query
+  fqn : Resolv::DNS::Resource::ANY
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 38
+Delete:
+Indexed:
+  attribute : address
+  class : A
+  class-ig : a
+  constant : ClassValue
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::IN::A
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(address):i
+  method : new(address):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource::IN
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 39
+Delete:
+Indexed:
+  attribute : address
+  attribute : bitmap
+  attribute : protocol
+  class : WKS
+  class-ig : wks
+  constant : ClassValue
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::IN::WKS
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(address,protocol,bitmap):i
+  method : new(address,protocol,bitmap):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource::IN
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 40
+Delete:
+Indexed:
+  attribute : address
+  class : AAAA
+  class-ig : aaaa
+  constant : ClassValue
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::IN::AAAA
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(address):i
+  method : new(address):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource::IN
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 41
+Delete:
+Indexed:
+  attribute : port
+  attribute : priority
+  attribute : target
+  attribute : weight
+  class : SRV
+  class-ig : srv
+  constant : ClassValue
+  constant : TypeValue
+  extends : Resource
+  fqn : Resolv::DNS::Resource::IN::SRV
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : initialize(priority,weight,port,target):i
+  method : new(priority,weight,port,target):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS::Resource::IN
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 42
+Delete:
+Indexed:
+  class : IN
+  class-ig : in
+  constant : ClassValue
+  fqn : Resolv::DNS::Resource::IN
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : m
+  in : Resolv::DNS::Resource
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 43
+Delete:
+Indexed:
+  class : Resource
+  class-ig : resource
+  constant : ClassHash
+  constant : ClassInsensitiveTypes
+  constant : ClassValue
+  extends : Query
+  fqn : Resolv::DNS::Resource
+  method : ==(other)
+  method : decode_rdata(msg):s
+  method : encode_rdata(msg)
+  method : eql?(other)
+  method : get_class(type_value,class_value):s
+  method : hash
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv::DNS
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 44
+Delete:
+Indexed:
+  class : DNS
+  class-ig : dns
+  constant : DNSThreadGroup
+  constant : Port
+  constant : UDPSize
+  field : config
+  field : initialized
+  field : mutex
+  field : requester
+  fqn : Resolv::DNS
+  method : close
+  method : each_address(name)
+  method : each_name(address)
+  method : each_resource(name,typeclass,&proc)
+  method : extract_resources(msg,name,typeclass)
+  method : getaddress(name)
+  method : getaddresses(name)
+  method : getname(address)
+  method : getnames(address)
+  method : getresource(name,typeclass)
+  method : getresources(name,typeclass)
+  method : initialize(config_info):i
+  method : lazy_initialize
+  method : new(config_info):is
+  method : open(*args):s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 45
+Delete:
+Indexed:
+  attribute : address
+  class : IPv4
+  class-ig : ipv4
+  constant : Regex
+  fqn : Resolv::IPv4
+  method : ==(other)
+  method : create(arg):s
+  method : eql?(other)
+  method : hash
+  method : initialize(address):i
+  method : inspect
+  method : new(address):is
+  method : to_name
+  method : to_s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 46
+Delete:
+Indexed:
+  attribute : address
+  class : IPv6
+  class-ig : ipv6
+  constant : Regex
+  constant : Regex_6Hex4Dec
+  constant : Regex_8Hex
+  constant : Regex_CompressedHex
+  constant : Regex_CompressedHex4Dec
+  fqn : Resolv::IPv6
+  method : ==(other)
+  method : create(arg):s
+  method : eql?(other)
+  method : hash
+  method : initialize(address):i
+  method : inspect
+  method : new(address):is
+  method : to_name
+  method : to_s
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  in : Resolv
+  requires : fcntl,timeout,win32/resolv,socket,thread
+
+
+Document 47
+Delete:
+Indexed:
+  class : Resolv
+  class-ig : resolv
+  constant : AddressRegex
+  constant : DefaultResolver
+  field : resolvers
+  fqn : Resolv
+  method : each_address(name)
+  method : each_address(name,&block):s
+  method : each_name(address)
+  method : each_name(address,&proc):s
+  method : getaddress(name)
+  method : getaddress(name):s
+  method : getaddresses(name)
+  method : getaddresses(name):s
+  method : getname(address)
+  method : getname(address):s
+  method : getnames(address)
+  method : getnames(address):s
+  method : initialize(resolvers):i
+  method : new(resolvers):is
+  source : <TESTURL>/resolv.rb
+
+Not Indexed:
+  attrs : c
+  requires : fcntl,timeout,win32/resolv,socket,thread

@@ -1,0 +1,22 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/postgresql_adapter.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  class : ActiveRecord
+  class-ig : activerecord
+  fqn : ActiveRecord
+  method : columns(table_name,name)
+  method : indexes(table_name,name)
+  source : <TESTURL>/postgresql_adapter.rb
+
+Not Indexed:
+  attrs : m
