@@ -109,12 +109,26 @@ public final class DocUtils {
 
         // TODO: fix this, do not use reflection
         try {
-            Method m = doc.getClass().getMethod("getVisColFromPos", Integer.TYPE);
-            return (Integer) m.invoke(doc, offset);
+            Method m = findDeclaredMethod(doc.getClass(), "getVisColFromPos", Integer.TYPE); //NOI18N
+            m.setAccessible(true);
+            int col = (Integer) m.invoke(doc, offset);
+            return col;
 //            return doc.getVisColFromPos(offset);
         } catch (Exception e) {
+            e.printStackTrace();
             return -1;
         }
+    }
+    
+    private static Method findDeclaredMethod(Class clazz, String name, Class... parameters) throws NoSuchMethodException {
+        while(clazz != null) {
+            try {
+                return clazz.getDeclaredMethod(name, parameters);
+            } catch (NoSuchMethodException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchMethodException("Method: " + name); //NOI18N
     }
     
     public static boolean isIdentifierPart(Document doc, char ch) {
