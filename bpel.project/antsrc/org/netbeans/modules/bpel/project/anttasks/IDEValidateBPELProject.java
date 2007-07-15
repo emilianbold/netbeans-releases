@@ -245,23 +245,25 @@ public class IDEValidateBPELProject extends Task {
         throw new RuntimeException("Error while trying to get BPEL Model", e);
       }
       Process process = model.getProcess();
+      
+      if (process != null) {
+          String qName = process.getName() + ", " + process.getTargetNamespace(); // NOI18N
+          BPELFile current = new BPELFile(file, mSourceDir, qName);
 
-      String qName = process.getName() + ", " + process.getTargetNamespace(); // NOI18N
-      BPELFile current = new BPELFile(file, mSourceDir, qName);
-
-      for (BPELFile bpel : myBPELFiles) {
-        if (bpel.getQName().equals(qName)) {
-          if ( !mAllowBuildWithError) { // # 106342
-            throw new BuildException(
-              " \n" +
-              "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
-              "have the same bpel process name and targetname space:\n" +
-              qName + " \n \n"
-            );
+          for (BPELFile bpel : myBPELFiles) {
+            if (bpel.getQName().equals(qName)) {
+              if ( !mAllowBuildWithError) { // # 106342
+                throw new BuildException(
+                  " \n" +
+                  "BPEL files " + bpel.getName() + " and " + current.getName() + "\n" +
+                  "have the same bpel process name and targetname space:\n" +
+                  qName + " \n \n"
+                );
+              }
+            }
           }
-        }
+          myBPELFiles.add(current);
       }
-      myBPELFiles.add(current);
 
       if (isBpelFileModified(file)) {
         loadAndValidateExistingBusinessProcess(file);
