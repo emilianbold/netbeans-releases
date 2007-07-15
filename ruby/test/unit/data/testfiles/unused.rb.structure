@@ -1,0 +1,1 @@
+foo:METHOD:[PUBLIC]:ESCAPED{foo}(PARAMETERS{ESCAPED{unusedparam}, ESCAPED{unusedparam2}, ESCAPED{usedparam}}):

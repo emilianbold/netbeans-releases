@@ -1,0 +1,43 @@
+Ape:CLASS:[]:ESCAPED{Ape}:
+  initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{args}}):
+  check:METHOD:[PUBLIC]:ESCAPED{check}(PARAMETERS{ESCAPED{uri}, ESCAPED{username}, ESCAPED{password}, ESCAPED{requested_e_coll}, ESCAPED{requested_m_coll}}):
+  might_fail:METHOD:[PUBLIC]:ESCAPED{might_fail}(PARAMETERS{ESCAPED{uri}, ESCAPED{requested_e_coll}, ESCAPED{requested_m_coll}}):
+  test_media_linkage:METHOD:[PUBLIC]:ESCAPED{test_media_linkage}(PARAMETERS{ESCAPED{coll}}):
+  test_sorting:METHOD:[PUBLIC]:ESCAPED{test_sorting}(PARAMETERS{ESCAPED{coll}}):
+  test_entry_posts:METHOD:[PUBLIC]:ESCAPED{test_entry_posts}(PARAMETERS{ESCAPED{entry_collection}}):
+  test_media_posts:METHOD:[PUBLIC]:ESCAPED{test_media_posts}(PARAMETERS{ESCAPED{media_collection}}):
+  check_new_entry:METHOD:[PUBLIC]:ESCAPED{check_new_entry}(PARAMETERS{ESCAPED{as_posted}, ESCAPED{new_entry}, ESCAPED{desc}}):
+  find_entry:METHOD:[PUBLIC]:ESCAPED{find_entry}(PARAMETERS{ESCAPED{feed_uri}, ESCAPED{name}, ESCAPED{id}, ESCAPED{report}}):
+  save_dialog:METHOD:[PUBLIC]:ESCAPED{save_dialog}(PARAMETERS{ESCAPED{name}, ESCAPED{actor}}):
+  check_resource:METHOD:[PUBLIC]:ESCAPED{check_resource}(PARAMETERS{ESCAPED{uri}, ESCAPED{name}, ESCAPED{content_type}, ESCAPED{report}}):
+  header:METHOD:[PUBLIC]:ESCAPED{header}(PARAMETERS{ESCAPED{uri}}):
+  footer:METHOD:[PUBLIC]:ESCAPED{footer}(PARAMETERS{ESCAPED{message}}):
+  show_crumbs:METHOD:[PUBLIC]:ESCAPED{show_crumbs}(PARAMETERS{ESCAPED{key}}):
+  warning:METHOD:[PUBLIC]:ESCAPED{warning}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):
+  error:METHOD:[PUBLIC]:ESCAPED{error}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):
+  good:METHOD:[PUBLIC]:ESCAPED{good}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}}):
+  info:METHOD:[PUBLIC]:ESCAPED{info}(PARAMETERS{ESCAPED{message}}):
+  step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{message}}):
+  start_list:METHOD:[PUBLIC]:ESCAPED{start_list}(PARAMETERS{ESCAPED{message}}):
+  list_item:METHOD:[PUBLIC]:ESCAPED{list_item}(PARAMETERS{ESCAPED{message}}):
+  end_list:METHOD:[PUBLIC]:ESCAPED{end_list}:
+  line:METHOD:[PUBLIC]:ESCAPED{line}:
+  report:METHOD:[PUBLIC]:ESCAPED{report}(PARAMETERS{ESCAPED{output}}):
+  report_html:METHOD:[PUBLIC]:ESCAPED{report_html}(PARAMETERS{ESCAPED{output}}):
+  report_li:METHOD:[PUBLIC]:ESCAPED{report_li}(PARAMETERS{ESCAPED{dialog}, ESCAPED{marker}, ESCAPED{text}}):
+  show_message:METHOD:[PUBLIC]:ESCAPED{show_message}(PARAMETERS{ESCAPED{crumb}, ESCAPED{tf}}):
+  report_text:METHOD:[PUBLIC]:ESCAPED{report_text}:
+  compare_entries:METHOD:[PUBLIC]:ESCAPED{compare_entries}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}}):
+  compare1:METHOD:[PUBLIC]:ESCAPED{compare1}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}, ESCAPED{field}}):
+  write_mark:METHOD:[PUBLIC]:ESCAPED{write_mark}(PARAMETERS{ESCAPED{mark}}):
+  footer:FIELD:[]:ESCAPED{footer}:
+  lnum:FIELD:[]:ESCAPED{lnum}:
+  authent:FIELD:[]:ESCAPED{authent}:
+  w:FIELD:[]:ESCAPED{w}:
+  dianum:FIELD:[]:ESCAPED{dianum}:
+  cats:FIELD:[]:ESCAPED{cats}:
+  diarefs:FIELD:[]:ESCAPED{diarefs}:
+  header:FIELD:[]:ESCAPED{header}:
+  dialogs:FIELD:[]:ESCAPED{dialogs}:
+  steps:FIELD:[]:ESCAPED{steps}:
+  output:FIELD:[]:ESCAPED{output}:
