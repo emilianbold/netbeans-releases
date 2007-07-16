@@ -36,9 +36,7 @@ public class Constants {
     public static final String HTTP_METHOD = REST_API_PACKAGE + "HttpMethod";         //NOI18N
     
     public static final String PRODUCE_MIME = REST_API_PACKAGE + "ProduceMime";        //NOI18N
-    
-    public static final String SUB_RESOURCES = REST_API_PACKAGE + "SubResources";      //NOI18N
- 
+
     public static final String CONSUME_MIME = REST_API_PACKAGE + "ConsumeMime";    //NOI18N
     
     public static final String URI_PARAM = REST_API_PACKAGE + "UriParam";  //NOI18N
@@ -86,9 +84,7 @@ public class Constants {
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
  
     public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
-    
-    public static final String SUB_RESOURCES_ANNOTATION = "SubResources";        //NOI18N
-    
+     
     public static final String URI_TEMPLATE_ANNOTATION = "UriTemplate"; //NOI18N
     
     public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
@@ -142,7 +138,6 @@ public class Constants {
         URI_TEMPLATE,
         HTTP_METHOD,
         PRODUCE_MIME,
-        SUB_RESOURCES,
         RESPONSE_BUILDER,
         HTTP_CONTEXT,
         URI_INFO
