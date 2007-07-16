@@ -320,6 +320,7 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         displayNameLabel = new javax.swing.JLabel();
         displayNameTF = new javax.swing.JTextField();
         roleNamesLabel = new javax.swing.JLabel();
@@ -340,11 +341,12 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
 
         displayNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_displayName_mnem").charAt(0));
         displayNameLabel.setLabelFor(displayNameTF);
-        displayNameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_displayName"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle"); // NOI18N
+        displayNameLabel.setText(bundle.getString("LBL_displayName")); // NOI18N
 
         roleNamesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_roleNames_mnem").charAt(0));
         roleNamesLabel.setLabelFor(roleNamesTF);
-        roleNamesLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_SecurityRoleNames"));
+        roleNamesLabel.setText(bundle.getString("LBL_SecurityRoleNames")); // NOI18N
         roleNamesLabel.setEnabled(false);
 
         roleNamesTF.setEditable(false);
@@ -352,14 +354,14 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
 
         authConstraintDescLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_description_mnem1").charAt(0));
         authConstraintDescLabel.setLabelFor(authConstraintDescTF);
-        authConstraintDescLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_SecurityRoleDescription"));
+        authConstraintDescLabel.setText(bundle.getString("LBL_SecurityRoleDescription")); // NOI18N
         authConstraintDescLabel.setEnabled(false);
 
         authConstraintDescTF.setEnabled(false);
 
         transportGuaranteeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_transportGuarantee_mnem").charAt(0));
         transportGuaranteeLabel.setLabelFor(transportGuaranteeCB);
-        transportGuaranteeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_TransportGuarantee"));
+        transportGuaranteeLabel.setText(bundle.getString("LBL_TransportGuarantee")); // NOI18N
         transportGuaranteeLabel.setEnabled(false);
 
         transportGuaranteeCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "NONE", "INTEGRAL", "CONFIDENTIAL" }));
@@ -367,14 +369,14 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
 
         webResourceCollectionLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_webResourceCollection_mnem").charAt(0));
         webResourceCollectionLabel.setLabelFor(webResourceCollectionPanel);
-        webResourceCollectionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_WebResourceCollection"));
+        webResourceCollectionLabel.setText(bundle.getString("LBL_WebResourceCollection")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         webResourceCollectionPanel.setLayout(new java.awt.GridBagLayout());
 
         authConstraintCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_authConstraint_mnem").charAt(0));
-        authConstraintCB.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_AuthConstraint"));
+        authConstraintCB.setText(bundle.getString("LBL_AuthConstraint")); // NOI18N
         authConstraintCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         authConstraintCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
         authConstraintCB.setOpaque(false);
@@ -385,7 +387,7 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
         });
 
         userDataConstraintCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_userDataConstraint_mnem").charAt(0));
-        userDataConstraintCB.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_UserDataConstraint"));
+        userDataConstraintCB.setText(bundle.getString("LBL_UserDataConstraint")); // NOI18N
         userDataConstraintCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         userDataConstraintCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
         userDataConstraintCB.setOpaque(false);
@@ -396,11 +398,12 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
         });
 
         webResourceCollectionPanel2.setOpaque(false);
+
         org.jdesktop.layout.GroupLayout webResourceCollectionPanel2Layout = new org.jdesktop.layout.GroupLayout(webResourceCollectionPanel2);
         webResourceCollectionPanel2.setLayout(webResourceCollectionPanel2Layout);
         webResourceCollectionPanel2Layout.setHorizontalGroup(
             webResourceCollectionPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 331, Short.MAX_VALUE)
+            .add(0, 537, Short.MAX_VALUE)
         );
         webResourceCollectionPanel2Layout.setVerticalGroup(
             webResourceCollectionPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -409,13 +412,13 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
 
         userDataConstraintDescLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_description_mnem2").charAt(0));
         userDataConstraintDescLabel.setLabelFor(userDataConstraintDescTF);
-        userDataConstraintDescLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_UserDataConstraintDescription"));
+        userDataConstraintDescLabel.setText(bundle.getString("LBL_UserDataConstraintDescription")); // NOI18N
         userDataConstraintDescLabel.setEnabled(false);
 
         userDataConstraintDescTF.setEnabled(false);
 
         editButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_editRoleNames_mnem").charAt(0));
-        editButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ddloaders/web/multiview/Bundle").getString("LBL_EditRoleNames"));
+        editButton.setText(bundle.getString("LBL_EditRoleNames")); // NOI18N
         editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -434,18 +437,18 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
                         .add(17, 17, 17)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(transportGuaranteeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(transportGuaranteeLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(transportGuaranteeCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createSequentialGroup()
                                 .add(userDataConstraintDescLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(userDataConstraintDescTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)))
+                                .add(userDataConstraintDescTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(layout.createSequentialGroup()
                         .add(displayNameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(displayNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
+                        .add(displayNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(userDataConstraintCB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -461,8 +464,8 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
                             .add(authConstraintDescLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(roleNamesTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
-                            .add(authConstraintDescTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)))
+                            .add(roleNamesTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                            .add(authConstraintDescTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)))
                     .add(authConstraintCB))
                 .add(6, 6, 6)
                 .add(editButton)
