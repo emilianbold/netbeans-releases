@@ -130,6 +130,10 @@ public class Index {
                     File file = new File (path);
                     file = FileUtil.normalizeFile (file);
                     FileObject fo = FileUtil.toFileObject (file);
+                    if (fo == null) {
+                        System.out.println (Index.class.getName () + " File not found: " + file);
+                        continue;
+                    }
                     roots.add (fo);
                     if (fo.equals (projectDir))
                         result = new File (cacheFolder, "s" + i);
