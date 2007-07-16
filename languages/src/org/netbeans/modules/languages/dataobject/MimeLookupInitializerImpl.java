@@ -29,6 +29,7 @@ import org.openide.util.lookup.Lookups;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.languages.features.BraceHighlighting;
+import org.netbeans.modules.languages.features.IndentFactory;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 
 
@@ -111,7 +112,8 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                         new Integer (2), 
 //                        new Integer (3), 
 //                        new Integer (4),
-                        new Integer (5)
+                        new Integer (5),
+                        new Integer (6)
                     },
                     new InstanceContent.Convertor<Integer,Object> () {
                         public Object convert (Integer i) {
@@ -140,7 +142,9 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 //                                    //S ystem.out.println("get CodeFoldingSideBarFactory for " + mimeTypes [0]);
 //                                    return new CodeFoldingSideBarFactory ();
                                 case 5:
-                                    return new BraceHighlighting(mimeTypes[0]);
+                                    return new BraceHighlighting (mimeTypes[0]);
+                                case 6:
+                                    return new IndentFactory ();
                             }
                             return null;
                         }
@@ -158,6 +162,8 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 //                                    return CodeFoldingSideBarFactory.class;
                                 case 5:
                                     return BracesMatcherFactory.class;
+                                case 6:
+                                    return IndentFactory.class;
                             }
                             return null;
                         }

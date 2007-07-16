@@ -177,7 +177,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         Action[] myActions = new Action[] {
             new BraceCompletionInsertAction (),
             new BraceCompletionDeleteAction (),
-            new IndentAction (),
+            //new IndentAction (),
             new InstantRenameAction(),
             new LanguagesGenerateFoldPopupAction (),
             new CommentCodeAction(),
