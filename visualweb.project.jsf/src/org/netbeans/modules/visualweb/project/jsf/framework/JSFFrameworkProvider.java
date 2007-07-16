@@ -323,6 +323,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         facesVerify.setParamValue(value);
                     }
                     
+                    String facesServletName = panel == null ? "Faces Servlet" : panel.getServletName(); // NOI18N
+                    String urlPattern = panel == null ? "/faces/*" : panel.getURLPattern(); // NOI18N
+
                     // The UpLoad Filter
                     Filter filter;
                     InitParam contextParam;
@@ -365,7 +368,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         
                         FilterMapping filterMapping = (FilterMapping)ddRoot.createBean("FilterMapping"); // NOI18N
                         filterMapping.setFilterName("UploadFilter"); // NOI18N
-                        filterMapping.setServletName(panel.getServletName());
+                        filterMapping.setServletName(facesServletName);
                         ddRoot.addFilterMapping(filterMapping);
                     }
                     
@@ -378,7 +381,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     for (int i = 0; i < servlets.length; i++) {
                         servlet = servlets[i];
                         String name = servlet.getServletName();
-                        if (panel.getServletName().equals(name)) {
+                        if (facesServletName.equals(name)) {
                             hasFacesServlet = true;
                         } else if ("ExceptionHandlerServlet".equals(name)) {
                             hasExceptionServlet = true;
@@ -389,7 +392,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     if (!hasFacesServlet) {
                         servlet = (Servlet)ddRoot.createBean("Servlet"); // NOI18N
-                        servlet.setServletName(panel.getServletName());
+                        servlet.setServletName(facesServletName);
                         servlet.setServletClass("javax.faces.webapp.FacesServlet"); // NOI18N    
                         if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
                             contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
@@ -437,16 +440,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ServletMapping[] maps = ddRoot.getServletMapping();
                     for (int i = 0; i < maps.length; i++) {
                         mapping = maps[i];
-                        if (panel.getServletName().equals(mapping.getServletName()) &&
-                            panel.getURLPattern().equals(mapping.getUrlPattern())) {
+                        if (facesServletName.equals(mapping.getServletName()) &&
+                            urlPattern.equals(mapping.getUrlPattern())) {
                             hasFacesPattern = true;
                         }
                     }
 
                     if (!hasFacesPattern) {
                         mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
-                        mapping.setServletName(panel.getServletName());
-                        mapping.setUrlPattern(panel.getURLPattern());
+                        mapping.setServletName(facesServletName);
+                        mapping.setUrlPattern(urlPattern);
                         ddRoot.addServletMapping(mapping);
                     }
 
@@ -461,7 +464,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addServletMapping(mapping);
 
                     // Adjust the path to the startpage based on JSF parameters
-                    String welcomeFile = JsfProjectUtils.getWelcomeFile(panel.getURLPattern(), pageName);
+                    String welcomeFile = JsfProjectUtils.getWelcomeFile(urlPattern, pageName);
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
                     if (wfl == null) {
                         wfl = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
