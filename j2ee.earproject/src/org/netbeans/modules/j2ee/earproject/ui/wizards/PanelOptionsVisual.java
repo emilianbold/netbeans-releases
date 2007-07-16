@@ -511,7 +511,7 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
         //        d.putProperty(WizardProperties.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
         d.putProperty(WizardProperties.CREATE_WAR, createWARCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
         d.putProperty(WizardProperties.CREATE_JAR, createEjbCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
-        d.putProperty(WizardProperties.CREATE_CAR, createCarCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
+        d.putProperty(WizardProperties.CREATE_CAR, createCarCheckBox.isEnabled() && createCarCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
         d.putProperty(WizardProperties.WAR_NAME,  jTextFieldWebAppName.getText());
         d.putProperty(WizardProperties.JAR_NAME, jTextFieldEjbModuleName.getText());
         d.putProperty(WizardProperties.CAR_NAME, jTextFieldCarName.getText());
