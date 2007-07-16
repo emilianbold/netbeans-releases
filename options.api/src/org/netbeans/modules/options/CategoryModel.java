@@ -353,12 +353,14 @@ public final class CategoryModel implements LookupListener {
             if (isUpdated) {
                 create().applyChanges();
             }
+            isUpdated = false;
         }
         
         private void cancel() {
             if (isUpdated) {
                 create().cancel();
             }
+            isUpdated = false;
         }
         
         private boolean isValid() {

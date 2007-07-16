@@ -40,13 +40,11 @@ public abstract class OptionsPanelController {
 
     /**
      * This method is called when Options Dialog "OK" button is pressed.
-     * This method can be called even before update () method is called.
      */
     public abstract void applyChanges ();
 
     /**
      * This method is called when Options Dialog "Cancel" button is pressed.
-     * This method can be called even before update () method is called.
      */
     public abstract void cancel ();
 
