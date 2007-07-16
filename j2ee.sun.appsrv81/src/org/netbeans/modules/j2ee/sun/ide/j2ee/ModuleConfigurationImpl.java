@@ -153,7 +153,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      */
     public void setCMPResource(String ejbName, String jndiName) throws ConfigurationException {
         checkConfiguration(config);
-        //        ((SunONEDeploymentConfiguration)config).ensureResourceDefinedForEjb(ci, jndiName);
+        config.setCMPResource(ejbName, jndiName);
     }
     
     /** Conduit to pass the cmp mapping information directly to the configuration
