@@ -167,11 +167,14 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private Map groupsListeners;
 	private final Project project;
         // icon badging <<<
+        
+        private String iconbase = "org/openide/loaders/defaultFolder";
 	
         public ConfFilesNode(Project prj) {
             super(ConfFilesChildren.forProject(prj), createLookup(prj));
 	    this.project = prj;
             setName("configurationFiles"); // NOI18N
+            setIconBase(iconbase);
                         
             FileObject projectDir = prj.getProjectDirectory();
             try {
@@ -195,7 +198,9 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private Image computeIcon(boolean opened, int type) {
             if (projectNode == null)
                 return null;
-            Image image = opened?icon2image("Tree.openIcon"):icon2image("Tree.closedIcon"); //NOI18N
+            Image image = opened ? icon2image("Tree.openIcon"):icon2image("Tree.closedIcon"); //NOI18N
+            if(null==image)
+                image= opened ? super.getOpenedIcon(type):super.getIcon(type);
             image = Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
             return image;
         }
