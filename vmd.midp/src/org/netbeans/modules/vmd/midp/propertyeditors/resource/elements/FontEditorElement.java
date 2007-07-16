@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
@@ -48,6 +49,10 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
     public JComponent getJComponent() {
         return this;
+    }
+
+    public TypeID getTypeID() {
+        return FontCD.TYPEID;
     }
 
     private void attachListeners() {
@@ -227,18 +232,19 @@ public class FontEditorElement extends PropertyEditorResourceElement {
             return;
         }
 
+        long componentID = wrapper.getComponentID();
+        final int[] kindCode = new int[] {FontCD.VALUE_KIND_DEFAULT};
+        final int[] faceCode = new int[] {FontCD.VALUE_FACE_SYSTEM};
+        final int[] styleCode = new int[] {FontCD.VALUE_STYLE_PLAIN};
+        final int[] sizeCode = new int[] {FontCD.VALUE_SIZE_MEDIUM};
+
         final DesignComponent component = wrapper.getComponent();
-        if (component != null) {
-            // existing component
+        if (component != null) { // existing component
             if (component.getType() != FontCD.TYPEID) {
                 throw new IllegalArgumentException("Passed component must have typeID " + FontCD.TYPEID + " instead passed " + component.getType()); // NOI18N
             }
 
-            long componentID = component.getComponentID();
-            final int[] kindCode = new int[1];
-            final int[] faceCode = new int[1];
-            final int[] styleCode = new int[1];
-            final int[] sizeCode = new int[1];
+            componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
                 public void run() {
                     kindCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
@@ -247,32 +253,31 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                     sizeCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_SIZE));
                 }
             });
+        }
 
-            if (wrapper.hasChanges()) {
-                Map<String, PropertyValue> changes = wrapper.getChanges();
-                for (String propertyName : changes.keySet()) {
-                    final PropertyValue propertyValue = changes.get(propertyName);
-                    if (FontCD.PROP_FONT_KIND.equals(propertyName)) {
-                        kindCode[0] = MidpTypes.getInteger(propertyValue);
-                    } else if (FontCD.PROP_FACE.equals(propertyName)) {
-                        faceCode[0] = MidpTypes.getInteger(propertyValue);
-                    } else if (FontCD.PROP_STYLE.equals(propertyName)) {
-                        styleCode[0] = MidpTypes.getInteger(propertyValue);
-                    } else if (FontCD.PROP_SIZE.equals(propertyName)) {
-                        sizeCode[0] = MidpTypes.getInteger(propertyValue);
-                    }
+        if (wrapper.hasChanges()) {
+            Map<String, PropertyValue> changes = wrapper.getChanges();
+            for (String propertyName : changes.keySet()) {
+                final PropertyValue propertyValue = changes.get(propertyName);
+                if (FontCD.PROP_FONT_KIND.equals(propertyName)) {
+                    kindCode[0] = MidpTypes.getInteger(propertyValue);
+                } else if (FontCD.PROP_FACE.equals(propertyName)) {
+                    faceCode[0] = MidpTypes.getInteger(propertyValue);
+                } else if (FontCD.PROP_STYLE.equals(propertyName)) {
+                    styleCode[0] = MidpTypes.getInteger(propertyValue);
+                } else if (FontCD.PROP_SIZE.equals(propertyName)) {
+                    sizeCode[0] = MidpTypes.getInteger(propertyValue);
                 }
             }
-
-            currentStub = new FontStub(componentID, kindCode[0], faceCode[0], styleCode[0], sizeCode[0]);
-
-            // UI stuff
-            setStateOfButtons();
-            setKindEnabled(true);
-            setFaceSizeStyleEnabled(kindCode[0] == FontCD.VALUE_KIND_CUSTOM);
-            setSampleFont(false);
-        } else { // virtual component
         }
+
+        currentStub = new FontStub(componentID, kindCode[0], faceCode[0], styleCode[0], sizeCode[0]);
+
+        // UI stuff
+        setStateOfButtons();
+        setKindEnabled(true);
+        setFaceSizeStyleEnabled(kindCode[0] == FontCD.VALUE_KIND_CUSTOM);
+        setSampleFont(false);
     }
 
     private static class FontStub {
@@ -437,6 +442,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         customRadioButton = new javax.swing.JRadioButton();
         kindLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
         sampleLabel = new javax.swing.JLabel();
         faceLabel = new javax.swing.JLabel();
         systemRadioButton = new javax.swing.JRadioButton();
@@ -476,23 +482,15 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         kindLabel.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.kindLabel.text")); // NOI18N
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.jPanel2.border.title"))); // NOI18N
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        jPanel1.setLayout(null);
 
         sampleLabel.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.sampleLabel.text")); // NOI18N
+        jPanel1.add(sampleLabel);
+        sampleLabel.setBounds(0, 0, 310, 14);
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(sampleLabel)
-                .addContainerGap(237, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(sampleLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        jPanel2.add(jPanel1, java.awt.BorderLayout.CENTER);
 
         faceLabel.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.faceLabel.text")); // NOI18N
         faceLabel.setEnabled(false);
@@ -594,7 +592,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                     .add(plainCheckBox)
                     .add(italicCheckBox))
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {boldCheckBox, customRadioButton, defaultRadioButton, faceLabel, inputRadioButton, italicCheckBox, kindLabel, largeRadioButton, mediumRadioButton, monospaceRadioButton, plainCheckBox, proportionalRadioButton, sizeLabel, smallRadioButton, staticRadioButton, styleLabel, systemRadioButton, underlinedCheckBox}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -645,7 +643,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(underlinedCheckBox))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -656,6 +654,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     private javax.swing.JLabel faceLabel;
     private javax.swing.JRadioButton inputRadioButton;
     private javax.swing.JCheckBox italicCheckBox;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.ButtonGroup kindButtonGroup;
     private javax.swing.JLabel kindLabel;
