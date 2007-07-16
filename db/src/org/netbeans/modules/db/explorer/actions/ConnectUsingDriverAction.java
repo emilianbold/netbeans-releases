@@ -35,6 +35,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 
 import org.openide.DialogDescriptor;
@@ -202,8 +203,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
                         } catch (DatabaseException exc) {
                             Logger.getLogger("global").log(Level.INFO, null, exc);
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()});
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message,NotifyDescriptor.ERROR_MESSAGE));
+                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
                             try {
                                 cinfo.getConnection().close();
                             } catch (SQLException e) {
@@ -233,7 +233,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
                     } else {
                         StringBuffer buffer = new StringBuffer();
-                        buffer.append(MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()})); //NOI18N
+                        buffer.append(DbUtilities.formatError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage())); // NOI18N
                         if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
                             SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
                             while (sqlEx != null) {
@@ -269,8 +269,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             cinfo.connect();
                         } catch (DatabaseException exc) {
                             Logger.getLogger("global").log(Level.INFO, null, exc);
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18n
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
                             try {
                                 cinfo.getConnection().close();
                                 cinfo.setConnection(null);

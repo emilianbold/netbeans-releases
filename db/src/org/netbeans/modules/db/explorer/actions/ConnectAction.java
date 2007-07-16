@@ -40,6 +40,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -140,7 +141,7 @@ public class ConnectAction extends DatabaseAction {
                         message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
                     } else {
                         StringBuffer buffer = new StringBuffer();
-                        buffer.append(MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()})); //NOI18N
+                        buffer.append(DbUtilities.formatError(bundle().getString("ERR_UnableToConnect"), exc.getMessage())); //NOI18N
                         if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
                             SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
                             while (sqlEx != null) {
@@ -207,8 +208,7 @@ public class ConnectAction extends DatabaseAction {
                                 nfo.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
                                 Logger.getLogger("global").log(Level.INFO, null, exc);
-                                String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()});
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                                DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                 return;
                             }
                             
@@ -250,8 +250,7 @@ public class ConnectAction extends DatabaseAction {
                                         nfo.finishConnect(null, dbcon, dbcon.getConnection());
                                     } catch (DatabaseException exc) {
                                         Logger.getLogger("global").log(Level.INFO, null, exc);
-                                        String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()});
-                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                                        DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                         return;
                                     }
                                     
@@ -315,8 +314,7 @@ public class ConnectAction extends DatabaseAction {
                                 }
                                 catch (DatabaseException exc) {
                                     Logger.getLogger("global").log(Level.INFO, null, exc);
-                                    String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()});
-                                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                                    DbUtilities.reportError(bundle().getString("ERR_UnableToInitializeConnection"), exc.getMessage()); // NOI18N
                                     return;
                                 }
                             } else if (event.getPropertyName().equals("failed")) { // NOI18N

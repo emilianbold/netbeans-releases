@@ -20,6 +20,7 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -68,8 +69,7 @@ public class DisconnectAction extends DatabaseAction {
                         ConnectionNodeInfo nfo = (ConnectionNodeInfo) info.getParent(DatabaseNode.CONNECTION);
                         nfo.disconnect();
                     } catch(Exception exc) {
-                        String message = MessageFormat.format(bundle().getString("ERR_UnableToDisconnect"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        DbUtilities.reportError(bundle().getString("ERR_UnableToDisconnect"), exc.getMessage()); // NOI18N
                     }
                 }
             }

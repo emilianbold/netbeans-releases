@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
 import org.openide.DialogDescriptor;
 
@@ -144,8 +145,7 @@ public class GrabTableAction extends DatabaseAction {
             ostream.close();
 
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToGrabTable"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
         }
     }
     

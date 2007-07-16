@@ -20,6 +20,7 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.*;
 import org.openide.nodes.*;
@@ -41,8 +42,7 @@ public class GrabCatalogAction extends DatabaseAction {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             DatabaseNodeInfo nfo = info.getParent(nodename);
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToGrabCatalog"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DbUtilities.reportError(bundle().getString("ERR_UnableToGrabCatalog"), exc.getMessage()); // NOI18N
         }
     }
 }

@@ -20,6 +20,7 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.infos.TableOperations;
 
 import org.openide.*;
@@ -42,8 +43,7 @@ public class CreateProcedureAction extends DatabaseAction
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             TableOperations nfo = (TableOperations)info.getParent(nodename);
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToCreateProcedure"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DbUtilities.reportError(bundle().getString("ERR_UnableToCreateProcedure"), exc.getMessage()); // NOI18N
         }
     }
 }

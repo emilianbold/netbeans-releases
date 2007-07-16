@@ -23,6 +23,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 
 import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.modules.db.explorer.DbUtilities;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -57,8 +58,7 @@ public class CreateViewAction extends DatabaseAction {
                 nfo.addView(dlg.getViewName());
             }
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToCreateView"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DbUtilities.reportError(bundle().getString("ERR_UnableToCreateView"), exc.getMessage()); // NOI18N
         }
     }
 }

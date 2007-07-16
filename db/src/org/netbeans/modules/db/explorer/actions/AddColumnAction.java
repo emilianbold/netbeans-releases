@@ -20,6 +20,7 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -59,8 +60,7 @@ public class AddColumnAction extends DatabaseAction {
                         nfo.addColumn(dlg.getColumnName());
                     }
                 } catch(Exception exc) {
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
                 }
             }
         }, 0);

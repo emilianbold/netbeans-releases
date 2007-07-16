@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -135,8 +136,7 @@ public class AddToIndexAction extends DatabaseAction {
             }
 
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
         }
     }
 }

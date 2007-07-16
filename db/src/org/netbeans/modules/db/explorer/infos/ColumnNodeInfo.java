@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,12 +79,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             // refresh list of columns after column drop
             //getParent().refreshChildren();
             fireRefresh();
-        //} catch(DatabaseException exc) {
-            //String message = MessageFormat.format(bundle.getString("ERR_UnableToDeleteColumn"), new String[] {exc.getMessage()}); // NOI18N
-            //Topmanager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception exc) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-//            throw new IOException(exc.getMessage());
+            DbUtilities.reportError(bundle().getString("ERR_UnableToDeleteColumn"), exc.getMessage()); // NOI18N
         }
     }
 

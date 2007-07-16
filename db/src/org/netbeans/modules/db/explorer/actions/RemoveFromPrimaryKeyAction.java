@@ -20,6 +20,7 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.*;
 import org.openide.nodes.*;
@@ -38,8 +39,7 @@ public class RemoveFromPrimaryKeyAction extends DatabaseAction {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             DatabaseNodeInfo nfo = info.getParent(nodename);
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle().getString("ERR_UnableToRemoveFromPK"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            DbUtilities.reportError(bundle().getString("ERR_UnableToRemoveFromPK"), exc.getMessage()); // NOI18N
         }
     }
 }

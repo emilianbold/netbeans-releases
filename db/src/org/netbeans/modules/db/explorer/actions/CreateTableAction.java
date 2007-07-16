@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.text.MessageFormat;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -59,8 +57,7 @@ public class CreateTableAction extends DatabaseAction {
                             //PENDING
                         }
                 } catch(Exception exc) {
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableToCreateTable"), new String[] {exc.getMessage()}); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    DbUtilities.reportError(bundle().getString("ERR_UnableToCreateTable"), exc.getMessage());
                 }
             }
         }, 0);       

@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
+import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -125,8 +126,7 @@ public class RecreateTableAction extends DatabaseAction {
                                 }
                             } catch (Exception exc) {
                                 Logger.getLogger("global").log(Level.INFO, null, exc);
-                                String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); //NOI18N
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                                DbUtilities.reportError(bundle().getString("ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                             }
                         } else { // CANCEL option
                             noResult = false;
@@ -134,8 +134,7 @@ public class RecreateTableAction extends DatabaseAction {
                     }
                 } catch (Exception exc) {
                     Logger.getLogger("global").log(Level.INFO, null, exc);
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); //NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+                    DbUtilities.reportError(bundle().getString("ERR_UnableToRecreateTable"), exc.getMessage()); //NOI18N
                 }
             }
         }, 0);
