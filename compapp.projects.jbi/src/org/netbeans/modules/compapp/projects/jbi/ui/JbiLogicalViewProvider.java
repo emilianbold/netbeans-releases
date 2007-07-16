@@ -69,6 +69,7 @@ import java.io.File;
 
 import javax.swing.*;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
+import org.openide.actions.FindAction;
 
 /**
  * Support for creating logical views.
@@ -340,6 +341,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectSensitiveAction(
                     new AddProjectAction(), bundle.getString("LBL_AddProjectAction_Name"), null
                     ));
+            actions.add(CommonProjectActions.newFileAction());
             
             // add this only if the casa editor is installed, and <proj>.casa exists..
             File pf = FileUtil.toFile(project.getProjectDirectory());
@@ -399,39 +401,17 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.openSubprojectsAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
-            actions.add(SystemAction.get(org.openide.actions.FindAction.class));
-            actions.add(null);
             
             actions.add(CommonProjectActions.renameProjectAction());
             actions.add(CommonProjectActions.moveProjectAction());
             actions.add(CommonProjectActions.copyProjectAction());
             actions.add(CommonProjectActions.deleteProjectAction());
+            actions.add(null);
+            actions.add(SystemAction.get(FindAction.class));
             
-            try {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
-                    if (it.hasNext()) {
-                        actions.add(null);
-                    }
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add((Action)next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
-                    }
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
-            }
-            
+            // honor 57874 contact
+            addFromLayers(actions, "Projects/Actions"); // NOI18N
+                        
             if (brokenLinksAction != null) {
                 actions.add(brokenLinksAction);
             }
@@ -440,6 +420,17 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
                         
             return (Action[]) actions.toArray(new Action[actions.size()]);            
+        }
+        
+        private void addFromLayers(List<Action> actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
+                }
+            }
         }
         
         /**

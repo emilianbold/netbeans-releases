@@ -29,14 +29,12 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.Compon
 import org.netbeans.modules.compapp.projects.jbi.ui.JbiCustomizerProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.JbiLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
-
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -46,30 +44,21 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
-
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-
 import org.openide.modules.InstalledFileLocator;
-
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -77,7 +66,6 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Logger;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -804,32 +792,26 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
         }
     }
     
-    private static final class RecommendedTemplatesImpl implements RecommendedTemplates,
-            PrivilegedTemplates {
+    private static final class RecommendedTemplatesImpl 
+            implements RecommendedTemplates, PrivilegedTemplates {
+        
         // List of primarily supported templates
-        private static final String[] TYPES = new String[] {"XML", // NOI18N
-        "simple-files" // NOI18N
-        };
-        private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/XML/untitled.wsdl", // NOI18N
-            "Templates/XML/XMLSchema.xsd", // NOI18N
-            "Templates/XML/retrieveXMLResource" // NOI18N
+        private static final String[] TYPES = new String[] {
+            "XML", // NOI18N
+            "simple-files" // NOI18N
         };
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/XML/WSDL.wsdl",    // NOI18N
+            "Templates/XML/XmlSchema.xsd", // NOI18N
+            "Templates/XML/retrieveSchemaResource", // NOI18N
+            "Templates/XML/retrieveWSDLResource", // NOI18N
+        };
+        
         public String[] getRecommendedTypes() {
             return TYPES;
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
