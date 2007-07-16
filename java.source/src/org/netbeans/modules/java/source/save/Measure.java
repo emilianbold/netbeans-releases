@@ -29,7 +29,7 @@ import static com.sun.source.tree.Tree.Kind;
  * @author  Pavel Flaska
  */
 class Measure {
-    
+
     /**
      * Default measure based on equals.
      */
@@ -46,6 +46,11 @@ class Measure {
      */
     static final Measure ARGUMENT = new ArgumentMeasure();
 
+    /** 
+     * Used for measuring distance of two <code>variables separated by comma</code>s.
+     */
+    static final Measure GROUP_VAR_MEASURE = new ArgumentMeasure();
+    
     /** 
      * Value representing infinite distance - any distance value equal
      * or greater than this is represented as infinite (i.e. indicates
@@ -67,6 +72,12 @@ class Measure {
      * Objects are the same kind, but different pos
      */
     static final int THE_SAME_KIND = 750;
+
+    /**
+     * Prevent instance creation outside the class.
+     */
+    private Measure() {
+    }
     
     /**
      * Compares two objects and returns distance between 
@@ -95,6 +106,7 @@ class Measure {
     
     // MemberMeasure
     private static final class MemberMeasure extends Measure {
+        @Override
         int getDistance(Object first, Object second) {
             int distance = DEFAULT.getDistance(first, second);
             if (distance == INFINITE_DISTANCE) {
@@ -110,6 +122,7 @@ class Measure {
     
     // Method invocation argument
     private static final class ArgumentMeasure extends Measure {
+        @Override
         int getDistance(Object first, Object second) {
             int distance = DEFAULT.getDistance(first, second);
             if (distance == INFINITE_DISTANCE) {

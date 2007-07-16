@@ -823,10 +823,12 @@ public abstract class PositionEstimator {
                     FieldGroupTree fgt = ((FieldGroupTree) item);
                     List<JCVariableDecl> vars = fgt.getVariables();
                     treeEnd = (int) positions.getEndPosition(compilationUnit, vars.get(vars.size()-1));
-                    seq.move(treeEnd);
-                    moveToSrcRelevant(seq, Direction.FORWARD);
-                    seq.moveNext();
-                    treeEnd = seq.offset();
+                    if (fgt.isEnum()) {
+                        seq.move(treeEnd);
+                        moveToSrcRelevant(seq, Direction.FORWARD);
+                        seq.moveNext();
+                        treeEnd = seq.offset();
+                    }
                 }
                 
                 seq.move(treeStart);

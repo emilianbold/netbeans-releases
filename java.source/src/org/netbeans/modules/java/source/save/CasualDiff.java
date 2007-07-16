@@ -458,7 +458,43 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) {
+    protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int pos) {
+        int localPointer = oldT.pos;
+        copyTo(pos, localPointer);
+        if (nameChanged(oldT.name, newT.name)) {
+            copyTo(localPointer, oldT.pos);
+            printer.print(newT.name);
+            diffInfo.put(oldT.pos, "Rename variable " + oldT.name);
+            localPointer = oldT.pos + oldT.name.length();
+        }
+        if (newT.init != null && oldT.init != null) {
+            copyTo(localPointer, localPointer = getOldPos(oldT.init));
+            localPointer = diffTree(oldT.init, newT.init, new int[] { localPointer, endPos(oldT.init) });
+        } else {
+            if (oldT.init != null && newT.init == null) {
+                // remove initial value
+                pos = getOldPos(oldT.init);
+                tokenSequence.move(pos);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                tokenSequence.moveNext();
+                int to = tokenSequence.offset();
+                copyTo(localPointer, to);
+                localPointer = endPos(oldT.init);
+            }
+            if (oldT.init == null && newT.init != null) {
+                int end = endPos(oldT);
+                tokenSequence.move(end);
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                copyTo(localPointer, localPointer = tokenSequence.offset());
+                printer.printVarInit(newT);
+            }
+        }
+        copyTo(localPointer, localPointer = endPos(oldT)-1);
+        return localPointer;
+    }
+    
+    private int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) {
         int localPointer = bounds[0];
         // check that it is not enum constant. If so, match it in special way
         if ((oldT.mods.flags & Flags.ENUM) != 0) {
@@ -1304,7 +1340,13 @@ public class CasualDiff {
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
-            return diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+            if (oldT.isEnum()) {
+                return diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+            } else {
+                int pos = diffVarGroup(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.GROUP_VAR_MEASURE);
+                copyTo(pos, bounds[1]);
+                return bounds[1];
+            }
         } else {
             tokenSequence.move(oldT.endPos());
             PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
@@ -1655,7 +1697,7 @@ public class CasualDiff {
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     copyTo(start, bounds[0], printer);
-                    diffTree(tree, item.element, bounds);
+                        diffTree(tree, item.element, bounds);
                     tokenSequence.move(bounds[1]);
                     PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     copyTo(bounds[1], pos = tokenSequence.offset(), printer);
@@ -1699,6 +1741,105 @@ public class CasualDiff {
             printer.print(makeAround[1].fixedText());
         }
         return oldList.isEmpty() ? pos : endPos(oldList);
+    }
+    
+    /**
+     * Diff two lists of parameters separated by comma. It is used e.g.
+     * from type parameters and method parameters.
+     * 
+     */
+    private int diffVarGroup(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JavaTokenId[] makeAround,
+            int pos,
+            Measure measure)
+    {
+        assert oldList != null && newList != null;
+        if (oldList == newList || oldList.equals(newList))
+            return pos; // they match perfectly or no need to do anything
+        
+        boolean printParens = makeAround != null && makeAround.length != 0;
+        if (newList.isEmpty()) {
+            int endPos = endPos(oldList);
+            if (printParens) {
+                tokenSequence.move(endPos);
+                TokenUtilities.moveFwdToToken(tokenSequence, endPos, makeAround[1]);
+                tokenSequence.moveNext();
+                endPos = tokenSequence.offset();
+                if (!PositionEstimator.nonRelevant.contains(tokenSequence.token()))
+                    printer.print(" "); // use options, if mods should be at new line
+            }
+            return endPos;
+        }
+        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(oldList, newList, measure);
+        if (!matcher.match()) {
+            // nothing in the list, no need to print and nothing was printed
+            return pos; 
+        }
+        ResultItem<JCTree>[] result = matcher.getResult();
+        if (printParens && oldList.isEmpty()) {
+            printer.print(makeAround[0].fixedText());
+        }
+        int oldIndex = 0;
+        for (int index = 0, j = 0; j < result.length; j++) {
+            ResultItem<JCTree> item = result[j];
+            switch (item.operation) {
+                case MODIFY: {
+                    JCTree tree = oldList.get(oldIndex++);
+                    int[] bounds = getBounds(tree);
+                    if (oldIndex != 1) {
+                        bounds[0] = tree.pos;
+                    }
+                    bounds[1]--;
+                    tokenSequence.move(bounds[0]);
+                    if (oldIndex != 1) {
+                        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                    }
+                    tokenSequence.moveNext();
+                    int start = tokenSequence.offset();
+                    copyTo(start, bounds[0], printer);
+                    if (oldIndex != 1) {
+                        diffVarDef((JCVariableDecl) tree, (JCVariableDecl) item.element, bounds[0]);
+                    } else {
+                        diffVarDef((JCVariableDecl) tree, (JCVariableDecl) item.element, bounds);
+                    }
+                    tokenSequence.move(bounds[1]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    copyTo(bounds[1], pos = tokenSequence.offset(), printer);
+                    break;
+                }
+                // just copy existing element
+                case NOCHANGE: {
+                    oldIndex++;
+                    int[] bounds = getBounds(item.element);
+                    if (oldIndex != 1) {
+                        bounds[0] = item.element.pos;
+                    }
+                    bounds[1]--;
+                    tokenSequence.move(bounds[0]);
+                    if (oldIndex != 1) {
+                        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                    }
+                    tokenSequence.moveNext();
+                    int start = tokenSequence.offset();
+                    tokenSequence.move(bounds[1]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    int end = tokenSequence.offset();
+                    copyTo(start, pos = end, printer);
+                    break;
+                }
+                default: 
+                    break;
+            }
+            if (commaNeeded(result, item)) {
+                printer.print(",");
+            }
+        }
+        if (printParens && oldList.isEmpty()) {
+            printer.print(makeAround[1].fixedText());
+        }
+        return pos;
     }
     
     private boolean commaNeeded(ResultItem[] arr, ResultItem item) {
