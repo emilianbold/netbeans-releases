@@ -54,6 +54,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorColorChooser;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -70,9 +71,14 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String PROP_USERNAME = "username"; //NOI18N
     public static final String PROP_PASSWORD = "password"; //NOI18N
     public static final String PROP_USE_LOGIN_BUTTON = "useButton"; //NOI18N
-    public static final String PROP_LOGIN_TITLE = "loginTitle"; //NOI18N 
+    public static final String PROP_LOGIN_TITLE = "loginLabel"; //NOI18N
+    public static final String PROP_USERNAME_LABEL = "usernameLabel"; //NOI18N
+    public static final String PROP_PASSWORD_LABEL = "passwordLabel"; //NOI18N
     public static final String PROP_BGK_COLOR = "backgroundColor"; //NOI18N
     public static final String PROP_FRG_COLOR = "foregroungColor"; //NOI18N
+    
+    public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "LBL_USERNAME"); //NOI18N 
+    public static final String USERNAME_PASSWORD = NbBundle.getMessage(LoginScreenCD.class, "LBL_PASSWORD"); //NOI18N  
     
     private static final String LOGIN_PROPERTIES = "Login Properties"; //NOI18N
     
@@ -95,7 +101,9 @@ public final class LoginScreenCD extends ComponentDescriptor {
             new PropertyDescriptor(PROP_USE_LOGIN_BUTTON, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_LOGIN_TITLE, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-3355444), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-16777216), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-16777216), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_USERNAME_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, MidpTypes.createStringValue(USERNAME_LOGIN), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_PASSWORD_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, MidpTypes.createStringValue(USERNAME_PASSWORD), true, true, MidpVersionable.MIDP_2)
         );
     }
     
@@ -105,16 +113,19 @@ public final class LoginScreenCD extends ComponentDescriptor {
                    .addProperty("Username", PropertyEditorString.createInstance(), PROP_USERNAME)
                    .addProperty("Password", PropertyEditorString.createInstance(), PROP_PASSWORD)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Use Login Button", PropertyEditorBooleanUC.createInstance(false), PROP_USE_LOGIN_BUTTON) //NOI18N
-                   .addProperty("Login Title", PropertyEditorString.createInstance(), PROP_LOGIN_TITLE)
-                   .addProperty("Background Color", new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
-                   .addProperty("Foreground Color", new PropertyEditorColorChooser(true), PROP_FRG_COLOR);
+                   .addProperty("Username Label", PropertyEditorString.createInstance(), PROP_USERNAME_LABEL)
+                   .addProperty("Password Label", PropertyEditorString.createInstance(), PROP_PASSWORD_LABEL)
+                   .addProperty("Use Login Button", PropertyEditorBooleanUC.createInstance(false), PROP_USE_LOGIN_BUTTON)
+                   .addProperty("Login Title", PropertyEditorString.createInstance(), PROP_LOGIN_TITLE);
+
+                   
     }
     
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
-            .addParameters(MidpParameter.create(PROP_BGK_COLOR, PROP_FRG_COLOR, PROP_USERNAME, PROP_PASSWORD, PROP_LOGIN_TITLE, PROP_USE_LOGIN_BUTTON))
+            .addParameters(MidpParameter.create(PROP_BGK_COLOR, PROP_FRG_COLOR, PROP_USERNAME, PROP_PASSWORD,PROP_LOGIN_TITLE,
+                                                PROP_USE_LOGIN_BUTTON, PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2)
             .addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters(MidpSetter.createSetter("setBGColor", MidpVersionable.MIDP).addParameters(PROP_BGK_COLOR)) //NOI18N
@@ -122,7 +133,8 @@ public final class LoginScreenCD extends ComponentDescriptor {
             .addSetters(MidpSetter.createSetter("setPassword", MidpVersionable.MIDP).addParameters(PROP_PASSWORD)) //NOI18N
             .addSetters(MidpSetter.createSetter("setUsername", MidpVersionable.MIDP).addParameters(PROP_USERNAME)) //NOI18N
             .addSetters(MidpSetter.createSetter("setLoginTitle", MidpVersionable.MIDP).addParameters(PROP_PASSWORD)) //NOI18N
-            .addSetters(MidpSetter.createSetter("setUseLoginButton", MidpVersionable.MIDP).addParameters(PROP_USE_LOGIN_BUTTON)); //NOI18N
+            .addSetters(MidpSetter.createSetter("setUseLoginButton", MidpVersionable.MIDP).addParameters(PROP_USE_LOGIN_BUTTON)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setLabelTexts", MidpVersionable.MIDP).addParameters(PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL)); //NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

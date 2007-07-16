@@ -156,7 +156,8 @@ public final class PropertiesNodesManager {
         final Sheet sheet = new Sheet();
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
-            public void run() {
+            @SuppressWarnings("deprecation")
+public void run() {
                 List<DesignPropertyDescriptor> designerPropertyDescriptors;
                 List<String> categories;
                 designerPropertyDescriptors = new ArrayList<DesignPropertyDescriptor>();

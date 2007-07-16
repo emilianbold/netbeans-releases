@@ -34,7 +34,7 @@ import org.openide.nodes.PropertySupport;
  */
 public abstract class DefaultPropertySupport extends PropertySupport {
 
-    public static final String PROPERTY_VALUE_NULL = "PROPERTY_NULL_VALUE_FOR_FEATURE_DESCRIPTOR"; //NOI18N //work aroun for hashmap which cant accept null
+    public static final String PROPERTY_VALUE_NULL = "PROPERTY_NULL_VALUE_FOR_FEATURE_DESCRIPTOR"; //NOI18N //work around for hashmap which cant accept null
     public static final String PROPERYT_INPLACE_EDITOR = "inplaceEditor"; //NOI18N
     public static final String PROPERTY_CUSTOM_EDITOR_TITLE = "title"; //NOI18N
     private PropertyValue propertyValue;
@@ -42,6 +42,7 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     private List<String> propertyNames;
     private DesignPropertyDescriptor designPropertyDescriptor;
 
+    @SuppressWarnings("unchecked")
     DefaultPropertySupport(DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor.getPropertyNames().iterator().next(), type, designerPropertyDescriptor.getPropertyDisplayName(), designerPropertyDescriptor.getPropertyToolTip(), true, true);
         this.designPropertyDescriptor = designerPropertyDescriptor;

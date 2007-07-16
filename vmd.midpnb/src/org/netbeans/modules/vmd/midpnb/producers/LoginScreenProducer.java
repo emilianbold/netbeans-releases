@@ -39,12 +39,12 @@ import org.netbeans.modules.vmd.midpnb.components.sources.LoginScreenLoginComman
  * @author Karol Harezlak
  */
 public class LoginScreenProducer extends MidpComponentProducer {
-    
+
     public LoginScreenProducer() {
         super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Login Screen", "Login Screen", LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
-    public Result postInitialize (DesignDocument document, DesignComponent loginScreen) {
+    public Result postInitialize(DesignDocument document, DesignComponent loginScreen) {
         DesignComponent loginCommand = MidpDocumentSupport.getSingletonCommand(document, LoginScreenLoginCommandCD.TYPEID);
         DesignComponent loginEventSource = document.createComponent(LoginScreenLoginCommandEventSourceCD.TYPEID);
         loginEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(loginScreen));
@@ -53,9 +53,11 @@ public class LoginScreenProducer extends MidpComponentProducer {
         loginScreen.writeProperty(LoginScreenCD.PROP_BGK_COLOR, MidpTypes.createIntegerValue(0x00));
         loginScreen.writeProperty(LoginScreenCD.PROP_FRG_COLOR, MidpTypes.createIntegerValue(0xCCCCCC));
         loginScreen.writeProperty(LoginScreenCD.PROP_USE_LOGIN_BUTTON, MidpTypes.createBooleanValue(Boolean.FALSE));
+        loginScreen.writeProperty(LoginScreenCD.PROP_USERNAME_LABEL, MidpTypes.createStringValue(LoginScreenCD.USERNAME_LOGIN));
+        loginScreen.writeProperty(LoginScreenCD.PROP_PASSWORD_LABEL, MidpTypes.createStringValue(LoginScreenCD.USERNAME_PASSWORD));
         return new Result(loginScreen, loginCommand, loginEventSource);
     }
-    
+
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }

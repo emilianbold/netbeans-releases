@@ -31,7 +31,6 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
  */
 public final class PrimitivePropertySupport extends DefaultPropertySupport {
     
-    //private DesignPropertyDescriptor designerPropertyDescriptor;
     private String displayName;
     private Object value;
     
