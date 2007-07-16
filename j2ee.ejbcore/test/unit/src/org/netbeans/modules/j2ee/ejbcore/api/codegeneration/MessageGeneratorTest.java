@@ -57,7 +57,7 @@ public class MessageGeneratorTest extends TestBase {
         // Queue based MessageDriven EJB in Java EE 1.4
         
         MessageDestination messageDestination = new MessageDestinationImpl("TestMDBQueue", MessageDestination.Type.QUEUE);
-        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, messageDestination, false, true);
+        MessageGenerator generator = new MessageGenerator("TestMDBQueue", packageFileObject, messageDestination, false, true, true);
         generator.generate();
         
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
@@ -88,7 +88,7 @@ public class MessageGeneratorTest extends TestBase {
         // Topic based MessageDriven EJB in Java EE 1.4
         
         messageDestination = new MessageDestinationImpl("TestMDBTopic", MessageDestination.Type.TOPIC);
-        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, messageDestination, false, true);
+        generator = new MessageGenerator("TestMDBTopic", packageFileObject, messageDestination, false, true, true);
         generator.generate();
         
         messageDriven = (MessageDriven) enterpriseBeans.findBeanByName(

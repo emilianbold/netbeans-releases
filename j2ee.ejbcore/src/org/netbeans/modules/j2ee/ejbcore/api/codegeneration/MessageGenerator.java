@@ -71,10 +71,10 @@ public final class MessageGenerator {
     private final Map<String, String> templateParameters;
 
     public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased) {
-        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, isXmlBased);
+        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, isXmlBased, false);
     }
     
-    private MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased) {
+    protected MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased, boolean isTest) {
         this.pkg = pkg;
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
@@ -88,6 +88,13 @@ public final class MessageGenerator {
         this.templateParameters = new HashMap<String, String>();
         // fill all possible template parameters
         this.templateParameters.put("package", packageName);
+        this.templateParameters.put("messageDestinationName", messageDestination.getName());
+        if (isTest) {
+            // set date, time and user to values used in goldenfiles
+            this.templateParameters.put("date", "{date}");
+            this.templateParameters.put("time", "{time}");
+            this.templateParameters.put("user", "{user}");
+        }
     }
     
     public FileObject generate() throws IOException {

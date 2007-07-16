@@ -83,11 +83,11 @@ public final class SessionGenerator {
 
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased);
+        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased, false);
     } 
     
-    private SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
+    protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+            boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, boolean isTest) {
         this.pkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
@@ -110,6 +110,12 @@ public final class SessionGenerator {
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("localInterface", packageNameWithDot + localName);
         this.templateParameters.put("remoteInterface", packageNameWithDot + remoteName);
+        if (isTest) {
+            // set date, time and user to values used in goldenfiles
+            this.templateParameters.put("date", "{date}");
+            this.templateParameters.put("time", "{time}");
+            this.templateParameters.put("user", "{user}");
+        }
     }
     
     public FileObject generate() throws IOException {

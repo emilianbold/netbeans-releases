@@ -1,9 +1,9 @@
 /*
  * TestCmpBean.java
- *
+ * 
  * Created on {date}, {time}
- *
- * To change this template, choose Tools | Template Manager
+ * 
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -88,10 +88,10 @@ public abstract class TestCmpBean implements EntityBean {
         
         // TODO add additional validation code, throw CreateException if data is not valid
         setKey(key);
-        
+
         return null;
     }
-    
+
     public void ejbPostCreate(java.lang.Long key) {
         // TODO populate relationships here if appropriate
     }

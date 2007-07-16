@@ -49,7 +49,7 @@ public class SessionGeneratorTest extends TestBase {
 
         // Stateless EJB in Java EE 1.4
         
-        SessionGenerator sessionGenerator = SessionGenerator.create("TestStatelessLR", packageFileObject, true, true, false, false, false, true);
+        SessionGenerator sessionGenerator = new SessionGenerator("TestStatelessLR", packageFileObject, true, true, false, false, false, true, true);
         sessionGenerator.generate();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
@@ -93,7 +93,7 @@ public class SessionGeneratorTest extends TestBase {
 
         // Stateful EJB in Java EE 1.4
         
-        sessionGenerator = SessionGenerator.create("TestStatefulLR", packageFileObject, false, true, true, false, false, true);
+        sessionGenerator = new SessionGenerator("TestStatefulLR", packageFileObject, false, true, true, false, false, true, true);
         sessionGenerator.generate();
         session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, "TestStatefulLRBean");
 
@@ -137,7 +137,7 @@ public class SessionGeneratorTest extends TestBase {
 
         // Stateless EJB in Java EE 5.0 defined in annotations
         
-        SessionGenerator sessionGenerator = SessionGenerator.create("TestStateless", packageFileObject, true, true, false, true, false, false);
+        SessionGenerator sessionGenerator = new SessionGenerator("TestStateless", packageFileObject, true, true, false, true, false, false, true);
         sessionGenerator.generate();
 
         assertFile(
@@ -158,7 +158,7 @@ public class SessionGeneratorTest extends TestBase {
 
         // Stateful EJB in Java EE 5.0 defined in annotations
         
-        sessionGenerator = SessionGenerator.create("TestStateful", packageFileObject, true, false, true, true, false, false);
+        sessionGenerator = new SessionGenerator("TestStateful", packageFileObject, true, false, true, true, false, false, true);
         sessionGenerator.generate();
 
         assertFile(

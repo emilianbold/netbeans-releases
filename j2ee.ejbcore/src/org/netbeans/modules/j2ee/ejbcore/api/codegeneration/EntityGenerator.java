@@ -41,7 +41,7 @@ import org.openide.filesystems.FileObject;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public class EntityGenerator {
+public final class EntityGenerator {
 
     private static final String BMP_EJBCLASS = "Templates/J2EE/EJB21/BmpEjbClass.java"; // NOI18N
     private static final String BMP_LOCAL = "Templates/J2EE/EJB21/BmpLocal.java"; // NOI18N
@@ -81,11 +81,11 @@ public class EntityGenerator {
 
     public static EntityGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isCMP, String primaryKeyClassName, String primaryKeyName) {
-        return new EntityGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName, primaryKeyName);
+        return new EntityGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName, primaryKeyName, false);
     }
     
-    private EntityGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
-            boolean isCMP, String primaryKeyClassName, String primaryKeyName) {
+    protected EntityGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+            boolean isCMP, String primaryKeyClassName, String primaryKeyName, boolean isTest) {
         this.pkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
@@ -110,6 +110,12 @@ public class EntityGenerator {
         this.templateParameters.put("primaryKeyName", primaryKeyName);
         this.templateParameters.put("localInterface", packageNameWithDot + localName);
         this.templateParameters.put("remoteInterface", packageNameWithDot + remoteName);
+        if (isTest) {
+            // set date, time and user to values used in goldenfiles
+            this.templateParameters.put("date", "{date}");
+            this.templateParameters.put("time", "{time}");
+            this.templateParameters.put("user", "{user}");
+        }
     }
 
     public FileObject generate() throws IOException {

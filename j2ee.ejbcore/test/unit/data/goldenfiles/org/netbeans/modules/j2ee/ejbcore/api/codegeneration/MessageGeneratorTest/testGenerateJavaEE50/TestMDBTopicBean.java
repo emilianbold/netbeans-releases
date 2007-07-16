@@ -18,7 +18,7 @@ import javax.jms.MessageListener;
  *
  * @author {user}
  */
-@MessageDriven(mappedName = "jms/TestMDBTopicBean", activationConfig =  {
+@MessageDriven(mappedName = "TestMessageDestination", activationConfig =  {
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
         @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
