@@ -30,6 +30,7 @@ import java.util.logging.LogRecord;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.uihandler.api.Controller;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -42,10 +43,15 @@ import org.openide.util.Task;
 public class UIHandler extends Handler 
 implements ActionListener, Runnable, Callable<JButton> {
     private final boolean exceptionOnly;
-    static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
+    public static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(Controller.getDefault());
     static final int MAX_LOGS = 1000;
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
+    
+    private static boolean exceptionHandler;
+    public static void registerExceptionHandler(boolean enable) {
+        exceptionHandler = enable;
+    }
     
     public UIHandler(boolean exceptionOnly) {
         setLevel(Level.FINEST);
@@ -53,8 +59,13 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
 
     public void publish(LogRecord record) {
-        if (exceptionOnly && record.getThrown() == null) {
-            return;
+        if (exceptionOnly) {
+            if (record.getThrown() == null) {
+                return;
+            }
+            if (!exceptionHandler) {
+                return;
+            }
         }
         
         class WriteOut implements Runnable {

@@ -102,7 +102,7 @@ public class Installer extends ModuleInstall {
     private static UIHandler ui = new UIHandler(false);
     private static UIHandler handler = new UIHandler(true);
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
-    static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
+    public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
     private static int logsSize;
@@ -173,10 +173,10 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    static URL hintsURL() {
+    public static URL hintsURL() {
         return hintURL;
     }
-    static boolean isHintsMode() {
+    public static boolean isHintsMode() {
         return prefs.getBoolean("autoSubmitWhenFull", false);
     }
     
@@ -333,7 +333,7 @@ public class Installer extends ModuleInstall {
     }
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
-    static boolean displaySummary(String msg, boolean explicit, boolean auto) {
+    public static boolean displaySummary(String msg, boolean explicit, boolean auto) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
