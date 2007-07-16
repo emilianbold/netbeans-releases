@@ -25,9 +25,6 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.visualweb.web.ui.appbase</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <!--
-                    <code-name-base>org.netbeans.modules.visualweb.libs.jsf.api</code-name-base>
-                    -->
                     <!-- Contains JSF 1.2 API -->
                     <code-name-base>org.netbeans.modules.visualweb.libs.javaee5</code-name-base>
                     <build-prerequisite/>
@@ -47,16 +44,9 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages/>
-            <!-- 
-            <friend-packages>
-                <package>org.netbeans.modules.visualweb.web.ui.appbase</package>
-                <package>com.sun.rave.web.ui.appbase.faces</package>
-                <package>com.sun.rave.web.ui.appbase.servlet</package>
-            </friend-packages>
-            -->
             <class-path-extension>
                 <runtime-relative-path>ext/appbase.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/appbase.jar</binary-origin>
+                <binary-origin>library/dist/appbase.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -27,25 +27,24 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Build the J2SE project JAR on which this library wrapper module depends. -->
     <target name="library-init">
         <ant dir="library" target="jar" inheritAll="false"/>
-        <mkdir dir="release/modules/ext"/>
-        <copy todir="release/modules/ext">
-            <fileset dir="library/dist" includes="*.jar"/>
-        </copy>
     </target>
     
     <target name="src-zip-init">
         <ant dir="library" target="src-zip" inheritAll="false"/>
-        <mkdir dir="release/docs"/>
-        <copy todir="release/docs">
-            <fileset dir="library/dist" includes="appbase-src.zip"/>
-        </copy>
     </target>
     
     <target name="javadoc-zip-init">
         <ant dir="library" target="javadoc-zip" inheritAll="false"/>
-        <mkdir dir="release/docs"/>
-        <copy todir="release/docs">
-            <fileset dir="library/dist" includes="appbase-doc.zip"/>
+    </target>
+
+    <target name="netbeans-extra" depends="init">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext">
+            <fileset dir="library/dist" includes="*.jar"/>
+        </copy>
+        <mkdir dir="${cluster}/docs"/>
+        <copy todir="${cluster}/docs">
+            <fileset dir="library/dist" includes="*.zip"/>
         </copy>
     </target>
     
@@ -54,6 +53,5 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Clean the J2SE project on which this library wrapper module depends. -->
     <target name="library-clean">
         <ant target="clean" dir="library" inheritAll="false"/>
-        <delete dir="release"/>
     </target>    
 </project>

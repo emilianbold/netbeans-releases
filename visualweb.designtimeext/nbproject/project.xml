@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/designtimeext.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/designtimeext.jar</binary-origin>
+                <binary-origin>library/dist/designtimeext.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
