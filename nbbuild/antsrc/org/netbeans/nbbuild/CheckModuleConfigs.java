@@ -64,7 +64,7 @@ public final class CheckModuleConfigs extends Task {
         File buildPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "build.properties");
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
         File goldenFile = new File(nbroot, "nbbuild" + File.separatorChar + "build" + File.separatorChar + "generated" + File.separatorChar + "moduleconfigs.txt");
-        File masterProjectXml = new File(nbroot, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar + "project.xml");
+        File masterProjectXml = new File(nbroot, "ide" + File.separatorChar + "allmodules" + File.separatorChar + "nbproject" + File.separatorChar + "project.xml");
         @SuppressWarnings("unchecked")
         Map<String,String> properties = getProject().getProperties();
         Map<String,Set<String>> configs = loadModuleConfigs(properties, buildPropertiesFile);
@@ -239,7 +239,7 @@ public final class CheckModuleConfigs extends Task {
         for (String module : allClusterModules) {
             if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
                 Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/1", "project");
-                e.appendChild(doc.createTextNode("../" + module));
+                e.appendChild(doc.createTextNode("../../" + module));
                 sp.appendChild(e);
             } else {
                 sp.appendChild(doc.createComment(" Unprojectized: " + module + " "));
