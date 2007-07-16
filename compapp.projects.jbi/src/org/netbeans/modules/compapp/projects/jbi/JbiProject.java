@@ -684,8 +684,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     //Broken property, log & ignore
                     LOG.warning("Illegal charset: " + prop+ " in project: " + // NOI18N
                             FileUtil.getFileDisplayName(getProjectDirectory())); 
-                }
-                catch (UnsupportedCharsetException e) {
+                } catch (UnsupportedCharsetException e) {
                     //todo: Needs UI notification like broken references.
                     LOG.warning("Unsupported charset: " + prop+ " in project: " + // NOI18N
                             FileUtil.getFileDisplayName(getProjectDirectory())); 

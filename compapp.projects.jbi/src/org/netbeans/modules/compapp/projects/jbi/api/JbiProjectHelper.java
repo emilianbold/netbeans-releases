@@ -37,13 +37,17 @@ public class JbiProjectHelper {
      * @return 
      */
     public static String getJbiProjectName(Project p) {
-        JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
-    
-        String name = (String) props.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
-        if (name == null) { // for backward compatibility until project is updated
-            name = (String) props.get(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
+        if (p == null) {
+            return "";
+        } else {
+            JbiProjectProperties props = ((JbiProject)p).getProjectProperties();
+            
+            String name = (String) props.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+            if (name == null) { // for backward compatibility until project is updated
+                name = (String) props.get(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
+            }
+            return name;
         }
-        return name;
     }
     
     /** 

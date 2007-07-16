@@ -2883,16 +2883,12 @@ public class CasaWrapperModel extends CasaModelImpl {
         // as well as make a call to saJBIModel.super.sync()
         super.sync();
         
-        try {
-            WSDLModel compAppWSDLModel = getCompAppWSDLModel(false);
-            
-            if (compAppWSDLModel != null) {
-                compAppWSDLModel.sync();
-            }
-        } catch (Error e) { // Added temporarily for unit test
-            ;
-        }
+        WSDLModel compAppWSDLModel = getCompAppWSDLModel(false);
         
+        if (compAppWSDLModel != null) {
+            compAppWSDLModel.sync();
+        }
+
         cachedWSDLComponents.clear();
         
         // Probably need to also reset all internal fields/state
