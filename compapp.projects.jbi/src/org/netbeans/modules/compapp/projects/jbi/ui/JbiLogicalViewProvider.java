@@ -373,20 +373,18 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null
                     ));
             actions.add(null);
-            
-            // ProjectSensitiveActions.projectCommandAction( JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, bundle.getString( "LBL_ValidatePortmaps_Name" ), null ), // NOI18N
+                        
             actions.add(ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_DEPLOY, bundle.getString("LBL_DeployAction_Name"),
                     null
                     ));
-            
-            // ProjectSensitiveActions.projectCommandAction( JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, bundle.getString( "LBL_ValidatePortmaps_Name" ), null ), // NOI18N
+                        
             actions.add(ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_UNDEPLOY, bundle.getString("LBL_UnDeployAction_Name"),
                     null
                     ));
             // Start Test Framework
-            actions.add(null);
+            //actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"),
                     null
