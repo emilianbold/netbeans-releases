@@ -213,29 +213,29 @@ public final class InfoPresenter extends DynamicPresenter {
     public static String getHtmlDisplayName (DesignComponent component) {
         InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
         if (presenter == null) {
-            Debug.warning ("Missing InfoPresenter for: ", component);
+            Debug.warning ("Missing InfoPresenter for: ", component); // NOI18N
             return null;
         }
         String primary = presenter.getDisplayName (InfoPresenter.NameType.PRIMARY);
         String secondary = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
-        return secondary != null ? primary + " <font color=\"#808080\">[" + secondary + "]" : primary;
+        return secondary != null ? primary + " <font color=\"#808080\">[" + secondary + "]" : primary; // NOI18N
     }
     
     public static String getDisplayName (DesignComponent component) {
         InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
         if (presenter == null) {
-            Debug.warning ("Missing InfoPresenter for: ", component);
+            Debug.warning ("Missing InfoPresenter for: ", component); // NOI18N
             return null;
         }
         String primary = presenter.getDisplayName (InfoPresenter.NameType.PRIMARY);
         String secondary = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
-        return secondary != null ? primary +" [" + secondary + "]" : primary; //NOI18N
+        return secondary != null ? primary +" [" + secondary + "]" : primary; // NOI18N
     }
 
     public static String getToolTip (DesignComponent component) {
         InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
         if (presenter == null) {
-            Debug.warning ("Missing InfoPresenter for: ", component);
+            Debug.warning ("Missing InfoPresenter for: ", component); // NOI18N
             return null;
         }
         return getToolTip (presenter);

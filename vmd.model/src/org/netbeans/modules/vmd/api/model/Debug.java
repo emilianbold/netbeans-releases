@@ -62,11 +62,14 @@ public class Debug {
         }
 
         StringBuilder sb = new StringBuilder ("WARNING: ");
-        sb.append (Thread.currentThread ().getStackTrace ()[stackTraceFriendIndex - 1]);
-        sb.append ('\n');
+        StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
+        sb.append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
+        if (stackTraceFriendIndex - 2 >= 0)
+            sb.append (stack[stackTraceFriendIndex - 2]).append ('\n'); // NOI18N
         for (Object message : messages)
             sb.append (" | ").append (message);
         System.err.println (sb.toString ());
+        Thread.dumpStack ();
     }
 
     /**
@@ -118,8 +121,10 @@ public class Debug {
             exception = (Throwable) messages[0];
         } else {
             StringBuilder sb = new StringBuilder ("ERROR: ");
-            sb.append (Thread.currentThread ().getStackTrace ()[stackTraceFriendIndex - 1]);
-            sb.append ('\n');
+            StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
+            sb.append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
+            if (stackTraceFriendIndex - 2 >= 0)
+                sb.append (stack[stackTraceFriendIndex - 2]).append ('\n'); // NOI18N
             for (Object message : messages)
                 sb.append (" | ").append (message);
 
