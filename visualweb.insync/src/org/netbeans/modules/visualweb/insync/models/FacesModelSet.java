@@ -42,6 +42,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -222,6 +223,33 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     private static void ensureJspJavaFolderStructure(FileObject srcParentFolder, FileObject destParentFolder, int depth) {
         assert srcParentFolder != null;
         assert destParentFolder != null;
+        
+        // Bug Fix# 108800
+        // Do not copy folder structure if the src folder is under page bean root.
+        Project project = FileOwnerQuery.getOwner(srcParentFolder);
+        if (project == null) {
+        	return;
+        }
+        
+        FileObject pageBeanRootFolder = JsfProjectUtils.getPageBeanRoot(project);
+        if (pageBeanRootFolder == null) {
+            return;
+        }
+        
+        ClassPath classPath = ClassPath.getClassPath(pageBeanRootFolder, ClassPath.SOURCE);
+        if (classPath == null) {
+        	return;        	
+        }
+        
+		FileObject srcRoot = classPath.findOwnerRoot(pageBeanRootFolder);
+		
+		if (srcRoot == null) {
+			return;
+		}
+        
+        if (FileUtil.isParentOf(srcRoot, srcParentFolder) || srcRoot.equals(srcParentFolder)) {
+        	return;
+        }
         
         FileObject[] fileObjects = srcParentFolder.getChildren();
         for (int i = 0; i < fileObjects.length; i++) {
