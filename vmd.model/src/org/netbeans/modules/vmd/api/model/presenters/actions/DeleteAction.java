@@ -58,7 +58,7 @@ public final class DeleteAction extends SystemAction {
         final boolean[] ret = new boolean[1];
         activeDocument.getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                ret[0] = DeleteSupport.canDeleteAsUser (activeDocument);
+                ret[0] = DeleteSupport.canDeleteAsUser (activeDocument, activeDocument.getSelectedComponents ());
             }
         });
 

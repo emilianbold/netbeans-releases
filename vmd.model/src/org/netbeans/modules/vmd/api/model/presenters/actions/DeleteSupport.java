@@ -116,40 +116,32 @@ public final class DeleteSupport {
             notifyComponentsDeleting (child, componentsToDeleteUm);
     }
 
-    static boolean canDeleteAsUser (DesignDocument document) {
-        Collection<DesignComponent> selectedComponents = document.getSelectedComponents ();
-        if (canDelete (selectedComponents) != DeletableState.ALLOWED)
-            return false;
-        return canDeleteAsUser (document, selectedComponents);
-    }
-
     public static boolean canDeleteAsUser (DesignDocument document, Collection<DesignComponent> componentsToDelete) {
+        if (canDelete (componentsToDelete) != DeletableState.ALLOWED)
+            return false;
+
         Collection<DesignComponent> allComponentsToDelete = gatherAllComponentsToDelete (document, componentsToDelete);
         return canDelete (allComponentsToDelete) != DeletableState.DISALLOWED;
-    }
-
-    static void invokeDirectUserDeletion (DesignDocument document) {
-        invokeDirectUserDeletion (document, document.getSelectedComponents ());
     }
 
     public static void invokeDirectUserDeletion (DesignDocument document, Collection<DesignComponent> componentsToDelete) {
         if (canDelete (componentsToDelete) != DeletableState.ALLOWED)
             return;
 
-        Collection<DesignComponent> componentsToDelete = gatherAllComponentsToDelete (document, componentsToDelete);
-        if (canDelete (componentsToDelete) == DeletableState.DISALLOWED)
+        Collection<DesignComponent> allComponentsToDelete = gatherAllComponentsToDelete (document, componentsToDelete);
+        if (canDelete (allComponentsToDelete) == DeletableState.DISALLOWED)
             return;
 
-        if (! ConfirmDeletionPanel.show (componentsToDelete, componentsToDelete))
+        if (! ConfirmDeletionPanel.show (componentsToDelete, allComponentsToDelete))
             return;
 
-        notifyComponentsDeleting (document.getRootComponent (), Collections.unmodifiableCollection (componentsToDelete));
+        notifyComponentsDeleting (document.getRootComponent (), Collections.unmodifiableCollection (allComponentsToDelete));
 
-        for (DesignComponent component : componentsToDelete)
+        for (DesignComponent component : allComponentsToDelete)
             for (DeletePresenter presenter : component.getPresenters (DeletePresenter.class))
                 presenter.delete ();
 
-        document.deleteComponents (componentsToDelete);
+        document.deleteComponents (allComponentsToDelete);
     }
 
 }
