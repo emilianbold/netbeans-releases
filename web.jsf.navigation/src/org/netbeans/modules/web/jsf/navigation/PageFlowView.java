@@ -363,13 +363,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                             java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> pinNodes = new java.util.ArrayList<org.netbeans.modules.web.jsf.navigation.Pin>(scene.getPins());
 
                             widget.removeChild(loadingWidget);
-                            for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : pinNodes) {
-                                if (pinNode.getPageFlowNode() == pageNode) {
-                                    assert pinNode.getPageFlowNode().getDisplayName().equals(pageNode.getDisplayName());
-                                    java.util.Collection<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge> caseNodes = scene.findPinEdges(pinNode, true, false);
+                            for (org.netbeans.modules.web.jsf.navigation.Pin pin : pinNodes) {
+                                if (pin.getPage() == pageNode) {
+                                    assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
+                                    java.util.Collection<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
                                     redrawCaseNodes.addAll(caseNodes);
-                                    if (!pinNode.isDefault()) {
-                                        scene.removePin(pinNode);
+                                    if (!pin.isDefault()) {
+                                        scene.removePin(pin);
                                     }
                                 }
                             }
@@ -448,9 +448,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     private void setEdgeSourcePin(NavigationCaseEdge navCaseNode, Page fromPageNode) {
         Pin sourcePin = scene.getDefaultPin(fromPageNode);
         Collection<Pin> pinNodes = scene.getPins();
-        for (Pin pinNode : pinNodes) {
-            if (pinNode.getFromOutcome() != null && fromPageNode == pinNode.getPageFlowNode() && pinNode.getFromOutcome().equals(navCaseNode.getFromOuctome())) {
-                sourcePin = pinNode;
+        for (Pin pin : pinNodes) {
+            if (pin.getFromOutcome() != null && fromPageNode == pin.getPage() && pin.getFromOutcome().equals(navCaseNode.getFromOuctome())) {
+                sourcePin = pin;
                 /* Remove any old navigation case nodes coming from this source */
                 Collection<NavigationCaseEdge> oldNavCaseNodes = scene.findPinEdges(sourcePin, true, false);
                 for (NavigationCaseEdge oldNavCaseNode : oldNavCaseNodes) {
@@ -613,14 +613,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         /* Gather the Edges */
         Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
         Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
-        for (Pin pinNode : pinNodes) {
-            if (pinNode.getPageFlowNode() == pageNode) {
-                assert pinNode.getPageFlowNode().getDisplayName().equals(pageNode.getDisplayName());
+        for (Pin pin : pinNodes) {
+            if (pin.getPage() == pageNode) {
+                assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
 
-                Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pinNode, true, false);
+                Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
                 redrawCaseNodes.addAll(caseNodes);
-                if (!pinNode.isDefault()) {
-                    scene.removePin(pinNode);
+                if (!pin.isDefault()) {
+                    scene.removePin(pin);
                 }
             }
         }

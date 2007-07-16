@@ -86,7 +86,6 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         return PAGEFLOW;
     }
     
-    //    private static final Image PageFlowImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif");
     private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
     public Image getIcon() {
         //        return PageFlowImage;

@@ -249,7 +249,7 @@ public class MapActionUtility {
                     assert CONNECT_DECORATOR_DEFAULT != null;
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
                 } else if (nextElement instanceof Pin) {
-                    Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
+                    Widget pageWidget = scene.findWidget(((Pin) nextElement).getPage());
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
                 }
                 if (targetAnchor != null) {
@@ -286,7 +286,7 @@ public class MapActionUtility {
                     assert CONNECT_DECORATOR_DEFAULT != null;
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
                 } else if (nextElement instanceof Pin) {
-                    Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
+                    Widget pageWidget = scene.findWidget(((Pin) nextElement).getPage());
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
                 }
                 if (targetAnchor != null) {
@@ -371,7 +371,7 @@ public class MapActionUtility {
                     Pin sourcePin = null;
                     if (scene.isPin(sourceObject)) {
                         sourcePin = (Pin) sourceObject;
-                        sourcePage = (sourcePin).getPageFlowNode();
+                        sourcePage = (sourcePin).getPage();
                     }
                     if (scene.isNode(sourceObject)) {
                         sourcePage = (Page) sourceObject;
@@ -381,7 +381,7 @@ public class MapActionUtility {
                     Object targetObject = scene.findObject(CONNECT_WIDGET.getTargetAnchor().getRelatedWidget());
                     Page targetPage = null;
                     if (scene.isPin(targetObject)) {
-                        targetPage = ((Pin) targetObject).getPageFlowNode();
+                        targetPage = ((Pin) targetObject).getPage();
                     }
                     if (scene.isNode(targetObject)) {
                         targetPage = (Page) targetObject;

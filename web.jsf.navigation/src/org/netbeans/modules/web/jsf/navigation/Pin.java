@@ -35,6 +35,7 @@ import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet;
@@ -46,32 +47,32 @@ import org.openide.util.NbBundle;
  *
  * @author joelle
  */
-public class Pin extends PageFlowSceneElement{
-    
-    private Page pageNode;
+public class Pin extends PageFlowSceneElement {
+
+    private Page page;
     private boolean isDefault = true;
     private PageContentItem pageContentItem;
-    
+
     /** Creates a default PinNode
-     * @param pageNode
+     * @param page
      */
-    public Pin(Page pageNode) {
-        this.pageNode = pageNode;
+    public Pin(Page page) {
+        this.page = page;
     }
-    
+
     /**
      * Create a nondefault pin in a page which represents a page content item.
-     * @param pageNode for which the pin belongs.
+     * @param page for which the pin belongs.
      * @param pageContentItem
      */
-    public Pin( Page pageNode, PageContentItem pageContentItem) {
+    public Pin(Page page, PageContentItem pageContentItem) {
         assert pageContentItem != null;
-        
-        this.pageNode = pageNode;
+
+        this.page = page;
         this.pageContentItem = pageContentItem;
         isDefault = false;
     }
-    
+
     /**
      * Is this a default pin?
      * @return boolean is Default?
@@ -79,149 +80,139 @@ public class Pin extends PageFlowSceneElement{
     public boolean isDefault() {
         return isDefault;
     }
-    
+
     @Override
     public String toString() {
-        return new String("Pin[pagename=" + pageNode.getDisplayName() + " isDefault=" + isDefault() +"] ");
+        return new String("Pin[pagename=" + page.getDisplayName() + " isDefault=" + isDefault() + "] ");
     }
-    
-    
-    
+
+
+
     /**
      * Is this a default pin?
      * @return Image pageContentItem Image
      */
     public Image getIcon(int type) {
-        if( pageContentItem != null ) {
+        if (pageContentItem != null) {
             return pageContentItem.getBufferedIcon();
         }
         return null;
     }
-    
-    
+
+
     /**
      * Get the name of this pin.  Will return content item name.
      * @return String
      */
     public String getName() {
-        if( pageContentItem != null ) {
+        if (pageContentItem != null) {
             return pageContentItem.getName();
         }
         return null;
     }
-    
+
     /**
      *
      * @return fromAction String
      */
     public String getFromAction() {
-        if( pageContentItem != null ) {
+        if (pageContentItem != null) {
             return pageContentItem.getFromAction();
         }
         return null;
     }
-    
+
     /**
      *
      * @return fromOutcome String
      */
     public String getFromOutcome() {
-        if( !isDefault ){
+        if (!isDefault) {
             return pageContentItem.getFromOutcome();
         }
         return null;
     }
-    
+
     public void setFromOutcome(String fromOutcome) {
-        if( pageContentItem != null )
+        if (pageContentItem != null) {
             pageContentItem.setFromOutcome(fromOutcome);
+        }
     }
-    
-    public void setFromAction(String fromAction ){
-        if( pageContentItem != null )
+
+    public void setFromAction(String fromAction) {
+        if (pageContentItem != null) {
             pageContentItem.setFromAction(fromAction);
+        }
     }
-    
+
     /**
      *
      * @return
      */
-    public Page getPageFlowNode() {
-        return pageNode;
+    public Page getPage() {
+        return page;
     }
-    
-    public Action[] getActions(){
-        if( pageContentItem != null ){
+
+    public Action[] getActions() {
+        if (pageContentItem != null) {
             return pageContentItem.getActions();
         }
         return new Action[]{};
     }
-    
-    
+
+
     public boolean equals(Object obj) {
-        return (this == obj);
+        return this == obj;
     }
-    
+
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
-    
+
     public HelpCtx getHelpCtx() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     public void destroy() throws IOException {
-        if( pinNode != null ){
+        if (pinNode != null) {
             pinNode.destroy();
         }
     }
-    
+
     public boolean canDestroy() {
         return false;
     }
-    
+
     public boolean canRename() {
         return false;
     }
-    
-    
-    //    @Override
-    //    public boolean equals(Object obj) {
-    //        if( pageContentItem != null )
-    //            return pageContentItem.equals(obj);
-    //        if( !(obj instanceof PinNode)){
-    //            return false;
-    //        }
-    //        PinNode tmpPinNode = (PinNode)obj;
-    //        return getPageFlowNode().equals(tmpPinNode.getPageFlowNode()) && getName().equals(tmpPinNode.getName());
-    //
-    //    }
-    //
-    //    @Override
-    //    public int hashCode() {
-    //        if( pageContentItem != null )
-    //           return pageContentItem.hashCode();
-    //        if( ! isDefault() )
-    //            return getPageFlowNode().hashCode() * getName().hashCode();
-    //        return getPageFlowNode().hashCode();
-    //    }
-    
-    
-    
+
+
     public Node getNode() {
-        if( pinNode == null )
-            pinNode = new MyNode();
+        if (pinNode == null) {
+            pinNode = new PinNode(this);
+        }
         return pinNode;
     }
-    
+
     Node pinNode;
-    private class MyNode extends AbstractNode {
-        
-        public MyNode() {
+
+    private class PinNode extends AbstractNode {
+        Page page;
+
+        public PinNode(Pin pin) {
             super(Children.LEAF);
+            page = pin.getPage();
         }
-        
+
+        @Override
+        public <T extends Cookie> T getCookie(Class<T> type) {
+            /* I needed to do this because it seems that the activatedNode requires some sort of DataObject to show things like Windows Title correctly */
+            return page.getCookie(type);
+        }
+
+
         @Override
         protected Sheet createSheet() {
             Sheet s = Sheet.createDefault();
@@ -234,27 +225,24 @@ public class Pin extends PageFlowSceneElement{
                 s.put(ss);
             }
             Set gs = ss;
-            
-            try {                
-                PropertySupport.Reflection  p = new Reflection<String>(pageContentItem, String.class, "getName", "setName"); // NOI18N
+
+            try {
+                PropertySupport.Reflection p = new Reflection<String>(pageContentItem, String.class, "getName", "setName"); // NOI18N
                 p.setName("fromView"); // NOI18N
                 p.setDisplayName(NbBundle.getMessage(Pin.class, "FromView")); // NOI18N
                 p.setShortDescription(NbBundle.getMessage(Pin.class, "FromViewHint")); // NOI18N
                 ss.put(p);
-                
+
                 p = new Reflection<String>(pageContentItem, String.class, "getFromOutcome", "setFromOutcome"); // NOI18N
                 p.setName("fromOutcome"); // NOI18N
                 p.setDisplayName(NbBundle.getMessage(Pin.class, "Outcome")); // NOI18N
                 p.setShortDescription(NbBundle.getMessage(Pin.class, "OutcomeHint")); // NOI18N
                 ss.put(p);
-                
             } catch (NoSuchMethodException nsme) {
                 ErrorManager.getDefault().notify(nsme);
             }
-            
+
             return s;
         }
     }
-    
-    
 }

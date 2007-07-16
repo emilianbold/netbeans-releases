@@ -65,7 +65,7 @@ public class LinkCreateProvider implements ConnectProvider {
         pinNode = null;
         if (graphScene.isPin(object)){
             pinNode = (Pin)object;
-            source = pinNode.getPageFlowNode();
+            source = pinNode.getPage();
         } else if ( graphScene.isNode(object) ){
             source = (Page)object;
         }
