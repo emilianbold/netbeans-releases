@@ -123,7 +123,7 @@ public class MigrateActionTest extends RubyTestBase {
 "    <type>org.netbeans.modules.ruby.railsprojects</type>\n" +
 "    <configuration>\n" +
 "        <data xmlns=\"http://www.netbeans.org/ns/rails-project/1\">\n" +
-"            <name>railsproj</name>\n" +
+"            <name>" + projectName + "</name>\n" +
 "        </data>\n" +
 "    </configuration>\n" +
 "</project>\n";
