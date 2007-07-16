@@ -77,21 +77,36 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             return;
         }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File[] roots = ctx.getFiles();
-        if (roots.length == 0) {
+        
+        // get files without exclusions
+        File[] contextFiles = ctx.getFiles();
+        if (contextFiles.length == 0) {
             return;
         }        
         
-        File[][] split = Utils.splitFlatOthers(roots);
+        // The commits are made non recursively, so 
+        // add also the roots to the to be commited list.       
+        List<File> rootFiles = ctx.getRoots();                
+        Set<File> filesSet = new HashSet<File>(); 
+        for(File file : contextFiles) {
+            filesSet.add(file);
+        }
+        for(File file : rootFiles) {
+            filesSet.add(file);
+        }
+        contextFiles = filesSet.toArray(new File[filesSet.size()]);
+                
+        // get all changed files while honoring the flat folder logic
+        File[][] split = Utils.splitFlatOthers(contextFiles);
         List<File> fileList = new ArrayList<File>();
         for (int c = 0; c < split.length; c++) {
-            roots = split[c];
+            contextFiles = split[c];
             boolean recursive = c == 1;
             if (recursive) {
                 File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
                 for (int i= 0; i < files.length; i++) {
-                    for(int r = 0; r < roots.length; r++) {
-                        if( SvnUtils.isParentOrEqual(roots[r], files[i]) ) {
+                    for(int r = 0; r < contextFiles.length; r++) {
+                        if( SvnUtils.isParentOrEqual(contextFiles[r], files[i]) ) {
                             if(!fileList.contains(files[i])) {
                                 fileList.add(files[i]);
                             }
@@ -99,7 +114,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                     }                    
                 }
             } else {
-                File[] files = SvnUtils.flatten(roots, FileInformation.STATUS_LOCAL_CHANGE);
+                File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
                 for (int i= 0; i<files.length; i++) {
                     if(!fileList.contains(files[i])) {
                         fileList.add(files[i]);
@@ -110,7 +125,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
         if(fileList.size()==0) {
             return; 
-        }
+        }        
         
         // show commit dialog        
         final CommitPanel panel = new CommitPanel();   
@@ -450,7 +465,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                 }                                
                 
                 File[] files = commitList.toArray(new File[commitList.size()]);                
-                client.commit(files, message, false);
+                client.commit(files, message, false);    
                 
                 if(rootUpdate) {
                     File[] rootFiles = ctx.getRootFiles();
