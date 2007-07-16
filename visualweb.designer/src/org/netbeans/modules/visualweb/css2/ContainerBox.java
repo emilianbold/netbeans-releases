@@ -1197,10 +1197,11 @@ public class ContainerBox extends CssBox {
             context.floating = false;
         }
         
-        if(getBoxType() == BoxType.FLOAT) {
-            oldFloats = context.floats;
-            context.floats = null;
-        }
+        // XXX #109564 This seems to caused the issue, but what it could cause now?
+//        if(getBoxType() == BoxType.FLOAT) {
+//            oldFloats = context.floats;
+//            context.floats = null;
+//        }
 
         if (handleChildren) {
             // Lay out the children now that we've established a containing
@@ -1208,9 +1209,10 @@ public class ContainerBox extends CssBox {
             box.relayout(context);
         }
 
-        if(getBoxType() == BoxType.FLOAT) {
-            context.floats = oldFloats;
-        }
+        // XXX #109564 This seems to caused the issue, but what it could cause now?
+//        if(getBoxType() == BoxType.FLOAT) {
+//            context.floats = oldFloats;
+//        }
 
         if (abs) {
             context.floats = oldFloats;

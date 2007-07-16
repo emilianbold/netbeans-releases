@@ -3092,11 +3092,12 @@ public class CssBox implements Box {
             box.initializeHorizontalWidths(context);
         }
 
+        // XXX #109564 This loop was commented out (from unknown reasons here),
+        // it was present in 5.5, and it fixes the mentioned issue.
         //XXX TODO 
         //temporary fix for 6480767. see bug info for more details
         //for all boxes within linebox, if the box width is in %, 
         //uninitialize contentWidth, so that intrinsic width is taken        
-        /*
         for (int i = 0; i < getBoxCount(); i++) {
             CssBox box = getBox(i);
             if(box instanceof LineBoxGroup) {
@@ -3115,7 +3116,6 @@ public class CssBox implements Box {
                 }
             }
         }
-         */
 
         int preferred = getPrefWidth();
         int minimum = getPrefMinWidth();
