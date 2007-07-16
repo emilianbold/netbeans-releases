@@ -193,12 +193,14 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         mainSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         mainSplitPane.setResizeWeight(1.0);
         mainSplitPane.setPreferredSize(new java.awt.Dimension(400, 650));
-        styleStringPanel.setLayout(new java.awt.GridBagLayout());
 
         styleStringPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
         styleStringPanel.setPreferredSize(new java.awt.Dimension(375, 100));
+        styleStringPanel.setLayout(new java.awt.GridBagLayout());
+
         styleStringScroll.setMaximumSize(new java.awt.Dimension(300, 100));
         styleStringScroll.setPreferredSize(new java.awt.Dimension(300, 100));
+
         styleTextArea.setColumns(50);
         styleTextArea.setLineWrap(true);
         styleTextArea.setRows(3);
@@ -210,10 +212,10 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
                 styleTextAreaFocusLost(evt);
             }
         });
-
         styleStringScroll.setViewportView(styleTextArea);
-        styleTextArea.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("STYLE_EDITOR_STYLE_TEXT_ACCESSIBLE_NAME"));
-        styleTextArea.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("STYLE_EDITOR_STYLE_TEXT_ACCESSIBLE_DESC"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle"); // NOI18N
+        styleTextArea.getAccessibleContext().setAccessibleName(bundle.getString("STYLE_EDITOR_STYLE_TEXT_ACCESSIBLE_NAME")); // NOI18N
+        styleTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("STYLE_EDITOR_STYLE_TEXT_ACCESSIBLE_DESC")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -223,7 +225,8 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         gridBagConstraints.weighty = 1.0;
         styleStringPanel.add(styleStringScroll, gridBagConstraints);
 
-        styleLabel.setText(org.openide.util.NbBundle.getMessage(StyleBuilderPanel.class, "CSS_STYLE"));
+        styleLabel.setLabelFor(styleTextArea);
+        styleLabel.setText(bundle.getString("CSS_STYLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -232,18 +235,18 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
 
         mainSplitPane.setBottomComponent(styleStringPanel);
 
-        editorListPanel.setLayout(new java.awt.BorderLayout());
-
         editorListPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        editorListPanel.setLayout(new java.awt.BorderLayout());
         styleEditorSplitPane.setLeftComponent(editorListPanel);
 
         editorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         editorSplitPane.setResizeWeight(1.0);
+
         previewScrollPane.setAutoscrolls(true);
         previewScrollPane.setDoubleBuffered(true);
         previewScrollPane.setPreferredSize(new java.awt.Dimension(400, 150));
-        previewPanel.setLayout(new java.awt.GridBagLayout());
 
+        previewPanel.setLayout(new java.awt.GridBagLayout());
         previewScrollPane.setViewportView(previewPanel);
 
         editorSplitPane.setBottomComponent(previewScrollPane);
@@ -251,8 +254,8 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         previewScrollPane1.setAutoscrolls(true);
         previewScrollPane1.setDoubleBuffered(true);
         previewScrollPane1.setPreferredSize(new java.awt.Dimension(400, 350));
-        editorPanel.setLayout(new java.awt.BorderLayout());
 
+        editorPanel.setLayout(new java.awt.BorderLayout());
         previewScrollPane1.setViewportView(editorPanel);
 
         editorSplitPane.setTopComponent(previewScrollPane1);
@@ -262,7 +265,6 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         mainSplitPane.setTopComponent(styleEditorSplitPane);
 
         add(mainSplitPane, java.awt.BorderLayout.CENTER);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void styleTextAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_styleTextAreaFocusLost

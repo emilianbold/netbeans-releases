@@ -2,7 +2,9 @@
 
 <Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -38,11 +40,14 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="fontLabel">
               <Properties>
+                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_FAMILY_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="fontChosenField"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="Font_Family" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="Font_Family" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[200, 15]"/>
@@ -108,7 +113,7 @@
                   <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="EDIT_FONT_FAMILY_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="EDIT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="EDIT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                   <Insets value="[4, 4, 4, 4]"/>
@@ -148,11 +153,14 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="sizeLabel">
               <Properties>
+                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_SIZE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="fontSizeField"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_SIZE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_SIZE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Constraints>
@@ -260,11 +268,14 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="styleLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_STYLE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="fontStyleComboBox"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_STYLE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_STYLE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <Constraints>
@@ -288,9 +299,9 @@
                     </Property>
                   </AccessibilityProperties>
                   <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="fontStyleComboBoxItemStateChanged"/>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fontStyleComboBoxActionPerformed"/>
                     <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fontStyleComboBoxFocusLost"/>
-                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="fontStyleComboBoxItemStateChanged"/>
                   </Events>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -300,11 +311,14 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="weightLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_WEIGHT_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="fontWeightComboBox"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_WEIGHT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_WEIGHT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <Constraints>
@@ -337,11 +351,14 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="variantLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_VARIANT_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="fontVariantComboBox"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_VARIANT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_VARIANT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <AccessibilityProperties>
@@ -367,10 +384,10 @@
                     </Property>
                   </AccessibilityProperties>
                   <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="fontVariantComboBoxItemStateChanged"/>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fontVariantComboBoxActionPerformed"/>
                     <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fontVariantComboBoxFocusGained"/>
                     <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="fontVariantComboBoxFocusLost"/>
-                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="fontVariantComboBoxItemStateChanged"/>
                   </Events>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -380,11 +397,14 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="colorLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_COLOR_MNEMONICS" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="colorSelectionPanel"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_COLOR" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_COLOR" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <Constraints>
@@ -423,7 +443,7 @@
                 <Component class="javax.swing.JLabel" name="decorationLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_DECORATION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_DECORATION" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <Constraints>
@@ -438,7 +458,7 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_DECORATION_UNDERLINE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_UNDERLINE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_UNDERLINE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                       <Insets value="[0, 2, 0, 2]"/>
@@ -464,7 +484,7 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_DECORATION_STRIKETHROUGH_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_STRIKETHROUGH" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_STRIKETHROUGH" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                       <Insets value="[0, 2, 0, 2]"/>
@@ -490,7 +510,7 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_DECORATION_OVERLINE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_OVERLINE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_OVERLINE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                       <Insets value="[0, 2, 0, 2]"/>
@@ -516,7 +536,7 @@
                       <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="FONT_DECORATION_NONE_MNEMONIC" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="NO_DECORATION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/visualweb/propertyeditors/css/Bundle.properties" key="NO_DECORATION" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <AccessibilityProperties>

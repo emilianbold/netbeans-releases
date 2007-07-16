@@ -224,11 +224,13 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         mainPanel.setLayout(new java.awt.BorderLayout());
 
+        fontFamilyPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         fontFamilyPanel.setLayout(new java.awt.GridBagLayout());
 
-        fontFamilyPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        fontLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_FAMILY_MNEMONIC").charAt(0));
         fontLabel.setLabelFor(fontChosenField);
-        fontLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "Font_Family"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle"); // NOI18N
+        fontLabel.setText(bundle.getString("Font_Family")); // NOI18N
         fontLabel.setMinimumSize(new java.awt.Dimension(200, 15));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -246,10 +248,9 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontFaceListValueChanged(evt);
             }
         });
-
         fontFaceScroll.setViewportView(fontFaceList);
-        fontFaceList.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontFamilyList"));
-        fontFaceList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontFamilyListAccessibleDescription"));
+        fontFaceList.getAccessibleContext().setAccessibleName(bundle.getString("FontFamilyList")); // NOI18N
+        fontFaceList.getAccessibleContext().setAccessibleDescription(bundle.getString("FontFamilyListAccessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -271,18 +272,17 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         fontFamilyPanel.add(fontChosenField, gridBagConstraints);
-        fontChosenField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("chosenFontsAccessibleName"));
-        fontChosenField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("ChosenFontAccessibleDescription"));
+        fontChosenField.getAccessibleContext().setAccessibleName(bundle.getString("chosenFontsAccessibleName")); // NOI18N
+        fontChosenField.getAccessibleContext().setAccessibleDescription(bundle.getString("ChosenFontAccessibleDescription")); // NOI18N
 
         fontFamilyButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("EDIT_FONT_FAMILY_MNEMONIC").charAt(0));
-        fontFamilyButton.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EDIT"));
+        fontFamilyButton.setText(bundle.getString("EDIT")); // NOI18N
         fontFamilyButton.setMargin(new java.awt.Insets(4, 4, 4, 4));
         fontFamilyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fontFamilyButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -290,15 +290,16 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         fontFamilyPanel.add(fontFamilyButton, gridBagConstraints);
-        fontFamilyButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("EditChosenFontsAccessibleDescription"));
+        fontFamilyButton.getAccessibleContext().setAccessibleDescription(bundle.getString("EditChosenFontsAccessibleDescription")); // NOI18N
 
         mainPanel.add(fontFamilyPanel, java.awt.BorderLayout.CENTER);
 
+        fontSizePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         fontSizePanel.setLayout(new java.awt.GridBagLayout());
 
-        fontSizePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        sizeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_SIZE_MNEMONIC").charAt(0));
         sizeLabel.setLabelFor(fontSizeField);
-        sizeLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_SIZE"));
+        sizeLabel.setText(bundle.getString("FONT_SIZE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -324,7 +325,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontSizeFieldKeyTyped(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -333,23 +333,22 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         fontSizePanel.add(fontSizeField, gridBagConstraints);
-        fontSizeField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("ChosenFontSizeAccessibleName"));
-        fontSizeField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("ChosenFontSizeAccessibleDescription"));
+        fontSizeField.getAccessibleContext().setAccessibleName(bundle.getString("ChosenFontSizeAccessibleName")); // NOI18N
+        fontSizeField.getAccessibleContext().setAccessibleDescription(bundle.getString("ChosenFontSizeAccessibleDescription")); // NOI18N
 
         fontSizeUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 fontSizeUnitComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         fontSizePanel.add(fontSizeUnitCombo, gridBagConstraints);
-        fontSizeUnitCombo.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontSizeUnitListAccessibleName"));
-        fontSizeUnitCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontSizeUnitListAccessibleDescription"));
+        fontSizeUnitCombo.getAccessibleContext().setAccessibleName(bundle.getString("FontSizeUnitListAccessibleName")); // NOI18N
+        fontSizeUnitCombo.getAccessibleContext().setAccessibleDescription(bundle.getString("FontSizeUnitListAccessibleDescription")); // NOI18N
 
         fontSizeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         fontSizeList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -357,10 +356,9 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontSizeListValueChanged(evt);
             }
         });
-
         fontSizeScroll.setViewportView(fontSizeList);
-        fontSizeList.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontSizeListAccessibleName"));
-        fontSizeList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontSizeListAccessibleDesription"));
+        fontSizeList.getAccessibleContext().setAccessibleName(bundle.getString("FontSizeListAccessibleName")); // NOI18N
+        fontSizeList.getAccessibleContext().setAccessibleDescription(bundle.getString("FontSizeListAccessibleDesription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -375,11 +373,12 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         styleMainPanel.setLayout(new java.awt.BorderLayout(20, 0));
 
+        stylePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         stylePanel.setLayout(new java.awt.GridBagLayout());
 
-        stylePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        styleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_STYLE_MNEMONIC").charAt(0));
         styleLabel.setLabelFor(fontStyleComboBox);
-        styleLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STYLE"));
+        styleLabel.setText(bundle.getString("FONT_STYLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -390,6 +389,11 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         fontStyleComboBox.setMinimumSize(new java.awt.Dimension(150, 20));
         fontStyleComboBox.setPreferredSize(new java.awt.Dimension(150, 20));
+        fontStyleComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                fontStyleComboBoxItemStateChanged(evt);
+            }
+        });
         fontStyleComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fontStyleComboBoxActionPerformed(evt);
@@ -400,12 +404,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontStyleComboBoxFocusLost(evt);
             }
         });
-        fontStyleComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                fontStyleComboBoxItemStateChanged(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -413,10 +411,11 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         stylePanel.add(fontStyleComboBox, gridBagConstraints);
-        fontStyleComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontStyleSelectionAccessibleDescription"));
+        fontStyleComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontStyleSelectionAccessibleDescription")); // NOI18N
 
+        weightLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_WEIGHT_MNEMONIC").charAt(0));
         weightLabel.setLabelFor(fontWeightComboBox);
-        weightLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_WEIGHT"));
+        weightLabel.setText(bundle.getString("FONT_WEIGHT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -441,7 +440,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontWeightComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -449,10 +447,11 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         stylePanel.add(fontWeightComboBox, gridBagConstraints);
-        fontWeightComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontWeightSelectionAccessibleDescription"));
+        fontWeightComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontWeightSelectionAccessibleDescription")); // NOI18N
 
+        variantLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_VARIANT_MNEMONIC").charAt(0));
         variantLabel.setLabelFor(fontVariantComboBox);
-        variantLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_VARIANT"));
+        variantLabel.setText(bundle.getString("FONT_VARIANT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -460,9 +459,14 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         stylePanel.add(variantLabel, gridBagConstraints);
-        variantLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontVariantSelectionAccessibleDescription"));
+        variantLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("FontVariantSelectionAccessibleDescription")); // NOI18N
 
         fontVariantComboBox.setMinimumSize(new java.awt.Dimension(150, 20));
+        fontVariantComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                fontVariantComboBoxItemStateChanged(evt);
+            }
+        });
         fontVariantComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fontVariantComboBoxActionPerformed(evt);
@@ -476,12 +480,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontVariantComboBoxFocusLost(evt);
             }
         });
-        fontVariantComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                fontVariantComboBoxItemStateChanged(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -489,10 +487,11 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         stylePanel.add(fontVariantComboBox, gridBagConstraints);
-        fontVariantComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontVariantSelectionAccessibleDescription"));
+        fontVariantComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontVariantSelectionAccessibleDescription")); // NOI18N
 
+        colorLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_COLOR_MNEMONICS").charAt(0));
         colorLabel.setLabelFor(colorSelectionPanel);
-        colorLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_COLOR"));
+        colorLabel.setText(bundle.getString("FONT_COLOR")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -500,7 +499,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         stylePanel.add(colorLabel, gridBagConstraints);
 
         colorSelectionPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -510,10 +508,10 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         styleMainPanel.add(stylePanel, java.awt.BorderLayout.WEST);
 
+        decorationPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         decorationPanel.setLayout(new java.awt.GridBagLayout());
 
-        decorationPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        decorationLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_DECORATION"));
+        decorationLabel.setText(bundle.getString("FONT_DECORATION")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -522,14 +520,13 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         decorationPanel.add(decorationLabel, gridBagConstraints);
 
         underlineCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_DECORATION_UNDERLINE_MNEMONIC").charAt(0));
-        underlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_UNDERLINE"));
+        underlineCheckbox.setText(bundle.getString("FONT_UNDERLINE")); // NOI18N
         underlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
         underlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 underlineCheckboxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -537,17 +534,16 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         decorationPanel.add(underlineCheckbox, gridBagConstraints);
-        underlineCheckbox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontUnderlineAccessibleDescription"));
+        underlineCheckbox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontUnderlineAccessibleDescription")); // NOI18N
 
         strikethroughCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_DECORATION_STRIKETHROUGH_MNEMONIC").charAt(0));
-        strikethroughCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STRIKETHROUGH"));
+        strikethroughCheckbox.setText(bundle.getString("FONT_STRIKETHROUGH")); // NOI18N
         strikethroughCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
         strikethroughCheckbox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 strikethroughCheckboxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -557,17 +553,16 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         decorationPanel.add(strikethroughCheckbox, gridBagConstraints);
-        strikethroughCheckbox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontStrikeThroughAccessibleDescription"));
+        strikethroughCheckbox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontStrikeThroughAccessibleDescription")); // NOI18N
 
         overlineCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_DECORATION_OVERLINE_MNEMONIC").charAt(0));
-        overlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_OVERLINE"));
+        overlineCheckbox.setText(bundle.getString("FONT_OVERLINE")); // NOI18N
         overlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
         overlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 overlineCheckboxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -575,23 +570,22 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         decorationPanel.add(overlineCheckbox, gridBagConstraints);
-        overlineCheckbox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontOverlineAccessibleDescription"));
+        overlineCheckbox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontOverlineAccessibleDescription")); // NOI18N
 
         noDecorationCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FONT_DECORATION_NONE_MNEMONIC").charAt(0));
-        noDecorationCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "NO_DECORATION"));
+        noDecorationCheckbox.setText(bundle.getString("NO_DECORATION")); // NOI18N
         noDecorationCheckbox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 noDecorationCheckboxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         decorationPanel.add(noDecorationCheckbox, gridBagConstraints);
-        noDecorationCheckbox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("FontNoDecorationAccessibleDescription"));
+        noDecorationCheckbox.getAccessibleContext().setAccessibleDescription(bundle.getString("FontNoDecorationAccessibleDescription")); // NOI18N
 
         styleMainPanel.add(decorationPanel, java.awt.BorderLayout.CENTER);
 
@@ -599,18 +593,16 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         add(mainPanel, java.awt.BorderLayout.NORTH);
 
+        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorPanel.setLayout(new java.awt.BorderLayout());
 
-        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorLabel.setForeground(new java.awt.Color(0, 0, 153));
         errorLabel.setMinimumSize(new java.awt.Dimension(200, 20));
         errorLabel.setPreferredSize(new java.awt.Dimension(200, 20));
         errorPanel.add(errorLabel, java.awt.BorderLayout.CENTER);
 
         add(errorPanel, java.awt.BorderLayout.CENTER);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void noDecorationCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_noDecorationCheckboxItemStateChanged
         textDecorationData.enableNoDecoration((evt.getStateChange() == evt.SELECTED));
