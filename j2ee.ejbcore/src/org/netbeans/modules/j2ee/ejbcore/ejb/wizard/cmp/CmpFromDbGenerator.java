@@ -192,12 +192,7 @@ public class CmpFromDbGenerator {
                                 entityClass.getClassName() + 
                                 ejbnames.getEntityEjbClassSuffix();
                         Entity entity = findEntityForEjbClass(ejbClassName);
-                        pwm.getConfigSupport().bindDatasourceReferenceForEjb(
-                                entity.getEjbName(),
-                                EnterpriseBeans.ENTITY,
-                                helper.getTableSource().getName(),
-                                helper.getTableSource().getName()
-                                );
+                        pwm.getConfigSupport().setCMPResource(entity.getEjbName(), helper.getTableSource().getName());
 		    } catch (ConfigurationException e) {
 			// TODO inform the user that the problem has occured
 		    }
