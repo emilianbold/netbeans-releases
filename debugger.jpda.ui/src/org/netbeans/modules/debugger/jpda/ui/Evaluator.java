@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.ComboBoxEditor;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
@@ -101,10 +102,10 @@ public class Evaluator extends javax.swing.JPanel {
         initComponents();
         initCombo();
         initResult();
-        expressionLabel.setLabelFor(expressionComboBox);
+        //expressionLabel.setLabelFor(expressionComboBox);
         Mnemonics.setLocalizedText(expressionLabel,
                 NbBundle.getMessage(Evaluator.class, "Evaluator.Expression"));
-        resultLabel.setLabelFor(resultPanel);
+        //resultLabel.setLabelFor(resultPanel);
         Mnemonics.setLocalizedText(resultLabel,
                 NbBundle.getMessage(Evaluator.class, "Evaluator.Result"));
         sessionListener = new SessionListener();
@@ -128,12 +129,15 @@ public class Evaluator extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        expressionLabel.setText(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.Expression"));
+        expressionLabel.setLabelFor(expressionComboBox);
+        expressionLabel.setText(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.Expression")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 12);
         add(expressionLabel, gridBagConstraints);
+        expressionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.ExpressionA11YDescr")); // NOI18N
 
+        expressionComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.ExpressionA11YDescr")); // NOI18N
         expressionComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 expressionComboBoxItemStateChanged(evt);
@@ -144,7 +148,6 @@ public class Evaluator extends javax.swing.JPanel {
                 expressionComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -152,15 +155,15 @@ public class Evaluator extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 12, 12);
         add(expressionComboBox, gridBagConstraints);
 
-        resultLabel.setText(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.Result"));
+        resultLabel.setText(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.Result")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 12);
         add(resultLabel, gridBagConstraints);
+        resultLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.ResultA11YDescr")); // NOI18N
 
-        resultPanel.setLayout(new javax.swing.BoxLayout(resultPanel, javax.swing.BoxLayout.X_AXIS));
-
+        resultPanel.setLayout(new javax.swing.BoxLayout(resultPanel, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -169,8 +172,9 @@ public class Evaluator extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 12, 12);
         add(resultPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.A11YName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Evaluator.class, "Evaluator.A11YDescr")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void expressionComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_expressionComboBoxItemStateChanged
         //System.err.println("itemStateChanged("+evt+")");
@@ -198,6 +202,10 @@ public class Evaluator extends javax.swing.JPanel {
         Dimension tps = tree.getPreferredSize();
         tps.height = tps.width/2;
         tree.setPreferredSize(tps);
+        tree.setName(NbBundle.getMessage(Evaluator.class, "Evaluator.ResultA11YName"));
+        tree.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Evaluator.class, "Evaluator.ResultA11YDescr"));
+        resultLabel.setLabelFor(tree);
     }
     
     private void destroy() {
@@ -284,21 +292,30 @@ public class Evaluator extends javax.swing.JPanel {
             return ;
         }
         final Evaluator evaluatorPanel = new Evaluator(debugger);
-        final String evalStr = NbBundle.getMessage(Evaluator.class, "Evaluator.Evaluate");
-        final String watchStr = NbBundle.getMessage(Evaluator.class, "Evaluator.Watch");
-        final String closeStr = NbBundle.getMessage(Evaluator.class, "Evaluator.Close");
+        String evalStr = NbBundle.getMessage(Evaluator.class, "Evaluator.Evaluate");
+        String watchStr = NbBundle.getMessage(Evaluator.class, "Evaluator.Watch");
+        String closeStr = NbBundle.getMessage(Evaluator.class, "Evaluator.Close");
+        final JButton evalBtn = new JButton();
+        Mnemonics.setLocalizedText(evalBtn, evalStr);
+        evalBtn.setToolTipText(NbBundle.getMessage(Evaluator.class, "Evaluator.Evaluate.TLT"));
+        final JButton watchBtn = new JButton();
+        Mnemonics.setLocalizedText(watchBtn, watchStr);
+        watchBtn.setToolTipText(NbBundle.getMessage(Evaluator.class, "Evaluator.Watch.TLT"));
+        final JButton closeBtn = new JButton();
+        Mnemonics.setLocalizedText(closeBtn, closeStr);
+        closeBtn.setToolTipText(NbBundle.getMessage(Evaluator.class, "Evaluator.Close.TLT"));
         DialogDescriptor dd = new DialogDescriptor(evaluatorPanel,
                 NbBundle.getMessage(Evaluator.class, "Evaluator.Title"),
-                false, new Object[] { evalStr, watchStr, closeStr },
+                false, new Object[] { evalBtn, watchBtn, closeBtn },
                 evalStr, DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(Evaluator.class.getName()), new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         Object option = e.getSource();
-                        if (evalStr.equals(option)) {
+                        if (evalBtn.equals(option)) {
                             evaluatorPanel.evaluate();
-                        } else if (watchStr.equals(option)) {
+                        } else if (watchBtn.equals(option)) {
                             DebuggerManager.getDebuggerManager ().createWatch (evaluatorPanel.getExpression ());
-                        } else if (closeStr.equals(option)) {
+                    } else if (closeBtn.equals(option)) {
                             close();
                         }
                     }
@@ -306,6 +323,8 @@ public class Evaluator extends javax.swing.JPanel {
         evalDialog = DialogDisplayer.getDefault().createDialog(dd);
         evalDialog.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(Evaluator.class, "Evaluator.A11YDescr"));
+        evalDialog.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Evaluator.class, "Evaluator.A11YName"));
         currentEvaluator = evaluatorPanel;
         evalDialog.setVisible(true);
         requestFocusForExpression();
