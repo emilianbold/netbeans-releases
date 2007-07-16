@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -486,6 +487,11 @@ public final class DefaultProjectOperationsImplementation {
         
         if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(from).getProjectDirectory())) {
             return ;
+        }
+        
+        //#109580
+        if (SharabilityQuery.getSharability(FileUtil.toFile(from)) == SharabilityQuery.NOT_SHARABLE) {
+            return;
         }
         
         if (from.isFolder()) {
