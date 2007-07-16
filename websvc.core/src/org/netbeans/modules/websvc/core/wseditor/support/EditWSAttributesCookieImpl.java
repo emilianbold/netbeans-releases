@@ -28,15 +28,10 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +47,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -74,7 +68,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie{
             //get all providers
             providers =
                     WSEditorProviderRegistry.getDefault().getEditorProviders();
-            tc = new EditWSAttributesTopComponent();
+            tc = new EditWSAttributesPanel();
             cachedTopComponents.put(this, tc);
         }
         populatePanels();
@@ -142,9 +136,9 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie{
     
     private Set<WSEditorProvider> providers;
     private Set<WSEditor> editors;
-    private static Map<EditWSAttributesCookie, EditWSAttributesTopComponent> cachedTopComponents
-            = new WeakHashMap<EditWSAttributesCookie, EditWSAttributesTopComponent>();
-    private EditWSAttributesTopComponent tc;
+    private static Map<EditWSAttributesCookie, EditWSAttributesPanel> cachedTopComponents
+            = new WeakHashMap<EditWSAttributesCookie, EditWSAttributesPanel>();
+    private EditWSAttributesPanel tc;
     private Node node;
     private JaxWsModel jaxWsModel;
     private DialogWindowListener windowListener;
