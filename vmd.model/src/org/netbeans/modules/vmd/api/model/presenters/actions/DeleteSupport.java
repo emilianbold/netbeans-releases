@@ -120,22 +120,27 @@ public final class DeleteSupport {
         Collection<DesignComponent> selectedComponents = document.getSelectedComponents ();
         if (canDelete (selectedComponents) != DeletableState.ALLOWED)
             return false;
+        return canDeleteAsUser (document, selectedComponents);
+    }
 
-        Collection<DesignComponent> componentsToDelete = gatherAllComponentsToDelete (document, selectedComponents);
-        return canDelete (componentsToDelete) != DeletableState.DISALLOWED;
+    public static boolean canDeleteAsUser (DesignDocument document, Collection<DesignComponent> componentsToDelete) {
+        Collection<DesignComponent> allComponentsToDelete = gatherAllComponentsToDelete (document, componentsToDelete);
+        return canDelete (allComponentsToDelete) != DeletableState.DISALLOWED;
     }
 
     static void invokeDirectUserDeletion (DesignDocument document) {
-        Collection<DesignComponent> selectedComponents = document.getSelectedComponents ();
+        invokeDirectUserDeletion (document, document.getSelectedComponents ());
+    }
 
-        if (canDelete (selectedComponents) != DeletableState.ALLOWED)
+    public static void invokeDirectUserDeletion (DesignDocument document, Collection<DesignComponent> componentsToDelete) {
+        if (canDelete (componentsToDelete) != DeletableState.ALLOWED)
             return;
 
-        Collection<DesignComponent> componentsToDelete = gatherAllComponentsToDelete (document, selectedComponents);
+        Collection<DesignComponent> componentsToDelete = gatherAllComponentsToDelete (document, componentsToDelete);
         if (canDelete (componentsToDelete) == DeletableState.DISALLOWED)
             return;
 
-        if (! ConfirmDeletionPanel.show (selectedComponents, componentsToDelete))
+        if (! ConfirmDeletionPanel.show (componentsToDelete, componentsToDelete))
             return;
 
         notifyComponentsDeleting (document.getRootComponent (), Collections.unmodifiableCollection (componentsToDelete));
