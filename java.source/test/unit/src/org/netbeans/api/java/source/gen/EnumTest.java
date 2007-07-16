@@ -47,6 +47,7 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testRenameConstantCheckJavadoc"));
 //        suite.addTest(new EnumTest("testRenameWithInit"));
 //        suite.addTest(new EnumTest("testRenameMethodInEnum"));
+//        suite.addTest(new EnumTest("testRenameConstantContainingBody"));
         return suite;
     }
 
@@ -492,6 +493,114 @@ public class EnumTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
+    /**
+     * Demonstrates #106932
+     * 
+     * Original:
+     * 
+     * <code>
+     * public enum BugEnum {
+     *   VALUE1{
+     *     public String doSomeTest(){
+     *       return "value1";
+     *     }    
+     *   }
+     *   ,
+     *   VALUE2{
+     *     public String doSomeTest(){
+     *       return "value2";
+     *     }
+     *   };
+     *   
+     *   public String doSomeTest(){
+     *     return null;
+     *   }
+     * }
+     * </code>
+     * 
+     * Expected result:
+     * 
+     * <code>
+     * public enum Test {
+     * public enum BugEnum {
+     *   VALUE_F{
+     *     public String doSomeTest(){
+     *       return "value1";
+     *     }    
+     *   }
+     *   ,
+     *   VALUE2{
+     *     public String doSomeTest(){
+     *       return "value2";
+     *     }
+     *   };
+     *   
+     *   public String doSomeTest(){
+     *     return null;
+     *   }
+     * }
+     * </code>
+     */
+    public void testRenameConstantContainingBody() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "public enum BugEnum {\n" +
+            "  VALUE1 {\n" +
+            "    public String doSomeTest(){\n" +
+            "      return \"value1\";\n" +
+            "    }    \n" +
+            "  }\n" +
+            "  ,\n" +
+            "  VALUE2{\n" +
+            "    public String doSomeTest(){\n" +
+            "      return \"value2\";\n" +
+            "    }\n" +
+            "  };\n" +
+            "  \n" +
+            "  public String doSomeTest(){\n" +
+            "    return null;\n" +
+            "  }\n" +
+            "}\n"
+            );
+        String golden =
+            "public enum BugEnum {\n" +
+            "  VALUE_F {\n" +
+            "    public String doSomeTest(){\n" +
+            "      return \"value1\";\n" +
+            "    }    \n" +
+            "  }\n" +
+            "  ,\n" +
+            "  VALUE2{\n" +
+            "    public String doSomeTest(){\n" +
+            "      return \"value2\";\n" +
+            "    }\n" +
+            "  };\n" +
+            "  \n" +
+            "  public String doSomeTest(){\n" +
+            "    return null;\n" +
+            "  }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                // VALUE1 -> VALUE_F
+                VariableTree vt = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(vt, make.setLabel(vt, "VALUE_F"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
