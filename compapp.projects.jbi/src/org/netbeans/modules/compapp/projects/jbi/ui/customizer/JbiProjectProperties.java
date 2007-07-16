@@ -60,6 +60,7 @@ import org.w3c.dom.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 import java.text.Collator;
 
@@ -72,6 +73,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
@@ -857,6 +859,16 @@ public class JbiProjectProperties {
                     antProjectHelper.putProperties(PROJECT, eProps.get(PROJECT));
                     antProjectHelper.putProperties(PRIVATE, eProps.get(PRIVATE));
                     ProjectManager.getDefault().saveProject(project);
+                    
+                    // Persist encoding for future projects
+                    Charset charset = (Charset) get(SOURCE_ENCODING);
+                    if (charset != null) {
+                        try {
+                            FileEncodingQuery.setDefaultEncoding(charset);
+                        } catch (UnsupportedCharsetException e) {
+                            //When the encoding is not supported by JVM do not set it as default
+                        }
+                    }
                     
                     return null;
                 }
