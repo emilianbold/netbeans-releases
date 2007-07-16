@@ -33,6 +33,7 @@ import org.netbeans.modules.dbschema.ColumnElement;
 class SQLType {
     private int sqlType;
     private String stringValue;
+    /* list of classes that could be used to represent this sql type in Java */
     private Class[] typeList;
     private boolean supportsFinder;
     private static final SQLType UNKNOWN = new SQLType(Types.OTHER, 
@@ -80,17 +81,6 @@ class SQLType {
     }    
     
     /**
-     * Return list of classes that could be used to represent this sql type in
-     * Java. The list is derived from JDBC 2.0 specification.
-     * @return list containing java.lang.Class elements to represent this type
-     */
-    private List getValidClasses() {
-        List retList = new ArrayList(typeList.length);
-        retList.addAll(Arrays.asList(typeList));
-        return retList;
-    }
-    
-    /**
      * Return the string value associated with this sql type
      * @return String value used in the method signature 
      */
@@ -115,10 +105,25 @@ class SQLType {
         }
         
         /* Alters the name in the case of byte arrays */
-        if (memberType.equals("[B")) {
-            memberType = "byte []";
+        if (memberType.equals("[B")) { // NOI18N
+            memberType = "byte []"; // NOI18N
         }
         return memberType;
+    }
+    
+    public String getFirstNonPrimitiveType() {
+        String typeName = null;
+        for (Class clazz : typeList) {
+            if (!clazz.isPrimitive()) {
+                typeName = clazz.getName();
+                break;
+            }
+        }
+        /* Alters the name in the case of byte arrays */
+        if ("[B".equals(typeName)) { // NOI18N
+            typeName = "byte []"; // NOI18N
+        }
+        return typeName;
     }
 
     // returns the relevant Class from the typeList if it is dependent on
@@ -178,21 +183,6 @@ class SQLType {
             default:
                 return null;
         }
-    }
- 
-    /**
-     * Return list of classes where class.isPrimitive() == false.
-     * @return list of java.lang.Class elements that can represent this type
-     */
-    public List getValidObjects() {
-        List classList = getValidClasses();
-        Iterator it = classList.iterator();
-        while (it.hasNext()) {
-            if (((Class) it.next()).isPrimitive()) {
-                it.remove();
-            }
-        }
-        return classList;
     }
     
     public boolean supportsFinder() {

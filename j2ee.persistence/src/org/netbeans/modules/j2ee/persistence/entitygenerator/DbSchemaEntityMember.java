@@ -67,7 +67,7 @@ class DbSchemaEntityMember extends EntityMember {
         // allowed to be of a primitive type, so the first corresponding class  
         // if extracted from the sqlType
         if (isPkField) {
-            setMemberType(((Class)sqlType.getValidObjects().get(0)).getName());
+            setMemberType(sqlType.getFirstNonPrimitiveType());
         }
     }
 
