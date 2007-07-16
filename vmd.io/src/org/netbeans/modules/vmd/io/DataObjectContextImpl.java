@@ -46,7 +46,7 @@ public class DataObjectContextImpl implements DataObjectContext {
     private static final long serialVersionUID = -1;
 
     private DataObject dataObject;
-    private final transient AtomicBoolean initialized = new AtomicBoolean (false);
+    private final transient AtomicBoolean initialized;
     private transient String projectID;
     private transient String projectType;
 
@@ -55,9 +55,11 @@ public class DataObjectContextImpl implements DataObjectContext {
     }
 
     public DataObjectContextImpl () {
+        initialized = new AtomicBoolean (false);
     }
 
     public DataObjectContextImpl (DataObject dataObject) {
+        this ();
         assert dataObject != null;
         this.dataObject = dataObject;
     }
