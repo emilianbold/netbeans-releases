@@ -462,10 +462,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                     commitList.removeAll(removeList);
                     File[] files = removeList.toArray(new File[commitList.size()]);                
                     client.commit(files, message, true);
-                }                                
-                
-                File[] files = commitList.toArray(new File[commitList.size()]);                
-                client.commit(files, message, false);    
+                }                                                
+                if(commitList.size() > 0) {
+                    File[] files = commitList.toArray(new File[commitList.size()]);                
+                    client.commit(files, message, false);    
+                }
                 
                 if(rootUpdate) {
                     File[] rootFiles = ctx.getRootFiles();
