@@ -146,8 +146,8 @@ public class MessageGeneratorTest extends TestBase {
         
         // Queue based MessageDriven EJB in Java EE 5 defined in annotation
         
-        MessageDestination messageDestination = new MessageDestinationImpl("TestMDBQueue", MessageDestination.Type.QUEUE);
-        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, messageDestination, true, false);
+        MessageDestination messageDestination = new MessageDestinationImpl("TestMessageDestination", MessageDestination.Type.QUEUE);
+        MessageGenerator generator = new MessageGenerator("TestMDBQueue", packageFileObject, messageDestination, true, false, true);
         generator.generate();
         
         assertFile(
@@ -158,8 +158,8 @@ public class MessageGeneratorTest extends TestBase {
 
         // Topic based MessageDriven EJB in Java EE 5 defined in annotation
         
-        messageDestination = new MessageDestinationImpl("TestMDBTopic", MessageDestination.Type.TOPIC);
-        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, messageDestination, true, false);
+        messageDestination = new MessageDestinationImpl("TestMessageDestination", MessageDestination.Type.TOPIC);
+        generator = new MessageGenerator("TestMDBTopic", packageFileObject, messageDestination, true, false, true);
         generator.generate();
         
         assertFile(
