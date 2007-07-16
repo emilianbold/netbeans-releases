@@ -70,7 +70,7 @@ final class GlobalDescriptorRegistry {
     private final HashMap<String, WeakReference<DescriptorRegistry>> projectID2projectRegistry = new HashMap<String, WeakReference<DescriptorRegistry>> ();
 
     private GlobalDescriptorRegistry (String projectType) {
-        assert projectType != null  && projectType.length () > 0;
+        assert projectType != null  && projectType.length () > 0 : "Invalid project-type: " + projectType; // NOI18N
         this.projectType = projectType;
 
         FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components");
