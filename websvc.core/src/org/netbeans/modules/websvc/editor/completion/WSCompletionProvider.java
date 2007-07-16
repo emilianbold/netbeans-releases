@@ -144,7 +144,7 @@ public class WSCompletionProvider implements CompletionProvider {
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
             FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
-            jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
+            if (fo!=null) jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
         }
         
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
