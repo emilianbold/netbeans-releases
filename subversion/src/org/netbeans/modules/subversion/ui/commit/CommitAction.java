@@ -287,7 +287,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
-            List<SvnFileNode> removeCandidates = new ArrayList<SvnFileNode>();
+            List<File> removeCandidates = new ArrayList<File>();
             Set<File> commitCandidates = new LinkedHashSet<File>();
             Set<File> binnaryCandidates = new HashSet<File>();
             
@@ -336,7 +336,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT_REMOVE == option) {
-                    removeCandidates.add(node);
+                    removeCandidates.add(node.getFile());
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT == option) {
                     commitCandidates.add(node.getFile());
@@ -432,9 +432,24 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             // finally commit            
             for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
                 // one commit for each wc
-                List<File> list = itCandidates.next();
-                File[] files = list.toArray(new File[list.size()]);
+                List<File> commitList = itCandidates.next();
+                List<File> removeList = new ArrayList<File>();
                 
+                // deleted directories have to commited recursively 
+                boolean removingDirectories = false;
+                for(File removeFile : removeCandidates) {
+                    if(removeFile.isDirectory()) {
+                        removingDirectories = true;
+                    }
+                    removeList.add(removeFile); 
+                }                
+                if(removingDirectories) {
+                    commitList.removeAll(removeList);
+                    File[] files = removeList.toArray(new File[commitList.size()]);                
+                    client.commit(files, message, true);
+                }                                
+                
+                File[] files = commitList.toArray(new File[commitList.size()]);                
                 client.commit(files, message, false);
                 
                 if(rootUpdate) {
@@ -448,9 +463,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                 }    
                 
                 // XXX it's probably already catched by cache's onNotify()
-                for (int i = 0; i < files.length; i++) {
-                    cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                refreshFiles(cache, commitList);
+                if(support.isCanceled()) {
+                    return;
                 }
+                refreshFiles(cache, removeList);                
                 if(support.isCanceled()) {
                     return;
                 }
@@ -461,6 +478,12 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
         } 
     }
 
+    private static void refreshFiles(FileStatusCache cache, List<File> files) {
+        for (File file : files) {
+            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }        
+    }
+    
     private static List<File> listUnmanagedParents(SvnFileNode node) {
         List<File> unmanaged = new ArrayList<File>();
         File file = node.getFile();
