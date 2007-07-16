@@ -148,8 +148,10 @@
     </folder>
     
     <folder name="Templates">
-    	<!--  add wsdl wizard into webservices category -->
-        <folder name="WebServices">
+    	<!--  Remove this for now.
+        probably do this from websvc.
+        add wsdl wizard into webservices category -->
+        <!--folder name="WebServices">
             <file name="WSDL.wsdl" url="WSDL.template">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
@@ -160,7 +162,7 @@
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
-        </folder>
+        </folder-->
         
         <folder name="XML">
             <file name="WSDL.wsdl" url="WSDL.template">
