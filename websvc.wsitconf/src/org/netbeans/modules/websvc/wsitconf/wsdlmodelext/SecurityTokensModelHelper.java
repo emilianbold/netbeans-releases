@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
@@ -487,6 +488,26 @@ public class SecurityTokensModelHelper {
                 model.endTransaction();
             }
         }
+    }
+
+    public static List<WSDLComponent> getSupportingTokens(WSDLComponent c) {
+        ArrayList<WSDLComponent> result = new ArrayList<WSDLComponent>(1);
+        if (c == null) return null;
+        WSDLComponent p = c;
+        if ((c instanceof Binding) || (c instanceof BindingOperation) || 
+           (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
+             p = PolicyModelHelper.getPolicyForElement(c);
+        }
+        if (p == null) return null;
+        Class[] a = { SupportingTokens.class, SignedSupportingTokens.class, 
+                      EndorsingSupportingTokens.class, SignedEndorsingSupportingTokens.class };
+        for (Class cl : a) {
+            WSDLComponent token = PolicyModelHelper.getTopLevelElement(p, cl);
+            if (token != null) {
+                result.add(token);
+            }
+        }
+        return result;
     }
     
     public static WSDLComponent getSupportingToken(WSDLComponent c, int supportingType) {
