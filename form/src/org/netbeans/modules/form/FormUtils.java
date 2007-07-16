@@ -622,9 +622,21 @@ public class FormUtils
                         tfProp.setCurrentEditor(tPrEd);
                     }
                 }
+
+                // also copy the resource/i18n attributes set on the property
+                copyPropertyAttrs(snProp, tnProp, ResourceSupport.getPropertyAttrNames());
             }
             catch (Exception ex) { // ignore
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+    }
+
+    private static void copyPropertyAttrs(Node.Property sourceProp, Node.Property targetProp, String[] attrs) {
+        for (String attr : attrs) {
+            Object value = sourceProp.getValue(attr);
+            if (value != null) {
+                targetProp.setValue(attr, value);
             }
         }
     }

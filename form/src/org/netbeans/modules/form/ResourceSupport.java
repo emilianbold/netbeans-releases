@@ -65,6 +65,7 @@ public class ResourceSupport {
      * to plain value). */
     private static final String EXCLUDE_FROM_RESOURCING = "does not want to be a resource"; // NOI18N
     private static final String EXCLUSION_DETERMINED = "already consulted with exclusion filters"; // NOI18N
+    private static final String[] PROPERTY_ATTRS = { EXCLUSION_DETERMINED, EXCLUDE_FROM_RESOURCING };
 
     static final String PROP_AUTO_RESOURCING = "autoResourcing"; // NOI18N
     static final int AUTO_OFF = 0;
@@ -777,6 +778,10 @@ public class ResourceSupport {
         if (isResourceableProperty(prop) && excl != isExcludedProperty(prop)) {
             prop.setValue(EXCLUDE_FROM_RESOURCING, excl);
         }
+    }
+
+    static String[] getPropertyAttrNames() {
+        return PROPERTY_ATTRS;
     }
 
     public static String getInjectionCode(RADComponent metacomp, String compGenName) {
