@@ -28,7 +28,6 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -79,8 +78,6 @@ public final class DocBaseNodeFactory implements NodeFactory {
         
         DocBaseNodeList(WebProject proj) {
             project = proj;
-            WebLogicalViewProvider logView = project.getLookup().lookup(WebLogicalViewProvider.class);
-            assert logView != null;
             evaluator = project.evaluator();
             helper = project.getUpdateHelper();
         }
@@ -123,7 +120,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 }
                 return null;
             }
-            assert false: "No node for key: " + key;
+            assert false: "No node for key: " + key; // NOI18N
             return null;
         }
 
@@ -292,7 +289,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
         private static final long serialVersionUID = 1L;
         
-        EventListenerList ell = new EventListenerList();        
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         
         public VisibilityQueryDataFilter() {
             VisibilityQuery.getDefault().addChangeListener( this );
@@ -304,24 +301,15 @@ public final class DocBaseNodeFactory implements NodeFactory {
         }
         
         public void stateChanged( ChangeEvent e) {            
-            Object[] listeners = ell.getListenerList();     
-            ChangeEvent event = null;
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i] == ChangeListener.class) {             
-                    if ( event == null) {
-                        event = new ChangeEvent( this );
-                    }
-                    ((ChangeListener)listeners[i+1]).stateChanged( event );
-                }
-            }
+            changeSupport.fireChange();
         }        
     
         public void addChangeListener( ChangeListener listener ) {
-            ell.add( ChangeListener.class, listener );
+            changeSupport.addChangeListener(listener);
         }        
                         
         public void removeChangeListener( ChangeListener listener ) {
-            ell.remove( ChangeListener.class, listener );
+            changeSupport.removeChangeListener(listener);
         }
         
     }
