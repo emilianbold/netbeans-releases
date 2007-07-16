@@ -58,6 +58,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -210,7 +211,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         FileObject dd = wm.getDeploymentDescriptor();
         if (dd != null){
-            FileObject[] filesFO = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
+            FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);
             File[] files = new File[filesFO.length];
             for (int i = 0; i < filesFO.length; i++)
                 files[i] = FileUtil.toFile(filesFO[i]);
@@ -232,9 +233,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         if (!defaultValue){
             // get configuration panel with values from the wm
-            Servlet servlet = JSFConfigUtilities.getActionServlet(webModule.getDeploymentDescriptor());
+            Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
             panel.setServletName(servlet == null ? "Faces Servlet" : servlet.getServletName()); // NOI18N
-            panel.setURLPattern(JSFConfigUtilities.getActionServletMapping(webModule.getDeploymentDescriptor()));
+            panel.setURLPattern(ConfigurationUtils.getFacesServletMapping(webModule));
             panel.setValidateXML(JSFConfigUtilities.validateXML(webModule.getDeploymentDescriptor()));
             panel.setVerifyObjects(JSFConfigUtilities.verifyObjects(webModule.getDeploymentDescriptor()));
         }
@@ -561,38 +562,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 replace.append("    <br/>");                        //NOI18N
                 replace.append(endLine);
                 replace.append("    <a href=\".");                  //NOI18N
-                replace.append(translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/"+pageName)); //NOI18N
+                replace.append(ConfigurationUtils.translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/"+pageName)); //NOI18N
                 replace.append("\">");                              //NOI18N
                 replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
                 replace.append("</a>");                             //NOI18N
                 content = content.replaceFirst(find, new String(replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
                 createFile(indexjsp, content, "UTF-8"); //NOI18N
             }
-        }
-    
-        /**
-         * Translates an URI to be executed with faces serlvet with the given mapping.
-         * For example, the servlet has mapping <i>*.jsf</i> then uri <i>/hello.jps</i> will be
-         * translated to <i>/hello.jsf</i>. In the case where the mapping is <i>/faces/*</i>
-         * will be translated to <i>/faces/hello.jsp<i>.
-         *
-         * @param mapping The servlet mapping
-         * @param uri The original URI
-         * @return The translated URI
-         */
-        public String translateURI(String mapping, String uri){
-            String resource = "";
-            if (mapping != null && mapping.length()>0){
-                if (mapping.startsWith("*.")){
-                    if (uri.indexOf('.') > 0)
-                        resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
-                    else
-                        resource = uri + mapping.substring(1);
-                } else
-                    if (mapping.endsWith("/*"))
-                        resource = mapping.substring(0,mapping.length()-2) + uri;
-            }
-            return resource;
         }
     }
 
