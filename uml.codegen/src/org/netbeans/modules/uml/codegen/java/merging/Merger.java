@@ -966,7 +966,7 @@ public class Merger implements IUMLParserEventsSink {
 	boolean overwrite = false;
 	if (props != null) 
 	{
-	    String val = props.getProperty("addMarkers", "def"); // NOI18N
+	    String val = props.getProperty("addMarkers", "false"); // NOI18N
 	    if (val != null) 
 	    {
 		overwrite = Boolean.valueOf(val).booleanValue(); 

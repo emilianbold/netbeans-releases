@@ -334,6 +334,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
             props.setCodeGenBackupSources(isBackupSources());
             props.setCodeGenUseMarkers(isGenerateMarkers());
             props.setCodeGenShowDialog(isShowDialog());
+            props.setCodeGenAddMarkers(isAddMarkers());
             props.save();
         }
         

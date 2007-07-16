@@ -150,7 +150,7 @@ public class JavaCodegen implements ICodeGenerator
 		boolean genToTmp = false;
 		ArrayList<FileMapping> fmappings = new ArrayList<FileMapping>();
 		HashSet<File> targetFiles = new HashSet<File>();
-		Merger merger = new Merger();
+		Merger merger = new Merger(props);
 
 		// 2 possible places to get templates from - 
 		// registry and teplates subdir of the project 
