@@ -75,6 +75,7 @@ public abstract class OptionsPanelController {
      * to support communication anong individual panels in one Options
      * Dialog.
      * 
+     * There is no guarantee that this method will be called from AWT thread.
      * 
      * @return lookup provided by this Options Dialog panel
      */
