@@ -20,11 +20,17 @@
 package org.netbeans.api.options;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import junit.framework.TestCase;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -36,7 +42,18 @@ import org.openide.util.Utilities;
  */
 public final class RegisteredCategory extends OptionsCategory {
     private static Icon icon;
+    private static PropertyChangeListener propertyChangeListener;
+    private Collection<String> calls = new HashSet<String>();
+
+    public void setInvalid() {
+        propertyChangeListener.propertyChange(new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, null, null));
+    }
     
+    public void helpChanged() {
+        propertyChangeListener.propertyChange(new PropertyChangeEvent(this, OptionsPanelController.PROP_HELP_CTX, null, null));
+    }
+    
+
     public Icon getIcon() {
         if (icon == null) {
             Image image = Utilities.loadImage("org/netbeans/modules/options/resources/generalOptions.png");
@@ -44,46 +61,81 @@ public final class RegisteredCategory extends OptionsCategory {
         }
         return icon;
     }
-    
+
     public String getCategoryName() {
-        return  "CTL_General_Options";
+        return "CTL_General_Options";
     }
-    
+
     public String getTitle() {
         return "CTL_General_Options_Title";
     }
-    
+
     public String getDescription() {
         return "CTL_General_Options_Description";
     }
     
+    public void assertThreadingForAllCallsWereTested() {
+        TestCase.assertTrue(calls.contains("update()"));
+        TestCase.assertTrue(calls.contains("cancel()"));        
+        TestCase.assertTrue(calls.contains("isValid()"));
+        TestCase.assertTrue(calls.contains("getLookup()"));
+        TestCase.assertTrue(calls.contains("getComponent()"));        
+        TestCase.assertTrue(calls.contains("applyChanges()"));
+        
+    }
+
     public OptionsPanelController create() {
         return new OptionsPanelController() {
-            public void update() {}
-            
-            public void applyChanges() {}
-            
-            public void cancel() {}
-            
+
+            public void update() {
+                TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
+                calls.add("update()");
+            }
+
+            public void applyChanges() {
+                TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
+                calls.add("applyChanges()");
+            }
+
+            public void cancel() {
+                TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
+                calls.add("cancel()");
+            }
+
             public boolean isValid() {
+                TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
+                calls.add("isValid()");
                 return true;
             }
-            
+
             public boolean isChanged() {
                 return false;
             }
-            
+
             public HelpCtx getHelpCtx() {
                 return null;
             }
             
-            public JComponent getComponent(Lookup masterLookup) {
-                return new JLabel();
+            public Lookup getLookup() {
+                TestCase.assertFalse(SwingUtilities.isEventDispatchThread());
+                calls.add("getLookup()");                
+                return super.getLookup();
             }
             
-            public void addPropertyChangeListener(PropertyChangeListener l) {}
-            
-            public void removePropertyChangeListener(PropertyChangeListener l) {}
-        };
+
+            public JComponent getComponent(Lookup masterLookup) {
+                TestCase.assertTrue(SwingUtilities.isEventDispatchThread());
+                calls.add("getComponent()");
+                return new JLabel();
+            }
+
+            public void addPropertyChangeListener(PropertyChangeListener l) {
+                propertyChangeListener = l;
+            }
+
+            public void removePropertyChangeListener(PropertyChangeListener l) {
+                propertyChangeListener = null;
+            }
+        };        
     }
 }

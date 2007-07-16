@@ -165,12 +165,8 @@ public class OptionsDisplayerImpl {
                 log.fine("Options Dialog - Ok pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
+                optionsPanel.save ();
                 d.dispose ();
-                RequestProcessor.getDefault ().post (new Runnable () {
-                   public void run () {
-                        optionsPanel.save ();
-                   } 
-                });
             } else
             if (e.getSource () == DialogDescriptor.CANCEL_OPTION ||
                 e.getSource () == DialogDescriptor.CLOSED_OPTION
@@ -178,12 +174,8 @@ public class OptionsDisplayerImpl {
                 log.fine("Options Dialog - Cancel pressed."); //NOI18N
                 Dialog d = dialog;
                 dialog = null;
-                d.dispose ();
-                RequestProcessor.getDefault ().post (new Runnable () {
-                   public void run () {
-                        optionsPanel.cancel ();
-                   } 
-                });
+                optionsPanel.cancel ();
+                d.dispose ();                
             } else
             if (e.getSource () == bClassic) {
                 log.fine("Options Dialog - Classic pressed."); //NOI18N
@@ -198,31 +190,19 @@ public class OptionsDisplayerImpl {
                     Object result = DialogDisplayer.getDefault ().
                         notify (descriptor);
                     if (result == NotifyDescriptor.YES_OPTION) {
-                        d.dispose ();
-                        RequestProcessor.getDefault ().post (new Runnable () {
-                           public void run () {
-                                optionsPanel.save ();
-                           } 
-                        });
+                        optionsPanel.save ();
+                        d.dispose ();                        
                     } else
                     if (result == NotifyDescriptor.NO_OPTION) {
-                        d.dispose ();
-                        RequestProcessor.getDefault ().post (new Runnable () {
-                           public void run () {
-                                optionsPanel.cancel ();
-                           } 
-                        });
+                        optionsPanel.cancel ();
+                        d.dispose ();                        
                     } else {
                         dialog = d;
                         return;
                     }
                 } else {
                     d.dispose ();
-                    RequestProcessor.getDefault ().post (new Runnable () {
-                       public void run () {
-                            optionsPanel.cancel ();
-                       } 
-                    });
+                    optionsPanel.cancel ();
                 }
                 try {
                     ClassLoader cl = (ClassLoader) Lookup.getDefault ().lookup (ClassLoader.class);
@@ -253,11 +233,7 @@ public class OptionsDisplayerImpl {
         public void windowClosing (WindowEvent e) {
             if (dialog == null) return;
             log.fine("Options Dialog - windowClosing "); //NOI18N
-            RequestProcessor.getDefault ().post (new Runnable () {
-               public void run () {
-                    optionsPanel.cancel ();
-               } 
-            });
+            optionsPanel.cancel ();
             if (this.originalDialog == dialog) {
                 dialog = null;            
             }
