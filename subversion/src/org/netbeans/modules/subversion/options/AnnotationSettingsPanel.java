@@ -38,27 +38,30 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        resetButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.resetButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(resetButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.resetButton.text")); // NOI18N
 
+        tableLabel.setLabelFor(expresionsTable);
         tableLabel.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.tableLabel.text")); // NOI18N
 
-        upButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.upButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.upButton.text")); // NOI18N
 
-        downButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.downButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.downButton.text")); // NOI18N
 
-        newButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.newButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.newButton.text")); // NOI18N
 
-        removeButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.removeButton.text")); // NOI18N
 
         expressionsPane.setBackground(new java.awt.Color(255, 255, 255));
         expressionsPane.setViewportView(expresionsTable);
+        expresionsTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSN_LablesTable")); // NOI18N
+        expresionsTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSD_LablesTable")); // NOI18N
 
         warningLabel.setForeground(new java.awt.Color(255, 0, 0));
         warningLabel.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.warningLabel.text")); // NOI18N
 
-        wizardButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.wizardButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(wizardButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.wizardButton.text")); // NOI18N
 
-        editButton.setText(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.editButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.editButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -113,6 +116,13 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
                     .add(warningLabel))
                 .addContainerGap())
         );
+
+        resetButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSN_Reset")); // NOI18N
+        resetButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSD_Reset")); // NOI18N
+        newButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSN_Add")); // NOI18N
+        newButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSD_Add")); // NOI18N
+        wizardButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSN_AddWizard")); // NOI18N
+        wizardButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "ACSD_AddWizard")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void initModel() {

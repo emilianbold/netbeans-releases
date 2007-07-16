@@ -600,23 +600,23 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     } 
 
     public boolean show(String title, HelpCtx helpCtx, boolean setMaxNeddedSize) {
-        RepositoryDialogPanel corectPanel = new RepositoryDialogPanel();
-        corectPanel.panel.setLayout(new BorderLayout());
+        RepositoryDialogPanel rdp = new RepositoryDialogPanel();
+        rdp.panel.setLayout(new BorderLayout());
         JPanel p = getPanel();
         if(setMaxNeddedSize) {
             p.setPreferredSize(maxNeededSize);
         }        
-        corectPanel.panel.add(p, BorderLayout.NORTH);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
+        rdp.panel.add(p, BorderLayout.NORTH);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(rdp, title); // NOI18N        
         showDialog(dialogDescriptor, helpCtx);
         return dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION;
     }
     
     public Object show(String title, HelpCtx helpCtx, Object[] options) {
-        RepositoryDialogPanel corectPanel = new RepositoryDialogPanel();
-        corectPanel.panel.setLayout(new BorderLayout());
-        corectPanel.panel.add(getPanel(), BorderLayout.NORTH);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
+        RepositoryDialogPanel rdp = new RepositoryDialogPanel();
+        rdp.panel.setLayout(new BorderLayout());
+        rdp.panel.add(getPanel(), BorderLayout.NORTH);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(rdp, title); // NOI18N        
         if(options!= null) {
             dialogDescriptor.setOptions(options); // NOI18N
         }        
@@ -629,6 +629,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         dialogDescriptor.setHelpCtx(helpCtx);        
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Repository.class, "ACSD_RepositoryPanel"));
+        dialog.getAccessibleContext().setAccessibleName(NbBundle.getMessage(Repository.class, "ACSN_RepositoryPanel"));
         dialog.setVisible(true);
     }
 

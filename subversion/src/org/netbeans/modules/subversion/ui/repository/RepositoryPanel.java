@@ -170,8 +170,12 @@ public class RepositoryPanel extends javax.swing.JPanel {
         titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel_Title")); // NOI18N
         titleLabel.getAccessibleContext().setAccessibleParent(this);
         jLabel2.getAccessibleContext().setAccessibleParent(this);
+        urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RepositoryURL")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryURL")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleParent(this);
         proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSN_RemoveHistory")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RemoveHistory")); // NOI18N
         userPasswordField.getAccessibleContext().setAccessibleParent(this);
         passwordLabel.getAccessibleContext().setAccessibleParent(this);
         userLabel.getAccessibleContext().setAccessibleParent(this);

@@ -98,11 +98,11 @@ public class URLPatternPanel extends javax.swing.JPanel {
                         .add(previewLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(jLabel4)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                                .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseRepositoryButton))
@@ -144,6 +144,14 @@ public class URLPatternPanel extends javax.swing.JPanel {
 
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSD_RepositoryFolder")); // NOI18N
         browseRepositoryButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSD_BrowseFolders")); // NOI18N
+        anyURLCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSN_AnyUrl")); // NOI18N
+        anyURLCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSD_AnyUrl")); // NOI18N
+        useFolderRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSN_UseFolderName")); // NOI18N
+        useFolderRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSD_UseFolderName")); // NOI18N
+        useSubfolderRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSN_UseSubfolderName")); // NOI18N
+        useSubfolderRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSD_UseSubfolderName")); // NOI18N
+        depthComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSN_DepthComboBox")); // NOI18N
+        depthComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "ACSD_DepthComboBox")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
