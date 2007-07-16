@@ -43,9 +43,17 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.UsernameToken;
+import org.netbeans.modules.xml.wsdl.model.BindingFault;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
  * @author Martin Grebac
@@ -226,8 +234,8 @@ public class ClientView extends SectionView {
         if (!SecurityPolicyModelHelper.isSecurityEnabled(serviceBinding)) {
             return false;
         }
-        return CallbackPanel.isStoreConfigRequired(profile, false) || 
-               CallbackPanel.isStoreConfigRequired(profile, true);
+        return CallbackPanel.isStoreConfigRequired(profile, false, serviceBinding) || 
+               CallbackPanel.isStoreConfigRequired(profile, true, serviceBinding);
     }
 
     private boolean isCallBackConfigRequired(Binding binding, WSDLModel serviceModel) {
@@ -236,13 +244,38 @@ public class ClientView extends SectionView {
         if (!SecurityPolicyModelHelper.isSecurityEnabled(serviceBinding)) {
             return false;
         }
-        if (ComboConstants.PROF_MUTUALCERT.equals(profile) ||
+        
+        ArrayList<WSDLComponent> compsToTry = new ArrayList<WSDLComponent>();
+        compsToTry.add(serviceBinding);
+        Collection<BindingOperation> ops = serviceBinding.getBindingOperations();
+        for (BindingOperation op : ops) {
+            BindingInput bi = op.getBindingInput();
+            if (bi != null) compsToTry.add(bi);
+            BindingOutput bo = op.getBindingOutput();
+            if (bo != null) compsToTry.add(bo);
+            Collection<BindingFault> bfs = op.getBindingFaults();
+            for(BindingFault bf : bfs) {
+                if (bf != null) compsToTry.add(bf);
+            }
+        }
+
+        for (WSDLComponent wc : compsToTry) {
+            List<WSDLComponent> suppTokens = SecurityTokensModelHelper.getSupportingTokens(wc);
+            if ((suppTokens != null) && (suppTokens.size() > 0)) {
+                for (WSDLComponent suppToken : suppTokens) {
+                    WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(suppToken);
+                    if (token instanceof UsernameToken) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        if ((ComboConstants.PROF_MUTUALCERT.equals(profile) ||
             ComboConstants.PROF_ENDORSCERT.equals(profile) ||
+            ComboConstants.PROF_MSGAUTHSSL.equals(profile)) ||
             ComboConstants.PROF_TRANSPORT.equals(profile)) {
             return false;
-        }
-        if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
-            // TODO - return false if callback is not required - depends on supporting token type
         }
         return true;
     }

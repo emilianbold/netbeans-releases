@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -22,6 +22,9 @@ package org.netbeans.modules.websvc.wsitconf.ui.client;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -53,7 +56,14 @@ import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TruststorePanel
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.X509Token;
 import org.netbeans.modules.xml.multiview.ui.NodeSectionPanel;
+import org.netbeans.modules.xml.wsdl.model.BindingFault;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.BindingOutput;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -69,15 +79,15 @@ public class CallbackPanel extends SectionInnerPanel {
     private Binding binding;
 
     private boolean inSync = false;
-    
+
     private Project project;
 
     private SectionView view;
     private JaxWsModel jaxwsmodel;
     private WSDLModel serviceModel;
-    
+
     private String profile;
-    
+
     public CallbackPanel(SectionView view, WSDLModel model, Node node, Binding binding, JaxWsModel jaxWsModel, WSDLModel serviceModel) {
         super(view);
         this.view = view;
@@ -88,8 +98,9 @@ public class CallbackPanel extends SectionInnerPanel {
         this.serviceModel = serviceModel;
 
         FileObject fo = node.getLookup().lookup(FileObject.class);
-        if (fo != null) project = FileOwnerQuery.getOwner(fo);
-        
+        if (fo != null) {
+            project = FileOwnerQuery.getOwner(fo);
+        }
         initComponents();
 
         samlHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -112,7 +123,7 @@ public class CallbackPanel extends SectionInnerPanel {
 
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
         profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
-        
+
         boolean defaults = ProfilesModelHelper.isClientDefaultSetupUsed(profile, binding, serviceBinding, project);
         setChBox(devDefaultsChBox, defaults);
 
@@ -120,7 +131,7 @@ public class CallbackPanel extends SectionInnerPanel {
         if (samlCallback != null) {
             setCallbackHandler(samlCallback);
         }
-        
+
         String usernameCBH = ProprietarySecurityPolicyModelHelper.getCallbackHandler(binding, CallbackHandler.USERNAME_CBHANDLER);
         if ((usernameCBH != null) && (usernameCBH.length() > 0)) {
             setCredType(ComboConstants.DYNAMIC, defaults);
@@ -131,10 +142,10 @@ public class CallbackPanel extends SectionInnerPanel {
         }
 
         enableDisable();
-        
+
         inSync = false;
     }
-    
+
     private void setChBox(JCheckBox chBox, Boolean enable) {
         if (enable == null) {
             chBox.setSelected(false);
@@ -142,16 +153,16 @@ public class CallbackPanel extends SectionInnerPanel {
             chBox.setSelected(enable);
         }
     }
-    
+
     private JPanel getPanel(String type, boolean defaults) {
         boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
 
         if (ComboConstants.DYNAMIC.equals(type)) {
-            return new DynamicCredsPanel(binding, project, !amSec && !defaults);            
+            return new DynamicCredsPanel(binding, project, !amSec && !defaults);
         }
         return new StaticCredsPanel(binding, project, !amSec && !defaults);
     }
-    
+
     private void setCredType(String credType, boolean defaults) {
         this.remove(credPanel);
         credPanel = getPanel(credType, defaults);
@@ -161,7 +172,7 @@ public class CallbackPanel extends SectionInnerPanel {
             NodeSectionPanel panel = view.getActivePanel();
             active = (panel == null) ? false : panel.isActive();
         }
-        
+
         Color c = active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor();
         credPanel.setBackground(c);
         refreshLayout();
@@ -169,14 +180,15 @@ public class CallbackPanel extends SectionInnerPanel {
 
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
-        if (inSync) return;
-        
+        if (inSync) {
+            return;
+        }
         if (source.equals(credTypeCombo)) {
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.USERNAME_CBHANDLER, null, null, true);
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.PASSWORD_CBHANDLER, null, null, true);
-            setCredType((String)credTypeCombo.getSelectedItem(), devDefaultsChBox.isSelected());
+            setCredType((String) credTypeCombo.getSelectedItem(), devDefaultsChBox.isSelected());
         }
-        
+
         if (source.equals(samlHandlerField)) {
             String classname = getCallbackHandler();
             if ((classname != null) && (classname.length() == 0)) {
@@ -197,10 +209,10 @@ public class CallbackPanel extends SectionInnerPanel {
                 credPanel.repaint();
             }
         }
-        
+
         enableDisable();
     }
-    
+
     @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         enableDisable();
@@ -209,7 +221,7 @@ public class CallbackPanel extends SectionInnerPanel {
     @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
     }
-    
+
     @Override
     protected void endUIChange() {
     }
@@ -222,7 +234,7 @@ public class CallbackPanel extends SectionInnerPanel {
     }
 
     private void enableDisable() {
-                
+
         boolean amSec = SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(node, jaxwsmodel);
         boolean samlRequired = true;
         boolean authRequired = true;
@@ -242,18 +254,12 @@ public class CallbackPanel extends SectionInnerPanel {
             keyStoreButton.setEnabled(!amSec && keyStoreConfigRequired && !defaults);
             trustStoreButton.setEnabled(!amSec && trustStoreConfigRequired && !defaults);
 
-            if (ComboConstants.PROF_USERNAME.equals(profile) ||
-                ComboConstants.PROF_STSISSUED.equals(profile) ||
-                ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
-                ComboConstants.PROF_STSISSUEDCERT.equals(profile) ||
-                ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
-                    samlRequired = false;
+            if (ComboConstants.PROF_USERNAME.equals(profile) || ComboConstants.PROF_STSISSUED.equals(profile) || ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) || ComboConstants.PROF_STSISSUEDCERT.equals(profile) || ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
+                samlRequired = false;
             }
 
-            if (ComboConstants.PROF_SAMLSSL.equals(profile) ||
-                ComboConstants.PROF_SAMLHOLDER.equals(profile) ||
-                ComboConstants.PROF_SAMLSENDER.equals(profile)) {
-                    authRequired = false;
+            if (ComboConstants.PROF_SAMLSSL.equals(profile) || ComboConstants.PROF_SAMLHOLDER.equals(profile) || ComboConstants.PROF_SAMLSENDER.equals(profile)) {
+                authRequired = false;
             }
 
             credTypeLabel.setEnabled(!amSec && authRequired && !defaults);
@@ -287,9 +293,40 @@ public class CallbackPanel extends SectionInnerPanel {
         refreshLayout();
     }
 
-    public static boolean isStoreConfigRequired(String profile, boolean trust) {
-        if ((ComboConstants.PROF_TRANSPORT.equals(profile)) ||
-            (ComboConstants.PROF_SAMLSSL.equals(profile))) {
+    public static boolean isStoreConfigRequired(String profile, boolean trust, Binding binding) {
+        ArrayList<WSDLComponent> compsToTry = new ArrayList<WSDLComponent>();
+        compsToTry.add(binding);
+        Collection<BindingOperation> ops = binding.getBindingOperations();
+        for (BindingOperation op : ops) {
+            BindingInput bi = op.getBindingInput();
+            if (bi != null) {
+                compsToTry.add(bi);
+            }
+            BindingOutput bo = op.getBindingOutput();
+            if (bo != null) {
+                compsToTry.add(bo);
+            }
+            Collection<BindingFault> bfs = op.getBindingFaults();
+            for (BindingFault bf : bfs) {
+                if (bf != null) {
+                    compsToTry.add(bf);
+                }
+            }
+        }
+
+        for (WSDLComponent wc : compsToTry) {
+            List<WSDLComponent> suppTokens = SecurityTokensModelHelper.getSupportingTokens(wc);
+            if ((suppTokens != null) && (suppTokens.size() > 0)) {
+                for (WSDLComponent suppToken : suppTokens) {
+                    WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(suppToken);
+                    if (token instanceof X509Token) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ((ComboConstants.PROF_TRANSPORT.equals(profile)) || (ComboConstants.PROF_SAMLSSL.equals(profile))) {
             return false;
         }
         if (!trust) {
@@ -298,7 +335,7 @@ public class CallbackPanel extends SectionInnerPanel {
             }
             if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
                 // TODO - depends on other config
-            }            
+            }
         } else {
             if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
                 return false;
@@ -306,74 +343,22 @@ public class CallbackPanel extends SectionInnerPanel {
         }
         return true;
     }
-    
+
     private void setCallbackHandler(String classname) {
         this.samlHandlerField.setText(classname);
-    }    
+    }
 
     private String getCallbackHandler() {
         return samlHandlerField.getText();
     }
-    
+
     private void refreshLayout() {
         org.jdesktop.layout.GroupLayout layout = (GroupLayout) this.getLayout();
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(keyStoreButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(trustStoreButton))
-                    .add(devDefaultsChBox))
-                .add(284, 284, 284))
-            .add(layout.createSequentialGroup()
-                .add(24, 24, 24)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(credTypeLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(credTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(samlHandlerLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(samlBrowseButton))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(devDefaultsChBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(keyStoreButton)
-                    .add(trustStoreButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(credTypeLabel)
-                    .add(credTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(samlHandlerLabel)
-                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(samlBrowseButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(12, 12, 12).add(keyStoreButton).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(trustStoreButton)).add(devDefaultsChBox)).add(284, 284, 284)).add(layout.createSequentialGroup().add(24, 24, 24).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(credTypeLabel).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(credTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false).add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup().add(samlHandlerLabel).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).add(samlBrowseButton)).add(org.jdesktop.layout.GroupLayout.LEADING, credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)).addContainerGap()));
+        layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(devDefaultsChBox).addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(keyStoreButton).add(trustStoreButton)).addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED).add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(credTypeLabel).add(credTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE).add(samlHandlerLabel).add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(samlBrowseButton)).addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
