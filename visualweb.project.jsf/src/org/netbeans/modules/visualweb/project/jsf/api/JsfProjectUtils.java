@@ -456,26 +456,24 @@ public class JsfProjectUtils {
 
     /**
      * Get the welcome file based on the URL Pattern and the Page Name.
-     * @param URLPattern the URL Pattern
-     * @param pageName the Page Name
+     * @param mapping the URL Pattern
+     * @param uri the Page Name
      * @return If successful, returns the welcome file, "faces/" + pageName if unsuccessful.
      */
-    public static String getWelcomeFile(String URLPattern, String pageName) {
-        int indWild = URLPattern.indexOf("*"); // NOI18N
-        if (indWild >= 0) {
-            String pPrefix = URLPattern.substring(0, indWild);
-            String pSuffix = URLPattern.substring(indWild + 1);
-
-            if (pPrefix.length() > 0) {
-                while (pPrefix.startsWith("/")) { // NOI18N
-                    pPrefix = pPrefix.substring(1);
+    public static String getWelcomeFile(String mapping, String uri) {
+        String resource = "";
+        if (mapping != null && mapping.length()>0){
+            if (mapping.startsWith("*.")){
+                if (uri.indexOf('.') > 0)
+                    resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
+                else
+                    resource = uri + mapping.substring(1);
+            } else
+                if (mapping.endsWith("/*")) {
+                    resource = mapping.substring(1,mapping.length()-1) + uri;
                 }
-            }
-
-            return pPrefix + pageName + pSuffix;
         }
-
-        return "faces/" + pageName;
+        return resource;
     }
 
     public static String setDataSourceReference(Project project, String resourceName) {
