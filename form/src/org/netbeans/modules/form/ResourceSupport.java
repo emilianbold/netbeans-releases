@@ -248,9 +248,10 @@ public class ResourceSupport {
         return newValue;
     }
 
-    private I18nValue searchDroppedI18nValue(Object key, String expectedValue) {
+    private I18nValue searchDroppedI18nValue(FormProperty property, String expectedValue) {
         if (droppedValues != null) {
-            Object value = droppedValues.get(key);
+            String dropKey = property.getPropertyContext().getContextPath() + "." + property.getName(); // NOI18N
+            Object value = droppedValues.get(dropKey);
             if (value instanceof I18nValue) {
                 I18nValue i18nValue = (I18nValue) value;
                 if (i18nValue.getValue().equals(expectedValue))
@@ -260,9 +261,10 @@ public class ResourceSupport {
         return null;
     }
 
-    private ResourceValue searchDroppedResourceValue(Object key, Object expectedValue) {
+    private ResourceValue searchDroppedResourceValue(FormProperty property, Object expectedValue) {
         if (droppedValues != null) {
-            Object value = droppedValues.get(key);
+            String dropKey = property.getPropertyContext().getContextPath() + "." + property.getName(); // NOI18N
+            Object value = droppedValues.get(dropKey);
             if (value instanceof ResourceValue) {
                 ResourceValue resValue = (ResourceValue) value;
                 if (resValue.getValue().equals(expectedValue))
@@ -403,10 +405,11 @@ public class ResourceSupport {
     }
 
     private void addDroppedValue(FormProperty property, Object value) {
-        if (droppedValues == null)
+        if (droppedValues == null) {
             droppedValues = new HashMap();
-
-        droppedValues.put(property, value);
+        }
+        String dropKey = property.getPropertyContext().getContextPath() + "." + property.getName(); // NOI18N
+        droppedValues.put(dropKey, value);
     }
 
     /**
