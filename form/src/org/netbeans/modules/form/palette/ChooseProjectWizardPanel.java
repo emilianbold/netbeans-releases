@@ -88,18 +88,19 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         if (projectChooser != null) {
             File file = projectChooser.getSelectedFile();
             if (file != null) {
-                file = FileUtil.normalizeFile(file);
-                FileObject projectDir = FileUtil.toFileObject(file);
-                try {
-                    Project project = ProjectManager.getDefault()
-                                               .findProject(projectDir);
-                    if (project != null) { // it is a project directory
-                        lastDirectoryUsed = projectChooser.getCurrentDirectory()
-                                                           .getAbsolutePath();
-                        return true;
+                FileObject projectDir = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                if (projectDir != null) {
+                    try {
+                        Project project = ProjectManager.getDefault()
+                                                   .findProject(projectDir);
+                        if (project != null) { // it is a project directory
+                            lastDirectoryUsed = projectChooser.getCurrentDirectory()
+                                                               .getAbsolutePath();
+                            return true;
+                        }
                     }
+                    catch (IOException ex) {} // ignore
                 }
-                catch (IOException ex) {} // ignore
             }
         }
         return false;
