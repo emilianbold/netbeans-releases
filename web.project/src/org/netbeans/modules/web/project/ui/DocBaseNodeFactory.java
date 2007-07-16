@@ -24,11 +24,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
@@ -38,13 +40,14 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -59,13 +62,14 @@ public final class DocBaseNodeFactory implements NodeFactory {
     }
 
     public NodeList createNodes(Project p) {
-        WebProject project = (WebProject)p.getLookup().lookup(WebProject.class);
+        WebProject project = p.getLookup().lookup(WebProject.class);
         assert project != null;
         return new DocBaseNodeList(project);
     }
 
     private static class DocBaseNodeList implements NodeList<String>, PropertyChangeListener {
         private static final String DOC_BASE = "docBase"; //NOI18N
+        private static final String WEB_INF = "webInf"; //NOI18N
 
         private final WebProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -75,15 +79,19 @@ public final class DocBaseNodeFactory implements NodeFactory {
         
         DocBaseNodeList(WebProject proj) {
             project = proj;
-            WebLogicalViewProvider logView = (WebLogicalViewProvider) project.getLookup().lookup(WebLogicalViewProvider.class);
+            WebLogicalViewProvider logView = project.getLookup().lookup(WebLogicalViewProvider.class);
             assert logView != null;
             evaluator = project.evaluator();
             helper = project.getUpdateHelper();
         }
         
         public List<String> keys() {
+            FolderHolder nodeFolders = getNodeFolders();
             List<String> result = new ArrayList<String>();
             result.add(DOC_BASE);
+            if (!nodeFolders.hasCorrectStructure()) {
+                result.add(WEB_INF);
+            }
             return result;
         }
 
@@ -96,17 +104,35 @@ public final class DocBaseNodeFactory implements NodeFactory {
         }
 
         public Node node(String key) {
+            FolderHolder nodeFolders = getNodeFolders();
             if (key == DOC_BASE) {
-                return new DocBaseNode(getFolder(WebProjectProperties.WEB_DOCBASE_DIR), project);
+                FileObject webDocBaseDir = nodeFolders.getWebDocBaseDir();
+                DataFolder webFolder = getFolder(webDocBaseDir);
+                if (webFolder != null) {
+                    return new DocBaseNode(webFolder, project);
+                }
+                return null;
+            } else if (key == WEB_INF) {
+                if (nodeFolders.hasCorrectStructure()) {
+                    return null;
+                }
+                FileObject webInfDir = nodeFolders.getWebInfDir();
+                DataFolder webInfFolder = getFolder(webInfDir);
+                if (webInfFolder != null) {
+                    return new WebInfNode(webInfFolder, project);
+                }
+                return null;
             }
             assert false: "No node for key: " + key;
             return null;
         }
 
         public void addNotify() {
+            evaluator.addPropertyChangeListener(this);
         }
 
         public void removeNotify() {
+            evaluator.removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -118,17 +144,15 @@ public final class DocBaseNodeFactory implements NodeFactory {
             });
         }
         
-        private DataFolder getFolder(String propName) {
-            FileObject fo = getFileObject(propName);
-            if (fo != null) {
-                DataFolder df = DataFolder.findFolder(fo);
-                return df;
+        private DataFolder getFolder(FileObject folder) {
+            if (folder != null) {
+                return DataFolder.findFolder(folder);
             }
             return null;
         }
         
         private FileObject getFileObject(String propName) {
-            String foName = evaluator.getProperty (propName);
+            String foName = evaluator.getProperty(propName);
             if (foName == null) {
                 return null;
             }
@@ -139,49 +163,67 @@ public final class DocBaseNodeFactory implements NodeFactory {
             return fo != null && fo.isValid() ? fo : null;
         }
         
+        private FolderHolder getNodeFolders() {
+            return ProjectManager.mutex().readAccess(new Mutex.Action<FolderHolder>() {
+                public FolderHolder run() {
+                    FileObject webDocBaseDir = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
+                    FileObject webInf = getFileObject(WebProjectProperties.WEBINF_DIR);
+                    
+                    return new FolderHolder(webDocBaseDir, webInf);
+                }
+            });
+        }
+        
+        private static final class FolderHolder {
+            private final FileObject webDocBaseDir;
+            private final FileObject webInfDir;
+
+            public FolderHolder(FileObject webDocBaseDir, FileObject webInfDir) {
+                this.webDocBaseDir = webDocBaseDir;
+                this.webInfDir = webInfDir;
+            }
+
+            public FileObject getWebDocBaseDir() {
+                return webDocBaseDir;
+            }
+
+            public FileObject getWebInfDir() {
+                return webInfDir;
+            }
+            
+            /**
+             * Return <code>true</code> if <tt>WEB-INF<tt> folder
+             * is located inside <tt>web</tt> folder.
+             * Return <code>false</code> if any of these folders
+             * is <code>null</code>.
+             */
+            public boolean hasCorrectStructure() {
+                if (webDocBaseDir == null
+                        || webInfDir == null) {
+                    return false;
+                }
+                return FileUtil.isParentOf(webDocBaseDir, webInfDir);
+            }
+        }
     }
     
-    private static final class DocBaseNode extends FilterNode {
-        private javax.swing.Action actions[]; 
-        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
+    private static final class DocBaseNode extends BaseNode {
         
-        private static Image WEB_PAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
-        
-        private final Project project;
+        private Action actions[];
         
         DocBaseNode (DataFolder folder, Project project) {
-            super (folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));
-            this.project = project;
+            super(folder, project);
         }
         
-        public Image getIcon(int type) {        
-            return computeIcon(false, type);
-        }
-
-        public Image getOpenedIcon(int type) {
-            return computeIcon(true, type);
-        }
-
-        private Node getDataFolderNodeDelegate() {
-            return ((DataFolder) getLookup().lookup(DataFolder.class)).getNodeDelegate();
-        }
-
-        private Image computeIcon(boolean opened, int type) {
-            Image image;
-
-            image = opened ? getDataFolderNodeDelegate().getOpenedIcon(type) : getDataFolderNodeDelegate().getIcon(type);
-            image = Utilities.mergeImages(image, WEB_PAGES_BADGE, 7, 7);
-
-            return image;        
-        }
-        
+        @Override
         public String getDisplayName () {
             return NbBundle.getMessage(DocBaseNodeFactory.class, "LBL_Node_DocBase"); //NOI18N
         }
 
-        public javax.swing.Action[] getActions( boolean context ) {
+        @Override
+        public Action[] getActions( boolean context ) {
             if ( actions == null ) {
-                actions = new javax.swing.Action[9];
+                actions = new Action[9];
                 actions[0] = org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction();
                 actions[1] = null;
                 actions[2] = org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemAction.class );
@@ -194,18 +236,61 @@ public final class DocBaseNodeFactory implements NodeFactory {
             }
             return actions;            
         }
+    }
+
+    private static final class WebInfNode extends BaseNode {
         
-        /* Can the original node be renamed?
-        *
-        * @return true if the node can be renamed
-        */
+        WebInfNode (DataFolder folder, Project project) {
+            super (folder, project);
+        }
+        
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(DocBaseNodeFactory.class, "LBL_Node_WebInf"); //NOI18N
+        }
+    }
+
+    private static class BaseNode extends FilterNode {
+        private static Image WEB_PAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
+        
+        protected final Project project;
+        
+        BaseNode(DataFolder folder, Project project) {
+            super(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter()));
+            this.project = project;
+        }
+        
+        @Override
+        public Image getIcon(int type) {        
+            return computeIcon(false, type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return computeIcon(true, type);
+        }
+
+        private Node getDataFolderNodeDelegate() {
+            return getLookup().lookup(DataFolder.class).getNodeDelegate();
+        }
+
+        private Image computeIcon(boolean opened, int type) {
+            Image image;
+
+            image = opened ? getDataFolderNodeDelegate().getOpenedIcon(type) : getDataFolderNodeDelegate().getIcon(type);
+            image = Utilities.mergeImages(image, WEB_PAGES_BADGE, 7, 7);
+
+            return image;        
+        }
+        
+        @Override
         public boolean canRename() {
             return false;
         }
-
     }
 
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+        private static final long serialVersionUID = 1L;
         
         EventListenerList ell = new EventListenerList();        
         

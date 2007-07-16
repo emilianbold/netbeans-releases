@@ -133,6 +133,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private JAXWSClientSupport apiJAXWSClientSupport;
     private WebContainerImpl enterpriseResourceSupport;
     private FileWatch webPagesFileWatch;
+    private FileWatch webInfFileWatch;
     private PropertyChangeListener j2eePlatformListener;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
@@ -281,6 +282,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
+        webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
     }
 
     public FileObject getProjectDirectory() {
@@ -766,6 +768,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();
+            webInfFileWatch.init();
             fixRecommendedAndPrivilegedTemplates();
         }
         
@@ -835,6 +838,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         
         protected void projectClosed() {
             webPagesFileWatch.reset();
+            webInfFileWatch.reset();
 
             // listen to j2ee platform classpath changes
             WebProjectProperties wpp = getWebProjectProperties();
