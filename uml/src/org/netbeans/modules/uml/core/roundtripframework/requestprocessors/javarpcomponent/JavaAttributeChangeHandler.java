@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent;
 
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import java.util.Iterator;
 import org.dom4j.Attribute;
 import org.dom4j.Node;
@@ -53,7 +52,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.NameManager;
 import org.netbeans.modules.uml.ui.support.ErrorDialogIconKind;
-import org.netbeans.modules.uml.util.StringTokenizer2;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -102,6 +100,7 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
                             staticChange(requestValidator, cType, cDetail);
                             arraySpecifierChange(requestValidator, cType, cDetail);
                             multiplicityChange(requestValidator, cType, cDetail);
+                            finalChange(requestValidator, cType, cDetail);
                         }
                         else if ( cDetail == RequestDetailKind.RDT_FEATURE_DUPLICATED )
                         {
@@ -1033,6 +1032,39 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
     {
         //C++ method is empty.
     }
+    
+    protected void finalChange(IRequestValidator requestValidator, int cType, int cDetail )
+    {
+        if ( cType == ChangeKind.CT_MODIFY  && cDetail == RequestDetailKind.RDT_FINAL_MODIFIED )
+        {
+            IAttribute pAttribute = null;
+            
+            ETPairT<IAttribute, IClassifier> operClass =
+                    m_Utilities.getAttributeAndClass(requestValidator.getRequest(),false);
+            if (operClass != null)
+            {
+                pAttribute = operClass.getParamOne();
+            }
+            
+            if (pAttribute == null)
+                return;
+                       
+            ETList<IOperation> setters =  null;
+            ETPairT<ETList<IOperation>, ETList<IDependency>> writePair =
+                    m_Utilities.getWriteAccessorsOfAttribute(pAttribute, null);
+            if (writePair != null)
+                setters = writePair.getParamOne();
+            for (IOperation op: setters)
+            {
+                op.delete();
+            }
+            if (!pAttribute.getIsFinal())
+            {  
+                m_Utilities.createWriteAccessor( pAttribute, getClassifier(pAttribute), true );
+            }
+        }
+    }
+    
     
     protected void initialValueChange(IRequestValidator requestValidator, int cType, int cDetail )
     {
