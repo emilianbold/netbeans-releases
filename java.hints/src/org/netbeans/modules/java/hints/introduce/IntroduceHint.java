@@ -25,7 +25,10 @@ import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
@@ -36,7 +39,9 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -677,12 +682,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void scan(Tree tree, Void p) {
-            if (tree == firstInSelection) {
-                phase = PHASE_INSIDE_SELECTION;
-            }
-            
-            if (phase == PHASE_INSIDE_SELECTION) {
-                treesSeensInSelection.add(tree);
+            if (phase != PHASE_AFTER_SELECTION) {
+                if (tree == firstInSelection) {
+                    phase = PHASE_INSIDE_SELECTION;
+                }
+
+                if (phase == PHASE_INSIDE_SELECTION) {
+                    treesSeensInSelection.add(tree);
+                }
             }
             
             Void result = super.scan(tree, p);
@@ -741,6 +748,23 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         @Override
+        public Void visitUnary(UnaryTree node, Void p) {
+            Kind k = node.getKind();
+            
+            if (k == Kind.POSTFIX_DECREMENT || k == Kind.POSTFIX_INCREMENT || k == Kind.PREFIX_DECREMENT || k == Kind.PREFIX_INCREMENT) {
+                //#109663:
+                if (phase == PHASE_INSIDE_SELECTION) {
+                    Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
+                    
+                    if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
+                        selectionWrittenLocalVariables.add((VariableElement) e);
+                    }
+                }
+            }
+            return super.visitUnary(node, p);
+        }
+
+        @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
             
@@ -789,7 +813,36 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             }
             return super.visitContinue(node, p);
         }
-        
+
+        @Override
+        public Void visitWhileLoop(WhileLoopTree node, Void p) {
+            super.visitWhileLoop(node, p);
+            
+            if (phase == PHASE_AFTER_SELECTION) {
+                //#109663:
+                //the selection was inside the while-loop, the variables inside the
+                //condition of the while loop need to be considered to be used again after the loop:
+                scan(node.getCondition(), p);
+            }
+            
+            return null;
+        }
+
+        @Override
+        public Void visitForLoop(ForLoopTree node, Void p) {
+            super.visitForLoop(node, p);
+            
+            if (phase == PHASE_AFTER_SELECTION) {
+                //#109663:
+                //the selection was inside the for-loop, the variables inside the
+                //condition and update parts of the for loop need to be considered to be used again after the loop:
+                scan(node.getCondition(), p);
+                scan(node.getUpdate(), p);
+            }
+            
+            return null;
+        }
+
         private String verifyExits(boolean exitsFromAllBranches) {
             int i = 0;
             

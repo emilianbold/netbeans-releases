@@ -557,6 +557,55 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
+    public void testIntroduceMethod109663a() throws Exception {
+        performErrorMessageTest("package test; public class Test {public static void test(int y) {while (y < 10) {if (y == 0) break; else y++; int u = y;}}}",
+                       106 - 25, 134 - 25,
+                       IntroduceKind.CREATE_METHOD,
+                       "ERR_Too_Many_Return_Values");
+    }
+    
+    public void testIntroduceMethod109663b() throws Exception {
+        performErrorMessageTest("package test; public class Test {public static void test(int y) {while (y < 10) {if (y == 0) break; else y++;}}}",
+                       106 - 25, 134 - 25,
+                       IntroduceKind.CREATE_METHOD,
+                       "ERR_Too_Many_Return_Values");
+    }
+    
+    public void testIntroduceMethod109663c() throws Exception {
+        performErrorMessageTest("package test; public class Test {public static void test(int y) {do {if (y == 0) break; else y++;} while (y < 10); }}",
+                       103 - 34, 131 - 34,
+                       IntroduceKind.CREATE_METHOD,
+                       "ERR_Too_Many_Return_Values");
+    }
+    
+    public void testIntroduceMethod109663d() throws Exception {
+        performErrorMessageTest("package test; public class Test {public static void test(int y) {for ( ; y < 10; ) {if (y == 0) break; else y++;}}}",
+                       118 - 34, 146 - 34,
+                       IntroduceKind.CREATE_METHOD,
+                       "ERR_Too_Many_Return_Values");
+    }
+    
+    public void testIntroduceMethod109663e() throws Exception {
+        performErrorMessageTest("package test; public class Test {public static void test(int y) {for ( ; ; y++) {if (y == 0) break; else y++;}}}",
+                       115 - 34, 143 - 34,
+                       IntroduceKind.CREATE_METHOD,
+                       "ERR_Too_Many_Return_Values");
+    }
+    
+    public void testIntroduceMethod109663f() throws Exception {
+        performFixTest("package test; public class Test {public static void test(int y) {for (int u = y ; ; ) {if (y == 0) break; else y++;}}}",
+                       112 - 25, 140 - 25,
+                       "package test; public class Test {public static void test(int y) {for (int u = y ; ; ) {if ( name(y)) break;}} private static boolean name(int y) { if (y == 0) { return true; } else { y++; } return false; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod109663g() throws Exception {
+        performFixTest("package test; public class Test {public static void test(int y) {for (Integer i : java.util.Arrays.asList(y)) {if (y == 0) break; else y++;}}}",
+                       136 - 25, 164 - 25,
+                       "package test; public class Test {public static void test(int y) {for (Integer i : java.util.Arrays.asList(y)) {if ( name(y)) break;}} private static boolean name(int y) { if (y == 0) { return true; } else { y++; } return false; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
