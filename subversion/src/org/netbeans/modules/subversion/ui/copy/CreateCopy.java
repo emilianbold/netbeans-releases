@@ -77,12 +77,12 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             );
         
         if(localeFile.isFile()) {
-            panel.localRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFile"));               // NOI18N
-            panel.remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromRemoteFile"));             // NOI18N            
+            org.openide.awt.Mnemonics.setLocalizedText(panel.localRadioButton, org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFile"));               // NOI18N                 
+            org.openide.awt.Mnemonics.setLocalizedText(panel.remoteRadioButton, org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromRemoteFile"));             // NOI18N            
             panel.skipCheckBox.setEnabled(false);
         } else {
-            panel.localRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFolder"));             // NOI18N            
-            panel.remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromRemoteFolder"));           // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(panel.localRadioButton, org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromLocalFolder"));             // NOI18N            
+            org.openide.awt.Mnemonics.setLocalizedText(panel.remoteRadioButton, org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromRemoteFolder"));           // NOI18N
         }        
         
         panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));                   // NOI18N
