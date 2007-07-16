@@ -119,9 +119,9 @@ public class Debug {
         if (messages.length == 1  &&  messages[0] instanceof Throwable) {
             exception = (Throwable) messages[0];
         } else {
-            StringBuilder sb = new StringBuilder ("ERROR: ");
+            StringBuilder sb = new StringBuilder ();
             StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
-            sb.append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
+            sb.append ("ERROR: ").append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
             if (stackTraceFriendIndex < stack.length)
                 sb.append ("       ").append (stack[stackTraceFriendIndex]).append ('\n'); // NOI18N
             for (Object message : messages)
