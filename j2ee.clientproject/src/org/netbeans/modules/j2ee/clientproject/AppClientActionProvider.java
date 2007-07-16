@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.MainClassWarning;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -416,7 +417,11 @@ class AppClientActionProvider implements ActionProvider {
         if ( command.equals( COMMAND_VERIFY ) ) {
             return project.getCarModule().hasVerifierSupport();
         }
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
+        if (command.equals(COMMAND_RUN)) {
+            //see issue #92895
+            //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
+            return !isTargetServerRemote();
+        } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
                     || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
@@ -739,5 +744,13 @@ class AppClientActionProvider implements ActionProvider {
             }
         }
         return false;
+    }
+   
+    private boolean isTargetServerRemote() {
+        J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
+        InstanceProperties props = module.getInstanceProperties();
+        String domain = props.getProperty("DOMAIN"); //NOI18N
+        String location = props.getProperty("LOCATION"); //NOI18N
+        return "".equals(domain) && "".equals(location); //NOI18N
     }
 }
