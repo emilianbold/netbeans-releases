@@ -332,9 +332,9 @@ public class TomcatProperties {
      */
     public File getJavaEndorsedDir() {
         if (TomcatVersion.TOMCAT_60 == tm.getTomcatVersion()) {
-            return new File(getCatalinaDir(), "endorsed"); // NOI18N
+            return new File(getCatalinaHome(), "endorsed"); // NOI18N
         } else {
-            return new File(getCatalinaDir(), "common/endorsed"); // NOI18N
+            return new File(getCatalinaHome(), "common/endorsed"); // NOI18N
         }
     }
     
