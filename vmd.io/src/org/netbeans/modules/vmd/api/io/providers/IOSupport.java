@@ -127,7 +127,7 @@ public final class IOSupport {
      */
     public static DataObjectInterface getDataObjectInteface(DataObject dataObject) {
         if (! (dataObject instanceof DataObjectInterface))
-            throw Debug.illegalArgument("DataObject does not implement DataObjectInterface", dataObject);
+            throw Debug.illegalArgument("DataObject does not implement DataObjectInterface", dataObject); // NOI18N
         return (DataObjectInterface) dataObject;
     }
     
@@ -140,7 +140,7 @@ public final class IOSupport {
     public static CloneableEditorSupport getCloneableEditorSupport(DataObject dataObject) {
         CloneableEditorSupport editorSupport = dataObject.getLookup().lookup(CloneableEditorSupport.class);
         if (editorSupport == null)
-            throw Debug.illegalArgument("Missing CloneableEditorSupport in DataObject lookup", dataObject);
+            throw Debug.illegalArgument("Missing CloneableEditorSupport in DataObject lookup", dataObject); // NOI18N
         return editorSupport;
     }
     
