@@ -328,10 +328,10 @@ public class RADComponentNode extends FormNode
      */
     @Override
     public void destroy() throws java.io.IOException {
-        if (MetaComponentCreator.isTransparentLayoutComponent(component.getParentComponent())) {
-            component = component.getParentComponent();
-        }
         if (component.getNodeReference() == this) {
+            if (MetaComponentCreator.isTransparentLayoutComponent(component.getParentComponent())) {
+                component = component.getParentComponent();
+            }
             if (EventQueue.isDispatchThread()) {
                 component.getFormModel().removeComponent(component, true);
             } else {
