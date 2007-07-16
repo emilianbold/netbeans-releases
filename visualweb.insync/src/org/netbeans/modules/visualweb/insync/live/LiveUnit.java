@@ -844,8 +844,7 @@ public class LiveUnit implements Unit, DesignContext, FacesDesignContext {
      * @see com.sun.rave.designtime.DesignContext#canMoveBean(com.sun.rave.designtime.DesignBean, com.sun.rave.designtime.DesignBean, com.sun.rave.designtime.Position)
      */
     public boolean canMoveBean(DesignBean lbean, DesignBean newParent, Position pos) {
-    	// Prevent moving to root bean. The child beans can be added to the root bean
-    	// only programatically. 
+    	// Prevent moving to root bean. The child beans can be added to the root bean only programatically. 
     	if (newParent instanceof SourceLiveRoot) {
     		return false;
     	}
