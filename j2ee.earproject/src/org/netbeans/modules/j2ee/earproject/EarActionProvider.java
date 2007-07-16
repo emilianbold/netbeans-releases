@@ -33,6 +33,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -231,6 +232,11 @@ public class EarActionProvider implements ActionProvider {
         if ( command.equals( COMMAND_VERIFY ) ) {
             J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
             return provider != null && provider.hasVerifierSupport();
+        } else if (command.equals(COMMAND_RUN)) {
+            //see issue #92895
+            //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
+            boolean isAppClientSelected = project.evaluator().getProperty("app.client") != null;
+            return !(isAppClientSelected && isTargetServerRemote());
         }
         // other actions are global
         return true;
@@ -297,5 +303,13 @@ public class EarActionProvider implements ActionProvider {
         String msg = NbBundle.getMessage(EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
         return false;
+    }
+
+    private boolean isTargetServerRemote() {
+        J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
+        InstanceProperties props = module.getInstanceProperties();
+        String domain = props.getProperty("DOMAIN"); //NOI18N
+        String location = props.getProperty("LOCATION"); //NOI18N
+        return "".equals(domain) && "".equals(location); //NOI18N
     }
 }
