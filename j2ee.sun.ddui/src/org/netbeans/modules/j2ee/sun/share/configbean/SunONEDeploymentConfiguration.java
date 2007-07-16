@@ -93,6 +93,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.NotImplementedException;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
+
+
 /** Manages the deployment plan I/O and access for initializing DConfigBeans
  *
  * @author Vince Kraemer
@@ -2333,6 +2335,57 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
 
         return jndiName;
     }
+    
+    public void setCMPResource(String ejbName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        // validation
+        if (Utils.strEmpty(ejbName) || Utils.strEmpty(jndiName)) {
+            return;
+        }
+
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            if (primarySunDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                if (sunDDRoot instanceof SunEjbJar) {
+                    SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                    EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                    if (eb == null) {
+                        eb = sunEjbJar.newEnterpriseBeans();
+                        sunEjbJar.setEnterpriseBeans(eb);
+                    }
+                    
+                    CmpResource cmpResource = eb.getCmpResource();
+                    if(cmpResource == null) {
+                        cmpResource = eb.newCmpResource();
+                        eb.setCmpResource(cmpResource);
+                    }
+
+                    String oldJndiName = cmpResource.getJndiName();
+                    if(!Utils.strEquivalent(oldJndiName, jndiName)) {
+                        if(Utils.notEmpty(oldJndiName)) {
+                            // !PW FIXME changing existing jndi name, should we notify user?
+                        }
+                    
+                        cmpResource.setJndiName(jndiName);
+                        
+                        // if changes, save file.
+                        sunEjbJar.write(primarySunDDFO);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch (Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
+    }    
 
     // Could have beanProp & nameProp in db indexed by Class<T>
     private <T extends CommonDDBean> T findNamedBean(CommonDDBean parentDD, String referenceName, /*Class<T> c,*/ String beanProp, String nameProp) {
