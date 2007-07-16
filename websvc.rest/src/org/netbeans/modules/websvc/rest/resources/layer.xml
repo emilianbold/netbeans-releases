@@ -27,6 +27,7 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
+            <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template"/>
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template"/>
             <file name="JaxwsWrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/JaxwsWrapperResource.template"/>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
