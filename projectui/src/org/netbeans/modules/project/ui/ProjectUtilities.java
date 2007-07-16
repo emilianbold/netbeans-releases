@@ -485,6 +485,12 @@ public class ProjectUtilities {
                 continue;
             }
             
+            //#109676
+            if (FileOwnerQuery.getOwner(fo) != p) {
+                ERR.log(Level.FINE, "File " + url + " doesn't belong to project at " + p.getProjectDirectory().getPath());
+                continue;
+            }
+            
             OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (fo);
         }
         
