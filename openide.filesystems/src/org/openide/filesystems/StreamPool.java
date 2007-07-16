@@ -68,6 +68,7 @@ final class StreamPool extends Object {
                 get(fo).iStream().add(retVal);
                 get(fo.getFileSystem()).iStream().add(retVal);
             } catch (InterruptedException e) {
+                ExternalUtil.annotate(e, fo.getPath());
                 ExternalUtil.exception(e);
             }
         }
@@ -113,6 +114,7 @@ final class StreamPool extends Object {
                 get(fo).oStream().add(retVal);
                 get(fo.getFileSystem()).oStream().add(retVal);
             } catch (InterruptedException e) {
+                ExternalUtil.annotate(e, fo.getPath());
                 ExternalUtil.exception(e);
             }
         }
