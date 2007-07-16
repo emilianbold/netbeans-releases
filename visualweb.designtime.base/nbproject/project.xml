@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/designtime-base.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/designtime-base.jar</binary-origin>
+                <binary-origin>library/dist/designtime-base.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

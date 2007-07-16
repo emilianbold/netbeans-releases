@@ -24,9 +24,6 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.visualweb.designtime</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <!--
-                    <code-name-base>org.netbeans.modules.visualweb.libs.jsf.api</code-name-base>
-                    -->
                     <!-- Contains JSF 1.2 API -->
                     <code-name-base>org.netbeans.modules.visualweb.libs.javaee5</code-name-base>
                     <build-prerequisite/>
@@ -78,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/designtime.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/designtime.jar</binary-origin>
+                <binary-origin>library/dist/designtime.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
