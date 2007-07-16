@@ -21,7 +21,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="java/source/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-
+    <property name="xtest.jvm.args" value="-Xmx256m"/>
+    
     <target name="pre-init-cp">
         <!-- XXX: xtext does not support compilation to build/test/classes.
             Add org.netbeans.api.project.TestUtil to classpath. -->
