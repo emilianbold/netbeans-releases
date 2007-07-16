@@ -366,11 +366,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         bPrev = new javax.swing.JButton();
         resultsPanel = new javax.swing.JPanel();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
         searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -380,7 +379,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.weightx = 1.0;
         add(searchCriteriaPanel, gridBagConstraints);
 
-        bSearch.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_Search"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle"); // NOI18N
+        bSearch.setToolTipText(bundle.getString("TT_Search")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -398,40 +398,41 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
+
         buttonGroup1.add(tbSummary);
         tbSummary.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(tbSummary, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_ShowSummary"));
-        tbSummary.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_Summary"));
+        org.openide.awt.Mnemonics.setLocalizedText(tbSummary, bundle.getString("CTL_ShowSummary")); // NOI18N
+        tbSummary.setToolTipText(bundle.getString("TT_Summary")); // NOI18N
         tbSummary.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onViewToggle(evt);
             }
         });
-
         jToolBar1.add(tbSummary);
 
         buttonGroup1.add(tbDiff);
-        org.openide.awt.Mnemonics.setLocalizedText(tbDiff, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_ShowDiff"));
-        tbDiff.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_ShowDiff"));
+        org.openide.awt.Mnemonics.setLocalizedText(tbDiff, bundle.getString("CTL_ShowDiff")); // NOI18N
+        tbDiff.setToolTipText(bundle.getString("TT_ShowDiff")); // NOI18N
         tbDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onViewToggle(evt);
             }
         });
-
         jToolBar1.add(tbDiff);
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jSeparator2.setMaximumSize(new java.awt.Dimension(2, 32767));
         jToolBar1.add(jSeparator2);
 
-        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png")));
+        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png"))); // NOI18N
         jToolBar1.add(bNext);
-        bNext.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("ACSN_NextDifference"));
+        bNext.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_NextDifference")); // NOI18N
+        bNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_NextDifference")); // NOI18N
 
-        bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png")));
+        bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png"))); // NOI18N
         jToolBar1.add(bPrev);
-        bPrev.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("ACSN_PrevDifference"));
+        bPrev.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_PrevDifference")); // NOI18N
+        bPrev.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_PrevDifference")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
@@ -440,7 +441,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         add(jToolBar1, gridBagConstraints);
 
         resultsPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -451,7 +451,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         add(resultsPanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle

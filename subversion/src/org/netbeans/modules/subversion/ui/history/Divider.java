@@ -25,6 +25,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
+import org.openide.util.NbBundle;
 
 /**
  * @author Maros Sandor
@@ -50,6 +51,8 @@ class Divider extends JPanel {
         sbkg = UIManager.getColor("TextField.selectionBackground"); // NOI18N
         selectedArrowColor = UIManager.getColor("TextField.selectionForeground"); // NOI18N
         arrowColor = UIManager.getColor("TextField.inactiveForeground"); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(Divider.class, "ACSN_Divider"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Divider.class, "ACSD_Divider"));
     }
 
     public Dimension getPreferredSize() {
