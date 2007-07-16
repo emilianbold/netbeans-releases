@@ -68,11 +68,7 @@ Element(text)[509,518] "
     
     
 Element(endtag)[500,508] " - "script"
-Element(text)[491,499] "
-        
-Element(comment)[379,499] "
-Element(text)[378,378] "
-
+Element(script)[378,499] "
 Element(tag)[325,377] " - "script" - {TagAttribute[name=language; value="JavaScript"; nameOffset=333; valueOffset=342], TagAttribute[name=type; value="text/javascript"; nameOffset=355; valueOffset=360], }
 Element(text)[316,324] "
         
