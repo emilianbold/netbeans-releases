@@ -125,7 +125,7 @@ public class RelocateAction extends ContextAction {
         });
         JButton btnCancel = new JButton(loc.getString("CTL_Relocate_Action_Cancel"));
         btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RelocateAction.class, "ACSD_Relocate_Action_Cancel"));  // NOI18N
-        DialogDescriptor descriptor = new DialogDescriptor(panel,  loc.getString("CTL_Relocate_Title"),  true, new Object [] {btnRelocate, btnCancel}, btnRelocate, DialogDescriptor.BOTTOM_ALIGN, null, null);
+        DialogDescriptor descriptor = new DialogDescriptor(panel,  loc.getString("CTL_Relocate_Dialog_Title"),  true, new Object [] {btnRelocate, btnCancel}, btnRelocate, DialogDescriptor.BOTTOM_ALIGN, null, null);
         descriptor.setClosingOptions(null);
         descriptor.setHelpCtx(new HelpCtx(RelocateAction.class));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
