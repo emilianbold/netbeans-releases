@@ -235,7 +235,7 @@ public class EarActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)) {
             //see issue #92895
             //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
-            boolean isAppClientSelected = project.evaluator().getProperty("app.client") != null;
+            boolean isAppClientSelected = project.evaluator().getProperty("app.client") != null; //NOI18N
             return !(isAppClientSelected && isTargetServerRemote());
         }
         // other actions are global
