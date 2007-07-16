@@ -192,7 +192,7 @@ public class ClientHandlerButtonListener implements ActionListener{
             //save bindingshandler file
             DataObject dobj = DataObject.find(bindingHandlerFO);
             if(dobj.isModified()){
-                SaveCookie saveCookie = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
                 saveCookie.save();
             }
             

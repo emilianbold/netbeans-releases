@@ -60,9 +60,9 @@ public class JaxWsClientChildren extends Children.Keys {
         this.client=client;
     }
     
+    @Override
     protected void addNotify() {
         super.addNotify();
-        FileObject wsdlFo = getLocalWsdl();
         final WsdlModeler wsdlModeler = ((JaxWsClientNode)getNode()).getWsdlModeler();
         if (wsdlModeler!=null) {
             wsdlModel = wsdlModeler.getWsdlModel();
@@ -111,7 +111,6 @@ public class JaxWsClientChildren extends Children.Keys {
     void refreshKeys(boolean downloadWsdl, String newWsdlUrl) {
         System.out.println("newWsdlUrl = "+newWsdlUrl);
         super.addNotify();
-        List keys=null;
         // copy to local wsdl first
         JAXWSClientSupport support = getJAXWSClientSupport();
         final JaxWsClientNode clientNode = (JaxWsClientNode)getNode();
@@ -134,10 +133,10 @@ public class JaxWsClientChildren extends Children.Keys {
                 
                 if (jaxWsModelChanged) {
                     client.setWsdlUrl(newWsdlUrl);
-                    FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName,false);
+                    FileObject xmlResourcesFo = support.getLocalWsdlFolderForClient(clientName,false);
                     System.out.println("localWsdl = "+localWsdl);
-                    if (xmlResorcesFo!=null) {
-                        String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
+                    if (xmlResourcesFo!=null) {
+                        String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
                         System.out.println("localWsdlUrl = "+localWsdlUrl);
                         client.setLocalWsdlFile(localWsdlUrl);
                     }
@@ -146,7 +145,7 @@ public class JaxWsClientChildren extends Children.Keys {
                 }  
                 // copy resources to WEB-INF[META-INF]/wsdl/client/${clientName}
                 if (client.getWsdlUrl().startsWith("file:")) {
-                    FileObject srcRoot = (FileObject)getNode().getLookup().lookup(FileObject.class);
+                    FileObject srcRoot = getNode().getLookup().lookup(FileObject.class);
                     Project project = FileOwnerQuery.getOwner(srcRoot);
                     if (project.getLookup().lookup(J2eeModuleProvider.class)!=null) {
                         FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName,false);
@@ -170,7 +169,6 @@ public class JaxWsClientChildren extends Children.Keys {
             
         }
 
-        FileObject wsdlFo = getLocalWsdl();
         final WsdlModeler wsdlModeler = clientNode.getWsdlModeler();
         clientNode.setModelGenerationFinished(false);
         clientNode.changeIcon();
@@ -224,7 +222,7 @@ public class JaxWsClientChildren extends Children.Keys {
             });
         }
         // re-generate java artifacts
-        FileObject srcRoot = (FileObject)getNode().getLookup().lookup(FileObject.class);
+        FileObject srcRoot = getNode().getLookup().lookup(FileObject.class);
         Project project = FileOwnerQuery.getOwner(srcRoot);
         if (project!=null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
@@ -248,10 +246,6 @@ public class JaxWsClientChildren extends Children.Keys {
     
     private JAXWSClientSupport getJAXWSClientSupport() {
         return ((JaxWsClientNode)getNode()).getJAXWSClientSupport();
-    }
-    
-    private FileObject getLocalWsdl() {
-        return ((JaxWsClientNode)getNode()).getLocalWsdl();
     }
     
     WsdlModel getWsdlModel() {
