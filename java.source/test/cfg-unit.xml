@@ -84,6 +84,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/InterfaceTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ClassExtendsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/FieldTest1.class"/>
+                <include name="org/netbeans/api/java/source/gen/FieldGroupTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/VarArgsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ClassMemberTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/FeatureAddingTest.class"/>
@@ -114,7 +115,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- <include name="org/netbeans/api/java/source/gen/LabelsTest.class"/> -->
                 <!-- <include name="org/netbeans/api/java/source/gen/FieldTest3.class"/> -->
                 <!-- <include name="org/netbeans/api/java/source/gen/FieldTest4.class"/> -->
-                <!-- <include name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class/testAddLocVarWithAnn"/> -->
             </patternset>
         </testset>
     </testbag>
@@ -137,11 +137,6 @@ Microsystems, Inc. All Rights Reserved.
                 not reported.
                 -->
                 <include name="org/netbeans/api/java/source/gen/LabelsTest.class"/> 
-                
-                <!--
-                Second test method corrupts the source. Details are not available yet.
-                -->
-                <include name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class"/>
                 
             </patternset>
         </testset>
