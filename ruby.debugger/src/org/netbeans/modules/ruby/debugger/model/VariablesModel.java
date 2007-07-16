@@ -49,7 +49,7 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
             "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
     
     protected final RubySession rubySession;
-    private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
+    protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     
     public VariablesModel(ContextProvider contextProvider) {
         this.rubySession = new ContextProviderWrapper(contextProvider).getRubySession();

@@ -19,9 +19,15 @@
 
 package org.netbeans.modules.ruby.debugger.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.rubyforge.debugcommons.model.RubyVariable;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
@@ -39,14 +45,18 @@ public final class WatchesModel extends VariablesModel {
     public static final String WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/Watch"; // NOI18N
     
+    private WatchesListener listener;
+    
     public WatchesModel(final ContextProvider contextProvider) {
         super(contextProvider);
     }
     
     // TreeModel implementation ................................................
     
+    @Override
     public Object[] getChildren(Object parent, int from, int to)
             throws UnknownTypeException {
+        checkListener(parent);
         if (parent == ROOT) {
             return DebuggerManager.getDebuggerManager().getWatches();
         } else if (parent instanceof Watch) {
@@ -57,6 +67,7 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return false;
@@ -68,7 +79,9 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
+    @Override
     public int getChildrenCount(Object node) throws UnknownTypeException {
+        checkListener(node);
         if (node == ROOT) {
             return DebuggerManager.getDebuggerManager().getWatches().length;
         } else if (node instanceof Watch) {
@@ -81,6 +94,7 @@ public final class WatchesModel extends VariablesModel {
     
     // NodeModel implementation ................................................
     
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof Watch) {
             return ((Watch) node).getExpression();
@@ -89,6 +103,7 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node == ROOT || node instanceof Watch) {
             return WATCH;
@@ -97,6 +112,7 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
+    @Override
     public String getShortDescription(Object node)
             throws UnknownTypeException {
         if (node instanceof Watch) {
@@ -109,6 +125,7 @@ public final class WatchesModel extends VariablesModel {
     
     // TableModel implementation ...............................................
     
+    @Override
     public Object getValueAt(Object node, String columnID) throws
             UnknownTypeException {
         if(node instanceof Watch) {
@@ -133,18 +150,90 @@ public final class WatchesModel extends VariablesModel {
         throw new UnknownTypeException(node);
     }
     
+    @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         return true;
     }
     
+    @Override
     public void setValueAt(Object node, String columnID, Object value)
             throws UnknownTypeException {
         throw new UnknownTypeException(node);
     }
-    
+
+    private synchronized void checkListener(Object node) {
+        if (listener == null && (node == ROOT || node instanceof Watch)) {
+            listener = new WatchesListener(this);
+        }
+    }
+
+    private void fireWatchPropertyChanged(Watch watch, String propertyName) {
+        for (ModelListener listener : listeners) {
+            listener.modelChanged(new ModelEvent.NodeChanged(this, watch));
+        }
+    }
+
     private RubyVariable resolveVariable(final Watch watch) {
         String expr = watch.getExpression();
         return rubySession.inspectExpression(expr);
     }
-    
+
+    private static class WatchesListener extends DebuggerManagerAdapter implements PropertyChangeListener {
+
+        private WeakReference<WatchesModel> modelRef;
+
+        public WatchesListener(WatchesModel watchesModel) {
+            modelRef = new WeakReference<WatchesModel>(watchesModel);
+            DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_WATCHES, this);
+            Watch[] watches = DebuggerManager.getDebuggerManager().getWatches();
+            for (Watch watch : watches) {
+                watch.addPropertyChangeListener(this);
+            }
+        }
+
+        private WatchesModel getModel() {
+            WatchesModel model = modelRef.get();
+            if (model == null) {
+                DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_WATCHES, this);
+                Watch[] watches = DebuggerManager.getDebuggerManager().getWatches();
+                for (Watch watch : watches) {
+                    watch.addPropertyChangeListener(this);
+                }
+            }
+            return model;
+        }
+
+        @Override
+        public void watchAdded(Watch watch) {
+            WatchesModel model = getModel();
+            if (model == null) {
+                return;
+            }
+            watch.addPropertyChangeListener(this);
+            model.fireChanges();
+        }
+
+        @Override
+        public void watchRemoved(Watch watch) {
+            WatchesModel model = getModel();
+            if (model == null) {
+                return;
+            }
+            watch.removePropertyChangeListener(this);
+            model.fireChanges();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            WatchesModel model = getModel();
+            if (model == null) {
+                return;
+            }
+            if (!(evt.getSource() instanceof Watch)) {
+                return;
+            }
+            Watch w = (Watch) evt.getSource();
+            model.fireWatchPropertyChanged(w, evt.getPropertyName());
+        }
+    }
 }
