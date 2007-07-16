@@ -54,6 +54,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -72,8 +73,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     private SunONEDeploymentConfiguration config;
     private J2eeModule module;
     private Lookup lookup;
-    private Project p;
-
+    
     /** Creates a new instance of ConfigurationSupport */
     ModuleConfigurationImpl(J2eeModule mod) throws ConfigurationException {
         this.module = mod;
@@ -85,7 +85,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             dds = new File[] { module.getDeploymentConfigurationFile("sun-web.xml") };
         } else if (module.EJB.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-ejb-jar.xml"),
-                    module.getDeploymentConfigurationFile("sun-cmp-mappings.xml") };
+            module.getDeploymentConfigurationFile("sun-cmp-mappings.xml") };
         } else if (module.CLIENT.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-application-client.xml")};
         } else if (module.EAR.equals(type)) {
@@ -106,7 +106,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             f = f.getParentFile();
         }
         if (null != f) {
-            p = FileOwnerQuery.getOwner(f.toURI());
+            Project p = FileOwnerQuery.getOwner(f.toURI());
             FileObject pdfo = p.getProjectDirectory();
             if (pdfo == null) {
                 return;
@@ -120,85 +120,13 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 return;
             }
             
-            privateFO.addFileChangeListener(new FileChangeAdapter() {
-                
-                public void fileDataCreated(FileEvent fe) {
-                    FileObject  tmp = fe.getFile();
-                    FileChangeListener fcl = this;
-                    if (tmp!=null) {
-                        react(tmp, fcl);
-                    }
-                }
-                
-                public void fileChanged(FileEvent fe) {
-                    FileObject  tmp = fe.getFile();
-                    FileChangeListener fcl = this;
-                    if (tmp!=null) {
-                        react(tmp, fcl);
-                    }
-                }
-                
-                private void react(final FileObject tmp, final FileChangeListener fcl) {
-                    if (tmp.getNameExt().equals("private.properties")) { // NOI18N
-                        // get out of the thread that has write access
-                        (new RequestProcessor()).post(new Runnable() {
-                            public void run() {
-                                // so that this request can queue up behind
-                                // the currently active "write"
-                                ProjectManager.mutex(). writeAccess(new Runnable() {
-                                    public void run() {
-                                        // Do not react to the file cheange events
-                                        // that this code is about to generate
-                                        tmp.removeFileChangeListener(fcl);
-                                        rewriteBuildImpl();
-                                        tmp.addFileChangeListener(fcl);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                }
-                
-                private void rewriteBuildImpl() {
-                    if (null != p) {
-                        boolean addExtension = true;
-                        DeploymentManager dm = getDeploymentManager(p);
-                        if (null == dm) {
-                            addExtension = false;
-                        }
-                        if (dm instanceof SunDeploymentManagerInterface) {
-                            SunDeploymentManagerInterface sdmi =
-                                    (SunDeploymentManagerInterface) dm;
-                            if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) < ServerLocationManager.GF_V2) {
-                                addExtension = false;
-                            }
-                        } else {
-                            // remove the extension  -- the project isn't targeted
-                            // for us anymore
-                            addExtension = false;
-                        }
-                        String target = ModuleType.EAR.equals(module.getModuleType()) ? "pre-dist" : "-pre-dist";
-                        try {
-                            if (addExtension) {
-                                BuildExtension.copyTemplate(p);
-                                BuildExtension.extendBuildXml(p,target);
-                            } else {
-                                BuildExtension.abbreviateBuildXml(p,target);
-                                BuildExtension.removeTemplate(p);
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    
-                }
-            });
+            privateFO.addFileChangeListener(new StaticBuildExtensionListener((ModuleType) module.getModuleType()));
         } else {
             Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Could not find project for J2eeModule");
         }
     }
     
-
+    
     public J2eeModule getJ2eeModule() {
         return module;
     }
@@ -209,8 +137,8 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         }
         return lookup;
     }
-
-        
+    
+    
     /** Called by j2eeserver to allow us to cleanup the deployment configuration object
      *  for this J2EE project.
      */
@@ -218,16 +146,16 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         checkConfiguration(config);
         ((SunONEDeploymentConfiguration)config).dispose();
     }
-
+    
     
     /** Called through j2eeserver when a new EJB resource may need to be added to the
      *  user's project.
      */
     public void setCMPResource(String ejbName, String jndiName) throws ConfigurationException {
         checkConfiguration(config);
-//        ((SunONEDeploymentConfiguration)config).ensureResourceDefinedForEjb(ci, jndiName);
+        //        ((SunONEDeploymentConfiguration)config).ensureResourceDefinedForEjb(ci, jndiName);
     }
-
+    
     /** Conduit to pass the cmp mapping information directly to the configuration
      *  backend.
      */
@@ -239,8 +167,8 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             ejbJarRoot.mapCmpBeans(mapping);
         }
     }
-
-
+    
+    
     /** Retrieves the context root field from sun-web.xml for this module, if the module is a
      *  web application.  Otherwise, returns null.
      */
@@ -248,7 +176,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         checkConfiguration(config);
         return ((SunONEDeploymentConfiguration)config).getContextRoot();
     }
-
+    
     
     /** Sets the context root field in sun-web.xml for this module, if the module is a
      *  web application.
@@ -256,7 +184,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     public void setContextRoot(String contextRoot) {
         checkConfiguration(config);
         ((SunONEDeploymentConfiguration)config).setContextRoot(contextRoot);
-    }    
+    }
     
     
     /** Utility method to validate the configuration object being passed to the
@@ -280,11 +208,11 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     public Set getDatasources() {
         Set projectDS = getSunConfig().getDatasources();
         return projectDS;
-    }    
+    }
     
     /**
      * Implementation of DS Management API in DatasourceConfiguration
-     * 
+     *
      * @return Returns true of plugin implements DS Management API's
      */
     public boolean supportsCreateDatasource() {
@@ -302,16 +230,16 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      * @param driver Driver ClassName for database referred to by this JDBC Resource's Connection Pool
      * @return Set containing SunDataSource
      */
-    public Datasource createDatasource(String jndiName, String  url, String username, 
-            String password, String driver) 
-    throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException    {
+    public Datasource createDatasource(String jndiName, String  url, String username,
+            String password, String driver)
+            throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException    {
         return getSunConfig().createDatasource(jndiName, url, username, password, driver);
     }
-
+    
     /**
      * Write the deployment plan file to the specified output stream.
-     * 
-     * 
+     *
+     *
      * @param outputStream the deployment paln file should be written to.
      * @throws ConfigurationException if an error
      */
@@ -319,38 +247,38 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                 new UnsupportedOperationException());
     }
-
+    
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         getSunConfig().bindDatasourceReference(referenceName, jndiName);
     }
-
-    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+    
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String jndiName) throws ConfigurationException {
         getSunConfig().bindDatasourceReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
-
+    
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         return getSunConfig().findDatasourceJndiName(referenceName);
     }
-
+    
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
-        return getSunConfig().findDatasourceJndiNameForEjb(ejbName, referenceName); 
+        return getSunConfig().findDatasourceJndiNameForEjb(ejbName, referenceName);
     }
-
+    
     /****************************  EjbResourceConfiguration ************************************/
     public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
-        getSunConfig().bindEjbReference(referenceName, referencedEjbName);                
+        getSunConfig().bindEjbReference(referenceName, referencedEjbName);
     }
-
+    
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-                                       String referenceName,
-                                       String referencedEjbName) throws ConfigurationException {
+            String referenceName,
+            String referencedEjbName) throws ConfigurationException {
         getSunConfig().bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
     }
-
+    
     /****************************  MessageDestinationConfiguration ************************************/
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
-        return getSunConfig().getMessageDestinations(); 
+        return getSunConfig().getMessageDestinations();
     }
     
     public boolean supportsCreateMessageDestination(){
@@ -362,24 +290,24 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     }
     
     public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
-        getSunConfig().bindMdbToMessageDestination(mdbName, name, type); 
+        getSunConfig().bindMdbToMessageDestination(mdbName, name, type);
     }
     
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
-        return getSunConfig().findMessageDestinationName(mdbName); 
+        return getSunConfig().findMessageDestinationName(mdbName);
     }
     
-    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
-        getSunConfig().bindMessageDestinationReference(referenceName, connectionFactoryName, 
-            destName, type); 
+        getSunConfig().bindMessageDestinationReference(referenceName, connectionFactoryName,
+                destName, type);
     }
     
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
-        getSunConfig().bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName, 
-            connectionFactoryName, destName, type); 
+        getSunConfig().bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName,
+                connectionFactoryName, destName, type);
     }
     
     private SunONEDeploymentConfiguration getSunConfig(){
@@ -388,29 +316,113 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         return sunConfig;
     }
     
-    private DeploymentManager getDeploymentManager(Project p) {
-        DeploymentManager dm = null;
-        J2eeModuleProvider provider = getProvider(p);
-        if(provider != null) {
-            InstanceProperties ip = provider.getInstanceProperties();
-            if(ip != null) {
-                dm = ip.getDeploymentManager();
-            } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties"));
+    static class StaticBuildExtensionListener extends FileChangeAdapter {
+        ModuleType type;
+        StaticBuildExtensionListener(ModuleType t) {
+            type = t;
+        }
+        
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            FileObject  tmp = fe.getFile();
+            FileChangeListener fcl = this;
+            if (tmp!=null) {
+                react(tmp, fcl);
             }
-        } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider"));
         }
-        return dm;
-    }
-    
-    private J2eeModuleProvider getProvider(Project project) {
-        J2eeModuleProvider provider = null;
-        if (project != null) {
-            org.openide.util.Lookup lookup = project.getLookup();
-            provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+        
+        @Override
+        public void fileChanged(FileEvent fe) {
+            FileObject  tmp = fe.getFile();
+            FileChangeListener fcl = this;
+            if (tmp!=null) {
+                react(tmp, fcl);
+            }
         }
-        return provider;
+        
+        private void react(final FileObject tmp, final FileChangeListener fcl) {
+            if (tmp.getNameExt().equals("private.properties")) { // NOI18N
+                // get out of the thread that has write access
+                (new RequestProcessor()).post(new Runnable() {
+                    public void run() {
+                        // so that this request can queue up behind
+                        // the currently active "write"
+                        ProjectManager.mutex(). writeAccess(new Runnable() {
+                            public void run() {
+                                // Do not react to the file cheange events
+                                // that this code is about to generate
+                                tmp.removeFileChangeListener(fcl);
+                                rewriteBuildImpl(tmp);
+                                tmp.addFileChangeListener(fcl);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        
+        private void rewriteBuildImpl(FileObject tmp) {
+            File f = FileUtil.toFile(tmp);
+            Project p = null;
+            if (null != f) {
+                p = FileOwnerQuery.getOwner(f.toURI());
+            }
+            if (null != p) {
+                boolean addExtension = true;
+                DeploymentManager dm = getDeploymentManager(p);
+                if (null == dm) {
+                    addExtension = false;
+                }
+                if (dm instanceof SunDeploymentManagerInterface) {
+                    SunDeploymentManagerInterface sdmi =
+                            (SunDeploymentManagerInterface) dm;
+                    if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) < ServerLocationManager.GF_V2) {
+                        addExtension = false;
+                    }
+                } else {
+                    // remove the extension  -- the project isn't targeted
+                    // for us anymore
+                    addExtension = false;
+                }
+                String target = ModuleType.EAR.equals(type) ? "pre-dist" : "-pre-dist"; // NOI18N
+                try {
+                    if (addExtension) {
+                        BuildExtension.copyTemplate(p);
+                        BuildExtension.extendBuildXml(p,target);
+                    } else {
+                        BuildExtension.abbreviateBuildXml(p,target);
+                        BuildExtension.removeTemplate(p);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        private DeploymentManager getDeploymentManager(Project p) {
+            DeploymentManager dm = null;
+            J2eeModuleProvider provider = getProvider(p);
+            if(provider != null) {
+                InstanceProperties ip = provider.getInstanceProperties();
+                if(ip != null) {
+                    dm = ip.getDeploymentManager();
+                } else {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties"));
+                }
+            } else {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider"));
+            }
+            return dm;
+        }
+        
+        private J2eeModuleProvider getProvider(Project project) {
+            J2eeModuleProvider provider = null;
+            if (project != null) {
+                org.openide.util.Lookup lookup = project.getLookup();
+                provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+            }
+            return provider;
+        }
     }
-}   
+}
 
