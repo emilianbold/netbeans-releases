@@ -61,6 +61,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -527,13 +530,20 @@ public final class DefaultProjectOperationsImplementation {
             }
             
             if (delete) {
-                toDelete.delete();
+                //#83958
+                DataFolder.findFolder(toDelete).delete();
             }
             
             return delete;
         } else {
             assert toDelete.isData();
-            toDelete.delete();
+            try {
+                //#83958
+                DataObject dobj = DataObject.find(toDelete);
+                dobj.delete();
+            } catch (DataObjectNotFoundException ex) {
+                toDelete.delete();
+            }
             return true;
         }
     }
