@@ -20,8 +20,8 @@ package org.netbeans.modules.vmd.api.model;
 
 import org.openide.ErrorManager;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * This class is in the API for debugging purpose only.
@@ -61,15 +61,14 @@ public class Debug {
             return;
         }
 
-        StringBuilder sb = new StringBuilder ("WARNING: ");
         StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
-        sb.append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
-        if (stackTraceFriendIndex - 2 >= 0)
-            sb.append (stack[stackTraceFriendIndex - 2]).append ('\n'); // NOI18N
+        StringBuilder sb = new StringBuilder ();
+        sb.append ("WARNING: ").append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
+        if (stackTraceFriendIndex < stack.length)
+            sb.append ("         ").append (stack[stackTraceFriendIndex]).append ('\n'); // NOI18N
         for (Object message : messages)
             sb.append (" | ").append (message);
         System.err.println (sb.toString ());
-        Thread.dumpStack ();
     }
 
     /**
@@ -123,8 +122,8 @@ public class Debug {
             StringBuilder sb = new StringBuilder ("ERROR: ");
             StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
             sb.append (stack[stackTraceFriendIndex - 1]).append ('\n'); // NOI18N
-            if (stackTraceFriendIndex - 2 >= 0)
-                sb.append (stack[stackTraceFriendIndex - 2]).append ('\n'); // NOI18N
+            if (stackTraceFriendIndex < stack.length)
+                sb.append ("       ").append (stack[stackTraceFriendIndex]).append ('\n'); // NOI18N
             for (Object message : messages)
                 sb.append (" | ").append (message);
 
