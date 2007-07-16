@@ -13,12 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,18 +33,20 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.NodeModelFilter;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * Filters some original tree of nodes (represented by {@link TreeModel}).
@@ -50,7 +54,7 @@ import org.openide.util.RequestProcessor;
  * @author   Jan Jancura
  */
 public class VariablesTreeModelFilter implements TreeModelFilter, 
-NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
+ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private ContextProvider lookupProvider;
     
@@ -458,6 +462,78 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             ov = ov.getSuper ();
         }
         return null;
+    }
+
+    public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.canRename(node);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).canRename(original, node);
+        }
+    }
+
+    public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.canCopy(node);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).canCopy(original, node);
+        }
+    }
+
+    public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.canCut(node);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).canCut(original, node);
+        }
+    }
+
+    public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.clipboardCopy(node);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).clipboardCopy(original, node);
+        }
+    }
+
+    public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.clipboardCut(node);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).clipboardCut(original, node);
+        }
+    }
+
+    public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.getPasteTypes(node, t);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).getPasteTypes(original, node, t);
+        }
+    }
+
+    public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            original.setName(node, name);
+        } else {
+            ((ExtendedNodeModelFilter) vf).setName(original, node, name);
+        }
+    }
+
+    public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        VariablesFilter vf = getFilter (node, true, null);
+        if (!(vf instanceof ExtendedNodeModelFilter))  {
+            return original.getIconBaseWithExtension(node);
+        } else {
+            return ((ExtendedNodeModelFilter) vf).getIconBaseWithExtension(original, node);
+        }
     }
 
 }

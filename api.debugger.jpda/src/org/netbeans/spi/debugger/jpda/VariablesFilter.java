@@ -36,6 +36,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  * Instances of this filter should be registerred in: "
  * "META-INF\debugger\netbeans-JPDADebuggerEngine\org.netbeans.spi.debugger.jpda.VariablesFilter"
  * file.
+ * 
+ * The implementor might want to implement also {@link org.netbeans.spi.viewmodel.ExtendedNodeModelFilter}
+ * for extra functionality.
  *
  * @author   Jan Jancura
  */
