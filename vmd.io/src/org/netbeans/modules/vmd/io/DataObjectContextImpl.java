@@ -73,7 +73,7 @@ public class DataObjectContextImpl implements DataObjectContext {
             projectType = documentSerializer.getProjectType ();
             if (projectType == null)
                 projectType = PROJECT_TYPE_VMD_UNKNOWN;
-            Debug.warning ("Initializing DataObjectContext", projectID, projectType, dataObject.getPrimaryFile ());
+            Debug.warning ("Initializing DataObjectContext", projectID, projectType, dataObject.getPrimaryFile ()); // NOI18N
         }
     }
 

@@ -86,15 +86,16 @@ public class CodeResolver implements DesignDocumentAwareness {
                 return;
 
             boolean modelModified = CodeResolver.this.document != document || CodeResolver.this.documentState != document.getListenerManager ().getDocumentState ();
+            boolean editorSupportModified = IOSupport.getCloneableEditorSupport (context.getDataObject ()).isModified ();
             boolean switchedFromModelToCode = kind != null && kind.equals (DataEditorView.Kind.CODE) && viewKind != null && viewKind.equals (DataEditorView.Kind.MODEL);
             final boolean switchedFromCodeToModel = kind != null && kind.equals (DataEditorView.Kind.MODEL) && viewKind != null && viewKind.equals (DataEditorView.Kind.CODE);
-            final boolean regenerateSourceCode = modelModified  &&  (switchedFromModelToCode  ||  kind == null);
+            final boolean regenerateSourceCode = editorSupportModified  &&  modelModified  &&  (switchedFromModelToCode  ||  kind == null);
 
             if (! IOSupport.isDocumentUpdatingEnabled (context.getDataObject ())) {
                 if (regenerateSourceCode)
                     SwingUtilities.invokeLater (new Runnable () {
                         public void run () {
-                            String lckFile = ".LCK" + context.getDataObject ().getPrimaryFile ().getNameExt () + "~";
+                            String lckFile = ".LCK" + context.getDataObject ().getPrimaryFile ().getNameExt () + "~"; // NOI18N
                             DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Message (
                                     "<html>Cannot update the source code. Please, checked whether the file is write-able and unlocked.<br>" +
                                     "<i>If <b>" + lckFile + "</b> file still exists even after the IDE is closed, then the file is locked.<br>" +
