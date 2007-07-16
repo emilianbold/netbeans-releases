@@ -78,24 +78,24 @@ public class TabControlButtonFactory {
      * Create default maximize/restore button. The button changes icons depending
      * on the state of tab component.
      */
-    public static TabControlButton createMaximizeRestoreButton( TabDisplayer displayer ) {
-        return new MaximizeRestoreButton( displayer );
+    public static TabControlButton createMaximizeRestoreButton( TabDisplayer displayer, boolean showBorder ) {
+        return new MaximizeRestoreButton( displayer, showBorder );
     }
     
-    public static TabControlButton createScrollLeftButton( TabDisplayer displayer, Action scrollAction ) {
-        TabControlButton button = new TimerButton( TabControlButton.ID_SCROLL_LEFT_BUTTON, displayer, scrollAction );
+    public static TabControlButton createScrollLeftButton( TabDisplayer displayer, Action scrollAction, boolean showBorder ) {
+        TabControlButton button = new TimerButton( TabControlButton.ID_SCROLL_LEFT_BUTTON, displayer, scrollAction, showBorder );
         button.setToolTipText( java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Scroll_Documents_Left") );
         return button;
     }
     
-    public static TabControlButton createScrollRightButton( TabDisplayer displayer, Action scrollAction ) {
-        TabControlButton button = new TimerButton( TabControlButton.ID_SCROLL_RIGHT_BUTTON, displayer, scrollAction );
+    public static TabControlButton createScrollRightButton( TabDisplayer displayer, Action scrollAction, boolean showBorder ) {
+        TabControlButton button = new TimerButton( TabControlButton.ID_SCROLL_RIGHT_BUTTON, displayer, scrollAction, showBorder );
         button.setToolTipText( java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Scroll_Documents_Right") );
         return button;
     }
     
-    public static TabControlButton createDropDownButton( TabDisplayer displayer ) {
-        return new DropDownButton( displayer );
+    public static TabControlButton createDropDownButton( TabDisplayer displayer, boolean showBorder ) {
+        return new DropDownButton( displayer, showBorder );
     }
     
     private static class CloseButton extends TabControlButton {
@@ -156,8 +156,8 @@ public class TabControlButtonFactory {
     
     private static class MaximizeRestoreButton extends TabControlButton {
         
-        public MaximizeRestoreButton( TabDisplayer displayer ) {
-            super( displayer );
+        public MaximizeRestoreButton( TabDisplayer displayer, boolean showBorder ) {
+            super( -1, displayer, showBorder );
             ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
             toolTipManager.registerComponent( this );
         }
@@ -207,8 +207,8 @@ public class TabControlButtonFactory {
     private static class TimerButton extends TabControlButton implements ActionListener {
         Timer timer = null;
 
-        public TimerButton( int buttonId, TabDisplayer displayer, Action a ) {
-            super( buttonId, displayer );
+        public TimerButton( int buttonId, TabDisplayer displayer, Action a, boolean showBorder ) {
+            super( buttonId, displayer, showBorder );
             setAction( a );
         }
 
@@ -290,8 +290,8 @@ public class TabControlButtonFactory {
         
         private boolean forcePressedIcon = false;
         
-        public DropDownButton( TabDisplayer displayer ) {
-            super( TabControlButton.ID_DROP_DOWN_BUTTON, displayer );
+        public DropDownButton( TabDisplayer displayer, boolean showBorder ) {
+            super( TabControlButton.ID_DROP_DOWN_BUTTON, displayer, showBorder );
             setAction( new TabListPopupAction( displayer ) );
             setToolTipText( java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Show_Opened_Documents_List") );
         }

@@ -30,8 +30,8 @@ import org.netbeans.swing.tabcontrol.event.TabActionEvent;
  * <p>A base class for control buttons placed within the tabs (view tabs) or 
  * next to the tab row (editor tabs). By default the button posts a TabActionEvent
  * to the TabDisplayerUI when pressed.</p>
- * <p>The button is painted using a set of icons only. The icons should include
- * 'fake' button border.</p>
+ * <p>The button is painted using a set of icons only unless 'showBorder' is true.
+ * The icons should include 'fake' button border then.</p>
  * 
  * @author S. Aubrecht
  */
@@ -55,13 +55,14 @@ public abstract class TabControlButton extends JButton {
     
     private int buttonId;
     private TabDisplayer displayer;
-    private String tabActionCommand;
+    private boolean showBorder;
+    private boolean superConstructorsCompleted = false;
             
     /**
      * @param displayer Tab displayer where this button is displayed.
      */
     TabControlButton( TabDisplayer displayer ) {
-        this( -1, displayer );
+        this( -1, displayer, false );
     }
     
     /**
@@ -69,8 +70,21 @@ public abstract class TabControlButton extends JButton {
      * @param displayer Tab displayer where this button is displayed.
      */
     TabControlButton( int buttonId, TabDisplayer displayer ) {
+        this( buttonId, displayer, false);
+    }
+    
+    /**
+     * @param buttonId Button type (close button, slide button etc)
+     * @param displayer Tab displayer where this button is displayed.
+     * @param showBorder if false then only icon will be make button overall look,
+     *          true means regular button border
+     */
+    TabControlButton( int buttonId, TabDisplayer displayer, boolean showBorder ) {
+        super();
+        this.superConstructorsCompleted = true;
         this.buttonId = buttonId;
         this.displayer = displayer;
+        this.showBorder = showBorder;
         configureButton();
     }
     
@@ -123,7 +137,10 @@ public abstract class TabControlButton extends JButton {
 
     public void updateUI() {
         super.updateUI();
-        configureButton();
+        // don't call configureButton() from super constructor
+        if (superConstructorsCompleted) {
+            configureButton();
+        }
     }
     
     /**
@@ -131,10 +148,15 @@ public abstract class TabControlButton extends JButton {
      */
     protected void configureButton() {
         setFocusable( false );
-        setContentAreaFilled( false );
-        setBorderPainted( false );
-        setBorder( BorderFactory.createEmptyBorder() );
         setRolloverEnabled( getRolloverIcon() != null );
+        if (showBorder) {
+            setContentAreaFilled( true );
+            setBorderPainted( true );
+        } else {
+            setContentAreaFilled( false );
+            setBorderPainted( false );
+            setBorder( BorderFactory.createEmptyBorder() );
+        }
     }
 
     protected void fireActionPerformed(ActionEvent event) {

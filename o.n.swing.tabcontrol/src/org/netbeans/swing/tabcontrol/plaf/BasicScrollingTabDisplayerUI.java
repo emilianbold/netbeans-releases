@@ -133,42 +133,48 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             int width = 0;
             int height = 0;
             
+            final boolean isGTK = "GTK".equals(UIManager.getLookAndFeel().getID());
+
             //create scroll-left button
             Action a = scroll().getBackwardAction();
             a.putValue( "control", displayer ); //NO18N
-            btnScrollLeft = TabControlButtonFactory.createScrollLeftButton( displayer, a );
+            btnScrollLeft = TabControlButtonFactory.createScrollLeftButton( displayer, a, isGTK );
             buttonsPanel.add( btnScrollLeft );
             Icon icon = btnScrollLeft.getIcon();
-            btnScrollLeft.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-            width += icon.getIconWidth();
+            Dimension prefDim = btnScrollLeft.getPreferredSize();
+            btnScrollLeft.setBounds( width, 0, prefDim.width, prefDim.height );
+            width += prefDim.width;
+            height = prefDim.height;
 
             //create scroll-right button
             a = scroll().getForwardAction();
             a.putValue( "control", displayer ); //NO18N
-            btnScrollRight = TabControlButtonFactory.createScrollRightButton( displayer, a );
+            btnScrollRight = TabControlButtonFactory.createScrollRightButton( displayer, a, isGTK );
             buttonsPanel.add( btnScrollRight );
-            icon = btnScrollRight.getIcon();
-            btnScrollRight.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-            width += icon.getIconWidth();
+            prefDim = btnScrollRight.getPreferredSize();
+            btnScrollRight.setBounds( width, 0, prefDim.width, prefDim.height );
+            width += prefDim.width;
+            height = Math.max (width, prefDim.height );
 
             //create drop down button
-            btnDropDown = TabControlButtonFactory.createDropDownButton( displayer );
+            btnDropDown = TabControlButtonFactory.createDropDownButton( displayer, isGTK );
             buttonsPanel.add( btnDropDown );
 
-            icon = btnDropDown.getIcon();
             width += 3;
-            btnDropDown.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-            width += icon.getIconWidth();
-            height = icon.getIconHeight();
+            prefDim = btnDropDown.getPreferredSize();
+            btnDropDown.setBounds( width, 0, prefDim.width, prefDim.height );
+            width += prefDim.width;
+            height = Math.max( width, prefDim.height );
             
             //maximize / restore button
             if( null != displayer.getWinsysInfo() ) {
                 width += 3;
-                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
+                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer, isGTK );
                 buttonsPanel.add( btnMaximizeRestore );
-                icon = btnMaximizeRestore.getIcon();
-                btnMaximizeRestore.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-                width += icon.getIconWidth();
+                prefDim = btnMaximizeRestore.getPreferredSize();
+                btnMaximizeRestore.setBounds( width, 0, prefDim.width, prefDim.height );
+                width += prefDim.width;
+                height = Math.max( width, prefDim.height );
             }
             
             Dimension size = new Dimension( width, height );
