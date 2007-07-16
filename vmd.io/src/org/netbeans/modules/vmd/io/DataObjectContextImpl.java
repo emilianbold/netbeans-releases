@@ -25,11 +25,14 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author David Kaspar
@@ -43,7 +46,7 @@ public class DataObjectContextImpl implements DataObjectContext {
     private static final long serialVersionUID = -1;
 
     private DataObject dataObject;
-    private transient boolean initialized;
+    private final transient AtomicBoolean initialized = new AtomicBoolean (false);
     private transient String projectID;
     private transient String projectType;
 
@@ -60,13 +63,16 @@ public class DataObjectContextImpl implements DataObjectContext {
     }
 
     private void initialize () {
-        if (initialized)
-            return;
-        initialized = true;
-        projectID = ProjectUtils.getProjectID (ProjectUtils.getProject (this));
-        projectType = IOSupport.getDocumentSerializer (dataObject).getProjectType ();
-        if (projectType == null)
-            projectType = PROJECT_TYPE_VMD_UNKNOWN;
+        synchronized (initialized) {
+            if (initialized.compareAndSet (true, true))
+                return;
+            projectID = ProjectUtils.getProjectID (ProjectUtils.getProject (this));
+            DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (dataObject);
+            projectType = documentSerializer.getProjectType ();
+            if (projectType == null)
+                projectType = PROJECT_TYPE_VMD_UNKNOWN;
+            Debug.warning ("Initializing DataObjectContext", projectID, projectType, dataObject.getPrimaryFile ());
+        }
     }
 
     public String getProjectID () {
