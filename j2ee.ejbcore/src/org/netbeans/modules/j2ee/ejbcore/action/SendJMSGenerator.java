@@ -195,21 +195,21 @@ public final class SendJMSGenerator {
     
     /**
      * Creates an injected resource field for the given <code>target</code>. The name
-     * of the field will be derivated from the given <code>mappedName</code>.
+     * of the field will be derivated from the given <code>destinationName</code>.
      * @param target the target class
      * @param mappedName the value for resource's mappedName attribute
      * @param fieldType the class of the field.
      * @return name of the created field.
      */
-    private String createInjectedField(FileObject fileObject, String className, String mappedName, String fieldType) throws IOException {
-        String fieldName = Utils.jndiNameToCamelCase(mappedName, true, "jms");
+    private String createInjectedField(FileObject fileObject, String className, String destinationName, String fieldType) throws IOException {
+        String fieldName = Utils.jndiNameToCamelCase(destinationName, true, "jms");
         _RetoucheUtil.generateAnnotatedField(
                 fileObject,
                 className,
                 "javax.annotation.Resource",
                 fieldName,
                 fieldType,
-                Collections.singletonMap("mappedName", mappedName),
+                Collections.singletonMap("name", destinationName),
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
         return fieldName;
