@@ -67,7 +67,7 @@ public class CodeClipPaletteActions extends PaletteActions {
 
     public Action[] getImportActions() {
         return new Action[] {
-            new ResetPaletteAction(paletteFolderName)
+            //new ResetPaletteAction(paletteFolderName)
         };
     }
 
@@ -105,9 +105,8 @@ public class CodeClipPaletteActions extends PaletteActions {
     }
 
 
-    /**
+    /** No longer necessary since the Palette API now provides this in the manager.
      * Reset Palette
-     */
     private static class ResetPaletteAction extends AbstractAction   {
         String folderName;
 
@@ -152,6 +151,7 @@ public class CodeClipPaletteActions extends PaletteActions {
 
         }
     }
+     */
     
     
     
