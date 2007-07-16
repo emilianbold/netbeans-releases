@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="number" default="number"/>
     <fontcolor name="operator" default="operator"/>
     <fontcolor name="string" default="string"/>
+    <fontcolor name="separator" default="separator"/>
     <fontcolor name="whitespace" default="whitespace"/>
     
     <!-- keyword groups -->
