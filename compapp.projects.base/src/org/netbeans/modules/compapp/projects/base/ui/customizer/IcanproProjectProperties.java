@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.Collator;
 import java.util.*;
 
@@ -42,6 +43,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.compapp.projects.base.IcanproProjectType;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -417,6 +419,17 @@ public class IcanproProjectProperties {
                     antProjectHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
                     antProjectHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
                     ProjectManager.getDefault ().saveProject (project);
+                    
+                    // Persist encoding for future projects
+                    Charset charset = (Charset) get(SOURCE_ENCODING);
+                    if (charset != null) {
+                        try {
+                            FileEncodingQuery.setDefaultEncoding(charset);
+                        } catch (UnsupportedCharsetException e) {
+                            //When the encoding is not supported by JVM do not set it as default
+                        }
+                    }
+                    
                     return null;
                 }
             });
