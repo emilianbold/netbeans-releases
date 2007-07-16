@@ -512,13 +512,12 @@ public class CasualDiff {
             }
             if (oldInit.def != null && newInit.def != null) {
                 anonClass = true;
-                int[] defBounds = getBounds(oldInit.def);
-                copyTo(localPointer, bounds[0]);
+                int[] defBounds = new int[] { localPointer, endPos(oldInit.def) } ;
                 localPointer = diffTree(oldInit.def, newInit.def, defBounds);
                 anonClass = false;
             }
             copyTo(localPointer, bounds[1]);
-            return localPointer;
+            return bounds[1];
         }
         if (!matchModifiers(oldT.mods, newT.mods)) {
             // if new tree has modifiers, print them
