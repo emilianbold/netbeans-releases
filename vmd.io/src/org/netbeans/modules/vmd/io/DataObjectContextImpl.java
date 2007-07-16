@@ -55,6 +55,7 @@ public class DataObjectContextImpl implements DataObjectContext {
     }
 
     public DataObjectContextImpl (DataObject dataObject) {
+        assert dataObject != null;
         this.dataObject = dataObject;
     }
 
