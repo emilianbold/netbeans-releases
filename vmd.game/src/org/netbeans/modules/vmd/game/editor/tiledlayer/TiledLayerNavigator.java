@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.vmd.game.editor.tiledlayer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
@@ -36,18 +38,43 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
     public TiledLayerNavigator(TiledLayer tiledLayer) {
         this.tiledLayer = tiledLayer;
         initComponents();
+		manualInit();
+    }
+	
+	private void manualInit() {
         textFieldLayerName.setText(this.tiledLayer.getName());
         textFieldImage.setText(this.tiledLayer.getImageResource().getRelativeResourcePath());
-        textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
-        textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
-		this.preview = new TiledLayerPreviewPanel(tiledLayer, false);
-		this.panelTiledLayer.add(preview);
-		this.panelTiledLayer.addMouseListener(new MouseAdapter() {
+        textFieldRows.setText(Integer.toString(tiledLayer.getRowCount()));
+        textFieldCols.setText(Integer.toString(tiledLayer.getColumnCount()));
+		preview = new TiledLayerPreviewPanel(tiledLayer, toggleButtonAutoRefresh.isSelected());
+		panelTiledLayer.add(preview);
+		
+		panelTiledLayer.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 preview.refresh();
             }
 		});
-    }
+		
+		toggleButtonAutoRefresh.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+				if (toggleButtonAutoRefresh.isSelected()) {
+					preview.setAutoUpdate(true);
+					buttonRefreshNow.setEnabled(false);
+				}
+				else {
+					preview.setAutoUpdate(false);
+					buttonRefreshNow.setEnabled(true);
+				}
+            }
+		});
+		
+		buttonRefreshNow.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                preview.refresh();
+            }
+		});
+		
+	}
 	
     /** This method is called from within the constructor to
      * initialize the form.
@@ -66,10 +93,13 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
         textFieldCols = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         textFieldImage = new javax.swing.JTextField();
+        toggleButtonAutoRefresh = new javax.swing.JToggleButton();
+        buttonRefreshNow = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(10, 180));
 
+        labelSprite.setBackground(new java.awt.Color(255, 255, 255));
         labelSprite.setText("TiledLayer:");
 
         textFieldLayerName.setBackground(new java.awt.Color(255, 255, 255));
@@ -82,6 +112,7 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
         panelTiledLayer.setToolTipText("Click here to refresh preview.");
         panelTiledLayer.setLayout(new java.awt.BorderLayout());
 
+        labelFrames.setBackground(new java.awt.Color(255, 255, 255));
         labelFrames.setText("Rows:");
 
         textFieldRows.setBackground(new java.awt.Color(255, 255, 255));
@@ -90,6 +121,7 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
         textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
         textFieldRows.setBorder(null);
 
+        labelDelay.setBackground(new java.awt.Color(255, 255, 255));
         labelDelay.setText("Cols:");
 
         textFieldCols.setBackground(new java.awt.Color(255, 255, 255));
@@ -98,12 +130,30 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
         textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
         textFieldCols.setBorder(null);
 
+        jLabel1.setBackground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Image:");
 
         textFieldImage.setBackground(new java.awt.Color(255, 255, 255));
         textFieldImage.setEditable(false);
         textFieldImage.setText(this.tiledLayer.getImageResource().getURL().toString());
         textFieldImage.setBorder(null);
+
+        toggleButtonAutoRefresh.setBackground(new java.awt.Color(255, 255, 255));
+        toggleButtonAutoRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/connection_mode.png"))); // NOI18N
+        toggleButtonAutoRefresh.setToolTipText("Continuously refresh preview (may degrade editor performance with large layers)");
+        toggleButtonAutoRefresh.setBorder(null);
+        toggleButtonAutoRefresh.setBorderPainted(false);
+        toggleButtonAutoRefresh.setPreferredSize(new java.awt.Dimension(16, 16));
+        toggleButtonAutoRefresh.setRolloverEnabled(true);
+
+        buttonRefreshNow.setBackground(new java.awt.Color(255, 255, 255));
+        buttonRefreshNow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/refresh.png"))); // NOI18N
+        buttonRefreshNow.setToolTipText("Refresh preview");
+        buttonRefreshNow.setBorder(null);
+        buttonRefreshNow.setBorderPainted(false);
+        buttonRefreshNow.setMaximumSize(new java.awt.Dimension(16, 16));
+        buttonRefreshNow.setMinimumSize(new java.awt.Dimension(16, 16));
+        buttonRefreshNow.setPreferredSize(new java.awt.Dimension(16, 16));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -118,9 +168,9 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
                             .add(jLabel1))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(textFieldRows, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
-                            .add(textFieldCols, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
-                            .add(textFieldImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)))
+                            .add(textFieldRows, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                            .add(textFieldCols, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                            .add(textFieldImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(labelDelay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 31, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -128,22 +178,31 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(labelSprite)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
+                        .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(buttonRefreshNow, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(toggleButtonAutoRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)))
+                        .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {buttonRefreshNow, toggleButtonAutoRefresh}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelSprite)
+                    .add(toggleButtonAutoRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(buttonRefreshNow, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                .add(12, 12, 12)
+                .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE)
+                .add(8, 8, 8)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelFrames)
                     .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -157,10 +216,14 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
                     .add(jLabel1))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {buttonRefreshNow, toggleButtonAutoRefresh}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JButton buttonRefreshNow;
     public javax.swing.JLabel jLabel1;
     public javax.swing.JLabel labelDelay;
     public javax.swing.JLabel labelFrames;
@@ -170,6 +233,7 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
     public javax.swing.JTextField textFieldImage;
     public javax.swing.JTextField textFieldLayerName;
     public javax.swing.JTextField textFieldRows;
+    public javax.swing.JToggleButton toggleButtonAutoRefresh;
     // End of variables declaration//GEN-END:variables
     
 }

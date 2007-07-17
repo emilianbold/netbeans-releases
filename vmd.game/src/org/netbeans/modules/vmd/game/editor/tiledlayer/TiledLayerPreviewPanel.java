@@ -35,6 +35,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 public class TiledLayerPreviewPanel extends JComponent implements TiledLayerListener {
 
 	private TiledLayer tiledLayer;
+	private boolean autoUpdate;
 	
     public TiledLayerPreviewPanel(TiledLayer tl, boolean autoUpdate) {
 		this.tiledLayer = tl;
@@ -43,10 +44,25 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
 				TiledLayerPreviewPanel.this.repaint();
 			}
 		});
+		this.setAutoUpdate(autoUpdate);
+    }
+	
+	public void setAutoUpdate(boolean autoUpdate) {
+		if (autoUpdate == this.autoUpdate) {
+			return;
+		}
 		if (autoUpdate) {
 			this.tiledLayer.addTiledLayerListener(this);
 		}
-    }
+		else {
+			this.tiledLayer.removeTiledLayerListener(this);
+		}
+		this.autoUpdate = autoUpdate;
+	}
+	
+	public boolean isAutoUpdate() {
+		return this.autoUpdate;
+	}
 	
 	public void refresh() {
 		this.repaint();

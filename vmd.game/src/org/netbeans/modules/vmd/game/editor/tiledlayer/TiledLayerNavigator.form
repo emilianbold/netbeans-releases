@@ -32,9 +32,9 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="textFieldRows" alignment="0" pref="89" max="32767" attributes="1"/>
-                          <Component id="textFieldCols" alignment="0" pref="89" max="32767" attributes="1"/>
-                          <Component id="textFieldImage" alignment="0" pref="89" max="32767" attributes="0"/>
+                          <Component id="textFieldRows" alignment="0" pref="186" max="32767" attributes="1"/>
+                          <Component id="textFieldCols" alignment="0" pref="186" max="32767" attributes="1"/>
+                          <Component id="textFieldImage" alignment="0" pref="186" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -45,11 +45,15 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="labelSprite" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="textFieldLayerName" pref="63" max="32767" attributes="0"/>
+                      <Component id="textFieldLayerName" pref="102" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="buttonRefreshNow" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="toggleButtonAutoRefresh" linkSize="1" min="-2" pref="20" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="panelTiledLayer" pref="142" max="32767" attributes="2"/>
+                      <Component id="panelTiledLayer" pref="239" max="32767" attributes="2"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -59,14 +63,16 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelSprite" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="toggleButtonAutoRefresh" linkSize="2" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="buttonRefreshNow" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="textFieldLayerName" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="panelTiledLayer" pref="69" max="32767" attributes="0"/>
-              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+              <Component id="panelTiledLayer" pref="68" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelFrames" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="textFieldRows" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -89,6 +95,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="labelSprite">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="TiledLayer:"/>
       </Properties>
     </Component>
@@ -125,6 +134,9 @@
     </Container>
     <Component class="javax.swing.JLabel" name="labelFrames">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Rows:"/>
       </Properties>
     </Component>
@@ -145,6 +157,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="labelDelay">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Cols:"/>
       </Properties>
     </Component>
@@ -165,6 +180,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Image:"/>
       </Properties>
     </Component>
@@ -179,6 +197,49 @@
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="toggleButtonAutoRefresh">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/org/netbeans/modules/vmd/game/editor/tiledlayer/res/connection_mode.png"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Continuously refresh preview (may degrade editor performance with large layers)"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="null"/>
+        </Property>
+        <Property name="borderPainted" type="boolean" value="false"/>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[16, 16]"/>
+        </Property>
+        <Property name="rolloverEnabled" type="boolean" value="true"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="buttonRefreshNow">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/org/netbeans/modules/vmd/game/editor/tiledlayer/res/refresh.png"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Refresh preview"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="null"/>
+        </Property>
+        <Property name="borderPainted" type="boolean" value="false"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[16, 16]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[16, 16]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[16, 16]"/>
         </Property>
       </Properties>
     </Component>
