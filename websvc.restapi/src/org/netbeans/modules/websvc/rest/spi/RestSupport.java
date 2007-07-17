@@ -21,13 +21,14 @@ package org.netbeans.modules.websvc.rest.spi;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -38,8 +39,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -55,7 +54,7 @@ import org.openide.util.NbBundle;
  * @author Nam Nguyen
  */
 public abstract class RestSupport {
-    public static final String SWDP_LIBRARY = "swdp"; //NOI18N
+    public static final String SWDP_LIBRARY = "restlib"; //NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir";
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";
@@ -69,6 +68,13 @@ public abstract class RestSupport {
     public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";
     public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
     public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";
+    public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";
+    public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";   
+    public static final String REST_SERVLET_ADAPTOR_MAPPING = "/restbean/*";
+    public static final String PARAM_WEB_RESOURCE_CLASS = "webresourceclass";
+    public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";
+    public static final String REST_API_JAR = "jsr311-api.jar";
+    public static final String REST_RI_JAR = "jersey.jar";
     
     AntProjectHelper helper;
 
@@ -238,17 +244,13 @@ public abstract class RestSupport {
 
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject sourceRoot = sgs[0].getRootFolder();
-        ProjectClassPathExtender pce = project.getLookup().lookup(ProjectClassPathExtender.class);
-        ProjectClassPathModifierImplementation pcm = project.getLookup().lookup(ProjectClassPathModifierImplementation.class);
-        if (pcm != null) {
-            for (String type : classPathTypes) {
+        for (String type : classPathTypes) {
+            try {
                 ProjectClassPathModifier.addLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
+            } catch(UnsupportedOperationException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.ALL, type+" not supported.");
+                
             }
-        } else if (pce != null) {
-            pce.addLibrary(swdpLibrary);
-        } else{
-            throw new IllegalStateException("Current project does not have support " +
-                    "for ProjectClassPathModifier or ProjectClassPathExtender");
         }
     }
 
