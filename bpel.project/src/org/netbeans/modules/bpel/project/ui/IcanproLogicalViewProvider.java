@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
@@ -253,39 +254,53 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
 
-            return new Action[] {
-                
-                CommonProjectActions.newFileAction(),
-                null,
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
+
+            List<Action> actions = new ArrayList<Action>();
+
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
+                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
+                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null )); // NOI18N
+                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null )); // NOI18N
 //                null,
 //                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
 //                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
-                null,
-                getProjectDebuggerAction(),
-                null,
-                CommonProjectActions.setAsMainProjectAction(),
-                CommonProjectActions.openSubprojectsAction(),
-                CommonProjectActions.closeProjectAction(),
-                null,
-                CommonProjectActions.renameProjectAction(),
-                CommonProjectActions.moveProjectAction(),
-                CommonProjectActions.copyProjectAction(),
-                CommonProjectActions.deleteProjectAction(),
-                null,
-                SystemAction.get( org.openide.actions.FindAction.class ),
+                actions.add(ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
+                actions.add(null);
+                actions.add(getProjectDebuggerAction());
+                actions.add(null);
+                actions.add(CommonProjectActions.setAsMainProjectAction());
+                actions.add(CommonProjectActions.openSubprojectsAction());
+                actions.add(CommonProjectActions.closeProjectAction());
+                actions.add(null);
+                actions.add(CommonProjectActions.renameProjectAction());
+                actions.add(CommonProjectActions.moveProjectAction());
+                actions.add(CommonProjectActions.copyProjectAction());
+                actions.add(CommonProjectActions.deleteProjectAction());
+                actions.add(null);
+                actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
+                // add versioning support
+                addFromLayers(actions, "Projects/Actions"); //NOI18N
 //                null,
 //                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                null,
-                ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null ), // NOI18N
-                null,
-                brokenLinksAction,
-                CommonProjectActions.customizeProjectAction(),
-            };
+                actions.add(null);
+                actions.add(brokenLinksAction);
+                actions.add(CommonProjectActions.customizeProjectAction());
+            
+            return actions.toArray(new Action[actions.size()]);
         }
         
+        private void addFromLayers(List<Action> actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
+                }
+            }
+        }        
+
         /**
          * Find a registered BPELProjectDebuggerAction if available and add
          * to context menu.
