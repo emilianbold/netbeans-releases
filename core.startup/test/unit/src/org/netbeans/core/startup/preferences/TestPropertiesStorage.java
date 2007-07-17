@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -201,5 +203,27 @@ public class TestPropertiesStorage extends TestFileStorage {
         pref.node("c1").removeNode();
         assertEquals(Collections.emptySet(), new TreeSet<String>(Arrays.asList(storage.childrenNames())));
     }
+    
+    public void testInvalidChildrenNames() throws Exception {
+        NbPreferences subnode = (NbPreferences)pref;
+        assertNotNull(subnode);
+        PropertiesStorage ps = (PropertiesStorage)pref.fileStorage;        
+        FileObject fold = ps.toFolder(true);
+        assertNotNull(FileUtil.createData(fold, "a/b/c/invalid1"));
+        subnode.sync();
+        assertEquals(0, subnode.childrenNames().length);
 
+        assertNotNull(FileUtil.createData(fold, "a/b/c/invalid2.huh"));
+        subnode.sync();
+        assertEquals(0, subnode.childrenNames().length);
+
+        assertNotNull(FileUtil.createData(fold, "a/b/c/invalid3.properties.huh"));
+        subnode.sync();
+        assertEquals(0, subnode.childrenNames().length);
+        
+        assertNotNull(FileUtil.createData(fold, "a/b/c/valid.properties"));
+        subnode.sync();
+        assertEquals(1, subnode.childrenNames().length);        
+        assertEquals("a", subnode.childrenNames()[0]);        
+    }    
 }

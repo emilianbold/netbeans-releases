@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import org.openide.filesystems.FileLock;
@@ -128,7 +129,14 @@ class PropertiesStorage implements NbPreferences.FileStorage {
             
             if (folder != null) {
                 for (FileObject fo : Collections.list(folder.getFolders(false))) {
-                    folderNames.add(fo.getNameExt());
+                    Enumeration<? extends FileObject> en = fo.getChildren(true);
+                    while (en.hasMoreElements()) {
+                        FileObject ffo = en.nextElement();
+                        if (ffo.hasExt("properties")) { // NOI18N
+                            folderNames.add(fo.getNameExt());
+                            break;
+                        }
+                    }
                 }
                 for (FileObject fo : Collections.list(folder.getData(false))) {
                     if (fo.hasExt("properties")) { // NOI18N
