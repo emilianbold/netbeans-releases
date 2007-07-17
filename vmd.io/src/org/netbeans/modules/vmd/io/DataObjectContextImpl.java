@@ -26,7 +26,6 @@ import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 
@@ -71,7 +70,6 @@ public class DataObjectContextImpl implements DataObjectContext {
             projectType = documentSerializer.getProjectType ();
             if (projectType == null)
                 projectType = PROJECT_TYPE_VMD_UNKNOWN;
-            Debug.warning ("Initializing DataObjectContext", projectID, projectType, dataObject.getPrimaryFile ()); // NOI18N
             initialized = true;
         }
     }
