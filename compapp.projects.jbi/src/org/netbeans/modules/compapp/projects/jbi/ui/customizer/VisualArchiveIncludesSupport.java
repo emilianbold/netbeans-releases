@@ -882,7 +882,7 @@ final class VisualArchiveIncludesSupport {
             webProperties.put(JbiProjectProperties.PASSWORD_PROPERTY_KEY, password);
         }
         
-        ClassLoader jbiClassLoader = JbiManager.getJbiClassLoader(serverInstance);
+        ClassLoader jbiClassLoader = JbiManager.getJBIClassLoader(serverInstance);
         
 //        System.out.println("VisualArchiveIncludesSupport.fetchInfo():");
 //        System.out.println("hostName=" + hostName);

@@ -42,12 +42,6 @@ import org.openide.loaders.DataObject;
 
 public class JbiManager {
     
-//    // todo: assuming only 1 for now.. needs to support multiple AS lateer...
-//    static JbiClassLoader loader = null;
-//    
-//    static DeploymentManager dm = null;
-    
-    
     public static final String URL_ATTR = "url"; // NOI18N
     public static final String HOSTNAME_ATTR = "hostname"; // NOI18N
     public static final String PORT_ATTR = "port"; // NOI18N
@@ -55,14 +49,14 @@ public class JbiManager {
     public static final String PASSWORD_ATTR = "password"; // NOI18N
     
     /** Mapping from ServerInstance to JbiClassLoader instances. */
-    private static Map loaderMap;
+    private static Map<String,JbiClassLoader> loaderMap;
     
-    public static JbiClassLoader getJbiClassLoader(String serverInstance) {
+    public static JbiClassLoader getJBIClassLoader(String serverInstance) {
         if (loaderMap == null) {
-            loaderMap = new HashMap();
+            loaderMap = new HashMap<String,JbiClassLoader>();
         }
         
-        JbiClassLoader loader = (JbiClassLoader) loaderMap.get(serverInstance);
+        JbiClassLoader loader = loaderMap.get(serverInstance);
         if (loader == null) {
             try {
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstance);
@@ -81,16 +75,6 @@ public class JbiManager {
                             loader.addURL(f);
                             break;
                         }
-//                        File libDir = new File(rootPath + "/lib");
-//                        File[] files = libDir.listFiles();
-//                        for (int j = 0; j  < files.length; j++) {
-//                            File file = files[j];
-//                            String filePath = file.getAbsolutePath();
-//                            if (filePath.endsWith(".jar")) {
-//                                loader.addURL(file);
-//                                System.out.println("Adding " + filePath);
-//                            }
-//                        }
                     }
                     
                     loaderMap.put(serverInstance, loader);
@@ -213,48 +197,7 @@ public class JbiManager {
         
         return null;
     }
-    
-//    public static JbiClassLoader getJbiClassLoader() {
-//
-//        if (loader == null) {
-//            try {
-//                loader = new JbiClassLoader(new Empty().getClass().getClassLoader());
-//
-//                String installRoot= "C:\\JavaEE5SDKb41\\Sun\\AppServer";
-//                File f = new File(installRoot+"/lib/appserv-rt.jar");
-//                loader.addURL(f);
-//            } catch (Exception ex) {
-//                loader = null;
-//                System.out.println("ex: " + ex);
-//            }
-//        }
-//        return loader;
-//    }
-    
-    
-//    static DeploymentManager getDeploymentManager() {
-//        if (loader == null) {
-//            getJbiClassLoader();
-//        }
-//        if ((dm == null) && (loader != null)) {
-//            try {
-//                File f = new File("C:\\SunApp\\AppServer\\lib\\appserv-deployment-client.jar");
-//                loader.addURL(f);
-//                File f2 = new File("C:\\SunApp\\AppServer\\lib\\appserv-ext.jar");
-//                loader.addURL(f2);
-//                File f3 = new File("C:\\SunApp\\AppServer\\lib\\javaee.jar");
-//                loader.addURL(f3);
-//                DeploymentFactory df = (DeploymentFactory) loader.loadClass("com.sun.enterprise.deployapi.SunDeploymentFactory").newInstance();
-//                // todo: needs to get these info from server instance..
-//                dm = df.getDeploymentManager("deployer:Sun:AppServer::localhost:4848","admin","adminadmin");
-//            } catch (Exception ex) {
-//                dm = null;
-//            }
-//        }
-//        return dm;
-//    }
-    
-    
+        
     public static boolean isGlassFish(File candidate) {
         //now test for AS 9 (J2EE 5.0) which should work for this plugin
         File as9 = new File(candidate.getAbsolutePath() +
@@ -294,67 +237,6 @@ public class JbiManager {
         }
         return (String[])arr.toArray(new String[arr.size()]);        
     }
-
-    
-//    public static boolean appServerStrated() {
-//        Deployment deployment = Deployment.getDefault();
-//        String[] serverInstanceIDs = deployment.getServerInstanceIDs();
-//        for (int i = 0; i < serverInstanceIDs.length; i++) {
-//            J2eePlatform platform = deployment.getJ2eePlatform(serverInstanceIDs[i]);
-//            if (platform != null){
-//                if (isAppServer(platform)) {
-//                    boolean serverUp = false;
-//                    try {
-//                        DeploymentManager dm = getDeploymentManager();
-//                        if (dm != null) {
-//                            try {
-//                                Target[] ts = dm.getTargets();
-//                                serverUp = true;
-//                            } catch (Exception ex) {
-//                                serverUp = false;
-//                            }
-//                        }
-//                    } catch (Exception ex) {
-//                        // System.out.println("Ex: "+ex);
-//                    }
-//                    return serverUp;
-//                }
-//            }
-//        }
-//        return false;
-//    }
-    
-//    public static void testManager() {
-//        // todo: 04/20/06, test code.. will be removed later.
-//        Deployment deployment = Deployment.getDefault();
-//        String[] serverInstanceIDs = deployment.getServerInstanceIDs();
-//
-//        String[] serverNames = new String[serverInstanceIDs.length];
-//        String[] serverURLs = new String[serverInstanceIDs.length];
-//        for (int i = 0; i < serverInstanceIDs.length; i++) {
-//            J2eePlatform platform = deployment.getJ2eePlatform(serverInstanceIDs[i]);
-//            if (platform != null){
-//                if (isAppServer(platform)) {
-//                    try {
-//                        DeploymentManager dm = getDeploymentManager();
-//                        System.out.println("Manager: "+dm);
-//                        boolean serverUp = false;
-//                        if (dm != null) {
-//                            try {
-//                                Target[] ts = dm.getTargets();
-//                                serverUp = true;
-//                            } catch (Exception ex) {
-//                                serverUp = false;
-//                            }
-//                        }
-//                        System.out.println("AppServer Running: "+serverUp);
-//                    } catch (Exception ex) {
-//                        System.out.println("Ex: "+ex);
-//                    }
-//                }
-//            }
-//        }
-//    }
     
     public static boolean isAppServer(String id) {
         J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(id);
@@ -379,10 +261,10 @@ public class JbiManager {
         return false;
     }
     
-    /*
-     *used to get the netbeans classload of this class.
+    /**
+     * Used to get the netbeans classload of this class.
      *
-     **/
+     */
     static class Empty{
         //  empty...
     }
