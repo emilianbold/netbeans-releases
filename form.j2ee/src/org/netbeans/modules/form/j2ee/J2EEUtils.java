@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
@@ -393,13 +394,6 @@ public class J2EEUtils {
             // PENDING
             final Set<FileObject> entities = generator.generate(AggregateProgressFactory.createProgressContributor("PENDING"));
 
-            for (FileObject fob : entities) {
-                makeEntityObservable(fob);
-            }
-            
-            // Compile generated bean
-            compileGeneratedEntities(entities);
-
             String[] result = new String[entities.size()];
             int count = 0;
             for (FileObject fob : entities) {
@@ -410,36 +404,6 @@ public class J2EEUtils {
             ex.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Compiles the given set of entities. 
-     * 
-     * @param entities entities to compile.
-     */
-    private static void compileGeneratedEntities(Set<FileObject> entities) {
-        try {
-            final Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
-            if (action instanceof ContextAwareAction) {
-                DataObject[] dobs = new DataObject[entities.size()];
-                int count = 0;
-                for (FileObject fob : entities) {
-                    dobs[count++] = DataObject.find(fob);
-                }
-                final Lookup lookup = Lookups.fixed((Object[])dobs);
-                if (EventQueue.isDispatchThread()) { // Issue 102572
-                    ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
-                } else {
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
-                        }
-                    });
-                }
-            }
-        } catch (DataObjectNotFoundException dnfex) {
-            dnfex.printStackTrace();
-        }
     }
 
     /**
@@ -675,8 +639,19 @@ public class J2EEUtils {
      * 
      * @param entity entity to make observable.
      */
-    private static void makeEntityObservable(FileObject entity) {
+    public static void makeEntityObservable(FileObject fileInProject, String[] entityInfo, MetadataModel<EntityMappingsMetadata> mappings) {
+        ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
+        String resName = entityInfo[1].replace('.', '/') + ".java"; // NOI18N
+        FileObject entity = cp.findResource(resName);
+        if (entity == null) return;
+        final List<String> properties;
+        try {
+            properties = propertiesForColumns(mappings, entityInfo[0], null);
+        } catch (IOException ioex) {
+            return;
+        }
         JavaSource source = JavaSource.forFileObject(entity);
+        final boolean[] alreadyUpdated = new boolean[1];
         try {
             // PENDING merge into one task once it will be possible
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -691,6 +666,18 @@ public class J2EEUtils {
                             break;
                         }
                     }
+                    
+                    for (Tree member : clazz.getMembers()) {
+                        if (Tree.Kind.VARIABLE == member.getKind()) {
+                            VariableTree variable = (VariableTree)member;
+                            String type = variable.getType().toString();
+                            if (type.endsWith("PropertyChangeSupport")) { // NOI18N
+                                alreadyUpdated[0] = true;
+                                return;
+                            }
+                        }
+                    }
+                    
                     TreeMaker make = wc.getTreeMaker();
                     
                     // changeSupport field
@@ -710,23 +697,24 @@ public class J2EEUtils {
                     for (Tree clMember : modifiedClass.getMembers()) {
                         if (clMember.getKind() == Tree.Kind.METHOD) {
                             MethodTree method = (MethodTree)clMember;
-                            // PENDING modify only setters that correspond to persistent properties
-                            if (method.getName().toString().startsWith("set") && (method.getParameters().size() == 1)) { // NOI18N
+                            String methodName = method.getName().toString();
+                            if (methodName.startsWith("set") && (methodName.length() > 3) && (Character.isUpperCase(methodName.charAt(3))) && (method.getParameters().size() == 1)) { // NOI18N
+                                String propName = methodName.substring(3);
+                                if ((propName.length() == 1) || (Character.isLowerCase(propName.charAt(1)))) {
+                                    propName = Character.toLowerCase(propName.charAt(0)) + propName.substring(1);
+                                }
+                                if (!properties.contains(propName)) continue;
                                 BlockTree block = method.getBody();
+                                if (block.getStatements().size() != 1) continue;
+                                StatementTree statement = block.getStatements().get(0);
+                                if (statement.getKind() != Tree.Kind.EXPRESSION_STATEMENT) continue;
+                                ExpressionTree expression = ((ExpressionStatementTree)statement).getExpression();
+                                if (expression.getKind() != Tree.Kind.ASSIGNMENT) continue;
+                                AssignmentTree assignment = (AssignmentTree)expression;
+                                String parName = assignment.getExpression().toString();
                                 VariableTree parameter = method.getParameters().get(0);
-                                ExpressionTree persistentVariable = null;
-                                for (StatementTree statement : block.getStatements()) {
-                                    if (statement.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
-                                        ExpressionTree expression =((ExpressionStatementTree)statement).getExpression();
-                                        if (expression.getKind() == Tree.Kind.ASSIGNMENT) {
-                                            AssignmentTree assignment = (AssignmentTree)expression;
-                                            persistentVariable = assignment.getVariable();
-                                        }
-                                    }
-                                }
-                                if (persistentVariable == null) {
-                                    continue;
-                                }
+                                if (!parameter.getName().toString().equals(parName)) continue;
+                                ExpressionTree persistentVariable = assignment.getVariable();
 
                                 // <Type> old<PropertyName> = this.<propertyName>
                                 String parameterName = parameter.getName().toString();
@@ -742,8 +730,7 @@ public class J2EEUtils {
                                 // changeSupport.firePropertyChange("<propertyName>", old<PropertyName>, <propertyName>);
                                 MemberSelectTree fireMethod = make.MemberSelect(make.Identifier(changeSupport.getName()), "firePropertyChange"); // NOI18N
                                 List<ExpressionTree> fireArgs = new LinkedList<ExpressionTree>();
-                                // PENDING literal should be the name of the property
-                                fireArgs.add(make.Literal(parameterName));
+                                fireArgs.add(make.Literal(propName));
                                 fireArgs.add(make.Identifier(oldParameterName));
                                 fireArgs.add(make.Identifier(parameterName));
                                 MethodInvocationTree notification = make.MethodInvocation(Collections.EMPTY_LIST, fireMethod, fireArgs);
@@ -759,6 +746,7 @@ public class J2EEUtils {
                 }
 
             }).commit();
+            if (alreadyUpdated[0]) return;
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
                 public void run(WorkingCopy wc) throws Exception {
@@ -960,6 +948,19 @@ public class J2EEUtils {
                             props.add(propName);
                         } else {
                             String columnName = basic.getColumn().getName();
+                            columnName = unquote(columnName);
+                            columnToProperty.put(columnName, propName);                        
+                        }
+                    }
+                    for (ManyToOne manyToOne : attrs.getManyToOne()) {
+                        String propName = J2EEUtils.fieldToProperty(manyToOne.getName());
+                        if ("<error>".equals(propName)) { // NOI18N
+                            continue;
+                        }
+                        if (all) {
+                            props.add(propName);
+                        } else {
+                            String columnName = manyToOne.getJoinColumn(0).getName();
                             columnName = unquote(columnName);
                             columnToProperty.put(columnName, propName);                        
                         }

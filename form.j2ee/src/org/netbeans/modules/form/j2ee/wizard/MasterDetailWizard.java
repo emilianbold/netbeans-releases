@@ -423,6 +423,8 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     // Add the entity into the persistence unit if it is not there already
                     J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
                 }
+                
+                J2EEUtils.makeEntityObservable(folder, entityInfo, mappings);
             }
             
             String[][] result = new String[2][];
@@ -486,7 +488,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     String relationField = null;
                     for (ManyToOne manyToOne : detailEntity.getAttributes().getManyToOne()) {
                         // PENDING when there can be more JoinColumns?
-                        String columnName = manyToOne.getJoinColumn()[0].getName();
+                        String columnName = manyToOne.getJoinColumn(0).getName();
                         if (relationColumn.equals(columnName)) {
                             relationField = manyToOne.getName();
                             break;
