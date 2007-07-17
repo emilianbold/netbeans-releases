@@ -99,7 +99,7 @@ public class RicohDeploymentProperties
         projectProp.put(PROP_RICOH_SIGN_MANIFEST,"");
         projectProp.put(PROP_RICOH_SIGN_KEYPASS,"");
         projectProp.put(PROP_RICOH_SIGN_ALIAS,"");
-        projectProp.put(PROP_RICOH_DEPLOY_METHOD,DeploymentPanels.SD_CARD_DEPLOY);
+        projectProp.put(PROP_RICOH_DEPLOY_METHOD,DeploymentComboBoxModel.SD_CARD_DEPLOY);
     }
     
     private static HashMap<String,Object> globalProp = new HashMap<String,Object>();

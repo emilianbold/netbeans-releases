@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="deploy-ricoh">
+    
+    <target name="update-dalp-index" if="xlet-project">
+        <condition property="web.install">
+            <or>
+                <equals arg1="${ricoh.deployment.deploy.method}" arg2="samba" trim="true"/>
+                <equals arg1="${ricoh.deployment.deploy.method}" arg2="scp" trim="true"/>
+            </or>
+        </condition>
+        <taskIf if="web.install" value="true">
+            <tstamp>
+                <format property="dalp-index.update-time" pattern="yyyy-MM-dd-HHmm"/>
+            </tstamp>
+            <echo message="libs.RicohAntTools.classpath = ${libs.RicohAntTools.classpath}"/>
+            <echo message="build.dir = ${build.dir}"/>
+            <echo message="xml.dir   = ${xml.dir}"/>
+            <mkdir dir="${xml.dir}"/>
+            <echo file="${xml.dir}/Original-Dalp.xml">
+                                &lt;dalpList pubDate="${dalp-index.update-time}"&gt;
+                                &lt;/dalpList&gt;
+                        
+                    </echo>
+            <taskIf if="ricoh.deployment.deploy.method" value="samba">
+                <property name="ricoh.install-server.web-port" value="${ricoh.deployment.smb.webport}"/>
+                <property name="ricoh.install-server.path" value="${ricoh.deployment.smb.webpath}"/>
+            </taskIf>
+            <taskIf if="ricoh.deployment.deploy.method" value="scp">
+                <property name="ricoh.install-server.web-port" value="${ricoh.deployment.scp.webport}"/>
+                <property name="ricoh.install-server.path" value="${ricoh.deployment.scp.webpath}"/>
+            </taskIf>
+            <echo message="Fetching Dalp.xml off HTTP server @ ${ricoh.install-server} on port ${ricoh.install-server.web-port}..."/>
+            <get src="http://${ricoh.install-server}:${ricoh.install-server.web-port}${ricoh.install-server.path}/Dalp.xml" dest="${xml.dir}/Original-Dalp.xml" ignoreerrors="true"/>
+            <condition property="no.original.dalp" value="true">
+                <not>
+                    <available file="${xml.dir}/Original-Dalp.xml"/>
+                </not>
+            </condition>
+            <taskIf if="no.original.dalp" value="true">
+                <echo message="Dalp.xml not found on webserver; generating new copy"/>
+            </taskIf>
+            <taskIf unless="no.original.dalp" value="true">
+                <echo message="Got original Dalp.xml, adding project to list."/>
+            </taskIf>
+            <echo file="${xml.dir}/update-dalp-index.xsl">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+                                &lt;!DOCTYPE stylesheet []&gt;
+                                    &lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"&gt;
+
+                                    &lt;xsl:output method="xml" indent="yes"/&gt;
+
+                                    &lt;xsl:template match="dalp[name='${xlet.dalp.name-only}']"&gt;
+                                    &lt;/xsl:template&gt;
+
+                                    &lt;xsl:template match="dalp"&gt;
+                                        &lt;dalp pubDate="{@pubDate}"&gt;
+                                            &lt;name&gt;&lt;xsl:value-of select="name"/&gt;&lt;/name&gt;
+                                            &lt;vendor&gt;&lt;xsl:value-of select="vendor"/&gt;&lt;/vendor&gt;
+                                        &lt;/dalp&gt;
+                                    &lt;/xsl:template&gt;
+
+                                    &lt;xsl:template match="dalpList"&gt;
+                                        &lt;dalpList pubDate="${dalp-index.update-time}"&gt;
+                                            &lt;dalp pubDate="${dalp-index.update-time}"&gt;
+                                                &lt;name&gt;${xlet.dalp.name-only}&lt;/name&gt;
+						&lt;vendor&gt;${application.vendor}&lt;/vendor&gt;
+                                            &lt;/dalp&gt;
+                                            &lt;xsl:apply-templates select="dalp"/&gt;
+					&lt;/dalpList&gt;
+                                    &lt;/xsl:template&gt;
+				&lt;/xsl:stylesheet&gt; 
+                    </echo>
+            <xslt in="${xml.dir}/Original-Dalp.xml" out="${xml.dir}/Dalp.xml" style="${xml.dir}/update-dalp-index.xsl"/>
+            <echo file="${xml.dir}/update-dalp.xsl">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+                        &lt;!DOCTYPE stylesheet []&gt;
+                        &lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"&gt;
+
+                            &lt;xsl:output method="xml" indent="yes"/&gt;
+
+                            &lt;xsl:template match="jar" mode="copy"&gt;
+                                &lt;xsl:copy&gt;
+                                    &lt;xsl:attribute name="href"&gt;http://${ricoh.install-server}:${ricoh.install-server.web-port}${ricoh.install-server.path}/&lt;xsl:value-of select="substring-after(@href,'./')"/&gt;&lt;/xsl:attribute&gt;
+                                    &lt;xsl:apply-templates select="@version|@basepath|@main" mode="copy"/&gt;
+                                &lt;/xsl:copy&gt;
+                            &lt;/xsl:template&gt;
+
+                            &lt;xsl:template match="*|@*" mode="copy"&gt;
+                                &lt;xsl:copy&gt;
+                                    &lt;xsl:apply-templates select="node()|@*" mode="copy"/&gt;
+                                &lt;/xsl:copy&gt;
+                            &lt;/xsl:template&gt;
+
+                            &lt;xsl:template match="*|@*" mode="adjust-hrefs"&gt;
+                                &lt;xsl:copy&gt;
+                                    &lt;xsl:apply-templates select="node()|@*" mode="adjust-hrefs"/&gt;
+                                &lt;/xsl:copy&gt;
+                            &lt;/xsl:template&gt;
+
+                            &lt;xsl:template match="dalp"&gt;
+                                &lt;xsl:copy&gt;
+                                    &lt;xsl:apply-templates select="@*" mode="copy"/&gt;
+                                    &lt;xsl:apply-templates select="node()" mode="copy"/&gt;
+                                &lt;/xsl:copy&gt;
+                            &lt;/xsl:template&gt;
+                        &lt;/xsl:stylesheet&gt;
+			</echo>
+            <xslt in="${dalp.dist}" out="${xml.dir}/Ricoh-test-mod.dalp" style="${xml.dir}/update-dalp.xsl"/>
+            <move file="${xml.dir}/Ricoh-test-mod.dalp" tofile="${xml.dir}/Ricoh-test.dalp"/>
+        </taskIf>
+    </target>
+
+    
+    <target name="init" depends="update-dalp-index">
+
+    </target>
+    
+    <target name="deploy-ricoh" depends="init" unless="no.application.uid"> <!--"-do-init-target, build-target, update-dalp-index, servlet-dist" > -->
+        <echo message="Variable configuration:"/>
+        <echoproperties/> 
+        <property name="xlet.jar" value="${deploy.dir}/${ant.project.name}.jar"/>
+        <copy todir="${target.dir}">
+            <fileset dir="${dist.jar.dir}">
+                <include name="lib"/>
+            </fileset>
+        </copy>
+        <antcall target="sign-jar"/>
+        <!--
+        <taskIf if="ricoh.deployment.deploy.method" value="sdcard">
+            <echo message="Deploying to SD Card @ ${ricoh.sdcard.path}"/>
+            <copy todir="${ricoh.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true">
+                <fileset dir="${target.dir}">
+                    <include name="*.jar"/>
+                    <include name="*.dalp"/>
+                </fileset>
+            </copy>
+        </taskIf>
+        <taskIf if="ricoh.deployment.deploy.method" value="scp">
+            <echo message="Deploying to webserver [${ricoh.scp.install-server}] via SCP as ''${ricoh.scp.install-server.user}''"/>
+            <taskIf unless="ricoh.scp.install-server.ssh-port" value="">
+                <echo message="Connecting to SSH service on port ${ricoh.scp.install-server.ssh-port}"/>
+                <scp todir="${ricoh.scp.install-server.user}@${ricoh.scp.install-server}:${ricoh.scp.install-server.dir}" knownhosts="${ricoh.hosts.file}" password="${ricoh.scp.install-server.password}" port="${ricoh.scp.install-server.ssh-port}">
+                    <fileset dir="${xml.dir}">
+                        <include name="Dalp.xml"/>
+                    </fileset>
+                    <fileset file="${target.dir}/Ricoh-test.dalp"/>
+                    <fileset dir="${target.dir}">
+                        <include name="*.jar"/>
+                    </fileset>
+                </scp>
+            </taskIf>
+            <taskIf if="ricoh.scp.install-server.ssh-port" value="">
+                <echo message="Connecting to SSH service on port 22"/>
+                <scp todir="${ricoh.scp.install-server.user}@${ricoh.scp.install-server}:${ricoh.scp.install-server.dir}" knownhosts="${ricoh.hosts.file}" password="${ricoh.scp.install-server.password}">
+                    <fileset dir="${xml.dir}">
+                        <filename name="Dalp.xml"/>
+                    </fileset>
+                    <fileset file="${target.dir}/Ricoh-test.dalp"/>
+                    <fileset dir="${target.dir}">
+                        <include name="*.jar"/>
+                    </fileset>
+                </scp>
+            </taskIf>
+        </taskIf>
+        <taskIf if="ricoh.deployment.deploy.method" value="samba">
+            <fail unless="jcifs" message="jcifs-1.2.x.jar library is not available. Download library at http://jcifs.samba.org/ and install it into &lt;NetBeans install directory&gt;/cdc2/external/"/>
+            <echo message="Deploying to webserver [${ricoh.smb.install-server}] via Samba as ''${ricoh.smb.install-server.user}''"/>
+            <taskIf unless="${ricoh.smb.install-server.smb-port}" value="">
+                <echo message="Connecting to Samba share on port ${ricoh.smb.install-server.smb-port}"/>
+            </taskIf>
+            <taskIf if="${ricoh.smb.install-server.smb-port}" value="">
+                <echo message="Connecting to Samba share on port 139"/>
+            </taskIf>
+            <taskdef name="smb" classname="ricoh.ant.samba.SambaTask" classpath="${libs.RicohAntTools.classpath}"/>
+            <smb todir="smb://${ricoh.smb.install-server.user}:${ricoh.smb.install-server.password}@${ricoh.smb.install-server}${ricoh.smb.install-server.dir}" destPort="${ricoh.smb.install-server.smb-port}">
+                <fileset dir="${xml.dir}">
+                    <include name="Dalp.xml"/>
+                </fileset>
+                <fileset file="${target.dir}/Ricoh-test.dalp"/>
+                <fileset dir="${target.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+            </smb>
+        </taskIf>
+        <taskIf if="ricoh.deployment.deploy.method" value="httppost">
+            <echo message="Installing directly to MFD:"/>
+            <echo message="Host:        ${ricoh.http.install-server.host}"/>
+            <echo message="Port:        ${ricoh.http.install-server.port}"/>
+            <echo message="Deploy Type: ${ricoh.application.type}, Java ME Ricoh MFD (SDK/J) version ${ricoh.platform.target.version}"/>
+            <taskdef name="post" classname="ricoh.ant.http.PostTask" classpath="${libs.AntContrib.classpath}"/>
+            <condition property="no.ricoh.http.install-server.username" value="true">
+                <or>
+                    <equals arg1="${ricoh.http.install-server.username}" arg2="" trim="true"/>
+                    <contains string="${ricoh.http.install-server.username}" substring="$${ricoh.http.install-server.username"/>
+                </or>
+            </condition>
+            <fail if="no.ricoh.http.install-server.username">Username for HTTP post unspecified.</fail>
+            <property name="ricoh.http.install-server.password" value=""/>
+            <taskIf if="ricoh.application.type" value="xlet">
+                <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/GetInfoServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                    <prop name="Type" value="xlet"/>
+                </post>
+                <echo message="Uploading ${rideploy.zip}..."/>
+                <taskIf if="ricoh.platform.target.version" value="1.4">
+                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/FileUploadServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                        <prop name="Type" value="xlet"/>
+                        <prop name="File" file="${rideploy.zip}"/>
+                    </post>
+                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/EndServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                        <prop name="restart" value="true"/>
+                    </post>
+                    <echo message="Upload complete."/>
+                </taskIf>
+                <taskIf if="ricoh.platform.target.version" value="2.0">
+                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                        <prop name="Type" value="xlet"/>
+                        <prop name="File" file="${rideploy.zip}"/>
+                    </post>
+                    <echo message="Upload complete."/>
+                </taskIf>
+            </taskIf>
+            <taskIf if="ricoh.application.type" value="server">
+                <echo message="Exporting ZIP package to ${ricoh.application.export-path}/${ricoh.application.uid}.zip"/>
+                <copy todir="${ricoh.application.export-path}">
+                    <fileset file="${rideploy.zip}"/>
+                </copy>
+                <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/GetInfoServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                    <prop name="Type" value="server"/>
+                </post>
+                <taskIf if="ricoh.platform.target.version" value="1.4">
+                    <echo message="Uploading ${rideploy.zip}"/>
+                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                        <prop name="File" file="${rideploy.zip}"/>
+                    </post>
+                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/EndServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                        <prop name="restart" value="false"/>
+                    </post>
+                    <echo message="Upload complete."/>
+                </taskIf>
+                <taskIf if="ricoh.platform.target.version" value="2.0">
+                    <echo message="Uploading ${rideploy.zip}"/>
+                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                        <prop name="File" file="${rideploy.zip}"/>
+                    </post>
+                    <echo message="Upload complete."/>
+                </taskIf>
+            </taskIf>
+        </taskIf>
+        -->
+    </target>
+</project>

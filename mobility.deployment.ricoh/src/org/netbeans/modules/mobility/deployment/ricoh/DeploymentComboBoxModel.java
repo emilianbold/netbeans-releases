@@ -1,9 +1,12 @@
 package org.netbeans.modules.mobility.deployment.ricoh;
 
+import java.awt.Component;
 import javax.swing.AbstractListModel;
+import javax.swing.JList;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.openide.util.NbBundle;
 
 
@@ -17,55 +20,82 @@ class DeploymentComboBoxModel extends AbstractListModel implements MutableComboB
     
     static String deployPropStr = SD_CARD_DEPLOY;
     
-    private String[] methodsByDisplayName = 
-    {
-        NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SD_CARD_DEPLOY), NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SMB_DEPLOY), NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SSH_DEPLOY), NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + HTTP_DEPLOY) //NOI18N            
-    };
     
-    private String[] methods = {
-            SD_CARD_DEPLOY,
-            SMB_DEPLOY,
-            SSH_DEPLOY,
-            HTTP_DEPLOY
-        };
-    
-    private String selectedItem;
-
-    DeploymentComboBoxModel(String selectedItem)
+    static class DeployMethodRenderer extends BasicComboBoxRenderer
     {
-        for (int i = 0; i < methods.length; i++) 
+        public Component getListCellRendererComponent(
+                                                 JList list, 
+                                                 Object value,
+                                                 int index, 
+                                                 boolean isSelected, 
+                                                 boolean cellHasFocus)
         {
-            if ((selectedItem != null) && (methods[i].equals(selectedItem)))
-            {
-                this.selectedItem = methodsByDisplayName[i];
-                return;
-            }
-            else
-            {
-                this.selectedItem = methodsByDisplayName[0];            
-            }
+            super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+            setText(findAntItem(value.toString()).getDispName());
+            return this;
         }
     }
     
+    static class DeployType
+    {
+        private String dispName;
+        private String antName;
+        
+        public DeployType(String d, String a)
+        {
+            dispName=d;
+            antName=a;
+        }
+        
+        public String toString()    { return antName; }
+        public String getDispName() { return dispName; }
+    }
+    
+    static private DeployType[] methods = 
+    {
+        new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SD_CARD_DEPLOY), SD_CARD_DEPLOY),
+        new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SMB_DEPLOY), SMB_DEPLOY),
+        new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SSH_DEPLOY), SSH_DEPLOY),
+        new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + HTTP_DEPLOY), HTTP_DEPLOY),
+    };
+    
+    
+    private DeployType selectedItem;
+
+    static DeployType findAntItem(String selectedItem)
+    {
+        DeployType type=methods[0];
+        for (int i = 0; i < methods.length; i++) 
+        {
+            if ((selectedItem != null) && (methods[i].antName.equals(selectedItem)))
+            {
+                type = methods[i];
+                return type;
+            }
+        }
+        return type;
+    }
+    
+    DeploymentComboBoxModel(String selectedItem)
+    {
+        this.selectedItem = findAntItem(selectedItem);
+    }
+    
     public int getSize() {
-        return methodsByDisplayName.length;
+        return methods.length;
     }
 
     public Object getElementAt(int index) {
-        return methodsByDisplayName[index];
+        return methods[index].antName;
     }
 
-    public void setSelectedItem(Object anItem) {
-        selectedItem = (String) anItem;
+    public void setSelectedItem(Object antItem) {
+        selectedItem = findAntItem(antItem.toString());
     }
 
-    public Object getSelectedItem() {
-        return selectedItem;
-    }
-
-    public String getSelectedDeployment(){
-        for (int i = 0; i < methodsByDisplayName.length; i++) {
-            if (methodsByDisplayName[i].equals(selectedItem)){
+    public DeployType getSelectedItem(){
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].equals(selectedItem)){
                 return methods[i];
             }
         }

@@ -36,21 +36,16 @@ public class DeploymentPanels extends javax.swing.JPanel
     private static final int DEFAULT_HTTP_PORT = 80;
     private static final int DEFAULT_OSGI_PORT = 8080;
     
-    static String SSH_DEPLOY     = "scp"; //NOI18N
-    static String SMB_DEPLOY     = "samba"; //NOI18N
-    static String SD_CARD_DEPLOY = "sdcard"; //NOI18N
-    static String HTTP_DEPLOY    = "httppost"; //NOI18N
-    
     final private ActionListener fieldListener;
     
     /** Creates new form DeploymentPanels */
     DeploymentPanels()
     {
         initComponents();
-        add(scpConfigPanel,SSH_DEPLOY);
-        add(sambaConfigPanel,SMB_DEPLOY);
-        add(sdCardConfigPanel,SD_CARD_DEPLOY);
-        add(httpPostConfigPanel,HTTP_DEPLOY);
+        add(scpConfigPanel,DeploymentComboBoxModel.SSH_DEPLOY);
+        add(sambaConfigPanel,DeploymentComboBoxModel.SMB_DEPLOY);
+        add(sdCardConfigPanel,DeploymentComboBoxModel.SD_CARD_DEPLOY);
+        add(httpPostConfigPanel,DeploymentComboBoxModel.HTTP_DEPLOY);
         
         //input verification
         PortVerifier verifier = new PortVerifier();

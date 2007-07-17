@@ -198,6 +198,7 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
 
         deployMethodComboBox.setModel(new DeploymentComboBoxModel(DeploymentComboBoxModel.deployPropStr));
         deployMethodComboBox.setName(RicohDeploymentProperties.PROP_RICOH_DEPLOY_METHOD);
+        deployMethodComboBox.setRenderer(new DeploymentComboBoxModel.DeployMethodRenderer());
         deployMethodComboBox.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -343,7 +344,7 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
 
     private void updateDeployment()
     {
-        String deployment = ((DeploymentComboBoxModel)deployMethodComboBox.getModel()).getSelectedDeployment();
+        String deployment = ((DeploymentComboBoxModel)deployMethodComboBox.getModel()).getSelectedItem().toString();
         
         JPanel panel=(JPanel)mainConfigPanel.getComponent(0);        
         ((CardLayout)panel.getLayout()).show(panel,deployment);            
