@@ -129,9 +129,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
-    /**
-     */
+       
     public void testFieldGroup3() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -168,6 +166,94 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 VariableTree vt = (VariableTree) clazz.getMembers().get(2);
                 workingCopy.rewrite(vt, make.setLabel(vt, "what"));
+            }            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFieldGroup4() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    int a, becko = 10, c = 25;\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    int acko, becko = 10, c = 25;\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree vt = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(vt, make.setLabel(vt, "acko"));
+            }            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFieldGroup5() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    int a, becko = 10, c = 25;\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    int a, becko = 10, cecko = 25;\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree vt = (VariableTree) clazz.getMembers().get(3);
+                workingCopy.rewrite(vt, make.setLabel(vt, "cecko"));
             }            
         };
         testSource.runModificationTask(task).commit();
