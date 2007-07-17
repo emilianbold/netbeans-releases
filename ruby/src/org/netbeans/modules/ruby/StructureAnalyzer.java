@@ -776,7 +776,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         public long getPosition() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return node.getNode().getPosition().getStartOffset();
         }
 
         @Override
