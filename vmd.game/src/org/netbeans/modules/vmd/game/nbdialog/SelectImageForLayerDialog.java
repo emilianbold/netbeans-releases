@@ -266,16 +266,25 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 		}
 		
 		private void handleImageSelectionChange() {
-			loadImagePreview();
-			Image img = SelectImageForLayerDialog.this.imagePreview.getImage();
-			FileObject entry = (FileObject) listImageFileName.getSelectedValue();
-			imgFile = entry;
-			labelError.setText(null);
-			setOKButtonEnabled(true);
+			try {
+				loadImagePreview();
+				labelError.setText(null);
+				setOKButtonEnabled(true);
+				FileObject entry = (FileObject) listImageFileName.getSelectedValue();
+				imgFile = entry;
+			} catch (MalformedURLException e) {
+				setOKButtonEnabled(false);
+				labelError.setText("Invalid image location.");
+				e.printStackTrace();
+			} catch (IllegalArgumentException iae) {
+				setOKButtonEnabled(false);
+				labelError.setText("Image file contents could not be loaded, image may be corrupt.");
+				iae.printStackTrace();
+			}
 		}
 	}
 	
-	private void loadImagePreview() {
+	private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
 		if (DEBUG) System.out.println("load image preview");
 		
 		FileObject entry = (FileObject) this.listImageFileName.getSelectedValue();
@@ -286,13 +295,11 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		assert(imageURL != null);
-		try {
-			this.imagePreview.setImageURL(imageURL);
-			this.repaint();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
+		
+		this.imagePreview.setImageURL(imageURL);
+		this.repaint();
 	}
 	
 	public FileObject getValue() {

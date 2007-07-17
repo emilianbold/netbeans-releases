@@ -43,7 +43,7 @@ public abstract class AbstractImagePreviewComponent extends JComponent {
 	
 	abstract public int getTileHeight();
 	
-	abstract public void setImageURL(URL imgUrl) throws MalformedURLException;
+	abstract public void setImageURL(URL imgUrl) throws MalformedURLException, IllegalArgumentException;
 	
 	abstract public URL getImageURL();
 	

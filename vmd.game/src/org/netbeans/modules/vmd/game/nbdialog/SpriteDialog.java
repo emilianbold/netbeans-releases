@@ -387,10 +387,15 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	private void setPreviewPartial() {
 		if (this.imagePreview != null) {
 			try {
+				System.out.println("setPreviewPartial");
 				this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
 			} catch (MalformedURLException e) {
 				this.labelError.setText("Invalid image location.");
 				e.printStackTrace();
+				return;
+			} catch (IllegalArgumentException iae) {
+				this.labelError.setText("Image file contents could not be loaded, image may be corrupt.");
+				iae.printStackTrace();
 				return;
 			}
 			this.partialImagePreview.setTileWidth(this.imagePreview.getTileWidth());
@@ -406,12 +411,17 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	private void setPreviewFull() {
 		if (this.imagePreview != null) {
 			try {
+				System.out.println("setPreviewFull");
 				this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
 			} catch (MalformedURLException e) {
 				this.labelError.setText("Invalid image location.");
 				e.printStackTrace();
 				return;
-			} 
+			} catch (IllegalArgumentException iae) {
+				this.labelError.setText("Image file contents could not be loaded, image may be corrupt.");
+				iae.printStackTrace();
+				return;
+			}
 			this.fullImagePreview.setTileWidth(this.imagePreview.getTileWidth());
 			this.fullImagePreview.setTileHeight(this.imagePreview.getTileHeight());
 		}
@@ -562,8 +572,9 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	private class ImageListListener implements ListSelectionListener {
 		
 		public void valueChanged(ListSelectionEvent e) {
-			if (e.getValueIsAdjusting())
+			if (e.getValueIsAdjusting()) {
 				return;
+			}
 			this.handleImageSelectionChange();
 		}
 		
@@ -574,7 +585,16 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			String errMsg = SpriteDialog.this.getFieldImageFileNameError();
 			if (errMsg == null) {
 				errMsg = SpriteDialog.this.getFieldLayerNameError();
-				SpriteDialog.this.loadImagePreview();
+				try {
+					SpriteDialog.this.loadImagePreview();
+				} catch (MalformedURLException e) {
+					errMsg = "Invalid image location.";
+					e.printStackTrace();
+				} catch (IllegalArgumentException iae) {
+					errMsg = "Image file contents could not be loaded, image may be corrupt.";
+					iae.printStackTrace();
+				}					
+					
 			}
 			
 			if (errMsg != null) {
@@ -588,7 +608,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		}
 	}
 	
-	private void loadImagePreview() {
+	private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
 		if (DEBUG) System.out.println("load image preview");
 		
 		Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
@@ -599,44 +619,41 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		assert(imageURL != null);
-		try {
-			this.sliderWidth.removeChangeListener(this.sliderListener);
-			this.sliderHeight.removeChangeListener(this.sliderListener);
-			
-			this.imagePreview.setImageURL(imageURL);
-			
-			this.tileWidths = this.imagePreview.getValidTileWidths();
-			this.tileHeigths = this.imagePreview.getValidTileHeights();
-			
-			DefaultBoundedRangeModel modelWidth = new DefaultBoundedRangeModel(tileWidths.size() -1, 0, 0, tileWidths.size() -1);
-			DefaultBoundedRangeModel modelHeight = new DefaultBoundedRangeModel(tileHeigths.size() -1, 0, 0, tileHeigths.size() -1);
-			this.sliderWidth.setModel(modelWidth);
-			this.sliderHeight.setModel(modelHeight);
-			
-			this.sliderWidth.setValue(this.tileWidths.indexOf(getNearestValue(DEFAULT_TILE_WIDTH, tileWidths)));
-			this.sliderHeight.setValue(this.tileHeigths.indexOf(getNearestValue(DEFAULT_TILE_HEIGHT, tileHeigths)));
-			
-			
-			//set labels
-			int tileWidth = this.tileWidths.get(((Integer) this.sliderWidth.getValue()).intValue());
-			int tileHeight = this.tileHeigths.get(((Integer) this.sliderHeight.getValue()).intValue());
-			
-			this.labelTileHeight.setText("Tile height: " + tileHeight + " px");
-			this.labelTileWidth.setText("Tile width: " + tileWidth + " px");
-			
-			this.imagePreview.setTileWidth(tileWidth);
-			this.imagePreview.setTileHeight(tileHeight);
 
-			this.repaint();
-			
-			this.sliderWidth.addChangeListener(sliderListener);
-			this.sliderHeight.addChangeListener(sliderListener);
-			
+		assert(imageURL != null);
+		
+		this.sliderWidth.removeChangeListener(this.sliderListener);
+		this.sliderHeight.removeChangeListener(this.sliderListener);
+
+		this.imagePreview.setImageURL(imageURL);
+
+		this.tileWidths = this.imagePreview.getValidTileWidths();
+		this.tileHeigths = this.imagePreview.getValidTileHeights();
+
+		DefaultBoundedRangeModel modelWidth = new DefaultBoundedRangeModel(tileWidths.size() -1, 0, 0, tileWidths.size() -1);
+		DefaultBoundedRangeModel modelHeight = new DefaultBoundedRangeModel(tileHeigths.size() -1, 0, 0, tileHeigths.size() -1);
+		this.sliderWidth.setModel(modelWidth);
+		this.sliderHeight.setModel(modelHeight);
+
+		this.sliderWidth.setValue(this.tileWidths.indexOf(getNearestValue(DEFAULT_TILE_WIDTH, tileWidths)));
+		this.sliderHeight.setValue(this.tileHeigths.indexOf(getNearestValue(DEFAULT_TILE_HEIGHT, tileHeigths)));
+
+
+		//set labels
+		int tileWidth = this.tileWidths.get(((Integer) this.sliderWidth.getValue()).intValue());
+		int tileHeight = this.tileHeigths.get(((Integer) this.sliderHeight.getValue()).intValue());
+
+		this.labelTileHeight.setText("Tile height: " + tileHeight + " px");
+		this.labelTileWidth.setText("Tile width: " + tileWidth + " px");
+
+		this.imagePreview.setTileWidth(tileWidth);
+		this.imagePreview.setTileHeight(tileHeight);
+
+		this.repaint();
+
+		this.sliderWidth.addChangeListener(sliderListener);
+		this.sliderHeight.addChangeListener(sliderListener);
 				
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	private static int getNearestValue(int mark, List<Integer> values) {

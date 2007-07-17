@@ -39,9 +39,12 @@ public class ImageUtils {
 		gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 	
-	public static BufferedImage loadImage(URL imageURL) {
+	public static BufferedImage loadImage(URL imageURL) throws IllegalArgumentException {
 		try {
 			BufferedImage im = ImageIO.read(imageURL);
+			if (im == null) {
+				return null;
+			}
 			int transparency = im.getColorModel().getTransparency();
 			BufferedImage copy = gc.createCompatibleImage(im.getWidth(), im.getHeight(), transparency);
 			Graphics2D g2d = copy.createGraphics();
