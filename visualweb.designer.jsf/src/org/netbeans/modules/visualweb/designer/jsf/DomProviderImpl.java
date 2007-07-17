@@ -885,7 +885,13 @@ class DomProviderImpl implements DomProvider {
 
     public Element getComponentRootElementEquivalentTo(Element oldComponentRootElement) {
         MarkupDesignBean oldMarkupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(oldComponentRootElement);
+        if (oldMarkupDesignBean == null) {
+            return null;
+        }
         MarkupDesignBean newMarkupDesignBean = getMarkupDesignBeanEquivalentTo(oldMarkupDesignBean);
+        if (oldMarkupDesignBean == newMarkupDesignBean) {
+            return oldComponentRootElement;
+        }
         return getComponentRootElementForMarkupDesignBean(newMarkupDesignBean);
     }
     
