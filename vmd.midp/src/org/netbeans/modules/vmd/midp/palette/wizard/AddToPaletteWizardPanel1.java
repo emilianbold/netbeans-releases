@@ -28,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -85,8 +84,6 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
         getComponent();
         Project project = component.getActiveProject ();
         ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_PROJECT, project);
-        Map<String, ComponentInstaller.Item> items = ComponentInstaller.search (project);
-        ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_ITEMS, items);
     }
 
 }
