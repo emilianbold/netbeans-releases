@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import com.sun.jdo.api.persistence.mapping.ejb.EJBInfoHelper;
 import java.beans.PropertyVetoException;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -57,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
@@ -67,6 +69,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
+import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
@@ -372,215 +375,215 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         });
     }
 
-    public void ensureResourceDefined(StandardDDImpl ddBean) {
-        // Determine type of ddbean we have so we know what resource to create.
-        String xpath = ddBean.getXpath();
-        int finalSlashIndex = xpath.lastIndexOf('/') + 1;
-        String type = (finalSlashIndex < xpath.length()) ? xpath.substring(finalSlashIndex) : ""; //NOI18N
-        if ("message-driven".equals(type)) { //NOI18N
-            // Find the DConfigBean for this ddBean.  This is actually quite complicated since
-            // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
-            // by the plugin.
-            BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
-
-            if (theEjbDCB == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
-                return;
-            }
-
-            ResourceConfiguratorInterface rci = getResourceConfigurator();
-            String jndiName = theEjbDCB.getJndiName(); // correct for 2.1.  For 3.0, if null, have to ask DD for default.
-            if (isEJB3()) {
-                String ejbName = getField(ddBean, "ejb-name");
-
-                if (!Utils.notEmpty(jndiName)) {
-                    // If the user has not explicitly set a jndi name in the server specific descriptor
-                    // then the jndi name is specified by the mapped-name field if set, otherwise, the ejb-name.
-                    jndiName = getField(ddBean, "mapped-name", ejbName); //NOI18N
-                }
-
-                if (!rci.isJMSResourceDefined(jndiName, resourceDir)) {
-                    // attempt to get activation-config property "destinationType" -- if present, must be one of
-                    // javax.jms.Queue or javax.jms.Topic, otherwise, default to Queue.
-                    String destinationType = "javax.jms.Queue"; // NOI18N
-                    try {
-                        DDBean[] activationNameFields = ddBean.getChildBean("activation-config/activation-config-property/activation-config-property-name");
-                        for (int i = 0; i < activationNameFields.length; i++) {
-                            if ("destinationType".equals(activationNameFields[i].getText())) {
-                                DDBean[] activationValueFields = activationNameFields[i].getChildBean("../activation-config-property-value");
-                                if (activationValueFields.length > 0) {
-                                    String value = activationValueFields[0].getText();
-                                    if (Utils.notEmpty(value)) {
-                                        destinationType = value;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception ex) {
-                        // It's possible that an exception here could normal.  Log for now and suppress
-                        // later if I confirm that it is normal.
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-
-                    // Check message destination but default to the above data if not specified.
-                    String messageDestinationName = getField(ddBean, "message-destination-link", ejbName); // NOI18N
-                    String messageDestinationType = getField(ddBean, "message-destination-type", destinationType); // NOI18N
-                    if (resourceDir == null) {
-                        // Unable to create JMS resource for message driven bean.
-                        postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoJMSResource", theEjbDCB.getEjbName())); // NOI18N
-                        // fall through and continue creating the remaining configuration elements though.
-                    } else {
-                        rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
-                    }
-                }
-            } else {
-                if (!rci.isJMSResourceDefined(jndiName, resourceDir)) {
-                    String ejbName = getField(ddBean, "ejb-name"); //NOI18N
-                    String messageDestinationName = getField(ddBean, "message-destination-link"); // NOI18N
-                    String messageDestinationType = getField(ddBean, "message-destination-type"); // NOI18N
-                    if (resourceDir == null) {
-                        // Unable to create JMS resource for message driven bean.
-                        postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoJMSResource", theEjbDCB.getEjbName())); // NOI18N
-                        // fall through and continue creating the remaining configuration elements though.
-                    } else {
-                        rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
-                    }
-
-                    MdbConnectionFactory mcf = getStorageFactory().createMdbConnectionFactory();
-                    String connectionFactoryJndiName = "jms/" + messageDestinationName + "Factory"; //NOI18N
-                    mcf.setJndiName(connectionFactoryJndiName);
-                    try {
-                        ((MDEjb) theEjbDCB).setMdbConnectionFactory(mcf);
-                    } catch (PropertyVetoException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-
-                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination md = getStorageFactory().createMessageDestination();
-                    md.setMessageDestinationName(messageDestinationName);
-                    md.setJndiName(theEjbDCB.getJndiName());
-                    EjbJarRoot root = (EjbJarRoot) theEjbDCB.getParent();
-                    try {
-                        root.addMessageDestination(md);
-                    } catch (PropertyVetoException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                }
-            }
-        } else if ("resource-ref".equals(type)) { //NOI18N
-            if (ddBean instanceof StandardDDImpl) {
-                Object o = getDCBCache().get(ddBean);
-                if (o instanceof ResourceRef) {
-                    ResourceRef theResRefDCB = (ResourceRef) o;
-                    final String refName = getField(ddBean, "res-ref-name"); //NOI18N
-                    final String description = getField(ddBean, "description"); //NOI18N
-                    final File targetDir = resourceDir;
-
-                    // Only execute resource autocreation code if the description field has contents
-                    // (Note the contents might still fail to parse, but the parser is not accessible
-                    // from here in the current code base.)
-                    if (Utils.notEmpty(description)) {
-                        if (resourceDir == null) {
-                            // Unable to create JDBC data source for resource ref.
-                            postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName())); // NOI18N
-                            return;
-                        }
-
-                        /** !PW This mechanism is from the original incarnation of this code from
-                         *  appsrv plugin module in NB 4.1.  There should be a more stable
-                         *  way to solve any such timing issue.  This method is likelky
-                         *  unstable.
-                         */
-                        /* Creating a RequestProcessor to create resources seperately to
-                         * prevent NPE while initial loading of IDE because of call to
-                         * access DatabaseRuntimeManager.getConnection(). This NPE
-                         * causes failure while loading WebServices Registry in Runtime Tab
-                         */
-                        resourceProcessor.post(new Runnable() {
-
-                            public void run() {
-                                ResourceConfiguratorInterface rci = getResourceConfigurator();
-                                if (rci != null) {
-                                    rci.createJDBCDataSourceFromRef(refName, description, targetDir);
-                                }
-                            }
-                        }, 500);
-                    }
-                } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No ResourceRef DConfigBean found bound to resource-ref DDBean: " + ddBean); // NOI18N
-                }
-            } else {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DDBean from wrong tree in ensureResourceDefined: " + ddBean); // NOI18N
-            }
-        } else if ("entity".equals(type)) { //NOI18N
-            ensureResourceDefinedForEjb(ddBean, null);
-        }
-    }
-
-    public void ensureResourceDefinedForEjb(StandardDDImpl ddBean, String jndiName) {
-        // Find the DConfigBean for this ddBean.  This is actually quite complicated since
-        // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
-        // by the plugin.
-        BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
-
-        if (theEjbDCB == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean)); // NOI18N
-            return;
-        }
-
-        if (theEjbDCB instanceof CmpEntityEjb) {
-            ResourceConfiguratorInterface rci = getResourceConfigurator();
-            CmpEntityEjb cmpEjbDCB = (CmpEntityEjb) theEjbDCB;
-
-            if (resourceDir == null) {
-                // Unable to create JDBC data source for CMP.
-                // JNDI name of CMP resource field not set.
-                postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoCmpOrJdbcDataSource", cmpEjbDCB.getEjbName())); // NOI18N
-                return;
-            }
-
-            if (jndiName == null) {
-                String description = getField(ddBean, "description"); //NOI18N
-                jndiName = rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
-            }
-
-            // Set the CmpResource jndi-name if not already defined.
-            if (jndiName != null) {
-                Base parentDCB = cmpEjbDCB.getParent();
-                if (parentDCB instanceof EjbJarRoot) {
-                    EjbJarRoot ejbJarRoot = (EjbJarRoot) parentDCB;
-                    CmpResource cmpResource = null;
-                    if (ejbJarRoot.getCmpResource() == null) {
-                        cmpResource = getStorageFactory().createCmpResource();
-                    } else {
-                        cmpResource = (CmpResource) ejbJarRoot.getCmpResource().clone();
-                    }
-                    cmpResource.setJndiName(jndiName);
-                    try {
-                        ejbJarRoot.setCmpResource(cmpResource);
-                    } catch (PropertyVetoException ex) {
-                        // Should never happen
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                } else {
-                    // Should never happen
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("CmpEntityBean DConfigBean parent is of wrong type: " + parentDCB)); // NOI18N
-                }
-            }
-        }
-    }
-
-    private boolean isEJB3() {
-        boolean result = false;
-
-        String j2eeModuleVersion = module.getModuleVersion(); // dObj.getModuleDTDVersion();
-        EjbJarVersion ejbJarVersion = EjbJarVersion.getEjbJarVersion(j2eeModuleVersion);
-        if (EjbJarVersion.EJBJAR_3_0.compareTo(ejbJarVersion) <= 0) {
-            result = true;
-        }
-
-        return result;
-    }
+//    public void ensureResourceDefined(StandardDDImpl ddBean) {
+//        // Determine type of ddbean we have so we know what resource to create.
+//        String xpath = ddBean.getXpath();
+//        int finalSlashIndex = xpath.lastIndexOf('/') + 1;
+//        String type = (finalSlashIndex < xpath.length()) ? xpath.substring(finalSlashIndex) : ""; //NOI18N
+//        if ("message-driven".equals(type)) { //NOI18N
+//            // Find the DConfigBean for this ddBean.  This is actually quite complicated since
+//            // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
+//            // by the plugin.
+//            BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
+//
+//            if (theEjbDCB == null) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
+//                return;
+//            }
+//
+//            ResourceConfiguratorInterface rci = getResourceConfigurator();
+//            String jndiName = theEjbDCB.getJndiName(); // correct for 2.1.  For 3.0, if null, have to ask DD for default.
+//            if (isEJB3()) {
+//                String ejbName = getField(ddBean, "ejb-name");
+//
+//                if (!Utils.notEmpty(jndiName)) {
+//                    // If the user has not explicitly set a jndi name in the server specific descriptor
+//                    // then the jndi name is specified by the mapped-name field if set, otherwise, the ejb-name.
+//                    jndiName = getField(ddBean, "mapped-name", ejbName); //NOI18N
+//                }
+//
+//                if (!rci.isJMSResourceDefined(jndiName, resourceDir)) {
+//                    // attempt to get activation-config property "destinationType" -- if present, must be one of
+//                    // javax.jms.Queue or javax.jms.Topic, otherwise, default to Queue.
+//                    String destinationType = "javax.jms.Queue"; // NOI18N
+//                    try {
+//                        DDBean[] activationNameFields = ddBean.getChildBean("activation-config/activation-config-property/activation-config-property-name");
+//                        for (int i = 0; i < activationNameFields.length; i++) {
+//                            if ("destinationType".equals(activationNameFields[i].getText())) {
+//                                DDBean[] activationValueFields = activationNameFields[i].getChildBean("../activation-config-property-value");
+//                                if (activationValueFields.length > 0) {
+//                                    String value = activationValueFields[0].getText();
+//                                    if (Utils.notEmpty(value)) {
+//                                        destinationType = value;
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    } catch (Exception ex) {
+//                        // It's possible that an exception here could normal.  Log for now and suppress
+//                        // later if I confirm that it is normal.
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                    }
+//
+//                    // Check message destination but default to the above data if not specified.
+//                    String messageDestinationName = getField(ddBean, "message-destination-link", ejbName); // NOI18N
+//                    String messageDestinationType = getField(ddBean, "message-destination-type", destinationType); // NOI18N
+//                    if (resourceDir == null) {
+//                        // Unable to create JMS resource for message driven bean.
+//                        postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoJMSResource", theEjbDCB.getEjbName())); // NOI18N
+//                        // fall through and continue creating the remaining configuration elements though.
+//                    } else {
+//                        rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
+//                    }
+//                }
+//            } else {
+//                if (!rci.isJMSResourceDefined(jndiName, resourceDir)) {
+//                    String ejbName = getField(ddBean, "ejb-name"); //NOI18N
+//                    String messageDestinationName = getField(ddBean, "message-destination-link"); // NOI18N
+//                    String messageDestinationType = getField(ddBean, "message-destination-type"); // NOI18N
+//                    if (resourceDir == null) {
+//                        // Unable to create JMS resource for message driven bean.
+//                        postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoJMSResource", theEjbDCB.getEjbName())); // NOI18N
+//                        // fall through and continue creating the remaining configuration elements though.
+//                    } else {
+//                        rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
+//                    }
+//
+//                    MdbConnectionFactory mcf = getStorageFactory().createMdbConnectionFactory();
+//                    String connectionFactoryJndiName = "jms/" + messageDestinationName + "Factory"; //NOI18N
+//                    mcf.setJndiName(connectionFactoryJndiName);
+//                    try {
+//                        ((MDEjb) theEjbDCB).setMdbConnectionFactory(mcf);
+//                    } catch (PropertyVetoException ex) {
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                    }
+//
+//                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination md = getStorageFactory().createMessageDestination();
+//                    md.setMessageDestinationName(messageDestinationName);
+//                    md.setJndiName(theEjbDCB.getJndiName());
+//                    EjbJarRoot root = (EjbJarRoot) theEjbDCB.getParent();
+//                    try {
+//                        root.addMessageDestination(md);
+//                    } catch (PropertyVetoException ex) {
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                    }
+//                }
+//            }
+//        } else if ("resource-ref".equals(type)) { //NOI18N
+//            if (ddBean instanceof StandardDDImpl) {
+//                Object o = getDCBCache().get(ddBean);
+//                if (o instanceof ResourceRef) {
+//                    ResourceRef theResRefDCB = (ResourceRef) o;
+//                    final String refName = getField(ddBean, "res-ref-name"); //NOI18N
+//                    final String description = getField(ddBean, "description"); //NOI18N
+//                    final File targetDir = resourceDir;
+//
+//                    // Only execute resource autocreation code if the description field has contents
+//                    // (Note the contents might still fail to parse, but the parser is not accessible
+//                    // from here in the current code base.)
+//                    if (Utils.notEmpty(description)) {
+//                        if (resourceDir == null) {
+//                            // Unable to create JDBC data source for resource ref.
+//                            postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName())); // NOI18N
+//                            return;
+//                        }
+//
+//                        /** !PW This mechanism is from the original incarnation of this code from
+//                         *  appsrv plugin module in NB 4.1.  There should be a more stable
+//                         *  way to solve any such timing issue.  This method is likelky
+//                         *  unstable.
+//                         */
+//                        /* Creating a RequestProcessor to create resources seperately to
+//                         * prevent NPE while initial loading of IDE because of call to
+//                         * access DatabaseRuntimeManager.getConnection(). This NPE
+//                         * causes failure while loading WebServices Registry in Runtime Tab
+//                         */
+//                        resourceProcessor.post(new Runnable() {
+//
+//                            public void run() {
+//                                ResourceConfiguratorInterface rci = getResourceConfigurator();
+//                                if (rci != null) {
+//                                    rci.createJDBCDataSourceFromRef(refName, description, targetDir);
+//                                }
+//                            }
+//                        }, 500);
+//                    }
+//                } else {
+//                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No ResourceRef DConfigBean found bound to resource-ref DDBean: " + ddBean); // NOI18N
+//                }
+//            } else {
+//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DDBean from wrong tree in ensureResourceDefined: " + ddBean); // NOI18N
+//            }
+//        } else if ("entity".equals(type)) { //NOI18N
+//            ensureResourceDefinedForEjb(ddBean, null);
+//        }
+//    }
+//
+//    public void ensureResourceDefinedForEjb(StandardDDImpl ddBean, String jndiName) {
+//        // Find the DConfigBean for this ddBean.  This is actually quite complicated since
+//        // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
+//        // by the plugin.
+//        BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
+//
+//        if (theEjbDCB == null) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean)); // NOI18N
+//            return;
+//        }
+//
+//        if (theEjbDCB instanceof CmpEntityEjb) {
+//            ResourceConfiguratorInterface rci = getResourceConfigurator();
+//            CmpEntityEjb cmpEjbDCB = (CmpEntityEjb) theEjbDCB;
+//
+//            if (resourceDir == null) {
+//                // Unable to create JDBC data source for CMP.
+//                // JNDI name of CMP resource field not set.
+//                postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_NoCmpOrJdbcDataSource", cmpEjbDCB.getEjbName())); // NOI18N
+//                return;
+//            }
+//
+//            if (jndiName == null) {
+//                String description = getField(ddBean, "description"); //NOI18N
+//                jndiName = rci.createJDBCDataSourceForCmp(cmpEjbDCB.getEjbName(), description, resourceDir);
+//            }
+//
+//            // Set the CmpResource jndi-name if not already defined.
+//            if (jndiName != null) {
+//                Base parentDCB = cmpEjbDCB.getParent();
+//                if (parentDCB instanceof EjbJarRoot) {
+//                    EjbJarRoot ejbJarRoot = (EjbJarRoot) parentDCB;
+//                    CmpResource cmpResource = null;
+//                    if (ejbJarRoot.getCmpResource() == null) {
+//                        cmpResource = getStorageFactory().createCmpResource();
+//                    } else {
+//                        cmpResource = (CmpResource) ejbJarRoot.getCmpResource().clone();
+//                    }
+//                    cmpResource.setJndiName(jndiName);
+//                    try {
+//                        ejbJarRoot.setCmpResource(cmpResource);
+//                    } catch (PropertyVetoException ex) {
+//                        // Should never happen
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                    }
+//                } else {
+//                    // Should never happen
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("CmpEntityBean DConfigBean parent is of wrong type: " + parentDCB)); // NOI18N
+//                }
+//            }
+//        }
+//    }
+//
+//    private boolean isEJB3() {
+//        boolean result = false;
+//
+//        String j2eeModuleVersion = module.getModuleVersion(); // dObj.getModuleDTDVersion();
+//        EjbJarVersion ejbJarVersion = EjbJarVersion.getEjbJarVersion(j2eeModuleVersion);
+//        if (EjbJarVersion.EJBJAR_3_0.compareTo(ejbJarVersion) <= 0) {
+//            result = true;
+//        }
+//
+//        return result;
+//    }
 
     private ASDDVersion computeMinASVersion(ModuleType moduleType, String j2eeModuleVersion) {
         ASDDVersion result = ASDDVersion.SUN_APPSERVER_7_0;
@@ -708,62 +711,62 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return configFiles;
     }
 
-    private BaseEjb getEjbDConfigBean(DDBean ejbDDBean) {
-        BaseEjb theEjbDCB = null;
-
-        try {
-            DDBean realEjbDDBean = getStorage().normalizeEjbDDBean(ejbDDBean);
-            DDBeanRoot ddBeanRoot = realEjbDDBean.getRoot();
-            DConfigBeanRoot dcbRoot = getDConfigBeanRoot(ddBeanRoot);
-            DConfigBean dcb = dcbRoot.getDConfigBean(realEjbDDBean);
-            if (dcb instanceof BaseEjb) {
-                theEjbDCB = (BaseEjb) dcb;
-            }
-        } catch (ConfigurationException ex) {
-            // I don't expect this exception to be thrown, but it might be.  If it is,
-            // it's probably a programmer error somewhere.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (NullPointerException ex) {
-            // If one of above values ends up being null, we definitely want to
-            // log that it happened.  But for reporting purposes, we'll return
-            // null and let the caller's IllegalStateException take precedence.
-            // This would probably also be caused only by programmer error.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return theEjbDCB;
-    }
-
-    /** Extract value of singular child field from a DDBean
-     */
-    private String getField(DDBean bean, String fieldId) {
-        String result = null;
-
-        try {
-            DDBean[] childFields = bean.getChildBean(fieldId);
-            if (childFields.length > 0) {
-                result = childFields[0].getText();
-            }
-        } catch (Exception ex) {
-            // If our code is written correctly, exceptions here should not happen.
-            // However, if the fieldId does not exist for this DD, or a few other
-            // types of programming errors, we could get a runtime exception here.
-            // This is here for runtime safety and to trap and log bugs.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return result;
-    }
-
-    private String getField(DDBean bean, String fieldId, String defaultValue) {
-        String result = getField(bean, fieldId);
-
-        if (!Utils.notEmpty(result)) {
-            result = defaultValue;
-        }
-
-        return result;
-    }
+//    private BaseEjb getEjbDConfigBean(DDBean ejbDDBean) {
+//        BaseEjb theEjbDCB = null;
+//
+//        try {
+//            DDBean realEjbDDBean = getStorage().normalizeEjbDDBean(ejbDDBean);
+//            DDBeanRoot ddBeanRoot = realEjbDDBean.getRoot();
+//            DConfigBeanRoot dcbRoot = getDConfigBeanRoot(ddBeanRoot);
+//            DConfigBean dcb = dcbRoot.getDConfigBean(realEjbDDBean);
+//            if (dcb instanceof BaseEjb) {
+//                theEjbDCB = (BaseEjb) dcb;
+//            }
+//        } catch (ConfigurationException ex) {
+//            // I don't expect this exception to be thrown, but it might be.  If it is,
+//            // it's probably a programmer error somewhere.
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        } catch (NullPointerException ex) {
+//            // If one of above values ends up being null, we definitely want to
+//            // log that it happened.  But for reporting purposes, we'll return
+//            // null and let the caller's IllegalStateException take precedence.
+//            // This would probably also be caused only by programmer error.
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        }
+//
+//        return theEjbDCB;
+//    }
+//
+//    /** Extract value of singular child field from a DDBean
+//     */
+//    private String getField(DDBean bean, String fieldId) {
+//        String result = null;
+//
+//        try {
+//            DDBean[] childFields = bean.getChildBean(fieldId);
+//            if (childFields.length > 0) {
+//                result = childFields[0].getText();
+//            }
+//        } catch (Exception ex) {
+//            // If our code is written correctly, exceptions here should not happen.
+//            // However, if the fieldId does not exist for this DD, or a few other
+//            // types of programming errors, we could get a runtime exception here.
+//            // This is here for runtime safety and to trap and log bugs.
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        }
+//
+//        return result;
+//    }
+//
+//    private String getField(DDBean bean, String fieldId, String defaultValue) {
+//        String result = getField(bean, fieldId);
+//
+//        if (!Utils.notEmpty(result)) {
+//            result = defaultValue;
+//        }
+//
+//        return result;
+//    }
 
     private ResourceConfiguratorInterface getResourceConfigurator() {
         ResourceConfiguratorInterface rci = null;
@@ -2387,7 +2390,39 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
             throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
         }
-    }    
+    }
+    
+    public void mapCmpBeans(OriginalCMPMapping [] mapping) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        if(!J2eeModule.EJB.equals(module.getModuleType())) {
+            return; // wrong module type.
+        }
+        
+        try {
+            FileObject sunCmpDDFO = getSunDD(configFiles[1], true);
+            if (sunCmpDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(sunCmpDDFO);
+                if (sunDDRoot instanceof SunCmpMappings) {
+                    SunCmpMappings sunCmpMappings = (SunCmpMappings) sunDDRoot;
+
+                    // EjbJarRoot.mapCmpBeans() body moves to here, integrating with the graph above.
+
+                    // if changes, save file.
+                    sunCmpMappings.write(sunCmpDDFO);
+                }
+            }
+        } catch (IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionMapCmpBeans", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch (Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionMapCmpBeans", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
+    }
 
     // Could have beanProp & nameProp in db indexed by Class<T>
     private <T extends CommonDDBean> T findNamedBean(CommonDDBean parentDD, String referenceName, /*Class<T> c,*/ String beanProp, String nameProp) {
