@@ -311,7 +311,6 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     
     private boolean hasPageContentModelBeenChecked = false;
     public Collection<Pin> getPinNodes() {
-        System.out.println("Get Pin Nodes.");
         if( !hasPageContentModelBeenChecked ){
             updateContentModel();
             initListeners();
