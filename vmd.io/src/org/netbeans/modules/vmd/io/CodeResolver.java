@@ -18,16 +18,15 @@
  */
 package org.netbeans.modules.vmd.io;
 
+import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.modules.vmd.api.io.*;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.Fold;
-import org.openide.util.Lookup;
-import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -181,15 +180,16 @@ public class CodeResolver implements DesignDocumentAwareness {
 
     private JEditorPane findEditorPane () {
         if (! SwingUtilities.isEventDispatchThread ()) {
-            Debug.warning ("Fold states cannot be restored since the code is invoke outside of AWT-thread"); // NOI18N
+//            Debug.warning ("Fold states cannot be restored since the code is invoke outside of AWT-thread"); // NOI18N
             return null;
         }
         JEditorPane[] panes = context.getCloneableEditorSupport ().getOpenedPanes ();
         if (panes == null  ||  panes.length < 1) {
-            Debug.warning ("No editor pane found for", context); // NOI18N
+//            Debug.warning ("No editor pane found for", context); // NOI18N
             return null;
-        } else if (panes.length > 1)
-            Debug.warning ("Multiple editor panes found for", context, "taking first one"); // NOI18N
+        }
+//        else if (panes.length > 1)
+//            Debug.warning ("Multiple editor panes found for", context, "taking first one"); // NOI18N
         return panes[0];
     }
 
