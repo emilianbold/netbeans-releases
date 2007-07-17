@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean.HttpMethodType;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 
@@ -35,10 +36,11 @@ import org.netbeans.modules.websvc.rest.wizard.Util;
 public class GenericResourceBean {
     public static final String RESOURCE_SUFFIX = "Resource";
     public static enum HttpMethodType { GET, PUT, POST, DELETE }
-    public static final String[] supportedMimeTypes = new String[] { 
-        Constants.MIME_TYPE_XML,  // first one is default
-        Constants.MIME_TYPE_TEXT, 
-        Constants.MIME_TYPE_TEXT_HTML,
+    public static final MimeType[] supportedMimeTypes = new MimeType[] { 
+        MimeType.XML,  // first one is default
+        MimeType.JSON,
+        MimeType.TEXT, 
+        MimeType.HTML
     };
     
     public static final HttpMethodType[] CONTAINER_METHODS = new HttpMethodType[] {
@@ -57,7 +59,7 @@ public class GenericResourceBean {
     private final String uriTemplate;
     private String[] queryParams;
     private String[] queryParamTypes;
-    private String[] mimeTypes;
+    private MimeType[] mimeTypes;
     private String[] representationTypes;
     private Set<HttpMethodType> methodTypes;
     private boolean privateFieldForQueryParam;
@@ -67,12 +69,12 @@ public class GenericResourceBean {
    }
 
    public GenericResourceBean(String name, String packageName, String uriTemplate, 
-            String[] mediaTypes, HttpMethodType[] methodTypes) {
+            MimeType[] mediaTypes, HttpMethodType[] methodTypes) {
         this(name, packageName, uriTemplate, mediaTypes, null, methodTypes);
     }
     
     public GenericResourceBean(String name, String packageName, String uriTemplate, 
-            String[] mediaTypes, String[] representationTypes,
+            MimeType[] mediaTypes, String[] representationTypes,
             HttpMethodType[] methodTypes) {
         this.name = name;
         this.packageName = packageName;
@@ -92,15 +94,15 @@ public class GenericResourceBean {
         this.representationTypes = representationTypes == null ? new String[0] : representationTypes;
     }
 
-    public static String[] getSupportedMimeTypes() {
+    public static MimeType[] getSupportedMimeTypes() {
         return supportedMimeTypes;
     }
     
-    public static String getDefaultRepresetationClass(String mime) {
-        if (mime.equals(Constants.MIME_TYPE_XML) || 
-            mime.equals(Constants.MIME_TYPE_TEXT) || 
-            mime.equals(Constants.MIME_TYPE_TEXT_HTML) ||
-            mime.equals(Constants.MIME_TYPE_JASON)) {
+    public static String getDefaultRepresetationClass(MimeType mime) {
+        if (mime == MimeType.XML || 
+            mime == MimeType.TEXT || 
+            mime == MimeType.HTML ||
+            mime == MimeType.JSON) {
             return String.class.getName();
         }
         return String.class.getName();
@@ -136,7 +138,7 @@ public class GenericResourceBean {
         return uriTemplate;
     }
 
-    public String[] getMimeTypes() {
+    public MimeType[] getMimeTypes() {
         return mimeTypes;
     }
 

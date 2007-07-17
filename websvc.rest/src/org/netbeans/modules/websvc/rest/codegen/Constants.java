@@ -98,15 +98,7 @@ public class Constants {
     public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
     
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
-    
-    public static final String MIME_TYPE_TEXT = "text/plain";
-    
-    public static final String MIME_TYPE_TEXT_HTML = "text/html";
-    
-    public static final String MIME_TYPE_XML = "application/xml";
-    
-    public static final String MIME_TYPE_JASON = "application/json";
-
+   
     public static final String HTTP_GET_METHOD = "GET";             //NOI18N
     
     public static final String HTTP_PUT_METHOD = "PUT";             //NOI18N
@@ -178,4 +170,32 @@ public class Constants {
     };
 
     public static final String JAVA_EXT = "java"; //NI18N
+    
+    public enum MimeType {
+        XML("application/xml", "Xml"),
+        JSON("application/json", "Json"),
+        TEXT("text/plain", "Text"),
+        HTML("text/html", "Html");
+        
+        private String value;
+        private String suffix;
+        
+        MimeType(String value, String suffix) {
+            this.value = value;
+            this.suffix = suffix;
+        }
+        
+        public String value() {
+            return value;
+        }
+        
+        public String suffix() {
+            return suffix;
+        }
+        
+        public String toString() {
+            return value;
+        }
+    }
+    
 }
