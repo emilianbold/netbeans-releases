@@ -47,8 +47,8 @@ Microsystems, Inc. All Rights Reserved.
                 <property name="ricoh.install-server.web-port" value="${ricoh.deployment.scp.webport}"/>
                 <property name="ricoh.install-server.path" value="${ricoh.deployment.scp.webpath}"/>
             </taskIf>
-            <echo message="Fetching Dalp.xml off HTTP server @ ${ricoh.install-server} on port ${ricoh.install-server.web-port}..."/>
-            <get src="http://${ricoh.install-server}:${ricoh.install-server.web-port}${ricoh.install-server.path}/Dalp.xml" dest="${xml.dir}/Original-Dalp.xml" ignoreerrors="true"/>
+            <echo message="Fetching Dalp.xml off HTTP server @ ${ricoh.deployment.server.name} on port ${ricoh.install-server.web-port}..."/>
+            <get src="http://${ricoh.deployment.server.name}:${ricoh.install-server.web-port}${ricoh.install-server.path}/Dalp.xml" dest="${xml.dir}/Original-Dalp.xml" ignoreerrors="true"/>
             <condition property="no.original.dalp" value="true">
                 <not>
                     <available file="${xml.dir}/Original-Dalp.xml"/>
@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
 
                             &lt;xsl:template match="jar" mode="copy"&gt;
                                 &lt;xsl:copy&gt;
-                                    &lt;xsl:attribute name="href"&gt;http://${ricoh.install-server}:${ricoh.install-server.web-port}${ricoh.install-server.path}/&lt;xsl:value-of select="substring-after(@href,'./')"/&gt;&lt;/xsl:attribute&gt;
+                                    &lt;xsl:attribute name="href"&gt;http://${ricoh.deployment.server.name}:${ricoh.install-server.web-port}${ricoh.install-server.path}/&lt;xsl:value-of select="substring-after(@href,'./')"/&gt;&lt;/xsl:attribute&gt;
                                     &lt;xsl:apply-templates select="@version|@basepath|@main" mode="copy"/&gt;
                                 &lt;/xsl:copy&gt;
                             &lt;/xsl:template&gt;
@@ -126,31 +126,91 @@ Microsystems, Inc. All Rights Reserved.
         </taskIf>
     </target>
 
-    
-    <target name="init" depends="update-dalp-index">
-
+    <target name="sign-jar" depends="update-dalp-index" unless="no.application.uid">
+        <condition property="no.keystore.manifest">
+            <or>
+                <equals arg1="${ricoh.deployment.keystore.manifest}" arg2="" trim="true"/>
+                <contains string="${ricoh.deployment.keystore.manifest}" substring="$${ricoh.deployment.keystore.manifest"/>
+            </or>
+        </condition>
+        <fail if="no.keystore.manifest" message="Keystore manifest path is not set up!"/>
+        <condition property="no.keystore.manifest.file">
+            <not>
+                <available file="${ricoh.deployment.keystore.manifest}"/>
+            </not>
+        </condition>
+        <fail if="no.keystore.manifest.file" message="Path to keystore manifest file is not valid!"/>
+        <condition property="no.keystore">
+            <or>
+                <equals arg1="${ricoh.deployment.keystore.file}" arg2="" trim="true"/>
+                <contains string="${ricoh.deployment.keystore.file}" substring="$${ricoh.deployment.keystore.file"/>
+            </or>
+        </condition>
+        <fail if="no.keystore" message="Path to keystore is not set up!"/>
+        <condition property="no.keystore.file">
+            <not>
+                <available file="${ricoh.deployment.keystore.file}"/>
+            </not>
+        </condition>
+        <fail if="no.keystore.file" message="Path to keystore file is not valid!"/>
+        <condition property="no.keystore.alias">
+            <or>
+                <equals arg1="${ricoh.deployment.keystore.alias}" arg2="" trim="true"/>
+                <contains string="${ricoh.deployment.keystore.alias}" substring="$${ricoh.deployment.keystore.alias"/>
+            </or>
+        </condition>
+        <fail if="no.keystore.alias" message="Keystore alias is not set up!"/>
+        <condition property="no.keystore.password">
+            <or>
+                <equals arg1="${ricoh.deployment.keystore.password}" arg2="" trim="true"/>
+                <contains string="${ricoh.deployment.keystore.password}" substring="$${ricoh.deployment.keystore.password"/>
+            </or>
+        </condition>
+        <fail if="no.keystore.password" message="Keystore password is not set up!"/>
+        <echo message="dist.jar = ${dist.jar}"/>
+        <echo message="signed.jar = ${signed.jar}"/>
+        <echo message="ricoh.deployment.keystore.file = ${ricoh.deployment.keystore.file}"/>
+        <echo message="ricoh.deployment.keystore.manifest = ${ricoh.deployment.keystore.manifest}"/>
+        <signjar jar="${dist.dir}/${dist.jar}" alias="${ricoh.deployment.keystore.alias}" storepass="${ricoh.deployment.keystore.password}" signedjar="${signed.jar}" keystore="${ricoh.deployment.keystore.file}"/>
+        <echo message="install ${ricoh.application.uid} cvm Ricoh-test.jar Ricoh-test.dalp" file="${target.dir}/bootscript"/>
+        <zip destfile="${rideploy.zip}" basedir="${target.dir}"/>
+        <echo message="rideploy file = ${rideploy.zip}"/>
     </target>
-    
-    <target name="deploy-ricoh" depends="init" unless="no.application.uid"> <!--"-do-init-target, build-target, update-dalp-index, servlet-dist" > -->
+
+    <target name="deploy-ricoh" depends="update-dalp-index" unless="no.application.uid"> <!--"-do-init-target, build-target, update-dalp-index, servlet-dist" > -->
+        <condition property="no.application.uid" value="true">
+            <or>
+                <equals arg1="${ricoh.application.uid}" arg2="" trim="true"/>
+                <contains string="${ricoh.application.uid}" substring="$${ricoh.application.uid"/>
+            </or>
+        </condition>
+        
+        <fail if="no.application.uid" message="Application ID is not set up!"/>
+        
+        <condition property="no.vendor.name" value="true">
+            <equals arg1="${application.vendor}" arg2="" trim="true"/>
+        </condition>
+
         <echo message="Variable configuration:"/>
         <echoproperties/> 
         <property name="xlet.jar" value="${deploy.dir}/${ant.project.name}.jar"/>
+        <property name="target.dir" value="target"/>
         <copy todir="${target.dir}">
             <fileset dir="${dist.jar.dir}">
                 <include name="lib"/>
             </fileset>
         </copy>
-        <antcall target="sign-jar"/>
-        <!--
+        <antcall target="sign-jar"/>        
         <taskIf if="ricoh.deployment.deploy.method" value="sdcard">
-            <echo message="Deploying to SD Card @ ${ricoh.sdcard.path}"/>
-            <copy todir="${ricoh.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true">
+            <echo message="Deploying to SD Card @ ${ricoh.deployment.sdcard.path}"/>
+            <copy todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true">
                 <fileset dir="${target.dir}">
                     <include name="*.jar"/>
                     <include name="*.dalp"/>
                 </fileset>
             </copy>
         </taskIf>
+        <!--
         <taskIf if="ricoh.deployment.deploy.method" value="scp">
             <echo message="Deploying to webserver [${ricoh.scp.install-server}] via SCP as ''${ricoh.scp.install-server.user}''"/>
             <taskIf unless="ricoh.scp.install-server.ssh-port" value="">
