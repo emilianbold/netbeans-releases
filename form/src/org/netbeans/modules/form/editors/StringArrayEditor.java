@@ -98,7 +98,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
                     case '\"': buf.append("\\\""); break; // NOI18N
                     case '\\': buf.append("\\\\"); break; // NOI18N
                     default:
-                        if (c >= 0x0020 && c <= 0x007f)
+                        if (c >= 0x0020/* && c <= 0x007f*/)
                             buf.append(c);
                         else {
                             buf.append("\\u"); // NOI18N
