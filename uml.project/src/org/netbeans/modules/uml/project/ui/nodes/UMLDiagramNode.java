@@ -50,6 +50,7 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import javax.swing.Action;
 import org.netbeans.modules.uml.common.Util;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.project.ui.nodes.actions.CopyDiagramAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
@@ -224,14 +225,20 @@ public class UMLDiagramNode extends UMLElementNode
         
         actions.add(SystemAction.get(OpenAction.class));
         actions.add(null);
-        actions.add(SystemAction.get(CopyDiagramAction.class));
+        int kind = getDiagram().getDiagramKind();
+        // see #102294
+        if ( kind != IDiagramKind.DK_SEQUENCE_DIAGRAM &&
+                kind != IDiagramKind.DK_COLLABORATION_DIAGRAM )
+        {
+            actions.add(SystemAction.get(CopyDiagramAction.class));
+        }
         actions.add(SystemAction.get(RenameAction.class));
         actions.add(SystemAction.get(DeleteAction.class));
         actions.add(null);
         addContextMenus(actions);
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));;
-        
+
         Action[] retVal = new Action[actions.size()];
         actions.toArray(retVal);
         return retVal;
