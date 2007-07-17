@@ -691,6 +691,9 @@ public class SelectionManager {
         if (element == null) {
             return;
         }
+        
+        // XXX #109439 The same components appeared more times in the selection.
+        clearSelection(false);
 
         Element[] children = WebForm.getDomProviderService().getChildComponents(element);
 //        for (int i = 0, n = root.getChildBeanCount(); i < n; i++) {
