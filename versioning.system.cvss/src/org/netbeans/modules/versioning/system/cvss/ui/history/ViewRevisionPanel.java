@@ -151,6 +151,15 @@ class ViewRevisionPanel extends javax.swing.JPanel {
                 .add(rbTrunk)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        rbTrunk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSN_ViewRevisionPanel.rbTrunk.text")); // NOI18N
+        rbTrunk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSD_ViewRevisionPanel.rbTrunk.text")); // NOI18N
+        rbBranch.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSN_ViewRevisionPanel.rbBranch.text")); // NOI18N
+        rbBranch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSD_ViewRevisionPanel.rbBranch.text")); // NOI18N
+        tfTagName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSN_ViewRevisionPanel.tfTagName")); // NOI18N
+        tfTagName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSD_ViewRevisionPanel.tfTagName")); // NOI18N
+        bBrowse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSN_ViewRevisionPanel.bBrowse.text")); // NOI18N
+        bBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ViewRevisionPanel.class, "ACSD_ViewRevisionPanel.bBrowse.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void rbBranchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbBranchActionPerformed
