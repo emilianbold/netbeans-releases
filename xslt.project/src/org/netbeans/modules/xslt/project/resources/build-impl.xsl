@@ -155,7 +155,7 @@ is divided into following sections:
 
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+                    <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
                 </path>
