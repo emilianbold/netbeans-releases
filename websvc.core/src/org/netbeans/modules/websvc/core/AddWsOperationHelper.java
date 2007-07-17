@@ -40,6 +40,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
@@ -52,6 +53,7 @@ import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
@@ -226,18 +228,39 @@ public class AddWsOperationHelper {
             }
             public void cancel() {}
         };
-        try {
-            targetSource.runModificationTask(modificationTask).commit();
-            DataObject dataObject = DataObject.find(implClassFo);
-            if (dataObject!=null) {
-                SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
-                if (cookie!=null) cookie.save();
-            }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } finally {
-            handle.finish();
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        targetSource.runModificationTask(modificationTask).commit();    
+                        DataObject dataObject = DataObject.find(implClassFo);
+                        if (dataObject!=null) {
+                            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+                            if (cookie!=null) cookie.save();
+                        }
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    } finally {
+                        handle.finish();
+                    }                
+                }
+            });
+        } else {
+            try {
+                targetSource.runModificationTask(modificationTask).commit();    
+                DataObject dataObject = DataObject.find(implClassFo);
+                if (dataObject!=null) {
+                    SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+                    if (cookie!=null) cookie.save();
+                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } finally {
+                handle.finish();
+            }            
         }
+
     }
     
     private String getMethodBody(Tree returnType) {
