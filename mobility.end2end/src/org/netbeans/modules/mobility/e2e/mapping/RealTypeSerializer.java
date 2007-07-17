@@ -102,7 +102,7 @@ public class RealTypeSerializer implements JavonSerializer {
             return "new Double(" + variable + ")";
         } else if( FloatClassData.equals( type )) {
             return "(Float)" + variable;
-        } else if( doubleClassData.equals( type )) {
+        } else if( DoubleClassData.equals( type )) {
             return "(Double)" + variable;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
