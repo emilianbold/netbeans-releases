@@ -157,6 +157,8 @@ public class XAMCatalogWriteModelImpl extends CatalogModelImpl implements Catalo
     
     public Collection<CatalogEntry> getCatalogEntries() {
         ArrayList<CatalogEntry> result = new ArrayList<CatalogEntry>();
+        if(getCatalogModel() == null || getCatalogModel().getRootComponent() == null)
+            return result;
         for(System sys: getCatalogModel().getRootComponent().getSystems()){
             CatalogEntry catEnt = new CatalogEntryImpl(CatalogElement.system, sys.getSystemIDAttr(),
                     sys.getURIAttr());
