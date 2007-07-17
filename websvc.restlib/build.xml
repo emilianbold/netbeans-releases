@@ -52,8 +52,9 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>-->
     
-    <target name="clean" depends="init">
+    <target name="clean" depends="init,projectized-common.clean">
         <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
         <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
+        <ant dir="../external" target="clean_rest"/>
     </target>
 </project>
