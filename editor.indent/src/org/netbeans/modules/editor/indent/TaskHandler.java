@@ -132,6 +132,9 @@ public final class TaskHandler {
                     // Collection<LanguagePath> activeEmbeddedPaths = getActiveEmbeddedPaths();
                     for (LanguagePath lp : languagePaths) {
                         mimePath = MimePath.parse(lp.mimePath());
+                        // Temporary fix until #108173 gets resolved: take only rightmost mime-type
+                        mimePath = MimePath.get(mimePath.getMimeType(mimePath.size() - 1));
+
                         addItem(mimePath);
                     }
                 }
@@ -180,6 +183,10 @@ public final class TaskHandler {
     }
 
     private boolean addItem(MimePath mimePath) {
+        // Only add if not added yet (doc's mime-type always added as first)
+        if (mime2Item != null && mime2Item.containsKey(mimePath))
+            return false;
+        
         maxMimePathSize = Math.max(maxMimePathSize, mimePath.size());
         MimeItem item = new MimeItem(this, mimePath);
         if (item.createTask(existingFactories)) {
@@ -187,16 +194,13 @@ public final class TaskHandler {
                 items = new ArrayList<MimeItem>();
                 mime2Item = new HashMap<MimePath,MimeItem>();
             }
-            // Only add if not added yet (doc's mime-type always added as first)
-            if (!mime2Item.containsKey(item.mimePath())) {
-                items.add(item);
-                mime2Item.put(item.mimePath(), item);
-                if (LOG.isLoggable(Level.FINE)) {
-                    StringBuilder sb = new StringBuilder(isIndent() ? "INDENT" : "REFRMAT");
-                    sb.append(": ");
-                    sb.append(item);
-                    LOG.fine(sb.toString());
-                }
+            items.add(item);
+            mime2Item.put(item.mimePath(), item);
+            if (LOG.isLoggable(Level.FINE)) {
+                StringBuilder sb = new StringBuilder(isIndent() ? "INDENT" : "REFORMAT");
+                sb.append(": ");
+                sb.append(item);
+                LOG.fine(sb.toString());
             }
             return true;
         }
