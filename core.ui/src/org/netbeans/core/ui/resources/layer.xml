@@ -302,7 +302,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- specify toolbar configuration for platform ui. -->
         <file name="Standard.xml" url="Standard.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="position" intvalue="300"/>
         </file>
     </folder> <!-- Toolbars -->
     

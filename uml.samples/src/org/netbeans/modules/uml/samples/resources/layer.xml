@@ -22,8 +22,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <attr name="Mobility/UML" boolvalue="true"/>
                 <folder name="UML">
+                    <attr name="position" intvalue="450"/>
                     <file name="UML Bank App Sample" url="../bankapp/resources/javaProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.samples.bankapp.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.uml.samples.bankapp.UMLBankAppSampleWizardIterator.createIterator"/>

@@ -326,7 +326,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="cppFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="position" intvalue="500"/>
+      	    <attr name="position" intvalue="550"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
 
 	    <file name="file.cc" url="templates/cpp/empty-cc.template">
@@ -359,7 +359,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="fortranFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="position" intvalue="600"/>
+      	    <attr name="position" intvalue="650"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fortranFiles.html"/>
 
 	    <file name="fortranEmptyFile.f90" url="templates/fortran/empty-f90.template">
@@ -394,7 +394,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="shells">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="position" intvalue="700"/>
+      	    <attr name="position" intvalue="750"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shells.html"/>
 
 	    <file name="shell.bash" url="templates/shell/simple-shell.template">

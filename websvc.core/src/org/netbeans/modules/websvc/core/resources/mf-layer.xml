@@ -26,15 +26,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
             <attr name="position" intvalue="1500"/>
-            <file name="WebServiceClient">
-                <attr name="position" intvalue="200"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create"/>
-                <attr name="templateCategory" stringvalue="web-service-clients"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
-            </file>
             <file name="WSDL.wsdl" url="WSDL.template">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
@@ -44,56 +35,62 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
-            <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
-        </folder>
-        
-       <folder name="WebServices">
-         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-         <file name="WebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebService.template">         
-             <attr name="template" boolvalue="true"/>
-             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator.create"/>
-             <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebService.html"/>
-             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
-         </file>
-          <!--  EJB Web Service --> 
-          <file name="EjbWebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/EjbWebService.template">
-              <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-          </file>
-
-         <file name="WebServiceFromWSDL.java">
-             <attr name="template" boolvalue="true"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create"/>
-             <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
-             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
-         </file>
-
-         <attr name="WebService/MessageHandler" boolvalue="true"/>
-         <file name="MessageHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.template">         
-             <attr name="template" boolvalue="true"/>
-             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create"/>
-             <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.html"/>
-             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
-         </file>
-
-         <attr name="WebService/LogicalHandler" boolvalue="true"/>
-         <file name="LogicalHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.template">         
-             <attr name="template" boolvalue="true"/>
-             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard.create"/>
-             <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.html"/>
-             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
-         </file>
-       </folder><!-- Web Services -->
+            <file name="WebServiceClient">
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create"/>
+                <attr name="templateCategory" stringvalue="web-service-clients"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
+            </file>
+            <file name="WSDL_import.wsdl" url="WSDL_import.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="WebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebService.template">         
+                <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="300"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator.create"/>
+                <attr name="templateCategory" stringvalue="web-services"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebService.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+            </file>
+            <file name="EjbWebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/EjbWebService.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="WebServiceFromWSDL.java">
+                <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create"/>
+                <attr name="templateCategory" stringvalue="web-services"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+            </file>
+            <file name="MessageHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.template">         
+                <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="500"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create"/>
+                <attr name="templateCategory" stringvalue="web-services"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+            </file>
+            <file name="LogicalHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.template">         
+                <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="600"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard.create"/>
+                <attr name="templateCategory" stringvalue="web-services"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+            </file>
+        </folder><!-- Web Services -->
     </folder>
     <folder name="Editors">
         <folder name="text">

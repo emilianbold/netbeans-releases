@@ -328,10 +328,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Toolbars">
         <folder name="Build">
-
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="350"/>
             </file>
         </folder>
     </folder>
