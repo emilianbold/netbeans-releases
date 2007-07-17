@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.localhistory.store;
 
-import java.beans.PropertyChangeEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
