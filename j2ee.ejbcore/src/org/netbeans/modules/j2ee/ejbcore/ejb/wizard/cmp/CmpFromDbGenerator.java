@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableSource;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -176,13 +177,18 @@ public class CmpFromDbGenerator {
         progressNotifier.progress(max - 1);
         progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_SavingDeploymentDescriptor"));
 
-        //TODO: RETOUCHE throwing java.lang.NoClassDefFoundError: org/netbeans/modules/j2ee/dd/api/ejb/DDProvider
-        // at com.sun.jdo.modules.persistence.mapping.ejb.EJBDevelopmentInfoHelper.getBundleDescriptor(EJBDevelopmentInfoHelper.java:87)
-//        //push mapping information
-//        if (pwm != null) {
-//            pwm.getConfigSupport().setCMPMappingInfo(mappings);
-//        }
+        // Push mapping information
+        // !PW should this really be called before ejb-jar.xml changes are saved to disk?
+        if (pwm != null) {
+            try {
+                pwm.getConfigSupport().setCMPMappingInfo(mappings);
+            } catch(ConfigurationException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        
         ejbJar.write(ddFileObject);
+        
         if (pwm != null) {
             for (EntityClass entityClass : helper.getBeans()) {
                 if (helper.getTableSource().getType() == TableSource.Type.DATA_SOURCE) {
@@ -193,8 +199,8 @@ public class CmpFromDbGenerator {
                                 ejbnames.getEntityEjbClassSuffix();
                         Entity entity = findEntityForEjbClass(ejbClassName);
                         pwm.getConfigSupport().setCMPResource(entity.getEjbName(), helper.getTableSource().getName());
-		    } catch (ConfigurationException e) {
-			// TODO inform the user that the problem has occured
+		    } catch (ConfigurationException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 		    }
                 }
             }
