@@ -1060,7 +1060,7 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
             }
             if (!pAttribute.getIsFinal())
             {  
-                m_Utilities.createWriteAccessor( pAttribute, getClassifier(pAttribute), true );
+                m_Utilities.createWriteAccessor( pAttribute, getClassifier(pAttribute), false );
             }
         }
     }
