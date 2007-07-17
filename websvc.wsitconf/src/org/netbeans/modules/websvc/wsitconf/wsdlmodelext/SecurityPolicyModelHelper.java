@@ -822,9 +822,11 @@ public class SecurityPolicyModelHelper {
                         addBody(signedParts, wcf);
                     }
                 }
-            }            
-            Binding b = (Binding) comp.getParent().getParent();
-            ProprietarySecurityPolicyModelHelper.setStreamingSecurity(b, streamingSecurity);
+            }
+            if ((comp instanceof BindingInput) || (comp instanceof BindingOutput) || (comp instanceof BindingFault)) {
+                Binding b = (Binding) comp.getParent().getParent();
+                ProprietarySecurityPolicyModelHelper.setStreamingSecurity(b, streamingSecurity);
+            }
         } finally {
             if (!isTransaction) {
                 model.endTransaction();
