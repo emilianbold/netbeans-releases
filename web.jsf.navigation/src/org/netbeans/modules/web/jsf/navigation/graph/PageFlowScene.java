@@ -513,29 +513,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         }
     }
 
-/*
-    public void createConnectionLabel(NavigationCaseEdge edge, VMDConnectionWidget connectionWidget) {
-    LabelWidget label = new LabelWidget(this, edge.getName());
-    label.setOpaque(true);
-    label.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageFlowScene.CaseNodeTextFieldInplaceEditor()));
-    Anchor anchor = connectionWidget.getSourceAnchor();
-    Anchor.Result sourceResult = anchor.compute(connectionWidget.getSourceAnchorEntry());
-    EnumSet<Anchor.Direction> directions = sourceResult.getDirections();
-    if (directions.contains(Anchor.Direction.TOP)) {
-    label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-    } else if (directions.contains(Anchor.Direction.BOTTOM)) {
-    label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
-    } else if (directions.contains(Anchor.Direction.RIGHT)) {
-    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-    } else {
-    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
-    }
-    connectionWidget.addChild(label);
-    }
-     **/
-
 
     public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
 
@@ -558,8 +535,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             String oldName = caseNode.getName();
 
             if (caseNode.canRename()) {
-                Pin pin = getEdgeSource(caseNode);
-                caseNode.setName(pin, newName);
+                //Pin pin = getEdgeSource(caseNode);
+                //caseNode.setName(pin, newName);
+                caseNode.setName(newName);
             }
 
             ((LabelWidget) widget).setLabel(newName);

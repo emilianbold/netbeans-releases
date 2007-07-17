@@ -116,10 +116,6 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
     
     public void setName(String newName) {
         Pin pin = pc.getView().getEdgeSourcePin(this);
-        setName(pin, newName);
-    }
-    
-    public void setName(Pin pin, String newName  ){
         if( pin != null && !pin.isDefault()){
             pin.setFromOutcome(newName);
         }        
