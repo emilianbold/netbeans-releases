@@ -129,23 +129,46 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     // ==================================================================================================
     // CREATE
     // ==================================================================================================
+
+    /**
+     * Stores files that are being created inside the IDE and the owner interceptor wants to handle the creation. Entries
+     * are added in beforeCreate() and removed in fileDataCreated() or createFailure(). 
+     */
+    private final Map<FileEx, DelegatingInterceptor> filesBeingCreated = new HashMap<FileEx, DelegatingInterceptor>(10);
     
     public void beforeCreate(FileObject parent, String name, boolean isFolder) {
         File file = FileUtil.toFile(parent);
         if (file == null) return;
         file = new File(file, name); 
         DelegatingInterceptor dic = getInterceptor(file, isFolder);
-        dic.beforeCreate();
+        if (dic.beforeCreate()) {
+            filesBeingCreated.put(new FileEx(parent, name, isFolder), dic);
+        }
+    }
+
+    public void createFailure(FileObject parent, String name, boolean isFolder) {
+        filesBeingCreated.remove(new FileEx(parent, name, isFolder));
     }
 
     public void fileFolderCreated(FileEvent fe) {
-        removeFromDeletedFiles(fe.getFile());
-        getInterceptor(fe).afterCreate();
+        fileDataCreated(fe);
     }
 
     public void fileDataCreated(FileEvent fe) {
+        FileObject fo = fe.getFile();
+        FileEx fileEx = new FileEx(fo.getParent(), fo.getNameExt(), fo.isFolder());
+        DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx); 
+        if (interceptor != null) {
+            try {
+                interceptor.doCreate();
+            } catch (Exception e) {
+                // ignore errors, the file is already created anyway
+            }
+        }
         removeFromDeletedFiles(fe.getFile());
-        getAllInterceptors(fe).afterCreate();        
+        // special handling of create events => all interceptors are notified. This is to work around the "implicit logic"
+        // bug that assumes that files missing from the cache are uptodate
+        getAllInterceptors(fe).afterCreate();
     }
     
     // ==================================================================================================
@@ -443,5 +466,31 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 //        VCSInterceptor getInterceptor() {
 //            return interceptor;
 //        }
+    }
+
+    private class FileEx {
+        final FileObject  parent;
+        final String      name;
+        final boolean     isFolder;
+
+        public FileEx(FileObject parent, String name, boolean folder) {
+            this.parent = parent;
+            this.name = name;
+            isFolder = folder;
+        }
+        
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof FileEx)) return false;
+            FileEx fileEx = (FileEx) o;
+            return isFolder == fileEx.isFolder && name.equals(fileEx.name) && parent.equals(fileEx.parent);
+        }
+
+        public int hashCode() {
+            int result = parent.hashCode();
+            result = 17 * result + name.hashCode();
+            result = 17 * result + (isFolder ? 1 : 0);
+            return result;
+        }
     }
 }
