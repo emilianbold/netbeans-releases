@@ -467,7 +467,7 @@ public class URLPanel extends JPanel implements PropertyChangeListener, ActionLi
         shortCutPanelMyProjectButton.setVerticalTextPosition(JToggleButton.BOTTOM);
         shortCutPanelMyProjectButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         shortCutPanelMyProjectButton.setPreferredSize(buttonSize);
-        shortCutPanelMyProjectButton.setMaximumSize(buttonSize);
+     //   shortCutPanelMyProjectButton.setMaximumSize(buttonSize);
         shortCutPanelMyProjectButton.addActionListener(this);
         shortCutPanel.add(shortCutPanelMyProjectButton, 0);
         shortCutPanel.add(Box.createRigidArea(new Dimension(1, 1)), 1);
@@ -503,8 +503,8 @@ public class URLPanel extends JPanel implements PropertyChangeListener, ActionLi
             httpLabel.setText(bundle.getMessage("enterUrlHttp")); //NOI18N
             httpLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
             this.add(httpLabel);
-            textField.setMaximumSize(new Dimension(Integer.MAX_VALUE,
-                textField.getPreferredSize().height));
+         //   textField.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+           //     textField.getPreferredSize().height));
             textField.setAlignmentX(JTextField.LEFT_ALIGNMENT);
             textField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLPanel.class, "URL_TEXTFIELD_ACCESS_NAME"));
             textField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLPanel.class, "URL_TEXTFIELD_ACCESS_DESC"));

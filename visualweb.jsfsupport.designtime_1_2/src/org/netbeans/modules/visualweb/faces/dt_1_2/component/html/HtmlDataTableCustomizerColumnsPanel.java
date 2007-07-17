@@ -307,7 +307,7 @@ public class HtmlDataTableCustomizerColumnsPanel extends JPanel {
         btnRemoveAll.addActionListener(actionListener);
         panColProps.setBorder(titledBorder1);
         panColProps.setDebugGraphicsOptions(0);
-        panColProps.setMaximumSize(new Dimension(32767, 32767));
+     //   panColProps.setMaximumSize(new Dimension(32767, 32767));
         panColProps.setLayout(gridBagLayout2);
         lblHeaderText.setText(bundle.getMessage("hdrTxt") + " "); //NOI18N
         lblFooterText.setText(bundle.getMessage("ftrTxt") + " "); //NOI18N

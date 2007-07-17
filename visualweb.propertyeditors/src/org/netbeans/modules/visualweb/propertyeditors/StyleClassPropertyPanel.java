@@ -140,7 +140,7 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         selectButton.setText(">");
         selectButton.setActionCommand(SELECT_ACTION);
         selectButton.setAlignmentY(0.0F);
-        selectButton.setMaximumSize(new java.awt.Dimension(45, 23));
+       // selectButton.setMaximumSize(new java.awt.Dimension(45, 23));
         selectButton.setMinimumSize(new java.awt.Dimension(45, 23));
         selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -153,7 +153,7 @@ public class StyleClassPropertyPanel extends PropertyPanelBase {
         deselectButton.setFont(deselectButton.getFont().deriveFont(Font.BOLD));
         deselectButton.setText("<");
         deselectButton.setActionCommand(DESELECT_ACTION);
-        deselectButton.setMaximumSize(new java.awt.Dimension(45, 23));
+       // deselectButton.setMaximumSize(new java.awt.Dimension(45, 23));
         deselectButton.setMinimumSize(new java.awt.Dimension(45, 23));
         selectButtonPanel.add(javax.swing.Box.createRigidArea(new java.awt.Dimension(0, 5)));
         deselectButton.addActionListener(new java.awt.event.ActionListener() {

@@ -275,7 +275,7 @@ public class ChooseManyReferenceDataPanel extends ChooseOneReferenceDataPanel {
 
         selectJButton = new JButton(">"); //NOI18N
         // some ridiculous size so it does not get in the way
-        selectJButton.setMaximumSize(new Dimension(200, 200));
+        //selectJButton.setMaximumSize(new Dimension(200, 200));
         selectJButton.setActionCommand(SELECT_ACTION);
         selectJButton.addActionListener(this);
         selectJButton.setEnabled(false);
@@ -283,7 +283,7 @@ public class ChooseManyReferenceDataPanel extends ChooseOneReferenceDataPanel {
         selectButtonsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
         deselectJButton = new JButton("<"); //NOI18N
-        deselectJButton.setMaximumSize(new Dimension(200, 200));
+        //deselectJButton.setMaximumSize(new Dimension(200, 200));
         deselectJButton.setActionCommand(DESELECT_ACTION);
         deselectJButton.addActionListener(this);
         deselectJButton.setEnabled(false);
@@ -291,7 +291,7 @@ public class ChooseManyReferenceDataPanel extends ChooseOneReferenceDataPanel {
         selectButtonsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
         deselectAllJButton = new JButton("<<"); //NOI18N
-        deselectAllJButton.setMaximumSize(new Dimension(200, 200));
+       // deselectAllJButton.setMaximumSize(new Dimension(200, 200));
         deselectAllJButton.setActionCommand(DESELECT_ALL_ACTION);
         deselectAllJButton.addActionListener(this);
         selectButtonsPanel.add(deselectAllJButton, null);
@@ -351,7 +351,7 @@ public class ChooseManyReferenceDataPanel extends ChooseOneReferenceDataPanel {
             moveButtonsPanel.setLayout(new BoxLayout(moveButtonsPanel, BoxLayout.Y_AXIS));
 
             upJButton = new JButton(BundleHolder.bundle.getMessage("up")); //NOI18N
-            upJButton.setMaximumSize(new Dimension(200, 200));
+          //  upJButton.setMaximumSize(new Dimension(200, 200));
             upJButton.setActionCommand(UP_ACTION);
             upJButton.addActionListener(this);
             upJButton.setEnabled(false);
@@ -359,7 +359,7 @@ public class ChooseManyReferenceDataPanel extends ChooseOneReferenceDataPanel {
             moveButtonsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
             downJButton = new JButton(BundleHolder.bundle.getMessage("down")); //NOI18N
-            downJButton.setMaximumSize(new Dimension(200, 200));
+          //  downJButton.setMaximumSize(new Dimension(200, 200));
             downJButton.setActionCommand(DOWN_ACTION);
             downJButton.setEnabled(false);
             downJButton.addActionListener(this);

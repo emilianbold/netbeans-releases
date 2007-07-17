@@ -50,9 +50,6 @@
           <SubComponents>
             <Container class="javax.swing.JScrollPane" name="styleStringScroll">
               <Properties>
-                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[300, 100]"/>
-                </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[300, 100]"/>
                 </Property>

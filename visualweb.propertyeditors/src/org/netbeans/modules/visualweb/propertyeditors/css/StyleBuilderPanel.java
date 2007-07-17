@@ -198,7 +198,7 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         styleStringPanel.setPreferredSize(new java.awt.Dimension(375, 100));
         styleStringPanel.setLayout(new java.awt.GridBagLayout());
 
-        styleStringScroll.setMaximumSize(new java.awt.Dimension(300, 100));
+       // styleStringScroll.setMaximumSize(new java.awt.Dimension(300, 100));
         styleStringScroll.setPreferredSize(new java.awt.Dimension(300, 100));
 
         styleTextArea.setColumns(50);
