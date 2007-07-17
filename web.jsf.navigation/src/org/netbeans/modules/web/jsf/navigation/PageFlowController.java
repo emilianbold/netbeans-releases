@@ -65,7 +65,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities.Scope;
+import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbPreferences;
 
@@ -191,7 +191,7 @@ public class PageFlowController {
     }
 
     public boolean isCurrentScope(Scope scope) {
-        return PageFlowUtilities.getInstance(view).getCurrentScope().equals(scope);
+        return PageFlowToolbarUtilities.getInstance(view).getCurrentScope().equals(scope);
     }
 
 

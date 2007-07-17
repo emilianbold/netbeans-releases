@@ -23,15 +23,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.web.jsf.navigation.Page;
-import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
-import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities.Scope;
+import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
+import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 
 /**
  *
  * @author joelle
  */
 public class PageFlowSceneData {
-    private PageFlowUtilities utilities;
+    private PageFlowToolbarUtilities utilities;
     //    private PageFlowScene scene;
     
     private final Map<String,Point> facesConfigSceneData = new HashMap<String,Point>();
@@ -45,7 +45,7 @@ public class PageFlowSceneData {
      * @param scene PageFlowScene
      * @param utilities PageFlowUtilites
      **/
-    public PageFlowSceneData(PageFlowUtilities utilities) {
+    public PageFlowSceneData(PageFlowToolbarUtilities utilities) {
         this.utilities = utilities;
         //        this.scene = scene;
     }
@@ -133,7 +133,7 @@ public class PageFlowSceneData {
     }
     
     public String getCurrentScopeStr() {
-        return PageFlowUtilities.getScopeLabel(utilities.getCurrentScope());
+        return PageFlowToolbarUtilities.getScopeLabel(utilities.getCurrentScope());
     }
     
     public void setCurrentScope(Scope newScope) {
@@ -142,8 +142,8 @@ public class PageFlowSceneData {
     
     
     public void setScopeData( String scope, Map<String,Point> map){
-        switch(PageFlowUtilities.getScope(scope)){
-        case SCOPE_FACESCONFIG:
+        switch(PageFlowToolbarUtilities.getScope(scope)){
+                case SCOPE_FACESCONFIG:
             facesConfigSceneData.clear();
             facesConfigSceneData.putAll(map);
             break;
@@ -167,7 +167,7 @@ public class PageFlowSceneData {
     
     public Map<String,Point> getScopeData( String scopeStr ) {
         Map<String,Point> sceneInfo = null;
-        PageFlowUtilities.Scope scope = PageFlowUtilities.getScope(scopeStr);
+        PageFlowToolbarUtilities.Scope scope = PageFlowToolbarUtilities.getScope(scopeStr);
         switch( scope ){
         case SCOPE_FACESCONFIG:
             sceneInfo = facesConfigSceneData;

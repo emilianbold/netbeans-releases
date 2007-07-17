@@ -24,7 +24,7 @@ import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
-import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
+import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
@@ -76,7 +76,7 @@ public class PageFlowDeleteAction extends AbstractAction{
                 return false;
             }
             
-            if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG) &&
+            if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG) &&
                     element instanceof Page ){
                 /* These are edges in the local faces config */
                 thoseEdges.clear();
@@ -166,7 +166,7 @@ public class PageFlowDeleteAction extends AbstractAction{
                                 updateSourcePins((NavigationCaseEdge)deleteNode);
                             }
                             
-                            if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG)){
+                            if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG)){
                                 if( thoseEdges.size() == 0 ) {
                                     deleteNode.destroy();
                                 } else {

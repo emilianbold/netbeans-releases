@@ -297,12 +297,12 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         if( page != null ){
             Page pageNode = pfc.getPageName2Page(page);
             if( pageNode != null && !pfc.isPageInAnyFacesConfig(page)){
-                if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_FACESCONFIG)){
-                    if ( pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG)  && !pfc.isPageInAnyFacesConfig(page)) {
+                if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_FACESCONFIG)){
+                    if ( pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG)  && !pfc.isPageInAnyFacesConfig(page)) {
                         view.removeNodeWithEdges(pageNode);
                         pfc.removePageName2Page(pageNode, true);
                         view.validateGraph();
-                    } else if ( !pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG)  ) {
+                    } else if ( !pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG)  ) {
                         view.removeNodeWithEdges(pageNode);
                         pfc.removePageName2Page(pageNode, true);
                         view.validateGraph();

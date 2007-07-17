@@ -104,7 +104,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         this.context = context;
         scene = initializeScene();
         pfc = new PageFlowController(context, this);
-        sceneData = new PageFlowSceneData(PageFlowUtilities.getInstance(this));
+        sceneData = new PageFlowSceneData(PageFlowToolbarUtilities.getInstance(this));
 
         deserializeNodeLocation(getStorageFile(context.getFacesConfigFile()));
         //runnables = new LinkedBlockingQueue<Runnable>();
@@ -493,7 +493,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         toolbar.addSeparator();
-        PageFlowUtilities utilities = PageFlowUtilities.getInstance(this);
+        PageFlowToolbarUtilities utilities = PageFlowToolbarUtilities.getInstance(this);
         toolbar.add(utilities.createScopeComboBox());
 
         toolbar.add(utilities.createLayoutButton());

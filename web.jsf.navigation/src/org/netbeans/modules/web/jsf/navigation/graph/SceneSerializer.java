@@ -13,7 +13,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
+import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -27,8 +27,8 @@ public class SceneSerializer {
     private static final String SCENE_SCOPE_ELEMENT = "Scope"; // NOI18N
     private static final String VERSION_ATTR = "version"; // NOI18NC
     
-    private static final String SCENE_FACES_SCOPE = PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_FACESCONFIG); //NOI18N
-    private static final String SCENE_PROJECT_SCOPE = PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_PROJECT);
+    private static final String SCENE_FACES_SCOPE = PageFlowToolbarUtilities.getScopeLabel(PageFlowToolbarUtilities.Scope.SCOPE_FACESCONFIG); //NOI18N
+    private static final String SCENE_PROJECT_SCOPE = PageFlowToolbarUtilities.getScopeLabel(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
     
     private static final String SCENE_NODE_COUNTER_ATTR = "nodeIDcounter"; // NOI18N
     private static final String SCENE_EDGE_COUNTER_ATTR = "edgeIDcounter"; // NOI18N
@@ -203,7 +203,7 @@ public class SceneSerializer {
             
             String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);
             
-            sceneData.setCurrentScope( PageFlowUtilities.getScope(lastUsedScope) );
+            sceneData.setCurrentScope( PageFlowToolbarUtilities.getScope(lastUsedScope)  );
             LOG.fine("Last Used Scope: " + lastUsedScope);
             // TODO: Save the Last Used Scope
             
