@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -60,6 +59,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
+
 /** Implementation of ModuleConfiguration.
  *
  *  Primarily serves to delegate directly to the specified DeploymentConfiguration
@@ -81,16 +81,16 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         Object type = mod.getModuleType();
         File dds[] = new File[0];
         
-        if (module.WAR.equals(type)) {
+        if (J2eeModule.WAR.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-web.xml") };
-        } else if (module.EJB.equals(type)) {
+        } else if (J2eeModule.EJB.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-ejb-jar.xml"),
             module.getDeploymentConfigurationFile("sun-cmp-mappings.xml") };
-        } else if (module.CLIENT.equals(type)) {
+        } else if (J2eeModule.CLIENT.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-application-client.xml")};
-        } else if (module.EAR.equals(type)) {
+        } else if (J2eeModule.EAR.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-application.xml") };
-        } else if (module.CONN.equals(type)) {
+        } else if (J2eeModule.CONN.equals(type)) {
             dds = new File[] { module.getDeploymentConfigurationFile("sun-ra.xml") };
         }
         
@@ -143,8 +143,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      *  for this J2EE project.
      */
     public void dispose() {
-        checkConfiguration(config);
-        ((SunONEDeploymentConfiguration)config).dispose();
+        config.dispose();
     }
     
     
@@ -152,7 +151,6 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      *  user's project.
      */
     public void setCMPResource(String ejbName, String jndiName) throws ConfigurationException {
-        checkConfiguration(config);
         config.setCMPResource(ejbName, jndiName);
     }
     
@@ -160,9 +158,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      *  backend.
      */
     public void setMappingInfo(OriginalCMPMapping[] mapping){
-        checkConfiguration(config);
-        SunONEDeploymentConfiguration s1config = (SunONEDeploymentConfiguration) config;
-        EjbJarRoot ejbJarRoot = s1config.getEjbJarRoot();
+        EjbJarRoot ejbJarRoot = config.getEjbJarRoot();
         if(ejbJarRoot != null) {
             ejbJarRoot.mapCmpBeans(mapping);
         }
@@ -173,8 +169,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      *  web application.  Otherwise, returns null.
      */
     public String getContextRoot() {
-        checkConfiguration(config);
-        return ((SunONEDeploymentConfiguration)config).getContextRoot();
+        return config.getContextRoot();
     }
     
     
@@ -182,22 +177,9 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      *  web application.
      */
     public void setContextRoot(String contextRoot) {
-        checkConfiguration(config);
-        ((SunONEDeploymentConfiguration)config).setContextRoot(contextRoot);
+        config.setContextRoot(contextRoot);
     }
     
-    
-    /** Utility method to validate the configuration object being passed to the
-     *  other methods in this class.
-     */
-    private void checkConfiguration(DeploymentConfiguration config) {
-        if(config == null) {
-            throw new IllegalArgumentException("DeploymentConfiguration is null");
-        }
-        if(!(config instanceof SunONEDeploymentConfiguration)) {
-            throw new IllegalArgumentException("Wrong DeploymentConfiguration instance " + config.getClass().getName());
-        }
-    }
     
     /**
      * Implementation of DS Management API in ConfigurationSupport
@@ -205,8 +187,8 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      * @return Returns Set of SunDataSource's(JDBC Resources) present in this J2EE project
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      */
-    public Set getDatasources() {
-        Set projectDS = getSunConfig().getDatasources();
+    public Set<Datasource> getDatasources() {
+        Set<Datasource> projectDS = config.getDatasources();
         return projectDS;
     }
     
@@ -233,7 +215,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     public Datasource createDatasource(String jndiName, String  url, String username,
             String password, String driver)
             throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException    {
-        return getSunConfig().createDatasource(jndiName, url, username, password, driver);
+        return config.createDatasource(jndiName, url, username, password, driver);
     }
     
     /**
@@ -249,36 +231,36 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     }
     
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
-        getSunConfig().bindDatasourceReference(referenceName, jndiName);
+        config.bindDatasourceReference(referenceName, jndiName);
     }
     
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String jndiName) throws ConfigurationException {
-        getSunConfig().bindDatasourceReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
+        config.bindDatasourceReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
     
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
-        return getSunConfig().findDatasourceJndiName(referenceName);
+        return config.findDatasourceJndiName(referenceName);
     }
     
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
-        return getSunConfig().findDatasourceJndiNameForEjb(ejbName, referenceName);
+        return config.findDatasourceJndiNameForEjb(ejbName, referenceName);
     }
     
     /****************************  EjbResourceConfiguration ************************************/
     public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
-        getSunConfig().bindEjbReference(referenceName, referencedEjbName);
+        config.bindEjbReference(referenceName, referencedEjbName);
     }
     
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
             String referenceName,
             String referencedEjbName) throws ConfigurationException {
-        getSunConfig().bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
+        config.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
     }
     
     /****************************  MessageDestinationConfiguration ************************************/
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
-        return getSunConfig().getMessageDestinations();
+        return config.getMessageDestinations();
     }
     
     public boolean supportsCreateMessageDestination(){
@@ -286,34 +268,28 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     }
     
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type) throws UnsupportedOperationException, ConfigurationException {
-        return getSunConfig().createMessageDestination(name, type);
+        return config.createMessageDestination(name, type);
     }
     
     public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws ConfigurationException {
-        getSunConfig().bindMdbToMessageDestination(mdbName, name, type);
+        config.bindMdbToMessageDestination(mdbName, name, type);
     }
     
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
-        return getSunConfig().findMessageDestinationName(mdbName);
+        return config.findMessageDestinationName(mdbName);
     }
     
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
-        getSunConfig().bindMessageDestinationReference(referenceName, connectionFactoryName,
+        config.bindMessageDestinationReference(referenceName, connectionFactoryName,
                 destName, type);
     }
     
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
-        getSunConfig().bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName,
+        config.bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName,
                 connectionFactoryName, destName, type);
-    }
-    
-    private SunONEDeploymentConfiguration getSunConfig(){
-        checkConfiguration(config);
-        SunONEDeploymentConfiguration sunConfig = ((SunONEDeploymentConfiguration)config);
-        return sunConfig;
     }
     
     static class StaticBuildExtensionListener extends FileChangeAdapter {
@@ -419,7 +395,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             J2eeModuleProvider provider = null;
             if (project != null) {
                 org.openide.util.Lookup lookup = project.getLookup();
-                provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+                provider = lookup.lookup(J2eeModuleProvider.class);
             }
             return provider;
         }
