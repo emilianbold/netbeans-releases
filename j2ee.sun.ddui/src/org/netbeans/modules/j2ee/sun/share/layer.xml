@@ -91,6 +91,7 @@
     <folder name="org-netbeans-modules-j2ee-sun-ddui">
         <file name="sun-web.xml" url="configbean/templates/sun-web.xml"/>
         <file name="sun-ejb-jar.xml" url="configbean/templates/sun-ejb-jar.xml"/>
+        <file name="sun-cmp-mappings.xml" url="configbean/templates/sun-cmp-mappings.xml"/>
         <file name="sun-application.xml" url="configbean/templates/sun-application.xml"/>
         <file name="sun-application-client.xml" url="configbean/templates/sun-application-client.xml"/>
     </folder>
