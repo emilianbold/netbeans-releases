@@ -45,6 +45,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -459,15 +460,24 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     
     private class RemoveAction extends AbstractAction {
         RemoveAction() {
-            super(UnitTab.textForKey("SettingsTab.RemoveButton.text"));
-            putValue (MNEMONIC_KEY, UnitTab.mnemonicForKey ("SettingsTab.RemoveButton.text"));
+            super(UnitTab.textForKey("SettingsTab.RemoveButton.text"));//NOI18N
+            putValue (MNEMONIC_KEY, UnitTab.mnemonicForKey ("SettingsTab.RemoveButton.text"));//NOI18N
         }
         public void actionPerformed(ActionEvent arg0) {
             SettingsTableModel model = getSettingsTableModel();
             int[] rowIndexes = table.getSelectedRows();
             for (int rowIndex : rowIndexes) {
                 if (rowIndex != -1) {
-                    model.remove(rowIndex);
+                    UpdateUnitProvider provider = model.getUpdateUnitProvider(rowIndex);
+                    if (provider != null) {//NOI18N
+                        String msg = NbBundle.getMessage(SettingsTab.class, "SettingsTab.bRemove.message",provider.getDisplayName());
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation (msg);
+                        nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+                        Object object = DialogDisplayer.getDefault ().notify (nd);
+                        if (NotifyDescriptor.YES_OPTION.equals (object)) {
+                            model.remove(rowIndex);
+                        }
+                    }
                 }
             }
             model.refreshModel();
