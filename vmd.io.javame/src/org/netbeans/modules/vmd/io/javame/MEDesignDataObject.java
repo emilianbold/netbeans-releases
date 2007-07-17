@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class MEDesignDataObject extends J2MEDataObject implements DataObjectInterface, FileChangeListener {
 
-    private FileObject javaFile;
+//    private FileObject javaFile;
     private FileObject designFile;
     private MEDesignEditorSupport editorSupport;
     private AtomicBoolean dirty = new AtomicBoolean (false);
@@ -50,7 +50,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     public MEDesignDataObject (FileObject javaFile, FileObject designFile, MultiFileLoader loader) throws DataObjectExistsException {
         super (javaFile, loader);
         ((MEDesignDataLoader) loader).createSecondaryEntry (this, designFile);
-        this.javaFile = javaFile;
+//        this.javaFile = javaFile;
         this.designFile = designFile;
 
         editorSupport = new MEDesignEditorSupport (this);
@@ -59,7 +59,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
         cookies.add (editorSupport);
 
         designFile.addFileChangeListener (WeakListeners.create (FileChangeListener.class, this, designFile));
-//        javaFile.addFileChangeListener (WeakListeners.create (FileChangeListener.class, this, javaFile)); // TODO - it is handled by t
+//        javaFile.addFileChangeListener (WeakListeners.create (FileChangeListener.class, this, javaFile)); // handled by the CloneableEditorSupport
     }
 
     public Node createNodeDelegate () {
@@ -144,7 +144,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
         SwingUtilities.invokeLater (new Runnable() {
             public void run () {
                 dirty.set (false);
-                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation ("File " + javaFile.getPath () + " was modified externally. Reload it?", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation ("File " + designFile.getPath () + " was modified externally. Reload it?", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 if (DialogDisplayer.getDefault ().notify (confirmation) != NotifyDescriptor.YES_OPTION)
                     return;
                 IOSupport.getDocumentSerializer (MEDesignDataObject.this).restartLoadingDocument ();
