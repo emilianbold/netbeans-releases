@@ -46,8 +46,8 @@ public final class DocumentSerializer {
     private UndoRedo.Manager undoRedoManager;
     private ArrayList<WeakReference<DocumentInterface>> documentInterfaces = new ArrayList<WeakReference<DocumentInterface>> ();
 
-    private boolean loaded = false;
-    private boolean loading = false;
+    private volatile boolean loaded = false;
+    private volatile boolean loading = false;
 
     private Runnable loader = new Runnable () {
         public void run () {
@@ -91,6 +91,13 @@ public final class DocumentSerializer {
                 return;
             loading = true;
             RequestProcessor.getDefault ().post (loader);
+        }
+    }
+
+    public void restartLoadingDocument () {
+        synchronized (this) {
+            loaded = false;
+            startLoadingDocument ();
         }
     }
 

@@ -45,7 +45,7 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Utilities;
-import org.openide.filesystems.FileLock;
+import org.openide.filesystems.*;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -69,6 +69,18 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     private GuardedSectionsProvider sections;
     private UndoRedo.Manager undoRedoManager;
 
+    private FileSystem.AtomicAction atomicSaveAction = new FileSystem.AtomicAction() {
+        public void run () throws IOException {
+            saveDocumentCore ();
+        }
+        public int hashCode () {
+            return getClass ().hashCode ();
+        }
+        public boolean equals (Object obj) {
+            return getClass ().equals (obj.getClass ());
+        }
+    };
+
     public MEDesignEditorSupport(MEDesignDataObject dataObject) {
         super(dataObject, new Env (dataObject));
         this.dataObject = dataObject;
@@ -77,6 +89,10 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
 
     @Override
     public void saveDocument() throws IOException {
+        dataObject.getPrimaryFile ().getFileSystem ().runAtomicAction (atomicSaveAction);
+    }
+
+    public void saveDocumentCore() throws IOException {
         DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (dataObject);
         documentSerializer.waitDocumentLoaded();
         IOSupport.forceUpdateCode (dataObject);
@@ -209,6 +225,11 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
 
     void discardAllEdits () {
         undoRedoManager.discardAllEdits ();
+    }
+
+
+    FileSystem.AtomicAction getAtomicSaveAction () {
+        return atomicSaveAction;
     }
 
     @Override

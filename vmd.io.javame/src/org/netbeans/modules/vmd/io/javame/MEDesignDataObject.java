@@ -20,36 +20,46 @@ package org.netbeans.modules.vmd.io.javame;
 
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
 import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 import javax.swing.text.StyledDocument;
+import javax.swing.*;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author David Kaspar
  */
-public final class MEDesignDataObject extends J2MEDataObject implements DataObjectInterface {
+public final class MEDesignDataObject extends J2MEDataObject implements DataObjectInterface, FileChangeListener {
 
-//    private FileObject javaFile;
+    private FileObject javaFile;
     private FileObject designFile;
     private MEDesignEditorSupport editorSupport;
+    private AtomicBoolean dirty = new AtomicBoolean (false);
 
     public MEDesignDataObject (FileObject javaFile, FileObject designFile, MultiFileLoader loader) throws DataObjectExistsException {
         super (javaFile, loader);
         ((MEDesignDataLoader) loader).createSecondaryEntry (this, designFile);
-//        this.javaFile = javaFile;
+        this.javaFile = javaFile;
         this.designFile = designFile;
 
         editorSupport = new MEDesignEditorSupport (this);
 
         CookieSet cookies = getCookieSet ();
         cookies.add (editorSupport);
+
+        designFile.addFileChangeListener (WeakListeners.create (FileChangeListener.class, this, designFile));
+//        javaFile.addFileChangeListener (WeakListeners.create (FileChangeListener.class, this, javaFile)); // TODO - it is handled by t
     }
 
     public Node createNodeDelegate () {
@@ -99,6 +109,47 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     @Override
     protected synchronized J2MEEditorSupport createJavaEditorSupport() {
         return editorSupport;
+    }
+
+    public void fileFolderCreated (FileEvent fe) {
+        // do nothing
+    }
+
+    public void fileDataCreated (FileEvent fe) {
+        // do nothing
+    }
+
+    public void fileChanged (FileEvent fe) {
+        if (! fe.firedFrom (editorSupport.getAtomicSaveAction ()))
+            reloadDesign ();
+    }
+
+    public void fileDeleted (FileEvent fe) {
+        if (! fe.firedFrom (editorSupport.getAtomicSaveAction ()))
+            reloadDesign ();
+    }
+
+    public void fileRenamed (FileRenameEvent fe) {
+        if (! fe.firedFrom (editorSupport.getAtomicSaveAction ()))
+            reloadDesign ();
+    }
+
+    public void fileAttributeChanged (FileAttributeEvent fe) {
+        // do nothing
+    }
+
+    private void reloadDesign () {
+        if (dirty.compareAndSet (true, true))
+            return;
+        SwingUtilities.invokeLater (new Runnable() {
+            public void run () {
+                dirty.set (false);
+                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation ("File " + javaFile.getPath () + " was modified externally. Reload it?", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                if (DialogDisplayer.getDefault ().notify (confirmation) != NotifyDescriptor.YES_OPTION)
+                    return;
+                IOSupport.getDocumentSerializer (MEDesignDataObject.this).restartLoadingDocument ();
+            }
+        });
     }
 
 }
