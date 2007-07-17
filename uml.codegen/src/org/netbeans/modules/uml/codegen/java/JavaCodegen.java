@@ -91,6 +91,9 @@ public class JavaCodegen implements ICodeGenerator
 
         int counter = 0;
 
+	String tempTemplatesDirName = null;
+	FileObject tempTemplatesDirFO = null;
+		
         for (IElement pElement: elements)
         {
             // has the task been canceled by the user?
@@ -173,7 +176,7 @@ public class JavaCodegen implements ICodeGenerator
   		} else {
 		    task.log(task.TERSE, ""); // NOI18N
 		}
-		
+
 		Iterator<DomainTemplate> iterTemplates = domainTemplates.iterator();
 
 		while (iterTemplates.hasNext()) 
@@ -210,14 +213,23 @@ public class JavaCodegen implements ICodeGenerator
 			if (exportPkgFileObject != null) {
 
 			    // lets check for existing source 
-			    String extAdd = templateDataObject.getPrimaryFile().getExt();
+			    String templExt = templateDataObject.getPrimaryFile().getExt();
+			    String extAdd = domainTemplate.getExtension();
 			    if (extAdd != null && extAdd.length() > 0) 
 			    {
-				extAdd = "." + extAdd; // NOI18N
+				String ext = extAdd;
+				if (ext.startsWith(".")) 
+				{
+				    ext = ext.substring(1);
+				}				
+				if (! ext.equals(templExt)) 
+				{
+				    fmap.ext = ext;
+				}
 			    } 
 			    else
 			    {
-				extAdd = ""; // NOI18N
+				extAdd = "." + templExt; // NOI18N
 			    }
 			    String targetPackageFolderPath = exportPkgFileObject.getPath();
 			    String targetFilePath = targetPackageFolderPath
@@ -228,15 +240,18 @@ public class JavaCodegen implements ICodeGenerator
 			    if (targetFile.exists()) 
 			    {
 				fmap.existingSourcePath = targetFile.getCanonicalPath();
-				FileObject buFileObj = backupFile(targetFile);		
-				fmap.existingSourceBackupPath = buFileObj.getPath();
+				FileObject buFileObj = backupFile(targetFile);
+				if (buFileObj != null) 
+				{
+				    fmap.existingSourceBackupPath = buFileObj.getPath();
+				}
 				ParsedInfo existingFileInfo = merger.parse(targetFilePath);
 				if (existingFileInfo != null)
 				{
 				    fmap.existingFileInfo = existingFileInfo;
 				    fmap.merge = true;
 				    genToTmp = true;
-				} 				    				
+				} 		
 			    } 
 			    else 
 			    {
@@ -354,8 +369,34 @@ public class JavaCodegen implements ICodeGenerator
 				getOutputName(clinfo.getName(), domainTemplate), 
 				parameters);
 
-			    fmap.generatedFilePath = n.getPrimaryFile().getPath();
-			    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N	
+			    FileObject genedFO = n.getPrimaryFile();
+			    if (genedFO != null) 
+			    {
+				String genedPath = genedFO.getPath();
+				String genedExt = genedFO.getExt();
+				if (fmap.ext != null && ! fmap.ext.equals(genedExt)) 
+				{ 				    
+				    if (genedPath.endsWith("."+genedExt)) // really expected to 
+				    {
+					int l = ("."+genedExt).length();
+					genedPath = genedPath.substring(0, genedPath.length() - l) 
+					    + "." + fmap.ext;
+					File genedFile = FileUtil.toFile(genedFO);
+					if (genedFile != null) 
+					{
+					    genedFile.renameTo(new File(genedPath));
+					}
+				    }
+				}
+				fmap.generatedFilePath = genedPath;
+				task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N	
+			    }	
+			    else 
+			    {
+				task.log(task.TERSE, 
+					 getBundleMessage("MSG_ErrorWhileSourceCodeGenerating"));
+				errorsCount++;
+			    }
 			}
 			else 
 			{
@@ -621,8 +662,20 @@ public class JavaCodegen implements ICodeGenerator
     private FileObject backupFile(File file)
     {
         String fileName = file.getName();
-        String className = fileName.substring(0, fileName.indexOf('.'));
-        
+	String className;
+	String ext = ""; 
+	int ind = fileName.indexOf('.');
+	if (ind > -1) {
+	    className = fileName.substring(0, ind);
+	    if (ind < fileName.length()) 
+	    {
+		ext = fileName.substring(ind + 1);
+	    }
+	} 
+	else 
+	{
+	    className = fileName;
+	}	    
         String[] files = file.getParentFile().list(
             new BackupJavaFilesFilter(fileName));
         
@@ -631,9 +684,8 @@ public class JavaCodegen implements ICodeGenerator
         for (String curName: files)
         {
             String numStr = StringTokenizer2.replace(
-                curName.substring(curName.indexOf(JAVA_EXT)+5),
+                curName.substring(fileName.length()),
                 TILDE, ""); // NOI18N
-            
             try
             {
                 int seqNum = Integer.parseInt(numStr);
@@ -656,7 +708,7 @@ public class JavaCodegen implements ICodeGenerator
                 FileUtil.toFileObject(file),
                 FileUtil.toFileObject(file.getParentFile()),
                 className,
-                JAVA + nextSeqNum + TILDE);
+                ext + nextSeqNum + TILDE);
             
             return buFileObj;
         }
@@ -699,6 +751,7 @@ public class JavaCodegen implements ICodeGenerator
     public static class FileMapping {
 
 	public String targetFilePath = null;
+	public String ext = null;
 	public String generatedFilePath = null;
 	public ParsedInfo generatedFileInfo = null;
 	public String existingSourcePath = null;

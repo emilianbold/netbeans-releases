@@ -201,7 +201,7 @@ public class Merger implements IUMLParserEventsSink {
 	imports = new ArrayList<Import>();
 	packageNodes = new ArrayList<Node>();
 	pParser.processStreamFromFile(fileName);
-	if (errorHappened) 
+	if (errorHappened || classNodes.size() == 0) 
 	{
 	    return null;
 	}
