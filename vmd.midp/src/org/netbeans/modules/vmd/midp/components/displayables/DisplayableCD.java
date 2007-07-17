@@ -42,18 +42,17 @@ import org.netbeans.modules.vmd.midp.flow.FlowDisplayableCommandPinOrderPresente
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
-
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import java.util.*;
 
 /**
+ * 
  * @author David Kaspar
  */
-
 public final class DisplayableCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Displayable"); // NOI18N
@@ -100,7 +99,7 @@ public final class DisplayableCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty ("Title", PropertyEditorString.createInstance(), PROP_TITLE)
-                    .addProperty ("Ticker", PropertyEditorResourcesComboBox.createTickerPropertyEditor(), PROP_TICKER);
+                    .addProperty ("Ticker", PropertyEditorResource.createTickerPropertyEditor(), PROP_TICKER);
     }
 
     private static Presenter createSetterPresenter () {
