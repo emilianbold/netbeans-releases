@@ -203,7 +203,7 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
             DeploymentConfiguration dc = storage.getDeploymentConfiguration();
             if(dc instanceof SunONEDeploymentConfiguration) {
                 SunONEDeploymentConfiguration config = (SunONEDeploymentConfiguration) dc;
-                config.ensureResourceDefined(dd);
+//                config.ensureResourceDefined(dd); // deprecated.
             }
         }
         ConfigBeanStorage cbs = new ConfigBeanStorage(cb, this, storage);
