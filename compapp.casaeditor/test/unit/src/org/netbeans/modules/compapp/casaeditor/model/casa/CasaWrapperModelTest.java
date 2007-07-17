@@ -289,18 +289,12 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getLinkedWSDLPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestGetLinkedWSDLPort() {
+    public void testGetLinkedWSDLPort() {
         System.out.println("getLinkedWSDLPort");
-        
-        CasaPort casaPort = null;
-        CasaWrapperModel instance = null;
-        
-        Port expResult = null;
-        Port result = instance.getLinkedWSDLPort(casaPort);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        List<CasaPort> casaPorts = casaWrapperModel.getCasaPorts();
+        CasaPort casaPort = casaPorts.get(0);
+        Port result = casaWrapperModel.getLinkedWSDLPort(casaPort);
+        assertEquals(casaPort.getEndpointName(), result.getName());
     }
 
     /**
@@ -357,26 +351,6 @@ public class CasaWrapperModelTest extends TestCase {
     }
 
     /**
-     * Test of addConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
-     */
-    public void INCORRECTtestAddConnection() {
-        System.out.println("addConnection");
-        
-        CasaConnection firstConnection = 
-                casaWrapperModel.getCasaConnectionList(true).get(0);
-        CasaConsumes consumes = null;// firstConnection.getConsumer();
-        CasaProvides provides = null;
-        
-        
-        CasaConnection expResult = null;
-        CasaConnection result = casaWrapperModel.addConnection(consumes, provides);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of removeConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
     public void testRemoveConnection_CompApp() {
@@ -389,6 +363,33 @@ public class CasaWrapperModelTest extends TestCase {
         assertEquals(2, casaWrapperModel.getCasaConnectionList(true).size());
         assertEquals("deleted", casaWrapperModel.getCasaConnectionList(true).get(0).getState());
     }
+
+    /**
+     * Test of addConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
+     */
+    public void testAddConnection() {
+        System.out.println("addConnection");
+
+
+        for(int i = 0; i < casaWrapperModel.getCasaConnectionList(true).size(); i++) {
+            casaWrapperModel.removeConnection(casaWrapperModel.getCasaConnectionList(true).get(i));
+        }
+
+        CasaBindingComponentServiceUnit fileBCSU = 
+                casaWrapperModel.getBindingComponentServiceUnits().get(0);
+
+        CasaServiceEngineServiceUnit seSU = 
+                casaWrapperModel.getServiceEngineServiceUnits().get(0);
+
+        CasaPort fileCasaPort = fileBCSU.getPorts().getPorts().get(0);
+        
+        int oldConnections = casaWrapperModel.getCasaConnectionList(true).size();
+        
+        CasaConnection result = casaWrapperModel.addConnection(fileCasaPort.getConsumes(), seSU.getProvides().get(0));
+        int newConnections = casaWrapperModel.getCasaConnectionList(true).size();
+        assertEquals(newConnections, oldConnections + 1);
+    }
+
     
     /**
      * Test of removeConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
@@ -405,7 +406,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of canConnect method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestCanConnect() {
+    public void testCanConnect() {
         System.out.println("canConnect");
         
         CasaBindingComponentServiceUnit fileBCSU = 
