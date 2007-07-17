@@ -101,7 +101,10 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 	
 	public void paintTileChanged(Tile tile) {
-		if (DEBUG) System.out.println("MainView - paint tile changed " + tile.toString());
+		if (DEBUG) System.out.println("MainView - paint tile changed " + tile);
+		if (tile == null) {
+			return;
+		}
 		JComponent editor = this.currentEditable.getEditor();
 		if (editor instanceof TiledLayerEditor) {
 			TiledLayerEditor tiledLayerEditor = (TiledLayerEditor) editor;
