@@ -224,8 +224,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
     
     void cancel() {
-        logic.disconnect();
-        logic = null;
+        if (logic != null) {
+            logic.disconnect();
+            logic = null;
+        }
     }
     
     boolean isChanged() {
@@ -233,9 +235,11 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     }
     
     void applyChanges() {
-        logic.applyChanges();
-        logic.disconnect();
-        logic = null;
+        if (logic != null) {
+            logic.applyChanges();
+            logic.disconnect();
+            logic = null;
+        }
     }
            
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
