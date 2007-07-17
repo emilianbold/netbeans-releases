@@ -1155,7 +1155,7 @@ class DomProviderImpl implements DomProvider {
     }
 
     public DomProvider.DomPosition createDomPosition(Node node, boolean after) {
-        return jsfForm.getDomDocumentImpl().createDomPosition(node, after);
+        return jsfForm.getDomDocumentImpl().createNextDomPosition(node, after);
     }
 
     public DomProvider.DomRange createDomRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {

@@ -75,8 +75,10 @@ import org.w3c.dom.ranges.DocumentRange;
 //    private /* static */ Position cachedMark = new Position(null, 0, Bias.FORWARD);
 //    private /* static */ Position cachedDot = Position.create(null, 0, Bias.FORWARD);
 //    private /* static */ Position cachedMark = Position.create(null, 0, Bias.FORWARD);
-    private DomPosition cachedDot = DomPositionImpl.create(null, null, 0, Bias.FORWARD);
-    private DomPosition cachedMark = DomPositionImpl.create(null, null, 0, Bias.FORWARD);
+//    private DomPosition cachedDot = DomPositionImpl.create(null, null, 0, Bias.FORWARD);
+//    private DomPosition cachedMark = DomPositionImpl.create(null, null, 0, Bias.FORWARD);
+    private DomPosition cachedDot = DomPosition.NONE;
+    private DomPosition cachedMark = DomPosition.NONE;
     
     private Bias dotBias = Bias.FORWARD;
     private Bias markBias = Bias.FORWARD;
@@ -312,16 +314,11 @@ import org.w3c.dom.ranges.DocumentRange;
         if (dotIsFirst) {
 //            cachedDot.setLocation(domRange.getStartContainer(), domRange.getStartOffset(),
 //                empty ? dotBias : Bias.FORWARD);
-            cachedDot = DomPositionImpl.create(domDocumentImpl, domRange.getStartContainer(), domRange.getStartOffset(), empty ? dotBias : Bias.FORWARD);
+            cachedDot = domDocumentImpl.createDomPosition(domRange.getStartContainer(), domRange.getStartOffset(), empty ? dotBias : Bias.FORWARD);
         } else {
 //            cachedDot.setLocation(domRange.getEndContainer(), domRange.getEndOffset(),
 //                empty ? dotBias : Bias.BACKWARD);
-            cachedDot = DomPositionImpl.create(domDocumentImpl, domRange.getEndContainer(), domRange.getEndOffset(), empty ? dotBias : Bias.FORWARD);
-        }
-
-        // XXX #109581 Prevent possible NPE. Is it OK there is a range with null start or end?
-        if (cachedDot.getNode() == null) {
-            cachedDot = DomPosition.NONE;
+            cachedDot = domDocumentImpl.createDomPosition(domRange.getEndContainer(), domRange.getEndOffset(), empty ? dotBias : Bias.FORWARD);
         }
 
         return cachedDot;
@@ -360,18 +357,13 @@ import org.w3c.dom.ranges.DocumentRange;
         if (dotIsFirst) {
 //            cachedMark.setLocation(domRange.getEndContainer(), domRange.getEndOffset(),
 //                empty ? markBias : Bias.BACKWARD);
-            cachedMark = DomPositionImpl.create(domDocumentImpl, domRange.getEndContainer(), domRange.getEndOffset(), empty ? markBias : Bias.FORWARD);
+            cachedMark = domDocumentImpl.createDomPosition(domRange.getEndContainer(), domRange.getEndOffset(), empty ? markBias : Bias.FORWARD);
         } else {
 //            cachedMark.setLocation(domRange.getStartContainer(), domRange.getStartOffset(),
 //                empty ? markBias : Bias.FORWARD);
-            cachedMark = DomPositionImpl.create(domDocumentImpl, domRange.getStartContainer(), domRange.getStartOffset(), empty ? markBias : Bias.FORWARD);
+            cachedMark = domDocumentImpl.createDomPosition(domRange.getStartContainer(), domRange.getStartOffset(), empty ? markBias : Bias.FORWARD);
         }
 
-        // XXX #109581 Prevent possible NPE. Is it OK there is a range with null start or end?
-        if (cachedMark.getNode() == null) {
-            cachedMark = DomPosition.NONE;
-        }
-        
         return cachedMark;
     }
 

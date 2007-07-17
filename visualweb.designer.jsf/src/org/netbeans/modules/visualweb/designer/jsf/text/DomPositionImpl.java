@@ -58,11 +58,19 @@ import org.w3c.dom.Text;
      * referenced at the top of this class' javadoc. Text nodes are special handled;
      * in this case the node points to the text node and the offset to a character
      * within the text node. */
-    public static DomPositionImpl create(DomDocumentImpl domDocumentImpl, Node node, int offset, Bias bias) {
+    static DomPosition create(DomDocumentImpl domDocumentImpl, Node node, int offset, Bias bias) {
+        if (domDocumentImpl == null || node == null) {
+            return NONE;
+        }
         return new DomPositionImpl(domDocumentImpl, node, offset, bias);
     }
     
     private /*public*/ DomPositionImpl(DomDocumentImpl domDocumentImpl, Node node, int offset, Bias bias) {
+        if (domDocumentImpl == null || node == null) {
+            throw new NullPointerException(
+                    "Parameters domDocumentImpl or node may not be null" +
+                    ", domDocumentImpl=" + domDocumentImpl + ", node=" + node); // NOI18N
+        }
         this.domDocumentImpl = domDocumentImpl;
         this.node = node;
         this.offset = offset;
@@ -89,10 +97,9 @@ import org.w3c.dom.Text;
      * this element.
      */
 //    public static Position create(Node node, boolean after) {
-    public static DomPosition create(DomDocumentImpl domDocumentImpl, Node node, boolean after) {
+    static DomPosition createNext(DomDocumentImpl domDocumentImpl, Node node, boolean after) {
         if (node == null) {
-//            return NONE;
-            return DomPosition.NONE;
+            return NONE;
         }
 
         if (node.getNodeType() == Node.TEXT_NODE) {
@@ -100,6 +107,11 @@ import org.w3c.dom.Text;
                 after ? Bias.BACKWARD : Bias.FORWARD);
         } else {
             Node parent = node.getParentNode();
+            
+            if (parent == null) {
+                return NONE;
+            }
+            
             int index = -1;
 
             while (node != null) {
@@ -565,7 +577,7 @@ import org.w3c.dom.Text;
                 Node n = MarkupService.getRenderedNodeForNode(node);
 
                 if (n != null) {
-                    return new DomPositionImpl(domDocumentImpl, n, 0, Bias.FORWARD);
+                    return domDocumentImpl.createDomPosition(n, 0, Bias.FORWARD);
                 } else {
 //                    return NONE;
                     return DomPosition.NONE;
@@ -575,19 +587,19 @@ import org.w3c.dom.Text;
                 node = node.getChildNodes().item(offset - 1);
 
 //                return Position.create(((RaveRenderNode)node).getRenderedNode(), true);
-                return DomPositionImpl.create(domDocumentImpl, MarkupService.getRenderedNodeForNode(node), true);
+                return domDocumentImpl.createNextDomPosition(MarkupService.getRenderedNodeForNode(node), true);
             } else if (offset < children.getLength()) {
                 node = node.getChildNodes().item(offset);
 
 //                return Position.create(((RaveRenderNode)node).getRenderedNode(), false);
-                return DomPositionImpl.create(domDocumentImpl, MarkupService.getRenderedNodeForNode(node), false);
+                return domDocumentImpl.createNextDomPosition(MarkupService.getRenderedNodeForNode(node), false);
             } else {
                 // The offset is larger than or equal to the number of children.
                 // Use the last child.
                 node = node.getChildNodes().item(children.getLength() - 1);
 
 //                return Position.create(((RaveRenderNode)node).getRenderedNode(), true);
-                return DomPositionImpl.create(domDocumentImpl, MarkupService.getRenderedNodeForNode(node), true);
+                return domDocumentImpl.createNextDomPosition(MarkupService.getRenderedNodeForNode(node), true);
             }
 
             //      } else if (node.getNodeType() == Node.TEXT_NODE) {
@@ -711,7 +723,7 @@ import org.w3c.dom.Text;
                     Node source = MarkupService.getSourceNodeForNode(curr);
 
                     if (source != null) {
-                        return DomPositionImpl.create(domDocumentImpl, source, true);
+                        return domDocumentImpl.createNextDomPosition(source, true);
                     }
 
                     curr = curr.getParentNode();
@@ -730,7 +742,7 @@ import org.w3c.dom.Text;
                     Node source = MarkupService.getSourceNodeForNode(curr);
 
                     if (source != null) {
-                        return DomPositionImpl.create(domDocumentImpl, source, false);
+                        return domDocumentImpl.createNextDomPosition(source, false);
                     }
 
                     curr = curr.getParentNode();
@@ -750,7 +762,7 @@ import org.w3c.dom.Text;
                     Node source = MarkupService.getSourceNodeForNode(curr);
 
                     if (source != null) {
-                        return DomPositionImpl.create(domDocumentImpl, source, true);
+                        return domDocumentImpl.createNextDomPosition(source, true);
                     }
 
                     curr = curr.getParentNode();

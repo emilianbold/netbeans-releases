@@ -255,7 +255,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             
 //            pos.setLocation(p, 0, Bias.FORWARD);
 //            caret.setDot(new Position(p, 0, Bias.FORWARD));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, p, 0, Bias.FORWARD)));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(p, 0, Bias.FORWARD)));
         }
 
         if (str.equals("\n") || str.equals("\r\n")) {
@@ -293,7 +293,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             }
 
 //            caret.setDot(new Position(targetNode, targetOffset, pos.getBias()));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, targetNode, targetOffset, pos.getBias())));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(targetNode, targetOffset, pos.getBias())));
         } else if ((node.getNodeType() == Node.ELEMENT_NODE) ||
                 (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE)) {
             NodeList list = node.getChildNodes();
@@ -320,7 +320,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                 node.appendChild(text);
                 
 //                caret.setDot(new Position(text, str.length(), Bias.FORWARD));
-                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, str.length(), Bias.FORWARD)));
+                fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(text, str.length(), Bias.FORWARD)));
 
                 return true;
             } else if (offset < len) {
@@ -333,7 +333,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                     text.appendData(str);
                     
 //                    caret.setDot(new Position(text, text.getLength(), pos.getBias()));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, text.getLength(), pos.getBias())));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(text, text.getLength(), pos.getBias())));
 
                     return true;
                 } else {
@@ -351,7 +351,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                     node.insertBefore(text, before);
                     
 //                    caret.setDot(new Position(text, str.length(), Bias.FORWARD));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, str.length(), Bias.FORWARD)));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(text, str.length(), Bias.FORWARD)));
 
                     return true;
                 }
@@ -515,7 +515,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
             // Locate end of the current list item
 //            Position listItemEnd = Position.create(list, true);
-            DomPosition listItemEnd = DomPositionImpl.create(this, list, true);
+            DomPosition listItemEnd = createNextDomPosition(list, true);
             domRange.setEnd(listItemEnd.getNode(), listItemEnd.getOffset());
 
             DocumentFragment df = domRange.extractContents();
@@ -559,7 +559,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             }
 
 //            caret.setDot(new Position(li, 0, Bias.FORWARD));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, li, 0, Bias.FORWARD)));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(li, 0, Bias.FORWARD)));
         } else {
             // TODO - if the offset is 0, or end, we don't have
             // to split!
@@ -597,10 +597,10 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
                 if (next instanceof Element) {
 //                    caret.setDot(Position.create((Element)next, false));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, (Element)next, false)));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, createNextDomPosition((Element)next, false)));
                 } else {
 //                    caret.setDot(Position.create(br, after));
-                    fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, br, after)));
+                    fireInsertUpdate(new DefaultDomDocumentEvent(this, createNextDomPosition(br, after)));
                 }
             } else if (offset == 0) {
                 // Insert before our text node
@@ -610,7 +610,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                         parent, text);
                 
 //                caret.setDot(new Position(text, 0, Bias.FORWARD));
-                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, 0, Bias.FORWARD)));
+                fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(text, 0, Bias.FORWARD)));
             } else {
                 // Insert in the middle of the text node; split it
                 org.w3c.dom.Text secondHalf = text.splitText(offset);
@@ -633,7 +633,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                                 text.getParentNode(), secondHalf.getNextSibling());
                         
 //                        caret.setDot(Position.create(br, false));
-                        fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, br, false)));
+                        fireInsertUpdate(new DefaultDomDocumentEvent(this, createNextDomPosition(br, false)));
 
                         return;
                     }
@@ -641,7 +641,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
                 //caret.setDot(Position.create(br, true));
 //                caret.setDot(new Position(secondHalf, 0, Bias.FORWARD));
-                fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, secondHalf, 0, Bias.FORWARD)));
+                fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(secondHalf, 0, Bias.FORWARD)));
             }
         }
     }
@@ -703,7 +703,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
             parent.insertBefore(text, next);
             
 //            caret.setDot(new Position(text, str.length(), Bias.FORWARD));
-            fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, text, str.length(), Bias.FORWARD)));
+            fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(text, str.length(), Bias.FORWARD)));
 
             return;
         }
@@ -799,7 +799,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
         // XXX check that this works on Windows too - or do they
         // use \r\n ?
 //        caret.setDot(new Position(targetNode, targetOffset, Bias.FORWARD));
-        fireInsertUpdate(new DefaultDomDocumentEvent(this, DomPositionImpl.create(this, targetNode, targetOffset, Bias.FORWARD)));
+        fireInsertUpdate(new DefaultDomDocumentEvent(this, createDomPosition(targetNode, targetOffset, Bias.FORWARD)));
     }
 
 //    /** XXX Copy also in insync/FacesDnDSupport
@@ -1486,11 +1486,17 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 
     
     public DomProvider.DomPosition createDomPosition(Node node, int offset, DomPosition.Bias bias) {
+        if (node == null) {
+            return DomPosition.NONE;
+        }
         return DomPositionImpl.create(this, node, offset, bias);
     }
 
-    public DomProvider.DomPosition createDomPosition(Node node, boolean after) {
-        return DomPositionImpl.create(this, node, after);
+    public DomProvider.DomPosition createNextDomPosition(Node node, boolean after) {
+        if (node == null) {
+            return DomPosition.NONE;
+        }
+        return DomPositionImpl.createNext(this, node, after);
     }
 
     public DomProvider.DomRange createRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {
@@ -1542,7 +1548,7 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
 //        Position currPos = Position.create(element, false);
 //        Position currPos = Position.create(componentRootElement, false);
 //        DomPosition currPos = webform.createDomPosition(componentRootElement, false);
-        DomPosition currPos = createDomPosition(componentRootElement, false);
+        DomPosition currPos = createNextDomPosition(componentRootElement, false);
 
         if (pos.equals(currPos)) {
             return true; // Already in the right place - done
