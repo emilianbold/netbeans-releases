@@ -398,8 +398,8 @@ public class OptionsPanel extends JPanel {
             setHorizontalTextPosition (CENTER);
             setHorizontalAlignment (CENTER);
             addMouseListener (this);
-            setFocusable (true);
-            setFocusTraversalKeysEnabled (true);
+            setFocusable (false);
+            setFocusTraversalKeysEnabled (false);
             setForeground (Color.black);
             
             if (isMac) {
