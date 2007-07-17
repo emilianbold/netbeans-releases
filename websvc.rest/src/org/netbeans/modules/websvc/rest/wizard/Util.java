@@ -192,12 +192,16 @@ public class Util {
     }
     
     public static String lowerFirstChar(String name) {
+        if (name.isEmpty()) return name;
+        
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toLowerCase(name.charAt(0)));
         return sb.toString();
     }
     
     public static String upperFirstChar(String name) {
+        if (name.isEmpty()) return name;
+        
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
         return sb.toString();
