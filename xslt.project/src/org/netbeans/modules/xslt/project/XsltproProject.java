@@ -222,7 +222,7 @@ public class XsltproProject implements Project, AntProjectListener {
         sourcesHelper.addPrincipalSourceRoot("${"+SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
         
         sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", SOURCES_TYPE_XSLTPRO, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+//        sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", ProjectConstants.SOURCES_TYPE_XML, srcJavaLabel, /*XXX*/null, null);
         
         ProjectManager.mutex().postWriteRequest(new Runnable() {
