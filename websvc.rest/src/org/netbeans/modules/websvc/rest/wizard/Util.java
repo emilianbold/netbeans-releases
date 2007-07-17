@@ -192,7 +192,7 @@ public class Util {
     }
     
     public static String lowerFirstChar(String name) {
-        if (name.isEmpty()) return name;
+        if (name.length() == 0) return name;
         
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toLowerCase(name.charAt(0)));
@@ -200,7 +200,7 @@ public class Util {
     }
     
     public static String upperFirstChar(String name) {
-        if (name.isEmpty()) return name;
+        if (name.length() == 0) return name;
         
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
