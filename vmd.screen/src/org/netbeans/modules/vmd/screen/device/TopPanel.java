@@ -101,6 +101,8 @@ public class TopPanel extends JPanel {
                 devicePanel.getController().getDocument().getTransactionManager().readAccess(new Runnable() {
                     public void run() {
                         dragedComponent = devicePanel.getDesignComponentAt(dgEvent.getDragOrigin());
+                        if (dragedComponent == null)
+                            return;
                         ScreenDisplayPresenter presenter = dragedComponent.getPresenter(ScreenDisplayPresenter.class);
                         if (presenter == null || presenter.isDraggable() == false) {
                             innerDragingInProgress = false;
