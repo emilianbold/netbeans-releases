@@ -132,11 +132,11 @@ public class Index {
                     FileObject fo = FileUtil.toFileObject (file);
                     if (fo == null) {
                         System.out.println (Index.class.getName () + " File not found: " + file);
-                        continue;
+                    } else {
+                        roots.add (fo);
+                        if (fo.equals (projectDir))
+                            result = new File (cacheFolder, "s" + i);
                     }
-                    roots.add (fo);
-                    if (fo.equals (projectDir))
-                        result = new File (cacheFolder, "s" + i);
                     path = reader.readLine ();
                     i++;
                 }
