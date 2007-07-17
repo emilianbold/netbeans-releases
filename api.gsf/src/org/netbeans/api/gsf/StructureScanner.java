@@ -21,9 +21,6 @@ package org.netbeans.api.gsf;
 
 import java.util.List;
 import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.StructureItem;
 
 /**
  * Given a parse tree, scan its structure and produce a flat list of

@@ -23,6 +23,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.gsf.annotations.NonNull;
 
 
@@ -95,4 +96,17 @@ public interface BracketCompletion {
      */
     @NonNull
     List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset);
+    
+    /**
+     * Compute the previous word position, if any. Can be used to implement
+     * camel case motion etc.
+     * 
+     * @param doc The document to move in
+     * @param caretOffset The caret position corresponding to the current word
+     * @param reverse If true, move forwards, otherwise move backwards (e.g. "previous" word)
+     * @return The next word boundary offset in the given direction, or -1 if this
+     *   implementation doesn't want to compute word boundaries (the default will be used)
+     */
+    @CheckForNull
+    int getNextWordOffset(Document doc, int caretOffset, boolean reverse);
 }

@@ -197,6 +197,44 @@ public class BracketCompleterTest extends RubyTestBase {
         }
     }
     
+    private void deleteWord(String original, String expected) throws BadLocationException {
+        int afterRemoveOffset = original.indexOf('^');
+        int finalCaretPos = expected.indexOf('^');
+        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
+        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+
+        BracketCompleter bc = new BracketCompleter();
+
+        BaseDocument doc = getDocument(original);
+
+        JTextArea ta = new JTextArea(doc);
+        Caret caret = ta.getCaret();
+        caret.setDot(afterRemoveOffset);
+        int dot = afterRemoveOffset;
+        //REMOVE char ch = doc.getChars(dot-1, 1)[0];
+
+        int begin = bc.getNextWordOffset(doc, dot, true);
+        if (begin == -1) {
+            begin = Utilities.getPreviousWord(ta, dot);
+        }
+        
+        doc.atomicLock();
+        DocumentUtilities.setTypingModification(doc, true);
+
+        try {
+            doc.remove(begin, dot-begin);
+            caret.setDot(begin);
+            String formatted = doc.getText(0, doc.getLength());
+            assertEquals(expected, formatted);
+            if (finalCaretPos != -1) {
+                assertEquals(finalCaretPos, caret.getDot());
+            }
+        } finally {
+            DocumentUtilities.setTypingModification(doc, false);
+            doc.atomicUnlock();
+        }
+    }
+
     public void testInsertX() throws Exception {
         insertChar("c^ass", 'l', "cl^ass");
     }
@@ -212,18 +250,17 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("# Hello^", '(', "# Hello(^");
     }
 
-    // BROKEN because of the lexer bug (108889) - disabled for now
-//    public void testNoMatchInStrings() throws Exception {
-//        insertChar("x = \"^\"", '\'', "x = \"'^\"");
-//        insertChar("x = \"^\"", '[', "x = \"[^\"");
-//        insertChar("x = \"^\"", '(', "x = \"(^\"");
-//        insertChar("x = \"^)\"", ')', "x = \")^)\"");
-//        insertChar("x = '^'", '"', "x = '\"^'");
-//        insertChar("x = \"\nf^\n\"", '\'', "x = \"\nf'^\n\"");
-//        insertChar("x = \"\nf^\n\"", '[', "x = \"\nf[^\n\"");
-//        insertChar("x = \"\nf^\n\"", '(', "x = \"\nf(^\n\"");
-//        insertChar("x = '\nf^\n'", '"', "x = '\nf\"^\n'");
-//    }
+    public void testNoMatchInStrings() throws Exception {
+        insertChar("x = \"^\"", '\'', "x = \"'^\"");
+        insertChar("x = \"^\"", '[', "x = \"[^\"");
+        insertChar("x = \"^\"", '(', "x = \"(^\"");
+        insertChar("x = \"^)\"", ')', "x = \")^)\"");
+        insertChar("x = '^'", '"', "x = '\"^'");
+        insertChar("x = \"\nf^\n\"", '\'', "x = \"\nf'^\n\"");
+        insertChar("x = \"\nf^\n\"", '[', "x = \"\nf[^\n\"");
+        insertChar("x = \"\nf^\n\"", '(', "x = \"\nf(^\n\"");
+        insertChar("x = '\nf^\n'", '"', "x = '\nf\"^\n'");
+    }
     
     public void testSingleQuotes1() throws Exception {
         insertChar("x = ^", '\'', "x = '^'");
@@ -369,12 +406,9 @@ public class BracketCompleterTest extends RubyTestBase {
 //        insertChar("x = %q((^))", ')', "x = %q(()^)");
 //    }
 
-    // Broken!
-    // This test fails for an unknown reason. It only happens within the
-    // test harness, not when I try to reproduce it by hand!
-//    public void testSinglePercent5() throws Exception {
-//        insertChar("x = %q((^))", 'a', "x = %q((a^))");
-//    }
+    public void testSinglePercent5() throws Exception {
+        insertChar("x = %q((^))", 'a', "x = %q((a^))");
+    }
     
     public void testSinglePercent6() throws Exception {
         insertChar("x = %q^", '-', "x = %q-^-");
@@ -523,7 +557,7 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = \"foo ^\"", '#', "x = \"foo #{^}\"");
     }
 
-    // Triggers test108889!
+    // This is broken!
 //    public void testInsertPercentInString2() throws Exception {
 //        // Make sure type-through works
 //        insertChar("x = \"foo #{^}\"", '}', "x = \"foo #{}^\"");
@@ -545,6 +579,40 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
     }
 
+    public void testReplaceCommentSelectionBold() throws Exception {
+        insertChar("# foo^", '*', "# *foo*^", "foo");
+    }
+
+    public void testReplaceCommentSelectionTerminal() throws Exception {
+        insertChar("# foo^", '+', "# +foo+^", "foo");
+    }
+
+    public void testReplaceCommentSelectionItalic() throws Exception {
+        insertChar("# foo^", '_', "# _foo_^", "foo");
+    }
+
+    public void testReplaceCommentSelectionWords() throws Exception {
+        // No replacement if it contains multiple lines
+        insertChar("# foo bar^", '*', "# *^", "foo bar");
+    }
+
+    public void testReplaceCommentOther() throws Exception {
+        // No replacement if it's not one of the three chars
+        insertChar("# foo^", 'x', "# x^", "foo");
+    }
+    
+//    public void testdeleteWord() throws Exception {
+//        deleteWord("foo_bar_baz^", "foo_bar^");
+//    }
+//
+//    public void testdeleteWord2() throws Exception {
+//        deleteWord("foo_bar_baz ^", "foo_bar^");
+//    }
+//
+//    public void testdeleteWord3() throws Exception {
+//        deleteWord("FooBarBaz^", "FooBar^");
+//    }
+    
     // TODO: Test
     // - backspace deletion
     // - entering incomplete output

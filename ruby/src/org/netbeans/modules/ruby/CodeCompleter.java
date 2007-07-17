@@ -35,6 +35,7 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
@@ -102,6 +103,8 @@ import org.openide.util.Exceptions;
  *   
  * 
  * @todo Handle this case:  {@code class HTTPBadResponse &lt; StandardError; end}
+ * @todo It would be nice if you select a method that takes a block, such as Array.each, if we could
+ *   insert a { ^ } suffix
  * @todo Use lexical tokens to avoid attempting code completion within comments,
  *   literal strings and regexps
  * @todo Percent-completion doesn't work if you at this to the end of the
@@ -2925,7 +2928,81 @@ public class CodeCompleter implements Completable {
     }
     
     private static final boolean FORCE_COMPLETION_SPACES = Boolean.getBoolean("ruby.complete.spaces"); // NOI18N
+    private static final boolean AUTO_COMPLETE_DOT = !Boolean.getBoolean("ruby.no.dotcomplete");
     
+    public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        char c = typedText.charAt(0);
+        
+        if (c != '.' && c != ':') {
+            return QueryType.NONE;
+        }
 
+        int offset = component.getCaretPosition();
+        BaseDocument doc = (BaseDocument)component.getDocument();
+
+        // TODO - figure out something such that typing through, e.g. "5.2", doesn't do completion.
+        // E.g. on no matches, we cancel IF it was auto-complete initiated.
+        if (AUTO_COMPLETE_DOT && (".".equals(typedText))) {
+            // See if we're in Ruby context
+            TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+            if (ts == null) {
+                return QueryType.NONE;
+            }
+            ts.move(offset);
+            if (!ts.movePrevious()) {
+                return QueryType.NONE;
+            }
+            Token<? extends GsfTokenId> token = ts.token();
+            TokenId id = token.id();
+            
+            // ".." is a range, not dot completion
+            if (id == RubyTokenId.RANGE) {
+                return QueryType.NONE;
+            }
+
+            // TODO - handle embedded ruby
+            if ("comment".equals(id.primaryCategory()) || "string".equals(id.primaryCategory())) {
+                return QueryType.NONE;
+            }
+            
+            return QueryType.COMPLETION;
+        }
+        
+        if (":".equals(typedText)) { // NOI18N
+            // See if it was "::" and we're in ruby context
+            int dot = component.getSelectionStart();
+            try {
+                if ((dot > 1 && component.getText(dot-2, 1).charAt(0) == ':') &&
+                        isRubyContext(doc, dot-1)) {
+                    return QueryType.COMPLETION;
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+        }
+        
+        return QueryType.NONE;
+    }
     
+    public static boolean isRubyContext(BaseDocument doc, int offset) {
+        TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+
+        if (ts == null) {
+            return false;
+        }
+        
+        ts.move(offset);
+        
+        if (!ts.movePrevious() && !ts.moveNext()) {
+            return true;
+        }
+        
+        TokenId id = ts.token().id();
+        if ("comment".equals(id.primaryCategory()) || "string".equals(id.primaryCategory()) ||
+                "regexp".equals(id.primaryCategory())) {
+            return false;
+        }
+        
+        return true;
+    }
 }

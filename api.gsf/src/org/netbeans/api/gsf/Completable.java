@@ -21,6 +21,7 @@ package org.netbeans.api.gsf;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.CompletionProposal;
@@ -55,7 +56,8 @@ public interface Completable {
         COMPLETION,
         DOCUMENTATION,
         TOOLTIP,
-        ALL_COMPLETION;
+        ALL_COMPLETION,
+        NONE;
     }
 
     /**
@@ -82,6 +84,12 @@ public interface Completable {
      */
     String getPrefix(@NonNull CompilationInfo info, int caretOffset, boolean upToOffset);
 
+    /**
+     * Consider a keystroke and decide whether it should automatically invoke some type
+     * of completion. If so, return the desired type, otherwise return QueryType.NONE.
+     */
+    QueryType getAutoQuery(@NonNull JTextComponent component, String typedText);
+    
     // TODO: 
     // processKey action stuff from GsfCompletionItem to handle "(", "." etc.
     

@@ -116,12 +116,20 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
     public BracketCompleter() {
     }
+    
+    public boolean isInsertMatchingEnabled(BaseDocument doc) {
+        // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
+        //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
+        //return b == null || b.booleanValue();
+        return true; // TODO - look up
+    }
 
-    /** Newline inserted: consider adding missing "end", "}" and "=end" markers, etc. */
     public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
+        
+        boolean insertMatching = isInsertMatchingEnabled(doc);
         
         int lineBegin = Utilities.getRowStart(doc,offset);
         int lineEnd = Utilities.getRowEnd(doc,offset);
@@ -143,7 +151,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     
                     if (id == RubyTokenId.STRING_BEGIN) {
                         String text = token.text().toString();
-                        if (text.startsWith("<<")) {
+                        if (text.startsWith("<<") && insertMatching) {
                             StringBuilder markerBuilder = new StringBuilder();
 
                             for (int i = 2, n = text.length(); i < n; i++) {
@@ -219,7 +227,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
         // Is it an umatched =begin token?
         if ((id == RubyTokenId.ERROR) && (ts.offset() == (offset - 6)) &&
-                token.text().toString().startsWith("=begin")) {
+                token.text().toString().startsWith("=begin") && insertMatching) {
             doc.insertString(offset, "\n=end", null);
             caret.setDot(offset);
 
@@ -230,7 +238,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         boolean[] insertEndResult = new boolean[1];
         boolean[] insertRBraceResult = new boolean[1];
         int[] indentResult = new int[1];
-        boolean insert =
+        boolean insert = insertMatching &&
             isEndMissing(doc, offset, false, insertEndResult, insertRBraceResult, null, indentResult);
 
         if (insert) {
@@ -433,6 +441,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
+        if (!isInsertMatchingEnabled(doc)) {
+            return false;
+        }
+        
         //dumpTokens(doc, caretOffset);
 
         // Gotta look for the string begin pair in tokens since ANY character can
@@ -440,7 +452,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         if (caretOffset == 0) {
             return false;
         }
-        
+
         if (target.getSelectionStart() != -1) {
             if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
@@ -472,6 +484,23 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         TokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
+        
+        if (id == RubyTokenId.LINE_COMMENT && target.getSelectionStart() != -1) {
+            if (ch == '*' || ch == '+' || ch == '_') {
+                // See if it's a comment and if so surround the text with an rdoc modifier
+                // such as bold, teletype or italics
+                String selection = target.getSelectedText();
+                // Don't allow any spaces - you can't bracket multiple words in rdoc I think (TODO - check that)
+                if (selection != null && selection.length() > 0 && selection.charAt(0) != ch && selection.indexOf(' ') == -1) {
+                    int start = target.getSelectionStart();
+                    doc.remove(start, target.getSelectionEnd()-start);
+                    doc.insertString(start, ch + selection + matching(ch), null);
+                    target.getCaret().setDot(start+selection.length()+2);
+                
+                    return true;
+                }
+            }
+        }
 
         if (ch == '\"') {
             stringTokens = STRING_TOKENS;
@@ -1428,5 +1457,98 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         }
 
         return ranges;
+    }
+
+    public int getNextWordOffset(Document document, int offset, boolean reverse) {
+        BaseDocument doc = (BaseDocument)document;
+        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        ts.move(offset);
+
+        TokenId id;
+        
+        do {
+            if (reverse && !ts.movePrevious()) {
+                return -1;
+            } else if (!reverse && !ts.moveNext()) {
+                return -1;
+            }
+            
+            Token<? extends GsfTokenId> token = ts.token();
+            id = token.id();
+
+            if (id == RubyTokenId.IDENTIFIER || id == RubyTokenId.TYPE_SYMBOL ||
+                    id == RubyTokenId.CONSTANT ||
+                    id == RubyTokenId.GLOBAL_VAR || id == RubyTokenId.INSTANCE_VAR) {
+                String s = token.text().toString();
+                int length = s.length();
+                int wordOffset = offset-ts.offset();
+                if (reverse) {
+                    // Find previous
+                    int offsetInImage = offset - 1 - ts.offset(); 
+                    if (offsetInImage < length && Character.isUpperCase(s.charAt(offsetInImage))) {
+                        for (int i = offsetInImage - 1; i >= 0; i--) {
+                            char charAtI = s.charAt(i);
+                            if (charAtI == '_' || !Character.isUpperCase(charAtI)) {
+                                // return offset of previous uppercase char in the identifier
+                                return ts.offset() + i + 1;
+                            }
+                        }
+                        return ts.offset();
+                    } else {
+                        for (int i = offsetInImage - 1; i >= 0; i--) {
+                            char charAtI = s.charAt(i);
+                            if (charAtI == '_') {
+                                return ts.offset() + i;
+                            }
+                            if (Character.isUpperCase(charAtI)) {
+                                // now skip over previous uppercase chars in the identifier
+                                for (int j = i; j >= 0; j--) {
+                                    char charAtJ = s.charAt(j);
+                                    if (charAtJ == '_') {
+                                        return ts.offset() + j;
+                                    }
+                                    if (!Character.isUpperCase(charAtJ)) {
+                                        // return offset of previous uppercase char in the identifier
+                                        return ts.offset() + j + 1;
+                                    }
+                                }
+                                return ts.offset();
+                            }
+                        }
+                    }
+                } else {
+                    // Find next
+                    int start = wordOffset+1;
+                    if (Character.isUpperCase(s.charAt(wordOffset))) { 
+                        // if starting from a Uppercase char, first skip over follwing upper case chars
+                        for (int i = start; i < length; i++) {
+                            char charAtI = s.charAt(i);
+                            if (!Character.isUpperCase(charAtI)) {
+                                break;
+                            }
+                            if (s.charAt(i) == '_') {
+                                return ts.offset()+i;
+                            }
+                            start++;
+                        }
+                    }
+                    for (int i = start; i < length; i++) {
+                        char charAtI = s.charAt(i);
+                        if (charAtI == '_' || Character.isUpperCase(charAtI)) {
+                            return ts.offset()+i;
+                        }
+                    }
+                }
+            }
+            
+            if (reverse) {
+                offset = ts.offset();
+            } else {
+                offset = ts.offset()+token.length();
+            }
+        } while (id == RubyTokenId.WHITESPACE);
+        
+        // Default handling in the IDE
+        return -1;
     }
 }
