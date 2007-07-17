@@ -21,7 +21,6 @@
 package org.netbeans.modules.uml.ui.products.ad.graphobjects;
 import org.netbeans.modules.uml.ui.support.applicationmanager.INodePresentation;
 import java.util.Iterator;
-
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.common.ETException;
 import org.netbeans.modules.uml.common.generics.IteratorT;
@@ -65,7 +64,6 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.ITSGraphObject;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.NotificationTargets;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-
 import com.tomsawyer.editor.TSEGraph;
 import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.TSENode;
@@ -83,6 +81,7 @@ import com.tomsawyer.drawing.geometry.TSRect;
 import com.tomsawyer.util.TSObject;
 import org.netbeans.modules.uml.core.support.Debug;
 import java.util.List;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 
 public class ETNode extends TSENode implements IETNode
 {
@@ -1314,7 +1313,10 @@ public class ETNode extends TSENode implements IETNode
             IElement element =
                     TypeConversions.getElement((IETGraphObject) this);
             
-            if (pe != null && element != null)
+            // #82727, 87841 validate element in case it was removed from repository 
+            // in a situation where delete notification was not propagated
+            if (pe != null && element != null && element.getNode().getDocument() != null &&
+                UMLXMLManip.findElementByID(element.getNode().getDocument(), element.getXMIID()) != null)
             {
                 // See if the element knows about this presentation elment
                 boolean bPEIsPresent = element.isPresent(pe);
