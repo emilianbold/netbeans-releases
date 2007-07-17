@@ -161,6 +161,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
     
     public void print(JCTree t) {
+        if (t == null) return;
         blankLines(t, true);
         toLeftMargin();
 	printPrecedingComments(t);
@@ -1316,6 +1317,9 @@ public final class VeryPretty extends JCTree.Visitor {
     }
     
     private void blankLines(JCTree tree, boolean before) {
+        if (tree == null) {
+            return;
+        }
         int n = 0;
         switch (tree.getKind()) {
             case CLASS:
