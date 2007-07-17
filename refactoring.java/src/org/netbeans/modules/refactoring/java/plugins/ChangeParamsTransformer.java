@@ -25,6 +25,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
@@ -131,9 +132,12 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 }
                 newParameters.add(vt);
             }
-            
+            Set<Modifier> modifiers = new HashSet(refactoring.getModifiers());
+            if (!el.getModifiers().contains(Modifier.ABSTRACT)) {
+                modifiers.remove(Modifier.ABSTRACT);
+            }
             MethodTree nju = make.Method(
-                    make.Modifiers(refactoring.getModifiers()),
+                    make.Modifiers(modifiers),
                     current.getName(),
                     current.getReturnType(),
                     current.getTypeParameters(),
