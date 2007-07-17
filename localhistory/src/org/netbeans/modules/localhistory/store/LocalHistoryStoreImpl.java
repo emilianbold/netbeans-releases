@@ -66,6 +66,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private static final String DATA_FILE     = "data";                  // NOI18N  
     private static final String HISTORY_FILE  = "history";               // NOI18N       
     private static final String LABELS_FILE   = "labels";                // NOI18N  
+    private static final String STORAGE_FILE  = "storage";                // NOI18N  
+    
+    private static final String STORAGE_VERSION = "1.0";
     
     private File storage;
     private Turbo turbo;
@@ -81,7 +84,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 public boolean accept(File dir, String fileName) {
                     return !( fileName.endsWith(DATA_FILE)    || 
                               fileName.endsWith(HISTORY_FILE) || 
-                              fileName.endsWith(LABELS_FILE)); 
+                              fileName.endsWith(LABELS_FILE)  ||
+                              fileName.endsWith(STORAGE_FILE)); 
                 }
             };
     
@@ -612,6 +616,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         
         for(File topLevelFile : topLevelFiles) {                        
+            
+            if(topLevelFile.getName().equals(STORAGE_FILE)) {
+                continue;
+            }
+            
             File[] secondLevelFiles = topLevelFile.listFiles();
             if(secondLevelFiles == null || secondLevelFiles.length == 0) {
                 FileUtils.deleteRecursively(topLevelFile);
@@ -781,8 +790,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         String userDir = System.getProperty("netbeans.user");                   // NOI18N                
         storage = new File(new File (userDir , "var"), "filehistory");       // NOI18N                    
         if(!storage.exists()) {
-            storage.mkdirs();
+            storage.mkdirs();            
         }        
+        writeStorage();
     }    
 
     private File getStoreFolder(File file) {                        
@@ -948,6 +958,21 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             file = getDataFile(file);
         }
         return (StoreDataFile) turbo.readEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES);
+    }
+
+    private void writeStorage() {        
+        DataOutputStream dos = null;
+        try {
+            dos = getOutputStream(new File(storage, STORAGE_FILE), false);            
+            writeString(dos, STORAGE_VERSION);
+            dos.flush();
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);                
+        } finally {
+            if (dos != null) {
+                try { dos.close(); } catch (IOException e) { }
+            }
+        }   
     }
 
     private void writeStoreData(File file, StoreDataFile data, boolean isOriginalFile) {        
