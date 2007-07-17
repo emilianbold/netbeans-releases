@@ -28,12 +28,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -498,7 +500,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 // XXX should also test merged content in the case of Editors/**; see editor/mimelookup/api
             }
         }
-        assertEquals("No warnings relating to folder ordering: " + h.errors(), 0, h.errors().size());
+        assertEquals("No warnings relating to folder ordering", Collections.emptySet(), new TreeSet<String>(h.errors()));
     }
 
     private static byte[] getFileContent(FileObject fo) throws IOException {
