@@ -94,9 +94,15 @@ public class UnitTab extends javax.swing.JPanel {
     private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
         public void run () {
             if (filter != null) {
+                int row = getSelectedRow();
+                final Unit u = (row >= 0) ? getModel().getUnitAtRow(row) : null;
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
                 Runnable runAftreWards = new Runnable (){
                     public void run () {
+                        if (u != null) {
+                            int row = findRow(u.updateUnit.getCodeName());
+                            restoreSelectedRow(row);
+                        }                        
                         UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
                         refreshState ();
                     }
@@ -644,7 +650,17 @@ public class UnitTab extends javax.swing.JPanel {
                 break;
             }
         }
-    }
+    }    
+    int findRow(String codeName) {
+        UnitCategoryTableModel model = getModel();
+        for (int i = 0; i < model.getRowCount();i++) {
+            Unit u = model.getUnitAtRow(i);
+            if (u != null && codeName.equals(u.updateUnit.getCodeName())) {
+                return i;
+            }
+        }
+        return -1;
+    } 
     
     
     static String textForKey (String key) {
