@@ -85,17 +85,6 @@ public class ${name} extends MIDlet {
     }//GEN-BEGIN:|5-switchDisplayable|2|
     //</editor-fold>//GEN-END:|5-switchDisplayable|2|
 
-    public void switchDisplayable(Alert alert, Displayable nextDisplayable) {//GEN-LINE:|5-switchDisplayable|0|5-preSwitch
-        // write pre-switch user code here
-        Display display = getDisplay();//GEN-BEGIN:|5-switchDisplayable|1|5-postSwitch
-        if (alert == null) {
-            display.setCurrent(nextDisplayable);
-        } else {
-            display.setCurrent(alert, nextDisplayable);
-        }//GEN-END:|5-switchDisplayable|1|5-postSwitch
-        // write post-switch user code here
-    }//GEN-LINE:|5-switchDisplayable|2|
-
 // HINT - Uncomment for accessing new MIDlet Started/Resumed logic.
 // NOTE - Be aware of resolving conflicts of following methods.
 //    /**
