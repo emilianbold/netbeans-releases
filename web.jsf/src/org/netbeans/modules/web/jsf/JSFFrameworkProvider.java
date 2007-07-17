@@ -30,6 +30,8 @@ import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
@@ -40,7 +42,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.Repository;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -57,6 +58,12 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
+    
+    private static final Logger LOGGER = Logger.getLogger(JSFFrameworkProvider.class.getName());
+    
+    private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
+    private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
+    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
     
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
@@ -88,8 +95,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                     if (jstlLibrary != null){
                                         cpExtender.addLibrary(jstlLibrary);
                                     }
-                                } catch (IOException ioe) {
-                                    //ErrorManager.getDefault().notify(ioe);
+                                } catch (IOException ioExceptoin) {
+                                    LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
                                 }
                             }
                         }
@@ -106,8 +113,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                     try {
                                         JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
                                         jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
-                                    } catch (IOException e){
-                                        Exceptions.printStackTrace(e);
+                                    } catch (IOException exception){
+                                        LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
                                     }
                                 }
                             }
@@ -115,13 +122,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         
                         if (cpExtender != null) {
                             try {
-                                cpExtender.addLibrary(jsfLib);
+                                if (jsfLib != null) {
+                                    cpExtender.addLibrary(jsfLib);
+                                }
                                 Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
                                 if (jstlLibrary != null){
                                     cpExtender.addLibrary(jstlLibrary);
                                 }
                             } catch (IOException ioe) {
-                                //ErrorManager.getDefault().notify(ioe);
+                                LOGGER.log(Level.WARNING, "Exception during extending an web project", ioe); //NOI18N
                             }
                         }
                     }
@@ -131,11 +140,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
-            result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"));
-        } catch (FileNotFoundException exc) {
-            Exceptions.printStackTrace(exc);
-        } catch (IOException exc) {
-            Exceptions.printStackTrace(exc);
+            result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp")); //NOI18N
+        } catch (FileNotFoundException exception) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N 
+        } catch (IOException exception) {
+           LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         }
         return result;
     }
@@ -234,6 +243,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         public void run() throws IOException {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
+            //faces servlet mapping
+            String facesMapping = panel == null ? "faces/*" : panel.getURLPattern();
+            
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
@@ -274,53 +286,62 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addContextParam(contextParam);
                     
                     if (isMyFaces) {
-                        Listener facesListener = (Listener) ddRoot.createBean("Listener");
-                        facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener");
+                        Listener facesListener = (Listener) ddRoot.createBean("Listener");  //NOI18N
+                        facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener"); //NOI18N
                         ddRoot.addListener(facesListener);
                     }
+                    // add welcome file
                     WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
                     if (welcomeFiles == null) {
-                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
                         ddRoot.setWelcomeFileList(welcomeFiles);
                     }
+                    // add the welcome file only if there not any
                     if (welcomeFiles.sizeWelcomeFile() == 0) {
-                        String welcomePage = ConfigurationUtils.getWelcomeFile(panel == null ? "faces/*" : panel.getURLPattern(), "welcomeJSF.jsp"); //NOI18N
-                        welcomeFiles.addWelcomeFile(welcomePage); //NOI18N
+                        if (facesMapping.charAt(0) == '/') {
+                            // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
+                            welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
+                        }
+                        else {
+                            // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
+                            // a helper file, which will foward the request to the right url
+                            welcomeFiles.addWelcomeFile(FORWARD_JSF);
+                            //copy forwardToJSF.jsp
+                            if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
+                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
+                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
+                                createFile(target, content, "UTF-8");  //NOI18N
+                            }
+                        }
                     }
-                    ddRoot.write(dd);
-                    
+                    ddRoot.write(dd);                    
                     
                 } catch (ClassNotFoundException cnfe){
-                    Exceptions.printStackTrace(cnfe);
+                    LOGGER.log(Level.WARNING, "Exception in JSFMoveClassPlugin", cnfe); //NOI18N
                 }
             }
             
             // copy faces-config.xml
-            if (canCreateNewFile(webModule.getWebInf(),"faces-config.xml")){
+            if (canCreateNewFile(webModule.getWebInf(),"faces-config.xml")) { //NO18N
                 String facesConfigTemplate = "faces-config.xml"; //NOI18N
                 if (ddRoot != null) {
                     if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
                         facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
                     }
                 }
-                String content = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/" + facesConfigTemplate).getInputStream(), "UTF-8"); //NOI18N
+                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
                 FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
                 createFile(target, content, "UTF-8"); //NOI18N
             }
             
             //copy Welcome.jsp
-            if (canCreateNewFile(webModule.getDocumentBase(), "welcomeJSF.jsp")){
-                String content = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/welcomeJSF.jsp").getInputStream(), "UTF-8"); //NOI18N
-                FileObject target = FileUtil.createData(webModule.getDocumentBase(), "welcomeJSF.jsp");//NOI18N
-                createFile(target, content, "UTF-8");  //NOI18N
-                
-                FileObject documentBase = webModule.getDocumentBase();
-                FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-                if (indexjsp != null){
-                    changeIndexJSP(indexjsp);
-                }
-            }
             
+            if (canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
+                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
+                FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);//NOI18N
+                createFile(target, content, "UTF-8");  //NOI18N
+            }
         }
         
         private boolean canCreateNewFile(FileObject parent, String name){
@@ -336,32 +357,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 create = (dialog.getValue() == org.openide.DialogDescriptor.NO_OPTION);
             }
             return create;
-        }
-        
-        /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
-         */
-        private void changeIndexJSP(FileObject indexjsp) throws IOException {
-            
-            String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
-            
-            // what find
-            String find = "<h1>JSP Page</h1>"; // NOI18N
-            String endLine = System.getProperty("line.separator"); //NOI18N
-            if ( content.indexOf(find) > 0){
-                StringBuffer replace = new StringBuffer();
-                replace.append(find);
-                replace.append(endLine);
-                replace.append("    <br/>");                        //NOI18N
-                replace.append(endLine);
-                replace.append("    <a href=\".");                  //NOI18N
-                replace.append(ConfigurationUtils.translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/welcomeJSF.jsp")); //NOI18N
-                replace.append("\">");                              //NOI18N
-                replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
-                replace.append("</a>");                             //NOI18N
-                content = content.replaceFirst(find, new String(replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
-                createFile(indexjsp, content, "UTF-8"); //NOI18N
-            }
-        }
+        }   
     }
-    
 }
