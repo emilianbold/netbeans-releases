@@ -1724,15 +1724,18 @@ public class FacesModel extends Model {
      * Workaround for bug#6468062
      */
     public void refreshAndSyncNonPageBeans(boolean deep){
-        refresh(deep);
-        //The following call enables syncing of non page beans required
-        //to refresh outline
-        ((FacesModelSet)getOwner()).findDesignContexts(new String[] {
-                "request", //NOI18N
-                "session", //NOI18N
-                "application" //NOI18N
-            });
-        
+    	// Bug Fix# 109681
+    	// Prevent NPE. No need to refresh if this is a deleted FacesModel 
+    	if (facesModelSet != null) {
+	        refresh(deep);
+			//The following call enables syncing of non page beans required
+	        //to refresh outline
+	        facesModelSet.findDesignContexts(new String[] {
+	                "request", //NOI18N
+	                "session", //NOI18N
+	                "application" //NOI18N
+	            });
+    	}
     }
     
     /** XXX Moved from designer/WebForm#refresh, the insync part.
