@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.TableSource;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -183,7 +183,7 @@ public class CmpFromDbGenerator {
             try {
                 pwm.getConfigSupport().setCMPMappingInfo(mappings);
             } catch(ConfigurationException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         
@@ -200,7 +200,7 @@ public class CmpFromDbGenerator {
                         Entity entity = findEntityForEjbClass(ejbClassName);
                         pwm.getConfigSupport().setCMPResource(entity.getEjbName(), helper.getTableSource().getName());
 		    } catch (ConfigurationException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        Exceptions.printStackTrace(ex);
 		    }
                 }
             }
@@ -214,7 +214,7 @@ public class CmpFromDbGenerator {
         
         Iterator<EntityMember> iterator = genData.getFields().iterator();
         while (iterator.hasNext()) {
-            EntityMember entityMember = (EntityMember) iterator.next();
+            EntityMember entityMember = iterator.next();
             if (entityMember.supportsFinder()) { // TODO consider not generating for primary key
                 String methodName = "findBy" + EntityMember.makeClassName(entityMember.getMemberName()); // NOI18N
                 MethodModel.Variable parameter = MethodModel.Variable.create(entityMember.getMemberType(), entityMember.getMemberName());
