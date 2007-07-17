@@ -219,10 +219,11 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        TransformTask task = new TransformTask(new MoveTransformer(this), null);
+        MoveTransformer t;
+        TransformTask task = new TransformTask(t=new MoveTransformer(this), null);
         createAndAddElements(a, task, elements, refactoring);
         fireProgressListenerStop();
-        return null;
+        return t.getProblem();
     }
     String getNewPackageName() {
         if (refactoring instanceof MoveRefactoring) {

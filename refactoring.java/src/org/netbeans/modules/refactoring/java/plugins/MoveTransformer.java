@@ -27,10 +27,12 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -44,7 +46,11 @@ public class MoveTransformer extends RefactoringVisitor {
     private boolean isThisFileMoving;
     private boolean isThisFileReferencingOldPackage = false;
     private Set<Element> elementsAlreadyImported = new HashSet();
-    
+    private Problem problem;
+
+    public Problem getProblem() {
+        return problem;
+    }
 
     public MoveTransformer(MoveRefactoringPlugin move) {
         this.move = move;
@@ -87,10 +93,17 @@ public class MoveTransformer extends RefactoringVisitor {
                             if (!workingCopy.getCompilationUnit().getPackageName().toString().equals(move.getTargetPackageName(fo)))
                                 elementsToImport.add(el);
                         }
-                    }
+                    } else if (getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent())) && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
+                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(), RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()), SourceUtils.getEnclosingTypeElement(el).getSimpleName()));
+                            }
                 } else {
                     if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
                         isThisFileReferencingOldPackage = true;
+                    }
+                    if ((!isElementMoving(el) && 
+                            getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) && 
+                            !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
+                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()), SourceUtils.getEnclosingTypeElement(el).getSimpleName()));
                     }
                 }
             }
@@ -98,6 +111,16 @@ public class MoveTransformer extends RefactoringVisitor {
         
         return super.visitIdentifier(node, p);
     }
+    
+    static final Problem createProblem(Problem result, boolean isFatal, String message) {
+        Problem problem = new Problem(isFatal, message);
+        if (result == null) {
+            return problem;
+        }
+        problem.setNext(result);
+        return problem;
+    }
+    
     
     private PackageElement getPackageOf(Element el) {
         //return workingCopy.getElements().getPackageOf(el);
