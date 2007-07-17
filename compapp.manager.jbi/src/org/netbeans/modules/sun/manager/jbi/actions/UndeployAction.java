@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -47,33 +49,30 @@ public abstract class UndeployAction extends NodeAction {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    Node parentNode = null; // the node that needs refreshing
+                    // a set of nodes that need refreshing
+                    final Set<Node> parentNodes = new HashSet<Node>(); 
                     
                     for (Node node : activatedNodes) {
                         Lookup lookup = node.getLookup();
                         Undeployable undeployable = lookup.lookup(Undeployable.class);
                         
                         if (undeployable != null) {
-                            // There will be at most one parent node that
-                            // needs refreshing
-                            if (parentNode == null) {
-                                parentNode = node.getParentNode();
-                            }
+                            parentNodes.add(node.getParentNode());
                             undeployable.undeploy(isForceAction());
                         }
                     }
                     
-                    if (parentNode != null) {
-                        final RefreshCookie refreshCookie =
-                                parentNode.getLookup().lookup(RefreshCookie.class);
-                        if (refreshCookie != null){
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            for (Node parentNode : parentNodes) {
+                                final RefreshCookie refreshCookie =
+                                        parentNode.getLookup().lookup(RefreshCookie.class);
+                                if (refreshCookie != null){                                    
                                     refreshCookie.refresh();
-                                }
-                            });
+                                }                                
+                            }
                         }
-                    }
+                    });
                 } catch(RuntimeException rex) {
                     //gobble up exception
                 }

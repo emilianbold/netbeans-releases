@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
@@ -43,20 +43,15 @@ public abstract class UninstallAction extends NodeAction {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    // a list of nodes that need refreshing
-                    final List<Node> parentNodes = new ArrayList<Node>();
+                    // a set of nodes that need refreshing
+                    final Set<Node> parentNodes = new HashSet<Node>();
                     
                     for (Node node : activatedNodes) {
                         Lookup lookup = node.getLookup();
                         Uninstallable uninstallable = lookup.lookup(Uninstallable.class);
                         
                         if (uninstallable != null) {
-                            // There will be at least one parent node that
-                            // needs refreshing
-                            Node parentNode = node.getParentNode();
-                            if (!parentNodes.contains(parentNode)) {
-                                parentNodes.add(parentNode);
-                            }
+                            parentNodes.add(node.getParentNode());
                             uninstallable.uninstall(isForceAction());
                         }
                     }
