@@ -21,35 +21,13 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="CreatorDesignerPalette5">
         
-        <!-- Sorting -->              
-        
-        
         <folder name="Converters">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime_1_2.resources.Bundle"/>
-            
-                          
-               
-                     
-            <file name="EnumConverter.comp_palette_item" url="resources/EnumConverter.comp_palette_item">
-                <attr name="position" intvalue="200"/>
-            </file>
+            <file name="EnumConverter.comp_palette_item" url="resources/EnumConverter.comp_palette_item"/>
         </folder>
         
         <folder name="Standard">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime_1_2.resources.Bundle"/>
-            
-            <!-- Begin Sort -->            
-                          
-                        
-                   
-                  
-             
-             
-             
-             
-             
-            <!-- End Sort -->
-            
             <attr name="position" intvalue="600"/>
             <file name="HtmlOutputText.comp_palette_item" url="resources/HtmlOutputText.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -75,7 +53,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="HtmlSelectOneListbox.comp_palette_item" url="resources/HtmlSelectOneListbox.comp_palette_item">
                 <attr name="position" intvalue="800"/>
             </file>
-            <file name="HtmlSelectManyListbox.comp_palette_item" url="resources/HtmlSelectManyListbox.comp_palette_item"/>
+            <file name="HtmlSelectManyListbox.comp_palette_item" url="resources/HtmlSelectManyListbox.comp_palette_item">
+                <attr name="position" intvalue="850"/>
+            </file>
             <file name="HtmlSelectBooleanCheckbox.comp_palette_item" url="resources/HtmlSelectBooleanCheckbox.comp_palette_item">
                 <attr name="position" intvalue="900"/>
             </file>

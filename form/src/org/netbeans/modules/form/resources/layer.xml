@@ -69,8 +69,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Tools">
             <folder name="PaletteManager">
+                <attr name="position" intvalue="1200"/>
                 <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance">
-                    <attr name="position" intvalue="200"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
@@ -118,14 +119,24 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JMenuBar.palette_item" url="palette/JMenuBar.palette_item">
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="JMenu.palette_item" url="palette/JMenu.palette_item"/>
-            <file name="JMenuItem.palette_item" url="palette/JMenuItem.palette_item"/>
-            <file name="JCheckBoxMenuItem.palette_item" url="palette/JCheckBoxMenuItem.palette_item"/>
-            <file name="JRadioButtonMenuItem.palette_item" url="palette/JRadioButtonMenuItem.palette_item"/>
-            <file name="JPopupMenu.palette_item" url="palette/JPopupMenu.palette_item">
+            <file name="JMenu.palette_item" url="palette/JMenu.palette_item">
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="JSeparator.palette_item" url="palette/JSeparator.palette_item"/>
+            <file name="JMenuItem.palette_item" url="palette/JMenuItem.palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="JCheckBoxMenuItem.palette_item" url="palette/JCheckBoxMenuItem.palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="JRadioButtonMenuItem.palette_item" url="palette/JRadioButtonMenuItem.palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="JPopupMenu.palette_item" url="palette/JPopupMenu.palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="JSeparator.palette_item" url="palette/JSeparator.palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>
             
             </folder>
 
@@ -271,6 +282,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="_Layouts_only_for_internal_use_">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="isNoPaletteCategory" boolvalue="true"/>
+            <attr name="position" intvalue="0"/>
             
             <file name="FlowLayout.palette_item" url="palette/FlowLayout.palette_item">
                 <attr name="position" intvalue="100"/>

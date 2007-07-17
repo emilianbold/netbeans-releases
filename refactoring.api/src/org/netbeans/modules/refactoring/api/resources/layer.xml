@@ -35,13 +35,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.CopyAction"/>
                 <attr name="position" intvalue="300"/>
             </file>
+            <file name="SafeDeleteAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction"/>
+                <attr name="position" intvalue="350"/>
+            </file>
             <file name="LastSeparator.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1100"/>
-            </file>
-            <file name="SafeDeleteAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.SafeDeleteAction"/>
-                <attr name="position" intvalue="1200"/>
             </file>
             <file name="UndoSeparator.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

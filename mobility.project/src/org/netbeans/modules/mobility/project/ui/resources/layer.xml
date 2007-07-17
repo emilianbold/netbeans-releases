@@ -466,6 +466,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/run.gif"/>
                 <file name="Run">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun"/>
                     <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
                     <attr name="triggerPropertyValue" stringvalue="CLDC"/>

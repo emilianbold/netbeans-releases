@@ -218,9 +218,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
+                    <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                 </folder>
                 
                 <folder name="HyperlinkProviders">

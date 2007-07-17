@@ -21,10 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="CreatorDesignerPalette">
         
-        <!-- Sorting -->        
-               
-        
-        
         <folder name="Layout">
             <attr name="isExpanded" boolvalue="true"/>            
             <attr name="isReadonly" boolvalue="true"/>  
@@ -90,18 +86,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime.resources.Bundle"/>
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!-- Begin Sort --> 
-             
-             
-                         
-                      
-             
-             
-             
-              
-               
-            <!-- End Sort -->
-            
             <file name="EncodingComponent.comp_palette_item" url="resources/EncodingComponent.comp_palette_item">
                 <attr name="position" intvalue="300"/>
             </file>
@@ -114,10 +98,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="CreatorDesignerPalette5">        
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime.resources.Bundle"/> -->
-        
-        <!-- Sorting -->        
-               
-        
         
         <folder name="Standard">
             <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime.resources.Bundle"/>-->
@@ -156,12 +136,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CalendarConverter.comp_palette_item" url="resources/CalendarConverter.comp_palette_item"/>            
             <file name="CharacterConverter.comp_palette_item" url="resources/CharacterConverter.comp_palette_item"/>
             <file name="DateTimeConverter.comp_palette_item" url="resources/DateTimeConverter.comp_palette_item"/>
-            <file name="DoubleConverter.comp_palette_item" url="resources/DoubleConverter.comp_palette_item">
-                <attr name="position" intvalue="100"/>
-            </file>
-            <file name="FloatConverter.comp_palette_item" url="resources/FloatConverter.comp_palette_item">
-                <attr name="position" intvalue="300"/>
-            </file>
+            <file name="DoubleConverter.comp_palette_item" url="resources/DoubleConverter.comp_palette_item"/>
+            <file name="FloatConverter.comp_palette_item" url="resources/FloatConverter.comp_palette_item"/>
             <file name="IntegerConverter.comp_palette_item" url="resources/IntegerConverter.comp_palette_item"/>
             <file name="LongConverter.comp_palette_item" url="resources/LongConverter.comp_palette_item"/>
             <file name="NumberConverter.comp_palette_item" url="resources/NumberConverter.comp_palette_item"/>
@@ -187,9 +163,6 @@ Microsystems, Inc. All Rights Reserved.
                    
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!-- Begin Sort -->
-            <!-- End Sort -->
-
             <file name="EncodingComponent.comp_palette_item" url="resources/EncodingComponent.comp_palette_item">
                 <attr name="position" intvalue="100"/>
             </file>

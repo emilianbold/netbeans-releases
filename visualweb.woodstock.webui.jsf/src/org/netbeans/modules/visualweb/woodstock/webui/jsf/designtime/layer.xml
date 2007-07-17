@@ -22,41 +22,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="CreatorDesignerPalette5">
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>-->
         
-        <!-- Sorting -->   
-        
-        
         <folder name="Basic">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             
             <attr name="isReadonly" boolvalue="true"/>
-            <!-- Begin Sorting -->                         
-                        
-                        
-                                                      
-                                                                  
-                                                                
-                                                                    
-                                                              
-                                                                        
-                                                                                   
-                                                                                         
-                                                                               
-                                                                          
-                                                                      
-                                                                                
-                                                                                          
-                                                                                
-                                                                            
-                                                                             
-                                                                           
-                                                                                      
-                                                                            
-                                                                     
-                                                               
-                                                             
-            <!-- End Sorting -->
-            
             <attr name="position" intvalue="100"/>
             <file name="WoodstockAnchor.comp_palette_item" url="resources/WoodstockAnchor.comp_palette_item">
                 <attr name="position" intvalue="2400"/>
@@ -149,19 +119,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>
             
             <attr name="isReadonly" boolvalue="true"/>
-            <!-- Begin Sorting -->             
-                          
-              
-             
-              
-                          
-                          
-             
-              
-              
-              
-                       
-            <!-- End Sorting -->
                      
             <!-- WHERE_IS: WoodstockHtmlPanelGrid" -->
             <attr name="position" intvalue="200"/>
@@ -208,34 +165,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!-- Begin Sort -->  
-            
-            
-            <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
-
-            <attr name="WoodstockContentPageTitle.comp_palette_item/WoodstockMasthead.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockMasthead.comp_palette_item/WoodstockVersionPage.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockVersionPage.comp_palette_item/WoodstockProgressIndicator.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockProgressIndicator.comp_palette_item/WoodstockCommonTasksSection.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockCommonTasksSection.comp_palette_item/WoodstockCommonTasksGroup.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockCommonTasksGroup.comp_palette_item/WoodstockCommonTask.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockCommonTask.comp_palette_item/WoodstockEditableList.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockEditableList.comp_palette_item/WoodstockFileChooser.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockFileChooser.comp_palette_item/WoodstockHelpWindow.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockHelpWindow.comp_palette_item/WoodstockLegend.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockLegend.comp_palette_item/WoodstockOrderableList.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockOrderableList.comp_palette_item/WoodstockScheduler.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockScheduler.comp_palette_item/WoodstockWizard.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockWizard.comp_palette_item/WoodstockWizardBranch.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockWizardBranch.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardStep.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch.comp_palette_item" boolvalue="true"/> 
-            <attr name="WoodstockWizardSubstepBranch.comp_palette_item/WoodstockEditableField.comp_palette_item" boolvalue="true"/>
-
-            <!-- End of Woodstock components not included in VWP -->
-            
-            <!-- End Sort -->
-  
             <attr name="position" intvalue="300"/>
             <file name="WoodstockAlert.comp_palette_item" url="resources/WoodstockAlert.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -251,36 +180,69 @@ Microsystems, Inc. All Rights Reserved.
             </file>  
             
             <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
-            <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item"/>
-            <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item"/>
-            <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item"/>
-            <file name="WoodstockProgressIndicator.comp_palette_item" url="resources/WoodstockProgressIndicator.comp_palette_item"/>
-            <file name="WoodstockCommonTasksSection.comp_palette_item" url="resources/WoodstockCommonTasksSection.comp_palette_item"/>
-            <file name="WoodstockCommonTasksGroup.comp_palette_item" url="resources/WoodstockCommonTasksGroup.comp_palette_item"/>
-            <file name="WoodstockCommonTask.comp_palette_item" url="resources/WoodstockCommonTask.comp_palette_item"/>
-            <file name="WoodstockEditableList.comp_palette_item" url="resources/WoodstockEditableList.comp_palette_item"/>
-            <file name="WoodstockFileChooser.comp_palette_item" url="resources/WoodstockFileChooser.comp_palette_item"/>
-            <file name="WoodstockHelpWindow.comp_palette_item" url="resources/WoodstockHelpWindow.comp_palette_item"/>
-            <file name="WoodstockLegend.comp_palette_item" url="resources/WoodstockLegend.comp_palette_item"/>
-            <file name="WoodstockOrderableList.comp_palette_item" url="resources/WoodstockOrderableList.comp_palette_item"/>
-            <file name="WoodstockScheduler.comp_palette_item" url="resources/WoodstockScheduler.comp_palette_item"/>
-            <file name="WoodstockWizard.comp_palette_item" url="resources/WoodstockWizard.comp_palette_item"/>
-            <file name="WoodstockWizardBranch.comp_palette_item" url="resources/WoodstockWizardBranch.comp_palette_item"/>
-            <file name="WoodstockWizardBranchSteps.comp_palette_item" url="resources/WoodstockWizardBranchSteps.comp_palette_item"/>
-            <file name="WoodstockWizardStep.comp_palette_item" url="resources/WoodstockWizardStep.comp_palette_item"/>
-            <file name="WoodstockWizardSubstepBranch.comp_palette_item" url="resources/WoodstockWizardSubstepBranch.comp_palette_item"/> 
-	    <file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item"/>
+            <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="WoodstockProgressIndicator.comp_palette_item" url="resources/WoodstockProgressIndicator.comp_palette_item">
+                <attr name="position" intvalue="800"/>
+            </file>
+            <file name="WoodstockCommonTasksSection.comp_palette_item" url="resources/WoodstockCommonTasksSection.comp_palette_item">
+                <attr name="position" intvalue="900"/>
+            </file>
+            <file name="WoodstockCommonTasksGroup.comp_palette_item" url="resources/WoodstockCommonTasksGroup.comp_palette_item">
+                <attr name="position" intvalue="1000"/>
+            </file>
+            <file name="WoodstockCommonTask.comp_palette_item" url="resources/WoodstockCommonTask.comp_palette_item">
+                <attr name="position" intvalue="1100"/>
+            </file>
+            <file name="WoodstockEditableList.comp_palette_item" url="resources/WoodstockEditableList.comp_palette_item">
+                <attr name="position" intvalue="1200"/>
+            </file>
+            <file name="WoodstockFileChooser.comp_palette_item" url="resources/WoodstockFileChooser.comp_palette_item">
+                <attr name="position" intvalue="1300"/>
+            </file>
+            <file name="WoodstockHelpWindow.comp_palette_item" url="resources/WoodstockHelpWindow.comp_palette_item">
+                <attr name="position" intvalue="1400"/>
+            </file>
+            <file name="WoodstockLegend.comp_palette_item" url="resources/WoodstockLegend.comp_palette_item">
+                <attr name="position" intvalue="1500"/>
+            </file>
+            <file name="WoodstockOrderableList.comp_palette_item" url="resources/WoodstockOrderableList.comp_palette_item">
+                <attr name="position" intvalue="1600"/>
+            </file>
+            <file name="WoodstockScheduler.comp_palette_item" url="resources/WoodstockScheduler.comp_palette_item">
+                <attr name="position" intvalue="1700"/>
+            </file>
+            <file name="WoodstockWizard.comp_palette_item" url="resources/WoodstockWizard.comp_palette_item">
+                <attr name="position" intvalue="1800"/>
+            </file>
+            <file name="WoodstockWizardBranch.comp_palette_item" url="resources/WoodstockWizardBranch.comp_palette_item">
+                <attr name="position" intvalue="1900"/>
+            </file>
+            <file name="WoodstockWizardBranchSteps.comp_palette_item" url="resources/WoodstockWizardBranchSteps.comp_palette_item">
+                <attr name="position" intvalue="2000"/>
+            </file>
+            <file name="WoodstockWizardStep.comp_palette_item" url="resources/WoodstockWizardStep.comp_palette_item">
+                <attr name="position" intvalue="2100"/>
+            </file>
+            <file name="WoodstockWizardSubstepBranch.comp_palette_item" url="resources/WoodstockWizardSubstepBranch.comp_palette_item">
+                <attr name="position" intvalue="2200"/>
+            </file>
+	    <file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item">
+                <attr name="position" intvalue="2300"/>
+            </file>
             <!-- End fo Woodstock components not included in VWP -->
         </folder>
         <folder name="Advanced">
             <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>-->
             
             <attr name="isReadonly" boolvalue="true"/>
-            <!-- Begin Sort -->  
-              
-              
-              
-            <!-- End Sort -->
             
             <file name="WoodstockMarkup.comp_palette_item" url="resources/WoodstockMarkup.comp_palette_item">
                 <attr name="position" intvalue="800"/>
@@ -300,10 +262,18 @@ Microsystems, Inc. All Rights Reserved.
             
             <attr name="isReadonly" boolvalue="true"/>
             <!-- All of the following were subcomponents -->
-            <file name="WoodstockValueBindingSortCriteria.comp_palette_item" url="resources/WoodstockValueBindingSortCriteria.comp_palette_item"/>  
-            <file name="WoodstockValueExpressionSortCriteria.comp_palette_item" url="resources/WoodstockValueExpressionSortCriteria.comp_palette_item"/>           
-            <file name="WoodstockValueBindingFilterCriteria.comp_palette_item" url="resources/WoodstockValueBindingFilterCriteria.comp_palette_item"/>
-            <file name="WoodstockValueExpressionFilterCriteria.comp_palette_item" url="resources/WoodstockValueExpressionFilterCriteria.comp_palette_item"/>           
+            <file name="WoodstockValueBindingSortCriteria.comp_palette_item" url="resources/WoodstockValueBindingSortCriteria.comp_palette_item">
+                <attr name="position" intvalue="1200"/>
+            </file>
+            <file name="WoodstockValueExpressionSortCriteria.comp_palette_item" url="resources/WoodstockValueExpressionSortCriteria.comp_palette_item">
+                <attr name="position" intvalue="1300"/>
+            </file>
+            <file name="WoodstockValueBindingFilterCriteria.comp_palette_item" url="resources/WoodstockValueBindingFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="1400"/>
+            </file>
+            <file name="WoodstockValueExpressionFilterCriteria.comp_palette_item" url="resources/WoodstockValueExpressionFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="1500"/>
+            </file>
         </folder>
     </folder>
     

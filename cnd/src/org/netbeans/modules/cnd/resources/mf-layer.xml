@@ -436,7 +436,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="MakeTemplates">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-	    <attr name="position" intvalue="800"/>
+	    <attr name="position" intvalue="850"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
 	    
 	    <file name="ComplexMakefile">

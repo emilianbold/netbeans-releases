@@ -22,21 +22,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="CreatorDesignerPalette">        
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>-->
         
-        <!-- Sorting  -->      
-        
-        
         <folder name="DataProviders">
             <attr name="isReadonly" boolvalue="true"/>
             <attr name="isExpanded" boolvalue="false"/>
             
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
-            <!--Sorting   -->            
-               
-              
-                
-            
-            
-            
             <attr name="position" intvalue="700"/>
             <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -62,24 +52,15 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="false"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
             <attr name="isReadonly" boolvalue="true"/>
-            <!--Sorting -->   
-              
-                
-             
             <!--
             <attr name="FieldIdSortCriteria.comp_palette_item/ValueBindingSortCriteria.comp_palette_item" boolvalue="true"/> 
             <attr name="ValueBindingSortCriteria.comp_palette_item/ValueExpressionsSortCriteria.comp_palette_item" boolvalue="true"/>   
             <attr name="ValueExpressionsSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/>
             -->         
-            
-            
-            
             <!-- <attr name="NestedFilterCriteria.comp_palette_item/ValueBindingFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueBindingFilterCriteria.comp_palette_item/ValueExpressionFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueExpressionFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>       
             -->    
-            <!--End Sorting -->
-            
             <attr name="position" intvalue="800"/>
             <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -119,21 +100,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="CreatorDesignerPalette5">        
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>-->
         
-        <!-- Sorting  -->      
-        
-        
         <folder name="DataProviders">            
             <attr name="isExpanded" boolvalue="false"/>
             <attr name="isReadonly" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/> 
-            
-            <!--Sorting   -->            
-               
-              
-                
-            
-            
-            
             <attr name="position" intvalue="800"/>
             <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -159,25 +129,15 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="false"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!--Sorting -->   
-              
-                
-             
             <!--
             <attr name="FieldIdSortCriteria.comp_palette_item/ValueBindingSortCriteria.comp_palette_item" boolvalue="true"/> 
             <attr name="ValueBindingSortCriteria.comp_palette_item/ValueExpressionsSortCriteria.comp_palette_item" boolvalue="true"/>   
             <attr name="ValueExpressionsSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/>
             -->         
-            
-            
-            
             <!-- <attr name="NestedFilterCriteria.comp_palette_item/ValueBindingFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueBindingFilterCriteria.comp_palette_item/ValueExpressionFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueExpressionFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>       
             -->    
-            <!--End Sorting -->
-            
             <attr name="position" intvalue="900"/>
             <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -222,10 +182,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->            
-            <!-- End Ordering -->
-            
             <attr name="position" intvalue="100"/>
             <file name="DatabaseFirst.xml" url="codeclips/DatabaseFirst.xml">
                 <attr name="position" intvalue="100"/>
@@ -264,10 +220,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            
-            <!-- Ordering -->            
-            <!-- End Ordering -->
-            
             <attr name="position" intvalue="100"/>
             <file name="DatabaseFirst.xml" url="codeclips/DatabaseFirst.xml">
                 <attr name="position" intvalue="100"/>
@@ -298,6 +250,5 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-    
     
 </filesystem>

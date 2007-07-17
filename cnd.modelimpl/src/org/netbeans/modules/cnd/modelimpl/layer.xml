@@ -35,8 +35,8 @@
                 <folder name="Popup">
                     <file name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow/goto" boolvalue="true"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-modelimpl-platform-CppUpToDateStatusProviderFactory.instance">
@@ -47,8 +47,8 @@
                 <folder name="Popup">
                     <file name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr name="org-netbeans-modules-cnd-modelimpl-impl-services-FindReferencesAction.shadow/goto" boolvalue="true"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-cnd-modelimpl-platform-CppUpToDateStatusProviderFactory.instance">

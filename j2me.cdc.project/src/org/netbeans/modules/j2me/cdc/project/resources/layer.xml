@@ -61,6 +61,7 @@
             <folder name="Run">
                 <attr name="position" intvalue="600"/>
                 <file name="CDCRun">
+                    <attr name="position" intvalue="200"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.CustomizerRun"/>
                     <attr name="triggerPropertyName" stringvalue="platform.trigger"/>

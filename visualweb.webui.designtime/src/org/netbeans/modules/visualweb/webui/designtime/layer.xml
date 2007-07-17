@@ -3,41 +3,10 @@
 <filesystem>
     <folder name="CreatorDesignerPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
-        
-        <!-- Sorting -->       
-        
-        
         <folder name="Basic">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
-            <!-- Begin Sorting -->                         
-                        
-                        
-                                                      
-                                                                  
-                                                                
-                                                                    
-                                                              
-                                                                        
-                                                                                   
-                                                                                         
-                                                                               
-                                                                          
-                                                                      
-                                                                                
-                                                                                          
-                                                                                
-                                                                            
-                                                                             
-                                                                           
-                                                                                      
-                                                                            
-                                                                     
-                                                               
-                                                             
-            <!-- End Sorting -->
-            
             <attr name="position" intvalue="100"/>
             <file name="Anchor.comp_palette_item" url="resources/Anchor.comp_palette_item">
                 <attr name="position" intvalue="2400"/>
@@ -129,21 +98,6 @@
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
-            
-            <!-- Begin Sorting -->             
-                          
-              
-             
-              
-                          
-                          
-             
-              
-              
-              
-                       
-            <!-- End Sorting -->
-            
             <attr name="position" intvalue="200"/>
             <file name="PanelGroup.comp_palette_item" url="resources/PanelGroup.comp_palette_item">
                 <attr name="position" intvalue="200"/>
@@ -186,10 +140,6 @@
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
-            
-            <!-- Begin Sort -->   
-            <!-- End Sort -->
-  
             <attr name="position" intvalue="900"/>
             <file name="Alert.comp_palette_item" url="resources/Alert.comp_palette_item">
                 <attr name="position" intvalue="100"/>
@@ -197,26 +147,17 @@
             <file name="AddRemove.comp_palette_item" url="resources/AddRemove.comp_palette_item">
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="Breadcrumbs.comp_palette_item" url="resources/Breadcrumbs.comp_palette_item"/>     
-            <file name="HelpInline.comp_palette_item" url="resources/HelpInline.comp_palette_item"/>  
+            <file name="Breadcrumbs.comp_palette_item" url="resources/Breadcrumbs.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="HelpInline.comp_palette_item" url="resources/HelpInline.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>
         </folder>
         <folder name="Advanced">
             <attr name="isExpanded" boolvalue="false"/>
             <attr name="isReadonly" boolvalue="true"/>
             <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>-->
-              
-            <!-- Begin Sort --> 
-             
-             
-                         
-                      
-             
-             
-             
-              
-               
-            <!-- End Sort -->
-            
             <file name="Markup.comp_palette_item" url="resources/Markup.comp_palette_item">
                 <attr name="position" intvalue="100"/>
             </file>  
@@ -233,17 +174,6 @@
         </folder>
         <folder name="AdvancedDataProviders">
             <attr name="isReadonly" boolvalue="true"/> 
-               
-            
-            
-            <!--
-            <attr name="RegexFilterCriteria.comp_palette_item/NestedFilterCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="NestedFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>   
-            -->
-       
-                   
-            
-            
             <!-- All of the following were subcomponents -->
             <file name="ValueBindingSortCriteria.comp_palette_item" url="resources/ValueBindingSortCriteria.comp_palette_item">
                 <attr name="position" intvalue="600"/>

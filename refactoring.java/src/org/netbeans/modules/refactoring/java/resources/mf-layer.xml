@@ -25,6 +25,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="400"/>
             </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
+                <attr name="position" intvalue="430"/>
+            </file>
+            <file name="separator-in-java-refactoring.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="470"/>
+            </file>
             <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pullUpAction"/>
               <attr name="position" intvalue="500"/>
@@ -49,11 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.innerToOuterAction"/>
                 <attr name="position" intvalue="1000"/>
             </file>
-            -->
-         <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
-                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
-            </file>
-
         </folder>    
      </folder>   
     <folder name="Editors">
