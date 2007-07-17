@@ -124,7 +124,7 @@ public final class DeleteSupport {
         return canDelete (allComponentsToDelete) != DeletableState.DISALLOWED;
     }
 
-    public static void invokeDirectUserDeletion (DesignDocument document, Collection<DesignComponent> componentsToDelete) {
+    public static void invokeDirectUserDeletion (DesignDocument document, Collection<DesignComponent> componentsToDelete, boolean showConfirmation) {
         if (canDelete (componentsToDelete) != DeletableState.ALLOWED)
             return;
 
@@ -132,7 +132,7 @@ public final class DeleteSupport {
         if (canDelete (allComponentsToDelete) == DeletableState.DISALLOWED)
             return;
 
-        if (! ConfirmDeletionPanel.show (componentsToDelete, allComponentsToDelete))
+        if (showConfirmation  &&  ! ConfirmDeletionPanel.show (componentsToDelete, allComponentsToDelete))
             return;
 
         notifyComponentsDeleting (document.getRootComponent (), Collections.unmodifiableCollection (allComponentsToDelete));

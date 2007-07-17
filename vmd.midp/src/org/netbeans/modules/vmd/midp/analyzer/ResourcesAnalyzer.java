@@ -25,12 +25,16 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
+import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
+import org.openide.util.NbBundle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -75,11 +79,16 @@ public class ResourcesAnalyzer implements Analyzer {
                         java.util.List<DesignComponent> resources = new ArrayList<DesignComponent>();
                         DesignComponent rootComponent = document.getRootComponent ();
                         if (rootComponent != null) {
-                            for (DesignComponent component : rootComponent.getComponents()) {
-                                if (ResourcesCategoryCD.TYPEID.equals(component.getType())) {
-                                    resources.addAll(component.getComponents());
-                                }
-                            }
+                            DesignComponent commandsCategory = MidpDocumentSupport.getCategoryComponent (document, CommandsCategoryCD.TYPEID);
+                            if (commandsCategory != null)
+                                for (DesignComponent command : commandsCategory.getComponents ())
+                                    if (MidpTypes.getBoolean (command.readProperty (CommandCD.PROP_ORDINARY)))
+                                        resources.add (command);
+
+                            DesignComponent resourcesCategory = MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID);
+                            if (resourcesCategory != null)
+                                resources.addAll(resourcesCategory.getComponents());
+
                             filterResources (rootComponent, resources);
                         }
                         

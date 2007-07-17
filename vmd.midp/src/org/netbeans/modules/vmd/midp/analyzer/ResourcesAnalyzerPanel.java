@@ -19,22 +19,18 @@
 
 package org.netbeans.modules.vmd.midp.analyzer;
 
-import java.awt.Component;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteSupport;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
+import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 /**
  *
@@ -45,66 +41,104 @@ public class ResourcesAnalyzerPanel extends javax.swing.JPanel {
     private DesignDocument document;
     private Map<Long, String> resourceNames;
     private Map<Long, Icon> resourceIcons;
-    private List<Long> resourcesID;
+    private List<Long> resourceIDs;
+    private Icon resourceIcon = new ImageIcon(ResourceCD.ICON_PATH);
 
     ResourcesAnalyzerPanel() {
         initComponents();
-        resourcesID = new ArrayList<Long>();
+        resourceIDs = new ArrayList<Long>();
         resourceNames = new HashMap<Long, String>();
         resourceIcons = new HashMap<Long, Icon>();
         resourcesList.setCellRenderer(new ResourcesListRenderer());
     }
 
     void setUnusedResources(DesignDocument document,List<DesignComponent> resources) {
+        Collections.sort (resources, new Comparator<DesignComponent>() {
+            public int compare (DesignComponent c1, DesignComponent c2) {
+                int i = c1.getType ().toString ().compareToIgnoreCase (c2.getType ().toString ());
+                if (i != 0)
+                    return i;
+                String s1 = InfoPresenter.getDisplayName (c1);
+                String s2 = InfoPresenter.getDisplayName (c2);
+                if (s1 != null) {
+                    i = s1.compareToIgnoreCase (s2);
+                    if (i != 0)
+                        return i;
+                    return s1.compareTo (s2);
+                } else
+                    return s2 != null ? 1 : 0;
+            }
+        });
         // do not change list if the resource are equal
-        if (resources.size() == resourcesID.size()) {
+        if (resources.size() == resourceIDs.size()) {
             for (int i = 0; i < resources.size(); i++) {
-                if (resources.get(i).getComponentID() == resourcesID.get(i)) {
+                if (resources.get(i).getComponentID() == resourceIDs.get(i)) {
                     return;
                 }
             }
         }
 
-        resourcesID.clear();
+        resourceIDs.clear ();
+        resourceNames.clear ();
+        resourceIcons.clear ();
         this.document = document;
         ((DefaultListModel) resourcesList.getModel()).removeAllElements();
 
-        for (DesignComponent resource : resources) {
-            resourcesID.add(resource.getComponentID());
+        if (resources.isEmpty ()) {
+            ((DefaultListModel) resourcesList.getModel()).addElement(NbBundle.getMessage (ResourcesAnalyzerPanel.class, "ResourcesAnalyzer.nothing-found")); // NOI18N
+            resourcesList.clearSelection ();
+        } else {
+            for (DesignComponent resource : resources) {
+                resourceIDs.add (resource.getComponentID ());
 
-            String resourceName = MidpTypes.getString(resource.readProperty(ClassCD.PROP_INSTANCE_NAME));
-            resourceNames.put(resource.getComponentID(), resourceName);
-            Icon resourceIcon = new ImageIcon(ResourceCD.ICON_PATH);
-            resourceIcons.put(resource.getComponentID(), resourceIcon);
+                InfoPresenter info = resource.getPresenter (InfoPresenter.class);
+                String resourceName;
+                Image image;
+                if (info != null) {
+                    resourceName = info.getDisplayName (InfoPresenter.NameType.PRIMARY);
+                    image = info.getIcon (InfoPresenter.IconType.COLOR_16x16);
+                } else {
+                    Debug.warning ("Missing InfoPresenter for", resource); // NOI18N
+                    resourceName = NbBundle.getMessage (ResourcesAnalyzerPanel.class, "ResourcesAnalyzer.no-label"); // NOI18N
+                    image = null;
+                }
 
-            ((DefaultListModel) resourcesList.getModel()).addElement(resource.getComponentID());
+                resourceNames.put (resource.getComponentID (), resourceName);
+                resourceIcons.put (resource.getComponentID (), image != null ? new ImageIcon (image) : this.resourceIcon);
+
+                ((DefaultListModel) resourcesList.getModel ()).addElement (resource.getComponentID ());
+            }
+
+            int size = resourcesList.getModel().getSize();
+            if (size > 0) {
+                resourcesList.setSelectionInterval(0, size - 1);
+            }
         }
 
-        int size = resourcesList.getModel().getSize();
-        if (size > 0) {
-            resourcesList.setSelectionInterval(0, size - 1);
-        }
     }
 
-    private void removeUnusedResources(Object[] selectedElements) {
+    private void removeUnusedResources(final Object[] selectedElements) {
         document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-                for (Object selected : resourcesList.getSelectedValues()) {
+                for (Object selected : selectedElements) {
+                    if (! (selected instanceof Long))
+                        continue;
                     DesignComponent resource = document.getComponentByUID((Long) selected);
-                    if (resource != null) {
-                        document.deleteComponent(resource);
-                    }
+                    if (resource != null)
+                        DeleteSupport.invokeDirectUserDeletion (document, Collections.singleton (resource), false);
                     ((DefaultListModel) resourcesList.getModel()).removeElement(selected);
                 }
             }
         });
+        if (resourcesList.getModel ().getSize () == 0)
+            ((DefaultListModel) resourcesList.getModel()).addElement(NbBundle.getMessage (ResourcesAnalyzerPanel.class, "ResourcesAnalyzer.nothing-found")); // NOI18N
     }
     
     private class ResourcesListRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             final JLabel renderer = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (document != null) {
+            if (document != null  &&  value instanceof Long) {
                 renderer.setText(resourceNames.get((Long) value));
                 renderer.setIcon(resourceIcons.get((Long) value));
             }

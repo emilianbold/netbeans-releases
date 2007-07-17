@@ -44,7 +44,7 @@ public final class DeleteAction extends SystemAction {
             public void run() {
                 activeDocument.getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
-                        DeleteSupport.invokeDirectUserDeletion (activeDocument, activeDocument.getSelectedComponents ());
+                        DeleteSupport.invokeDirectUserDeletion (activeDocument, activeDocument.getSelectedComponents (), true);
                     }
                 });
             }
