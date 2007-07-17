@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/PurchaseOrder.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.schema.wizard.SampleSchemaIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
             <file name="LoanApplication.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/LoanApplication.xsd">
@@ -61,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/LoanApplication.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.schema.wizard.SampleSchemaIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
         </folder> <!-- XML -->
