@@ -688,7 +688,7 @@ var viewNames = new Array()
 viewNames[0] = "MSG_TEST_RESBEANS_TabularView"
 viewNames[1] = "MSG_TEST_RESBEANS_RawView"
 viewNames[2] = "MSG_TEST_RESBEANS_Headers"
-viewNames[2] = "MSG_TEST_RESBEANS_Monitor"
+viewNames[3] = "MSG_TEST_RESBEANS_Monitor"
 function getTab(id, style) {
     var c = '<div id="'+id+'"'+style+'><table class="result"><tr>';
     var style = 'otab';
@@ -868,7 +868,7 @@ function getMimeType(mime) {
     if(mime != null) {
         var i = mime.indexOf('(');
         if(i == -1)
-            return mime;
+            return getDefaultMime();
         else
             return mime.substring(i+1, mime.length-1);
     } else
