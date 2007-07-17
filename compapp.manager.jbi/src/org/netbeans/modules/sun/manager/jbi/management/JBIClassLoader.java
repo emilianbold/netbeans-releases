@@ -72,17 +72,11 @@ public class JBIClassLoader extends URLClassLoader {
     private void init(ServerInstance instance) throws MalformedURLException {
         
         // Retrieve the jar files required to make the HTTPServerConnection.
-        String serverInstanceLocation = instance.getLocation();
         
-        // For remote server, the server instance location is
-        // not defined in the config file.
-        if (serverInstanceLocation == null || serverInstanceLocation.trim().length() == 0) {
-            // We can get the local server installation location
-            // from the url string.
-            serverInstanceLocation = instance.getUrlLocation();
-        }
+        // Get the server location. This is not the domain or instance location. #90749
+        String serverLocation = instance.getUrlLocation(); 
         
-        String appserv_rt_jar = serverInstanceLocation + "/lib/appserv-rt.jar"; // NOI18N
+        String appserv_rt_jar = serverLocation + "/lib/appserv-rt.jar"; // NOI18N
         
         File appserv_rt_jarFile = new File(appserv_rt_jar);
         if (appserv_rt_jarFile.exists()) {
@@ -91,8 +85,8 @@ public class JBIClassLoader extends URLClassLoader {
             throw new RuntimeException("JbiClassLoader: Cannot find " + appserv_rt_jar + ".");
         }
         
-        String jbi_rt_jar_90 = serverInstanceLocation + "/addons/jbi/lib/jbi_rt.jar"; // NOI18N // Glassfish 9.0
-        String jbi_rt_jar_91 = serverInstanceLocation + "/jbi/lib/jbi_rt.jar"; // NOI18N // Glassfish 9.1
+        String jbi_rt_jar_90 = serverLocation + "/addons/jbi/lib/jbi_rt.jar"; // NOI18N // Glassfish 9.0
+        String jbi_rt_jar_91 = serverLocation + "/jbi/lib/jbi_rt.jar"; // NOI18N // Glassfish 9.1
         
         File jbi_rt_jarFile = new File(jbi_rt_jar_90);
         if (jbi_rt_jarFile.exists()) {
@@ -107,44 +101,4 @@ public class JBIClassLoader extends URLClassLoader {
             }
         }
     }
-    
-    /*
-    private String getJbiHome(String serverInstanceLocation) {
-        try {
-            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-//            builderFactory.setValidating(false);
-//            builderFactory.setExpandEntityReferences(false);
-            DocumentBuilder builder = builderFactory.newDocumentBuilder();
-     
-            String domloc = serverInstanceLocation
-                    + "/domains/domain1/config/domain.xml"; // NOI18N
-            File domFile = new File(domloc);
-            if (domFile.exists()) {
-                Document doc = builder.parse(domFile);
-                NodeList lcNodeList = doc
-                        .getElementsByTagName("lifecycle-module"); // NOI18N
-                for (int i = 0, isize = lcNodeList.getLength(); i < isize; i++) {
-                    Node lcNode = lcNodeList.item(i);
-                    NodeList children = lcNode.getChildNodes();
-                    for (int j = 0, jsize = children.getLength(); j < jsize; j++) {
-                        Node child = children.item(j);
-                        if (child.getNodeName().equalsIgnoreCase("property")) { // NOI18N
-                            NamedNodeMap map = child.getAttributes();
-                            String name = map.getNamedItem("name")
-                            .getNodeValue(); // NOI18N
-                            String value = map.getNamedItem("value")
-                            .getNodeValue(); // NOI18N
-                            if (name.equalsIgnoreCase("com.sun.jbi.home")) { // NOI18N
-                                return value;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error parsing XML: " + e);
-        }
-        return null;
-    }
-     */
 }

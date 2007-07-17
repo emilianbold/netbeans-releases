@@ -20,7 +20,6 @@
 package org.netbeans.modules.sun.manager.jbi.util;
 
 import java.io.Serializable;
-
 import java.util.Properties;
 
 
@@ -30,146 +29,78 @@ import java.util.Properties;
  * @author Graj TODO To change the template for this generated type comment go to Window -
  *         Preferences - Java - Code Style - Code Templates
  */
+/* 
+<attributes version="1.0">
+    <fileobject name="instance">
+        <attr name="DOMAIN" stringvalue="domain1"/>
+        <attr name="HttpMonitorOn" stringvalue="true"/>
+        <attr name="HttpProxySynced" stringvalue="true"/>
+        <attr name="LOCATION" stringvalue="C:\Glassfish-v2-b54\glassfish\domains"/>
+        <attr name="PROP_INSTANCE_ID" stringvalue="glassfish"/>
+        <attr name="displayName" stringvalue="GlassFish V2 (b54)"/>
+        <attr name="httpportnumber" stringvalue="8080"/>
+        <attr name="password" stringvalue="adminadmin"/>
+        <attr name="url" stringvalue="[C:\Glassfish-v2-b54\glassfish]deployer:Sun:AppServer::localhost:4848"/>
+        <attr name="username" stringvalue="admin"/>
+    </fileobject>
+    <fileobject name="instance_1">
+        <attr name="DOMAIN" stringvalue="GFb54_PersonalDomain2"/>
+        <attr name="HttpMonitorOn" stringvalue="true"/>
+        <attr name="HttpProxySynced" stringvalue="true"/>
+        <attr name="LOCATION" stringvalue="C:\tmp"/>
+        <attr name="PROP_INSTANCE_ID" stringvalue="glassfish_1"/>
+        <attr name="displayName" stringvalue="GlassFish V2 (b54 personal domain 2)"/>
+        <attr name="httpportnumber" stringvalue="8105"/>
+        <attr name="password" stringvalue="adminadmin"/>
+        <attr name="url" stringvalue="[C:\Glassfish-v2-b54\glassfish]deployer:Sun:AppServer::localhost:4873"/>
+        <attr name="username" stringvalue="admin"/>
+    </fileobject>
+    <fileobject name="instance_2">
+        <attr name="DOMAIN" stringvalue=""/>
+        <attr name="LOCATION" stringvalue=""/>
+        <attr name="displayName" stringvalue="GlassFish V2"/>
+        <attr name="httpportnumber" stringvalue="2848"/>
+        <attr name="password" stringvalue="adminadmin"/>
+        <attr name="url" stringvalue="[C:\Glassfish-v2-b54\glassfish]deployer:Sun:AppServer::cordova.stc.com:2848"/>
+        <attr name="username" stringvalue="admin"/>
+    </fileobject>
+</attributes>
+*/
 public class ServerInstance implements Serializable {
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String DISPLAY_NAME = "displayName"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String DOMAIN = "DOMAIN"; // NOI18N
+    static final String DISPLAY_NAME = "displayName"; // NOI18N
+    static final String DOMAIN = "DOMAIN"; // NOI18N
+    static final String HTTP_MONITOR_ON = "HttpMonitorOn"; // NOI18N
+    static final String HTTP_PORT_NUMBER = "httpportnumber"; // NOI18N
+    static final String LOCATION = "LOCATION"; // NOI18N
+    static final String PASSWORD = "password"; // NOI18N
+    static final String URL = "url"; // NOI18N
+    static final String USER_NAME = "username"; // NOI18N
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String HTTP_MONITOR_ON = "HttpMonitorOn"; // NOI18N
+    /*
+    private static final String DISPLAY_NAME_PROPERTY_KEY = "com.sun.appserver.instance.displayName"; // NOI18N
+    private static final String HOST_NAME_PROPERTY_KEY = "com.sun.appserver.instance.hostName"; // NOI18N
+    private static final String ADMINISTRATION_PORT_PROPERTY_KEY = "com.sun.appserver.instance.administrationPort"; // NOI18N
+    private static final String DOMAIN_PROPERTY_KEY = "com.sun.appserver.instance.domain"; // NOI18N
+    private static final String HTTP_MONITOR_ON_PROPERTY_KEY = "com.sun.appserver.instance.httpMonitorOn"; // NOI18N
+    private static final String HTTP_PORT_NUMBER_PROPERTY_KEY = "com.sun.appserver.instance.httpPortNumber"; // NOI18N
+    private static final String LOCATION_PROPERTY_KEY = "com.sun.appserver.instance.location"; // NOI18N
+    private static final String PASSWORD_PROPERTY_KEY = "com.sun.appserver.instance.password"; // NOI18N
+    private static final String URL_PROPERTY_KEY = "com.sun.appserver.instance.url"; // NOI18N
+    private static final String USER_NAME_PROPERTY_KEY = "com.sun.appserver.instance.userName"; // NOI18N
+    */
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String HTTP_PORT_NUMBER = "httpportnumber"; // NOI18N
+    private String displayName;
+    private String domain;
+    private String httpMonitorOn;
+    private String httpPortNumber;
+    private String location;
+    private String password;
+    private String url;
+    private String userName;
+    private String hostName;
+    private String adminPort;
     
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String LOCATION = "LOCATION"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String PASSWORD = "password"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String URL = "url"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String USER_NAME = "username"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String DISPLAY_NAME_PROPERTY_KEY = "com.sun.appserver.instance.displayName"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String HOST_NAME_PROPERTY_KEY = "com.sun.appserver.instance.hostName"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String ADMINISTRATION_PORT_PROPERTY_KEY = "com.sun.appserver.instance.administrationPort"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String DOMAIN_PROPERTY_KEY = "com.sun.appserver.instance.domain"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String HTTP_MONITOR_ON_PROPERTY_KEY = "com.sun.appserver.instance.httpMonitorOn"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String HTTP_PORT_NUMBER_PROPERTY_KEY = "com.sun.appserver.instance.httpPortNumber"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String LOCATION_PROPERTY_KEY = "com.sun.appserver.instance.location"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String PASSWORD_PROPERTY_KEY = "com.sun.appserver.instance.password"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String URL_PROPERTY_KEY = "com.sun.appserver.instance.url"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    public static final String USER_NAME_PROPERTY_KEY = "com.sun.appserver.instance.userName"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String displayName;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String domain;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String httpMonitorOn;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String httpPortNumber;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String location;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String password;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String url;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String userName;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String hostName;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    String adminPort;
   
     public ServerInstance() {
     }
@@ -274,7 +205,8 @@ public class ServerInstance implements Serializable {
     }
     
     /**
-     * DOCUMENT ME!
+     * Gets local domain's parent location. For remote domain, this location
+     * is empty.
      *
      * @return Returns the location.
      */
@@ -288,16 +220,9 @@ public class ServerInstance implements Serializable {
      * @param location The location to set.
      */
     public void setLocation(String location) {
-        //todo: 05/16/05 fix the appserver location path, skip the domains
-        int i = location.indexOf("domains"); // NOI18N
-        
-        if (i > -1) {
-            this.location = location.substring(0, i - 1);
-        } else {
-            this.location = location;
-        }
+        this.location = location;
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -351,9 +276,6 @@ public class ServerInstance implements Serializable {
         String[] separator = this.url.split(":"); // NOI18N
         
         int k = separator.length -1;
-//        for (int index = 0; index < separator.length; index++) {
-//            System.out.println("separator[" + index + "] =" + separator[index]);
-//        }
         
         /* NB5.0 Format changed...
            [C:\alaska\root\jbi\runtime\Sun\AppServer]deployer:Sun:AppServer::localhost:4848
@@ -403,7 +325,7 @@ public class ServerInstance implements Serializable {
      * DOCUMENT ME!
      *
      * @return DOCUMENT ME!
-     */
+     *
     public Properties getProperties() {
         Properties properties = new Properties();
         
@@ -449,6 +371,7 @@ public class ServerInstance implements Serializable {
         
         return properties;
     }
+    */
     
     /**
      * DOCUMENT ME!

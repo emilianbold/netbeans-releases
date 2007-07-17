@@ -284,14 +284,6 @@ public class AppserverJBIMgmtController {
             instanceHost = getHostName();
             isLocalHost = true;
         }
-        String instanceUrlLocation = instance.getUrlLocation();
-        
-        if (instanceUrlLocation == null) {
-            return false;
-        }
-        
-        instanceUrlLocation = instanceUrlLocation.replace('\\', '/'); // NOI18N
-        String instanceHttpPort = instance.getHttpPortNumber();
         
         try {
             MBeanServerConnection mbeanServerConnection = getMBeanServerConnection();
@@ -303,14 +295,21 @@ public class AppserverJBIMgmtController {
                     instanceHost.toLowerCase().startsWith(host.toLowerCase())) {    // FIXME: domain name
                 objectName = new ObjectName(HOST_ASADMIN_MBEAN_NAME);
                 String appBase = (String) mbeanServerConnection.getAttribute(objectName, "appBase");    // NOI18N
-                
+                                
+                // For local domains, use instance LOCATION instead of url location  (#90749)
+                String localInstanceLocation = instance.getLocation();
+                assert localInstanceLocation != null;                
+                localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
+                        
                 // FIXME
                 // For remote host, there is no point checking the server path.
                 // Here I am assuming there is no two remote servers running on
                 // the same machine.
-                if (!isLocalHost || appBase.toLowerCase().startsWith(instanceUrlLocation.toLowerCase())) {
+                
+                if (!isLocalHost || appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase())) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
                     String port = (String) mbeanServerConnection.getAttribute(objectName, "port");  // NOI18N
+                    String instanceHttpPort = instance.getHttpPortNumber();
                     if (port.equals(instanceHttpPort)) {
                         return true;
                     }
