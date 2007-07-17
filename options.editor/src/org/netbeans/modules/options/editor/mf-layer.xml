@@ -763,5 +763,17 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="Editors">
+        <folder name="Toolbars">
+            <folder name="Default">
+                <file name="start-macro-recording">
+                    <attr name="position" intvalue="18000"/>
+                </file>
+                <file name="stop-macro-recording">
+                    <attr name="position" intvalue="19000"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     
 </filesystem>
