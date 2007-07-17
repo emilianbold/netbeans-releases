@@ -397,7 +397,7 @@ public class CvsVersioningSystem {
     File getTopmostManagedParent(File file) {
         if (Utils.isPartOfCVSMetadata(file)) {
             for (;file != null; file = file.getParentFile()) {
-                if (file.isDirectory() && file.getName().equals(FILENAME_CVS)) {
+                if (file.getName().equals(FILENAME_CVS) && (file.isDirectory() || !file.exists())) {
                     file = file.getParentFile();
                     break;
                 }
