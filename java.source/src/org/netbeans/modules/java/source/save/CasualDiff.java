@@ -579,15 +579,15 @@ public class CasualDiff {
             newT.stats = newT.stats.tail;
         }
         PositionEstimator est = EstimatorFactory.statements(
-                ((BlockTree) oldT).getStatements(),
-                ((BlockTree) newT).getStatements(),
+                filterHidden(oldT.stats),
+                filterHidden(newT.stats),
                 workingCopy
         );
         copyTo(localPointer, oldT.pos + 1);
         int old = printer.indent();
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
-        localPointer = diffList(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.MEMBER, printer);
+        localPointer = diffList(filterHidden(oldT.stats), filterHidden(newT.stats), oldT.pos + 1, est, Measure.MEMBER, printer);
         printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
             copyTo(localPointer, localPointer = endPos(oldT));
@@ -1856,7 +1856,7 @@ public class CasualDiff {
         return false;
     }
     
-    private List<JCTree> filterHidden(List<JCTree> list) {
+    private List<JCTree> filterHidden(List<? extends JCTree> list) {
         List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         boolean enumConstants = false;
