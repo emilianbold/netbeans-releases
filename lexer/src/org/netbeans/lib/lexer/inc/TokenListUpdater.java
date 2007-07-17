@@ -447,7 +447,7 @@ public final class TokenListUpdater {
             // There should remain at least one added token since that one
             // may not be the same like the original removed one because
             // token lengths would differ because of the input source modification.
-            while (lastAddedTokenIndex >= 1 && index > relexIndex) {
+            while (lastAddedTokenIndex >= 1 && index > relexIndex && index < tokenList.tokenCount()) {
                 AbstractToken<T> addedToken = LexerUtilsConstants.token(
                         change.addedTokensOrBranches().get(lastAddedTokenIndex));
                 AbstractToken<T> removedToken = token(tokenList, index);
