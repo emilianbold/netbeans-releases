@@ -46,7 +46,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-import org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -131,6 +130,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         return module;
     }
     
+    
     public synchronized Lookup getLookup() {
         if (null == lookup) {
             lookup = Lookups.fixed(this);
@@ -153,15 +153,13 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     public void setCMPResource(String ejbName, String jndiName) throws ConfigurationException {
         config.setCMPResource(ejbName, jndiName);
     }
+
     
     /** Conduit to pass the cmp mapping information directly to the configuration
      *  backend.
      */
-    public void setMappingInfo(OriginalCMPMapping[] mapping){
-        EjbJarRoot ejbJarRoot = config.getEjbJarRoot();
-        if(ejbJarRoot != null) {
-            ejbJarRoot.mapCmpBeans(mapping);
-        }
+    public void setMappingInfo(OriginalCMPMapping[] mapping) throws ConfigurationException {
+        config.mapCmpBeans(mapping);
     }
     
     
