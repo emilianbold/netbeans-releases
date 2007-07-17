@@ -31,6 +31,9 @@ import java.util.Collection;
  * <p>
  * This interface is used to listen on document change and you need to lock additional lock or mutex
  * or some initialization/finalization code must performed before/after the event firing.
+ * <p>
+ * NOTE: Be aware that the creation of this class is called when a DesignDocument is creating,
+ * do not perform any action which may call/use DesignDocument since the document is not initialized yet.
  *
  * @author David Kaspar
  */
