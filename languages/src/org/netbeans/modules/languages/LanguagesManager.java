@@ -299,9 +299,15 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             if (actionAdded) {
                 createSeparator(popup, "SeparatorBeforeCut", pos + increment);
             }
-            FileUtil.createData (popup, "generate-fold-popup").setAttribute("position", findPositionOfDefaultPopupAction("org-openide-actions-PasteAction.instance", 3000) + 50);
+            if (l.getFeatures("FOLD").size() > 0) {
+                FileUtil.createData (popup, "generate-fold-popup").setAttribute(
+                    "position",
+                    findPositionOfDefaultPopupAction("org-openide-actions-PasteAction.instance", 3000) + 50
+                );
+            }
             // init actions
     }
+    
     private static int findPositionOfDefaultPopupAction(String name, int fallback) {
         FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Editors/Popup/" + name);
         if (f != null) {
@@ -322,7 +328,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         separator.setAttribute ("instanceClass", "javax.swing.JSeparator");
         separator.setAttribute("position", position);
     }
-    
     
     // innerclasses ............................................................
     
@@ -353,6 +358,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         public void fileRenamed (FileRenameEvent fe) {
         }
     }
+    
 }
 
 
