@@ -19,32 +19,17 @@
 
 package org.netbeans.modules.localhistory.store;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.localhistory.utils.FileUtils;
 
 /**
 */
-public class StoreTest extends NbTestCase {
-    
-    private static int DELETED = 0;
-    private static int TOUCHED = 1;
-    
+public class StoreTest extends LHTestCase {
+        
     public StoreTest(String testName) {
         super(testName);      
     }
@@ -69,12 +54,6 @@ public class StoreTest extends NbTestCase {
         assertFile(file, store, ts, -1, 2, 1, "data", TOUCHED);
 
         File storefile = store.getStoreFile(file, ts);
-        // try again
-//        if(store.lastModified(file) != ts) {
-//            createFile(store, file, ts, "data");
-//        }
-        // no changes ?
-        assertFile(file, store, ts, storefile.lastModified(), 2, 1, "data", TOUCHED);
 
         // create file2 in store
         file = new File(getDataDir(), "file2");
@@ -82,14 +61,7 @@ public class StoreTest extends NbTestCase {
         // is it there?
         assertFile(file, store, ts, -1, 2, 1, "data", TOUCHED);
 
-        // check the whole repository
-//        File mainDir = getStoreMainFolder();
-//        File[] files = mainDir.listFiles();
-//        assertTrue(files != null && files.length == 2);
-//        files = files[0].listFiles();
-//        assertTrue(files != null && files.length == 1);
-//        files = files[1].listFiles();
-//        assertTrue(files != null && files.length == 1);
+
         // create file in store
         File folder = new File(getDataDir(), "folder");
         ts = System.currentTimeMillis();
@@ -313,79 +285,7 @@ public class StoreTest extends NbTestCase {
         String strFile = read(new FileInputStream(entriesMap.get("fileChangedAfterRevert").getFile()), 1024);
         assertNotSame(strFile, strStore);
     }     
-    
-    public void testCleanUp() throws Exception { 
-        LocalHistoryTestStore store = createStore();
-        File folder = new File(getDataDir(), "datafolder");        
-        folder.mkdirs();
-        
-        // create the files
-        File file1 = new File(folder, "file1");
-        File file2 = new File(folder, "file2");
-        File file3 = new File(folder, "file3");
-        File file4 = new File(folder, "file4");
-        File file5 = new File(folder, "file5");
-        
-        // lets get some history
-        
-        // 4 days ago
-        long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
-        createFile(store, folder, ts, null);
-        createFile(store, file1, ts + 10000, "data1");
-        createFile(store, file2, ts + 20000, "data2");
-        createFile(store, file3, ts + 30000, "data3");
-        createFile(store, file4, ts + 40000, "data4");
-        store.setLabel(file1, ts + 10000, "dil");                
-        store.setLabel(file2, ts + 20000, "dil2");                
-        
-        long tsCreateFile5 = ts + 50000; 
-        createFile(store, file5, tsCreateFile5, "data5"); // this one will get deleted by cleanup
-        
-        // 2 days ago
-        ts = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
-        changeFile(store, file1, ts + 10000, "data1.1");
-        changeFile(store, file2, ts + 20000, "data2.1");
-        changeFile(store, file3, ts + 30000, "data3.1");
-        changeFile(store, file4, ts + 40000, "data4.1");
-        long tsLabelFile2 = ts + 20000; 
-        String labelFile2 = "dil2.1";
-        store.setLabel(file2, tsLabelFile2, labelFile2);  // two labels - each timestamp got one               
-        
-        store.setLabel(file3, ts + 30000, "dil3");                
-        
-        // check the files created in storage
-        long now = System.currentTimeMillis();
-        assertFile(file1, store, ts + 10000, -1, 4, 2, "data1.1", TOUCHED);
-        assertFile(file2, store, ts + 20000, -1, 4, 2, "data2.1", TOUCHED);
-        assertFile(file3, store, ts + 30000, -1, 4, 2, "data3.1", TOUCHED);
-        assertFile(file4, store, ts + 40000, -1, 3, 2, "data4.1", TOUCHED);
-        assertFile(file5, store, tsCreateFile5, -1, 2, 2, "data5",   TOUCHED);
-        
-        // run clean up - time to live = 3 days 
-        long ttl = 3 * 24 * 60 * 60 * 1000;
-        store.cleanUp(ttl); 
-        
-        // check the cleaned storage
-        assertFile(file1, store, ts + 10000, -1, 2, 1, "data1.1", TOUCHED);
-        assertFile(file2, store, ts + 20000, -1, 3, 1, "data2.1", TOUCHED);
-        assertFile(file3, store, ts + 30000, -1, 3, 1, "data3.1", TOUCHED);
-        assertFile(file4, store, ts + 40000, -1, 2, 1, "data4.1", TOUCHED);
-        
-        // check labels for file2 - the first one should be deleted
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(baos);
-        dos.writeLong(tsLabelFile2);
-        dos.writeInt(labelFile2.length());
-        dos.writeChars(labelFile2);        
-        dos.flush();
-        
-        File labelsFile = store.getLabelsFile(file2);
-        assertDataInFile(labelsFile, baos.toByteArray());
-        
-        dos.close();
-        
-    }   
-    
+       
     public void testGetStoreEntries() throws Exception { 
         LocalHistoryTestStore store = createStore();
         File folder = new File(getDataDir(), "datafolder");        
@@ -543,40 +443,6 @@ public class StoreTest extends NbTestCase {
         
     }   
 
-    public void testLocalHistoryStoreTested() throws Exception {         
-        Set<String> notTestedMethods = new HashSet<String>(2);
-        notTestedMethods.add("addPropertyChangeListener");
-        notTestedMethods.add("removePropertyChangeListener");
-                        
-        Method[] methods = LocalHistoryStore.class.getMethods();
-        for(Method method : methods) {
-            if(!notTestedMethods.contains(method.getName())) {
-                try {
-                    this.getClass().getMethod("test" + method.getName().substring(0, 1).toUpperCase() + method.getName().substring(1), new Class[] {});
-                } catch(NoSuchMethodException e) {
-                    fail("Missing test for method " + method.getName());
-                }                
-            }            
-        }        
-    }
-    
-    private LocalHistoryTestStore createStore() {
-        System.setProperty("netbeans.user", getDataDir().getAbsolutePath());  
-        return new LocalHistoryTestStore(getDataDir().getAbsolutePath());
-    }
-    
-    private void cleanUpDataFolder() {
-        File[] files = getDataDir().listFiles();
-        if(files == null || files.length == 0) {
-            return;
-        }
-        for(File file : files) {
-            if(!file.getName().equals("var")) {
-                FileUtils.deleteRecursively(file);   
-            }
-        }        
-    }
-
     private long setupFirstFolderToRevert(LocalHistoryStore store, File folder) throws Exception {
         
         File fileNotInStorage = new File(folder, "fileNotInStorage");
@@ -653,185 +519,5 @@ public class StoreTest extends NbTestCase {
         
         return revertToTS;
     }     
-
-    private void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int siblings, int parentChildren, String data, int action) throws Exception {
-
-        File storeFolder = store.getStoreFolder(file);
-        String[] files = storeFolder.list();
-        if (files == null || files.length == 0) {
-            fail("no files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
-        }
-        if (files.length != siblings) {
-            fail("wrong amount of files in store folder " + files.length + " instead of expected " + siblings + " : file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
-        }
-
-        File storeParent = store.getStoreFolder(file.getParentFile());
-        files = storeParent.list();
-        if (files == null || files.length == 0) {
-            fail("no files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
-        }
-        if (files.length != parentChildren) {
-            fail("wrong amount of files in store parent " + files.length + " instead of expected " + parentChildren + " : file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
-        }
-
-        if (file.isFile()) {
-            File storeFile = store.getStoreFile(file, ts);
-            if (!storeFile.exists()) {
-                fail("store file doesn't exist for file");
-            }
-            if (data != null) {
-                ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(storeFile)));
-                        
-                ZipEntry entry;
-                while ( (entry = zis.getNextEntry()) != null ) {
-                    if( entry.getName().equals(storeFile.getName()) ) {
-                        break;
-                    }
-                }   
-                assertNotNull(entry);
-                assertDataInStream(zis, data.getBytes());
-            }
-        }
-
-        File dataFile = store.getDataFile(file);
-        assertTrue(dataFile.exists());
-        assertValuesInFile(dataFile, file.isFile(), action, ts, file.getAbsolutePath());
-        if (storeFileLastModified != -1) {
-            assertTrue(storeFileLastModified == storeFolder.lastModified());
-        }
-    }
-
-    private void assertValuesInFile(File file, boolean isFile, int action, long modified, String filePath) throws Exception {
-        DataInputStream dis = null;
-        try {
-            dis = new DataInputStream(new FileInputStream(file));
-            boolean f = dis.readBoolean();
-            int i = dis.readInt();
-            long l = dis.readLong();
-            int len = dis.readInt();
-            StringBuffer fileName = new StringBuffer();
-            while (len-- > 0) {
-                char c = dis.readChar();
-                fileName.append(c);
-            }
-            if (f != isFile) {
-                fail("storeDataFile.isFile value in file " + file.getAbsolutePath() + " is " + f + " instead of " + isFile);
-            }
-            if (modified != l) {
-                fail("storeDataFile.modified value in file " + file.getAbsolutePath() + " is " + l + " instead of " + modified);
-            }
-            if (action != i) {
-                fail("storeDataFile.action value in file " + file.getAbsolutePath() + " is " + i + " instead of " + action);
-            }
-            if (!fileName.toString().equals(filePath)) {
-                fail("storeDataFile.fileName value in file " + file.getAbsolutePath() + " is " + fileName + " instead of " + filePath);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (dis != null) {
-                dis.close();
-            }
-        }
-    }
-        
-    private void assertEntries(StoreEntry[] entries, File[] files, String[] data) throws Exception {
-        assertEquals(entries.length, files.length);
-        for(int i = 0; i < files.length; i++) {                        
-            boolean blContinue = false;
-            for(StoreEntry entry : entries) {
-                if(entry.getFile().equals(files[i])) {
-                    assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
-                    blContinue = true;                    
-                    break;
-                }
-            }
-            if(!blContinue) {
-                fail("no store entry for file " + files[i]);
-            }            
-        }
-    }
-
-    private void assertEntries(StoreEntry[] entries, File file, long[] ts, String[] data) throws Exception {
-        assertEquals(entries.length, ts.length);
-        for(int i = 0; i < ts.length; i++) {                        
-            boolean blContinue = false;
-            for(StoreEntry entry : entries) {
-                assertEquals(entry.getFile(), file);
-                if(entry.getTimestamp() == ts[i]) {
-                    assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
-                    blContinue = true;                    
-                    break;
-                }
-            }
-            if(!blContinue) {
-                fail("no store entry with timestamp " + ts[i]);
-            }            
-        }
-    }
-    
-    private void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
-        if(data != null) {
-            write(file, data.getBytes());
-        } else {
-            file.mkdirs();
-        }
-        store.fileCreate(file, ts);        
-    }
-    
-    private void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
-        write(file, data.getBytes());        
-        store.fileChange(file, ts);        
-    }
-    
-    private String read(InputStream is, int length) throws Exception {        
-        try {            
-            byte[] buffer = new byte[length];
-            int len = is.read(buffer);
-            byte[] ret = new byte[len];
-            for(int i = 0; i < len; i++) {
-                ret[i] = buffer[i];
-            }
-            return new String(ret);
-        } catch(Exception e) {
-            throw e;
-        } finally {
-            if(is != null) { is.close(); };
-        }
-    }
-    
-    private void write(File file, byte[] data) throws Exception {
-        BufferedOutputStream bos  = null;
-        try {
-            bos = new BufferedOutputStream(new FileOutputStream(file));
-            bos.write(data);
-        } catch(Exception e) {
-            throw e;
-        } finally {
-            if(bos != null) { bos.close(); };
-        }
-    }
-
-    private void assertDataInStream(InputStream is, byte[] data) throws Exception {        
-        BufferedInputStream bis = new BufferedInputStream(is);
-        try {
-            byte[] contents = new byte[data.length];
-            int l = bis.read(contents);            
-            for (int i = 0; i < contents.length; i++) {
-                assertEquals(contents[i], data[i]);
-            }
-            assertTrue(bis.read() == -1);
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (bis != null) {
-                bis.close();
-            }
-        }
-    }
-
-    private void assertDataInFile(File file, byte[] data) throws Exception {
-        assertDataInStream(new FileInputStream(file), data);
-    }
     
 }

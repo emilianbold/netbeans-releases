@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
  *
@@ -30,6 +31,7 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     private final LocalHistoryStore store;        
     private Method getStoreFolderMethod;
     private Method getDataFileMethod;
+    private Method getHistoryFileMethod;
     private Method getLabelsFileMethod;
     private Method getStoreFileMethod;
     private Method cleanUpImplMethod;
@@ -42,10 +44,14 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store.setLabel(file, ts, label);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        store.removePropertyChangeListener(l);
+    public void removeVersioningListener(VersioningListener l) {
+        store.removeVersioningListener(l);
     }
 
+    public void addVersioningListener(VersioningListener l) {
+        store.addVersioningListener(l);    
+    }
+    
     public org.netbeans.modules.localhistory.store.StoreEntry getStoreEntry(File file, long ts) {
         return store.getStoreEntry(file, ts);
     }
@@ -85,10 +91,6 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     public void deleteEntry(File file, long ts) {
         store.deleteEntry(file, ts);
     }
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        store.addPropertyChangeListener(l);
-    }
     
     public void cleanUp(long ttl) {
         // screw the impl a bit as we won't run the cleanup asynchronously
@@ -101,6 +103,14 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    File getHistoryFile(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if(getHistoryFileMethod == null) {            
+            getHistoryFileMethod = store.getClass().getDeclaredMethod("getHistoryFile", new Class[] {File.class});
+            getHistoryFileMethod.setAccessible(true);            
+        }
+        return (File) getHistoryFileMethod.invoke(store, new Object[]{file});           
     }
         
     File getStoreFolder(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
