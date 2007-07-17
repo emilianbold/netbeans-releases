@@ -272,16 +272,16 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setEndpointName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestSetEndpointName() {
+    public void testSetEndpointName() {
         System.out.println("setEndpointName");
+
+        String componentName = "MyCasaPort";
+        String componentType = "MyType";
+        int x = 0;
+        int y = 0;
+
+        CasaPort casaPort = casaWrapperModel.addCasaPort(componentType, componentName, x, y);
         
-        // file binding
-        CasaPort casaPort = casaWrapperModel.getCasaPorts().get(0);
-        casaWrapperModel.setEndpointName(casaPort, "FOO");
-        assertEquals("FOO", casaPort.getEndpointName());
-        
-        // http binding
-        casaPort = casaWrapperModel.getCasaPorts().get(1);
         casaWrapperModel.setEndpointName(casaPort, "FOO");
         assertEquals("FOO", casaPort.getEndpointName());
     }
@@ -460,18 +460,13 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaPortType method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestGetCasaPortType() {
+    public void testGetCasaPortType() {
         System.out.println("getCasaPortType");
+
+        CasaPort casaPort = casaWrapperModel.getCasaPorts().get(0);
         
-        CasaPort casaPort = null;
-        CasaWrapperModel instance = null;
-        
-        PortType expResult = null;
-        PortType result = instance.getCasaPortType(casaPort);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        PortType result = casaWrapperModel.getCasaPortType(casaPort);
+        assertEquals(CasaWrapperModel.isDummyPortType(result), true);
     }
 
     /**
@@ -498,21 +493,17 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of addCasaPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestAddCasaPort() {
+    public void testAddCasaPort() {
         System.out.println("addCasaPort");
         
-        String componentName = "";
-        String componentType = "";
+        String componentName = "MyCasaPort";
+        String componentType = "MyType";
         int x = 0;
         int y = 0;
-        CasaWrapperModel instance = null;
-        
-        CasaPort expResult = null;
-        CasaPort result = instance.addCasaPort(componentType, componentName, x, y);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+
+        CasaPort result = casaWrapperModel.addCasaPort(componentType, componentName, x, y);
+
+        assertEquals(result.getBindingType(), componentType);
     }
 
     /**
@@ -536,16 +527,13 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeCasaPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestRemoveCasaPort() {
+    public void testRemoveCasaPort() {
         System.out.println("removeCasaPort");
-        
-        CasaPort casaPort = null;
-        CasaWrapperModel instance = null;
-        
-        instance.removeCasaPort(casaPort);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        int noOfPorts = casaWrapperModel.getCasaPorts().size();
+        for(int i = noOfPorts - 1; i >= 0; i--) {
+            casaWrapperModel.removeCasaPort(casaWrapperModel.getCasaPorts().get(i));
+        }
+        assertEquals(0, casaWrapperModel.getCasaPorts().size());
     }
 
     /**
@@ -553,7 +541,7 @@ public class CasaWrapperModelTest extends TestCase {
      */
     public void INCORRECTtestRemoveEndpoint() {
         System.out.println("removeEndpoint");
-        
+
         CasaEndpointRef endpointRef = null;
         CasaWrapperModel instance = null;
         
