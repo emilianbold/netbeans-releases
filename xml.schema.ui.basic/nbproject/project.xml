@@ -285,6 +285,7 @@
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.encoder.custom.aip</friend>
                 <friend>org.netbeans.modules.encoder.hl7.aip</friend>
+                <friend>org.netbeans.modules.encoder.coco.ui</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
