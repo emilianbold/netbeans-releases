@@ -58,8 +58,6 @@ final class InspectorFolderNode extends AbstractNode {
     private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
     private Transferable transferable;
-    static long i = 0;
-    
     
     InspectorFolderNode(DataObjectContext context) {
         super(new InspectorChildren(), context.getDataObject().getLookup());
@@ -137,9 +135,7 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     protected void createPasteTypes(Transferable t, java.util.List s) {
-        System.out.println(component.get());
         super.createPasteTypes(t, s);
-        
         if (!t.isDataFlavorSupported(INSPECTOR_NODE_DATA_FLAVOR)) 
             return;
         

@@ -48,11 +48,11 @@ public final class PropertiesSupport {
     }
     
     public static Sheet getSheet(DataEditorView view, DesignComponent component) {
-        return PropertiesNodesManager.getDefault(view).getSheet(component);
+        return PropertiesNodesManager.getInstance(view).getSheet(component);
     }
     
     public static void addInstanceContent(DataEditorView view, InstanceContent ic) {
-        PropertiesNodesManager.getDefault(view).add(ic);
+        PropertiesNodesManager.getInstance(view).add(ic);
     }
     
     //multi selection not supported
@@ -63,7 +63,7 @@ public final class PropertiesSupport {
             Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N
         DataEditorView view = ActiveViewSupport.getDefault().getActiveView();
         assert (view != null);
-        Sheet sheet = PropertiesNodesManager.getDefault(view).createSheet(component);
+        Sheet sheet = PropertiesNodesManager.getInstance(view).createSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {

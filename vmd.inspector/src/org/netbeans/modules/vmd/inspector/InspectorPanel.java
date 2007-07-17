@@ -125,4 +125,10 @@ public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSuppo
     
     public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
+    
+     void removeInspectorUI(DesignDocument document) {
+        synchronized (InspectorPanel.class) {
+            uiMap.remove(document);
+        }
+    }
 }

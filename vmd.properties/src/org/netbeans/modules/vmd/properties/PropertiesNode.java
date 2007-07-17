@@ -51,7 +51,7 @@ public class PropertiesNode extends AbstractNode{
     public Sheet createSheet() {
         if(component.get() == null)
             super.createSheet();
-        return PropertiesNodesManager.getDefault(view.get()).getSheet(component.get());
+        return PropertiesNodesManager.getInstance(view.get()).getSheet(component.get());
     }
     
     public String getDisplayName() {
