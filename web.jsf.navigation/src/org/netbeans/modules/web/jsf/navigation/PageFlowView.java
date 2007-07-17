@@ -42,10 +42,12 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -444,6 +446,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName) {
         scene.renameEdgeWidget(edge, newName, oldName);
     }
+    
+    public Pin getEdgeSourcePin( NavigationCaseEdge navCase ) {  
+        return scene.getEdgeSource(navCase);
+    }
 
     private void setEdgeSourcePin(NavigationCaseEdge navCaseNode, Page fromPageNode) {
         Pin sourcePin = scene.getDefaultPin(fromPageNode);
@@ -461,6 +467,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
         scene.setEdgeSource(navCaseNode, sourcePin);
     }
+    
 
     private void setEdgeTargePin(NavigationCaseEdge navCaseNode, Page toPageNode) {
         Pin targetPin = scene.getDefaultPin(toPageNode);
