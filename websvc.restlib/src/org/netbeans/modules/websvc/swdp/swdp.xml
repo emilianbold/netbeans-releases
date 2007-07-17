@@ -21,24 +21,27 @@ Microsystems, Inc. All Rights Reserved.
 
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>swdp</name>
+    <name>restlib</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/swdp/restbeans-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/restbeans-impl.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jsr311-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jersey.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jsr250-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/localizer.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/localizer.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxrpc16/mail.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/wadl2java.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jaxb-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr173_api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-tools.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-rt.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/rome-0.8.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/swdp/jdom-1.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/comresrcgen.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/grizzly-1.0.13.jar!/</resource>
     </volume>  
 </library>

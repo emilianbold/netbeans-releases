@@ -24,11 +24,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <ant dir="../external" target="unzip_swdp"/>
+        <ant dir="../external" target="unzip_rest"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy description="Copying files" 
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/swdp/">
-            <fileset dir="../external/swdp/"/>
+	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/">
+            <fileset dir="../external/rest/"/>
         </copy>
     </target>
 
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>-->
     
     <target name="clean" depends="init">
-        <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/swdp/"/>
-        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/swdp/"/>
+        <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
+        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
     </target>
 </project>
