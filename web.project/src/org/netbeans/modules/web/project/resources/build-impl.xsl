@@ -750,7 +750,10 @@ introduced by support for multiple source roots. -jglick
             
             <target name="-init-rest" if="rest.support.on">
                 <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.WebResourcesProcessorTask">
-                    <classpath><path path="${{j2ee.platform.classpath}}"/></classpath>
+                    <classpath>
+                        <path path="${{j2ee.platform.classpath}}"/>
+                        <path path="${{libs.restlib.classpath}}"/>
+                    </classpath>
                 </taskdef>
             </target>
             <target name="-rest-post-compile" depends="-init-rest" if="rest.support.on">
