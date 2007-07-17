@@ -99,15 +99,16 @@ import org.xml.sax.SAXException;
  *
  * @author Vince Kraemer
  * @author Peter Williams
- */ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentConfigurationInterface {
+ */ 
+public class SunONEDeploymentConfiguration implements Constants, SunDeploymentConfigurationInterface {
 
-    //, InstanceListener {
-// !PW FIXME workaround for linking ConfigDataObjects w/ the correct Deployment
-    // Configuration object.  Key is primary File for configuration.
-    private static WeakHashMap configurationMap = new WeakHashMap();
+    // !PW FIXME workaround for linking sun descriptor file DataObjects w/ the 
+    // correct Deployment Configuration object.  Key is primary File for configuration.
+    private static WeakHashMap<File, WeakReference<SunONEDeploymentConfiguration>> configurationMap = 
+            new WeakHashMap<File, WeakReference<SunONEDeploymentConfiguration>>();
 
     public static void addConfiguration(File key, SunONEDeploymentConfiguration config) {
-        configurationMap.put(key, new WeakReference(config));
+        configurationMap.put(key, new WeakReference<SunONEDeploymentConfiguration>(config));
     }
 
     public static void removeConfiguration(File key) {
@@ -116,9 +117,9 @@ import org.xml.sax.SAXException;
 
     public static SunONEDeploymentConfiguration getConfiguration(File key) {
         SunONEDeploymentConfiguration config = null;
-        WeakReference ref = (WeakReference) configurationMap.get(key);
+        WeakReference<SunONEDeploymentConfiguration> ref = configurationMap.get(key);
         if (ref != null) {
-            config = (SunONEDeploymentConfiguration) ref.get();
+            config = ref.get();
         }
         return config;
     }
@@ -146,6 +147,7 @@ import org.xml.sax.SAXException;
     private DDFilesListener ddFilesListener;
 
     private static final RequestProcessor resourceProcessor = new RequestProcessor("sun-resource-ref"); // NOI18N
+    
     /** Available server targets:
      */
     private ASDDVersion appServerVersion;
@@ -198,7 +200,7 @@ import org.xml.sax.SAXException;
         configFiles = new File[cfgFiles.length];
         for (int i = 0; i < cfgFiles.length; i++) {
             // Array is too short to justify arraycopy.
-configFiles[i] = cfgFiles[i];
+            configFiles[i] = cfgFiles[i];
         }
 
         // configFiles array is just one file except for EJB modules, where it's two.
@@ -209,8 +211,7 @@ configFiles[i] = cfgFiles[i];
         // since other code depends on the main configuration file being the first entry
         // in this list.
         //
-        if (configFiles.length == 2 && configFiles[1] != null && "sun-ejb-jar.xml".equals(configFiles[1].getName())) {
-            // NOI18N
+        if (configFiles.length == 2 && configFiles[1] != null && "sun-ejb-jar.xml".equals(configFiles[1].getName())) { // NOI18N
             File tmp = configFiles[0];
             configFiles[0] = configFiles[1];
             configFiles[1] = tmp;
@@ -250,7 +251,7 @@ configFiles[i] = cfgFiles[i];
 //            if("sun-ra.xml".equals(configFiles[0].getName())) {
 //                return;
 //            }
-if (!cfgFiles[0].exists()) {
+            if (!cfgFiles[0].exists()) {
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
                 J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
@@ -376,9 +377,8 @@ if (!cfgFiles[0].exists()) {
         String xpath = ddBean.getXpath();
         int finalSlashIndex = xpath.lastIndexOf('/') + 1;
         String type = (finalSlashIndex < xpath.length()) ? xpath.substring(finalSlashIndex) : ""; //NOI18N
-        if ("message-driven".equals(type)) {
-            //NOI18N
-// Find the DConfigBean for this ddBean.  This is actually quite complicated since
+        if ("message-driven".equals(type)) { //NOI18N
+            // Find the DConfigBean for this ddBean.  This is actually quite complicated since
             // the DDBean passed in is from j2eeserver, not from the DDBean tree used and managed
             // by the plugin.
             BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
@@ -467,9 +467,8 @@ if (!cfgFiles[0].exists()) {
                     }
                 }
             }
-        } else if ("resource-ref".equals(type)) {
-            //NOI18N
-if (ddBean instanceof StandardDDImpl) {
+        } else if ("resource-ref".equals(type)) { //NOI18N
+            if (ddBean instanceof StandardDDImpl) {
                 Object o = getDCBCache().get(ddBean);
                 if (o instanceof ResourceRef) {
                     ResourceRef theResRefDCB = (ResourceRef) o;
@@ -513,9 +512,8 @@ if (ddBean instanceof StandardDDImpl) {
             } else {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DDBean from wrong tree in ensureResourceDefined: " + ddBean); // NOI18N
             }
-        } else if ("entity".equals(type)) {
-            //NOI18N
-ensureResourceDefinedForEjb(ddBean, null);
+        } else if ("entity".equals(type)) { //NOI18N
+            ensureResourceDefinedForEjb(ddBean, null);
         }
     }
 
@@ -675,10 +673,10 @@ ensureResourceDefinedForEjb(ddBean, null);
 
         if (!asVersion.equals(appServerVersion) || deferredAppServerChange) {
             appServerVersion = asVersion;
-            ConfigurationStorage storage = getStorage();
-            if (storage != null) {
+            ConfigurationStorage localStorage = getStorage();
+            if (localStorage != null) {
                 deferredAppServerChange = false;
-                storage.setChanged();
+                localStorage.setChanged();
             }
         }
     }
@@ -803,7 +801,7 @@ ensureResourceDefinedForEjb(ddBean, null);
                 Project project = FileOwnerQuery.getOwner(fo);
                 if (project != null) {
                     org.openide.util.Lookup lookup = project.getLookup();
-                    provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+                    provider = lookup.lookup(J2eeModuleProvider.class);
                 }
             } else {
                 File parent = file.getParentFile();
@@ -840,14 +838,15 @@ ensureResourceDefinedForEjb(ddBean, null);
      * @return
      */
     public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot dDBeanRoot) throws ConfigurationException {
-/*
+        /*
          *		dcbroot = rootcache.get(ddroot)
          *		if dcbroot == null
          *			factory = lookup(moduletype)
          *			dcbroot = factory.create(ddroot)
          *			cache.add(dcbroot)
          *		return dcbroot
-         */ if (null == dDBeanRoot) {
+         */ 
+        if (null == dDBeanRoot) {
             throw Utils.makeCE("ERR_DDBeanIsNull", null, null);
         }
 
@@ -1257,7 +1256,7 @@ ensureResourceDefinedForEjb(ddBean, null);
 
         // !PW Do we need to do this?  What about the secondary file?  Need to convert to file based as well.
 //        getPrimaryFile().refresh(); //check for external changes
-synchronized (storageMonitor) {
+        synchronized (storageMonitor) {
             theStorage = storage;
         }
 
@@ -1346,7 +1345,7 @@ synchronized (storageMonitor) {
 //            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DeployableObject with null DDBeanRoot!!!");
 //        }
 //
-return ejbJar;
+        return ejbJar;
     }
 
     /**
@@ -1597,7 +1596,7 @@ return ejbJar;
         return dcbFactoryMap;
     }
 
-/** Factory that knows how to create and initialize root DConfigBeans from a
+    /** Factory that knows how to create and initialize root DConfigBeans from a
      *  DDBeanRoot passed in by the tool side of JSR-88.
      */
     private class DCBTopRootFactory implements DCBFactory {
@@ -2073,7 +2072,7 @@ return ejbJar;
 // [/tools/as81ur2]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/as82]deployer:Sun:AppServer::localhost:4848, serverType: J2EE
 // [/tools/glassfish_b35]deployer:Sun:AppServer::localhost:4948, serverType: J2EE
-if ("J2EE".equals(serverType)) {
+        if ("J2EE".equals(serverType)) {
             // NOI18N
             String instance = provider.getServerInstanceID();
             if (Utils.notEmpty(instance)) {
@@ -2092,7 +2091,7 @@ if ("J2EE".equals(serverType)) {
             }
         } else if ("SUNWebserver7".equals(serverType)) {
             // NOI18N
-result = ASDDVersion.SUN_APPSERVER_8_1;
+            result = ASDDVersion.SUN_APPSERVER_8_1;
         }
 
         return result;
@@ -2131,11 +2130,14 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
      * @return Returns Set of SunDataSource's(JDBC Resources) present in this J2EE project
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      */
-    public Set getDatasources() {
-        Set datasources = new HashSet();
+    public Set<Datasource> getDatasources() {
+        Set<Datasource> datasources = null;
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         if ((rci != null) && (resourceDir != null) && resourceDir.exists()) {
             datasources = rci.getResources(resourceDir);
+        }
+        if(datasources == null) {
+            datasources = new HashSet<Datasource>();
         }
         return datasources;
     }
@@ -2335,7 +2337,7 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
 
         return jndiName;
     }
-    
+
     public void setCMPResource(String ejbName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
         // validation
         if (Utils.strEmpty(ejbName) || Utils.strEmpty(jndiName)) {
@@ -2353,7 +2355,7 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
                         eb = sunEjbJar.newEnterpriseBeans();
                         sunEjbJar.setEnterpriseBeans(eb);
                     }
-                    
+
                     CmpResource cmpResource = eb.getCmpResource();
                     if(cmpResource == null) {
                         cmpResource = eb.newCmpResource();
@@ -2365,9 +2367,9 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
                         if(Utils.notEmpty(oldJndiName)) {
                             // !PW FIXME changing existing jndi name, should we notify user?
                         }
-                    
+
                         cmpResource.setJndiName(jndiName);
-                        
+
                         // if changes, save file.
                         sunEjbJar.write(primarySunDDFO);
                     }
@@ -2404,11 +2406,14 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
     }
 
     /*****************************  MessageDestinationConfiguration **************************************/
-    public Set getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        Set destinations = new HashSet();
+    public Set<MessageDestination> getMessageDestinations() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        Set<MessageDestination> destinations = null;
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         if (resourceDir != null && resourceDir.exists()) {
             destinations = rci.getMessageDestinations(resourceDir);
+        }
+        if(destinations == null) {
+            destinations = new HashSet<MessageDestination>();
         }
         return destinations;
     }
@@ -2497,8 +2502,8 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
         String destinationName = null;
         try {
             RootInterface sunDDRoot = getSunDDRoot(false);
-            SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
-            if (sunEjbJar != null) {
+            if(sunDDRoot instanceof SunEjbJar) {
+                SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
                 EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
                 if (eb != null) {
                     Ejb ejb = findNamedBean(eb, mdbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
@@ -2615,7 +2620,7 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
                         ref.setJndiName(connectionFactoryName);
                         ejb.addResourceRef(ref);
                     }
-                    
+
                     org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef destRef = findNamedBean(ejb, referenceName, Ejb.MESSAGE_DESTINATION_REF, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME);
                     if (destRef != null) {
                         // set jndi name of existing reference.
@@ -2710,8 +2715,19 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
             return;
         }
 
-        if (Double.parseDouble(module.getModuleVersion()) > 2.4) {
-            return;
+        // Version > 2.4, then return, but we can't compare directly against 2.4
+        // because FP formats are not exact.
+        //
+        // !PW this appears to be overloaded logic in that it's differentiating 
+        // servlet 2.4 from servlet 2.5 and also appclient 1.4 from appclient 5.0,
+        // hence the odd usage of "2.45" in the comparison.
+        //
+        try {
+            if (Double.parseDouble(module.getModuleVersion()) > 2.45) {
+                return;
+            }
+        } catch(NumberFormatException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         try {
@@ -2766,8 +2782,14 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
             return;
         }
 
-        if (Double.parseDouble(module.getModuleVersion()) > 2.1) {
-            return;
+        // Version > 2.1, then return, but we can't compare directly against 2.1 
+        // because FP formats are not exact.
+        try {
+            if (Double.parseDouble(module.getModuleVersion()) > 2.15) {
+                return;
+            }
+        } catch(NumberFormatException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         try {
