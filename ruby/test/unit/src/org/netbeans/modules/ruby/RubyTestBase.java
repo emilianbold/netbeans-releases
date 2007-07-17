@@ -93,6 +93,11 @@ public abstract class RubyTestBase extends NbTestCase {
         File nbtree = data.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
         assertNotNull(nbtree);
         assertTrue(nbtree.exists());
+        if (!new File(nbtree, "nbbuild").exists()) {
+            nbtree = nbtree.getParentFile();
+        }
+        assertNotNull(nbtree);
+        assertTrue(nbtree.exists());
         File jruby = new File(nbtree, "nbbuild" + File.separator + "netbeans" + File.separator + "ruby1" + File.separator + "jruby-1.0");
         assertTrue(jruby.exists());
         try {
