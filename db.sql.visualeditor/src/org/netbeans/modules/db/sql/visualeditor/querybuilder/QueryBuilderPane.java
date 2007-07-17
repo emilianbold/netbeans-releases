@@ -113,9 +113,10 @@ public class QueryBuilderPane extends JSplitPane {
         graphScrollPaneEnabled = true;
         qbInputTableSPEnabled = true;
 
-        //Make sure we have nice window decorations.
-        JFrame.setDefaultLookAndFeelDecorated(true);
-        JDialog.setDefaultLookAndFeelDecorated(true);
+	// This causes system-wide changes in some LookAndFeels on Linux
+        // // Make sure we have nice window decorations.
+        // JFrame.setDefaultLookAndFeelDecorated(true);
+        // JDialog.setDefaultLookAndFeelDecorated(true);
 
         // Create the four panes that provide the main functionality
 
@@ -162,6 +163,7 @@ public class QueryBuilderPane extends JSplitPane {
 
 	QBGraphScene scene = new QBGraphScene (_queryBuilderGraphFrame);
  	JComponent sceneView = scene.createView();
+
  	_queryBuilderGraphFrame.initScene(scene, sceneView);
 
         // Wrap the diagram into a scroll pane, and make it the
