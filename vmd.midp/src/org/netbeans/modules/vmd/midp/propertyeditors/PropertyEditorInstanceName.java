@@ -80,7 +80,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     @Override
     public void setAsText(String text) {
         PropertyValue value = (PropertyValue) super.getValue();
-        if (value != null) {
+        if (value == null) {
             return;
         }
         Object pv = value.getPrimitiveValue();
