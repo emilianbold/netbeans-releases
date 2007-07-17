@@ -124,7 +124,7 @@ public class RealTypeSerializer implements JavonSerializer {
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         if( floatClassData.equals( type ) || FloatClassData.equals( type )) {
             return stream + ".writeFloat(" + fromObject( floatClassData, object ) + ");";
-        } else if( DoubleClassData.equals( type ) || DoubleClassData.equals( type )) {
+        } else if( doubleClassData.equals( type ) || DoubleClassData.equals( type )) {
             return stream + ".writeDouble(" + fromObject( doubleClassData, object ) + ");";
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
