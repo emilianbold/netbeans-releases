@@ -27,7 +27,8 @@ package org.netbeans.modules.vmd.api.model;
 public interface AccessControllerFactory {
 
     /**
-     * Factory method for creating AccessControllers. It is called when a DesignDocument is creating.
+     * Factory method for creating AccessController.
+     * NOTE: It is called when a DesignDocument is creating, do not perform any action which may call/use DesignDocument since the document is not initialized yet.
      * @param document the document
      * @return the access controller
      */
