@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.TrustStore;
 import org.netbeans.modules.xml.wsdl.model.*;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.DisableStreamingSecurity;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 
 /**
@@ -290,6 +291,29 @@ public class ProprietarySecurityPolicyModelHelper {
             return sc.getRequireCancelSCT();
         }
         return false;
+    }
+
+    public static boolean isStreamingSecurity(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        DisableStreamingSecurity streaming = PolicyModelHelper.getTopLevelElement(p, DisableStreamingSecurity.class);
+        return (streaming == null) ? true : false;
+    }
+    
+    public static void setStreamingSecurity(Binding b, boolean enable) {
+        if (enable == isStreamingSecurity(b)) return;
+        if (!enable) {
+            All a = PolicyModelHelper.createPolicy(b, true);
+            PolicyModelHelper.createElement(a, 
+                    ProprietarySecurityPolicyServiceQName.DISABLESTREAMINGSECURITY.getQName(), 
+                    DisableStreamingSecurity.class, false);
+        } else {
+            Policy p = PolicyModelHelper.getPolicyForElement(b);
+            DisableStreamingSecurity streaming = PolicyModelHelper.getTopLevelElement(p, DisableStreamingSecurity.class);
+            if (streaming != null) {
+                PolicyModelHelper.removeElement(streaming.getParent(), DisableStreamingSecurity.class, false);
+            }
+            PolicyModelHelper.cleanPolicies(b);
+        }
     }
     
 //    public static String getMaxClockSkew(Binding b, boolean client) {

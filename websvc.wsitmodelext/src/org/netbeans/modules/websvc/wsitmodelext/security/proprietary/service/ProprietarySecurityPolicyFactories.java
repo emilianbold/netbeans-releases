@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.CallbackHandlerConfigurationImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.CallbackHandlerImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.DisableStreamingSecurityImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.KeyStoreImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.TrustStoreImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl.ValidatorConfigurationImpl;
@@ -134,4 +135,18 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    public static class DisableStreamingSecurityServiceFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            return Collections.singleton(ProprietarySecurityPolicyServiceQName.DISABLESTREAMINGSECURITY.getQName());
+        }
+        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
+            return type.cast(new DisableStreamingSecurityImpl(context.getModel()));
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new DisableStreamingSecurityImpl(context.getModel(), element);
+        }
+    }
+    
 }

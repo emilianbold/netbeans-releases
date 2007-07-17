@@ -110,6 +110,9 @@ public class SecurityPolicyModelHelper {
         assert ((c instanceof Binding) || (c instanceof BindingOperation));
         setSecurityBindingType(c, null);
         SecurityTokensModelHelper.setSupportingTokens(c, null, SecurityTokensModelHelper.NONE);
+        if (c instanceof Binding) {
+            ProprietarySecurityPolicyModelHelper.setStreamingSecurity((Binding)c, true);
+        }
         disableWss(c);
         disableTrust10(c);
         removeTargets(c);
@@ -765,7 +768,7 @@ public class SecurityPolicyModelHelper {
                 topLevel = p;
             }
            
-
+            boolean streamingSecurity = true;
             for (Vector v : targetModel) {
                 TargetElement te = (TargetElement) v.get(TargetElement.DATA);
                 boolean encrypt = ((Boolean)v.get(TargetElement.ENCRYPT)).booleanValue();
@@ -786,7 +789,7 @@ public class SecurityPolicyModelHelper {
                         addHeaderElementForListItem(te.toString(), signedParts, wcf);                        
                     }
                 } else if (te instanceof MessageElement) {
-                    
+                    streamingSecurity = false;
                     if (encrypt) {
                         if (encryptedElements == null) {
                             encryptedElements = PolicyModelHelper.createElement(topLevel, SecurityPolicyQName.ENCRYPTEDELEMENTS.getQName(), EncryptedElements.class, false);
@@ -819,7 +822,9 @@ public class SecurityPolicyModelHelper {
                         addBody(signedParts, wcf);
                     }
                 }
-            }
+            }            
+            Binding b = (Binding) comp.getParent().getParent();
+            ProprietarySecurityPolicyModelHelper.setStreamingSecurity(b, streamingSecurity);
         } finally {
             if (!isTransaction) {
                 model.endTransaction();

@@ -33,6 +33,7 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.Vector;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -97,30 +98,7 @@ public class TargetsPanel extends javax.swing.JPanel {
         }
     }
 
-//    private void disableComponents(JComponent c, boolean enable) {
-//        Component[] comps = c.getComponents();
-//        if ((comps != null) && (comps.length > 0)) {
-//            for (Component comp : comps) {
-//                if (comp instanceof JComponent) {
-//                    disableComponents((JComponent)comp, enable);
-//                }
-//                comp.setEnabled(enable);
-//            }
-//        }
-//        c.setEnabled(enable);
-//    }
-    
     private void enableDisable() {
-//        jTable1.setEnabled(true);
-//        jScrollPane2.setEnabled(!defaults);
-//        jScrollPane2.getViewport().getView().setEnabled(!defaults);
-//        jScrollPane2.getHorizontalScrollBar().setEnabled(!defaults);
-//        jScrollPane2.getVerticalScrollBar().setEnabled(!defaults);
-//        disableComponents(jScrollPane2, !defaults);
-//        addBodyButton.setEnabled(!defaults);
-//        addHeaderButton.setEnabled(!defaults);
-//        addPartButton.setEnabled(!defaults);
-//        removeButton.setEnabled(!defaults);
     }
 
     /** This method is called from within the constructor to
@@ -217,6 +195,7 @@ public class TargetsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @SuppressWarnings("unchecked")
     private void addBodyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBodyButtonActionPerformed
         MessageBody body = new MessageBody();
         if (!(SecurityPolicyModelHelper.targetExists(getTargetsModel(), body) != null)) {
@@ -230,6 +209,7 @@ public class TargetsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_addBodyButtonActionPerformed
 
+    @SuppressWarnings("unchecked")
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int[] rows = jTable1.getSelectedRows();
         Vector rowsToRemove = new Vector();
@@ -242,19 +222,27 @@ public class TargetsPanel extends javax.swing.JPanel {
         saveTargetsModel();
     }//GEN-LAST:event_removeButtonActionPerformed
     
+    @SuppressWarnings("unchecked")
     private void addPartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPartButtonActionPerformed
-        MessageElement e = new MessageElement(NbBundle.getMessage(TargetsPanel.class, "TXT_EditHere")); //NOI18N
-        Vector row = new Vector();
-        row.add(TargetElement.DATA, e);
-        row.add(TargetElement.SIGN, Boolean.FALSE);
-        row.add(TargetElement.ENCRYPT, Boolean.FALSE);
-        row.add(TargetElement.REQUIRE, Boolean.TRUE);
-        getTargetsModel().add(row);
-        jTable1.updateUI();
+        
+        Object button = DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(TargetsPanel.class, "WARNING_DISABLE_OPTIMSECURITY")));
+        if (NotifyDescriptor.OK_OPTION.equals(button)) {
+            MessageElement e = new MessageElement(NbBundle.getMessage(TargetsPanel.class, "TXT_EditHere")); //NOI18N
+            Vector row = new Vector();
+            row.add(TargetElement.DATA, e);
+            row.add(TargetElement.SIGN, Boolean.FALSE);
+            row.add(TargetElement.ENCRYPT, Boolean.FALSE);
+            row.add(TargetElement.REQUIRE, Boolean.TRUE);
+            getTargetsModel().add(row);
+            jTable1.updateUI();
+        }
     }//GEN-LAST:event_addPartButtonActionPerformed
 
+    @SuppressWarnings("unchecked")
     private void addHeaderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addHeaderButtonActionPerformed
-        AddHeaderPanel addHeaderPanel = getAddHeaderPanel();
+        addHeaderPanel = getAddHeaderPanel();
         DialogDescriptor dd = new DialogDescriptor(
                 addHeaderPanel, 
                 NbBundle.getMessage(TargetsPanel.class, "LBL_SignEncryptChooser_AddHeaderTitle"),  //NOI18N
