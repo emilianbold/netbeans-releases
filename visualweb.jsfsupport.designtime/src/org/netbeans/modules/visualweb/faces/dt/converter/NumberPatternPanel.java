@@ -39,8 +39,7 @@ public class NumberPatternPanel extends JPanel {
     public NumberPatternPanel(NumberPatternPropertyEditor propertyEditor, DesignProperty liveProperty) {
        
         this.propertyEditor = propertyEditor;
-        this.designProperty = liveProperty;
-        
+        this.designProperty = liveProperty;        
         initComponents();
         
         // Populate the pattern combo box with some sample patterns
@@ -105,7 +104,7 @@ public class NumberPatternPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
-
+	  java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/faces/dt/converter/Bundle"); // NOI18N
         lblPattern = new javax.swing.JLabel();
         cmbPattern = new javax.swing.JComboBox();
         pnlExample = new javax.swing.JPanel();
@@ -121,14 +120,14 @@ public class NumberPatternPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         lblPattern.setLabelFor(cmbPattern);
-        lblPattern.setText(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("pattern"));
+        lblPattern.setText(bundle.getString("pattern"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         add(lblPattern, gridBagConstraints);
-        lblPattern.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("pattern"));
+        lblPattern.getAccessibleContext().setAccessibleDescription(bundle.getString("pattern"));
 
         cmbPattern.setEditable(true);
         cmbPattern.addActionListener(new java.awt.event.ActionListener() {
@@ -144,7 +143,7 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         add(cmbPattern, gridBagConstraints);
-        cmbPattern.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("pattern"));
+        cmbPattern.getAccessibleContext().setAccessibleDescription(bundle.getString("pattern"));
 
         pnlExample.setLayout(new java.awt.GridBagLayout());
 
@@ -156,9 +155,9 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         pnlExample.add(jSeparator1, gridBagConstraints);
 
-        lblExample.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("example_mnemonic").charAt(0));
+        lblExample.setDisplayedMnemonic(bundle.getString("example_mnemonic").charAt(0));
         lblExample.setLabelFor(cmbExample);
-        lblExample.setText(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("example_label"));
+        lblExample.setText(bundle.getString("example"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -166,7 +165,7 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         pnlExample.add(lblExample, gridBagConstraints);
-        lblExample.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("example_label"));
+        lblExample.getAccessibleContext().setAccessibleDescription(bundle.getString("example"));
 
         txtResults.setEditable(false);
         txtResults.setText("1234.56");
@@ -183,11 +182,11 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         pnlExample.add(txtResults, gridBagConstraints);
-        txtResults.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("results_label"));
+        txtResults.getAccessibleContext().setAccessibleDescription(bundle.getString("results"));
 
-        lblResults.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("results_mnemonic").charAt(0));
+        lblResults.setDisplayedMnemonic(bundle.getString("result_mnemonic").charAt(0));
         lblResults.setLabelFor(txtResults);
-        lblResults.setText(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("results_label"));
+        lblResults.setText(bundle.getString("results"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -195,7 +194,7 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         pnlExample.add(lblResults, gridBagConstraints);
-        lblResults.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("results_label"));
+        lblResults.getAccessibleContext().setAccessibleDescription(bundle.getString("results"));
 
         cmbExample.setEditable(true);
         cmbExample.addActionListener(new java.awt.event.ActionListener() {
@@ -211,10 +210,9 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         pnlExample.add(cmbExample, gridBagConstraints);
-        cmbExample.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("example_label"));
-
-        btnTest.setMnemonic(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("testButton_mnemonic").charAt(0));
-        btnTest.setText(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("testButton_label"));
+        cmbExample.getAccessibleContext().setAccessibleDescription(bundle.getString("example"));
+        btnTest.setMnemonic(bundle.getString("testBtn_mnemonic").charAt(0));
+        btnTest.setText(bundle.getString("testText"));
         btnTest.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnTestActionPerformed(evt);
@@ -228,12 +226,12 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
         pnlExample.add(btnTest, gridBagConstraints);
-        btnTest.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("test"));
+        btnTest.getAccessibleContext().setAccessibleDescription(bundle.getString("testText"));
 
         txtExampleInstructions.setBackground(getBackground());
         txtExampleInstructions.setBorder(null);
         txtExampleInstructions.setEditable(false);
-        txtExampleInstructions.setText(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("exampleInstruction"));
+        txtExampleInstructions.setText(bundle.getString("exampleInstructionsText"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -242,8 +240,8 @@ public class NumberPatternPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 11);
         pnlExample.add(txtExampleInstructions, gridBagConstraints);
-        txtExampleInstructions.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("exampleInstruction"));
-        txtExampleInstructions.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("com/sun/jsfcl/std/property/Bundle").getString("exampleInstruction"));
+        txtExampleInstructions.getAccessibleContext().setAccessibleName(bundle.getString("exampleInstructionsText"));
+        txtExampleInstructions.getAccessibleContext().setAccessibleDescription(bundle.getString("exampleInstructionsText"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
