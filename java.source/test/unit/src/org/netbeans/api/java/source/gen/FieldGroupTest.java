@@ -51,6 +51,8 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBody5"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBody6"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBody7"));
+//        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast1"));
+//        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast2"));
         return suite;
     }
     
@@ -534,6 +536,101 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 BlockTree block = method.getBody();
                 VariableTree vt = (VariableTree) block.getStatements().get(0);
                 workingCopy.rewrite(vt, make.setLabel(vt, "acko"));
+            }            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFieldGroupInBodyCast1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "        Object o11=null; Object o21=null;\n" +
+            "        Widget w1=o11,w2=o21;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "        Object o11=null; Object o21=null;\n" +
+            "        Widget w1=(Widget) o11,w2=o21;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                VariableTree vt = (VariableTree) block.getStatements().get(2);
+                ExpressionTree init = vt.getInitializer();
+                workingCopy.rewrite(init, make.TypeCast(make.Identifier("Widget"), init));
+            }            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    
+    public void testFieldGroupInBodyCast2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "        Object o11=null; Object o21=null;\n" +
+            "        Widget w1=o11,w2=o21;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "        Object o11=null; Object o21=null;\n" +
+            "        Widget w1=o11,w2=(Widget) o21;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                VariableTree vt = (VariableTree) block.getStatements().get(3);
+                ExpressionTree init = vt.getInitializer();
+                workingCopy.rewrite(init, make.TypeCast(make.Identifier("Widget"), init));
             }            
         };
         testSource.runModificationTask(task).commit();
