@@ -365,7 +365,7 @@ class DiffViewManager implements ChangeListener {
      * 
      * 5. scroll the other document proportionally
      */ 
-    private synchronized void smartScroll() {
+    private void smartScroll() {
         DiffContentPanel rightPane = master.getEditorPane2();
         DiffContentPanel leftPane = master.getEditorPane1();        
         
