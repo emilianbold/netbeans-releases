@@ -486,9 +486,10 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
         jPanel1.setLayout(null);
 
+        sampleLabel.setFont(new java.awt.Font("Dialog", 0, 12));
         sampleLabel.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.sampleLabel.text")); // NOI18N
         jPanel1.add(sampleLabel);
-        sampleLabel.setBounds(0, 0, 310, 14);
+        sampleLabel.setBounds(0, 0, 310, 16);
 
         jPanel2.add(jPanel1, java.awt.BorderLayout.CENTER);
 
