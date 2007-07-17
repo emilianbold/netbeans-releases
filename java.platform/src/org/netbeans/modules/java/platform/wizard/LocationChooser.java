@@ -367,6 +367,11 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
         
         
         private boolean isPlatformDir ( File f ) {
+            //XXX: Workaround of hard NFS mounts on Solaris.
+            final int osId = Utilities.getOperatingSystem();
+            if (osId == Utilities.OS_SOLARIS || osId == Utilities.OS_SUNOS) {
+                return false;
+            }
             FileObject fo = (f != null) ? convertToValidDir(f) : null;
             if (fo != null) {
                 //XXX: Workaround of /net folder on Unix, the folders in the root are not badged as platforms.
