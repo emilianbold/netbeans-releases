@@ -2768,7 +2768,7 @@ public final class ModelViewMapper {
 //        return null;
 //    }
 
-    /** Locates a component root element in the visible view given the box.
+    /** Locates element in the visible view given the box.
      * @return <code>Element</code> or <code>null</code> if there is not such */
     public static Element findElement(CssBox box) {
         for (; box != null; box = box.getParent()) {
@@ -2786,6 +2786,27 @@ public final class ModelViewMapper {
 
         return null;
     }
+
+    // XXX #106870 This is different from findElement.
+    /** Locates component root element in the visible view given the box.
+     * @return <code>Element</code> or <code>null</code> if there is not such */
+    public static Element findComponentRootElement(CssBox box) {
+        for (; box != null; box = box.getParent()) {
+            // #107084 Find the element, don't check for the root.
+//            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+            Element element = box.getComponentRootElement();
+            if (element != null) {
+                if (WebForm.getDomProviderService().isSpecialComponent(element)) {
+                    continue;
+                }
+
+                return element;
+            }
+        }
+
+        return null;
+    }
+    
     
     public static CssBox findBox(PageBox pageBox, int x, int y) {
 //        PageBox pageBox = webform.getPane().getPageBox();

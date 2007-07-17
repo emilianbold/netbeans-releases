@@ -2549,7 +2549,7 @@ public class InteractionManager {
             if ((bx != null) && !(bx instanceof PageBox)) { // can't select body
 //                component = ModelViewMapper.findComponent(bx);
 //                component = ModelViewMapper.findMarkupDesignBean(bx);
-                component = ModelViewMapper.findElement(bx);
+                component = ModelViewMapper.findComponentRootElement(bx);
             }
 
             if (component != null) {
