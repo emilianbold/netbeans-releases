@@ -539,50 +539,37 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeEndpoint method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestRemoveEndpoint() {
+    public void testRemoveEndpoint() {
         System.out.println("removeEndpoint");
-
-        CasaEndpointRef endpointRef = null;
-        CasaWrapperModel instance = null;
-        
-        instance.removeEndpoint(endpointRef);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
+        CasaEndpointRef endpointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, false);
+        casaWrapperModel.removeEndpoint(endpointRef);
+        CasaEndpointRef newEndpointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, false);
+        assertEquals(null, newEndpointRef);
     }
 
     /**
      * Test of getCasaPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestGetCasaPort() {
+    public void testGetCasaPort() {
         System.out.println("getCasaPort");
-        
-        CasaEndpointRef endpointRef = null;
-        CasaWrapperModel instance = null;
-        
-        CasaPort expResult = null;
-        CasaPort result = instance.getCasaPort(endpointRef);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+
+        CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
+        CasaEndpointRef endPointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, true);
+        CasaPort casaPort = casaWrapperModel.getCasaPort(endPointRef);
+        assertEquals("port1", casaPort.getEndpointName());
     }
 
     /**
      * Test of getCasaEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestGetCasaEngineServiceUnit() {
+    public void testGetCasaEngineServiceUnit() {
         System.out.println("getCasaEngineServiceUnit");
         
-        CasaEndpointRef endpointRef = null;
-        CasaWrapperModel instance = null;
-        
-        CasaServiceEngineServiceUnit expResult = null;
-        CasaServiceEngineServiceUnit result = instance.getCasaEngineServiceUnit(endpointRef);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
+        CasaEndpointRef endPointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, false);
+        CasaServiceEngineServiceUnit result = casaWrapperModel.getCasaEngineServiceUnit(endPointRef);
+        assertEquals("SynchronousSampleApplication-SynchronousSample", result.getName());
     }
 
     /**
@@ -591,12 +578,8 @@ public class CasaWrapperModelTest extends TestCase {
     public void INCORRECTtestSaveDocument() {
         System.out.println("saveDocument");
         
-        CasaWrapperModel instance = null;
+        casaWrapperModel.saveDocument();
         
-        instance.saveDocument();
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -605,30 +588,20 @@ public class CasaWrapperModelTest extends TestCase {
     public void INCORRECTtestDiscardRelatedDataObjects() {
         System.out.println("discardRelatedDataObjects");
         
-        CasaWrapperModel instance = null;
+        casaWrapperModel.discardRelatedDataObjects();
         
-        instance.discardRelatedDataObjects();
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
      * Test of addEndpointToServiceEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestAddEndpointToServiceEngineServiceUnit() {
+    public void testAddEndpointToServiceEngineServiceUnit() {
         System.out.println("addEndpointToServiceEngineServiceUnit");
-        
-        CasaServiceEngineServiceUnit seSU = null;
+        CasaServiceEngineServiceUnit seSU = casaWrapperModel.addServiceEngineServiceUnit(false,0,0);
         boolean isConsumes = true;
-        CasaWrapperModel instance = null;
-        
         CasaEndpointRef expResult = null;
-        CasaEndpointRef result = instance.addEndpointToServiceEngineServiceUnit(seSU, isConsumes);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaEndpointRef result = casaWrapperModel.addEndpointToServiceEngineServiceUnit(seSU, isConsumes);
+        assertEquals("extEndpoint1", result.getEndpointName());
     }
 
     /**
@@ -652,32 +625,29 @@ public class CasaWrapperModelTest extends TestCase {
      */
     public void INCORRECTtestAddInternalJBIModule() {
         System.out.println("addInternalJBIModule");
-        
         Project project = null;
-        String type = "";
+        try {
+            project = casaWrapperModel.getJBIProject();
+        } catch (Exception e) {
+            fail("Failed to obtain JBI Project");
+        }
+        String type = "MyProjectType";
         int x = 0;
         int y = 0;
-        CasaWrapperModel instance = null;
+        casaWrapperModel.addInternalJBIModule(project, type, x, y);
         
-        instance.addInternalJBIModule(project, type, x, y);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
      * Test of removeServiceEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestRemoveServiceEngineServiceUnit() {
+    public void testRemoveServiceEngineServiceUnit() {
         System.out.println("removeServiceEngineServiceUnit");
-        
-        CasaServiceEngineServiceUnit seSU = null;
-        CasaWrapperModel instance = null;
-        
-        instance.removeServiceEngineServiceUnit(seSU);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+
+        CasaServiceEngineServiceUnit seSU = casaWrapperModel.getServiceEngineServiceUnits().get(0);
+        assertEquals(true, seSU.isInDocumentModel());
+        casaWrapperModel.removeServiceEngineServiceUnit(seSU);
+        assertEquals(false, seSU.isInDocumentModel());
     }
 
     /**
@@ -705,50 +675,42 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of isDeletable method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestIsDeletable() {
+    public void testIsDeletable() {
         System.out.println("isDeletable");
-        
-        CasaServiceEngineServiceUnit seSU = null;
-        CasaWrapperModel instance = null;
-        
-        boolean expResult = true;
-        boolean result = instance.isDeletable(seSU);
-        assertEquals(expResult, result);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaServiceEngineServiceUnit seSU = 
+                casaWrapperModel.getServiceEngineServiceUnits().get(0);        
+        assertEquals(true, casaWrapperModel.isDeletable(seSU));
     }
 
     /**
      * Test of setEndpointInterfaceQName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestSetEndpointInterfaceQName() {
+    public void testSetEndpointInterfaceQName() {
         System.out.println("setEndpointInterfaceQName");
         
-        CasaEndpointRef endpointRef = null;
-        QName interfaceQName = null;
-        CasaWrapperModel instance = null;
-        
-        instance.setEndpointInterfaceQName(endpointRef, interfaceQName);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
+        CasaEndpointRef endPointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, true);
+        QName interfaceQName = new QName("MyNameSpace", "MyName");
+       
+        casaWrapperModel.setEndpointInterfaceQName(endPointRef, interfaceQName);
+        QName newQName = endPointRef.getInterfaceQName();
+        assertEquals(interfaceQName, newQName);
     }
 
     /**
      * Test of setEndpointServiceQName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
-    public void INCORRECTtestSetEndpointServiceQName() {
+    public void testSetEndpointServiceQName() {
         System.out.println("setEndpointServiceQName");
         
-        CasaEndpointRef endpointRef = null;
-        QName serviceQName = null;
-        CasaWrapperModel instance = null;
+        CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
+        CasaEndpointRef endPointRef = casaWrapperModel.getCasaEndpointRef(casaConnection, true);
+        QName serviceQName = new QName("MyNameSpace", "MyName");
         
-        instance.setEndpointServiceQName(endpointRef, serviceQName);
+        casaWrapperModel.setEndpointServiceQName(endPointRef, serviceQName);
         
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        QName newQName = endPointRef.getServiceQName();
+        assertEquals(serviceQName, newQName);
     }
 
     /**
