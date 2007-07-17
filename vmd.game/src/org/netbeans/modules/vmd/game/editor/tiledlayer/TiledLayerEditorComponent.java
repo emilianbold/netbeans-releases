@@ -133,11 +133,11 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		//create custom cursors
 		URL cursorUrl = TiledLayerEditorComponent.class.getResource("res/drawing_mode_mouse_16.png");
 		ImageIcon cursorIcon = new ImageIcon(cursorUrl);
-		paintCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(4, 0), PAINT_CURSOR_NAME);
+		paintCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(7, 7), PAINT_CURSOR_NAME);
 		
 		cursorUrl = TiledLayerEditorComponent.class.getResource("res/select_mode_mouse_16.png");
 		cursorIcon = new ImageIcon(cursorUrl);
-		selectionCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(0, 0), PAINT_CURSOR_NAME);
+		selectionCursor = Cursor.getDefaultCursor();
 	}
 			
 	/** Creates a new instance of EditorComponent */
