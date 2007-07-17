@@ -156,8 +156,10 @@ public class SchemaParser extends DefaultHandler {
             
             parser.parse( uri, this );
         } catch( SAXException e ) {
-            if( e.getException() instanceof SchemaException ) {             
-                throw new SchemaException( e.getCause());
+            if( e.getException() instanceof SchemaException ) {
+                validationResults.add( new WSDL2Java.ValidationResult( 
+                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Error during parsing of the schema file." ));
+//                throw new SchemaException( e.getCause());
             }
         } catch( ParserConfigurationException e ) {
             e.printStackTrace();
@@ -337,6 +339,15 @@ public class SchemaParser extends DefaultHandler {
 //            if( localName.equals( SchemaConstants.QNAME_RESTRICTION.getLocalPart())) {
 //                throw new SAXException( "", new SchemaException( "restriction is not supported" ));
 //            }
+            // ALL 
+            if( localName.equalsIgnoreCase( SchemaConstants.ALL.getLocalPart()) && state.peek().equals( COMPLEX_TYPE )) {
+                validationResults.add( new WSDL2Java.ValidationResult(
+                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "'all' element in complex-type element is not supported by JSR-172." ));
+            }
+            if( localName.equalsIgnoreCase( SchemaConstants.CHOICE.getLocalPart()) && state.peek().equals( COMPLEX_TYPE )) {
+                validationResults.add( new WSDL2Java.ValidationResult(
+                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "'choice' element in complex-type element is not supported by JSR-172." ));
+            }
         }        
     }
     
@@ -364,7 +375,7 @@ public class SchemaParser extends DefaultHandler {
 //                    System.err.println(" - top element ");
                 } else {
                     if( !SEQUENCE.equals( state.peek())) {
-                        throw new SAXException( "", new SchemaException( "Invalid super tag for 'element'." ));
+                        throw new SAXException( "", new SchemaException( "Invalid super tag for 'element'." )); 
                     }
                 }
             }
