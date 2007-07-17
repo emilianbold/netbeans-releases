@@ -55,10 +55,10 @@ public final class EntitySelectionPanel extends AbstractPanel {
             setErrorMessage("MSG_EntitySelectionPanel_NotWebProject");
             return false;
         } else {
-            if(!support.hasSwdpLibrary()) {
+            /*if(!support.hasSwdpLibrary()) {
                 setErrorMessage("MSG_EntitySelectionPanel_NoSWDP");
                 return false;
-            }
+            }*/
             if (getPersistenceUnitName(project) == null) {
                 setErrorMessage("MSG_EntitySelectionPanel_NoPersistenceUnit");
                 return false;
