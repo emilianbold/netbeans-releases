@@ -20,7 +20,7 @@
 -->
 
 
-<mconfig name="enterprise pack qa-performance test config">
+<mconfig name="mobility pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
     <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions" prio="1"
