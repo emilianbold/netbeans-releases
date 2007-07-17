@@ -19,6 +19,7 @@
 
 package org.netbeans.api.java.source;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -108,8 +109,42 @@ public final class PositionConverter {
             component.getDocument().addDocumentListener(this);
         }
 
-        public Reader filterReader(Reader r) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public Reader filterReader(final Reader r) {
+            return new Reader() {
+                
+                private int next = 0;
+                private String text = component.getText();
+
+                public int read(char[] cbuf, int off, int len) throws IOException {
+                    synchronized (lock) {
+                        if (off < 0 || off > cbuf.length || len < 0 || (off + len) > cbuf.length) {
+                            throw new IndexOutOfBoundsException();
+                        } else if (len == 0) {
+                            return 0;
+                        }
+                        if (text.length() == 0 && length == 0)
+                            return r.read(cbuf, off, len);
+                        if (next < offset) {
+                            int n = r.read(cbuf, off, Math.min(offset - next, len));
+                            next += n;
+                            return n;
+                        }
+                        if (next == offset)
+                            r.skip(length);
+                        if (next < offset + text.length()) {
+                            int n = Math.min(offset + text.length() - next, len);
+                            text.getChars(next - offset, next - offset + n, cbuf, off);
+                            next += n;
+                            return n;
+                        }
+                        return r.read(cbuf, off, len);
+                    }
+                }
+
+                public void close() throws IOException {
+                    r.close();
+                }
+            };
         }
 
         public CharSequence filterCharSequence(CharSequence charSequence) {
