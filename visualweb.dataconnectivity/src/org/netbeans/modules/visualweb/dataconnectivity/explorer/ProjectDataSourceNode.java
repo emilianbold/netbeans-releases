@@ -57,7 +57,6 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
     protected WaitForModelingListener modelingListener = new WaitForModelingListener() ;
     private volatile boolean firstTimeShowAlert = false;
-    private volatile boolean isModeled;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
@@ -65,7 +64,6 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         CurrentProject.getInstance().setProject(nbProject);
         // Create a weak listener so that the connection listener can be GC'd when listener for a project is no longer referenced
         ConnectionManager.getDefault().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault()));
-        isModeled = ProjectDataSourceTracker.isProjectModeled(project);
         initPuppy() ;
     }
 
@@ -223,13 +221,11 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         
         /*---------- ModelSetListener------------*/
         public void modelAdded(Model model) {
-            isModeled = true;
             fireIconChange();
             fireDisplayNameChange(null, null);
         }
         
         public void modelChanged(Model model) {
-            isModeled = true;
             fireIconChange();
             fireDisplayNameChange(null, null);
         }
