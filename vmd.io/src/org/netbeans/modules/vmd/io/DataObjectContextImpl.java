@@ -62,16 +62,18 @@ public class DataObjectContextImpl implements DataObjectContext {
         this.dataObject = dataObject;
     }
 
-    private synchronized void initialize () {
-        if (initialized)
-            return;
-        projectID = ProjectUtils.getProjectID (ProjectUtils.getProject (this));
-        DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (dataObject);
-        projectType = documentSerializer.getProjectType ();
-        if (projectType == null)
-            projectType = PROJECT_TYPE_VMD_UNKNOWN;
-        Debug.warning ("Initializing DataObjectContext", projectID, projectType, dataObject.getPrimaryFile ()); // NOI18N
-        initialized = true;
+    private void initialize () {
+        synchronized (this) {
+            if (initialized)
+                return;
+            projectID = ProjectUtils.getProjectID (ProjectUtils.getProject (this));
+            DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (dataObject);
+            projectType = documentSerializer.getProjectType ();
+            if (projectType == null)
+                projectType = PROJECT_TYPE_VMD_UNKNOWN;
+            Debug.warning ("Initializing DataObjectContext", projectID, projectType, dataObject.getPrimaryFile ()); // NOI18N
+            initialized = true;
+        }
     }
 
     public String getProjectID () {
