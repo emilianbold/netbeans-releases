@@ -843,6 +843,21 @@ public abstract class DocumentBox extends ContainerBox {
             return;
         }
 
+        // Unfortunately, we may have "preloaded" the component with styles above
+        // before we had actual containing blocks assigned to the elements, so
+        // clear the styles first
+//        CssLookup.clearComputedStyles(target.getElement());
+        // XXX This needs to be cleared before the new box is added into the hierarchy (see below).
+//        CssProvider.getEngineService().clearComputedStylesForElement(element);
+        if (changedElements == null || changedElements.length == 0) {
+            CssProvider.getEngineService().clearComputedStylesForElement(element);
+        } else {
+            // XXX #105179 Update style only for the changed elements (and their children).
+            for (Element changedElement : changedElements) {
+                CssProvider.getEngineService().clearComputedStylesForElement(changedElement);
+            }
+        }
+        
         //!CQ parent may be the Document itself... assert parent.getNodeType() == Node.ELEMENT_NODE;
         //Element parentElement = (Element)parent;
         if (target == null) {
@@ -879,21 +894,6 @@ public abstract class DocumentBox extends ContainerBox {
             return;
         }
         */
-        
-        // Unfortunately, we may have "preloaded" the component with styles above
-        // before we had actual containing blocks assigned to the elements, so
-        // clear the styles first
-//        CssLookup.clearComputedStyles(target.getElement());
-        // XXX This needs to be cleared before the new box is added into the hierarchy (see below).
-//        CssProvider.getEngineService().clearComputedStylesForElement(element);
-        if (changedElements == null || changedElements.length == 0) {
-            CssProvider.getEngineService().clearComputedStylesForElement(element);
-        } else {
-            // XXX #105179 Update style only for the changed elements (and their children).
-            for (Element changedElement : changedElements) {
-                CssProvider.getEngineService().clearComputedStylesForElement(changedElement);
-            }
-        }
         
         CreateContext cc = new CreateContext();
         cc.pushPage(webform);
