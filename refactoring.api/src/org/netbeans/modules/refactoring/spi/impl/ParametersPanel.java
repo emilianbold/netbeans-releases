@@ -660,7 +660,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     public void stateChanged(ChangeEvent e) {
-        showProblem(rui.checkParameters());
+        if (rui instanceof RefactoringUIBypass && ((RefactoringUIBypass)rui).isRefactoringBypassRequired()) {
+                showProblem(null);
+        } else {
+            showProblem(rui.checkParameters());
+        }
         setOKorRefactor();
     }
     
