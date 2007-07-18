@@ -63,27 +63,21 @@ ActionListener {
         initComponents ();
         
         // localization
-        setName(loc ("Indentation_Tab"));
-        loc (lStatementContinuationIndent, "Statement_Indent");
-        loc (lNumberOfSpacesPerIndent, "Indent");
-        loc (lPreview, "Preview");
-        loc (cbExpandTabsToSpaces, "Expand_Tabs");
-        loc (cbAddLeadingStarInComments, "Add_Leading_Star");
-        loc (cbAddNewLineBeforeBrace, "Add_New_Line");
-        loc (cbAddSpaceBeforeParenthesis, "Add_Space");
-        epPreview.getAccessibleContext ().setAccessibleName (loc ("AN_Preview"));
-        epPreview.getAccessibleContext ().setAccessibleDescription (loc ("AD_Preview"));
+        setName(loc ("Indentation_Tab")); //NOI18N
+        loc (lNumberOfSpacesPerIndent, "Indent"); //NOI18N
+        loc (lTabSize, "TabSize"); //NOI18N
+        loc (lPreview, "Preview"); //NOI18N
+        loc (lExpandTabsToSpaces, "Expand_Tabs"); //NOI18N
+        epPreview.getAccessibleContext ().setAccessibleName (loc ("AN_Preview")); //NOI18N
+        epPreview.getAccessibleContext ().setAccessibleDescription (loc ("AD_Preview")); //NOI18N
 
         //listeners
         epPreview.setBorder (new EtchedBorder ());
-        cbAddNewLineBeforeBrace.addActionListener (this);
-        cbAddLeadingStarInComments.addActionListener (this);
         cbExpandTabsToSpaces.addActionListener (this);
-        cbAddSpaceBeforeParenthesis.addActionListener (this);
-        sStatementContinuationIndent.setModel (new SpinnerNumberModel (8, 1, 50, 1));
-        sStatementContinuationIndent.addChangeListener (this);
         sNumberOfSpacesPerIndent.setModel (new SpinnerNumberModel (4, 1, 50, 1));
         sNumberOfSpacesPerIndent.addChangeListener (this);
+        sTabSize.setModel (new SpinnerNumberModel (4, 1, 50, 1));
+        sTabSize.addChangeListener (this);
         epPreview.setEnabled (false);
     }
     
@@ -94,102 +88,86 @@ ActionListener {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        lStatementContinuationIndent = new javax.swing.JLabel();
-        sStatementContinuationIndent = new javax.swing.JSpinner();
+
         lNumberOfSpacesPerIndent = new javax.swing.JLabel();
         sNumberOfSpacesPerIndent = new javax.swing.JSpinner();
         cbExpandTabsToSpaces = new javax.swing.JCheckBox();
-        cbAddLeadingStarInComments = new javax.swing.JCheckBox();
-        cbAddNewLineBeforeBrace = new javax.swing.JCheckBox();
-        cbAddSpaceBeforeParenthesis = new javax.swing.JCheckBox();
         lPreview = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         epPreview = new javax.swing.JEditorPane();
-
-        lStatementContinuationIndent.setLabelFor(sStatementContinuationIndent);
-        lStatementContinuationIndent.setText("Statement Continuation Indent:");
+        lTabSize = new javax.swing.JLabel();
+        sTabSize = new javax.swing.JSpinner();
+        lExpandTabsToSpaces = new javax.swing.JLabel();
 
         lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
         lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
 
-        cbExpandTabsToSpaces.setText("Expand Tabs to Spaces");
         cbExpandTabsToSpaces.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbExpandTabsToSpaces.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        cbAddLeadingStarInComments.setText("Add Leading Star in Comments");
-        cbAddLeadingStarInComments.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbAddLeadingStarInComments.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        cbAddNewLineBeforeBrace.setText("Add New Line Before Brace");
-        cbAddNewLineBeforeBrace.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbAddNewLineBeforeBrace.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        cbAddSpaceBeforeParenthesis.setText("Add Space Before Parenthesis");
-        cbAddSpaceBeforeParenthesis.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbAddSpaceBeforeParenthesis.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         lPreview.setText("Preview:");
 
         jScrollPane1.setViewportView(epPreview);
+
+        lTabSize.setLabelFor(sTabSize);
+        lTabSize.setText("Tab Size:");
+
+        lExpandTabsToSpaces.setLabelFor(cbExpandTabsToSpaces);
+        lExpandTabsToSpaces.setText("Expand Tabs To Spaces:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(lPreview)
+                .addContainerGap(451, Short.MAX_VALUE))
+            .add(jScrollPane1)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(25, 25, 25)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lPreview)
-                    .add(lNumberOfSpacesPerIndent)
-                    .add(lStatementContinuationIndent))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sStatementContinuationIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbExpandTabsToSpaces)
-                    .add(cbAddLeadingStarInComments)
-                    .add(cbAddNewLineBeforeBrace)
-                    .add(cbAddSpaceBeforeParenthesis))
-                .addContainerGap(49, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 233, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(61, 61, 61))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lStatementContinuationIndent)
-                    .add(sStatementContinuationIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(lExpandTabsToSpaces)
                     .add(cbExpandTabsToSpaces))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lNumberOfSpacesPerIndent)
-                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(cbAddLeadingStarInComments))
+                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbAddNewLineBeforeBrace)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbAddSpaceBeforeParenthesis)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lTabSize)
+                    .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(27, 27, 27)
                 .add(lPreview)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbAddLeadingStarInComments;
-    private javax.swing.JCheckBox cbAddNewLineBeforeBrace;
-    private javax.swing.JCheckBox cbAddSpaceBeforeParenthesis;
     private javax.swing.JCheckBox cbExpandTabsToSpaces;
     private javax.swing.JEditorPane epPreview;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lExpandTabsToSpaces;
     private javax.swing.JLabel lNumberOfSpacesPerIndent;
     private javax.swing.JLabel lPreview;
-    private javax.swing.JLabel lStatementContinuationIndent;
+    private javax.swing.JLabel lTabSize;
     private javax.swing.JSpinner sNumberOfSpacesPerIndent;
-    private javax.swing.JSpinner sStatementContinuationIndent;
+    private javax.swing.JSpinner sTabSize;
     // End of variables declaration//GEN-END:variables
     
     
@@ -199,32 +177,23 @@ ActionListener {
     
     private static void loc (Component c, String key) {
         if (!(c instanceof JLabel)) {
-            c.getAccessibleContext ().setAccessibleName (loc ("AN_" + key));
-            c.getAccessibleContext ().setAccessibleDescription (loc ("AD_" + key));
+            c.getAccessibleContext ().setAccessibleName (loc ("AN_" + key)); //NOI18N
+            c.getAccessibleContext ().setAccessibleDescription (loc ("AD_" + key)); //NOI18N
         }
         if (c instanceof AbstractButton) {
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc ("CTL_" + key)
-            );
+            Mnemonics.setLocalizedText ((AbstractButton) c, loc ("CTL_" + key)); //NOI18N
         } else {
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc ("CTL_" + key)
-            );
+            Mnemonics.setLocalizedText ((JLabel) c, loc ("CTL_" + key)); //NOI18N
         }
     }
 
     private void updatePreview () {
-        model.setJavaFormatLeadingStarInComment (cbAddLeadingStarInComments.isSelected ());
-        model.setJavaFormatNewlineBeforeBrace (cbAddNewLineBeforeBrace.isSelected ());
-        model.setJavaFormatSpaceBeforeParenthesis (cbAddSpaceBeforeParenthesis.isSelected ());
         model.setExpandTabs (cbExpandTabsToSpaces.isSelected ());
-        model.setJavaFormatStatementContinuationIndent (
-            (Integer) sStatementContinuationIndent.getValue ()
-        );
         model.setSpacesPerTab (
             (Integer) sNumberOfSpacesPerIndent.getValue ()
+        );
+        model.setTabSize(
+            (Integer) sTabSize.getValue ()
         );
         
         // start formatter
@@ -252,24 +221,26 @@ ActionListener {
     public void stateChanged (ChangeEvent e) {
         if (!listen) return;
         updatePreview ();
-        if (changed != model.isChanged ())
+        if (changed != model.isChanged ()) {
             firePropertyChange (
                 OptionsPanelController.PROP_CHANGED,
                 Boolean.valueOf (changed),
                 Boolean.valueOf (model.isChanged ())
             );
+        }
         changed = model.isChanged ();
     }
     
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
         updatePreview ();
-        if (changed != model.isChanged ())
+        if (changed != model.isChanged ()) {
             firePropertyChange (
                 OptionsPanelController.PROP_CHANGED,
                 Boolean.valueOf (changed),
                 Boolean.valueOf (model.isChanged ())
             );
+        }
         changed = model.isChanged ();
     }
 
@@ -278,17 +249,20 @@ ActionListener {
         
         if (originalText == null) {
             // add text to preview
-            InputStream is = getClass ().getResourceAsStream 
-                ("/org/netbeans/modules/options/indentation/indentationExample");
-            BufferedReader r = new BufferedReader (new InputStreamReader (is));
-            StringBuffer sb = new StringBuffer ();
             try {
-                String line = r.readLine ();
-                while (line != null) {
-                    sb.append (line).append ('\n');
-                    line = r.readLine ();
+                InputStream is = getClass ().getResourceAsStream("/org/netbeans/modules/options/indentation/indentationExample"); //NOI18N
+                BufferedReader r = new BufferedReader (new InputStreamReader (is));
+                try {
+                    StringBuffer sb = new StringBuffer ();
+                    String line = r.readLine ();
+                    while (line != null) {
+                        sb.append (line).append ('\n'); //NOI18N
+                        line = r.readLine ();
+                    }
+                        originalText = new String (sb);
+                } finally {
+                    r.close();
                 }
-                originalText = new String (sb);
             } catch (IOException ex) {
                 ex.printStackTrace ();
             }
@@ -296,35 +270,30 @@ ActionListener {
         
         // init components
         listen = false;
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                epPreview.setContentType ("text/x-java");
-                cbExpandTabsToSpaces.setSelected (model.isExpandTabs ());
-                cbAddLeadingStarInComments.setSelected 
-                        (model.getJavaFormatLeadingStarInComment ());
-                cbAddNewLineBeforeBrace.setSelected 
-                        (model.getJavaFormatNewlineBeforeBrace ());
-                cbAddSpaceBeforeParenthesis.setSelected 
-                        (model.getJavaFormatSpaceBeforeParenthesis ());
-                sNumberOfSpacesPerIndent.setValue (model.getSpacesPerTab ());
-                sStatementContinuationIndent.setValue 
-                        (model.getJavaFormatStatementContinuationIndent ());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                epPreview.setContentType("text/xml");
+                cbExpandTabsToSpaces.setSelected(model.isExpandTabs());
+                sNumberOfSpacesPerIndent.setValue(model.getSpacesPerTab());
+                sTabSize.setValue(model.getTabSize());
                 listen = true;
 
                 // update preview
-                updatePreview ();
+                updatePreview();
             }
         });
     }
     
     public void applyChanges () {
-        if (model != null)
+        if (model != null) {
             model.applyChanges ();
+        }
     }
     
     public void cancel () {
-        if (model != null)
+        if (model != null) {
             model.revertChanges ();
+        }
     }
     
     public boolean dataValid () {
@@ -332,7 +301,10 @@ ActionListener {
     }
     
     public boolean isChanged () {
-        if (model == null) return false;
-        return model.isChanged ();
+        if (model == null) {
+            return false;
+        } else {
+            return model.isChanged ();
+        }
     }
 }

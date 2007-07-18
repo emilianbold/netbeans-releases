@@ -36,11 +36,8 @@ import org.openide.util.Lookup;
 class IndentationModel {
 
     private boolean         originalExpandedTabs;
-    private boolean         originalAddStar;
-    private boolean         originalNewLine;
-    private boolean         originalSpace;
-    private int             originalStatementIndent = 0;
-    private int             originalIndent = 0;
+    private int             originalSpacesPerTab = 0;
+    private int             originalTabSize = 0;
     
     private boolean         changed = false;
 
@@ -48,12 +45,8 @@ class IndentationModel {
     IndentationModel () {
         // save original values
         originalExpandedTabs = isExpandTabs ();
-        originalAddStar = getJavaFormatLeadingStarInComment ();
-        originalNewLine = getJavaFormatNewlineBeforeBrace ();
-        originalSpace = getJavaFormatSpaceBeforeParenthesis ();
-        originalStatementIndent = getJavaFormatStatementContinuationIndent ().
-                intValue ();
-        originalIndent = getSpacesPerTab ().intValue ();
+        originalSpacesPerTab = getSpacesPerTab ().intValue ();
+        originalTabSize = getTabSize().intValue ();
     }
     
     boolean isExpandTabs () {
@@ -63,67 +56,6 @@ class IndentationModel {
     
     void setExpandTabs (boolean expand) {
         setParameter ("setExpandTabs", Boolean.valueOf (expand), Boolean.TYPE);
-        updateChanged ();
-    }
-    
-    boolean getJavaFormatLeadingStarInComment () {
-        return ((Boolean) getParameter (
-            "getJavaFormatLeadingStarInComment", Boolean.FALSE
-        )).booleanValue ();
-    }
-    
-    void setJavaFormatLeadingStarInComment (boolean star) {
-        setParameter (
-            "setJavaFormatLeadingStarInComment", 
-            Boolean.valueOf (star), 
-            Boolean.TYPE
-        );
-        updateChanged ();
-    }
-    
-    boolean getJavaFormatSpaceBeforeParenthesis () {
-        return ((Boolean) getParameter (
-            "getJavaFormatSpaceBeforeParenthesis", Boolean.FALSE
-        )).booleanValue ();
-    }
-    
-    void setJavaFormatSpaceBeforeParenthesis (boolean space) {
-        setParameter (
-            "setJavaFormatSpaceBeforeParenthesis", 
-            Boolean.valueOf (space), 
-            Boolean.TYPE
-        );
-        updateChanged ();
-    }
-    
-    boolean getJavaFormatNewlineBeforeBrace () {
-        return ((Boolean) getParameter (
-            "getJavaFormatNewlineBeforeBrace", Boolean.FALSE
-        )).booleanValue ();
-    }
-    
-    void setJavaFormatNewlineBeforeBrace (boolean newLine) {
-        setParameter (
-            "setJavaFormatNewlineBeforeBrace", 
-            Boolean.valueOf (newLine), 
-            Boolean.TYPE
-        );
-        updateChanged ();
-    }
-    
-    Integer getJavaFormatStatementContinuationIndent () {
-        return (Integer) getParameter (
-            "getJavaFormatStatementContinuationIndent", new Integer (4)
-        );
-    }
-    
-    void setJavaFormatStatementContinuationIndent (Integer continuation) {
-	if (continuation.intValue () > 0)
-            setParameter (
-                "setJavaFormatStatementContinuationIndent", 
-                continuation, 
-                Integer.TYPE
-            );
         updateChanged ();
     }
     
@@ -143,71 +75,81 @@ class IndentationModel {
         updateChanged ();
     }
 
+    Integer getTabSize () {
+        BaseOptions options = getExampleBaseOptions();
+        if (options != null) {
+            return options.getTabSize();
+        } else {
+            return 4;
+        }
+    }
+    
+    void setTabSize (Integer size) {
+	if (size.intValue () > 0) {
+            BaseOptions options = getExampleBaseOptions();
+            if (options != null) {
+                options.setTabSize(size);
+            }
+        }
+        updateChanged ();
+    }
+
     boolean isChanged () {
         return changed;
     }
 
     void applyChanges() {
-        applyParameterToAll ("setJavaFormatLeadingStarInComment", Boolean.valueOf (getJavaFormatLeadingStarInComment ()), Boolean.TYPE); //NOI18N
-        applyParameterToAll ("setJavaFormatNewlineBeforeBrace", Boolean.valueOf (getJavaFormatNewlineBeforeBrace ()), Boolean.TYPE); //NOI18N
-        applyParameterToAll ("setJavaFormatSpaceBeforeParenthesis", Boolean.valueOf (getJavaFormatSpaceBeforeParenthesis ()), Boolean.TYPE); //NOI18N
-        applyParameterToAll ("setJavaFormatStatementContinuationIndent", getJavaFormatStatementContinuationIndent (), Integer.TYPE); //NOI18N
+        if (!changed) return; // no changes
         applyParameterToAll ("setExpandTabs", Boolean.valueOf(isExpandTabs ()), Boolean.TYPE); //NOI18N
         applyParameterToAll ("setSpacesPerTab", getSpacesPerTab (), Integer.TYPE); //NOI18N
+        applyParameterToAll ("setTabSize", getTabSize(), Integer.TYPE); //NOI18N
     }
     
     void revertChanges () {
         if (!changed) return; // no changes
-        if (getJavaFormatLeadingStarInComment () != originalAddStar)
-            setJavaFormatLeadingStarInComment (originalAddStar);
-        if (getJavaFormatNewlineBeforeBrace () != originalNewLine)
-            setJavaFormatNewlineBeforeBrace (originalNewLine);
-        if (getJavaFormatSpaceBeforeParenthesis () != originalSpace)
-            setJavaFormatSpaceBeforeParenthesis (originalSpace);
-        if (isExpandTabs () != originalExpandedTabs)
-            setExpandTabs (originalExpandedTabs);
-        if (getJavaFormatStatementContinuationIndent ().intValue () != 
-                originalStatementIndent &&
-            originalStatementIndent > 0
-        )
-            setJavaFormatStatementContinuationIndent 
-                (new Integer (originalStatementIndent));
-        if (getSpacesPerTab ().intValue () != 
-                originalIndent &&
-            originalIndent > 0
-        )
-            setSpacesPerTab 
-                (new Integer (originalIndent));
+        if (isExpandTabs() != originalExpandedTabs) {
+            setExpandTabs(originalExpandedTabs);
+        }
+        if (getSpacesPerTab().intValue() != originalSpacesPerTab && originalSpacesPerTab > 0) {
+            setSpacesPerTab(new Integer(originalSpacesPerTab));
+        }
+        if (getTabSize().intValue() != originalTabSize && originalTabSize > 0) {
+            setTabSize(new Integer(originalTabSize));
+        }
     }
     
     // private helper methods ..................................................
 
     private void updateChanged () {
         changed = 
-                isExpandTabs () != originalExpandedTabs ||
-                getJavaFormatLeadingStarInComment () != originalAddStar ||
-                getJavaFormatNewlineBeforeBrace () != originalNewLine ||
-                getJavaFormatSpaceBeforeParenthesis () != originalSpace ||
-                getJavaFormatStatementContinuationIndent ().intValue () != 
-                    originalStatementIndent ||
-                getSpacesPerTab ().intValue () != originalIndent;
+            isExpandTabs () != originalExpandedTabs ||
+            getSpacesPerTab ().intValue () != originalSpacesPerTab ||
+            getTabSize().intValue() != originalTabSize;
     }
     
-    private IndentEngine javaIndentEngine = null;
+    private BaseOptions exampleBaseOptions = null;
+    private IndentEngine exampleIndentEngine = null;
     
-    private IndentEngine getDefaultIndentEngine() {
-        if (javaIndentEngine == null) {
-            BaseOptions options = getOptions ("text/x-java");
+    private BaseOptions getExampleBaseOptions() {
+        if (exampleBaseOptions == null) {
+            BaseOptions options = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(BaseOptions.class); //NOI18N
             if (options == null) {
-                options = getOptions ("text/plain");
+                options = MimeLookup.getLookup(MimePath.parse("text/plain")).lookup(BaseOptions.class); //NOI18N
             }
-            javaIndentEngine = options == null ? null : options.getIndentEngine ();
+            exampleBaseOptions = options;
         }
-        return javaIndentEngine;
+        return exampleBaseOptions;
+    }
+    private IndentEngine getExampleIndentEngine() {
+        if (exampleIndentEngine == null) {
+            BaseOptions options = getExampleBaseOptions();
+            exampleIndentEngine = options == null ? null : options.getIndentEngine ();
+        }
+        return exampleIndentEngine;
     }
     
     private Object getParameter (String parameterName, Object defaultValue) {
-        IndentEngine eng = getDefaultIndentEngine();
+        IndentEngine eng = getExampleIndentEngine();
         if (eng != null) {
             try {
                 Method method = eng.getClass ().getMethod (
@@ -226,7 +168,7 @@ class IndentationModel {
         Object parameterValue,
         Class parameterType
     ) {
-        IndentEngine eng = getDefaultIndentEngine();
+        IndentEngine eng = getExampleIndentEngine();
         if (eng != null) {
             try {
                 Method method = eng.getClass ().getMethod (
@@ -244,11 +186,10 @@ class IndentationModel {
         Object parameterValue,
         Class parameterType
     ) {
-        HashSet mimeTypeBoundEngines = new HashSet();
-        Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
-        for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
-            String mimeType = (String) i.next();
-            BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+        HashSet<IndentEngine> mimeTypeBoundEngines = new HashSet<IndentEngine>();
+        Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
+        for(String mimeType : mimeTypes) {
+            BaseOptions baseOptions = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
             
             if (baseOptions == null) {
                 continue;
@@ -258,30 +199,32 @@ class IndentationModel {
             mimeTypeBoundEngines.add(indentEngine);
             
             try {
-                // HACK
-                if (baseOptions.getClass ().getName ().equals ("org.netbeans.modules.java.editor.options.JavaOptions") &&
-                    !indentEngine.getClass ().getName ().equals ("org.netbeans.modules.editor.java.JavaIndentEngine")
-                ) {
-                    Class javaIndentEngineClass = getClassLoader ().loadClass 
-                        ("org.netbeans.modules.editor.java.JavaIndentEngine");
-                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup 
-                        (javaIndentEngineClass);
-                    baseOptions.setIndentEngine (indentEngine);
+                ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                // XXX: HACK
+                if (baseOptions.getClass().getName().equals("org.netbeans.modules.java.editor.options.JavaOptions") && //NOI18N
+                    !indentEngine.getClass().getName().equals("org.netbeans.modules.editor.java.JavaIndentEngine")) //NOI18N
+                {
+                    Class javaIndentEngineClass = classLoader.loadClass("org.netbeans.modules.editor.java.JavaIndentEngine"); //NOI18N
+                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup (javaIndentEngineClass);
+                    baseOptions.setIndentEngine(indentEngine);
                 }
-                if (baseOptions.getClass ().getName ().equals ("org.netbeans.modules.web.core.syntax.JSPOptions") &&
-                    !indentEngine.getClass ().getName ().equals ("org.netbeans.modules.web.core.syntax.JspIndentEngine")
-                ) {
-                    Class jspIndentEngineClass = getClassLoader ().loadClass 
-                        ("org.netbeans.modules.web.core.syntax.JspIndentEngine");
-                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup 
-                        (jspIndentEngineClass);
-                    baseOptions.setIndentEngine (indentEngine);
+                if (baseOptions.getClass().getName().equals("org.netbeans.modules.web.core.syntax.JSPOptions") && //NOI18N
+                    !indentEngine.getClass().getName().equals("org.netbeans.modules.web.core.syntax.JspIndentEngine")) //NOI18N
+                {
+                    Class jspIndentEngineClass = classLoader.loadClass("org.netbeans.modules.web.core.syntax.JspIndentEngine"); //NOI18N
+                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup (jspIndentEngineClass);
+                    baseOptions.setIndentEngine(indentEngine);
                 }
-                Method method = indentEngine.getClass ().getMethod (
-                    parameterName,
-                    new Class [] {parameterType}
-                );
-                method.invoke (indentEngine, new Object [] {parameterValue});
+                
+                if (parameterName.equals("setTabSize")) { //NOI18N
+                    baseOptions.setTabSize((Integer)parameterValue);
+                } else {
+                    Method method = indentEngine.getClass ().getMethod (
+                        parameterName,
+                        new Class [] {parameterType}
+                    );
+                    method.invoke (indentEngine, new Object [] {parameterValue});
+                }
             } catch (Exception ex) {
             }
         }
@@ -306,17 +249,6 @@ class IndentationModel {
         }
     }
     
-    private ClassLoader classLoader;
-    private ClassLoader getClassLoader () {
-        if (classLoader == null)
-            classLoader = (ClassLoader) Lookup.getDefault ().lookup 
-                (ClassLoader.class);
-        return classLoader;
-    }
-    
-    private static BaseOptions getOptions (String mimeType) {
-        return (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
-    }
 }
 
 

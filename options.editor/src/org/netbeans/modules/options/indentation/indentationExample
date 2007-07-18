@@ -1,12 +1,10 @@
-/**
-   Block comment. 
- */
-public class JavaExample {
-    
-    public String method (
-        int param1,
-        String param2
-    ) {
-        return "String " + '-' + 1.2;
-    }
-}
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    A list of WWW bookmarks.
+-->
+<web-bookmarks>
+    <bookmark id="0x0001">
+        <title>The Cloud Appreciation Society</title>
+        <link url="http://www.cloudappreciationsociety.org/" />
+    </bookmark>
+</web-bookmarks>
