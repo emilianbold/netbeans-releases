@@ -20,10 +20,12 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.lib.cvsclient.file.DefaultFileHandler;
+import org.netbeans.lib.cvsclient.file.FileReadOnlyHandler;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.util.Utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +45,7 @@ import java.io.FileOutputStream;
  *
  * @author Petr Kuzel
  */
-class CvsLiteFileHandler extends DefaultFileHandler {
+class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandler {
 
     protected boolean createNewFile(File file) throws IOException {
         boolean exists = file.isFile();
@@ -125,6 +127,25 @@ class CvsLiteFileHandler extends DefaultFileHandler {
         }
     }
 
+    public void setFileReadOnly(File file, boolean readOnly) throws IOException {
+        String [] command = new String[3];
+        // TODO: update for JDK 6
+        if (Utilities.isWindows()) {
+            command[0] = "attrib";
+            command[1] = readOnly ? "+R" : "-R";
+        } else {
+            command[0] = "chmod";
+            command[1] = readOnly ? "u-w" : "u+w";
+        }
+        command[2] = file.getAbsolutePath();
+        try {
+            System.out.println(command[1]);
+            Runtime.getRuntime().exec(command);
+        } catch (Exception e) {
+            
+        }
+    }
+        
     private static class LockedOutputStream extends OutputStream {
 
         private final OutputStream peer;
