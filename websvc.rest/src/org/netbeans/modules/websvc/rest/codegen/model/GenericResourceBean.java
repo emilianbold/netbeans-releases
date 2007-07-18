@@ -51,7 +51,9 @@ public class GenericResourceBean {
         HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE
     };
     
-    public static final HttpMethodType[] STAND_ALONE_METHODS = HttpMethodType.values();
+    public static final HttpMethodType[] STAND_ALONE_METHODS = new HttpMethodType[] {
+        HttpMethodType.GET, HttpMethodType.PUT 
+    };
     
     private final String name;
     private String packageName;

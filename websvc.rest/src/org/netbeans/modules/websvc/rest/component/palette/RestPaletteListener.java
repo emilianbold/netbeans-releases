@@ -41,7 +41,9 @@ import org.xml.sax.SAXException;
  */
 public class RestPaletteListener implements PropertyChangeListener, FileChangeListener {
     
-    public static final String REST_TEMPLATE = "@UriTemplate";
+    public static final String REST_TEMPLATE = "@UriTemplate";      //NOI18N
+    
+    public static final String HTTP_METHOD = "@HttpMethod";         //NOI18N
     
     PaletteController pc = null;
     
@@ -97,8 +99,10 @@ public class RestPaletteListener implements PropertyChangeListener, FileChangeLi
                 return false;
             javax.swing.text.Document doc = ec.getDocument();
             if (doc != null) {
-                return doc.getText(0, doc.getLength()).
-                        indexOf(REST_TEMPLATE) != -1;
+                String docText = doc.getText(0, doc.getLength());
+                
+                return (docText.indexOf(REST_TEMPLATE) != -1) ||
+                        (docText.indexOf(HTTP_METHOD) != -1);
             }
         } catch (BadLocationException ex) {
         }
