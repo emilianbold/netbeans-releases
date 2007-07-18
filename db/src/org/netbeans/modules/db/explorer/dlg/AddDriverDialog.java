@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.sql.Driver;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private JComponent progressComponent;
     
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
-    private static final Logger logger = Logger.getLogger(AddDriverDialog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
 
     /** Creates new form AddDriverDialog1 */
     public AddDriverDialog() {
@@ -310,18 +311,16 @@ public class AddDriverDialog extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 startProgress();
+                                     
+                // This classloader is used to load classes
+                // from the jar files for the driver.  We can then use
+                // introspection to see if a class in one of these jar files
+                // implements java.sql.Driver
+                URLClassLoader jarloader = createJarLoader();
                 
                 for (int i = 0; i < drvs.size(); i++) {
                     try {
                         URL url = (URL)drvs.get(i);
-                        
-                        // This classloader is used to load classes
-                        // from the current jar file.  We can then use
-                        // introspection to see if a class in the jar file
-                        // implements java.sql.Driver
-                        URLClassLoader jarloader = new URLClassLoader(
-                                new URL[] { url }, 
-                                this.getClass().getClassLoader());
 
                         File file = new File(new URI(url.toExternalForm()));
                         JarFile jf = new JarFile(file);
@@ -353,6 +352,28 @@ public class AddDriverDialog extends javax.swing.JPanel {
         }, 0);
     }//GEN-LAST:event_findButtonActionPerformed
 
+    private URLClassLoader createJarLoader() {
+        // For reasons not fully clear to me, we can't just call
+        // toArray() on the drvs list (which is a LinkedList full of URLs).
+        // and cast this to  URL[]: this causes a ClassCastException.
+        //
+        // So, we have to iterate through the whole list to create the
+        // array needed by the URLClassLoader constructor.  Sigh...
+        //
+        // Luckily, this shouldn't be too expensive, as the jar list is
+        // most likely one or two files, and never more than a handful.
+        int numDrivers = drvs.size();
+        URL[] urls = new URL[numDrivers];
+        
+        for ( int i = 0 ; i < numDrivers ; i++) {
+            urls[i] = (URL)drvs.get(i);
+        }
+
+        return new URLClassLoader(
+            urls,
+            this.getClass().getClassLoader());
+    }
+
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         stopProgress();
         
@@ -381,7 +402,10 @@ public class AddDriverDialog extends javax.swing.JPanel {
                     try {
                         drvs.add(files[i].toURI().toURL());
                     } catch (MalformedURLException exc) {
-                        //PENDING
+                        LOGGER.log(Level.WARNING, 
+                            "Unable to add driver jar file " +
+                            files[i].getAbsolutePath() + 
+                            ": can not convert to URL", exc);
                     }
                 }
             
@@ -406,31 +430,21 @@ public class AddDriverDialog extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private boolean isDriverClass(URLClassLoader jarloader, String className) {
-        Class clazz = null;
+        Class clazz;
 
         try {
             clazz = jarloader.loadClass(className);
         } catch ( Throwable t ) {
-            logger.log(Level.FINE, null, t);
-            logger.log(Level.INFO,
+            LOGGER.log(Level.INFO,
                  "Got an exception trying to load class " +
-                 className + " during search for drivers in jar file " +
-                 jarloader.getURLs()[0].toExternalForm() + ": " +
-                 t.getClass().getName() + ": " + t.getMessage() + 
-                 ".  Skipping this class."); // NOI18N
+                 className + " during search for JDBC drivers in " +
+                 " driver jar(s). Skipping this class...", 
+                 t); // NOI18N
 
             return false;         
         }
-        if ( clazz == null) {
-            logger.log(Level.WARNING,
-                "Class object for class " + className + " is null during " +
-                "search for JDBC driver classes in jar file " +
-                jarloader.getURLs()[0].toExternalForm() + 
-                ".  Skipping this class"); // NOI18N
-            return false;
-        }
 
-        if ( java.sql.Driver.class.isAssignableFrom(clazz) ) {
+        if ( Driver.class.isAssignableFrom(clazz) ) {
             return true;
         }
         
