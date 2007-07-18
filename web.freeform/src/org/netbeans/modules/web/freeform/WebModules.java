@@ -147,6 +147,10 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     private FileObject getFile (Element parent, String fileElName) {
         Element el = Util.findElement (parent, fileElName, WebProjectNature.NS_WEB);
         String fname = Util.findText (el);
+        if (fname == null) {
+            // empty element => cannot find fileobject
+            return null;
+        }
         String locationEval = evaluator.evaluate(fname);
         if (locationEval != null) {
             File locationFile = helper.resolveFile(locationEval);
