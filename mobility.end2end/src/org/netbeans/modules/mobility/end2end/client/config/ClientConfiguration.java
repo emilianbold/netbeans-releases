@@ -38,9 +38,8 @@ public class ClientConfiguration {
     private Properties properties;
     
     public final static String PROP_CREATE_STUBS    = "createStubs";    // NOI18N
-    public final static String PROP_MULTIPLE_CALL   = "multipleCall";   // NOI18N
     public final static String PROP_FLOATING_POINT  = "floatingPoint";  // NOI18N
-    public final static String PROP_TRACE           = "trace";          // NOI18N
+    public final static String PROP_DATABINDING     = "DataBinding";    // NOI18N
     
     /**
      * Sets name of the client project

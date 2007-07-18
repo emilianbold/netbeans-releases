@@ -121,7 +121,7 @@ public class ClientOptionsPanel implements TemplateWizard.Panel, ChangeListener 
         
         Templates.setTargetName( templateWizard, gui.getTargetName() );
         templateWizard.putProperty(GenericServiceIterator.PROP_CLIENT_ROOT, sourceRoot);
-        templateWizard.putProperty(GenericServiceIterator.PROP_CREATE_MIDLET, new Boolean(gui.isCreateSampleMIDlet()));
+        templateWizard.putProperty(GenericServiceIterator.PROP_DATABINDING, new Boolean( gui.isDataBinded()));
         
         cc.setClassDescriptor( cd );
         //System.err.println(" = class name - " + className );
@@ -131,20 +131,15 @@ public class ClientOptionsPanel implements TemplateWizard.Panel, ChangeListener 
         } else {
             props.put( ClientConfiguration.PROP_CREATE_STUBS, FALSE ); // NOI18N
         }
-        if( gui.isGroupedCalls()) {
-            props.put( ClientConfiguration.PROP_MULTIPLE_CALL, TRUE ); // NOI18N
-        } else {
-            props.put( ClientConfiguration.PROP_MULTIPLE_CALL, FALSE ); // NOI18N
-        }
         if( gui.isFloatingPointUsed()) {
             props.put( ClientConfiguration.PROP_FLOATING_POINT, TRUE ); // NOI18N
         } else {
             props.put( ClientConfiguration.PROP_FLOATING_POINT, FALSE ); // NOI18N
         }
-        if( gui.isTracing()) {
-            props.put( ClientConfiguration.PROP_TRACE, TRUE ); // NOI18N
+        if( gui.isDataBinded()) {
+            props.put( ClientConfiguration.PROP_DATABINDING, TRUE ); // NOI18N
         } else {
-            props.put( ClientConfiguration.PROP_TRACE, FALSE ); // NOI18N
+            props.put( ClientConfiguration.PROP_DATABINDING, FALSE ); // NOI18N
         }
         
         cc.setProperties( props );
@@ -164,12 +159,6 @@ public class ClientOptionsPanel implements TemplateWizard.Panel, ChangeListener 
         } else if( !isValidJavaFolderName( gui.getPackageFileName())) {
             templateWizard.putProperty(WPEM, NbBundle.getMessage(ClientOptionsPanel.class, "ERR_File_InvalidPackageName")); // NOI18N
             return false;
-        } else if( gui.isCreateSampleMIDlet() && gui.isGroupedCalls() && gui.isGenerateStubs()) {
-            templateWizard.putProperty(WPEM, NbBundle.getMessage(ClientOptionsPanel.class, "MSG_NoGroupedCallMidlet")); // NOI18N
-            return true;
-        } else if( gui.isCreateSampleMIDlet() && gui.isGroupedCalls() && !gui.isGenerateStubs()) {
-            templateWizard.putProperty(WPEM, NbBundle.getMessage(ClientOptionsPanel.class, "MSG_NoGroupedSampleMidlet")); // NOI18N
-            return true;
         }
         templateWizard.putProperty(WPEM, " "); //NOI18N
         return true;

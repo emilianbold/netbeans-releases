@@ -63,10 +63,10 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         
         final ClientConfiguration cc = config.getClientConfiguration();
         properties = cc.getProperties();
-        if( TRUE.equals( properties.getProperty( ClientConfiguration.PROP_TRACE ))) {
-            clientTrace.setSelected( true );
+        if( TRUE.equals( properties.getProperty( ClientConfiguration.PROP_DATABINDING ))) {
+            clientDataBinding.setSelected( true );
         } else {
-            clientTrace.setSelected( false );
+            clientDataBinding.setSelected( false );
         }
         if( TRUE.equals( properties.getProperty( ClientConfiguration.PROP_CREATE_STUBS ))) {
             clientCreateStubs.setSelected( true );
@@ -77,11 +77,6 @@ public class ClientOptionsPanel extends SectionInnerPanel {
             clientFloatingPoint.setSelected( true );
         } else {
             clientFloatingPoint.setSelected( false );
-        }
-        if( TRUE.equals( properties.getProperty( ClientConfiguration.PROP_MULTIPLE_CALL ))) {
-            clientCreateMultipleCall.setSelected( true );
-        } else {
-            clientCreateMultipleCall.setSelected( false );
         }
     }
     
@@ -111,10 +106,10 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         @SuppressWarnings("synthetic-access")
 		public void save() {
             //System.err.println(" - Saving Option Panel");
-            if( clientTrace.getSelectedObjects() == null ) {
-                properties.setProperty( ClientConfiguration.PROP_TRACE, FALSE ); // NOI18N
+            if( clientDataBinding.getSelectedObjects() == null ) {
+                properties.setProperty( ClientConfiguration.PROP_DATABINDING, FALSE ); // NOI18N
             } else {
-                properties.setProperty( ClientConfiguration.PROP_TRACE, TRUE ); // NOI18N
+                properties.setProperty( ClientConfiguration.PROP_DATABINDING, TRUE ); // NOI18N
             }
             
             if( clientCreateStubs.getSelectedObjects() == null ) {
@@ -129,11 +124,6 @@ public class ClientOptionsPanel extends SectionInnerPanel {
                 properties.setProperty( ClientConfiguration.PROP_FLOATING_POINT, TRUE ); // NOI18N
             }
             
-            if( clientCreateMultipleCall.getSelectedObjects() == null ) {
-                properties.setProperty( ClientConfiguration.PROP_MULTIPLE_CALL, FALSE ); // NOI18N
-            } else {
-                properties.setProperty( ClientConfiguration.PROP_MULTIPLE_CALL, TRUE ); // NOI18N
-            }
         }
         
         public int hashCode() {
@@ -159,24 +149,21 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         clientCreateStubs = new javax.swing.JCheckBox();
-        clientCreateMultipleCall = new javax.swing.JCheckBox();
         clientFloatingPoint = new javax.swing.JCheckBox();
-        clientTrace = new javax.swing.JCheckBox();
+        clientDataBinding = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         clientCreateStubs.setBackground(new java.awt.Color(255, 255, 255));
         clientCreateStubs.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Generate_Stubs").charAt(0));
-        clientCreateStubs.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LBL_Generate_Stubs"));
-        clientCreateStubs.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        clientCreateStubs.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LBL_Generate_Stubs")); // NOI18N
+        clientCreateStubs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientCreateStubs.setMargin(new java.awt.Insets(0, 0, 0, 0));
         clientCreateStubs.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clientCreateStubsActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -185,38 +172,16 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         add(clientCreateStubs, gridBagConstraints);
 
-        clientCreateMultipleCall.setBackground(new java.awt.Color(255, 255, 255));
-        clientCreateMultipleCall.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Grouped_Calls").charAt(0));
-        clientCreateMultipleCall.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Generate_Grouped_Calls"));
-        clientCreateMultipleCall.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        clientCreateMultipleCall.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        clientCreateMultipleCall.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clientCreateMultipleCallActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
-        add(clientCreateMultipleCall, gridBagConstraints);
-
         clientFloatingPoint.setBackground(new java.awt.Color(255, 255, 255));
         clientFloatingPoint.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Floating_point").charAt(0));
-        clientFloatingPoint.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Floating_Point"));
-        clientFloatingPoint.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        clientFloatingPoint.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Floating_Point")); // NOI18N
+        clientFloatingPoint.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientFloatingPoint.setMargin(new java.awt.Insets(0, 0, 0, 0));
         clientFloatingPoint.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clientFloatingPointActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -225,32 +190,28 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         add(clientFloatingPoint, gridBagConstraints);
 
-        clientTrace.setBackground(new java.awt.Color(255, 255, 255));
-        clientTrace.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Tracing_Code").charAt(0));
-        clientTrace.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Client_Tracing"));
-        clientTrace.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        clientTrace.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        clientTrace.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clientTraceActionPerformed(evt);
+        clientDataBinding.setBackground(new java.awt.Color(255, 255, 255));
+        clientDataBinding.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Tracing_Code").charAt(0));
+        clientDataBinding.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Client_DataBinding")); // NOI18N
+        clientDataBinding.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        clientDataBinding.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        clientDataBinding.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clientDataBindingActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
-        add(clientTrace, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        add(clientDataBinding, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
     
-    private void clientTraceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientTraceActionPerformed
+    private void clientDataBindingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientDataBindingActionPerformed
         dataObject.setModified( true );
-    }//GEN-LAST:event_clientTraceActionPerformed
+}//GEN-LAST:event_clientDataBindingActionPerformed
     
     private void clientCreateStubsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientCreateStubsActionPerformed
         dataObject.setModified( true );
@@ -259,17 +220,12 @@ public class ClientOptionsPanel extends SectionInnerPanel {
     private void clientFloatingPointActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientFloatingPointActionPerformed
         dataObject.setModified( true );
     }//GEN-LAST:event_clientFloatingPointActionPerformed
-    
-    private void clientCreateMultipleCallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientCreateMultipleCallActionPerformed
-        dataObject.setModified( true );
-    }//GEN-LAST:event_clientCreateMultipleCallActionPerformed
-    
+        
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox clientCreateMultipleCall;
     private javax.swing.JCheckBox clientCreateStubs;
+    private javax.swing.JCheckBox clientDataBinding;
     private javax.swing.JCheckBox clientFloatingPoint;
-    private javax.swing.JCheckBox clientTrace;
     // End of variables declaration//GEN-END:variables
     
 }

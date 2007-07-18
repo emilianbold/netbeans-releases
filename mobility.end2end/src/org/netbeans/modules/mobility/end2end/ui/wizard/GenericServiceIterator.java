@@ -56,7 +56,7 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
     public static final String PROP_CONFIGURATION = "e2e-configuration"; // NOI18N
     public static final String PROP_SERVER_PROJECT = "server-project"; // NOI18N
     static String PROP_CLIENT_ROOT = "client-root"; // NOI18N
-    static String PROP_CREATE_MIDLET = "createMIDlet"; // NOI18N
+    static String PROP_DATABINDING = "DataBinding"; // NOI18N
     
     protected static GenericServiceIterator instance;
     
@@ -117,7 +117,6 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
     }
     
     public void uninitialize( final TemplateWizard templateWizard ) {
-        templateWizard.putProperty(PROP_CREATE_MIDLET, null);
         webapplicationPanel.removeChangeListener(this);
         webapplicationPanel = null;
         serviceSelectionPanel = null;
