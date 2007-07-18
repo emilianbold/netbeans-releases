@@ -37,6 +37,9 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
 
@@ -87,8 +90,30 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
                     }
                 }
             });
-        } catch (CatalogModelException ex) {
-            // show blank ui
+
+            // vlv # 109986
+            FileObject fileObject = cwm.getCatalogFileObject();
+
+            if (fileObject == null) {
+              return;
+            }
+            DataObject dataObject = DataObject.find(fileObject);
+
+            if (dataObject == null) {
+              return;
+            }
+            SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+
+            if (saveCookie == null) {
+              return;
+            }
+            saveCookie.save();
+        }
+        catch(org.openide.loaders.DataObjectNotFoundException e) {
+        }
+        catch(java.io.IOException e) {
+        }
+        catch (CatalogModelException ex) {
         }
     }
     
