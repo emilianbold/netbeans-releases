@@ -111,7 +111,13 @@ public final class DDProvider {
                 webApp.setError((SAXParseException) ex.getException());
             }
         }
-        ddMap.put(fo.getURL(), new WeakReference(webApp));
+        synchronized(ddMap){
+            WebApp cached = getFromCache(fo);
+            if (cached != null) {
+                return cached;
+            }
+            ddMap.put(fo.getURL(), new WeakReference(webApp));
+        }
         return webApp;
     }
     
@@ -151,8 +157,6 @@ public final class DDProvider {
         if (webApp == null) {
             baseBeanMap.remove(fo.getURL());
             errorMap.remove(fo.getURL());
-            if (ddMap.get(fo.getURL()) == null) {
-            }
         }
         return webApp;
     }
@@ -193,7 +197,9 @@ public final class DDProvider {
     private void removeFromCache(FileObject fo){
         try{
             URL foUrl = fo.getURL();
-            ddMap.remove(foUrl);
+            synchronized (ddMap){
+                ddMap.remove(foUrl);
+            }
             baseBeanMap.remove(foUrl);
             errorMap.remove(foUrl);
             musMap.remove(fo);
