@@ -114,6 +114,9 @@ public class RenameTransformer extends RefactoringVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(path))
             return;
         Element el = workingCopy.getTrees().getElement(path);
+        if (el==null) {
+            return;
+        }
         if (el.equals(elementToFind) || isMethodMatch(el)) {
             Tree nju = make.setLabel(tree, newName);
             rewrite(tree, nju);
