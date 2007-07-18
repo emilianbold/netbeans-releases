@@ -206,7 +206,9 @@ final class PropUtils {
      * Metal, where the background color of the button changes if it
      * is selected */
     private static Boolean useOptimizedCustomButtonPainting = null;
-    static boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    static final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    
     private static Graphics scratchGraphics = null;
 
     //Comparators copied from original propertysheet implementation
@@ -1066,12 +1068,7 @@ final class PropUtils {
             noAltBg = Boolean.FALSE;
         }
 
-        Icon collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
-        Icon expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
-        
-        assert collapsedIcon != null: "no Tree.collapsedIcon found";
-        assert expandedIcon != null: "no Tree.expandedIcon found";
-
+        Icon collapsedIcon = getCollapsedIcon();
             
         int iconSize = collapsedIcon.getIconWidth();
         if (collapsedIcon != null) {
@@ -1109,7 +1106,7 @@ final class PropUtils {
     /** Get the icon displayed by an expanded set.  Typically this is just the
      * same icon the look and feel supplies for trees */
     static Icon getExpandedIcon() {
-        Icon expandedIcon = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+        Icon expandedIcon = UIManager.getIcon(isGtk ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
         assert expandedIcon != null: "no Tree.expandedIcon found";
         return expandedIcon;
     }
@@ -1117,7 +1114,7 @@ final class PropUtils {
     /** Get the icon displayed by a collapsed set. Typically this is just the
      * icon the look and feel supplies for trees */
     static Icon getCollapsedIcon() {
-        Icon collapsedIcon = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
+        Icon collapsedIcon = UIManager.getIcon(isGtk ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon"); //NOI18N
         assert collapsedIcon != null: "no Tree.collapsedIcon found";
         return collapsedIcon;
     }
