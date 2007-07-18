@@ -75,7 +75,7 @@ public final class CanvasCD extends ComponentDescriptor {
     }
 
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (DisplayableCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor (DisplayableCD.TYPEID, TYPEID, false, true);
     }
 
     public VersionDescriptor getVersionDescriptor () {

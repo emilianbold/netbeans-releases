@@ -98,6 +98,7 @@
             <file name="org-netbeans-modules-vmd-midp-components-displayables-TextBoxCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-displayables-FormCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-displayables-CanvasCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-GameCanvasCD.instance"/>
 
             <file name="org-netbeans-modules-vmd-midp-components-items-ChoiceGroupCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-items-DateFieldCD.instance"/>
