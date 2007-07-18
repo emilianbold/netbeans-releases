@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.uihandler.api.Controller;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbPreferences;
@@ -112,10 +113,17 @@ public class AutosubmitTest extends NbTestCase {
             log.warning("" + i);
         }
 
-        Installer.RP.post(new Runnable() {
-            public void run() {
+        assertEquals("Full buffer", 1000, Controller.getDefault().getLogRecordsCount());
+        for (;;) {
+            Installer.RP.post(new Runnable() {
+                public void run() {
+                }
+            }, 0, Thread.MIN_PRIORITY).waitFinished();
+            if (Controller.getDefault().getLogRecordsCount() < 1000) {
+                
+                break;
             }
-        }, 0, Thread.MIN_PRIORITY).waitFinished();
+        }
 
         {
             final byte[] content = MemoryURL.getOutputForURL("memory://uploaddone");
@@ -123,7 +131,7 @@ public class AutosubmitTest extends NbTestCase {
         }
         
         assertEquals("Mode is automatic", true, Installer.isHintsMode());
-        assertEquals("Now the hint points to xelfi", new URL("http://www.xelfi.cz"), Installer.hintsURL());
+        assertEquals("Now the hint points to xelfi", new URL("http://www.xelfi.cz").toURI(), Installer.hintsURL().toURI());
 
         icon.setSize(10, 20); // dummy call, invokes refresh
         assertEquals("Visible now", new Dimension(16, 16), icon.getSize());
@@ -131,9 +139,10 @@ public class AutosubmitTest extends NbTestCase {
         if (jc.getToolTipText().indexOf("hint") < 0) {
             fail("There should be a note about hint:\n" + jc.getToolTipText());
         }
+        MockServices.setServices(URLD.class);
         icon.dispatchEvent(new MouseEvent(icon, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 0, 5, 8, 1, false));
         
-        assertEquals("Clicking on the component opens browser", URLD.url, Installer.hintsURL());
+        assertEquals("Clicking on the component opens browser", URLD.url.toURI(), Installer.hintsURL().toURI());
     }
     
     public static final class URLD extends HtmlBrowser.URLDisplayer {

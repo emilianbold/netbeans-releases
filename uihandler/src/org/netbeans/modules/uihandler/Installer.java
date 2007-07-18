@@ -157,7 +157,12 @@ public class Installer extends ModuleInstall {
                 prefs.putInt("count", UIHandler.MAX_LOGS);
                 closeLogStream();
                 if (isHintsMode()) {
-                    displaySummary("WELCOME_URL", true, true);
+                    class Auto implements Runnable {
+                        public void run() {
+                            displaySummary("WELCOME_URL", true, true);
+                        }
+                    }
+                    RP.post(new Auto()).waitFinished();
                 }
                 File f = logFile(0);
                 f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
