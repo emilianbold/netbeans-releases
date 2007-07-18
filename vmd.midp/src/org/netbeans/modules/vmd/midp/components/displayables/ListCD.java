@@ -147,7 +147,6 @@ public final class ListCD extends ComponentDescriptor {
                 // actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ListElementEventSourceCD.TYPEID),
                 // inspector
-                InspectorPositionPresenter.create(new DisplayablePC()),
                 MidpInspectorSupport.createComponentElementsCategory("Elements", getInspectorOrderingControllers(), ListElementEventSourceCD.TYPEID), //NOI18N
                 // code
                 createSetterPresenter(),

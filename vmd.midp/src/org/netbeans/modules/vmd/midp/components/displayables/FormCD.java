@@ -118,7 +118,6 @@ public final class FormCD extends ComponentDescriptor {
                 // action
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
                 // inspector
-                InspectorPositionPresenter.create(new DisplayablePC()),
                 MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() ,
                 ItemCD.TYPEID), //NOI18N //TODO
                 // code

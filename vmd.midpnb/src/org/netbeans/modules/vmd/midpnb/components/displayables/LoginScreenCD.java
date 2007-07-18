@@ -143,12 +143,10 @@ public final class LoginScreenCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // code
             createSetterPresenter(),
+            MidpCodePresenterSupport.createAddImportPresenter(),
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
-            //inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
-            MidpCodePresenterSupport.createAddImportPresenter(),
-            //screen
+            // screen
             new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
         );
     }

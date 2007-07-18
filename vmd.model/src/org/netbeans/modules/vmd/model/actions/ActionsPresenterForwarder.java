@@ -38,7 +38,7 @@ public abstract class ActionsPresenterForwarder extends ActionsPresenter {
         return new ActionsPresenterForwarder(actionsToInherit) {
             protected DesignComponent getTargetComponent() {
                 if (referencePropertyName == null)
-                    throw new IllegalArgumentException("Argument referencePropertyName null"); //NOI18N
+                    throw new IllegalArgumentException("Argument referencePropertyName is null"); //NOI18N
                 return getComponent().readProperty(referencePropertyName).getComponent();
             }
         };

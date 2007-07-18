@@ -105,8 +105,6 @@ public final class CanvasCD extends ComponentDescriptor {
         return Arrays.asList(
             // properties
             createPropertiesPresenter(),
-            // inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
             // code
             createSetterPresenter()
         );

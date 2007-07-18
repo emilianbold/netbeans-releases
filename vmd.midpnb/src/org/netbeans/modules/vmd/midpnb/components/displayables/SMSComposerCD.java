@@ -135,8 +135,6 @@ public final class SMSComposerCD extends ComponentDescriptor {
             MidpCodePresenterSupport.createAddImportPresenter(),
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
-            // inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
             // screen
             new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
         );

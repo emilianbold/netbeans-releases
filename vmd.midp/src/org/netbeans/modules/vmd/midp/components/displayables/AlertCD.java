@@ -130,8 +130,6 @@ public final class AlertCD extends ComponentDescriptor {
             SwitchDisplayableEventHandlerCD.createSwitchAlertEventHandlerCreatorPresenter (),
             // properties
             createPropertiesPresenter(),
-            // inspector
-            InspectorPositionPresenter.create(new DisplayablePC()),
             // code
             createSetterPresenter(),
             // delete

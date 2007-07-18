@@ -48,6 +48,8 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import java.util.*;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 
 /**
  * 
@@ -131,6 +133,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             // inspector
             new InspectorFolderComponentPresenter(true),
             MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
+            InspectorPositionPresenter.create(new DisplayablePC()),
             // action
             EditDependencyPresenter.createEditablePresenter(),    
             // accept

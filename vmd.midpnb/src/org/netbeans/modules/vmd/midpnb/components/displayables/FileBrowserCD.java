@@ -112,16 +112,16 @@ public final class FileBrowserCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
-            //properties
+            // properties
             createPropertiesPresenter(),
             // code
             createSetterPresenter(),
             MidpCodePresenterSupport.createAddImportPresenter(),
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
-            //inspector
+            // inspector
             InspectorPositionPresenter.create(new DisplayablePC()),
-            //screen
+            // screen
             new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
         );
     }

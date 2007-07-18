@@ -135,7 +135,7 @@ public final class InspectorFolderCategoryPresenter extends InspectorFolderPrese
         }
         
         public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-            if (getComponent().getType() == path.getLastElement().getTypeID() &&  path.getLastElement().getComponentID().equals(getComponentID()))
+            if (getComponent().getType().equals(path.getLastElement().getTypeID()) &&  path.getLastElement().getComponentID().equals(getComponentID()))
                 return true;
             return false;
         }
