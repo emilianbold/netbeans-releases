@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.structure.formatting;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,7 +101,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
     }
     
     @Override public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
-            boolean indentOnly) throws BadLocationException, IOException {
+            boolean indentOnly) throws BadLocationException {
         LinkedList<TagIndentationData>unprocessedOpeningTags = new LinkedList<TagIndentationData>();
         List<TagIndentationData>matchedOpeningTags = new ArrayList<TagIndentationData>();
         doc.atomicLock();

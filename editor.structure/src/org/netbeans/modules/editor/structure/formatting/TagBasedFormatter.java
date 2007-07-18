@@ -97,7 +97,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     }
     
     @Override public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
-            boolean indentOnly) throws BadLocationException, IOException {
+            boolean indentOnly) throws BadLocationException {
         
         if (!hasValidSyntaxSupport(doc)){
             return null;
