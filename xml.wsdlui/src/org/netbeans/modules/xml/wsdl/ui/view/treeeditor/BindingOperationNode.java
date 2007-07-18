@@ -17,12 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * Created on May 24, 2005
- *
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
+
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
@@ -40,10 +35,7 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.commands.NamedPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingOperationFaultNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingOperationInputNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingOperationOutputNewType;
@@ -52,6 +44,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityEle
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -64,18 +57,13 @@ import org.openide.util.datatransfer.NewType;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOperation> {
-    private  BindingOperation mWSDLConstruct;
-    private BindingOperationPropertyAdapter mPropertyAdapter;
     private Image ICON;
 
     public BindingOperationNode(BindingOperation wsdlConstruct) {
         super(new GenericWSDLComponentChildren<BindingOperation>(wsdlConstruct), wsdlConstruct, new BindingOperationNewTypesFactory());
-        mWSDLConstruct = wsdlConstruct;
         // Must set the icon to something to honor getIcon() contract.
         ICON = Utilities.loadImage(
                 "org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");
-        mPropertyAdapter = new BindingOperationPropertyAdapter();
-        super.setNamedPropertyAdapter(this.mPropertyAdapter);
         if (wsdlConstruct.getOperation() != null) {
             Operation operation = wsdlConstruct.getOperation().get();
             if (operation != null) {
@@ -117,27 +105,32 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
     public Image getOpenedIcon(int type) {
         return ICON;
     }
+    
+    @Override
+    public boolean canRename() {
+        return false;
+    }
 
     @Override
     protected Node.Property createAttributeProperty(QName attrQName) {
-            Node.Property attrValueProperty = null;
-            try {
+        Node.Property attrValueProperty = null;
+        try {
             String attrName = attrQName.getLocalPart();
-             //name
+            //name
             if(attrName.equals(NAME_PROP)) { //NOT I18N
                 //name
-            attrValueProperty = createNameProperty();
-            
+                attrValueProperty = createNameProperty();
+
             }  else {
                 attrValueProperty = super.createAttributeProperty(attrQName);
-             }
-            
-            } catch(Exception ex) {
-                mLogger.log(Level.SEVERE, "failed to create property sheet for "+ getWSDLComponent(), ex);
-                ErrorManager.getDefault().notify(ex);
             }
-             return attrValueProperty;
+
+        } catch(Exception ex) {
+            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ getWSDLComponent(), ex);
+            ErrorManager.getDefault().notify(ex);
         }
+        return attrValueProperty;
+    }
     
     
      @Override
@@ -149,37 +142,27 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
     }
     
     
-      private Node.Property createNameProperty() throws NoSuchMethodException {
+      private Node.Property createNameProperty() {
           Node.Property attrValueProperty;
-          attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
-          attrValueProperty.setName(BindingOperation.NAME_PROPERTY);
-          attrValueProperty.setDisplayName(NbBundle.getMessage(BindingOperationNode.class, "PROP_NAME_DISPLAYNAME"));
-          attrValueProperty.setShortDescription(NbBundle.getMessage(BindingOperationNode.class, "BINDINGOPERATION_NAME_DESCRIPTION"));
+          attrValueProperty = new BindingOperationNameProperty(BindingOperation.NAME_PROPERTY, 
+                          NbBundle.getMessage(BindingOperationNode.class, "PROP_NAME_DISPLAYNAME"), 
+                          NbBundle.getMessage(BindingOperationNode.class, "BINDINGOPERATION_NAME_DESCRIPTION"));
                 
           return attrValueProperty;
       }
       
 
-    public class BindingOperationPropertyAdapter extends PropertyAdapter implements NamedPropertyAdapter {
+    public class BindingOperationNameProperty extends PropertySupport.ReadOnly<String> {
         
-         public BindingOperationPropertyAdapter() {
-             super(mWSDLConstruct);
+         public BindingOperationNameProperty(String name, String displayName, String shortDesc) {
+             super(name, String.class, displayName, shortDesc);
          }
-         
-        public void setName(String name) {
-            getWSDLComponent().getModel().startTransaction();
-            ((BindingOperation) getWSDLComponent()).setName(name);
-                getWSDLComponent().getModel().endTransaction();
+
+        @Override
+        public String getValue() {
+            String name = getWSDLComponent().getName();
+            return name == null ? "" : name;
         }
-         
-        public String getName() {
-            if(mWSDLConstruct.getName() == null) {
-                return "";
-            }
-            
-            return mWSDLConstruct.getName();
-        }
-         
     }
     
     public static final class BindingOperationNewTypesFactory implements NewTypesFactory{

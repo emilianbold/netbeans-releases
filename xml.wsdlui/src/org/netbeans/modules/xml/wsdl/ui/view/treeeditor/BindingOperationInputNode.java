@@ -35,15 +35,13 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.commands.NamedPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -57,20 +55,11 @@ import org.openide.util.datatransfer.NewType;
  */
 public class BindingOperationInputNode extends WSDLExtensibilityElementNode<BindingInput> {
     
-    private BindingInput mWSDLConstruct;
-    
-    private BindingOperationPropertyAdapter mPropertyAdapter = null;
-    
     private static Image ICON  = Utilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindinginput.png");
     
     public BindingOperationInputNode(BindingInput wsdlConstruct) {
         super(new GenericWSDLComponentChildren<BindingInput>(wsdlConstruct), wsdlConstruct, new BindingOperationInputNewTypesFactory());
-        mWSDLConstruct = wsdlConstruct;
-        
-        
-        this.mPropertyAdapter = new BindingOperationPropertyAdapter();
-        super.setNamedPropertyAdapter(this.mPropertyAdapter);
     }
     
     @Override
@@ -86,6 +75,11 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode<Bind
     @Override
     public Image getOpenedIcon(int type) {
         return ICON;
+    }
+    
+    @Override
+    public boolean canRename() {
+        return false;
     }
     
     @Override
@@ -119,41 +113,27 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode<Bind
         return alwaysPresentAttrProperties;
     }
     
-    
-    private Node.Property createNameProperty() throws NoSuchMethodException {
+    private Node.Property createNameProperty() {
         Node.Property attrValueProperty;
-        attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
-                String.class, NAME_PROP);
-        attrValueProperty.setName(BindingInput.NAME_PROPERTY);
-        attrValueProperty.setDisplayName(NbBundle.getMessage(BindingOperationInputNode.class, "PROP_NAME_DISPLAYNAME"));
-        attrValueProperty.setShortDescription(NbBundle.getMessage(BindingOperationInputNode.class, "BINDINGOPERATIONINPUT_NAME_DESCRIPTION"));
-        
-        
+        attrValueProperty = new BindingInputNameProperty(BindingInput.NAME_PROPERTY, 
+                NbBundle.getMessage(BindingOperationInputNode.class, "PROP_NAME_DISPLAYNAME"), 
+                NbBundle.getMessage(BindingOperationInputNode.class, "BINDINGOPERATIONINPUT_NAME_DESCRIPTION"));
+
         return attrValueProperty;
     }
-    
-    
-    
-    public class BindingOperationPropertyAdapter extends PropertyAdapter implements NamedPropertyAdapter {
-        
-        public BindingOperationPropertyAdapter() {
-            super(getWSDLComponent());
+
+
+    public class BindingInputNameProperty extends PropertySupport.ReadOnly<String> {
+
+        public BindingInputNameProperty(String name, String displayName, String shortDesc) {
+            super(name, String.class, displayName, shortDesc);
         }
-        
-        public void setName(String name) {
-            getWSDLComponent().getModel().startTransaction();
-            getWSDLComponent().setName(name);
-                getWSDLComponent().getModel().endTransaction();
+
+        @Override
+        public String getValue() {
+            String name = getWSDLComponent().getName();
+            return name == null ? "" : name;
         }
-        
-        public String getName() {
-            if(mWSDLConstruct.getName() == null) {
-                return "";
-            }
-            
-            return mWSDLConstruct.getName();
-        }
-        
     }
     
     public static final class BindingOperationInputNewTypesFactory implements NewTypesFactory{

@@ -35,15 +35,13 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.commands.NamedPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
-import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -57,20 +55,11 @@ import org.openide.util.datatransfer.NewType;
  */
 public class BindingOperationFaultNode extends WSDLExtensibilityElementNode<BindingFault> {
     
-    private BindingFault mWSDLConstruct;
-    
-    private BindingOperationFaultPropertyAdapter mPropertyAdapter = null;
-    
     private static Image ICON  = Utilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingfault.png");
     
     public BindingOperationFaultNode(BindingFault wsdlConstruct) {
         super(new GenericWSDLComponentChildren<BindingFault>(wsdlConstruct), wsdlConstruct, new BindingOperationFaultNewTypesFactory());
-        mWSDLConstruct = wsdlConstruct;
-        
-        
-        this.mPropertyAdapter = new BindingOperationFaultPropertyAdapter();
-        super.setNamedPropertyAdapter(this.mPropertyAdapter);
     }
     
     @Override
@@ -116,44 +105,33 @@ public class BindingOperationFaultNode extends WSDLExtensibilityElementNode<Bind
         
         return alwaysPresentAttrProperties;
     }
-    
-    
-    private Node.Property createNameProperty() throws NoSuchMethodException {
-        Node.Property attrValueProperty;
-        attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
-                String.class, NAME_PROP);
-        attrValueProperty.setName(BindingFault.NAME_PROPERTY);
-        attrValueProperty.setDisplayName(NbBundle.getMessage(BindingOperationFaultNode.class, "PROP_NAME_DISPLAYNAME"));
-        attrValueProperty.setShortDescription(NbBundle.getMessage(BindingOperationFaultNode.class, "BINDINGOPERATIONFAULT_NAME_DESCRIPTION"));
-        
-        return attrValueProperty;
+
+    @Override
+    public boolean canRename() {
+        return false;
     }
     
-    
-    
-    
-    
-    public class BindingOperationFaultPropertyAdapter extends PropertyAdapter implements NamedPropertyAdapter {
-        
-        public BindingOperationFaultPropertyAdapter() {
-            super(getWSDLComponent());
+    private Node.Property createNameProperty() {
+        Node.Property attrValueProperty;
+        attrValueProperty = new BindingFaultNameProperty(BindingFault.NAME_PROPERTY, 
+                NbBundle.getMessage(BindingOperationFaultNode.class, "PROP_NAME_DISPLAYNAME"), 
+                NbBundle.getMessage(BindingOperationFaultNode.class, "BINDINGOPERATIONFAULT_NAME_DESCRIPTION"));
+
+        return attrValueProperty;
+    }
+
+
+    public class BindingFaultNameProperty extends PropertySupport.ReadOnly<String> {
+
+        public BindingFaultNameProperty(String name, String displayName, String shortDesc) {
+            super(name, String.class, displayName, shortDesc);
         }
-        
-        public void setName(String name) {
-            getWSDLComponent().getModel().startTransaction();
-            getWSDLComponent().setName(name);
-                getWSDLComponent().getModel().endTransaction();
+
+        @Override
+        public String getValue() {
+            String name = getWSDLComponent().getName();
+            return name == null ? "" : name;
         }
-        
-        public String getName() {
-            if(mWSDLConstruct.getName() == null) {
-                return "";
-            }
-            
-            return mWSDLConstruct.getName();
-        }
-        
-        
     }
     
     public static final class BindingOperationFaultNewTypesFactory implements NewTypesFactory{
