@@ -100,6 +100,7 @@ public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
         getComponent ();
         Project project = (Project) ((WizardDescriptor) settings).getProperty (AddToPaletteWizardAction.PROPERTY_PROJECT);
         Map<String, ComponentInstaller.Item> items = ComponentInstaller.search (project);
+        ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_ITEMS, items);
         component.setItems (items.values ());
     }
 
