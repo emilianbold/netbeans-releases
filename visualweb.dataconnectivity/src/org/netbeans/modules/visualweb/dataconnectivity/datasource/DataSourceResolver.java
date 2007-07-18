@@ -36,7 +36,6 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoListe
 import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManager;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
-import org.netbeans.modules.visualweb.dataconnectivity.ui.AddDataSourceDialog;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -47,8 +46,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
