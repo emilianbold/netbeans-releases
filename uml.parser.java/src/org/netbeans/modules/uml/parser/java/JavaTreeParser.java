@@ -3111,6 +3111,7 @@ public JavaTreeParser() {
 		
 		AST enumConstantDef_AST_in = (AST)_t;
 		AST n = null;
+		AST rp = null;
 		AST cm = null;
 		mController.stateBegin("Enum Member");
 		
@@ -3132,6 +3133,10 @@ public JavaTreeParser() {
 			{
 				elist(_t);
 				_t = _retTree;
+				rp = (AST)_t;
+				match(_t,RPAREN);
+				_t = _t.getNextSibling();
+				mController.tokenFound(rp, "Parameter End");
 				break;
 			}
 			case 3:
@@ -3631,6 +3636,7 @@ public JavaTreeParser() {
 	public final void enumConstantBlock(AST _t) throws RecognitionException {
 		
 		AST enumConstantBlock_AST_in = (AST)_t;
+		AST rc = null;
 		
 		try {      // for error handling
 			AST __t148 = _t;
@@ -3683,6 +3689,10 @@ public JavaTreeParser() {
 				}
 			} while (true);
 			}
+			rc = (AST)_t;
+			match(_t,RCURLY);
+			_t = _t.getNextSibling();
+			mController.tokenFound(rc, "Body End");
 			mController.stateEnd();
 			_t = __t148;
 			_t = _t.getNextSibling();

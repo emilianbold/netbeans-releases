@@ -136,6 +136,14 @@ public class EnumMemberStateHandler extends AttributeStateHandler
             recordStartToken(pToken);
             handleComment(pToken);
         } 
+	else if("Parameter End".equals(tokenType))
+	{
+	    createTokenDescriptor("Parameter End", pToken);
+        } 
+	else if("Body End".equals(tokenType))
+	{
+	    createTokenDescriptor("Body End", pToken);
+        } 
 	else if("Literal Separator".equals(tokenType))
 	{
 	    createTokenDescriptor("Literal Separator", pToken);

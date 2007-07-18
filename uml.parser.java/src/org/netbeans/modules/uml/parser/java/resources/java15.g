@@ -764,9 +764,15 @@ annotationBlock
 
 // This is the body of an enum. You can have zero or more enum constants
 // followed by any number of fields like a regular class
-enumBlock
+enumBlock {AST enumConst = null;}
 	:	l:LCURLY {#l.setType(START_CLASS_BODY);}
-			(options{greedy=true;}:  ec:enumConstant  cm:COMMA! {#ec.addChild(#cm);})* (enumConstant)?    
+			( ec:enumConstant {enumConst=#ec;} 
+              ( options{greedy=true;}: 
+                cm1:COMMA! { if (enumConst != null) { enumConst.addChild(#cm1); } }  
+                ec1:enumConstant {enumConst=#ec1;} 
+              )* 
+              ( cm:COMMA! { if (enumConst != null) { enumConst.addChild(#cm); } } )? 
+            )?    
 			( SEMI ( classField | SEMI! )* )?
 		r:RCURLY {#r.setType(END_CLASS_BODY);}
 		{#enumBlock = #([OBJBLOCK, "OBJBLOCK"], #enumBlock);}
@@ -807,17 +813,17 @@ enumConstant!
 		i:IDENT
 		(	LPAREN!
 			a:argList
-			RPAREN!
+			rp:RPAREN
 		)?
 		( b:enumConstantBlock )?
-		{#enumConstant = #([ENUM_CONSTANT_DEF, "ENUM_CONSTANT_DEF"], an, i, a, b);}
+		{#enumConstant = #([ENUM_CONSTANT_DEF, "ENUM_CONSTANT_DEF"], an, i, a, rp, b);}
 	;
 
 //The class-like body of an enum constant
 enumConstantBlock
 	:	LCURLY!
 		( enumConstantField | SEMI! )*
-		RCURLY!
+		RCURLY
 		{#enumConstantBlock = #([OBJBLOCK, "OBJBLOCK"], #enumConstantBlock);}
 	;
 

@@ -445,7 +445,7 @@ annotationFieldDecl
 // TODO: Handle enum values with arguments
 enumConstantDef
 { mController.stateBegin("Enum Member"); }
-   : #(ENUM_CONSTANT_DEF annotations n:IDENT { mController.tokenFound(#n, "Name"); } (elist)? (enumConstantBlock)? (cm:COMMA {mController.tokenFound(#cm, "Literal Separator");})? )  
+   : #(ENUM_CONSTANT_DEF annotations n:IDENT { mController.tokenFound(#n, "Name"); } (elist rp:RPAREN { mController.tokenFound(#rp, "Parameter End");} )? (enumConstantBlock)? (cm:COMMA {mController.tokenFound(#cm, "Literal Separator");})? )  
 
      { mController.stateEnd(); }
    ;
@@ -459,6 +459,8 @@ enumConstantBlock
         | typeDefinition
         | #(INSTANCE_INIT slist[""])
         )*
+        
+        rc:RCURLY { mController.tokenFound(#rc, "Body End"); }
 
         { mController.stateEnd(); }
       )
