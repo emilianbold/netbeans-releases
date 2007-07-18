@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.io.javame;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
 import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObjectExistsException;
@@ -145,7 +146,9 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
                 NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation ("File " + designFile.getPath () + " was modified externally. Reload it?", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 if (DialogDisplayer.getDefault ().notify (confirmation) != NotifyDescriptor.YES_OPTION)
                     return;
-                IOSupport.getDocumentSerializer (MEDesignDataObject.this).restartLoadingDocument ();
+                DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (MEDesignDataObject.this);
+                if (documentSerializer.isLoadingOrLoaded ())
+                    documentSerializer.restartLoadingDocument ();
             }
         });
     }

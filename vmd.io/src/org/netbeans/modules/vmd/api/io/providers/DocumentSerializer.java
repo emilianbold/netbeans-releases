@@ -85,6 +85,12 @@ public final class DocumentSerializer {
         }
     }
 
+    public boolean isLoadingOrLoaded () {
+        synchronized (this) {
+            return loading  ||  loaded;
+        }
+    }
+
     public void startLoadingDocument () {
         synchronized (this) {
             if (loaded  ||  loading)
