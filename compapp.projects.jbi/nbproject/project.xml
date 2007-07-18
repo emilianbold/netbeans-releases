@@ -22,14 +22,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.compapp.projects.jbi</code-name-base>
-            <!--
-            <public-packages>
-                <package>com.sun.jbi.ui.devtool.projects.jbi</package>
-                <package>org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints</package>
-                <package>org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model</package>
-                <package>org.netbeans.modules.compapp.projects.jbi.ui.customizer</package>
-            </public-packages>
-            -->
             <module-dependencies>
                 <dependency>
                     <code-name-base>javax.wsdl4j</code-name-base>
@@ -382,10 +374,18 @@
                 <package>org.netbeans.modules.compapp.projects.jbi.api</package>
                 <package>org.netbeans.modules.compapp.projects.jbi.ui.actions</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/wsdl4j-1_5_2/wsdl4j.jar</runtime-relative-path>
-                <binary-origin>../external/wsdl4j-1_5_2/wsdl4j.jar</binary-origin>
-            </class-path-extension>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${antsrc.cp}</classpath>
+                <built-to>build/antclasses</built-to>
+                <built-to>${cluster}/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar</built-to>
+            </extra-compilation-unit>
+            <extra-compilation-unit>
+                <package-root>catdsrc</package-root>
+                <classpath>${catdsrc.cp}</classpath>
+                <built-to>build/catdclasses</built-to>
+                <built-to>${cluster}/modules/ext/jbi/catd.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>
