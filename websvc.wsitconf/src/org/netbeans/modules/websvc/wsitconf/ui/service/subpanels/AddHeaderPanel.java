@@ -20,6 +20,8 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.MessageHeader;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 
 /**
  *
@@ -27,13 +29,22 @@ import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.MessageHeader
  */
 public class AddHeaderPanel extends javax.swing.JPanel {
     
+    Binding binding = null;
+    
     /**
      * Creates new form AddHeaderPanel
      */
-    public AddHeaderPanel() {
+    public AddHeaderPanel(Binding b) {
         super();
         initComponents();
 
+        this.binding = b;
+
+        boolean rm = true;
+        if (binding != null) {
+            rm = RMModelHelper.isRMEnabled(binding);
+        }
+        
         headerCombo.addItem(MessageHeader.ADDRESSING_TO);
         headerCombo.addItem(MessageHeader.ADDRESSING_FROM);
         headerCombo.addItem(MessageHeader.ADDRESSING_FAULTTO);
@@ -42,9 +53,11 @@ public class AddHeaderPanel extends javax.swing.JPanel {
         headerCombo.addItem(MessageHeader.ADDRESSING_RELATESTO);
         headerCombo.addItem(MessageHeader.ADDRESSING_ACTION);
 
-        headerCombo.addItem(MessageHeader.RM_ACKREQUESTED);
-        headerCombo.addItem(MessageHeader.RM_SEQUENCEACK);
-        headerCombo.addItem(MessageHeader.RM_SEQUENCE);
+//        if (rm) {
+            headerCombo.addItem(MessageHeader.RM_ACKREQUESTED);
+            headerCombo.addItem(MessageHeader.RM_SEQUENCEACK);
+            headerCombo.addItem(MessageHeader.RM_SEQUENCE);
+//        }
     }
     
     public boolean isAllHeaders() {

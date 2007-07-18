@@ -34,14 +34,17 @@ public class MessageHeader extends TargetElement {
     public static final String RM_SEQUENCEACK=NbBundle.getMessage(MessageHeader.class, "COMBO_RM_SequenceAck");  //NOI18N
     public static final String RM_SEQUENCE=NbBundle.getMessage(MessageHeader.class, "COMBO_RM_Sequence");  //NOI18N
 
-    public static final String[] ALL_HEADERS  = new String[] { 
+    public static final String[] ADDRESSING_HEADERS  = new String[] { 
         ADDRESSING_TO, 
         ADDRESSING_FROM, 
         ADDRESSING_FAULTTO, 
         ADDRESSING_REPLYTO, 
         ADDRESSING_MESSAGEID,
         ADDRESSING_RELATESTO,
-        ADDRESSING_ACTION,
+        ADDRESSING_ACTION
+    };
+
+    public static final String[] RM_HEADERS  = new String[] { 
         RM_ACKREQUESTED,
         RM_SEQUENCEACK,
         RM_SEQUENCE

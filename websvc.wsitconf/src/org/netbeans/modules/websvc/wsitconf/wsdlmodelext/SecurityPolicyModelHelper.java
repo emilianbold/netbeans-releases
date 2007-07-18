@@ -581,7 +581,7 @@ public class SecurityPolicyModelHelper {
         }
         // BODY
         if ((bodies != null) && (!bodies.isEmpty())) {
-            Vector columns = new Vector();
+            Vector<Object> columns = new Vector<Object>();
             columns.add(TargetElement.DATA, new MessageBody());
             columns.add(TargetElement.SIGN, Boolean.FALSE);
             columns.add(TargetElement.ENCRYPT, Boolean.TRUE);
@@ -592,7 +592,7 @@ public class SecurityPolicyModelHelper {
         for (Header h : headers) {
             MessageHeader header = getListModelForHeader(h);
             if (header != null) {
-                Vector columns = new Vector();
+                Vector<Object> columns = new Vector<Object>();
                 columns.add(TargetElement.DATA, header);
                 columns.add(TargetElement.SIGN, Boolean.FALSE);
                 columns.add(TargetElement.ENCRYPT, Boolean.TRUE);
@@ -604,7 +604,7 @@ public class SecurityPolicyModelHelper {
         for (XPath x : xpaths) {
             MessageElement e = getListModelForXPath(x);
             if (e != null) {
-                Vector columns = new Vector();
+                Vector<Object> columns = new Vector<Object>();
                 columns.add(TargetElement.DATA, e);
                 columns.add(TargetElement.SIGN, Boolean.FALSE);
                 columns.add(TargetElement.ENCRYPT, Boolean.TRUE);
@@ -629,7 +629,7 @@ public class SecurityPolicyModelHelper {
             if (existing != null) {
                 existing.set(TargetElement.SIGN, Boolean.TRUE);
             } else {
-                Vector columns = new Vector();
+                Vector<Object> columns = new Vector<Object>();
                 columns.add(TargetElement.DATA, body);
                 columns.add(TargetElement.SIGN, Boolean.TRUE);
                 columns.add(TargetElement.ENCRYPT, Boolean.FALSE);
@@ -644,7 +644,7 @@ public class SecurityPolicyModelHelper {
                 if (existing != null) {
                     existing.set(TargetElement.SIGN, Boolean.TRUE);
                 } else {
-                    Vector columns = new Vector();
+                    Vector<Object> columns = new Vector<Object>();
                     columns.add(TargetElement.DATA, header);
                     columns.add(TargetElement.SIGN, Boolean.TRUE);
                     columns.add(TargetElement.ENCRYPT, Boolean.FALSE);
@@ -660,7 +660,7 @@ public class SecurityPolicyModelHelper {
                 if (existing != null) {
                     existing.set(TargetElement.SIGN, Boolean.TRUE);
                 } else {
-                    Vector columns = new Vector();
+                    Vector<Object> columns = new Vector<Object>();
                     columns.add(TargetElement.DATA, e);
                     columns.add(TargetElement.SIGN, Boolean.TRUE);
                     columns.add(TargetElement.ENCRYPT, Boolean.FALSE);
@@ -681,7 +681,7 @@ public class SecurityPolicyModelHelper {
                 if (existing != null) {
                     existing.set(TargetElement.REQUIRE, Boolean.TRUE);
                 } else {
-                    Vector columns = new Vector();
+                    Vector<Object> columns = new Vector<Object>();
                     columns.add(TargetElement.DATA, e);
                     columns.add(TargetElement.SIGN, Boolean.FALSE);
                     columns.add(TargetElement.ENCRYPT, Boolean.FALSE);
@@ -1006,11 +1006,11 @@ public class SecurityPolicyModelHelper {
         return secBindingType;
     }
 
-    public static void setDefaultTargets(WSDLComponent c,boolean headers) {
+    public static void setDefaultTargets(WSDLComponent c, boolean headers, boolean rm) {
 
         Vector<Vector> targets = new Vector<Vector>();
 
-        Vector row = new Vector();
+        Vector<Object> row = new Vector<Object>();
         MessageBody body = new MessageBody();
         row.add(TargetElement.DATA, body);
         row.add(TargetElement.SIGN, Boolean.TRUE);
@@ -1019,14 +1019,25 @@ public class SecurityPolicyModelHelper {
         targets.add(row);
 
         if (headers) {
-            for (String s : MessageHeader.ALL_HEADERS) {
-                row = new Vector();
+            for (String s : MessageHeader.ADDRESSING_HEADERS) {
+                row = new Vector<Object>();
                 MessageHeader h = new MessageHeader(s);
                 row.add(TargetElement.DATA, h);
                 row.add(TargetElement.SIGN, Boolean.TRUE);
                 row.add(TargetElement.ENCRYPT, Boolean.FALSE);
                 row.add(TargetElement.REQUIRE, Boolean.FALSE);
                 targets.add(row);
+            }
+//            if (rm) {
+                for (String s : MessageHeader.RM_HEADERS) {
+                    row = new Vector<Object>();
+                    MessageHeader h = new MessageHeader(s);
+                    row.add(TargetElement.DATA, h);
+                    row.add(TargetElement.SIGN, Boolean.TRUE);
+                    row.add(TargetElement.ENCRYPT, Boolean.FALSE);
+                    row.add(TargetElement.REQUIRE, Boolean.FALSE);
+                    targets.add(row);
+  //              }
             }
         }
 

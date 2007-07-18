@@ -33,6 +33,8 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.Vector;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.NotifyDescriptor;
 
 /**
@@ -43,7 +45,8 @@ public class TargetsPanel extends javax.swing.JPanel {
     
     private WSDLModel model;
     private WSDLComponent comp;
-    
+
+    private Binding binding;
     private Vector<Vector> targetsModel;
     private MessagePartsModel targetsTableDataModel;
     private Vector<String> columnNames = new Vector<String>();
@@ -59,6 +62,15 @@ public class TargetsPanel extends javax.swing.JPanel {
         super();
         this.model = c.getModel();
         this.comp = c;
+        
+        WSDLComponent b = c;
+        while (!(b instanceof Binding) && (b != null)) {
+            b = b.getParent();
+        }
+        if ((b != null) && (b instanceof Binding)) {
+            binding = (Binding) b;
+        }
+        
         initComponents();
 
         columnNames.add(NbBundle.getMessage(TargetsPanel.class, "LBL_Targets_MessagePart"));    //NOI18N
@@ -85,10 +97,7 @@ public class TargetsPanel extends javax.swing.JPanel {
     }
     
     private AddHeaderPanel getAddHeaderPanel() {
-        if (this.addHeaderPanel == null) {
-            addHeaderPanel = new AddHeaderPanel();
-        }
-        return addHeaderPanel;
+        return new AddHeaderPanel(binding);
     }
     
     private void saveTargetsModel() {
@@ -255,7 +264,7 @@ public class TargetsPanel extends javax.swing.JPanel {
         if (DialogDisplayer.getDefault().notify(dd).equals(DialogDescriptor.OK_OPTION)) {
             if (addHeaderPanel != null) {
                 if (addHeaderPanel.isAllHeaders()) {
-                    for (String s : MessageHeader.ALL_HEADERS) {
+                    for (String s : MessageHeader.ADDRESSING_HEADERS) {
                         MessageHeader h = new MessageHeader(s);
                         if (!(SecurityPolicyModelHelper.targetExists(getTargetsModel(), h) != null)) {
                             Vector row = new Vector();
@@ -265,6 +274,23 @@ public class TargetsPanel extends javax.swing.JPanel {
                             row.add(TargetElement.REQUIRE, Boolean.FALSE);
                             getTargetsModel().add(row);
                         }
+                    }
+                    boolean rm = true;
+                    if (binding != null) {
+                        rm = RMModelHelper.isRMEnabled(binding);
+                    }
+//                    if (rm) {
+                        for (String s : MessageHeader.RM_HEADERS) {
+                            MessageHeader h = new MessageHeader(s);
+                            if (!(SecurityPolicyModelHelper.targetExists(getTargetsModel(), h) != null)) {
+                                Vector row = new Vector();
+                                row.add(TargetElement.DATA, h);
+                                row.add(TargetElement.SIGN, Boolean.TRUE);
+                                row.add(TargetElement.ENCRYPT, Boolean.FALSE);
+                                row.add(TargetElement.REQUIRE, Boolean.FALSE);
+                                getTargetsModel().add(row);
+                            }
+//                        }
                     }
                 } else {
                     String header = addHeaderPanel.getHeader();
