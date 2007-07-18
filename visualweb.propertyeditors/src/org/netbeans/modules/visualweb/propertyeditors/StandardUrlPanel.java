@@ -914,5 +914,17 @@ public class StandardUrlPanel extends JPanel implements PropertyChangeListener, 
 
         liveProperty.setValue(getPropertyValue());
     }
-
+ 
+    /**
+     * Override addNotify in order to set foucs on the text field.
+     * Before calling requestFocusInWindow() on the field, we have to
+     * make sure that the field is displayable. When super.addNotify()
+     * returns, we know that a corresponding peer object is created,
+     * so it is safe to set focus then.
+     */ 
+    public void addNotify() {
+        super.addNotify();        
+        // Set focus on the text field for accessibility.
+        valueTextField.requestFocusInWindow();
+    }
 }
