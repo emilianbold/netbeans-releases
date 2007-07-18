@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.properties.editors;
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,7 +32,6 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Reply;
-import org.netbeans.modules.bpel.model.api.ToPartContainer;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
@@ -44,7 +42,6 @@ import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.VirtualVariableContainer;
 import org.netbeans.modules.bpel.properties.choosers.NewMessageVarChooser;
-import org.netbeans.modules.bpel.properties.editors.controls.PartVariableTable;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.UserNotification;
@@ -135,22 +132,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         initComponents();
         bindControls2PropertyNames();
         
-//        Reply reply = (Reply) mcc.getEditedObject();
-//        
-//        boolean hasFaultName = (reply.getFaultName() != null);
-//        boolean hasToParts = false;
-//        boolean hasVariable = false;
-//        
-//        ToPartContainer container = reply.getToPartContaner();
-//        if (container != null) {
-//            hasToParts = (container.sizeOfToParts() > 0);
-//        }
-//        
-//        BpelReference<VariableDeclaration> variableDeclaration = reply.getVariable();
-//        if (variableDeclaration != null) {
-//            hasVariable = (variableDeclaration.get() != null);
-//        }
-//        
+        
         // Issue 85553 start
         lblMessageExchange.setVisible(false);
         fldMessageExchange.setVisible(false);
@@ -203,26 +185,6 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                 }
             }
         });
-        
-        
-//        if (hasFaultName) {
-//            rbtnFaultVariable.setSelected(!hasToParts);
-//            rbtnFaultParts.setSelected(hasToParts);
-//        } else {
-//            rbtnFaultVariable.setSelected(true);
-//            rbtnFaultParts.setSelected(false);
-//        }
-//        
-//        updateEnabledStateOfFaultUI();
-//        
-        ActionListener faultRadioActionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                updateEnabledStateOfFaultUI();
-            }
-        };
-        
-        rbtnFaultVariable.addActionListener(faultRadioActionListener);
-        rbtnFaultParts.addActionListener(faultRadioActionListener);
     }
     
     /**
@@ -253,69 +215,13 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
             }
         }
         //
-        //
-
-        //
         if (myFaultName != null) {
             rbtnFaultResponse.setSelected(true);
         } else {
             rbtnNormalResponse.setSelected(true);
         }
-        ((PartVariableTable) tblFaultParts).setMessage(getFaultMessage());
-
-        boolean hasFaultName = (reply.getFaultName() != null);
-        boolean hasToParts = false;
-        boolean hasVariable = false;
-        
-        ToPartContainer container = reply.getToPartContaner();
-        if (container != null) {
-            hasToParts = (container.sizeOfToParts() > 0);
-        }
-        
-        BpelReference<VariableDeclaration> variableDeclaration = reply.getVariable();
-        if (variableDeclaration != null) {
-            hasVariable = (variableDeclaration.get() != null);
-        }
-        
-        if (hasFaultName) {
-            Message faultMessage = null;
-            QName faultQName = reply.getFaultName();
-            String faultNameLocalPart = faultQName.getLocalPart();
-            
-            if (faultNameLocalPart != null) {
-                WSDLReference<Operation> operationReference = reply.getOperation();
-                Operation operation = (operationReference == null) ? null 
-                        : operationReference.get();
-                Collection<Fault> faults = (operation == null) ? null
-                        : operation.getFaults();
-                if (faults != null) {
-                    for (Fault fault : faults) {
-                        String faultName = fault.getName();
-                        if (faultName != null 
-                                && faultName.equals(faultNameLocalPart))
-                        {
-                            NamedComponentReference<Message> faultMessageReference 
-                                    = fault.getMessage();
-                            faultMessage = (faultMessageReference == null) ? null
-                                    : faultMessageReference.get();
-                            if (faultMessage != null) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            rbtnFaultVariable.setSelected(!hasToParts);
-            rbtnFaultParts.setSelected(hasToParts);
-            ((PartVariableTable) tblFaultParts).setMessage(faultMessage);
-        } else {
-            rbtnFaultVariable.setSelected(true);
-            rbtnFaultParts.setSelected(false);
-        }
-        
         updateEnabledState();
-        
+        //
         mcc.initControls();
         mec.initControls();
         //
@@ -348,19 +254,11 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                 reply.removeFaultName();
             }
             //
-            if (!useNormalOutput) {
-                if (rbtnFaultVariable.isSelected()) {
-                    if (currFaultVar != null) {
-                        VariableDeclaration varDecl = currFaultVar
-                                .createNewVariable();
-                        BpelReference<VariableDeclaration> varRef = reply
-                                .createReference(varDecl, VariableDeclaration.class);
-                        reply.setVariable(varRef);
-                    }
-                    ((PartVariableTable) tblFaultParts).removeParts();
-                } else {
-                    ((PartVariableTable) tblFaultParts).applyChanges();
-                }
+            if (!useNormalOutput && currFaultVar != null) {
+                VariableDeclaration varDecl = currFaultVar.createNewVariable();
+                BpelReference<VariableDeclaration> varRef =
+                        reply.createReference(varDecl, VariableDeclaration.class);
+                reply.setVariable(varRef);
             }
             // no need to clear the variable property here if the fault variable
             // isn't specified because it has to be cleared before
@@ -386,9 +284,6 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
             String text = ResolverUtility.qName2DisplayText(myFaultName, reply);
             fldFaultName.setText(text);
         }
-        
-        ((PartVariableTable) tblFaultParts).setMessage(getFaultMessage());
-        updateEnabledStateOfFaultUI();
     }
     
     private void chooseFaultName() throws MissingResourceException {
@@ -422,7 +317,6 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                 setFaultName(null);
             }
             //
-            ((PartVariableTable) tblFaultParts).setMessage(getFaultMessage());
             updateEnabledState();
         }
     }
@@ -466,61 +360,54 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         }
     }
     
-    
-    private void setEnabled(boolean enabled, Component... components) {
-        for (Component c : components) {
-            c.setEnabled(enabled);
-        }
-    }
-    
-    
-    private Message getFaultMessage() {
-        NamedComponentReference<Message> messageReference 
-                = getRequiredFaultTypeRef();
-        return (messageReference == null) ? null : messageReference.get();
-    }
-    
-    
-    private void updateEnabledStateOfFaultUI() {
-        boolean faultEnabled = rbtnFaultResponse.isSelected();
-        boolean variableEnabled;
-        boolean partsEnabled;
-
-        if (getFaultMessage() == null || !faultEnabled) {
-            variableEnabled = false;
-            partsEnabled = false;
-        } else {
-            variableEnabled = rbtnFaultVariable.isSelected();
-            partsEnabled = rbtnFaultParts.isSelected();
-        }
-        
-        setEnabled(faultEnabled, rbtnFaultVariable, rbtnFaultParts, 
-                fldFaultName, btnChooseFaultName, lblFaultName);
-        setEnabled(variableEnabled, fldFaultVariable, btnNewFaultVariable, 
-                btnChooseFaultVariable);
-        setEnabled(partsEnabled, tblFaultParts);
-    }
-    
-    
     private void updateEnabledState() {
-        useNormalOutput = rbtnNormalResponse.isSelected();
-        mcc.setOutputVarEnabled(useNormalOutput);
-        updateEnabledStateOfFaultUI();
-//        int index = cbxOperation.getSelectedIndex();
-//        if (index == -1) {
-//            lblFaultName.setEnabled(false);
-//            fldFaultName.setEnabled(false);
-//            btnChooseFaultName.setEnabled(false);
-//            rbtnFaultVariable.setEnabled(false);
-//            fldFaultVariable.setEnabled(false);
-//            btnNewFaultVariable.setEnabled(false);
-//            btnChooseFaultVariable.setEnabled(false);
-//            tblFaultParts.setEnabled(false);
-//        } else {
-//            useNormalOutput = rbtnNormalResponse.isSelected();
-//            mcc.setOutputVarEnabled(useNormalOutput);
-//            updateEnabledStateOfFaultUI();
-//        }
+        int index = cbxOperation.getSelectedIndex();
+        if (index == -1) {
+            lblFaultName.setEnabled(false);
+            fldFaultName.setEnabled(false);
+            btnChooseFaultName.setEnabled(false);
+            lblFaultVariable.setEnabled(false);
+            fldFaultVariable.setEnabled(false);
+            btnNewFaultVariable.setEnabled(false);
+            btnChooseFaultVariable.setEnabled(false);
+        } else {
+            if (rbtnNormalResponse.isSelected()) {
+                useNormalOutput = true;
+                //
+                lblFaultName.setEnabled(false);
+                fldFaultName.setEnabled(false);
+                btnChooseFaultName.setEnabled(false);
+                lblFaultVariable.setEnabled(false);
+                fldFaultVariable.setEnabled(false);
+                btnNewFaultVariable.setEnabled(false);
+                btnChooseFaultVariable.setEnabled(false);
+                //
+                lblOutputVariable.setEnabled(true);
+                mcc.setOutputVarEnabled(true);
+            } else {
+                useNormalOutput = false;
+                //
+                lblFaultName.setEnabled(true);
+                fldFaultName.setEnabled(true);
+                btnChooseFaultName.setEnabled(true);
+                //
+                if (myFaultName == null) {
+                    lblFaultVariable.setEnabled(false);
+                    fldFaultVariable.setEnabled(false);
+                    btnNewFaultVariable.setEnabled(false);
+                    btnChooseFaultVariable.setEnabled(false);
+                } else {
+                    lblFaultVariable.setEnabled(true);
+                    fldFaultVariable.setEnabled(true);
+                    btnChooseFaultVariable.setEnabled(true);
+                    //
+                    btnNewFaultVariable.setEnabled(getRequiredFaultTypeRef() != null);
+                }
+                //
+                lblOutputVariable.setEnabled(false);
+                mcc.setOutputVarEnabled(false);
+            }
+        }
     }
     
     private void chooseFaultVariable() {
@@ -697,19 +584,16 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                         if (vcc != null) {
                             varMsg = vcc.getType().getMessage();
                         }
-                        
-                        if (rbtnFaultVariable.isSelected()) {
-                            if (varMsg == null) {
-                                addReasonKey("ERR_FAULT_VAR_EMPTY"); //NOI18N
-                                return false;
-                            } else if (!requiredMessageRef.get().equals(varMsg)) {
-                                String required = ResolverUtility.
-                                        qName2DisplayText(requiredMessageRef.getQName());
-                                String current = ResolverUtility.
-                                        qName2DisplayText(vcc.getType().getTypeQName());
-                                addReasonKey("ERR_FAULT_VAR_WRONG_TYPE", required, current); //NOI18N
-                                return false;
-                            }
+                        if (varMsg == null) {
+                            addReasonKey("ERR_FAULT_VAR_EMPTY"); //NOI18N
+                            return false;
+                        } else if (!requiredMessageRef.get().equals(varMsg)) {
+                            String required = ResolverUtility.
+                                    qName2DisplayText(requiredMessageRef.getQName());
+                            String current = ResolverUtility.
+                                    qName2DisplayText(vcc.getType().getTypeQName());
+                            addReasonKey("ERR_FAULT_VAR_WRONG_TYPE", required, current); //NOI18N
+                            return false;
                         }
                     }
                     //
@@ -767,10 +651,6 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
      * -- the fault has the same type as the fault type selected in the dialog
      */
     private NamedComponentReference<Message> getRequiredFaultTypeRef() {
-        if (myFaultName == null) {
-            return null;
-            
-        }
         NamedComponentReference<Message> faultMessageRef = null;
         //
         Object item = cbxOperation.getSelectedItem();
@@ -816,39 +696,29 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         buttonGroup1 = new javax.swing.ButtonGroup();
-        faultButtonGroup = new javax.swing.ButtonGroup();
         lblName = new javax.swing.JLabel();
         fldName = new javax.swing.JTextField();
         lblMessageExchange = new javax.swing.JLabel();
         fldMessageExchange = mec.getFldMessageExchange();
         btnChooseMessEx = mec.getBtnChooseMsgEx();
+        lblFaultName = new javax.swing.JLabel();
+        fldFaultName = new javax.swing.JTextField();
+        btnChooseFaultName = new javax.swing.JButton();
         lblPartnerLink = new javax.swing.JLabel();
         cbxPartnerLink = mcc.getCbxPartnerLink();
         lblOperation = new javax.swing.JLabel();
         cbxOperation = mcc.getCbxOperation();
-        lblErrorMessage = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        rbtnNormalResponse = new javax.swing.JRadioButton();
-        jRadioButton1 = mcc.getRbtnOutputVariable();
-        btnChooseOutputVariable = mcc.getBtnChooseOutputVariable();
-        btnNewOutputVariable = mcc.getBtnNewOutputVariable();
+        lblOutputVariable = new javax.swing.JLabel();
         fldOutputVariable = mcc.getFldOutputVariable();
-        jRadioButton2 = mcc.getRbtnOutputParts();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = mcc.getTblOutputParts();
-        jPanel3 = new javax.swing.JPanel();
+        btnNewOutputVariable = mcc.getBtnNewOutputVariable();
+        btnChooseOutputVariable = mcc.getBtnChooseOutputVariable();
+        rbtnNormalResponse = new javax.swing.JRadioButton();
         rbtnFaultResponse = new javax.swing.JRadioButton();
-        lblFaultName = new javax.swing.JLabel();
-        btnChooseFaultName = new javax.swing.JButton();
-        fldFaultName = new javax.swing.JTextField();
-        rbtnFaultVariable = new javax.swing.JRadioButton();
-        btnChooseFaultVariable = new javax.swing.JButton();
-        btnNewFaultVariable = new javax.swing.JButton();
+        lblFaultVariable = new javax.swing.JLabel();
         fldFaultVariable = new javax.swing.JTextField();
-        rbtnFaultParts = new javax.swing.JRadioButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tblFaultParts = new PartVariableTable(mcc, PartVariableTable.Type.FAULT);
+        btnNewFaultVariable = new javax.swing.JButton();
+        btnChooseFaultVariable = new javax.swing.JButton();
+        lblErrorMessage = new javax.swing.JLabel();
 
         lblName.setLabelFor(fldName);
         lblName.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_Name"));
@@ -868,6 +738,18 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         btnChooseMessEx.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_ChooseMessageExchange"));
         btnChooseMessEx.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_ChooseMessageExchange"));
 
+        lblFaultName.setLabelFor(fldFaultName);
+        lblFaultName.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"LBL_FaultName"));
+        lblFaultName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_FaultName"));
+        lblFaultName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_FaultName"));
+
+        fldFaultName.setEditable(false);
+
+        btnChooseFaultName.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"BNT_ChooseFaultName"));
+        btnChooseFaultName.setMargin(new java.awt.Insets(0, 4, 0, 4));
+        btnChooseFaultName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BNT_ChooseFaultName"));
+        btnChooseFaultName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BNT_ChooseFaultName"));
+
         lblPartnerLink.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_PartnerLink"));
         lblPartnerLink.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_PartnerLink"));
         lblPartnerLink.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_PartnerLink"));
@@ -876,86 +758,29 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         lblOperation.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_Operation"));
         lblOperation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_Operation"));
 
-        lblErrorMessage.setForeground(new java.awt.Color(255, 0, 0));
-        lblErrorMessage.setAlignmentX(0.5F);
+        lblOutputVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_OutputVariable"));
+        lblOutputVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_OutputVariable"));
+        lblOutputVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_OutputVariable"));
 
-        jPanel1.setLayout(new java.awt.GridLayout(2, 1));
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Send Data"));
-        buttonGroup1.add(rbtnNormalResponse);
-        rbtnNormalResponse.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"RBTN_NormalResponse"));
-        rbtnNormalResponse.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbtnNormalResponse.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        rbtnNormalResponse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_RBTN_NormalResponse"));
-        rbtnNormalResponse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_RBTN_NormalResponse"));
-
-        jRadioButton1.setText("Output Variable:");
-        jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        btnChooseOutputVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "BTN_BrowseOutputVarible"));
-        btnChooseOutputVariable.setMargin(new java.awt.Insets(0, 2, 0, 2));
-        btnChooseOutputVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_BrowseOutputVarible"));
-        btnChooseOutputVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_BrowseOutputVarible"));
+        fldOutputVariable.setColumns(30);
+        fldOutputVariable.setEditable(false);
 
         btnNewOutputVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "BTN_CreateOutputVariable"));
         btnNewOutputVariable.setMargin(new java.awt.Insets(0, 4, 0, 4));
         btnNewOutputVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_CreateOutputVariable"));
         btnNewOutputVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_CreateOutputVariable"));
 
-        fldOutputVariable.setColumns(30);
-        fldOutputVariable.setEditable(false);
+        btnChooseOutputVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "BTN_BrowseOutputVarible"));
+        btnChooseOutputVariable.setMargin(new java.awt.Insets(0, 2, 0, 2));
+        btnChooseOutputVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_BrowseOutputVarible"));
+        btnChooseOutputVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_BrowseOutputVarible"));
 
-        jRadioButton2.setText("To Parts:");
-        jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jScrollPane1.setViewportView(jTable1);
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2Layout.createSequentialGroup()
-                        .add(44, 44, 44)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(rbtnNormalResponse)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .add(17, 17, 17)
-                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jRadioButton2)
-                                    .add(jPanel2Layout.createSequentialGroup()
-                                        .add(jRadioButton1)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(btnNewOutputVariable)))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(btnChooseOutputVariable)))))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(rbtnNormalResponse)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jRadioButton1)
-                    .add(btnChooseOutputVariable)
-                    .add(btnNewOutputVariable)
-                    .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jRadioButton2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel1.add(jPanel2);
+        buttonGroup1.add(rbtnNormalResponse);
+        rbtnNormalResponse.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"RBTN_NormalResponse"));
+        rbtnNormalResponse.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        rbtnNormalResponse.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        rbtnNormalResponse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_RBTN_NormalResponse"));
+        rbtnNormalResponse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_RBTN_NormalResponse"));
 
         buttonGroup1.add(rbtnFaultResponse);
         rbtnFaultResponse.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"RBTN_FaultResponse"));
@@ -964,100 +789,26 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         rbtnFaultResponse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_RBTN_FaultResponse"));
         rbtnFaultResponse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_RBTN_FaultResponse"));
 
-        lblFaultName.setLabelFor(fldFaultName);
-        lblFaultName.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"LBL_FaultName"));
-        lblFaultName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_FaultName"));
-        lblFaultName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_FaultName"));
+        lblFaultVariable.setLabelFor(fldFaultVariable);
+        lblFaultVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_FaultVariable"));
+        lblFaultVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_LBL_FaultVariable"));
+        lblFaultVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_LBL_FaultVariable"));
 
-        btnChooseFaultName.setText(org.openide.util.NbBundle.getMessage(FormBundle.class,"BNT_ChooseFaultName"));
-        btnChooseFaultName.setMargin(new java.awt.Insets(0, 4, 0, 4));
-        btnChooseFaultName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BNT_ChooseFaultName"));
-        btnChooseFaultName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BNT_ChooseFaultName"));
-
-        fldFaultName.setEditable(false);
-
-        faultButtonGroup.add(rbtnFaultVariable);
-        rbtnFaultVariable.setText("Fault Variable:");
-        rbtnFaultVariable.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbtnFaultVariable.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        btnChooseFaultVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "BTN_BrowseFaultVarible"));
-        btnChooseFaultVariable.setMargin(new java.awt.Insets(0, 2, 0, 2));
-        btnChooseFaultVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_BrowseFaultVarible"));
-        btnChooseFaultVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_BrowseFaultVarible"));
+        fldFaultVariable.setColumns(30);
+        fldFaultVariable.setEditable(false);
 
         btnNewFaultVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "BTN_CreateFaultVariable"));
         btnNewFaultVariable.setMargin(new java.awt.Insets(0, 4, 0, 4));
         btnNewFaultVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_CreateFaultVariable"));
         btnNewFaultVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_CreateFaultVariable"));
 
-        fldFaultVariable.setColumns(30);
-        fldFaultVariable.setEditable(false);
+        btnChooseFaultVariable.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "BTN_BrowseFaultVarible"));
+        btnChooseFaultVariable.setMargin(new java.awt.Insets(0, 2, 0, 2));
+        btnChooseFaultVariable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSN_BTN_BrowseFaultVarible"));
+        btnChooseFaultVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormBundle.class,"ACSD_BTN_BrowseFaultVarible"));
 
-        faultButtonGroup.add(rbtnFaultParts);
-        rbtnFaultParts.setText("To Parts:");
-        rbtnFaultParts.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbtnFaultParts.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jScrollPane2.setViewportView(tblFaultParts);
-
-        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createSequentialGroup()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(rbtnFaultResponse)
-                            .add(jPanel3Layout.createSequentialGroup()
-                                .add(17, 17, 17)
-                                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(rbtnFaultParts)
-                                    .add(jPanel3Layout.createSequentialGroup()
-                                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(rbtnFaultVariable)
-                                            .add(lblFaultName))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(jPanel3Layout.createSequentialGroup()
-                                                .add(fldFaultName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(btnChooseFaultName))
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                                                .add(fldFaultVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(btnNewFaultVariable)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(btnChooseFaultVariable))))))))
-                    .add(jPanel3Layout.createSequentialGroup()
-                        .add(44, 44, 44)
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createSequentialGroup()
-                .add(rbtnFaultResponse)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblFaultName)
-                    .add(btnChooseFaultName)
-                    .add(fldFaultName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rbtnFaultVariable)
-                    .add(btnChooseFaultVariable)
-                    .add(btnNewFaultVariable)
-                    .add(fldFaultVariable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbtnFaultParts)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel1.add(jPanel3);
+        lblErrorMessage.setForeground(new java.awt.Color(255, 0, 0));
+        lblErrorMessage.setAlignmentX(0.5F);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -1066,7 +817,27 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+                    .add(lblErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+
+
+                            .add(lblFaultName)
+                            .add(lblFaultVariable))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(fldFaultVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(btnNewFaultVariable)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(btnChooseFaultVariable))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(fldFaultName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(btnChooseFaultName)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblPartnerLink)
@@ -1074,16 +845,27 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                             .add(lblName))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbxPartnerLink, 0, 426, Short.MAX_VALUE)
-                            .add(cbxOperation, 0, 426, Short.MAX_VALUE)
-                            .add(fldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)))
+                            .add(cbxOperation, 0, 383, Short.MAX_VALUE)
+                            .add(cbxPartnerLink, 0, 383, Short.MAX_VALUE)
+                            .add(fldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(lblOutputVariable)
+                        .add(7, 7, 7)
+                        .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnNewOutputVariable)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnChooseOutputVariable))
+                    .add(rbtnNormalResponse)
+                    .add(rbtnFaultResponse)
                     .add(layout.createSequentialGroup()
                         .add(lblMessageExchange)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fldMessageExchange, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                        .add(fldMessageExchange, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(btnChooseMessEx))
-                    .add(lblErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE))
+                        .add(btnChooseMessEx)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -1101,15 +883,34 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblOperation)
                     .add(cbxOperation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(rbtnNormalResponse)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblOutputVariable)
+                    .add(btnNewOutputVariable)
+                    .add(btnChooseOutputVariable)
+                    .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(rbtnFaultResponse)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblFaultName)
+                    .add(fldFaultName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(btnChooseFaultName))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblFaultVariable)
+                    .add(btnNewFaultVariable)
+                    .add(btnChooseFaultVariable)
+                    .add(fldFaultVariable, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(fldMessageExchange, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lblMessageExchange)
-                    .add(btnChooseMessEx)
-                    .add(fldMessageExchange, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(btnChooseMessEx))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblErrorMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 37, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(lblErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1124,30 +925,20 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox cbxOperation;
     private javax.swing.JComboBox cbxPartnerLink;
-    private javax.swing.ButtonGroup faultButtonGroup;
     private javax.swing.JTextField fldFaultName;
     private javax.swing.JTextField fldFaultVariable;
     private javax.swing.JTextField fldMessageExchange;
     private javax.swing.JTextField fldName;
     private javax.swing.JTextField fldOutputVariable;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
     private javax.swing.JLabel lblErrorMessage;
     private javax.swing.JLabel lblFaultName;
+    private javax.swing.JLabel lblFaultVariable;
     private javax.swing.JLabel lblMessageExchange;
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblOperation;
+    private javax.swing.JLabel lblOutputVariable;
     private javax.swing.JLabel lblPartnerLink;
-    private javax.swing.JRadioButton rbtnFaultParts;
     private javax.swing.JRadioButton rbtnFaultResponse;
-    private javax.swing.JRadioButton rbtnFaultVariable;
     private javax.swing.JRadioButton rbtnNormalResponse;
-    private javax.swing.JTable tblFaultParts;
     // End of variables declaration//GEN-END:variables
 }

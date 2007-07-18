@@ -18,45 +18,24 @@
  */
 package org.netbeans.modules.bpel.properties.editors.controls;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Font;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import javax.swing.AbstractCellEditor;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import org.netbeans.modules.bpel.properties.VirtualVariableContainer;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
@@ -85,10 +64,6 @@ import org.netbeans.modules.bpel.properties.choosers.VariableChooserPanel;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.bpel.properties.choosers.NewMessageVarChooser;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
-import org.netbeans.modules.bpel.model.api.ToPartsHolder;
-import org.netbeans.modules.bpel.model.api.ToPartContainer;
-import org.netbeans.modules.bpel.model.api.FromPartContainer;
-import org.netbeans.modules.bpel.model.api.FromPartsHolder;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Output;
@@ -102,7 +77,6 @@ import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -121,25 +95,15 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
     private CustomNodeEditor myEditor;
     private DefaultValidator myValidator;
     
+    private JButton btnChooseInputVariable;
+    private JButton btnChooseOutputVariable;
     private JButton btnNewInputVariable;
     private JButton btnNewOutputVariable;
     private JComboBox cbxOperation;
     private JComboBox cbxPartnerLink;
-    private JTextField fldVariableName;
-
-    private JRadioButton rbtnInputVariable;
-    private JRadioButton rbtnInputParts;
     private JTextField fldInputVariable;
-    private JButton btnChooseInputVariable;
-    private PartVariableTable tblInputParts;
-    private ButtonGroup inputButtonGroup;
-    
-    private JRadioButton rbtnOutputVariable;
-    private JRadioButton rbtnOutputParts;
     private JTextField fldOutputVariable;
-    private JButton btnChooseOutputVariable;
-    private PartVariableTable tblOutputParts;
-    private ButtonGroup outputButtonGroup;
+    private JTextField fldVariableName;
     
     /**
      * Specifies what role (My or Partner) has to be used
@@ -194,53 +158,7 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         }
     }
     
-    
-    private boolean hasInputParts() {
-        return (getEditedObject() instanceof Invoke) 
-                ? hasToParts() : hasFromParts();
-    }
-    
-    
-    private boolean hasOutputParts() {
-        return (getEditedObject() instanceof Invoke) 
-                ? hasFromParts() : hasToParts();
-    }
-    
-    
-    private boolean hasToParts() {
-        BpelEntity bpelEntity = getEditedObject();
-        
-        if (bpelEntity instanceof ToPartsHolder) {
-            ToPartsHolder holder = (ToPartsHolder) bpelEntity;
-            ToPartContainer container = holder.getToPartContaner();
-            if (container != null) {
-                return (container.sizeOfToParts() > 0);
-            }
-        }
-        
-        return false;
-    }
-    
-    
-    private boolean hasFromParts() {
-        BpelEntity bpelEntity = getEditedObject();
-        
-        if (bpelEntity instanceof FromPartsHolder) {
-            FromPartsHolder holder = (FromPartsHolder) bpelEntity;
-            FromPartContainer container = holder.getFromPartContaner();
-            if (container != null) {
-                return (container.sizeOfFromParts() > 0);
-            }
-        }
-        
-        return false;
-    }
-    
-    
     public void createContent() {
-        inputButtonGroup = new ButtonGroup();
-        outputButtonGroup = new ButtonGroup();
-        
         //
         btnChooseInputVariable = new JButton();
         btnChooseOutputVariable = new JButton();
@@ -248,59 +166,9 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         btnNewOutputVariable = new JButton();
         cbxOperation = new JComboBox();
         cbxPartnerLink = new JComboBox();
-        
-        ActionListener inputRadioActionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                updateEnabledStateForInputUI();
-            }
-        };
-        rbtnInputVariable = new JRadioButton();
-        rbtnInputVariable.addActionListener(inputRadioActionListener);
-        rbtnInputParts = new JRadioButton();
-        rbtnInputParts.addActionListener(inputRadioActionListener);
         fldInputVariable = new JTextField();
-        inputButtonGroup = new ButtonGroup();
-        inputButtonGroup.add(rbtnInputVariable);
-        inputButtonGroup.add(rbtnInputParts);
-        tblInputParts = new PartVariableTable(this, true);
-
-        ActionListener outputRadioActionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                updateEnabledStateForOutputUI();
-            }
-        };
         fldOutputVariable = new JTextField();
-        rbtnOutputVariable = new JRadioButton();
-        rbtnOutputVariable.addActionListener(outputRadioActionListener);
-        rbtnOutputParts = new JRadioButton();
-        rbtnOutputParts.addActionListener(outputRadioActionListener);
-        outputButtonGroup = new ButtonGroup();
-        outputButtonGroup.add(rbtnOutputVariable);
-        outputButtonGroup.add(rbtnOutputParts);
-        tblOutputParts = new PartVariableTable(this, false);
-        
-//        if (hasInputParts()) {
-//            rbtnInputVariable.setSelected(false);
-//            rbtnInputParts.setSelected(true);
-//        } else {
-//            rbtnInputVariable.setSelected(true);
-//            rbtnInputParts.setSelected(false);
-//        }
-//        
-//        updateEnabledStateForInputUI();
-//
-//        if (hasOutputParts()) {
-//            rbtnOutputVariable.setSelected(false);
-//            rbtnOutputParts.setSelected(true);
-//        } else {
-//            rbtnOutputVariable.setSelected(true);
-//            rbtnOutputParts.setSelected(false);
-//        }
-//        updateEnabledStateForOutputUI();
-        
         fldVariableName = new JTextField();
-        
-        
         //
         cbxPartnerLink.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent event) {
@@ -621,43 +489,17 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                                 }
                             }
                         }
-                        
                         //
                         reloadOperationList();
                         setCurrentOperationSelection();
                         //
                         setCurrentVariables();
-
-                        if (hasInputParts()) {
-                            rbtnInputVariable.setSelected(false);
-                            rbtnInputParts.setSelected(true);
-                        } else {
-                            rbtnInputVariable.setSelected(true);
-                            rbtnInputParts.setSelected(false);
-                        }
-                        tblInputParts.setMessage(getSelectedOperationInputMessage());
-
-                        updateEnabledStateForInputUI();
-
-                        if (hasOutputParts()) {
-                            rbtnOutputVariable.setSelected(false);
-                            rbtnOutputParts.setSelected(true);
-                        } else {
-                            rbtnOutputVariable.setSelected(true);
-                            rbtnOutputParts.setSelected(false);
-                        }
-                        tblOutputParts.setMessage(getSelectedOperationOutputMessage());
-                        
-                        updateEnabledStateForOutputUI();
                     }
                 }
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        
-        updateEnabledStateForInputUI();
-        updateEnabledStateForOutputUI();
         //
         return true;
     }
@@ -722,53 +564,31 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
             //
             if (inputVisible) {
                 prop = PropertyUtils.lookForPropertyByType(node, PropertyType.INPUT);
-                
-                if (rbtnInputVariable.isSelected()) {
-                    if (prop != null) {
-                        if (currInputVar != null && rbtnInputVariable.isSelected()) 
-                        {
-                            VariableDeclaration varDecl = currInputVar.createNewVariable();
-                            BpelReference<VariableDeclaration> varRef =
-                                    refColl.createReference(varDecl,
-                                    VariableDeclaration.class);
-                            prop.setValue(varRef);
-                        } else {
-                            prop.setValue(null);
-                        }
-                    }
-                    tblInputParts.removeParts();
-                } else {
-                    if (prop != null) {
+                if ( prop != null ) {
+                    if (currInputVar != null) {
+                        VariableDeclaration varDecl = currInputVar.createNewVariable();
+                        BpelReference<VariableDeclaration> varRef =
+                                refColl.createReference(varDecl,
+                                VariableDeclaration.class);
+                        prop.setValue(varRef);
+                    } else {
                         prop.setValue(null);
                     }
-                    tblInputParts.applyChanges();
                 }
             }
             //
             if (outputVisible) {
                 prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OUTPUT);
-                if (isOutputVarEnabled) {
-                    if (rbtnOutputVariable.isSelected()) {
-                        if (prop != null) {
-                            if (currOutputVar != null && rbtnOutputVariable.isSelected()) {
-                                VariableDeclaration varDecl = currOutputVar.createNewVariable();
-                                BpelReference<VariableDeclaration> varRef =
-                                        refColl.createReference(varDecl,
-                                        VariableDeclaration.class);
-                                prop.setValue(varRef);
-                            } else {
-                                prop.setValue(null);
-                            }
-                        }
-                        tblOutputParts.removeParts();
+                if ( prop != null ){
+                    if (currOutputVar != null && isOutputVarEnabled) {
+                        VariableDeclaration varDecl = currOutputVar.createNewVariable();
+                        BpelReference<VariableDeclaration> varRef =
+                                refColl.createReference(varDecl,
+                                VariableDeclaration.class);
+                        prop.setValue(varRef);
                     } else {
-                        if (prop != null) {
-                            prop.setValue(null);
-                        }
-                        tblOutputParts.applyChanges();
+                        prop.setValue(null);
                     }
-                } else {
-                    prop.setValue(null);
                 }
             }
             //
@@ -972,13 +792,6 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         }
     }
     
-    
-    private void setEnabled(boolean value, Component... components) {
-        for (Component c : components) {
-            c.setEnabled(value);
-        }
-    }
-    
     /**
      * Update variables state according to selected Partner Link or Operation.
      * It can clear current variables if they have not suitable type and
@@ -990,6 +803,10 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         if (element == null) {
             setCurrInputVar(null);
             setCurrOutputVar(null);
+            btnNewInputVariable.setEnabled(false);
+            btnChooseInputVariable.setEnabled(false);
+            btnNewOutputVariable.setEnabled(false);
+            btnChooseOutputVariable.setEnabled(false);
         } else {
             assert element instanceof Operation;
             //
@@ -1021,14 +838,13 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                             setCurrInputVar(null);
                         }
                     }
-                    
                 }
-                
-                tblInputParts.setMessage(inMessage);
                 //
+                btnNewInputVariable.setEnabled(input != null);
+                btnChooseInputVariable.setEnabled(input != null);
             }
             //
-            if (outputVisible) { // && isOutputVarEnabled) {
+            if (outputVisible && isOutputVarEnabled) {
                 Message outMessage = null;
                 Output output = operation.getOutput();
                 if (output != null) {
@@ -1050,57 +866,12 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
                         }
                     }
                 }
-                
-                tblOutputParts.setMessage(outMessage);
                 //
+                btnNewOutputVariable.setEnabled(output != null);
+                btnChooseOutputVariable.setEnabled(output != null);
             }
         }
-        updateEnabledStateForInputUI();
-        updateEnabledStateForOutputUI();
     }
-    
-    
-    public Lookup getLookup() {
-        return myEditor.getLookup();
-    }
-    
-    
-    public BpelEntity getEditedObject() {
-        return (BpelEntity) myEditor.getEditedObject();
-    }
-    
-    
-    private TableModel createToPartsTableModel(Message message) {
-        DefaultTableModel result = new DefaultTableModel(
-                new Object[] { "From Variable", "To Part"}, 0);
-        
-        if (message != null) {
-            Collection<Part> parts = message.getParts();
-
-            for (Part part : parts) {
-                result.addRow(new Object[] { null, part });
-            }
-        }
-        
-        return result;
-    }
-
-    
-    private TableModel createFromPartsTableModel(Message message) {
-        DefaultTableModel result = new DefaultTableModel(
-                new Object[] { "From Part", "To Variable"}, 0);
-        
-        if (message != null) {
-            Collection<Part> parts = message.getParts();
-
-            for (Part part : parts) {
-                result.addRow(new Object[] { part, null });
-            }
-        }
-        
-        return result;
-    }
-    
     
     /**
      * This method allows to globally mark the controls
@@ -1108,10 +879,23 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
      * It is used for the Reply activity in the "reply fault" mode.
      */
     public void setOutputVarEnabled(boolean newValue) {
-        isOutputVarEnabled = newValue;
-        updateEnabledStateForOutputUI();
+        if (newValue != isOutputVarEnabled) {
+            isOutputVarEnabled = newValue;
+            if (isOutputVarEnabled) {
+                fldOutputVariable.setEnabled(true);
+                Object element = cbxOperation.getSelectedItem();
+                if (element != null && element instanceof Operation) {
+                    Output output = ((Operation)element).getOutput();
+                    btnNewOutputVariable.setEnabled(output != null);
+                    btnChooseOutputVariable.setEnabled(output != null);
+                }
+            } else {
+                fldOutputVariable.setEnabled(false);
+                btnNewOutputVariable.setEnabled(false);
+                btnChooseOutputVariable.setEnabled(false);
+            }
+        }
     }
-    
     
     public VirtualVariableContainer getCurrInputVar() {
         return currInputVar;
@@ -1234,32 +1018,6 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
         Object operationObj = cbxOperation.getSelectedItem();
         return operationObj == null ? null : (Operation)operationObj;
     }
-
-    public JTable getTblInputParts() {
-        return tblInputParts;
-    }
-    
-    
-    public JTable getTblOutputParts() {
-        return tblOutputParts;
-    }
-
-    public JRadioButton getRbtnInputParts() {
-        return rbtnInputParts;
-    }
-
-    public JRadioButton getRbtnInputVariable() {
-        return rbtnInputVariable;
-    }
-
-    public JRadioButton getRbtnOutputParts() {
-        return rbtnOutputParts;
-    }
-
-    public JRadioButton getRbtnOutputVariable() {
-        return rbtnOutputVariable;
-    }
-    
     
 // ==============================================================
 // Fields accessors
@@ -1300,106 +1058,14 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
     public JTextField getFldVariableName() {
         return fldVariableName;
     }
-
     
     public void setConfigurationListener(ConfigurationListener newValue) {
         myListener = newValue;
     }
-
-    
-    private Message getSelectedOperationInputMessage() {
-        Object selectedOperation = getCbxOperation().getSelectedItem();
-        if (!(selectedOperation instanceof Operation)) {
-            return null;
-        }
-        
-        Operation operation = (Operation) selectedOperation;
-        BpelEntity bpelEntity = getEditedObject();
-        
-        NamedComponentReference<Message> messageReference = null;
-        
-        
-//        if (bpelEntity instanceof Invoke) {
-            Input input = operation.getInput();
-            messageReference = (input == null) ? null : input.getMessage();
-//        } else {
-//            Output output = operation.getOutput();
-//            messageReference = (output == null) ? null : output.getMessage();
-//        }
-        
-        return (messageReference == null) ? null : messageReference.get();
-    }
-
-    
-    private Message getSelectedOperationOutputMessage() {
-        Object selectedOperation = getCbxOperation().getSelectedItem();
-        if (!(selectedOperation instanceof Operation)) {
-            return null;
-        }
-        
-        Operation operation = (Operation) selectedOperation;
-        BpelEntity bpelEntity = getEditedObject();
-        
-        NamedComponentReference<Message> messageReference = null;
-        
-        
-//        if (bpelEntity instanceof Invoke) {
-            Output output = operation.getOutput();
-            messageReference = (output == null) ? null : output.getMessage();
-//        } else {
-//            Input input = operation.getInput();
-//            messageReference = (input == null) ? null : input.getMessage();
-//        }
-        
-        return (messageReference == null) ? null : messageReference.get();
-    }
-    
-    
-    private void updateEnabledStateForInputUI() {
-        boolean radioButtonsEnabled;
-        boolean variableEnabled;
-        boolean partsEnabled;
-        
-        if (getSelectedOperationInputMessage() == null) {
-            radioButtonsEnabled = false;
-            variableEnabled = false;
-            partsEnabled = false;
-        } else {
-            radioButtonsEnabled = true;
-            variableEnabled = rbtnInputVariable.isSelected();
-            partsEnabled = rbtnInputParts.isSelected();
-        }
-        setEnabled(radioButtonsEnabled, rbtnInputVariable, rbtnInputParts);
-        setEnabled(variableEnabled, fldInputVariable, 
-                btnNewInputVariable, btnChooseInputVariable);
-        setEnabled(partsEnabled, tblInputParts);
-    }
-    
-    private void updateEnabledStateForOutputUI() {
-        boolean radioButtonsEnabled;
-        boolean variableEnabled;
-        boolean partsEnabled;
-        
-        if (getSelectedOperationOutputMessage() == null || !isOutputVarEnabled) 
-        {
-            radioButtonsEnabled = false;
-            variableEnabled = false;
-            partsEnabled = false;
-        } else {
-            radioButtonsEnabled = true;
-            variableEnabled = rbtnOutputVariable.isSelected();
-            partsEnabled = rbtnOutputParts.isSelected();
-        }
-
-        setEnabled(radioButtonsEnabled, rbtnOutputVariable, rbtnOutputParts);
-        setEnabled(variableEnabled, fldOutputVariable, 
-                btnNewOutputVariable, btnChooseOutputVariable);
-        setEnabled(partsEnabled, tblOutputParts);
-    }
-    
     
     public interface ConfigurationListener {
         void partnerLinkChanged();
         void operationChanged();
     }
+    
 }
