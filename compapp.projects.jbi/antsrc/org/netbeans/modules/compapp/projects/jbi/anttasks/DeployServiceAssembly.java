@@ -28,7 +28,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.jbiserver.settings.Instance;
+import org.netbeans.modules.compapp.jbiserver.settings.ServerInstance;
 import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIServiceAssemblyDocument;
@@ -37,7 +37,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 /**
- * Deploy Service Assembly to the target JBI server
+ * Ant task to deploy/undeploy Service Assembly to/from the target JBI server.
  *
  */
 public class DeployServiceAssembly extends Task {
@@ -61,12 +61,14 @@ public class DeployServiceAssembly extends Task {
     
     private String password;
     
+    // REMOVE ME
     private String serverInstanceLocation;
     
     private String netBeansUserDir;
     
     // If not defined, then the first server instance in the setting file
     // will be used.
+    // REMOVE ME
     private String j2eeServerInstance;
     
     
@@ -203,10 +205,9 @@ public class DeployServiceAssembly extends Task {
         String nbUserDir = getNetBeansUserDir();
         String j2eeServerInstance = getJ2eeServerInstance();
         
-        Instance instance = AdminServiceHelper.getServerInstance(nbUserDir, j2eeServerInstance);
+        ServerInstance instance = AdminServiceHelper.getServerInstance(nbUserDir, j2eeServerInstance);
         AdministrationService adminService = AdminServiceHelper.getAdminService(instance);
         
-        serverInstanceLocation = instance.getLocation();
         hostName = instance.getHostName();
         port = instance.getAdminPort();
         userName = instance.getUserName();
