@@ -128,7 +128,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/webui.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/webui.jar</binary-origin>
+                <binary-origin>library/dist/webui.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

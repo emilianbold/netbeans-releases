@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <class-path-extension>
                 <runtime-relative-path>ext/errorhandler.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/errorhandler.jar</binary-origin>
+                <binary-origin>library/dist/errorhandler.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

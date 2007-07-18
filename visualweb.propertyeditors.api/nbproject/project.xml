@@ -54,7 +54,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/editors.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/editors.jar</binary-origin>
+                <binary-origin>library/dist/editors.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

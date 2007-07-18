@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/dataprovider.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/dataprovider.jar</binary-origin>
+                <binary-origin>library/dist/dataprovider.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

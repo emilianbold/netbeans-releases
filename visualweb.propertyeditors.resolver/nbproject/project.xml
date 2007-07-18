@@ -14,7 +14,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/editor-resolver.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/editor-resolver.jar</binary-origin>
+                <binary-origin>library/dist/editor-resolver.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

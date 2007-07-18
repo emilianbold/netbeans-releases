@@ -24,7 +24,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/batik-mod.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/batik-mod.jar</binary-origin>
+                <binary-origin>library/dist/batik-mod.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

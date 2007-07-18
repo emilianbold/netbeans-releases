@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsfcl.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jsfcl.jar</binary-origin>
+                <binary-origin>library/dist/jsfcl.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
