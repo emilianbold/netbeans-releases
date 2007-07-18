@@ -45,7 +45,7 @@ public class CollectionSerializer implements JavonSerializer {
         return "Collection serializer";
     }
 
-    public boolean isTypeSupported( TypeMirror type ) {
+    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
         if( TypeKind.DECLARED == type.getKind()) {
             TypeElement clazz = (TypeElement)((DeclaredType) type).asElement();
             String fqn = clazz.getQualifiedName().toString();

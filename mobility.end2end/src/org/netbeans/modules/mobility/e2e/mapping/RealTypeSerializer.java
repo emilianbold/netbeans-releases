@@ -49,7 +49,7 @@ public class RealTypeSerializer implements JavonSerializer {
         return "Real numbers serializer";
     }
 
-    public boolean isTypeSupported( TypeMirror type ) {
+    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
         if( TypeKind.ARRAY == type.getKind()) return false;
         if( TypeKind.FLOAT == type.getKind()) {
             return true;
@@ -105,7 +105,7 @@ public class RealTypeSerializer implements JavonSerializer {
         } else if( DoubleClassData.equals( type )) {
             return "(Double)" + variable;
         }
-        throw new IllegalArgumentException( "Invalid type: " + type.getName());        
+        throw new IllegalArgumentException( "Invalid type: " + type.getName());
     }
 
     public String fromObject( ClassData type, String object ) {
@@ -118,7 +118,7 @@ public class RealTypeSerializer implements JavonSerializer {
         } else if( DoubleClassData.equals( type )) {
             return "(Double)" + object;
         }
-        throw new IllegalArgumentException( "Invalid type: " + type.getName());        
+        throw new IllegalArgumentException( "Invalid type: " + type.getName());
     }
 
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {

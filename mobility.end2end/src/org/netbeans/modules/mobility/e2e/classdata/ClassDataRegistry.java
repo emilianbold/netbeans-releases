@@ -49,7 +49,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.mobility.javon.JavonProfileProvider;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
 import org.netbeans.modules.mobility.javon.Traversable;
-import org.netbeans.modules.mobility.e2e.mapping.Utils;
 import org.openide.util.Lookup;
 
 /**
@@ -354,7 +353,8 @@ public class ClassDataRegistry {
                 if ( packageLength > 0 )
                     packageName = clazz.getQualifiedName().toString().substring( 0, packageLength );
 
-                ClassData serviceType = new ClassData( packageName, clazz.getSimpleName().toString(), true, false, false, Utils.findSupportingSerializer( type, this.profileProvider ) );
+
+                ClassData serviceType = new ClassData( packageName, clazz.getSimpleName().toString(), false, false, false);                      
 
                 // Test methods
                 for ( ExecutableElement e : ElementFilter.methodsIn( clazz.getEnclosedElements() ) ) {
@@ -396,7 +396,7 @@ public class ClassDataRegistry {
 
         public ClassData traverseType( TypeMirror type, Map<String, ClassData> typeCache ) {
             for ( JavonSerializer serializer : profileProvider.getSerializers() ) {
-                if ( serializer.isTypeSupported( type ) ) {
+                if ( serializer.isTypeSupported( this, type, typeCache ) ) {
                     ClassData cd = serializer.getType( this, type, typeCache );
                     serializerRegistry.put( cd, serializer );
                     //registeredTypes.add( cd);
@@ -407,7 +407,7 @@ public class ClassDataRegistry {
         }
 
         public boolean isTypeSupported( TypeMirror type, Map<String, ClassData> typeCache ) {
-            if ( Utils.findSupportingSerializer( type, this.profileProvider ) != null )
+            if ( Utils.findSupportingSerializer( type, this.profileProvider, this, typeCache ) != null )
                 return true;
             else
                 return false;

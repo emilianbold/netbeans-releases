@@ -49,7 +49,7 @@ public class AllJavaSerializer implements JavonSerializer {
 
     }
 
-    public boolean isTypeSupported( TypeMirror type ) {
+    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
         return true;
     }
 

@@ -48,7 +48,7 @@ public class ArrayTypeSerializer implements JavonSerializer {
         return "Array type serializer";
     }
 
-    public boolean isTypeSupported( TypeMirror type ) {
+    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
         if( TypeKind.ARRAY != type.getKind()) return false;
         return true;
     }

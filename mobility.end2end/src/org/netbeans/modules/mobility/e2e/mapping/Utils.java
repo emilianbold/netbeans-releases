@@ -85,13 +85,4 @@ public class Utils {
         return Collections.unmodifiableSet( new HashSet( result.values()));
     }
 
-    public static JavonSerializer findSupportingSerializer( TypeMirror type, JavonProfileProvider provider) {
-        for (JavonSerializer serializer:provider.getSerializers()) {
-            if (serializer.isTypeSupported(type))
-                return serializer;
-        }
-        return null;
-
-    }
-
 }

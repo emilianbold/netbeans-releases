@@ -67,7 +67,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         return "Primitive type serializer";
     }
 
-    public boolean isTypeSupported( TypeMirror type ) {
+    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
         if( TypeKind.VOID == type.getKind()) {
             return true;
         } else if( TypeKind.BOOLEAN == type.getKind()) {
