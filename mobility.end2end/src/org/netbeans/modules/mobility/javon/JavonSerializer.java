@@ -43,7 +43,7 @@ public interface JavonSerializer {
      * @param type 
      * @return true when the type is supported
      */
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache );
+    public boolean isTypeSupported( TypeMirror type );
     
     /**
      * 

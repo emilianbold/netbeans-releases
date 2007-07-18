@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.mobility.e2e.classdata;
 
+import org.netbeans.modules.mobility.javon.JavonSerializer;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,21 +35,24 @@ public class ClassData {
     private String className;
     private boolean primitive;
     private boolean array;
+    private boolean generics;
 
     private ClassData parent;
+    private JavonSerializer supportingSerializer=null;
     
     private List<FieldData> fields;
     private List<MethodData> methods;
 
     private ClassData componentType;
     
-    public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false );
+    public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false, false );
     
-    public ClassData( String packageName, String className, boolean primitive, boolean array ) {
+    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics ) {
         this.packageName = packageName;
         this.className = className;
         this.primitive = primitive;
         this.array = array;
+        this.generics = generics;
 
         this.fields = new ArrayList();
         this.methods = new ArrayList();
@@ -55,12 +60,24 @@ public class ClassData {
         parent = java_lang_Object;
     }
 
-    public ClassData( String packageName, String className, boolean primitive, boolean array, 
+    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics, JavonSerializer serializer ) {
+        this( packageName, className, primitive, array, generics);
+
+        this.supportingSerializer=serializer;
+    }
+
+    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics,
             List<FieldData> fields, List<MethodData> methods ) 
     {
-        this( packageName, className, primitive, array );
+        this( packageName, className, primitive, array, generics );
         this.fields = fields;
         this.methods = methods;
+    }
+
+    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics,
+            List<FieldData> fields, List<MethodData> methods, JavonSerializer serializer) {
+        this( packageName, className, primitive, array, generics, fields, methods );
+        this.supportingSerializer=serializer;
     }
 
     public String getPackage() {
@@ -159,7 +176,12 @@ public class ClassData {
     
     public static enum Modifier {
         PUBLIC, PRIVATE
-    }    
+    }
+
+    public JavonSerializer getSerializer() {
+        return this.supportingSerializer;
+    }
+
     
     @Override
     public boolean equals( Object o ) {

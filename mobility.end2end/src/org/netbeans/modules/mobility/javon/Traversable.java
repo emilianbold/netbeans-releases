@@ -51,4 +51,13 @@ public interface Traversable {
      * @param type to registered
      */
     public void registerType( ClassData type, JavonSerializer serializer );
+
+    /**
+     *  Register type with its default serializer
+     *
+     *  @param type to be registered
+     *  @return serializer that registered it
+     */
+
+    public JavonSerializer registerType( ClassData type );
 }

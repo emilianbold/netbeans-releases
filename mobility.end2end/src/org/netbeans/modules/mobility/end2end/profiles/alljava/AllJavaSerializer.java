@@ -49,7 +49,7 @@ public class AllJavaSerializer implements JavonSerializer {
 
     }
 
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
+    public boolean isTypeSupported( TypeMirror type ) {
         return true;
     }
 
@@ -80,12 +80,14 @@ public class AllJavaSerializer implements JavonSerializer {
         }
         //add the new class info to the type cache, including its methods and fields
         else {
-            ClassData clsData = new ClassData( pkgName, clsName, false, false );
+            ClassData clsData = new ClassData( pkgName, clsName, false, false, false, this );
             typeCache.put( fqName, clsData );
             return clsData;
         }
     }
 
+
+    //TODO this will likely be erased and not used when the ClassDataRegistry is fixed
     private ClassData getArrayType( TypeMirror type, Map<String, ClassData> typeCache ) {
         assert type.getKind()==TypeKind.ARRAY;
 
@@ -108,7 +110,7 @@ public class AllJavaSerializer implements JavonSerializer {
                 if (component.isArray())
                     return component;
             } else {
-                ClassData result=new ClassData (pkgName, componentClsName, false, true);
+                ClassData result=new ClassData (pkgName, componentClsName, false, true, false, this);
                 typeCache.put( componentFqName, result);
                 return result;
             }

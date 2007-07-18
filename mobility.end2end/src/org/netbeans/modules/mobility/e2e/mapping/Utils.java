@@ -26,52 +26,56 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
+import org.netbeans.modules.mobility.javon.JavonSerializer;
+import org.netbeans.modules.mobility.javon.JavonProfileProvider;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  *
  * @author Michal Skvor
  */
 public class Utils {
-    
+
     private ClassDataRegistry registry;
-    
+
     /** Creates a new instance of Utils 
-     * @param registry 
+     * @param registry
      */
     public Utils( ClassDataRegistry registry ) {
         this.registry = registry;
     }
-        
+
     /**
      * Filter out duplicate ClassData instances from Set
      * 
-     * @param service 
+     * @param service
      * @return filtered instances
      */
     public Set<ClassData> getReturnTypeInstances( JavonMappingImpl.Service service ) {
         return filterInstances( service.getReturnTypes());
     }
-    
+
     /**
      * Filter out duplicate ClassData instances from parameter type Set
-     * @param service 
+     * @param service
      * @return filtered instances
      */
     public Set<ClassData> getParameterTypeInstances( JavonMappingImpl.Service service ) {
         return filterInstances( service.getParameterTypes());
     }
-    
+
     /**
      * Filter duplicate instance name from the set of classes
-     * @param classes 
-     * @return 
+     * @param classes
+     * @return
      */
     public Set<ClassData> filterInstances( Set<ClassData> classes ) {
         Set<String> instanceTypes = new HashSet<String>();
         for( ClassData cd : classes ) {
-            instanceTypes.add( registry.getTypeSerializer( cd ).instanceOf( cd ));            
+            instanceTypes.add( registry.getTypeSerializer( cd ).instanceOf( cd ));
         }
-        
+
         Map<String, ClassData> result = new HashMap<String, ClassData>();
         for( ClassData cd : classes ) {
             if( result.get( registry.getTypeSerializer( cd ).instanceOf( cd )) == null ) {
@@ -80,4 +84,14 @@ public class Utils {
         }
         return Collections.unmodifiableSet( new HashSet( result.values()));
     }
+
+    public static JavonSerializer findSupportingSerializer( TypeMirror type, JavonProfileProvider provider) {
+        for (JavonSerializer serializer:provider.getSerializers()) {
+            if (serializer.isTypeSupported(type))
+                return serializer;
+        }
+        return null;
+
+    }
+
 }

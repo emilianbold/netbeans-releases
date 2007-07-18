@@ -26,6 +26,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
+import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
 import org.netbeans.modules.mobility.javon.Traversable;
@@ -47,7 +48,7 @@ public class ArrayTypeSerializer implements JavonSerializer {
         return "Array type serializer";
     }
 
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
+    public boolean isTypeSupported( TypeMirror type ) {
         if( TypeKind.ARRAY != type.getKind()) return false;
         return true;
     }
@@ -57,8 +58,10 @@ public class ArrayTypeSerializer implements JavonSerializer {
             ArrayType array = (ArrayType)type;
             TypeMirror componentType = array.getComponentType();
             ClassData cCD = traversable.traverseType( componentType, typeCache );
+
             if( cCD != null ) {
-                ClassData cd = new ClassData( cCD.getPackage(), cCD.getName(), cCD.isPrimitive(), true );
+                
+                ClassData cd = new ClassData( cCD.getPackage(), cCD.getName(), cCD.isPrimitive(), true, false, this );
                 cd.setComponentType( cCD );
                 if( !arrayTypes.contains( cd )) {
                     arrayTypes.add( cd );

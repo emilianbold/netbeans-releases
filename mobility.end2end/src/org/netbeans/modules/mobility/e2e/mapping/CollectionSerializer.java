@@ -35,7 +35,7 @@ import org.netbeans.modules.mobility.javon.Traversable;
  */
 public class CollectionSerializer implements JavonSerializer {
     
-    private static final ClassData vectorClassData = new ClassData( "java.util", "Vector", false, false );
+    private final ClassData vectorClassData = new ClassData( "java.util", "Vector", false, false, false, this );
     
     /** Creates a new instance of CollectionSerializer */
     public CollectionSerializer() {
@@ -45,7 +45,7 @@ public class CollectionSerializer implements JavonSerializer {
         return "Collection serializer";
     }
 
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
+    public boolean isTypeSupported( TypeMirror type ) {
         if( TypeKind.DECLARED == type.getKind()) {
             TypeElement clazz = (TypeElement)((DeclaredType) type).asElement();
             String fqn = clazz.getQualifiedName().toString();

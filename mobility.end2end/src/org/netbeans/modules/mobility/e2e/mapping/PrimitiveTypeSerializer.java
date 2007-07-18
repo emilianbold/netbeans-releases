@@ -42,33 +42,32 @@ import org.netbeans.modules.mobility.javon.Traversable;
  */
 public class PrimitiveTypeSerializer implements JavonSerializer {
     
-    private final static ClassData voidClassData        = new ClassData( "", "void", true, false );
-    private final static ClassData booleanClassData     = new ClassData( "", "boolean", true, false );
-    private final static ClassData BooleanClassData     = new ClassData( "java.lang", "Boolean", false, false );
-    private final static ClassData byteClassData        = new ClassData( "", "byte", true, false );
-    private final static ClassData ByteClassData        = new ClassData( "java.lang", "Byte", false, false );
-    private final static ClassData charClassData        = new ClassData( "", "char", true, false );
-    private final static ClassData CharClassData        = new ClassData( "java.lang", "Character", true, false );
-    private final static ClassData intClassData         = new ClassData( "", "int", true, false );
-    private final static ClassData IntClassData         = new ClassData( "java.lang", "Integer", false, false );
-    private final static ClassData longClassData        = new ClassData( "", "long", true, false );
-    private final static ClassData LongClassData        = new ClassData( "java.lang", "Long", false, false );
-    private final static ClassData shortClassData       = new ClassData( "", "short", true, false );
-    private final static ClassData ShortClassData       = new ClassData( "java.lang", "Short", false, false );
-    
-    private final static ClassData stringClassData      = new ClassData( "java.lang", "String", false, false );
-    
-    private final static Set<String> supportedDeclaredTypes = new HashSet<String>();
-    
+    private final ClassData voidClassData        = new ClassData( "", "void", true, false, false , this);
+    private final ClassData booleanClassData     = new ClassData( "", "boolean", true, false, false, this );
+    private final ClassData BooleanClassData     = new ClassData( "java.lang", "Boolean", false, false, false, this );
+    private final ClassData byteClassData        = new ClassData( "", "byte", true, false, false, this );
+    private final ClassData ByteClassData        = new ClassData( "java.lang", "Byte", false, false, false, this );
+    private final ClassData charClassData        = new ClassData( "", "char", true, false, false, this );
+    private final ClassData CharClassData        = new ClassData( "java.lang", "Character", true, false, false, this );
+    private final ClassData intClassData         = new ClassData( "", "int", true, false, false, this );
+    private final ClassData IntClassData         = new ClassData( "java.lang", "Integer", false, false, false, this );
+    private final ClassData longClassData        = new ClassData( "", "long", true, false, false, this );
+    private final ClassData LongClassData        = new ClassData( "java.lang", "Long", false, false, false, this );
+    private final ClassData shortClassData       = new ClassData( "", "short", true, false, false, this );
+    private final ClassData ShortClassData       = new ClassData( "java.lang", "Short", false, false, false, this );
+    private final ClassData stringClassData      = new ClassData( "java.lang", "String", false, false, false, this );
+
+
     /** Creates a new instance of PrimitiveTypeSerializer */
-    public PrimitiveTypeSerializer() {        
+    public PrimitiveTypeSerializer() {
+
     }
     
     public String getName() {
         return "Primitive type serializer";
     }
 
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
+    public boolean isTypeSupported( TypeMirror type ) {
         if( TypeKind.VOID == type.getKind()) {
             return true;
         } else if( TypeKind.BOOLEAN == type.getKind()) {

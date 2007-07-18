@@ -66,7 +66,7 @@ public class BeanTypeSerializer implements JavonSerializer {
         return "Bean type serializer";
     }
 
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
+    public boolean isTypeSupported( TypeMirror type ) {
         if( TypeKind.ARRAY == type.getKind()) return false;
         if( TypeKind.DECLARED == type.getKind()) {
             TypeElement clazz = (TypeElement)((DeclaredType) type).asElement();
@@ -114,7 +114,7 @@ public class BeanTypeSerializer implements JavonSerializer {
                 return cd; 
             }
             
-            cd = new ClassData( packageName, shortName, false, false );
+            cd = new ClassData( packageName, shortName, false, false, false, this );
             beanTypes.put( classFullQualifiedName, cd );
             typeCache.put( classFullQualifiedName, cd );
             

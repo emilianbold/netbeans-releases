@@ -35,11 +35,11 @@ import org.netbeans.modules.mobility.javon.Traversable;
  */
 public class RealTypeSerializer implements JavonSerializer {
     
-    private final static ClassData floatClassData  = new ClassData( "", "float", true, false );
-    private final static ClassData doubleClassData = new ClassData( "", "double", true, false );
+    private final ClassData floatClassData  = new ClassData( "", "float", true, false, false, this );
+    private final ClassData doubleClassData = new ClassData( "", "double", true, false, false, this );
     
-    private final static ClassData FloatClassData  = new ClassData( "java.lang", "Float", false, false );
-    private final static ClassData DoubleClassData = new ClassData( "java.lang", "Double", false, false );
+    private final ClassData FloatClassData  = new ClassData( "java.lang", "Float", false, false, false, this );
+    private final ClassData DoubleClassData = new ClassData( "java.lang", "Double", false, false, false, this );
     
     /** Creates a new instance of RealTypeSerializer */
     public RealTypeSerializer() {
@@ -49,7 +49,7 @@ public class RealTypeSerializer implements JavonSerializer {
         return "Real numbers serializer";
     }
 
-    public boolean isTypeSupported( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
+    public boolean isTypeSupported( TypeMirror type ) {
         if( TypeKind.ARRAY == type.getKind()) return false;
         if( TypeKind.FLOAT == type.getKind()) {
             return true;

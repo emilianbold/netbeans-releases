@@ -49,6 +49,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.mobility.javon.JavonProfileProvider;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
 import org.netbeans.modules.mobility.javon.Traversable;
+import org.netbeans.modules.mobility.e2e.mapping.Utils;
 import org.openide.util.Lookup;
 
 /**
@@ -63,7 +64,7 @@ public class ClassDataRegistry {
 
     private Map<String, ClassData> typeMap;
     private Map<String, ClassData> baseClasses;
-    private Set<String> basePackages;
+    private Set<String> basePackages;      //skrt
 
     private Map<ClassData, JavonSerializer> serializerRegistry = new HashMap<ClassData, JavonSerializer>();
 
@@ -73,7 +74,6 @@ public class ClassDataRegistry {
     private Set<ClassData> parameterTypes = new HashSet<ClassData>();
     // Types used as return types from methods
     private Set<ClassData> returnTypes = new HashSet<ClassData>();
-    ;
 
     private Map<ClassData, Integer> idMapping = new HashMap<ClassData, Integer>();
 
@@ -167,8 +167,8 @@ public class ClassDataRegistry {
         return Collections.unmodifiableSet( basePackages );
     }
 
-    public boolean isRegisteredType(ClassData clsData) {
-        if ( baseClasses==null)
+    public boolean isRegisteredType( ClassData clsData ) {
+        if ( baseClasses == null )
             updateClassDataTree();
         return this.registeredTypes.contains( clsData );
     }
@@ -180,15 +180,15 @@ public class ClassDataRegistry {
      * @return Set<ClassData> classes
      */
 
-    public Set<ClassData> getClassesForPackage(String packageName) {
+    public Set<ClassData> getClassesForPackage( String packageName ) {
         if ( basePackages == null )
             updateClassDataTree();
-        HashSet<ClassData> result=new HashSet<ClassData>();
+        HashSet<ClassData> result = new HashSet<ClassData>();
 
-        Set<String> fqClassNames=this.baseClasses.keySet();
-        for (String fqClassName : fqClassNames) {
-            if (fqClassName.startsWith( packageName))
-                result.add( this.baseClasses.get( fqClassName));
+        Set<String> fqClassNames = this.baseClasses.keySet();
+        for ( String fqClassName : fqClassNames ) {
+            if ( fqClassName.startsWith( packageName ) )
+                result.add( this.baseClasses.get( fqClassName ) );
         }
         return result;
     }
@@ -218,7 +218,7 @@ public class ClassDataRegistry {
         // Gather all instance names
         Set<String> instanceNames = new HashSet<String>();
         registeredTypes = new HashSet<ClassData>();
-        int id = 1;        
+        int id = 1;
         for ( ClasspathInfo cpi : classpaths ) {
             try {
                 // Traverse the tree of classes
@@ -258,7 +258,7 @@ public class ClassDataRegistry {
      * @return
      */
     public Set<ClassData> getRegisteredTypes() {
-        if ( baseClasses==null)
+        if ( baseClasses == null )
             updateClassDataTree();
         return Collections.unmodifiableSet( registeredTypes );
     }
@@ -280,13 +280,13 @@ public class ClassDataRegistry {
      * @return Set of parameter ClassData types
      */
     public Set<ClassData> getParameterTypes() {
-        if ( baseClasses == null)
+        if ( baseClasses == null )
             updateClassDataTree();
         return Collections.unmodifiableSet( parameterTypes );
     }
 
     public int getRegisteredTypeId( ClassData type ) {
-        if ( baseClasses==null)
+        if ( baseClasses == null )
             updateClassDataTree();
         return idMapping.get( type );
     }
@@ -304,7 +304,7 @@ public class ClassDataRegistry {
         private final static int RETURN_TYPES = 1;
         private final static int PARAMETERS_TYPES = 2;
         private int status;
-        
+
         public TraversingTask( JavonProfileProvider profileProvider, ClasspathInfo cpi ) {
             this.profileProvider = profileProvider;
             this.cpi = cpi;
@@ -318,7 +318,7 @@ public class ClassDataRegistry {
 //            parameterTypes = new HashSet<ClassData>();
 //            returnTypes = new HashSet<ClassData>();
         }
-        
+
         public void cancel() {
         }
 
@@ -326,7 +326,7 @@ public class ClassDataRegistry {
             Set<ElementHandle<TypeElement>> elements = cpi.getClassIndex().getDeclaredTypes( "", NameKind.PREFIX, EnumSet.of( SearchScope.SOURCE ) );
             for ( ElementHandle<TypeElement> eh : elements ) {
                 TypeElement te = eh.resolve( parameter );
-                if( te == null ) continue;
+                if ( te == null ) continue;
                 ClassData cd = getServiceType( te.asType() );
                 // Skip unsupported types
                 if ( cd == null ) continue;
@@ -354,7 +354,7 @@ public class ClassDataRegistry {
                 if ( packageLength > 0 )
                     packageName = clazz.getQualifiedName().toString().substring( 0, packageLength );
 
-                ClassData serviceType = new ClassData( packageName, clazz.getSimpleName().toString(), true, false );
+                ClassData serviceType = new ClassData( packageName, clazz.getSimpleName().toString(), true, false, false, Utils.findSupportingSerializer( type, this.profileProvider ) );
 
                 // Test methods
                 for ( ExecutableElement e : ElementFilter.methodsIn( clazz.getEnclosedElements() ) ) {
@@ -396,9 +396,10 @@ public class ClassDataRegistry {
 
         public ClassData traverseType( TypeMirror type, Map<String, ClassData> typeCache ) {
             for ( JavonSerializer serializer : profileProvider.getSerializers() ) {
-                if ( serializer.isTypeSupported( this, type, typeCache ) ) {
+                if ( serializer.isTypeSupported( type ) ) {
                     ClassData cd = serializer.getType( this, type, typeCache );
                     serializerRegistry.put( cd, serializer );
+                    //registeredTypes.add( cd);
                     return cd;
                 }
             }
@@ -406,12 +407,10 @@ public class ClassDataRegistry {
         }
 
         public boolean isTypeSupported( TypeMirror type, Map<String, ClassData> typeCache ) {
-            for ( JavonSerializer serializer : profileProvider.getSerializers() ) {
-                if ( serializer.isTypeSupported( this, type, typeCache ) ) {
-                    return true;
-                }
-            }
-            return false;
+            if ( Utils.findSupportingSerializer( type, this.profileProvider ) != null )
+                return true;
+            else
+                return false;
         }
 
         public void registerType( ClassData type, JavonSerializer serializer ) {
@@ -421,6 +420,14 @@ public class ClassDataRegistry {
                 returnTypes.add( type );
             }
             serializerRegistry.put( type, serializer );
+        }
+
+        public JavonSerializer registerType( ClassData type ) {
+            JavonSerializer supportingSerializer = getTypeSerializer( type );
+            if ( supportingSerializer == null )
+                return null;
+            returnTypes.add( type );
+            return supportingSerializer;
         }
 
         private String displayClassData( ClassData clsData ) {
