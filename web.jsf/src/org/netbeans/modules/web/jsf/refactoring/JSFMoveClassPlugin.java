@@ -34,6 +34,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -117,29 +119,46 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                 }
             }
         }
-        } 
+       } 
 
-        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+       if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
             WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-            if (webModule != null){
+            if (webModule != null) {
                 CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
                 Element resElement = treePathHandle.resolveElement(info);
                 TypeElement type = (TypeElement) resElement;
                 String oldFQN = type.getQualifiedName().toString();
-                String newPackageName = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class)); 
-                String newFQN = (newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString());
-                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
-
-                Modifications modification = new Modifications();
-                for (Occurrences.OccurrenceItem item : items) {
-                    Modifications.Difference difference = new Modifications.Difference(
-                            Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(),
-                            item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
-                    modification.addDifference(item.getFacesConfig(), difference);
-                    refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
+                String newPackageName = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
+                String newFQN = newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString();
+                if (isTargetOtherProject(fileObject, refactoring)) {
+                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+                    for (Occurrences.OccurrenceItem item : items) {
+                        refactoringElements.add(refactoring, new JSFSafeDeletePlugin.JSFSafeDeleteClassElement(item));
+                    }
+                } else {
+                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+                    Modifications modification = new Modifications();
+                    for (Occurrences.OccurrenceItem item : items) {
+                        Modifications.Difference difference = new Modifications.Difference(Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(), item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
+                        modification.addDifference(item.getFacesConfig(), difference);
+                        refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
+                    }
                 }
             }
         }
         return null;
+    }
+    private boolean isTargetOtherProject(FileObject localFileObject, MoveRefactoring ref) {
+        boolean targetOtherProject = false;
+
+        try {
+            Project targetProject = FileOwnerQuery.getOwner(ref.getTarget().lookup(URL.class).toURI());
+            Project srcProject = FileOwnerQuery.getOwner(localFileObject);
+            targetOtherProject = !targetProject.equals(srcProject);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Exception in JSFMoveClassPlugin", e); //NOI18N
+        }
+
+        return targetOtherProject;
     }
 }

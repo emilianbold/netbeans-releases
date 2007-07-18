@@ -173,7 +173,7 @@ public class Occurrences {
                     faces.getModel().startTransaction();
                     faces.removeManagedBean(managedBean);
                     faces.getModel().endTransaction();
-                    continue;
+                    break;
                 }
             }
         }
@@ -262,7 +262,7 @@ public class Occurrences {
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
                     facesConfig.getModel().endTransaction();
-                    continue;
+                    break;
                 }
             }
         }
@@ -288,7 +288,7 @@ public class Occurrences {
                     converter.getModel().startTransaction();
                     converter.setConverterClass(newClass);
                     converter.getModel().endTransaction();
-                    continue;
+                    break;
                 }
             }
         }
@@ -350,7 +350,7 @@ public class Occurrences {
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
                     facesConfig.getModel().endTransaction();
-                    continue;
+                    break;
                 }
             }
         }
@@ -377,7 +377,7 @@ public class Occurrences {
                     converter.getModel().startTransaction();
                     converter.setConverterForClass(newClass);
                     converter.getModel().endTransaction();
-                    continue;
+                    break;
                 }
             }
         }
