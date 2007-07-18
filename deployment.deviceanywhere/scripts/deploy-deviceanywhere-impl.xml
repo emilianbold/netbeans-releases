@@ -15,7 +15,6 @@
                 </and>
             </or>
         </condition>
-<!--        
         <property name="deployment.deviceanywhere.device" value="-1"/>
         <condition property="device-not-selected">
             <or>
@@ -24,7 +23,6 @@
             </or>
         </condition>
         <fail if="device-not-selected">Device must be selected!</fail>
--->        
     </target>
     <target name="set-password" depends="init" unless="skip-password-input">
         <property name="deployment.deviceanywhere.userid" value=""/>
@@ -33,6 +31,6 @@
     <target name="deploy-deviceanywhere" depends="init,set-password">
         <property name="deployment.deviceanywhere.userid.eval" value="${deployment.deviceanywhere.userid}"/>
         <property name="deployment.deviceanywhere.password.eval" value="${deployment.deviceanywhere.password}"/>
-        <DeviceAnywhereUploadTask user="${deployment.deviceanywhere.userid.eval}" password="${deployment.deviceanywhere.password.eval}" deviceid="${deployment.deviceanywhere.device}" jadfile="${deployment.jad}" jarfile="${deployment.jar}"/>
+        <DeviceAnywhereUploadTask user="${deployment.deviceanywhere.userid.eval}" password="${deployment.deviceanywhere.password.eval}" deviceid="${deployment.deviceanywhere.device}" jadfile="${deployment.jad}" jarfile="${deployment.jar}" service="${deployment.deviceanywhere.serviceurl}"/>
     </target>
 </project>

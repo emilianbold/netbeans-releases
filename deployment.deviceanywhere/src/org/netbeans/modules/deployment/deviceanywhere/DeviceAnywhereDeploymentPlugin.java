@@ -28,32 +28,43 @@ import java.awt.Component;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
+import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  *
- * @author Adam Sotona
+ * @author Petr Suchomel
  */
-public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin {
+public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin, CustomizerPanel {
     
     static final String PROP_DEVICE = "deployment.deviceanywhere.device"; //NOI18N
     static final String PROP_AVAILABLE_DEVICES = "deployment.deviceanywhere.availabledevices"; //NOI18N
     static final String PROP_USERID = "deployment.deviceanywhere.userid"; //NOI18N
     static final String PROP_PASSWORD = "deployment.deviceanywhere.password"; //NOI18N
+    static final String PROP_SERVICE = "deployment.deviceanywhere.serviceurl"; //NOI18N
     
-    final Map propertyDefValues;
+    final Map<String, Object> propertyDefValues;
+    final Map<String, Object> globalPropertyDefValues;
     
-    private DeviceAnywhereCustomizerPanel panel = null;
+    private ProjectProperties props;
+    private String configuration;
     
+    private PropertyEvaluator evaluator = new PropertyEvaluator();
     /**
      * Creates a new instance of DeviceAnywhereDeploymentPlugin
      */
     public DeviceAnywhereDeploymentPlugin() {
-        HashMap<String, String> m = new HashMap<String, String>();
-        m.put(PROP_DEVICE, "");//NOI18N
+        HashMap<String, Object> m = new HashMap<String, Object>();
         m.put(PROP_USERID, "");//NOI18N
         m.put(PROP_PASSWORD, "");//NOI18N
+        m.put(PROP_SERVICE, "0");//NOI18N
+        globalPropertyDefValues = Collections.unmodifiableMap(m);
+        m = new HashMap<String, Object>();
+        m.put(PROP_DEVICE, "");//NOI18N
         m.put(PROP_AVAILABLE_DEVICES, "");//NOI18N
         propertyDefValues = Collections.unmodifiableMap(m);
     }
@@ -71,7 +82,7 @@ public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin {
     }
 
     public Component createProjectCustomizerPanel() {
-        return new DeviceAnywhereCustomizerPanel();
+        return new DeviceAnywhereCustomizerPanel(evaluator);
     }
     
     public Map<String, Object> getProjectPropertyDefaultValues() {
@@ -79,10 +90,41 @@ public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin {
     }
     
     public Map<String, Object> getGlobalPropertyDefaultValues() {
-        return Collections.EMPTY_MAP;
+        return globalPropertyDefValues;
     }
     
     public Component createGlobalCustomizerPanel() {
-        return null;
+        return new DeviceAnywhereGlobalCustomizerPanel();
     }
+
+    public void initValues(ProjectProperties props, String configuration) {
+        this.props = props;
+        this.configuration = configuration;
+    }
+    
+    class PropertyEvaluator {
+        String evaluateProperty (String propertyName) {
+            assert props != null : "Project Properties can not be null!"; //NOI18N
+            if (configuration == null)
+                return (String) props.get(propertyName);
+            String value = (String) props.get("configs." + configuration + "." + propertyName); // NOI18N
+            return value != null ? value : evaluateProperty (propertyName, null);
+        }
+
+        private String evaluateProperty (String propertyName, String configuration) {
+            //deployment.instance
+            if (configuration == null)
+                return (String) props.get(propertyName);
+            String value = (String) props.get("configs." + configuration + "." + propertyName); // NOI18N
+            return value != null ? value : evaluateProperty (propertyName, null);
+        }
+        
+        String evaluateGlobalProperty (String propertyName, String instanceName) {
+            EditableProperties ep = PropertyUtils.getGlobalProperties();
+            String prefix = "deployments.DeviceAnywhere.";
+            String evaluatedPropertyName = prefix + ((instanceName == null) ? "default" : instanceName) + '.' + propertyName; //NOI18N
+            String value = ep.getProperty(evaluatedPropertyName); // NOI18N
+            return value != null ? value : evaluateGlobalProperty (propertyName, null);
+        }
+    }    
 }

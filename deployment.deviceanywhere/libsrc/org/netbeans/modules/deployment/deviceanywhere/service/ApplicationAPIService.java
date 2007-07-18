@@ -35,29 +35,24 @@ import javax.xml.ws.WebServiceFeature;
  * Generated source version: 2.1
  * 
  */
-@WebServiceClient(name = "ApplicationAPIService", targetNamespace = "http://services.mc.com", wsdlLocation = "file:/G:/ApplicationAPI.wsdl")
+@WebServiceClient(name = "ApplicationAPIService", targetNamespace = "http://services.mc.com")
 public class ApplicationAPIService
     extends Service
 {
+    private static String[] SERVICES = new String[]{
+        "http://www.deviceanywhere.com/axis/services/ApplicationAPI", //default
+        "http://www.deviceanywhere.com/vdl/sprint/axis/services/ApplicationAPI", //vdl
+        "http://mcdemo5.mobilecomplete.com/axis/services/ApplicationAPI" //test
+    };
 
-    private final static URL APPLICATIONAPISERVICE_WSDL_LOCATION;
+    public static int SERVICE_LENGTH = SERVICES.length;       
+    
+//    public ApplicationAPIService(URL wsdlLocation, QName serviceName) {
+//        super(wsdlLocation, serviceName);
+//    }
 
-    static {
-        URL url = null;
-        try {
-            url = new URL("file:/G:/ApplicationAPI.wsdl");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        APPLICATIONAPISERVICE_WSDL_LOCATION = url;
-    }
-
-    public ApplicationAPIService(URL wsdlLocation, QName serviceName) {
-        super(wsdlLocation, serviceName);
-    }
-
-    public ApplicationAPIService() {
-        super(APPLICATIONAPISERVICE_WSDL_LOCATION, new QName("http://services.mc.com", "ApplicationAPIService"));
+    public ApplicationAPIService(int serviceIndex) throws MalformedURLException {
+        super(new URL(SERVICES[serviceIndex] + "?wsdl"), new QName("http://services.mc.com", "ApplicationAPIService")); //NOI18N
     }
 
     /**

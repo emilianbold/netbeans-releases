@@ -51,14 +51,14 @@ public class DeviceChooser extends javax.swing.JPanel {
     
     protected ChangeListener changeListener;
     private List<ApplicationAPIDeviceWrapper> devices;
-   
+    
     /** Creates new form DeviceChooser */
-    public DeviceChooser(String user, String password, ApplicationAPIDeviceWrapper selectedDevice) {
+    public DeviceChooser(String user, String password, ApplicationAPIDeviceWrapper selectedDevice, int selectedService) {
         initComponents();
-        initView(user, password, selectedDevice);
+        initView(user, password, selectedDevice, selectedService);
     }
     
-    private void initView(final String user, final String password, final ApplicationAPIDeviceWrapper selectedDevice){
+    private void initView(final String user, final String password, final ApplicationAPIDeviceWrapper selectedDevice, final int selectedService){
         deviceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         deviceList.setListData (getWarmupList ());
         deviceList.addListSelectionListener (new ListSelectionListener () {
@@ -88,7 +88,7 @@ public class DeviceChooser extends javax.swing.JPanel {
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 try {
-                    ApplicationAPIService service = new ApplicationAPIService();
+                    ApplicationAPIService service = new ApplicationAPIService(selectedService);
                     ApplicationAPI port = service.getApplicationAPI();
                     final ApplicationAPIGetLockedDevicesReturn wrapper = port.getLockedDevices(user, password);
                     final int returnCode = wrapper.getReturnCode();
@@ -154,7 +154,7 @@ public class DeviceChooser extends javax.swing.JPanel {
                     } else {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
-                }
+                } 
             }
         });
         

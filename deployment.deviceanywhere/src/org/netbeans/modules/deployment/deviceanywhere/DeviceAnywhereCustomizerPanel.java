@@ -53,11 +53,12 @@ import org.openide.util.NbBundle;
 public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         
     private List<ApplicationAPIDeviceWrapper> devices;
+    private DeviceAnywhereDeploymentPlugin.PropertyEvaluator evaluator;
     //private 
     /**
      * Creates new form DeviceAnywhereCustomizerPanel
      */
-    public DeviceAnywhereCustomizerPanel() {
+    DeviceAnywhereCustomizerPanel(DeviceAnywhereDeploymentPlugin.PropertyEvaluator evaluator) {
         initComponents();   
         //invisible components, only value holders
         allDevices.setVisible(false);
@@ -65,6 +66,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         add(allDevices);
         add(selectedDevice);
         retriveButton.addActionListener(new DeviceListener());
+        this.evaluator = evaluator;
     }
     
     @Override
@@ -106,8 +108,8 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
                 devicesComboBox.setSelectedIndex(0);
             }
         }
-        retriveButton.setEnabled(jTextFieldUser.getText().trim().length() != 0);                
-        jTextFieldUser.getDocument().addDocumentListener(dl);
+        retriveButton.setEnabled(true/*jTextFieldUser.getText().trim().length() != 0*/);                
+        //jTextFieldUser.getDocument().addDocumentListener(dl);
         devicesComboBox.addItemListener(il);
         
         super.addNotify();
@@ -116,7 +118,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
     @Override
     public void removeNotify(){
         super.removeNotify();
-        jTextFieldUser.getDocument().removeDocumentListener(dl);
+        //jTextFieldUser.getDocument().removeDocumentListener(dl);
         devicesComboBox.removeItemListener(il);        
     }
     
@@ -130,11 +132,9 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
 
         allDevices = new javax.swing.JTextField();
         selectedDevice = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jTextFieldUser = new javax.swing.JTextField();
-        jPasswordField = new javax.swing.JPasswordField();
-        jTextArea1 = new javax.swing.JTextArea();
+        inputPasswordPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        passwordField = new javax.swing.JPasswordField();
         devicesComboBox = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
         retriveButton = new javax.swing.JButton();
@@ -145,21 +145,29 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         selectedDevice.setText("jTextField1");
         selectedDevice.setName(DeviceAnywhereDeploymentPlugin.PROP_DEVICE);
 
-        jLabel3.setLabelFor(jTextFieldUser);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "LBL_UserName")); // NOI18N
+        jLabel1.setLabelFor(passwordField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "MSG_InsertPass")); // NOI18N
 
-        jLabel4.setLabelFor(jPasswordField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "LBL_Password")); // NOI18N
-
-        jTextFieldUser.setName(DeviceAnywhereDeploymentPlugin.PROP_USERID);
-
-        jPasswordField.setName(DeviceAnywhereDeploymentPlugin.PROP_PASSWORD);
-
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "MSG_PassWarning")); // NOI18N
-        jTextArea1.setWrapStyleWord(true);
+        org.jdesktop.layout.GroupLayout inputPasswordPanelLayout = new org.jdesktop.layout.GroupLayout(inputPasswordPanel);
+        inputPasswordPanel.setLayout(inputPasswordPanelLayout);
+        inputPasswordPanelLayout.setHorizontalGroup(
+            inputPasswordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(inputPasswordPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        inputPasswordPanelLayout.setVerticalGroup(
+            inputPasswordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(inputPasswordPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(inputPasswordPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         jLabel5.setLabelFor(devicesComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "LBL_Device")); // NOI18N
@@ -172,41 +180,21 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jTextArea1)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel3)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(jLabel5))
-                        .add(1, 1, 1)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(devicesComboBox, 0, 289, Short.MAX_VALUE)
-                            .add(jPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-                            .add(jTextFieldUser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
-                        .add(10, 10, 10)
-                        .add(retriveButton)))
+                .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(devicesComboBox, 0, 316, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(retriveButton)
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jTextFieldUser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(jPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
                     .add(retriveButton)
+                    .add(jLabel5)
                     .add(devicesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jTextArea1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, Short.MAX_VALUE))
+                .addContainerGap(173, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -214,12 +202,10 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField allDevices;
     private javax.swing.JComboBox devicesComboBox;
-    javax.swing.JLabel jLabel3;
-    javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel inputPasswordPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel5;
-    javax.swing.JPasswordField jPasswordField;
-    javax.swing.JTextArea jTextArea1;
-    javax.swing.JTextField jTextFieldUser;
+    private javax.swing.JPasswordField passwordField;
     private javax.swing.JButton retriveButton;
     private javax.swing.JTextField selectedDevice;
     // End of variables declaration//GEN-END:variables
@@ -240,21 +226,44 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
          */
         public void actionPerformed( ActionEvent e ) {
             
-            // only chooseMainClassButton can be performed
-            String password = new String(jPasswordField.getPassword());
-            if (password.trim().length() == 0){
+            String user = evaluator.evaluateGlobalProperty(
+                    DeviceAnywhereDeploymentPlugin.PROP_USERID,
+                    evaluator.evaluateProperty("deployment.instance")); //NOI18N
+
+            if (user.trim().length() == 0){     
                 NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                        NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "LBL_InsertPass"),  //NOI18N
-                        NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "TITLE_InsertPass"), //NOI18N
-                        NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
-                if ( DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION){
-                    password = input.getInputText();
+                        NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "MSG_InsertUsername"),  //NOI18N
+                        NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "TITLE_InsertUsername")); //NOI18N
+                DialogDisplayer.getDefault().notify(input);
+                if ( input.getValue() == NotifyDescriptor.OK_OPTION){
+                    user = input.getInputText();
                 } else {
                     return;
-                }
-                
+                }                
             }
-            final DeviceChooser panel = new DeviceChooser (jTextFieldUser.getText(), password, null);
+
+            String password = evaluator.evaluateGlobalProperty(
+                    DeviceAnywhereDeploymentPlugin.PROP_PASSWORD, 
+                    evaluator.evaluateProperty("deployment.instance"));
+
+            if (password.trim().length() == 0){     
+                DialogDescriptor input = new DialogDescriptor(
+                        inputPasswordPanel,  //NOI18N
+                        NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "TITLE_InsertPass")); //NOI18N
+                DialogDisplayer.getDefault().createDialog(input).setVisible(true);
+                if ( input.getValue() == NotifyDescriptor.OK_OPTION){
+                    password = new String(passwordField.getPassword());
+                } else {
+                    return;
+                }                
+            }
+            
+            String serviceId = evaluator.evaluateGlobalProperty(
+                    DeviceAnywhereDeploymentPlugin.PROP_SERVICE,
+                    evaluator.evaluateProperty("deployment.instance")); //NOI18N 
+
+            serviceId = (serviceId != null)? serviceId : "0"; //NOI18N default value
+            final DeviceChooser panel = new DeviceChooser (user, password, null, Integer.parseInt(serviceId));
             Object[] options = new Object[] {
                 okButton,
                 DialogDescriptor.CANCEL_OPTION
@@ -332,7 +341,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
      
      DocumentListener dl = new DocumentListener() {
          public void changedUpdate(DocumentEvent e) {
-             retriveButton.setEnabled(jTextFieldUser.getText().trim().length() != 0);
+            // retriveButton.setEnabled(jTextFieldUser.getText().trim().length() != 0);
          }
          public void insertUpdate(DocumentEvent e) {
              changedUpdate(e);
