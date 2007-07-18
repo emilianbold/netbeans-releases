@@ -121,7 +121,7 @@ public class ScopeNode extends BaseScopeNode<Scope> {
             // ActionType.ADD_CORRELATION_SET, // issue #79779
             // ActionType.ADD_MESSAGE_EXCHANGE, // Issue 85553
             ActionType.ADD_EVENT_HANDLERS,
-            ActionType.ADD_COMPENSATION_HANDLER, // issue #79777
+            // ActionType.ADD_COMPENSATION_HANDLER, // issue #79777, #107002
             // ActionType.ADD_TERMINATION_HANDLER, // issue #79781
             ActionType.ADD_FAULT_HANDLERS
         };
