@@ -59,9 +59,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.indent.Bundle"/>
             </file>
         </folder> <!-- IndentEngine -->
-        
-        
-        
 
         <folder name="Hidden">
             <file name="org-netbeans-modules-xml-text-completion-ReloadActionPerformer.instance">
@@ -88,21 +85,21 @@ Microsystems, Inc. All Rights Reserved.
                         </folder>
                     </folder>
                 </folder>
-
+                
                 <folder name="DocumentModel">
                     <file name="org-netbeans-modules-xml-text-structure-XMLDocumentModelProvider.instance"/>
                 </folder>
-
+                
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-xml-text-folding-XmlFoldManagerFactory.instance"/>
                 </folder>
-
+                
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1500"/>
                     </file>
-                    </folder>
-
+                </folder>
+                
                 <folder name="Popup">
                     <file name="org-netbeans-modules-xml-text-syntax-XMLViewActions.instance">
                         <attr name="position" intvalue="1400"/>
@@ -111,39 +108,36 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
                         <attr name="position" intvalue="1600"/>
                     </file>
-
+                    
                     <file name="format">
                         <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
-                    </file>
-
+                    </file>                   
                     
-
                     <!-- Cut, Copy, Paste actions block -->
-
                     <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4100"/>
                     </file>
-
+                    
                     <file name="org-openide-actions-ToolsAction.instance">
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
-
+                
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-xml-text-xmlCodeTemplates.xml" url="XMLEditor-abbreviations.xml"/>
                     </folder>
                 </folder>
-
+                
                 <file name="Settings.settings" url="XMLEditor-options.xml"/>
-
+                
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
                 </file>
-
+                
                 <!-- <folder name="Toolbars">
                     <folder name="Default">
                         <attr name="stop-macro-recording/XMLSeparator1.instance" boolvalue="true"/>
@@ -160,17 +154,80 @@ Microsystems, Inc. All Rights Reserved.
             </folder> <!-- xml -->
 
             <folder name="xml-external-parsed-entity">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
                 <!-- It reuses kit only -->
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
                 </file>
+                
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-xml-text-completion-XMLCompletionProvider.instance"/>
+                </folder>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="XML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>                
+                <folder name="DocumentModel">
+                    <file name="org-netbeans-modules-xml-text-structure-XMLDocumentModelProvider.instance"/>
+                </folder>
+                
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-xml-text-folding-XmlFoldManagerFactory.instance"/>
+                </folder>
+                
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-xml-text-syntax-XMLViewActions.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <!-- implicit separator provided by above action group -->
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    
+                    <file name="format">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>                   
+                    
+                    <!-- Cut, Copy, Paste actions block -->
+                    <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4100"/>
+                    </file>
+                    
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
+                </folder>
+                
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-xml-text-xmlCodeTemplates.xml" url="XMLEditor-abbreviations.xml"/>
+                    </folder>
+                </folder>
+                
+                <file name="Settings.settings" url="XMLEditor-options.xml"/>
+                
             </folder> <!-- xml-external-parsed-entity -->
         </folder> <!-- text -->
 
         <folder name="application">
             <folder name="xml-dtd">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
-
+                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -180,28 +237,27 @@ Microsystems, Inc. All Rights Reserved.
                         </folder>
                     </folder>
                 </folder>
-                    
-                <folder name="Popup">
-
+                
+                <folder name="Popup">                    
                     <!-- implicit separator provided by below action group -->    
                     <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance">
                         <attr name="position" intvalue="4100"/>
                     </file>
-
+                    
                     <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4200"/>
                     </file>
-
+                    
                     <file name="org-openide-actions-ToolsAction.instance">
                         <attr name="position" intvalue="4300"/>
                     </file>
                 </folder>
-
+                
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-xml-text-dtdCodeTemplates.xml" url="DTDEditor-abbreviations.xml"/>
                     </folder>
                 </folder>
-
+                
                 <file name="Settings.settings" url="DTDEditor-options.xml"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.DTDKit"/>
@@ -220,5 +276,5 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-
+    
 </filesystem>
