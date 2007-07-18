@@ -45,14 +45,6 @@ public class WebJPADataSourceSupport implements JPADataSourcePopulator, JPADataS
     
     public void connect(JComboBox comboBox) {
         DatasourceUIHelper.connect(project.getWebModule(), comboBox);
-        // see the comment in EjbJarJPASupport regarding the code below
-        int size = comboBox.getItemCount();
-        for (int i = 0; i < size; i++){
-            Object item = comboBox.getItemAt(i);
-            if (item instanceof Datasource){
-                comboBox.insertItemAt(new DatasourceWrapper((Datasource)item), i);
-            }
-        }
     }
 
     public List<JPADataSource> getDataSources() {
@@ -73,6 +65,16 @@ public class WebJPADataSourceSupport implements JPADataSourcePopulator, JPADataS
         }
         return result;
     }
+    
+    public JPADataSource toJPADataSource(Object dataSource) {
+        if (dataSource instanceof JPADataSource) {
+            return (JPADataSource) dataSource;
+        } else if (dataSource instanceof Datasource) {
+            return new DatasourceWrapper((Datasource) dataSource);
+        }
+        return null;
+    }
+
 
 /**
  * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.

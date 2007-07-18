@@ -36,4 +36,12 @@ public interface JPADataSourceProvider {
      * the available data sources.
      */ 
     List<JPADataSource> getDataSources();
+    
+    /**
+     * Converts the given <code>dataSource</code> to a <code>JPADataSource</code> if possible. 
+     * 
+     * @return the given <code>dataSource</code> as a <code>JPADataSource</code> or 
+     * <code>null</code> if it could not be converted. 
+     */ 
+    JPADataSource toJPADataSource(Object dataSource);
 }

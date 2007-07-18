@@ -347,15 +347,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         dbconn = null;
         dbschemaFile = null;
 
+
         if (datasourceRadioButton.isSelected()) {
             Object item = datasourceComboBox.getSelectedItem();
-            if (item instanceof JPADataSource) {
-                JPADataSource ds = (JPADataSource)item;
-                List<DatabaseConnection> dbconns = findDatabaseConnections(ds);
+            JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+            JPADataSource jpaDS = dsProvider != null ? dsProvider.toJPADataSource(item) : null;
+            if (jpaDS != null) {
+                List<DatabaseConnection> dbconns = findDatabaseConnections(jpaDS);
                 if (dbconns.size() > 0) {
                     dbconn = dbconns.get(0);
                 } else {
-                    String drvClass = ds.getDriverClassName();
+                    String drvClass = jpaDS.getDriverClassName();
                     if (drvClass == null) {
                         notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_NoDriverClassName"));
                     } else {
@@ -365,14 +367,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                         } else {
                             JDBCDriver driver = JDBCDriverManager.getDefault().getDrivers(drvClass)[0];
                             dbconn = ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(
-                                    driver, ds.getUrl(), ds.getUsername(), ds.getPassword());
+                                    driver, jpaDS.getUrl(), jpaDS.getUsername(), jpaDS.getPassword());
                         }
                     }
                 }
                 if (dbconn != null) {
                     try {
                         sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
-                        datasourceName = ds.getJndiName();
+                        datasourceName = jpaDS.getJndiName();
                     } catch (SQLException e) {
                         notify(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_DatabaseError"));
                     }

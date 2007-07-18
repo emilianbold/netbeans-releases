@@ -45,16 +45,6 @@ public class EjbJarJPASupport implements JPADataSourcePopulator, JPADataSourcePr
     
     public void connect(JComboBox comboBox) {
         DatasourceUIHelper.connect(project.getEjbModule(), comboBox);
-        // a bit of a hack. needs rethinking when j2ee/persistence doesn't 
-        // have a dependency to j2ee/utilities anymore (then the DatasourceUIHelper
-        // may be changed to use JPADataSources directly).
-        int size = comboBox.getItemCount();
-        for (int i = 0; i < size; i++){
-            Object item = comboBox.getItemAt(i);
-            if (item instanceof Datasource){
-                comboBox.insertItemAt(new DatasourceWrapper((Datasource)item), i);
-            }
-        }
     }
     
     public List<JPADataSource> getDataSources() {
@@ -77,6 +67,16 @@ public class EjbJarJPASupport implements JPADataSourcePopulator, JPADataSourcePr
         }
         return result;
     }
+
+    public JPADataSource toJPADataSource(Object dataSource) {
+        if (dataSource instanceof JPADataSource){
+            return (JPADataSource) dataSource;
+        } else if (dataSource instanceof Datasource){
+            return new DatasourceWrapper((Datasource) dataSource);
+        }
+        return null;
+    }
+    
 
 /**
  * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.
@@ -117,5 +117,5 @@ private static class DatasourceWrapper implements Datasource, JPADataSource{
         return delegate.toString();
     }
 }
-    
+
 }

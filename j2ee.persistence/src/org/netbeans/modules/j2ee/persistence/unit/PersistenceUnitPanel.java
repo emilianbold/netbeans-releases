@@ -43,6 +43,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.unit.JdbcListCellRenderer;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
@@ -345,9 +346,11 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         if (jndiName == null) {
             int itemIndex = dsCombo.getSelectedIndex();
             Object item = dsCombo.getSelectedItem();
-            if (item instanceof JPADataSource)
-                jndiName = ((JPADataSource)item).getJndiName();
-            else if (itemIndex == -1 && item != null){ // user input
+            JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+            JPADataSource jpaDS = dsProvider != null ? dsProvider.toJPADataSource(item) : null;
+            if (jpaDS != null){
+                jndiName = jpaDS.getJndiName();
+            } else if (itemIndex == -1 && item != null){ // user input
                 jndiName = item.toString();
             }
         }
