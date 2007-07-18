@@ -46,6 +46,32 @@ public class XsltMapperRule extends BasicMapperRule {
     
     @Override
     public boolean isAllowToCreate(IMapperLink link) {
+        IMapperNode startNode = link.getStartNode();
+        IMapperNode endNode = link.getEndNode();
+        //
+        // Check if the start and end nodes are specified
+        if (startNode == null || endNode == null) {
+            return false;
+        }
+        //
+        // In case of the start and end nodes are the field nodes
+        // then they should be of different types: input and output
+        if (startNode instanceof IFieldNode && endNode instanceof IFieldNode) {
+            boolean isStartInput = ((IFieldNode)startNode).isInput();
+            boolean isEndInput = ((IFieldNode)endNode).isInput();
+            //
+            if (isStartInput == isEndInput) {
+               return false;
+            }
+            //
+            boolean isStartOutput = ((IFieldNode)startNode).isOutput();
+            boolean isEndOutput = ((IFieldNode)endNode).isOutput();
+            //
+            if (isStartOutput == isEndOutput) {
+               return false;
+            }
+        }
+        //
         return !(new CheckCyclicLinks(link).isCycle());
     }
     
