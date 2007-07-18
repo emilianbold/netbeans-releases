@@ -795,6 +795,7 @@ final class MatchingObject implements PropertyChangeListener {
     /** Returns name of this node.
      * @return name of this node.
      */
+    @Override
     public String toString() {
         return super.toString() + "[" + getName()+ "]"; // NOI18N
     }
