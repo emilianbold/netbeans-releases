@@ -23,6 +23,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
@@ -42,9 +43,10 @@ public final class JSFPaletteUtilities {
     public static void insert(String s, JTextComponent target, boolean reformat) 
     throws BadLocationException 
     {
-        Document doc = target.getDocument();
-        if (doc == null)
+        Document _doc = target.getDocument();
+        if (_doc == null || !(_doc instanceof BaseDocument)) {
             return;
+        }
         
         //check whether we are not in a scriptlet 
 //        JspSyntaxSupport sup = (JspSyntaxSupport)(doc.getSyntaxSupport().get(JspSyntaxSupport.class));
@@ -56,27 +58,24 @@ public final class JSFPaletteUtilities {
         if (s == null)
             s = "";
         
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicLock();
-        
-        int start = insert(s, target, doc);
-        
-        if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
-            int end = start + s.length();
-            Formatter f = ((BaseDocument)doc).getFormatter();
-            f.reformat((BaseDocument)doc, start, end);
+        BaseDocument doc = (BaseDocument)_doc;
+        Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            doc.atomicLock();
+            try {
+                int start = insert(s, target, _doc);
+                if (reformat && start >= 0 && _doc instanceof BaseDocument) {
+                    // format the inserted text
+                    int end = start + s.length();
+                    indent.reindent(start, end);
+                }
+            } finally {
+                doc.atomicUnlock();
+            }
+        } finally {
+            indent.unlock();
         }
-
-//        if (select && start >= 0) { // select the inserted text
-//            Caret caret = target.getCaret();
-//            int current = caret.getDot();
-//            caret.setDot(start);
-//            caret.moveDot(current);
-//            caret.setSelectionVisible(true);
-//        }
-
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicUnlock();
         
     }
     
