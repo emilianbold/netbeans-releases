@@ -70,17 +70,17 @@ final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocum
             ui = new InspectorUI(document);
             folderWrapperTree = new InspectorWrapperTree(document, ui);
             ui.getExplorerManager().setRootContext(folderWrapperTree.getRootWrapperFolder().getNode());
-            document.getListenerManager().addDesignListener(this, new DesignEventFilter().setGlobal(true));
             ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
+            document.getListenerManager().addDesignListener(this, new DesignEventFilter().setGlobal(true));
             folderWrapperTree.buildTree(null);
         } else if (this.document != null && document == null) {
-            INSTANCES.remove(context);
-            this.document.getListenerManager().removeDesignListener(this);
             ActiveDocumentSupport.getDefault().removeActiveDocumentListener(this);
+            this.document.getListenerManager().removeDesignListener(this);
             folderWrapperTree.terminate();
             ui = null;
             folderWrapperTree = null;
             this.document = null;
+            INSTANCES.remove(context);
             context = null;
         }
     }

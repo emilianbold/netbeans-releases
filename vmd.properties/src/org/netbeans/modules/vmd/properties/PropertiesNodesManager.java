@@ -95,13 +95,13 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
     public void setDesignDocument(DesignDocument document) {
         if (document != null) {
             this.document = document;
+            document.getListenerManager().addDesignListener(this, new DesignEventFilter().setGlobal(true));
             ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
             ActiveViewSupport.getDefault().addActiveViewListener(this);
-            document.getListenerManager().addDesignListener(this, new DesignEventFilter().setGlobal(true));
         } else if (this.document != null) {
-            this.document.getListenerManager().removeDesignListener(this);
             ActiveDocumentSupport.getDefault().removeActiveDocumentListener(this);
             ActiveViewSupport.getDefault().removeActiveViewListener(this);
+            this.document.getListenerManager().removeDesignListener(this);
             this.document = null;
             view = null;
             propertySupportMap = null;
