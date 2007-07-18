@@ -130,8 +130,12 @@ public class XMLRefactoringTransaction implements Transaction {
 	  if(modelsInRefactoring == null)
               modelsInRefactoring = getModels();
             Set<Model> models = modelsInRefactoring.keySet();
-            
+                   
             Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
+            if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
+                genericChangeUndoManager.undo();
+            }
+            
             if(undoManagers != null ) {
                 for (UndoManager um : undoManagers.values()) {
                     while (um.canUndo()) {
@@ -139,11 +143,7 @@ public class XMLRefactoringTransaction implements Transaction {
                     }
                }
             }
-            
-           if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
-                genericChangeUndoManager.undo();
-            }
-           
+                                
             //fix for issue 108512
            if(undoManagers != null ){
                Set<Model> mods = undoManagers.keySet();
@@ -643,17 +643,19 @@ public class XMLRefactoringTransaction implements Transaction {
             Set<Model> models = modelsInRefactoring.keySet();
             
             Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
+            
+            if (genericChangeUndoManager != null && genericChangeUndoManager.canRedo()) {
+                genericChangeUndoManager.redo();
+            }
+            
             if(undoManagers != null ){
                 for (UndoManager um : undoManagers.values()) {
                     while (um.canRedo()) {
                         um.redo();
                     }
                 }
-            }
-            if (genericChangeUndoManager != null && genericChangeUndoManager.canRedo()) {
-                genericChangeUndoManager.redo();
-            }
-            
+            }           
+            //fix for issue 108512
             if(undoManagers != null) {
                 Set<Model> mods = undoManagers.keySet();
                 for(Model m:mods){
