@@ -62,7 +62,7 @@ public class CustomButtonBox extends CssBox {
     private int textWidth;
     private int prefWidth;
     private int prefHeight;
-    private int baseline;
+//    private int baseline;
 
     /**
      * Create a StringBox for the given string
@@ -151,7 +151,7 @@ public class CustomButtonBox extends CssBox {
         bottomBorderWidth = border.getBottomBorderWidth();
         rightBorderWidth = border.getRightBorderWidth();
 
-        baseline = fm.getHeight() - fm.getDescent() + topBorderWidth + topPadding;
+//        baseline = fm.getHeight() - fm.getDescent() + topBorderWidth + topPadding;
 
         //baseline += (height-baseline)/2;
     }
@@ -177,7 +177,9 @@ public class CustomButtonBox extends CssBox {
     }
 
     public int getBaseline() {
-        return baseline;
+//        return baseline;
+        // #109564 It corresponds to the height.
+        return height;
     }
 
 //    public String toString() {
