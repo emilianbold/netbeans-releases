@@ -986,7 +986,8 @@ public class CasualDiff {
         int localPointer = bounds[0];
         copyTo(localPointer, getOldPos(oldT.expr));
         localPointer = diffTree(oldT.expr, newT.expr, getBounds(oldT.expr));
-        return localPointer;
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
     }
 
     protected int diffAssign(JCAssign oldT, JCAssign newT, int[] bounds) {
