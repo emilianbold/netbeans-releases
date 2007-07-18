@@ -40,7 +40,7 @@ public class RubyTokenDumpTest extends NbTestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
-    public void test() throws Exception {
+    public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
                 RubyTokenId.language());
     }
@@ -57,6 +57,11 @@ public class RubyTokenDumpTest extends NbTestCase {
 
     public void testScenario2() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/postgresql_adapter.rb.txt",
+                RubyTokenId.language());
+    }    
+
+    public void testScenario3() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/freakout.rb.txt",
                 RubyTokenId.language());
     }    
 }

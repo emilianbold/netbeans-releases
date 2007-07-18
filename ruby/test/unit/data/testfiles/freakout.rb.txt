@@ -1,0 +1,6 @@
+.t.e.s.t. Heredocs
+x = method_call(50, <<TOKEN1, "arg3", <<TOKEN2, /startofregexp/
+This is part of the string
+TOKEN1
+restofregexp/)
+.e.o.f.

@@ -118,56 +118,56 @@ GSF_WHITESPACE  " ", la=1, st=RubyLexerState[substituting|spaceseen,null,EXPR_BE
 GSF_STRING_BEGIN  "<<EOS", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOS,null,0],end:true,term:HeredocTerm[2,EOS,null,0]]
 GSF_RPAREN      ")", st=RubyLexerState[-,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOS,null,0],end:true,term:HeredocTerm[2,EOS,null,0]]
 GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,EOS,null,0],end:true,term:HeredocTerm[2,EOS,null,0]]
-GSF_STRING_LITERAL  "<html>Hello from <b><u>JRuby</u></b>.<br>\nButton '", la=2, st=RubyLexerState[commandstart,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
-GSF_STRING_LITERAL  "#{", st=RubyLexerState[embedded|commandstart,HeredocTerm[2,EOS,null,2],EXPR_BEG,HeredocTermState[2],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,2]]
-EMBEDDED_RUBY   "evt.getActionCommand()", la=1, st=RubyLexerState[commandstart,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
-GSF_STRING_LITERAL  "}' clicked.\n", la=4, st=RubyLexerState[commandstart,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
-GSF_STRING_END  "EOS\n", st=RubyLexerState[commandstart,null,EXPR_END,null,null]
-GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_END,null,null]
-END             "end", la=2, st=1
-GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-END             "end", la=2, st=1
-GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_IDENTIFIER  "button", la=2, st=3
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "add_action_listener", la=2, st=2
-GSF_LPAREN      "(", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_CONSTANT    "ClickAction", la=2, st=3
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "new", la=2, st=2
-GSF_RPAREN      ")", la=1, st=1
-GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_LINE_COMMENT  "# Add the button to the frame\n", st=0
-GSF_IDENTIFIER  "frame", la=2, st=2
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "get_content_pane", la=2, st=2
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "add", la=2, st=2
-GSF_LPAREN      "(", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_IDENTIFIER  "button", la=2, st=3
-GSF_RPAREN      ")", la=1, st=1
-GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_LINE_COMMENT  "# Show frame\n", st=0
-GSF_IDENTIFIER  "frame", la=2, st=2
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "set_default_close_operation", la=2, st=2
-GSF_LPAREN      "(", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_CONSTANT    "JFrame", la=2, st=3
-GSF_IDENTIFIER  "::", st=7
-GSF_CONSTANT    "EXIT_ON_CLOSE", la=2, st=2
-GSF_RPAREN      ")", la=1, st=1
-GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_IDENTIFIER  "frame", la=2, st=3
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "pack", la=2, st=2
-GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_IDENTIFIER  "frame", la=2, st=3
-DOT             ".", la=1, st=7
-GSF_IDENTIFIER  "visible", la=2, st=2
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_ARG,null,null]
-NONUNARY_OP     "=", la=1, st=0
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-GSF_ANY_KEYWORD  "true", la=1, st=1
+QUOTED_STRING_LITERAL  "<html>Hello from <b><u>JRuby</u></b>.<br>\nButton '", la=2, st=RubyLexerState[substituting|commandstart,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
+GSF_STRING_LITERAL  "#{", st=RubyLexerState[embedded|substituting|commandstart,HeredocTerm[2,EOS,null,2],EXPR_BEG,HeredocTermState[2],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,2]]
+EMBEDDED_RUBY   "evt.getActionCommand()", la=1, st=RubyLexerState[substituting|commandstart,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
+QUOTED_STRING_LITERAL  "}' clicked.\n", la=4, st=RubyLexerState[substituting|commandstart,HeredocTerm[2,EOS,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=1):end:true,term:HeredocTerm[2,EOS,null,1]]
+QUOTED_STRING_END  "EOS\n", st=RubyLexerState[substituting|commandstart,null,EXPR_END,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[substituting|spaceseen,null,EXPR_END,null,null]
+END             "end", la=2, st=RubyLexerState[substituting,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+END             "end", la=2, st=RubyLexerState[substituting,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "button", la=2, st=RubyLexerState[substituting,null,EXPR_CMDARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "add_action_listener", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "ClickAction", la=2, st=RubyLexerState[substituting,null,EXPR_CMDARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "new", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_RPAREN      ")", la=1, st=RubyLexerState[substituting,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_LINE_COMMENT  "# Add the button to the frame\n", st=RubyLexerState[substituting,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "get_content_pane", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "add", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "button", la=2, st=RubyLexerState[substituting,null,EXPR_CMDARG,null,null]
+GSF_RPAREN      ")", la=1, st=RubyLexerState[substituting,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_LINE_COMMENT  "# Show frame\n", st=RubyLexerState[substituting,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "set_default_close_operation", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_LPAREN      "(", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_CONSTANT    "JFrame", la=2, st=RubyLexerState[substituting,null,EXPR_CMDARG,null,null]
+GSF_IDENTIFIER  "::", st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_CONSTANT    "EXIT_ON_CLOSE", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_RPAREN      ")", la=1, st=RubyLexerState[substituting,null,EXPR_END,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=RubyLexerState[substituting,null,EXPR_CMDARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "pack", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "frame", la=2, st=RubyLexerState[substituting,null,EXPR_CMDARG,null,null]
+DOT             ".", la=1, st=RubyLexerState[substituting,null,EXPR_DOT,null,null]
+GSF_IDENTIFIER  "visible", la=2, st=RubyLexerState[substituting,null,EXPR_ARG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[substituting|spaceseen,null,EXPR_ARG,null,null]
+NONUNARY_OP     "=", la=1, st=RubyLexerState[substituting,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[substituting|spaceseen,null,EXPR_BEG,null,null]
+GSF_ANY_KEYWORD  "true", la=1, st=RubyLexerState[substituting,null,EXPR_END,null,null]
 ----- EOF -----
 
 <Unnamed test>

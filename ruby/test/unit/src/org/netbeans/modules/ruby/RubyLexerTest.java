@@ -214,8 +214,8 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LINE_COMMENT, "# Comment\n");
        // LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "foo\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOT\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
         assertFalse(ts.moveNext());
     }
 
@@ -231,10 +231,10 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOY");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "foo\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOT\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "bar\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOY\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "bar\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOY\n");
         assertFalse(ts.moveNext());
     }
     
@@ -250,8 +250,8 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "name");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "HELLO\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "S\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "HELLO\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "S\n");
         assertFalse(ts.moveNext());
     }
 
@@ -267,16 +267,16 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOY");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "foo");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "hello");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "}foo\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "}foo\n");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "#{");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.EMBEDDED_RUBY, "hello");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "}\n\n\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOT\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "bar\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOY\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "}\n\n\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "bar\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOY\n");
         assertFalse(ts.moveNext());
     }
     @SuppressWarnings("unchecked")
@@ -329,12 +329,12 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
         // XXX Is it correct that the string would include the indentation on the closing
         // delimiter line??
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "foo\n   ");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOT\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo\n   ");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
         // XXX Is it correct that the string would include the indentation on the closing
         // delimiter line??
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "bar\n   ");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOY\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "bar\n   ");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOY\n");
         assertFalse(ts.moveNext());
     }
     
@@ -350,10 +350,10 @@ public class RubyLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<-\"EOY\"");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "foo\n   ");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOT\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_LITERAL, "bar\n   ");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOY\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo\n   ");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "bar\n   ");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOY\n");
         assertFalse(ts.moveNext());
     }
     

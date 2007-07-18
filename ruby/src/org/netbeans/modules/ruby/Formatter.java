@@ -59,11 +59,11 @@ import org.openide.util.Exceptions;
  * @todo Use in complete file reindentation, then diff with original formatted ruby source
  *    and see where I've gotta improve matters
  * @todo Use configuration object to pass in Ruby conventions
- * @todo Handle RDoc conventions; if the previous line has a number or bullet
- *   or label, indent into the matching text.
  * @todo Use the provided parse tree, if any, to for example check heredoc nodes
  *   and see if they are indentable.
  * @todo If you select a complete line, the endOffset is on a new line; adjust it back
+ * @todo If line ends with \ I definitely have a line continuation!
+ * @todo Handle comma in param lists
 
  *
  * @author Tor Norbye
@@ -359,7 +359,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     return true;
                 }
                 
-                if (id == RubyTokenId.STRING_END) {
+                if (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END) {
                     // Possibly a heredoc
                     TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
                     ts.move(pos);

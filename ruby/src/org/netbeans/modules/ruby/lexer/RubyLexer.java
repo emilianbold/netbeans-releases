@@ -320,10 +320,19 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
                 return RubyTokenId.EMBEDDED_RUBY;
             } else if (inRegexp) {
                 return RubyTokenId.REGEXP_LITERAL;
-            } else if (substituting) {
-                return RubyTokenId.QUOTED_STRING_LITERAL;
             } else {
-                return RubyTokenId.STRING_LITERAL;
+                // For heredocs I may not know when I see the opening
+                if (lexer.getStrTerm() != null) {
+                    substituting = lexer.getStrTerm().isSubstituting();
+                    if (substituting) {
+                        return RubyTokenId.QUOTED_STRING_LITERAL;
+                    } else {
+                        return RubyTokenId.STRING_LITERAL;
+                    }
+                } else {
+                    substituting = false;
+                    return RubyTokenId.STRING_LITERAL;
+                }
             }
 
         case Tokens.tREGEXP_BEG:
