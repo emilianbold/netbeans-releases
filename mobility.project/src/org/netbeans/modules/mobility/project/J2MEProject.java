@@ -499,16 +499,26 @@ public final class J2MEProject implements Project, AntProjectListener {
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
                 }
+                URL u = null;
                 while (!files.isEmpty()) try {
                     FileObject fo = files.removeFirst();
                     if (fo.getExt().equals("xml") && isAuthorized(fo)) { //NOI18N
-                        URL u = fo.isData() ? fo.getURL() : new URL("", null, -1, fo.getPath(), COMPOSED_STREAM_HANDLER); //NOI18N
+                        u = fo.isData() ? fo.getURL() : new URL("", null, -1, fo.getPath(), COMPOSED_STREAM_HANDLER); //NOI18N
                         genFilesHelper.refreshBuildScript(FileUtil.getRelativePath(root, fo), u, checkForProjectXmlModified);
                     } else if (fo.isFolder()) {
                         files.addAll(Arrays.asList(fo.getChildren()));
                     }
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
+                    BufferedReader br = null;
+                    if (u != null) try {
+                        br = new BufferedReader(new InputStreamReader(u.openStream()));
+                        String s;
+                        while ((s = br.readLine()) != null) ErrorManager.getDefault().log(ErrorManager.ERROR, s);
+                    } catch (Exception e) {
+                    } finally {
+                        if (br != null) try {br.close();} catch (IOException e) {}
+                    }
                 }
             }
         });

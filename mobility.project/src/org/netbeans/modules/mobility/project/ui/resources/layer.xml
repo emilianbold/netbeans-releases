@@ -253,6 +253,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="1600"/>
                     </file>
                     <folder name="run-subtargets">
+                        <attr name="position" intvalue="1700"/>
                         <file name="cldc-run" url="buildscript/cldc-run">
                             <attr name="position" intvalue="100"/>
                         </file>
@@ -264,6 +265,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <folder name="debug-subtargets">
+                        <attr name="position" intvalue="2000"/>
                         <file name="cldc-debug" url="buildscript/cldc-debug">
                             <attr name="position" intvalue="100"/>
                         </file>
