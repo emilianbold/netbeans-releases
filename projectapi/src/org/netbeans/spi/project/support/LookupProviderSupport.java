@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
@@ -89,14 +91,16 @@ public final class LookupProviderSupport {
         private List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
         
         public DelegatingLookupImpl(Lookup base, String path) {
-            this(base, Lookups.forPath(path));
+            this(base, Lookups.forPath(path), path);
         }
         
-        public DelegatingLookupImpl(Lookup base, Lookup providerLookup) {
+        public DelegatingLookupImpl(Lookup base, Lookup providerLookup, String path) {
             super();
             assert base != null;
             baseLookup = base;
             providerResult = providerLookup.lookup(new Lookup.Template<LookupProvider>(LookupProvider.class));
+            assert isAllJustLookupProviders(providerLookup) : 
+                "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details."; //NOI18N
             doDelegate(providerResult.allInstances());
             providerListener = new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
@@ -105,6 +109,19 @@ public final class LookupProviderSupport {
             };
             providerResult.addLookupListener(
                 WeakListeners.create(LookupListener.class, providerListener, providerResult));
+        }
+        
+        //just for assertion evaluation.
+        private boolean isAllJustLookupProviders(Lookup lkp) {
+            Lookup.Result<Object> res = lkp.lookupResult(Object.class);
+            Set<Class<?>> set = res.allClasses();
+            for (Class clzz : set) {
+                if (!LookupProvider.class.isAssignableFrom(clzz)) {
+                    Logger.getLogger(LookupProviderSupport.class.getName()).warning("" + clzz.getName() + " is not instance of LookupProvider."); //NOI18N
+                    return false;
+                }
+            }
+            return true;
         }
         
         
