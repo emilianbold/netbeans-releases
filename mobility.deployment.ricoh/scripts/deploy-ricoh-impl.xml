@@ -121,8 +121,8 @@ Microsystems, Inc. All Rights Reserved.
                             &lt;/xsl:template&gt;
                         &lt;/xsl:stylesheet&gt;
 			</echo>
-            <xslt in="${dalp.dist}" out="${xml.dir}/Ricoh-test-mod.dalp" style="${xml.dir}/update-dalp.xsl"/>
-            <move file="${xml.dir}/Ricoh-test-mod.dalp" tofile="${xml.dir}/Ricoh-test.dalp"/>
+            <xslt in="${dalp.dist}" out="${xml.dir}/${xlet.dalp}-mod.dalp" style="${xml.dir}/update-dalp.xsl"/>
+            <move file="${xml.dir}/${xlet.dalp}-mod.dalp" tofile="${xml.dir}/${xlet.dalp}"/>
         </taskIf>
     </target>
 
@@ -172,8 +172,8 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="ricoh.deployment.keystore.file = ${ricoh.deployment.keystore.file}"/>
         <echo message="ricoh.deployment.keystore.manifest = ${ricoh.deployment.keystore.manifest}"/>
         <jar destfile="${dist.dir}/${dist.jar}" manifest="${ricoh.deployment.keystore.manifest}" update="true"/>
-        <signjar verbose="true" jar="${dist.dir}/${dist.jar}" alias="${ricoh.deployment.keystore.alias}" storepass="${ricoh.deployment.keystore.password}" signedjar="${deploy.dir}/${dist.jar}" keystore="${ricoh.deployment.keystore.file}"/>
-        <echo message="install ${ricoh.application.uid} cvm Ricoh-test.jar Ricoh-test.dalp" file="${deploy.dir}/bootscript"/>
+        <signjar jar="${dist.dir}/${dist.jar}" alias="${ricoh.deployment.keystore.alias}" storepass="${ricoh.deployment.keystore.password}" signedjar="${deploy.dir}/${dist.jar}" keystore="${ricoh.deployment.keystore.file}"/>
+        <echo message="install ${ricoh.application.uid} cvm ${dist.jar} ${xlet.dalp}" file="${deploy.dir}/bootscript"/>
         <zip destfile="${rideploy.zip}" basedir="${deploy.dir}"/>
         <echo message="rideploy file = ${rideploy.zip}"/>
     </target>
@@ -212,41 +212,42 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="sign-jar"/>        
         <taskIf if="ricoh.deployment.deploy.method" value="sdcard">
             <echo message="Deploying to SD Card @ ${ricoh.deployment.sdcard.path}"/>
-            <copy verbose="true" todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true" >
+            <copy todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true" >
                 <fileset dir="${deploy.dir}">
                     <include name="*.jar"/>
                     <include name="*.dalp"/>
                 </fileset>
             </copy>
         </taskIf>
-        <!--
+        
         <taskIf if="ricoh.deployment.deploy.method" value="scp">
-            <echo message="Deploying to webserver [${ricoh.scp.install-server}] via SCP as ''${ricoh.scp.install-server.user}''"/>
-            <taskIf unless="ricoh.scp.install-server.ssh-port" value="">
-                <echo message="Connecting to SSH service on port ${ricoh.scp.install-server.ssh-port}"/>
-                <scp todir="${ricoh.scp.install-server.user}@${ricoh.scp.install-server}:${ricoh.scp.install-server.dir}" knownhosts="${ricoh.hosts.file}" password="${ricoh.scp.install-server.password}" port="${ricoh.scp.install-server.ssh-port}">
+            <echo message="Deploying to webserver [${ricoh.deployment.server.name}] via SCP as ''${ricoh.deployment.server.user}''"/>
+            <taskIf unless="ricoh.deployment.scp.sshport" value="">
+                <echo message="Connecting to SSH service on port ${ricoh.deployment.scp.sshport}"/>
+                <scp todir="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.server.dir}" knownhosts="${ricoh.deployment.scp.keyfile}" password="${ricoh.deployment.server.password}" port="${ricoh.deployment.scp.sshport}">
                     <fileset dir="${xml.dir}">
                         <include name="Dalp.xml"/>
                     </fileset>
-                    <fileset file="${target.dir}/Ricoh-test.dalp"/>
-                    <fileset dir="${target.dir}">
+                    <fileset file="${deploy.dir}/${xlet.dalp}"/>
+                    <fileset dir="${deploy.dir}">
                         <include name="*.jar"/>
                     </fileset>
                 </scp>
             </taskIf>
-            <taskIf if="ricoh.scp.install-server.ssh-port" value="">
+            <taskIf if="ricoh.deployment.scp.sshport" value="">
                 <echo message="Connecting to SSH service on port 22"/>
-                <scp todir="${ricoh.scp.install-server.user}@${ricoh.scp.install-server}:${ricoh.scp.install-server.dir}" knownhosts="${ricoh.hosts.file}" password="${ricoh.scp.install-server.password}">
+                <scp todir="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.server.dir}" knownhosts="${ricoh.deployment.scp.keyfile}" password="${ricoh.deployment.server.password}">
                     <fileset dir="${xml.dir}">
                         <filename name="Dalp.xml"/>
                     </fileset>
-                    <fileset file="${target.dir}/Ricoh-test.dalp"/>
-                    <fileset dir="${target.dir}">
+                    <fileset file="${deploy.dir}/${xlet.dalp}"/>
+                    <fileset dir="${deploy.dir}">
                         <include name="*.jar"/>
                     </fileset>
                 </scp>
             </taskIf>
         </taskIf>
+        <!--
         <taskIf if="ricoh.deployment.deploy.method" value="samba">
             <fail unless="jcifs" message="jcifs-1.2.x.jar library is not available. Download library at http://jcifs.samba.org/ and install it into &lt;NetBeans install directory&gt;/cdc2/external/"/>
             <echo message="Deploying to webserver [${ricoh.smb.install-server}] via Samba as ''${ricoh.smb.install-server.user}''"/>
