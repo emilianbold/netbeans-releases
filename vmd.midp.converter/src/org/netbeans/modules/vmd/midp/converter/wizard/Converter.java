@@ -19,36 +19,36 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
+import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
-import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import static org.netbeans.modules.vmd.midp.converter.wizard.ConverterUtil.getBoolean;
-import org.netbeans.api.visual.widget.Widget;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.text.CloneableEditorSupport;
 import org.w3c.dom.Node;
 
+import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -103,57 +103,61 @@ public class Converter {
                 if (! item.isUsed ())
                     Debug.warning ("Unrecognized component: " + item.getTypeID ()); // NOI18N
 
-            final Map<DesignComponent, Point> flowNodes = getFlowNodes (id2item, rootNode);
-            if (! flowNodes.isEmpty ()) {
+//            final Map<DesignComponent, Point> flowNodes = getFlowNodes (id2item, rootNode);
+//            if (! flowNodes.isEmpty ()) {
                 SwingUtilities.invokeAndWait (new Runnable() {
                     public void run () {
                         document.getTransactionManager ().writeAccess (new Runnable() {
                             public void run () {
                                 FlowScene scene = FlowScene.getFlowSceneForDocument (document);
                                 for (FlowNodeDescriptor node : scene.getNodes ()) {
-                                    Point point = flowNodes.get (node.getRepresentedComponent ());
-                                    if (point != null) {
+//                                    Point point = flowNodes.get (node.getRepresentedComponent ());
+//                                    if (point != null) {
+//                                        Widget widget = scene.findWidget (node);
+//                                        if (widget != null)
+//                                            widget.setPreferredLocation (point);
+//                                    }
                                         Widget widget = scene.findWidget (node);
                                         if (widget != null)
-                                            widget.setPreferredLocation (point);
-                                    }
+                                            widget.setPreferredLocation (null);
                                 }
-                                scene.validate ();
                             }
                         });
                     }
                 });
-            }
+//            }
 
             IOSupport.forceUpdateCode (outputDesign);
-            outputDesign.getLookup ().lookup (CloneableEditorSupport.class).saveDocument ();
+            CloneableEditorSupport cloneableEditorSupport = IOSupport.getCloneableEditorSupport (outputDesign);
+            cloneableEditorSupport.saveDocument ();
+            cloneableEditorSupport.close ();
         } catch (Exception e) {
             Exceptions.printStackTrace (e);
         }
         return errors;
     }
 
-    private static Map<DesignComponent, Point> getFlowNodes (HashMap<String, ConverterItem> id2item, Node rootNode) {
-        HashMap<DesignComponent, Point> map = new HashMap<DesignComponent, Point> ();
-        Node flowNode = XMLUtil.getChild (rootNode, "FlowDocument"); // NOI18N
-        String version = XMLUtil.getAttributeValue (flowNode, "version"); // NOI18N
-        if (! "1.1".equals (version)) // NOI18N
-            return Collections.emptyMap ();
-        for (Node node : XMLUtil.getChildren (flowNode, "Node")) { // NOI18N
-            String id = XMLUtil.getAttributeValue (node, "id"); // NOI18N
-            ConverterItem item = id2item.get (id);
-            if (item == null  ||  ! item.isUsed ())
-                continue;
-            String loc = XMLUtil.getAttributeValue (node, "location"); // NOI18N
-            int i = loc.indexOf (','); // NOI18N
-            if (i < 0)
-                continue;
-            int x = Integer.parseInt (loc.substring (0, i));
-            int y = Integer.parseInt (loc.substring (i + 1));
-            map.put (item.getRelatedComponent (), new Point (x, y));
-        }
-        return map;
-    }
+//    private static Map<DesignComponent, Point> getFlowNodes (HashMap<String, ConverterItem> id2item, Node rootNode) {
+//        HashMap<DesignComponent, Point> map = new HashMap<DesignComponent, Point> ();
+//        Node flowNode = XMLUtil.getChild (rootNode, "FlowDocument"); // NOI18N
+//        String version = XMLUtil.getAttributeValue (flowNode, "version"); // NOI18N
+//        if (! "1.1".equals (version)) // NOI18N
+//            return Collections.emptyMap ();
+//        for (Node node : XMLUtil.getChildren (flowNode, "Node")) { // NOI18N
+//            String id = XMLUtil.getAttributeValue (node, "id"); // NOI18N
+//            ConverterItem item = id2item.get (id);
+//            if (item == null  ||  ! item.isUsed ())
+//                continue;
+//            String loc = XMLUtil.getAttributeValue (node, "location"); // NOI18N
+//            int i = loc.indexOf (','); // NOI18N
+//            if (i < 0)
+//                continue;
+//            int x = Integer.parseInt (loc.substring (0, i));
+//            int y = Integer.parseInt (loc.substring (i + 1));
+//            map.put (item.getRelatedComponent (), new Point (x, y));
+//        }
+//        return map;
+//    }
 
     private static List<ConverterItem> getConverterItems (Node rootNode) {
         ArrayList<ConverterItem> components = new ArrayList<ConverterItem> ();
