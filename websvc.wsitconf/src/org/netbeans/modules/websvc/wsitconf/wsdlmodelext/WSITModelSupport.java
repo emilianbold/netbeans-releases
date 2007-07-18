@@ -104,7 +104,7 @@ public class WSITModelSupport {
         if (client != null) { //it is a client
             FileObject srcRoot = node.getLookup().lookup(FileObject.class);
             Project p = FileOwnerQuery.getOwner(srcRoot);
-            return getModelForClient(p, client, create, createdFiles);
+            model = getModelForClient(p, client, create, createdFiles);
         } else if (service != null) {  //it is a service
             FileObject implClass = node.getLookup().lookup(FileObject.class);
             if (jaxWsModel == null) {
@@ -112,7 +112,7 @@ public class WSITModelSupport {
                 return null;
             }
             Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
-            return getModelForService(service, implClass, p, create, createdFiles);
+            model = getModelForService(service, implClass, p, create, createdFiles);
         } else { //neither a client nor a service, get out of here
             logger.log(Level.INFO, "Unable to identify node type: " + node);
         }
