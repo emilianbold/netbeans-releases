@@ -23,10 +23,15 @@ import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.category.SearchComponent;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -49,7 +54,8 @@ public abstract class SearchControlPanel extends JPanel
     private List<Object> searchResults;
     /** Offset into searchResults which is currently shown. */
     private int searchResultIndex;
-
+    private Action findAcion;
+    
     /**
      * Creates new form SearchControlPanel.
      */
@@ -64,9 +70,28 @@ public abstract class SearchControlPanel extends JPanel
         searchField = new SearchFieldPanel();
         searchField.addSearchListener(this);
         fieldPanel.add(searchField, BorderLayout.CENTER);
+        
+        //IZ 91545
+        findAcion = new FindAction();
+        nextButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).
+                put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "findNext"); //NOI18N
+        nextButton.getActionMap().put("findNext", findAcion); //NOI18N
+        prevButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).
+                put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, KeyEvent.SHIFT_MASK), "findPrevious"); //NOI18N
+        prevButton.getActionMap().put("findPrevious", findAcion);
+    }
+    
+    class FindAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            performAction(e);
+        }        
+    }
+    
+    public void actionPerformed(ActionEvent event) {
+        performAction(event);
     }
 
-    public void actionPerformed(ActionEvent event) {
+    private void performAction(ActionEvent event) {
         Object src = event.getSource();
         if (src == closeButton) {
             dismissSearch();
@@ -90,6 +115,7 @@ public abstract class SearchControlPanel extends JPanel
                 beep();
             }
             showSearchResult(searchResults.get(searchResultIndex));
+            searchField.requestFocus();
         }
     }
     
