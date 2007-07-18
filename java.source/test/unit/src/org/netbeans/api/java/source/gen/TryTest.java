@@ -109,7 +109,7 @@ public class TryTest extends GeneratorTestMDRCompat {
     /**
      * #96551: Incorrectly formatted catch
      */ 
-    public void testAddCatchClause() throws Exception {
+    public void testInsertCatchClause() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -159,6 +159,68 @@ public class TryTest extends GeneratorTestMDRCompat {
                     make.Block(Collections.<StatementTree>emptyList(), false)
                 );
                 workingCopy.rewrite(tt, make.insertTryCatch(tt, 0, njuKec));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #96551: Incorrectly formatted catch
+     */ 
+    public void testAddCatchClause() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "            File f = new File(\"auto\");\n" +
+            "            FileInputStream fis = new FileInputStream(f);\n" +
+            "        } catch (FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "            File f = new File(\"auto\");\n" +
+            "            FileInputStream fis = new FileInputStream(f);\n" +
+            "        } catch (NullPointerException npe) {\n" +
+            "        } catch (FileNotFoundException ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TryTree tt = (TryTree) method.getBody().getStatements().get(0);
+                CatchTree njuKec = make.Catch(make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()), 
+                        "npe", 
+                        make.Identifier("NullPointerException"), 
+                        null),
+                    make.Block(Collections.<StatementTree>emptyList(), false)
+                );
+                workingCopy.rewrite(tt, make.insertTryCatch(tt, 1, njuKec));
             }
             
         };
