@@ -19,24 +19,15 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import org.w3c.dom.Element;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
-    
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
-    
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
-    Application createApplication();
-    ViewHandler createViewHandler();
+public interface ViewHandler extends FullyQualifiedClassType {
+    /**
+     * Property of &lt;view-handler&gt; element.
+     */ 
+    public static final String VIEW_HANDLER = JSFConfigQNames.VIEW_HANDLER.getLocalName();
 }

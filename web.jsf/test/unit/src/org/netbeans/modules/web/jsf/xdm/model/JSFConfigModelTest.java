@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.*;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.Model;
@@ -285,10 +287,11 @@ public class JSFConfigModelTest extends NbTestCase {
         assertTrue(model2.isEditable());
     }
     
-    private void dumpModelToFile(JSFConfigModel model, String fileName) throws Exception{
+    private File dumpModelToFile(JSFConfigModel model, String fileName) throws Exception{
         File file = new File(getWorkDir(), fileName);
         System.out.println("workfile: " + file.getAbsolutePath());
         Util.dumpToFile(model, file);
+        return file;
     }
     
     public void testConverter() throws Exception {
@@ -368,6 +371,54 @@ public class JSFConfigModelTest extends NbTestCase {
         assertTrue(ManagedBean.Scope.REQUEST.compareTo(ManagedBean.Scope.SESSION) < 0);
         assertTrue(ManagedBean.Scope.SESSION.compareTo(ManagedBean.Scope.APPLICATION) < 0);
         assertTrue(ManagedBean.Scope.APPLICATION.compareTo(ManagedBean.Scope.NONE) < 0);
+    }
+    
+    boolean viewHandlerChanged = false;
+    public void testApplication() throws Exception {
+        
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-application.xml");
+        
+        model.addPropertyChangeListener(new PropertyChangeListener(){
+            public void propertyChange(PropertyChangeEvent event) {
+                System.out.println("property: " +  event.getPropertyName());
+                if(event.getPropertyName().equals(ViewHandler.VIEW_HANDLER)) {
+                    viewHandlerChanged = true;
+                }
+            } 
+        });
+        
+        List<Application> applications = model.getRootComponent().getApplications();
+        assertEquals("Number of applications ", 1, applications.size());
+        
+        List<ViewHandler> viewHandlers = applications.get(0).getViewHandlers();
+        assertEquals("Number of view hadlers ", 1, viewHandlers.size());
+        assertEquals("Name of handler ", "org.test.ViewHandler", viewHandlers.get(0).getFullyQualifiedClassType());
+        
+        model.startTransaction();
+        viewHandlers.get(0).setFullyQualifiedClassType("a.b.c.Handler");
+        model.endTransaction();
+        model.sync();
+        
+        assertEquals("Name of handler ", "a.b.c.Handler", viewHandlers.get(0).getFullyQualifiedClassType());
+        
+        Application newApplication = model.getFactory().createApplication();
+        model.startTransaction();
+        model.getRootComponent().addApplication(newApplication);
+        ViewHandler viewHandler = model.getFactory().createViewHandler();
+        viewHandler.setFullyQualifiedClassType("a.b.c.Handler2");
+        newApplication.addViewHandler(viewHandler);
+        viewHandler = model.getFactory().createViewHandler();
+        viewHandler.setFullyQualifiedClassType("a.b.c.Handler3");
+        newApplication.addViewHandler(viewHandler);
+        viewHandler = model.getFactory().createViewHandler();
+        viewHandler.setFullyQualifiedClassType("a.b.c.Handler1");
+        newApplication.addViewHandler(0, viewHandler);
+        model.endTransaction();
+        model.sync();
+        
+        assertTrue(viewHandlerChanged);
+        
+        assertFile(dumpModelToFile(model, "test-application.xml"), getGoldenFile("gold-application.xml"));
     }
     
 }

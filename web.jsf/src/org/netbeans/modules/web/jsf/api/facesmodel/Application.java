@@ -19,24 +19,27 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import org.w3c.dom.Element;
+import java.util.List;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 
 /**
- *
+ * The "application" element provides a mechanism to define the
+ * various per-application-singleton implementation artifacts for
+ * a particular web application that is utilizing 
+ * JavaServer Faces.  For nested elements that are not specified, 
+ * the JSF implementation must provide a suitable default.
+ * 
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
+public interface Application extends JSFConfigComponent {
+    /**
+     * Property of &lt;view-handler&gt; element.
+     */ 
+    public static final String VIEW_HANDLER = JSFConfigQNames.VIEW_HANDLER.getLocalName();
     
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
+    List<ViewHandler> getViewHandlers();
+    void addViewHandler(ViewHandler handler);
+    void addViewHandler(int index, ViewHandler handler);
+    void removeViewHandler(ViewHandler handler);
     
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
-    Application createApplication();
-    ViewHandler createViewHandler();
 }

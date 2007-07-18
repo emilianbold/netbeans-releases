@@ -33,6 +33,8 @@ public interface JSFConfigVisitor {
     void visit(Description component);
     void visit(DisplayName compoent);
     void visit(Icon component);
+    void visit(ViewHandler component);
+    void visit(Application component);
     
     /**
      * Default shallow visitor.
@@ -60,6 +62,12 @@ public interface JSFConfigVisitor {
             visitChild();
         }
         public void visit(Icon component) {
+            visitChild();
+        }
+        public void visit(ViewHandler component) {
+            visitChild();
+        }
+        public void visit(Application component) {
             visitChild();
         }
         protected void visitChild() {

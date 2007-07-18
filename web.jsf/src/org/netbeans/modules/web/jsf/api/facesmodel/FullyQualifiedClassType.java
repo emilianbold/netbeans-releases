@@ -19,24 +19,13 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import org.w3c.dom.Element;
-
 /**
  *
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
+public interface FullyQualifiedClassType extends JSFConfigComponent {
     
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
+    String getFullyQualifiedClassType();
     
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
-    Application createApplication();
-    ViewHandler createViewHandler();
+    void setFullyQualifiedClassType(String type);
 }

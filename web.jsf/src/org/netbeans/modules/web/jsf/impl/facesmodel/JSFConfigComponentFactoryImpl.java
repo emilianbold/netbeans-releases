@@ -21,19 +21,7 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.Description;
-import org.netbeans.modules.web.jsf.api.facesmodel.DisplayName;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.Icon;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.impl.facesmodel.ConverterImpl;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
 
@@ -97,6 +85,14 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
         return new IconImpl(model);
     }
     
+    public Application createApplication() {
+        return new ApplicationImpl(model);
+    }
+    
+    public ViewHandler createViewHandler() {
+        return new ViewHandlerImpl(model);
+    }
+    
     public static boolean areSameQName(JSFConfigQNames jsfqname,Element element) {
         QName qname = AbstractDocumentComponent.getQName(element);
         boolean aresame = false;
@@ -129,10 +125,12 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             
             if (isElementQName(JSFConfigQNames.MANAGED_BEAN)) {
                 created = new ManagedBeanImpl((JSFConfigModelImpl) context.getModel(), element);
-            } else if (isElementQName(JSFConfigQNames.NAVIGATION_RULE)){
+            } else if (isElementQName(JSFConfigQNames.NAVIGATION_RULE)) {
                 created = new NavigationRuleImpl((JSFConfigModelImpl) context.getModel(), element);
-            } else if (isElementQName(JSFConfigQNames.CONVERTER)){
+            } else if (isElementQName(JSFConfigQNames.CONVERTER)) {
                 created = new ConverterImpl((JSFConfigModelImpl) context.getModel(), element);
+            } else if (isElementQName(JSFConfigQNames.APPLICATION)) {
+                created = new ApplicationImpl((JSFConfigModelImpl) context.getModel(), element);
             }
         }
         
@@ -152,11 +150,17 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             }
         }
         
-        public void visit(Converter context){
+        public void visit(Converter context) {
             if (isElementQName(JSFConfigQNames.NAVIGATION_CASE)) {
                 created = new ConverterImpl((JSFConfigModelImpl)context.getModel(), element);
             } else {
                 checkDescriptionGroup(context);
+            }
+        }
+        
+        public void visit(Application context) {
+            if (isElementQName(JSFConfigQNames.VIEW_HANDLER)) {
+                created = new ViewHandlerImpl((JSFConfigModelImpl)context.getModel(), element);
             }
         }
         

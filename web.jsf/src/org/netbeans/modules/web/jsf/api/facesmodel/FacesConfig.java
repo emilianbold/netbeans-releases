@@ -44,6 +44,10 @@ public interface FacesConfig extends JSFConfigComponent {
      */
     public static final String CONVERTER = JSFConfigQNames.CONVERTER.getLocalName();
     
+    /**
+     * Property of &lt;application&gt; element
+     */
+    public static final String APPLICATION = JSFConfigQNames.APPLICATION.getLocalName();
     
     List<Converter> getConverters();
     void addConverter(Converter converter);
@@ -59,4 +63,9 @@ public interface FacesConfig extends JSFConfigComponent {
     void addNavigationRule(NavigationRule rule);
     void addNavigationRule(int index, NavigationRule rule);
     void removeNavigationRule(NavigationRule rule);
+    
+    List<Application> getApplications();
+    void addApplication(Application application);
+    void addApplication(int index, Application application);
+    void removeApplication(Application application);
 }

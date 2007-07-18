@@ -1,4 +1,4 @@
-/*
+ /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -17,26 +17,37 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
+
+public class ViewHandlerImpl extends JSFConfigComponentImpl implements ViewHandler {
     
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
+    public ViewHandlerImpl(JSFConfigModelImpl model, Element element) {
+        super(model, element);
+    }
     
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
-    Application createApplication();
-    ViewHandler createViewHandler();
+    public ViewHandlerImpl(JSFConfigModelImpl model) {
+        super(model, createElementNS(model, JSFConfigQNames.VIEW_HANDLER));
+    }
+    
+    public void accept(JSFConfigVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    public String getFullyQualifiedClassType() {
+        return getText().trim();
+    }
+
+    public void setFullyQualifiedClassType(String type) {
+        setText(VIEW_HANDLER, type);
+    }
+
 }

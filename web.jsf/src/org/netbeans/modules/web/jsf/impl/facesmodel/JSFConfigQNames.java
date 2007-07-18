@@ -32,32 +32,35 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
  */
 public enum JSFConfigQNames {
     
-    FACES_CONFIG("faces-config"),
+    FACES_CONFIG("faces-config"),                   //NOI18N
     //general
-    DESCRIPTION("description"),
-    DISPLAY_NAME("display-name"),
-    ICON("icon"),
-    SMALL_ICON("small-icon"),
-    LARGE_ICON("large-icon"),
+    DESCRIPTION("description"),                     //NOI18N
+    DISPLAY_NAME("display-name"),                   //NOI18N
+    ICON("icon"),                                   //NOI18N
+    SMALL_ICON("small-icon"),                       //NOI18N
+    LARGE_ICON("large-icon"),                       //NOI18N
     //managed-bean
-    MANAGED_BEAN("managed-bean"),
-    MANAGED_BEAN_NAME("managed-bean-name"),
-    MANAGED_BEAN_CLASS("managed-bean-class"),
-    MANAGED_BEAN_SCOPE("managed-bean-scope"),
+    MANAGED_BEAN("managed-bean"),                   //NOI18N
+    MANAGED_BEAN_NAME("managed-bean-name"),         //NOI18N
+    MANAGED_BEAN_CLASS("managed-bean-class"),       //NOI18N
+    MANAGED_BEAN_SCOPE("managed-bean-scope"),       //NOI18N
     //navigation-rule
-    NAVIGATION_RULE("navigation-rule"),
-    FROM_VIEW_ID("from-view-id"),
+    NAVIGATION_RULE("navigation-rule"),             //NOI18N
+    FROM_VIEW_ID("from-view-id"),                   //NOI18N
     //navigation-case
-    NAVIGATION_CASE("navigation-case"),
-    FROM_OUTCOME("from-outcome"),
-    FROM_ACTION("from-action"),
-    TO_VIEW_ID("to-view-id"),
-    REDIRECT("redirect"),
+    NAVIGATION_CASE("navigation-case"),             //NOI18N
+    FROM_OUTCOME("from-outcome"),                   //NOI18N
+    FROM_ACTION("from-action"),                     //NOI18N
+    TO_VIEW_ID("to-view-id"),                       //NOI18N
+    REDIRECT("redirect"),                           //NOI18N
     //converter
-    CONVERTER("converter"),
-    CONVERTER_ID("converter-id"),
-    CONVERTER_FOR_CLASS("converter-for-class"),
-    CONVERTER_CLASS("converter-class");
+    CONVERTER("converter"),                         //NOI18N
+    CONVERTER_ID("converter-id"),                   //NOI18N
+    CONVERTER_FOR_CLASS("converter-for-class"),     //NOI18N
+    CONVERTER_CLASS("converter-class"),             //NOI18N
+    //application
+    APPLICATION("application"),                     //NOI18N
+    VIEW_HANDLER("view-handler");                   //NOI18N
     
     private QName qname_1_1;
     private QName qname_1_2;
@@ -102,6 +105,8 @@ public enum JSFConfigQNames {
         mappedQNames_1_1.add(DESCRIPTION.getQName(JSFVersion.JSF_1_1));
         mappedQNames_1_1.add(DISPLAY_NAME.getQName(JSFVersion.JSF_1_1));
         mappedQNames_1_1.add(ICON.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(APPLICATION.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(VIEW_HANDLER.getQName(JSFVersion.JSF_1_1));
         
         mappedQNames_1_2.add(FACES_CONFIG.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(MANAGED_BEAN.getQName(JSFVersion.JSF_1_2));
@@ -111,6 +116,8 @@ public enum JSFConfigQNames {
         mappedQNames_1_2.add(DESCRIPTION.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(DISPLAY_NAME.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(ICON.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(APPLICATION.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(VIEW_HANDLER.getQName(JSFVersion.JSF_1_2));
     }
     
     public static Set<QName> getMappedQNames(JSFVersion version) {

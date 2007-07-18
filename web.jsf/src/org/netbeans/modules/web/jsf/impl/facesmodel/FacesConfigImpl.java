@@ -21,11 +21,7 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 
 import java.util.List;
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.w3c.dom.Element;
 
 /**
@@ -88,6 +84,22 @@ public class FacesConfigImpl extends JSFConfigComponentImpl implements FacesConf
     
     public void removeConverter(Converter converter) {
         removeChild(CONVERTER, converter);
+    }
+    
+    public List<Application> getApplications() {
+        return getChildren(Application.class);
+    }
+
+    public void addApplication(Application application) {
+        appendChild(APPLICATION, application);
+    }
+
+    public void addApplication(int index, Application application) {
+        insertAtIndex(APPLICATION, application, index, Application.class);
+    }
+
+    public void removeApplication(Application application) {
+        removeChild(APPLICATION, application);
     }
     
     public void accept(JSFConfigVisitor visitor) {
