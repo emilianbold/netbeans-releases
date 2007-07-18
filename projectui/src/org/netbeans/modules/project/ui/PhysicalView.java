@@ -371,19 +371,31 @@ public class PhysicalView {
                    path.add( strtok.nextToken() );
                 }
                 
-                String name = fo.getName();
-                
-                try { 
-                    DataObject dobj = DataObject.find( fo );
-                    name = dobj.getNodeDelegate().getName();
+                if (path.size() > 0) {
+                    path.remove(path.size() - 1);
+                } else {
+                    return null;
                 }
-                catch( DataObjectNotFoundException e ) {
-                }
-                
-                path.set( path.size() - 1, name );
-                                 
                 try {
-                    return NodeOp.findPath( root, Collections.enumeration( path ) );
+                    //#75205
+                    Node parent = NodeOp.findPath( root, Collections.enumeration( path ) );
+                    if (parent != null) {
+                        //not nice but there isn't a findNodes(name) method.
+                        Node[] nds = parent.getChildren().getNodes(true);
+                        for (int i = 0; i < nds.length; i++) {
+                            DataObject dobj = nds[i].getLookup().lookup(DataObject.class);
+                            if (dobj != null && fo.equals(dobj.getPrimaryFile())) {
+                                return nds[i];
+                            }
+                        }
+                        String name = fo.getName();
+                        try {
+                            DataObject dobj = DataObject.find( fo );
+                            name = dobj.getNodeDelegate().getName();
+                        } catch (DataObjectNotFoundException ex) {
+                        }
+                        return parent.getChildren().findChild(name);
+                    }
                 }
                 catch ( NodeNotFoundException e ) {
                     return null;
