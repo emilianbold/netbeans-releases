@@ -309,7 +309,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private void jButtonWSDLFileBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWSDLFileBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(previousDirectory);
         chooser.setMultiSelectionEnabled(false);
-        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setAcceptAllFileFilterUsed(true);
         chooser.addChoosableFileFilter(WSDL_FILE_FILTER);
         chooser.setFileFilter(WSDL_FILE_FILTER);
         
@@ -584,13 +584,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     
     private static class WsdlFileFilter extends FileFilter {
         public boolean accept(File f) {
-            boolean result;
-            if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
-                result = true;
-            } else {
-                result = false;
-            }
-            return result;
+            String ext = FileUtil.getExtension(f.getName());
+            return f.isDirectory() || "wsdl".equalsIgnoreCase(ext) || "asmx".equalsIgnoreCase(ext); // NOI18N
         }
         
         public String getDescription() {

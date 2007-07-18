@@ -420,7 +420,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 // 		System.out.println("browse for wsdl file...");
             JFileChooser chooser = new JFileChooser(previousDirectory);
             chooser.setMultiSelectionEnabled(false);
-            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.setAcceptAllFileFilterUsed(true);
             chooser.addChoosableFileFilter(WSDL_FILE_FILTER);
             chooser.setFileFilter(WSDL_FILE_FILTER);
             
@@ -944,35 +944,32 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 return false; // invalid WSDL file
             }
             
-            if(!"wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlInvalid")); // NOI18N
-                return false; // invalid WSDL file
-            }
-            
             // 50103 - could be done via xml api, but this way should be quicker and suffice the need
             FileReader fr = null;
             LineNumberReader lnReader = null;
+            boolean foundWsdlNamespace = false;
             try {
                 fr = new FileReader(f);
-                if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
-                    lnReader = new LineNumberReader(fr);
-                    if (lnReader != null) {
-                        String line = null;
+                lnReader = new LineNumberReader(fr);
+                if (lnReader != null) {
+                    String line = null;
+                    try {
+                        line = lnReader.readLine();
+                    } catch (IOException ioe) {
+                        //ignore
+                    }
+                    while (line != null) {
+                        if (line.indexOf("http://schemas.xmlsoap.org/wsdl/") > 0) { //NOI18N
+                            foundWsdlNamespace = true;
+                        }
+                        if (line.indexOf("REPLACE_WITH_ACTUAL_URL") > 0) { //NOI18N
+                            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongWsdl")); // NOI18N
+                            return false;
+                        } //NOI18N                       
                         try {
                             line = lnReader.readLine();
                         } catch (IOException ioe) {
                             //ignore
-                        }
-                        while (line != null) {
-                            if (line.indexOf("REPLACE_WITH_ACTUAL_URL") > 0) { //NOI18N
-                                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongWsdl")); // NOI18N
-                                return false;
-                            } //NOI18N
-                            try {
-                                line = lnReader.readLine();
-                            } catch (IOException ioe) {
-                                //ignore
-                            }
                         }
                     }
                 }
@@ -986,6 +983,11 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 }catch(IOException e){
                     ErrorManager.getDefault().notify(e);
                 }
+            }
+            
+            if (!foundWsdlNamespace) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NotWsdl", f.getName())); // NOI18N
+                return false;
             }
             
             // !PW FIXME should also detect if WSDL file has previously been added to
@@ -1184,13 +1186,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     
     private static class WsdlFileFilter extends FileFilter {
         public boolean accept(File f) {
-            boolean result;
-            if(f.isDirectory() || "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
-                result = true;
-            } else {
-                result = false;
-            }
-            return result;
+            String ext = FileUtil.getExtension(f.getName());
+            return f.isDirectory() || "wsdl".equalsIgnoreCase(ext) || "asmx".equalsIgnoreCase(ext); // NOI18N
         }
         
         public String getDescription() {
