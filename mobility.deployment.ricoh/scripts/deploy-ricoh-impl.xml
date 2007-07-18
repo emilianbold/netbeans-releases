@@ -171,13 +171,23 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="signed.jar = ${signed.jar}"/>
         <echo message="ricoh.deployment.keystore.file = ${ricoh.deployment.keystore.file}"/>
         <echo message="ricoh.deployment.keystore.manifest = ${ricoh.deployment.keystore.manifest}"/>
-        <signjar jar="${dist.dir}/${dist.jar}" alias="${ricoh.deployment.keystore.alias}" storepass="${ricoh.deployment.keystore.password}" signedjar="${signed.jar}" keystore="${ricoh.deployment.keystore.file}"/>
-        <echo message="install ${ricoh.application.uid} cvm Ricoh-test.jar Ricoh-test.dalp" file="${target.dir}/bootscript"/>
-        <zip destfile="${rideploy.zip}" basedir="${target.dir}"/>
+        <jar destfile="${dist.dir}/${dist.jar}" manifest="${ricoh.deployment.keystore.manifest}" update="true"/>
+        <signjar verbose="true" jar="${dist.dir}/${dist.jar}" alias="${ricoh.deployment.keystore.alias}" storepass="${ricoh.deployment.keystore.password}" signedjar="${deploy.dir}/${dist.jar}" keystore="${ricoh.deployment.keystore.file}"/>
+        <echo message="install ${ricoh.application.uid} cvm Ricoh-test.jar Ricoh-test.dalp" file="${deploy.dir}/bootscript"/>
+        <zip destfile="${rideploy.zip}" basedir="${deploy.dir}"/>
         <echo message="rideploy file = ${rideploy.zip}"/>
     </target>
 
-    <target name="deploy-ricoh" depends="update-dalp-index" unless="no.application.uid"> <!--"-do-init-target, build-target, update-dalp-index, servlet-dist" > -->
+    <target name="create-target" unless="no.application.uid">
+        <mkdir dir="${deploy.dir}"/>
+        <copy todir="${deploy.dir}" file="${dist.jar}" overwrite="true" failonerror="false"/>
+        <copy todir="${deploy.dir}" overwrite="true">
+            <fileset dir="${dist.dir}/lib"/>
+        </copy>
+        <copy todir="${deploy.dir}" file="${dalp.dist}" overwrite="true"/>
+    </target>
+
+    <target name="deploy-ricoh" depends="create-target,update-dalp-index" unless="no.application.uid"> <!--"-do-init-target, build-target, update-dalp-index, servlet-dist" > -->
         <condition property="no.application.uid" value="true">
             <or>
                 <equals arg1="${ricoh.application.uid}" arg2="" trim="true"/>
@@ -194,8 +204,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Variable configuration:"/>
         <echoproperties/> 
         <property name="xlet.jar" value="${deploy.dir}/${ant.project.name}.jar"/>
-        <property name="target.dir" value="target"/>
-        <copy todir="${target.dir}">
+        <copy todir="${deploy.dir}">
             <fileset dir="${dist.jar.dir}">
                 <include name="lib"/>
             </fileset>
@@ -203,8 +212,8 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="sign-jar"/>        
         <taskIf if="ricoh.deployment.deploy.method" value="sdcard">
             <echo message="Deploying to SD Card @ ${ricoh.deployment.sdcard.path}"/>
-            <copy todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true">
-                <fileset dir="${target.dir}">
+            <copy verbose="true" todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true" >
+                <fileset dir="${deploy.dir}">
                     <include name="*.jar"/>
                     <include name="*.dalp"/>
                 </fileset>
