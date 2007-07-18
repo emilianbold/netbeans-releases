@@ -1097,7 +1097,7 @@ public class JbiProjectProperties {
         AntArtifact aa = vi.getAntArtifact();
         
         if (desc == null) { // if needed, use default one...
-            JbiProjectHelper.getServiceUnitDescription(jbiProject);
+            desc = JbiProjectHelper.getServiceUnitDescription(jbiProject);
             vi.setAsaDescription(desc);
         }
                 
