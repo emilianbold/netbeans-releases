@@ -63,6 +63,8 @@ public class ConsistencyVerifier {
                 "org.openide.modules.os.PlainUnix, " + // NOI18N
                 "org.openide.modules.os.Windows, " + // NOI18N
                 "org.openide.modules.os.MacOSX, " + // NOI18N
+                "org.openide.modules.os.Linux, " + // NOI18N
+                "org.openide.modules.os.Solaris, " + // NOI18N
                 "org.openide.modules.os.OS2"); // NOI18N
         dummy.getMainAttributes().putValue("OpenIDE-Module-Public-Packages", "-"); // NOI18N
         try {

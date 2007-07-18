@@ -64,6 +64,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
 
@@ -679,26 +680,26 @@ final class NbInstaller extends ModuleInstaller {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
             List<String> arr = new ArrayList<String>(4);
             
-            boolean isOS2 = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_OS2) != 0;
-            
-            if (org.openide.util.Utilities.isUnix ()) {
-                arr.add ("org.openide.modules.os.Unix"); // NOI18N
-                if (!org.openide.util.Utilities.isMac()) {
+            if (Utilities.isUnix()) {
+                arr.add("org.openide.modules.os.Unix"); // NOI18N
+                if (!Utilities.isMac()) {
                     arr.add("org.openide.modules.os.PlainUnix"); // NOI18N
                 }
-            } 
-            
-            if (
-                org.openide.util.Utilities.isWindows ()
-            ) {
-                arr.add ("org.openide.modules.os.Windows"); // NOI18N
-            } 
-            
-            if (org.openide.util.Utilities.isMac()) {
-                arr.add ("org.openide.modules.os.MacOSX"); // NOI18N
             }
-            if (isOS2) {
-                arr.add ("org.openide.modules.os.OS2"); // NOI18N
+            if (Utilities.isWindows()) {
+                arr.add("org.openide.modules.os.Windows"); // NOI18N
+            }
+            if (Utilities.isMac()) {
+                arr.add("org.openide.modules.os.MacOSX"); // NOI18N
+            }
+            if ((Utilities.getOperatingSystem() & Utilities.OS_OS2) != 0) {
+                arr.add("org.openide.modules.os.OS2"); // NOI18N
+            }
+            if ((Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0) {
+                arr.add("org.openide.modules.os.Linux"); // NOI18N
+            }
+            if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
+                arr.add("org.openide.modules.os.Solaris"); // NOI18N
             }
             
             // module format is now 1

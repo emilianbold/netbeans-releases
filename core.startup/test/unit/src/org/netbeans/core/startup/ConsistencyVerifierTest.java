@@ -89,6 +89,10 @@ public class ConsistencyVerifierTest extends NbTestCase {
                 "=foo; Requires=org.openide.modules.os.MacOSX");
         assertProblems("{}",
                 "=foo; Requires=org.openide.modules.os.OS2");
+        assertProblems("{}",
+                "=foo; Requires=org.openide.modules.os.Linux");
+        assertProblems("{}",
+                "=foo; Requires=org.openide.modules.os.Solaris");
         assertProblems("{foo=[requires org.openide.modules.os.Windoze]}",
                 "=foo; Requires=org.openide.modules.os.Windoze");
     }

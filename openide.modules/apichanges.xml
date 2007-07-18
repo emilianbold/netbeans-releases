@@ -69,6 +69,21 @@ Microsystems, Inc. All Rights Reserved.
         </description>
         <class package="org.openide.modules" name="Dependency"/>
     </change>
+    <change id="enhanced-support-for-os-specific-modules-iz-109288">
+        <api name="modules"/>
+        <summary>Enhanced support for OS specific modules (part II)</summary>
+        <version major="7" minor="3"/>
+        <date day="18" month="7" year="2007"/>
+        <author login="jglick"/>
+        <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes" deletion="no" modification="no"/>
+        <description>
+            Modules can now express dependencies on
+            <code>org.openide.modules.os.Linux</code> and
+            <code>org.openide.modules.os.Solaris</code>.
+            For more details read <a href="@TOP@/org/openide/modules/doc-files/api.html#how-os-specific">here</a>.
+        </description>
+        <issue number="109288"/>
+    </change>
     <change id="enhanced-support-for-os-specific-modules-iz-50943">
         <api name="modules"/>
         <summary>Enhanced support for OS specific modules</summary>
