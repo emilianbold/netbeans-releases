@@ -41,14 +41,14 @@ import org.openide.windows.TopComponent;
  * @author Karol Harezlak
  */
 
-//TODO DesignDocument change to WeakRef! > memory leaks!
-
 final class InspectorUI  extends TopComponent implements ExplorerManager.Provider, PropertyChangeListener, Presenter.Popup {
+    
+    static final String INSPECTOR_UI_ID = "InspectorUI"; //NOI18N
     
     private transient ExplorerManager explorerManager;
     private transient volatile boolean lockSelectionSetting;
     private transient BeanTreeView inspectorBeanTreeView;
-    private transient WeakReference<DesignDocument> document;
+    private transient DesignDocument document;
     
     InspectorUI(DesignDocument document) {
         lockSelectionSetting = false;
@@ -57,7 +57,7 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
         initComponents();
         lockSelectionSetting = false;
         associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
-        this.document = new WeakReference<DesignDocument>(document);
+        this.document = document;
     }
     
     private void initComponents() {
@@ -86,9 +86,9 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
         
         if (explorerManager.getSelectedNodes().length < 1)
             return;
-        if (document.get() == null || document.get().getTransactionManager().isAccess())
+        if (document == null || document.getTransactionManager().isAccess())
             return;
-        document.get().getTransactionManager().writeAccess(new Runnable() {
+        document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
                 if (lockSelectionSetting)
                     return;
@@ -99,14 +99,14 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
                     for (Node node : selectedNodes) {
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();
-                            DesignComponent component = componentID == null ? null : document.get().getComponentByUID(componentID);
+                            DesignComponent component = componentID == null ? null : document.getComponentByUID(componentID);
                             if (component != null) {
                                 selectedComponents.add(component);
                             }
                             
                         }
                     }
-                    document.get().setSelectedComponents(InspectorAccessController.INSPECTOR_ID, selectedComponents);
+                    document.setSelectedComponents(InspectorUI.INSPECTOR_UI_ID, selectedComponents);
                 } finally {
                     lockSelectionSetting = false;
                 }

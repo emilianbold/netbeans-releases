@@ -12,19 +12,10 @@
  */
 package org.netbeans.modules.vmd.inspector;
 
-
-
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.util.Collection;
-import java.util.WeakHashMap;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.util.Lookup;
-
 import javax.swing.*;
-import org.netbeans.modules.vmd.api.io.IOUtils;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
@@ -34,101 +25,54 @@ import org.openide.util.lookup.InstanceContent;
  * @author Karol Harezlak
  */
 
-public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSupport.Listener {
-    
-    private static final JLabel emptyPanel = new JLabel(NbBundle.getMessage(InspectorPanel.class, "LBL_emptyPanel"), JLabel.CENTER); //NOI18N
-    
+public final class InspectorPanel implements NavigatorPanel {
+
     private static InspectorPanel INSTANCE;
+    
     private JPanel panel;
-    private WeakHashMap<DesignDocument, InspectorUI> uiMap;
+    private Lookup lookup;
+    private final InstanceContent ic;
     
     public static InspectorPanel getInstance() {
-        synchronized(InspectorPanel.class) {
+        synchronized (InspectorPanel.class) {
             if (INSTANCE == null) {
                 INSTANCE = new InspectorPanel();
-                ActiveDocumentSupport.getDefault().addActiveDocumentListener(INSTANCE);
             }
             return INSTANCE;
         }
     }
-    
-    //private InspectorUI ui;
-    private Lookup lookup;
-    /** Dynamic Lookup content */
-    private final InstanceContent ic;
     
     private InspectorPanel() {
         this.ic = new InstanceContent();
         this.lookup = new AbstractLookup(ic);
         this.panel = new JPanel(new BorderLayout());
         this.panel.setBackground(Color.WHITE);
-        this.uiMap = new WeakHashMap<DesignDocument, InspectorUI>();
     }
-    
-    synchronized InspectorUI getUI(DesignDocument document) {
-        InspectorUI ui = uiMap.get(document);
-        if (ui == null)
-            uiMap.put(document , new InspectorUI(document));
-        return uiMap.get(document);
-    }
-    
+
     public String getDisplayName() {
         return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelDisplayName"); //NOI18N
     }
-    
+
     public String getDisplayHint() {
         return NbBundle.getMessage(InspectorPanel.class, "LBL_InspectorPanelHint"); //NOI18N
     }
-    
+
     public synchronized JComponent getComponent() {
         return panel;
     }
-    
+
     public void panelActivated(Lookup lookup) {
     }
-    
+
     public void panelDeactivated() {
     }
-    
+
     public Lookup getLookup() {
         return lookup;
     }
-    
+
     public InstanceContent getInstanceContent() {
         return ic;
     }
-   
-    public synchronized void activeDocumentChanged(DesignDocument deactivatedDocument,final DesignDocument activatedDocument) {
-        if (activatedDocument == null) {
-            IOUtils.runInAWTNoBlocking(new Runnable() {
-                public void run() {
-                    panel.removeAll();
-                    panel.add(emptyPanel, BorderLayout.CENTER);
-                    panel.revalidate();
-                    panel.repaint();
-                }
-            });
-            return;
-        }
-        
-        IOUtils.runInAWTNoBlocking(new Runnable() {
-            public void run() {
-                panel.removeAll();
-                InspectorUI ui = uiMap.get(activatedDocument);
-                if (ui != null)
-                    panel.add(ui, BorderLayout.CENTER);
-                panel.revalidate();
-                panel.repaint();
-            }
-        });
-    }
-    
-    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
-    }
-    
-     void removeInspectorUI(DesignDocument document) {
-        synchronized (InspectorPanel.class) {
-            uiMap.remove(document);
-        }
-    }
+
 }

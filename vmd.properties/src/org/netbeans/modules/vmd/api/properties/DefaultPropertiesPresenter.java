@@ -99,6 +99,9 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
 
     protected void notifyDetached(DesignComponent component) {
         descriptors = null;
+        categories = null;
+        category = null;
+        designEventFilterResolver = null;
     }
 
     protected DesignEventFilter getEventFilter() {

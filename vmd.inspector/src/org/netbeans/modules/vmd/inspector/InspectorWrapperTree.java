@@ -59,8 +59,9 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
     private WeakSet<DesignComponent> deletedComponentsCash;
     private WeakSet<InspectorFolderWrapper> foldersToExtend;
     private boolean lock = true;
+    private InspectorUI ui;
 
-    InspectorWrapperTree(DesignDocument document) {
+    InspectorWrapperTree(DesignDocument document, InspectorUI ui) {
         foldersToExtend = new WeakSet<InspectorFolderWrapper>();
         foldersToUpdate = new WeakSet<InspectorFolderWrapper>();
         componentsToAdd = new WeakSet<DesignComponent>();
@@ -69,27 +70,28 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         this.document = document;
         rootFolderWrapper = new InspectorFolderWrapper(document, new RootFolder());
         rootFolderWrapper.resolveFolder(document);
+        this.ui = ui;
     }
 
     synchronized void buildTree(final DesignEvent event) {
         lock = true;
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (rootFolderWrapper.getChildren() != null) {
+                if (rootFolderWrapper.getChildren() != null && event != null) {
                     if (event.getFullyAffectedComponents() != null && !event.getFullyAffectedComponents().isEmpty()) {
                         updateFolderToUpdate(event.getFullyAffectedComponents(), rootFolderWrapper);
                     }
                     updateChangedDescriptors(event.getCreatedComponents(), event.getFullyAffectedComponents());
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
                     updateTreeStructureView();
-                    InspectorPanel.getInstance().getUI(document).expandNodes(foldersToExtend);
+                    ui.expandNodes(foldersToExtend);
                 } else {
                     updateChangedDescriptors(markAllComponentsAsToAdd(), null);
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
                     updateTreeStructureView();
                     Collection foldersToExpand = rootFolderWrapper.getChildren();
                     if (foldersToExpand != null) {
-                        InspectorPanel.getInstance().getUI(document).expandNodes(foldersToExpand);
+                        ui.expandNodes(foldersToExpand);
                     }
                 }
             }
@@ -516,6 +518,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
             deletedComponentsCash = null;
             foldersToExtend = null;
             rootFolderWrapper = null;
+            ui = null;
             lock = false;
         }
     }

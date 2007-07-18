@@ -50,9 +50,19 @@ import org.openide.util.lookup.InstanceContent;
 /**
  * @author Karol Harezlak
  */
-public final class PropertiesNodesManager implements DesignDocumentAwareness, DesignListener, ActiveDocumentSupport.Listener, ActiveViewSupport.Listener {
+//TODO rename it to PropeertiesViewNodesManager or PropeertiesViewNodesController
+public final class PropertiesNodesManager implements DesignDocumentAwareness,
+                                                     DesignListener,
+                                                     ActiveDocumentSupport.Listener,
+                                                     ActiveViewSupport.Listener {
 
     private static final WeakHashMap<DataEditorView, PropertiesNodesManager> INSTANCES = new WeakHashMap<DataEditorView, PropertiesNodesManager>();
+    private static Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
+
+        public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
+            return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
+        }
+    };
 
     public static synchronized PropertiesNodesManager getInstance(DataEditorView view) {
         if (INSTANCES.get(view) == null) {
@@ -61,26 +71,6 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness, De
         }
         return INSTANCES.get(view);
     }
-
-    private static synchronized void createCategoriesSet(Sheet sheet, List<String> categories) {
-        for (String propertyCategory : categories) {
-            sheet.put(createPropertiesSet(propertyCategory));
-        }
-    }
-
-    private static synchronized Sheet.Set createPropertiesSet(String categoryName) {
-        Sheet.Set setSheet = new Sheet.Set();
-        setSheet.setName(categoryName);
-        setSheet.setDisplayName(categoryName);
-        return setSheet;
-    }
-
-    private static Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
-
-        public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
-            return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
-        }
-    };
 
     private WeakHashMap<DataEditorView, InstanceContent> icMap;
     private Collection<InstanceContent> ics;
@@ -151,7 +141,6 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness, De
             return;
         }
         document.getTransactionManager().readAccess(new Runnable() {
-
             public void run() {
                 repaintPropertiesWindow(document.getSelectedComponents());
             }
@@ -246,8 +235,6 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness, De
     public Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
-
-            @SuppressWarnings(value = "deprecation")
             public void run() {
                 List<DesignPropertyDescriptor> designerPropertyDescriptors;
                 List<String> categories;
@@ -340,7 +327,6 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness, De
 
     private void repaintPropertiesWindow(final Collection<DesignComponent> selectedComponents) {
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 if (view != null) {
                     PropertiesNodesManager.this.changeLookup(selectedComponents);
@@ -348,6 +334,19 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness, De
                 }
             }
         });
+    }
+
+    private synchronized void createCategoriesSet(Sheet sheet, List<String> categories) {
+        for (String propertyCategory : categories) {
+            sheet.put(createPropertiesSet(propertyCategory));
+        }
+    }
+
+    private synchronized Sheet.Set createPropertiesSet(String categoryName) {
+        Sheet.Set setSheet = new Sheet.Set();
+        setSheet.setName(categoryName);
+        setSheet.setDisplayName(categoryName);
+        return setSheet;
     }
 
     private class PropertiesNodeConverter implements InstanceContent.Convertor {

@@ -37,9 +37,11 @@ import org.openide.util.lookup.InstanceContent;
  */
 
 public class InspectorLookupFactory implements DataEditorViewLookupFactory {
+    
     private static InstanceContent ic;
     
     public Collection<?> getLookupObjects(DataObjectContext context, DataEditorView view) {
+        InspectorManagerView.register(context);
         if (view.canShowSideWindows()  &&  view.getKind() == DataEditorView.Kind.MODEL) {
             return Arrays.asList( new NavigatorLookupHint() {
                 public String getContentType() {
@@ -50,7 +52,7 @@ public class InspectorLookupFactory implements DataEditorViewLookupFactory {
                     return NavigatorLookupPanelsPolicy.LOOKUP_HINTS_ONLY;
                 }
             });
-        }
+        }        
         return null;
     }
     
