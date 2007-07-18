@@ -318,9 +318,9 @@ public class PolicyModelHelper {
                     c = policies.get(0);
                 }
             }
-            List l = c.getExtensibilityElements(cl);
+            List<ExtensibilityElement> l = c.getExtensibilityElements(cl);
             if ((l != null) && (!l.isEmpty())) {
-                ExtensibilityElement tok = (ExtensibilityElement)l.get(0);
+                ExtensibilityElement tok = l.get(0);
                 tok.getParent().removeExtensibilityElement(tok);
             }
         } finally {
