@@ -2311,9 +2311,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     } // End of ErrorPanelCallbackImpl.
 
     
-    public DataObject getJspDataObject() {
-        return jsfForm.getJspDataObject();
-    }
+//    public DataObject getJspDataObject() {
+//        return jsfForm.getJspDataObject();
+//    }
     
     
     // JSF notifications >>>

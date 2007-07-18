@@ -877,8 +877,12 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
         }
 
 //        return tc.getWebForm().getMarkup().getFileObject();
-        DataObject jspDataObject = tc.getJspDataObject();
+        DataObject jspDataObject = getJspDataObject(tc);
         return jspDataObject == null ? null : jspDataObject.getPrimaryFile();
+    }
+    
+    private static DataObject getJspDataObject(JsfTopComponent jsfTopComponent) {
+        return jsfTopComponent.getLookup().lookup(DataObject.class);
     }
 
     //    public static void testPreview() {
