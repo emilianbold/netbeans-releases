@@ -20,6 +20,7 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.openide.util.Cancellable;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.api.progress.ProgressHandle;
@@ -48,9 +49,9 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     private final boolean abortOnExecutorFailure;    
     public boolean executed;
     private boolean cancelled;
-    private List listeners = new ArrayList(2);
+    private List<Cancellable> cancellables  = new ArrayList<Cancellable>(2);
     private List executors = new ArrayList(2);
-    private List cleanups = new ArrayList(2);
+    private List<ExecutorSupport> cleanups  = new ArrayList<ExecutorSupport>(2);
     /** ClientRuntime => CommandRunnale*/
     private Map queues = new HashMap();
     /** ClientRuntimes*/
@@ -245,8 +246,8 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         if (!abortOnExecutorFailure) return;
         failed = true;
         Iterator it;
-        synchronized(listeners) {
-            it = new ArrayList(listeners).iterator();
+        synchronized(cancellables) {
+            it = new ArrayList<Cancellable>(cancellables).iterator();
         }
         while (it.hasNext()) {
             try {
@@ -256,6 +257,19 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
+        synchronized(executors) {
+            it = new ArrayList(executors).iterator();
+        }
+        while (it.hasNext()) {
+            try {
+                Object elem = it.next();
+                if(elem instanceof ExecutorSupport) {
+                    ((ExecutorSupport) elem).getTask().cancel();
+                }
+            } catch (RuntimeException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }        
         synchronized(this) {
             if (progressHandle != null) {
                 progressHandle.finish();
@@ -268,14 +282,14 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      * Add a cancelaable in chain of cancellable performers.
      */
     public void addCancellable(Cancellable cancellable) {
-        synchronized(listeners) {
-            listeners.add(cancellable);
+        synchronized(cancellables) {
+            cancellables.add(cancellable);
         }
     }
 
     public void removeCancellable(Cancellable cancellable) {
-        synchronized(listeners) {
-            listeners.remove(cancellable);
+        synchronized(cancellables) {
+            cancellables.remove(cancellable);
         }
     }
 

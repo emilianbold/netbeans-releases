@@ -23,7 +23,6 @@ import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
@@ -42,7 +41,6 @@ class CommandRunnable implements Runnable, Cancellable {
     private Throwable           failure;
     
     private boolean             aborted;
-    private Thread              interruptibleThread;
     private ExecutorSupport     support;
 
     private static boolean      testRetry = Boolean.getBoolean("netbeans.debug.cvs.io.retry");  // NOI18N
@@ -61,47 +59,25 @@ class CommandRunnable implements Runnable, Cancellable {
             }
             support.commandStarted(this);
         }
-        interruptibleThread = Thread.currentThread();
-        Runnable worker = new Runnable() {
-            public void run() {
-                CounterRunnable counterUpdater = new CounterRunnable();
-                RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
-                counterUpdater.initTask(counterTask);
-                try {
-                    counterTask.schedule(500);
-                    if (testRetry && support.t9yRetryFlag == false) {
-                        support.t9yRetryFlag = true;
-                        String msg = "Testing retry logic. Retry attempt will be OK. (-Dnetbeans.debug.cvs.io.retry=true)"; // NOI18N
-                        throw new AuthenticationException(msg, msg);
-                    }
-                    client.executeCommand(cmd, options);
-                } catch (Throwable e) {
-                    failure = e;
-                } finally {
-                    counterTask.cancel();
-                    try {
-                        client.getConnection().close();
-                    } catch (Throwable e) {
-                        ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                    }
-                }
-            }
-        };
-        Thread workerThread = new Thread(worker, "CVS I/O Worker ");  // NOI18N
-        workerThread.start();
+        CounterRunnable counterUpdater = new CounterRunnable();
+        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+        counterUpdater.initTask(counterTask);
         try {
-            workerThread.join();
-        } catch (InterruptedException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread + "\nCVS command: " + cmd.getCVSCommand());  // NOI18N
-            workerThread.interrupt(); // sometimes not interuptible e.g. while in Socket.connect()
-            err.notify(ErrorManager.INFORMATIONAL, e);
-            Thread.currentThread().interrupt(); // preserve interrupted flag
-            // let the thread finish before we return; it is (hopefully) processing the InterruptedException now
+            counterTask.schedule(500);
+            if (testRetry && support.t9yRetryFlag == false) {
+                support.t9yRetryFlag = true;
+                String msg = "Testing retry logic. Retry attempt will be OK. (-Dnetbeans.debug.cvs.io.retry=true)"; // NOI18N
+                throw new AuthenticationException(msg, msg);
+            }
+            client.executeCommand(cmd, options);
+        } catch (Throwable e) {
+            failure = e;
+        } finally {
+            counterTask.cancel();
             try {
-                workerThread.join(2000);
-            } catch (InterruptedException e1) {
-                // ignore
+                client.getConnection().close();
+            } catch (Throwable e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             }
         }
     }
@@ -123,9 +99,6 @@ class CommandRunnable implements Runnable, Cancellable {
         }
         aborted = true;
         client.abort();
-        if (interruptibleThread != null) {
-            interruptibleThread.interrupt();  // waiting in join
-        }
         return true;
     }
 

@@ -223,10 +223,8 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(AddToRepositoryAction.class, "BK0019"));
         try {
             group.progress(NbBundle.getMessage(AddToRepositoryAction.class, "BK0020"));
-            final Thread thread = Thread.currentThread();
             group.addCancellable(new Cancellable() {
                 public boolean cancel() {
-                    thread.interrupt();
                     return true;
                 }
             });

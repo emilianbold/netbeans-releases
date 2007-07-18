@@ -67,7 +67,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
-    private Thread                      refreshViewThread;
     private ExecutorGroup               refreshCommandGroup;
 
     private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);  // NOI18N
@@ -239,8 +238,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         }
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
         try {
-            refreshViewThread = Thread.currentThread();
-            refreshViewThread.interrupted();  // clear interupted status
             ph.start();  // XXX created handle does not have set Cancelable hook
             final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context, displayStatuses));  // takes long
             if (nodes == null) {
@@ -293,7 +290,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ph.finish();
-                    refreshViewThread = null;
                 }
             });
         }
@@ -478,9 +474,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             refreshCommandGroup.cancel();
         }
         refreshViewTask.cancel();
-        if (refreshViewThread != null) {
-            refreshViewThread.interrupt();
-        }
     }
 
     private class RefreshViewTask implements Runnable {

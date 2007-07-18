@@ -299,7 +299,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         private final String revision2;
         private boolean showLastDifference;
         private volatile boolean cancelled;
-        private Thread thread;
 
         public ShowDiffTask(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
@@ -310,7 +309,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
         public void run() {
             parent.getUndoRedo().setDiffView(null);            
-            thread = Thread.currentThread();
             final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1 == VersionsCache.REVISION_CURRENT ? 
                     NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision1);  // NOI18N
@@ -356,9 +354,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
         public boolean cancel() {
             cancelled = true;
-            if (thread != null) {
-                thread.interrupt();
-            }
             return true;
         }
     }

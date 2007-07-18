@@ -66,7 +66,7 @@ public class ClientRuntime {
     /**
      * Processor to use when posting commands to given CVSRoot. It has a throughput of 1.
      */ 
-    private RequestProcessor    requestProcessor;
+    private RequestProcessor    requestProcessor = new RequestProcessor("CVS ClientRuntime", 1, true);
 
     /**
      * Holds server communication log for associated cvs root.
