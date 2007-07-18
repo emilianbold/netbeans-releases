@@ -125,13 +125,11 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     }
 
     public void fileDeleted (FileEvent fe) {
-        if (! fe.firedFrom (editorSupport.getAtomicSaveAction ()))
-            reloadDesign ();
+        // do nothing
     }
 
     public void fileRenamed (FileRenameEvent fe) {
-        if (! fe.firedFrom (editorSupport.getAtomicSaveAction ()))
-            reloadDesign ();
+        // do nothing
     }
 
     public void fileAttributeChanged (FileAttributeEvent fe) {
