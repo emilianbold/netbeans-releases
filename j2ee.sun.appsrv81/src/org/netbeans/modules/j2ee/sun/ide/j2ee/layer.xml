@@ -279,7 +279,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 	</folder>
     </folder>          
     <folder name="Templates">
-        <folder name="sjsgf">
+        <folder name="SunResources">
+            <attr name="position" intvalue="1800"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"/>
             <file name="extendArchiveGF.xml" url="/org/netbeans/modules/j2ee/sun/ide/j2ee/extendArchiveGF.xml_"/>
         </folder>
         <!-- <folder name="Other">

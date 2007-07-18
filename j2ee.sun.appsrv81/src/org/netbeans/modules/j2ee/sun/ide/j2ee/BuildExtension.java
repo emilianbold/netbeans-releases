@@ -51,7 +51,7 @@ public class BuildExtension {
         FileObject jnlpBuildFile = projDir.getFileObject("nbproject/extendArchiveGF.xml"); // NOI18N
         if (jnlpBuildFile == null) {
             FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject templateFO = sfs.findResource("Templates/sjsgf/extendArchiveGF.xml"); // NOI18N
+            FileObject templateFO = sfs.findResource("Templates/SunResources/extendArchiveGF.xml"); // NOI18N
             if (templateFO != null) {
                 FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "extendArchiveGF"); // NOI18N
             }
