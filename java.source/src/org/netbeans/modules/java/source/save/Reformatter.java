@@ -21,9 +21,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
-import java.io.IOException;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -239,14 +240,9 @@ public class Reformatter {
                         sb.append(textTS.token().text());
                     String s = sb.toString();
                     if (preDelta.length() > 0 || postDelta.length() > 0) {
-                        List<String> sbLines = new ArrayList<String>();
-                        getLines(s, sbLines, null);
-                        List<String> preDeltaLines = new ArrayList<String>();
-                        if (preDelta.length() > 0)
-                            getLines(preDelta.toString(), preDeltaLines, null);
-                        List<String> postDeltaLines = new ArrayList<String>();
-                        if (postDelta.length() > 0)
-                            getLines(postDelta.toString(), postDeltaLines, null);
+                        List<String> sbLines = getLines(s);
+                        List<String> preDeltaLines = preDelta.length() > 0 ? getLines(preDelta.toString()) : Collections.<String>emptyList();
+                        List<String> postDeltaLines = postDelta.length() > 0 ? getLines(postDelta.toString()) : Collections.<String>emptyList();
                         int idx = Math.min(preDeltaLines.size() - 1, sbLines.size() - 1);
                         sb = new StringBuilder();
                         if (idx >= 0) {
@@ -271,12 +267,13 @@ public class Reformatter {
         
     private LinkedList<Diff> getDiffs(String source, String text, int offset) throws BadLocationException {
         LinkedList<Diff> diffs = new LinkedList<Diff>();
-        List<String> sourceLines = new ArrayList<String>();
-        List<Integer> lineOffsets = new ArrayList<Integer>();
-        getLines(source, sourceLines, lineOffsets);
-        List<String> textLines = new ArrayList<String>();
-        getLines(text, textLines, null);
-        List lineDiffs = new ComputeDiff(sourceLines, textLines).diff();
+        List<String> sourceLines = getLines(source);
+        List<String> textLines = getLines(text);
+        List lineDiffs = new ComputeDiff(sourceLines, textLines, new SimpleLineComparator()).diff();
+        int i = 0;
+        int j = 0;
+        int lineOffset = offset;
+        int lineEndOffset = offset;
         for (Object l : lineDiffs) {
             Difference lineDiff = (Difference) l;
             int lineDelStart = lineDiff.getDeletedStart();
@@ -284,75 +281,97 @@ public class Reformatter {
             int lineAddStart = lineDiff.getAddedStart();
             int lineAddEnd = lineDiff.getAddedEnd();
             char kind = lineDelEnd < 0 ? 'i' : lineAddEnd < 0 ? 'r' : 'c';
-            switch (kind) {
-                case 'i':
-                    int lineOffset = lineOffsets.get(lineDelStart) + offset;
-                    if (lineOffset >= startOffset && lineOffset <= endOffset) {
-                        Position pos = doc.createPosition(lineOffset + shift);
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = lineAddStart; i <= lineAddEnd; i++)
-                            sb.append(textLines.get(i));
-                        if (sb.length() > 0)
-                            diffs.add(new Diff(pos, pos, sb.toString()));
+            while (i < lineDelStart && j < lineAddStart) {
+                String sourceLine = sourceLines.get(i++);
+                lineOffset = lineEndOffset;
+                lineEndOffset += sourceLine.length();
+                if (lineEndOffset > startOffset && lineOffset < endOffset) {
+                    String textLine = textLines.get(j++);
+                    if (!sourceLine.equals(textLine)) {
+                        TokenSequence<JavaTokenId> sourceTS = TokenHierarchy.create(sourceLine, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+                        TokenSequence<JavaTokenId> textTS = TokenHierarchy.create(textLine, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+                        diffs.addAll(getDiffs(sourceTS, textTS, lineOffset));
                     }
-                    break;
-                case 'r':
-                    int start = -1;
-                    int end = -1;
-                    int delta = 0;
-                    for (int i = lineDelStart; i <= lineDelEnd; i++) {
-                        lineOffset = lineOffsets.get(i) + offset;
-                        int lineEndOffset = lineOffset + sourceLines.get(i).length();
-                        if (lineEndOffset > startOffset && lineOffset < endOffset) {
-                            if (start < 0) {
-                                delta = startOffset - lineOffset;
-                                start = delta > 0 ? startOffset : lineOffset;
-                            }
-                            end = lineEndOffset <= endOffset ? lineEndOffset : endOffset;
-                        }
-                    }
-                    if (start >= 0) {
-                        if (delta > 0 && sourceLines.size() > lineDelEnd + 1) {
-                            String firstLine = sourceLines.get(lineDelStart);
-                            String nextLine = sourceLines.get(lineDelEnd + 1);
-                            lineOffset = lineOffsets.get(lineDelEnd + 1);
-                            int idx = 0;
-                            while (idx < delta && lineOffset + idx < endOffset && idx < nextLine.length() && firstLine.charAt(idx) == nextLine.charAt(idx))
-                                idx++;
-                            end += idx;
-                        }
-                        Position startPos = doc.createPosition(start + shift);
-                        Position endPos = doc.createPosition(end + shift);
-                        diffs.add(new Diff(startPos, endPos, null));
-                    }
-                    break;
-                case 'c':
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = lineDelStart; i <= lineDelEnd; i++)
-                        sb.append(sourceLines.get(i));
-                    TokenSequence<JavaTokenId> sourceTS = TokenHierarchy.create(sb, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-                    sb = new StringBuilder();
-                    for (int i = lineAddStart; i <= lineAddEnd; i++)
-                        sb.append(textLines.get(i));
-                    TokenSequence<JavaTokenId> textTS = TokenHierarchy.create(sb, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
-                    diffs.addAll(getDiffs(sourceTS, textTS, lineOffsets.get(lineDelStart) + offset));
+                } else {
+                    j++;
+                }                
             }
+            switch (kind) {
+            case 'i':
+                lineOffset = lineEndOffset;
+                if (lineOffset >= startOffset && lineOffset <= endOffset) {
+                    Position pos = doc.createPosition(lineOffset + shift);
+                    StringBuilder sb = new StringBuilder();
+                    while(j <= lineAddEnd)
+                        sb.append(textLines.get(j++));
+                    diffs.add(new Diff(pos, pos, sb.toString()));
+                } else {
+                    j = lineAddEnd + 1;
+                }
+                break;
+            case 'r':
+                int start = -1;
+                int end = -1;
+                while (i <= lineDelEnd) {
+                    lineOffset = lineEndOffset;
+                    lineEndOffset += sourceLines.get(i++).length();
+                    if (lineEndOffset > startOffset && lineOffset < endOffset) {
+                        if (start < 0)
+                            start = startOffset - lineOffset > 0 ? startOffset : lineOffset;
+                        end = lineEndOffset <= endOffset ? lineEndOffset : endOffset;
+                    }
+                }
+                if (start >= 0) {
+                    Position startPos = doc.createPosition(start + shift);
+                    Position endPos = doc.createPosition(end + shift);
+                    diffs.add(new Diff(startPos, endPos, null));
+                }
+                break;
+            case 'c':
+                StringBuilder sb = new StringBuilder();
+                start = lineEndOffset;
+                while (i <= lineDelEnd) {
+                    String sourceLine = sourceLines.get(i++);
+                    lineOffset = lineEndOffset;
+                    lineEndOffset += sourceLine.length();
+                    sb.append(sourceLine);
+                }
+                TokenSequence<JavaTokenId> sourceTS = TokenHierarchy.create(sb, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+                sb = new StringBuilder();
+                while (j <= lineAddEnd)
+                    sb.append(textLines.get(j++));
+                TokenSequence<JavaTokenId> textTS = TokenHierarchy.create(sb, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+                diffs.addAll(getDiffs(sourceTS, textTS, start));
+            }
+        }
+        while (i < sourceLines.size() && j < textLines.size()) {
+            String sourceLine = sourceLines.get(i++);
+            lineOffset = lineEndOffset;
+            lineEndOffset += sourceLine.length();
+            if (lineEndOffset > startOffset && lineOffset < endOffset) {
+                String textLine = textLines.get(j++);
+                if (!sourceLine.equals(textLine)) {
+                    TokenSequence<JavaTokenId> sourceTS = TokenHierarchy.create(sourceLine, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+                    TokenSequence<JavaTokenId> textTS = TokenHierarchy.create(textLine, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+                    diffs.addAll(getDiffs(sourceTS, textTS, lineOffset));
+                }
+            } else {
+                j++;
+            }                
         }
         return diffs;
     }
     
-    private void getLines(String text, List<String> lines, List<Integer> lineOffsets) {
+    private List<String> getLines(String text) {
+        List<String> lines = new ArrayList<String>();
         int start = 0;
         int end = 0;
         while ((end = text.indexOf('\n', start)) >= 0) {
             lines.add(text.substring(start, end + 1));
-            if(lineOffsets != null)
-                lineOffsets.add(start);
             start = end + 1;
         }
         lines.add(text.substring(start));
-        if (lineOffsets != null)
-            lineOffsets.add(start);
+        return lines;
     }
     
     private static class Diff {
@@ -364,6 +383,28 @@ public class Reformatter {
             this.start = start;
             this.end = end;
             this.text = text;
+        }
+    }
+    
+    private static class SimpleLineComparator implements Comparator<String> {
+        
+        public int compare(String line1, String line2) {
+            int i = 0;
+            int j = 0;
+            while(true) {
+                char c1 = 0;
+                boolean hasNext1;
+                while((hasNext1 = (i < line1.length())) && Character.isWhitespace(c1 = line1.charAt(i++)));
+                char c2 = 0;
+                boolean hasNext2;
+                while((hasNext2 = (j < line2.length())) && Character.isWhitespace(c2 = line2.charAt(j++)));
+                if (!hasNext1)
+                    return hasNext2 ? -1 : 0;
+                if (!hasNext2)
+                    return 1;
+                if (c1 != c2)
+                    return c1 - c2;
+            }
         }
     }
 
