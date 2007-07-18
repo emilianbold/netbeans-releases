@@ -27,6 +27,7 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
+import org.netbeans.modules.uml.common.ui.SaveNotifier;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
@@ -46,6 +47,7 @@ import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.util.AbstractNBTask;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.netbeans.modules.uml.util.StringTokenizer2;
 
 import org.openide.DialogDescriptor;
@@ -55,6 +57,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
@@ -173,18 +176,18 @@ public class GenerateCodeAction extends CookieAction
         }
         
         // if UML project is dirty, save it first
-        if (parentProject.isDirty())
-        {
-// Default to autosave the model from now on
+//        if (parentProject.isDirty())
+//        {
+//            // Default to autosave the model from now on
 //            boolean prefVal = NbPreferences.forModule(DummyCorePreference.class)
-//                .getBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
+//                .getBoolean("UML_Prompt_to_Save_Project", true); // NOI18N
 //            
 //            if (prefVal)
 //            {
 //                Object result = SaveNotifier.getDefault().displayNotifier(
 //                    NbBundle.getMessage(GenerateCodeAction.class,
 //                        "MSG_DialogTitle_AuthorizeUMLProjectSave"), // NOI18N
-//                        NbBundle.getMessage(GenerateCodeAction.class, "MSG_UMLProject"), // NOI18N
+//                        "UML Model", // NOI18N
 //                    parentProject.getName());
 //
 //                if (result == NotifyDescriptor.CANCEL_OPTION || 
@@ -200,10 +203,10 @@ public class GenerateCodeAction extends CookieAction
 //                        .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
 //                }
 //            }
-            
-            // umlProject.saveProject();
-            parentProject.save(parentProject.getFileName(), true);
-        }
+//            
+//            // umlProject.saveProject();
+//            // parentProject.save(parentProject.getFileName(), true);
+//        }
         
         ETList<IElement> selElements = new ETArrayList();
         
@@ -274,8 +277,8 @@ public class GenerateCodeAction extends CookieAction
         // even though the user is prompted to save dirty UML project before
         // code gen, somehow, the UML project gets dirty again during Code Gen, 
         // so we have to save it again
-        if (parentProject.isDirty())
-            parentProject.save(parentProject.getFileName(), true);
+//        if (parentProject.isDirty())
+//            parentProject.save(parentProject.getFileName(), true);
 
         // createJavaProject(ProjectUtil.getOpenJavaProjects()[0]);
     }
