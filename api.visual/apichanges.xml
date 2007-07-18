@@ -274,7 +274,7 @@
             <version major="2" minor="4"/>
             <date day="8" month="6" year="2007"/>
             <author login="dkaspar"/>
-            <compatibility addition="no"/>
+            <compatibility semantic="incompatible" modification="yes"/>
             <description>
                 All built-in zoom actions are using modifiers from Scene.getInputBindings().getZoomActionModifiers() method.
 		Default value has been changed from nothing to Ctrl key which backward-incompatible change affecting all users.
