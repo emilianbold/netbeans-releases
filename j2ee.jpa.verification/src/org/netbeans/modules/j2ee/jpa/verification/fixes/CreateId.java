@@ -38,6 +38,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -196,7 +197,7 @@ public class CreateId implements Fix {
                     ModifiersTree toAnnotate = accessType == AccessType.FIELD ?
                         fieldTree.getModifiers() : accesorTree.getModifiers();
                     
-                    AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NOI18N
+                    AnnotationTree idAnnotation = genUtils.createAnnotation(JPAAnnotations.ID);
                     
                     workingCopy.rewrite(toAnnotate, make.addModifiersAnnotation(toAnnotate, idAnnotation));
                     
