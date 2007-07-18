@@ -71,7 +71,9 @@ public class I18nString {
      * has to be non-null 
      */
     protected I18nString(I18nSupport support) {
-        if(support == null) throw new NullPointerException();
+        if (support == null) {
+            throw new NullPointerException();
+        }
 
         this.support = support;
         
@@ -122,8 +124,9 @@ public class I18nString {
 
     /** Setter for <code>key</code>. */
     public void setKey(String key) {
-        if(this.key == key || (this.key != null && this.key.equals(key)))
+        if ((this.key == key) || ((this.key != null) && this.key.equals(key))) {
             return;
+        }
 
         this.key = key;
     }
@@ -135,8 +138,9 @@ public class I18nString {
 
     /** Setter for <code>value</code>. */
     public void setValue(String value) {
-        if(this.value == value || (this.value != null && this.value.equals(value)))
+        if ((this.value == value) || ((this.value != null) && (this.value.equals(value)))) {
             return;
+        }
 
         this.value = value;
     }
@@ -148,8 +152,9 @@ public class I18nString {
 
     /** Setter for <code>comment</code>. */
     public void setComment(String comment) {
-        if(this.comment == comment || (this.comment != null && this.comment.equals(comment)))
+        if ((this.comment == comment) || ((this.comment != null) && (this.comment.equals(comment)))) {
             return;
+        }
 
         this.comment = comment;
     }
@@ -178,11 +183,15 @@ public class I18nString {
      * @return replacing string or null if this instance is invalid 
      */
     public String getReplaceString() {
-        if(getKey() == null || getSupport() == null || getSupport().getResourceHolder().getResource() == null)
+        if (getKey() == null
+                || getSupport() == null
+                || getSupport().getResourceHolder().getResource() == null) {
             return null;
+        }
         
-        if(replaceFormat == null)
+        if (replaceFormat == null) {
             replaceFormat = I18nUtil.getOptions().getReplaceJavaCode();
+        }
 
         // Create map.
         
