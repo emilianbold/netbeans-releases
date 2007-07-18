@@ -67,5 +67,10 @@ public class DateTimePatternPropertyEditor extends AbstractPropertyEditor
         this.setValue(event.getNewValue());
         super.firePropertyChange();
     }
+    
+     public String getJavaInitializationString() {        
+        return "\"" + getAsText() + "\"";
+    }
+    
 
 }
