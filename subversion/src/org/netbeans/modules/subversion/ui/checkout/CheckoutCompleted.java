@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -36,18 +35,14 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -189,10 +184,7 @@ public class CheckoutCompleted implements ActionListener {
         OpenProjects.getDefault().open(projects, false);
 
         // set as main project and expand
-        ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
-        Lookup ctx = Lookups.singleton(p);
-        Action ctxAction = action.createContextAwareInstance(ctx);
-        ctxAction.actionPerformed(new ActionEvent(this, 0, ""));
+        OpenProjects.getDefault().setMainProject(p);        
         ProjectUtilities.selectAndExpandProject(p);
     }
 }
