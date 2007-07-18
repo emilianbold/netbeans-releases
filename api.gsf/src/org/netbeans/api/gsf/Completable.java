@@ -57,7 +57,8 @@ public interface Completable {
         DOCUMENTATION,
         TOOLTIP,
         ALL_COMPLETION,
-        NONE;
+        NONE,
+        STOP
     }
 
     /**
@@ -87,6 +88,8 @@ public interface Completable {
     /**
      * Consider a keystroke and decide whether it should automatically invoke some type
      * of completion. If so, return the desired type, otherwise return QueryType.NONE.
+     * @return A QueryType if automatic completion should be initiated, or {@link QueryType.NONE}
+     *   if it should be left alon, or {@link QueryType.STOP} if completion should be terminated
      */
     QueryType getAutoQuery(@NonNull JTextComponent component, String typedText);
     

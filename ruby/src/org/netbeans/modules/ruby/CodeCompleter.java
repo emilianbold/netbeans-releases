@@ -2933,6 +2933,10 @@ public class CodeCompleter implements Completable {
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         char c = typedText.charAt(0);
         
+        if (c == '\n' || c == '(' || c == '[' || c == '{') {
+            return QueryType.STOP;
+        }
+        
         if (c != '.' && c != ':') {
             return QueryType.NONE;
         }
