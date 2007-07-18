@@ -117,6 +117,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             implReset();
         }
         
+        @Override
         protected void implReset() {
             inBufPos = 0;
             outBufPos = 0;
@@ -155,6 +156,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
         }
         
+        @Override
         protected CoderResult implFlush(ByteBuffer out) {
             return flushOutBuf(out) ? OVERFLOW
                                     : UNDERFLOW;
@@ -373,6 +375,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             implReset();
         }
 
+        @Override
         protected void implReset() {
             log.finer("");
             log.finer("implReset() called");
@@ -629,7 +632,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         
         private int decodeByte(final byte b) {
             final int oldPos = outBufPos;
-            final int bInt = (int) (b >= 0 ? b : b + 256);
+            final int bInt = (b >= 0 ? b : b + 256);
             assert (bInt >= 0) && ((bInt & 0xff) == bInt);
             
             final char bChar = (char) bInt;
@@ -697,7 +700,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
         
         private static char[] hexavalue(byte b) {
-            final int bInt = (int) (b >= 0 ? b : b + 256);
+            final int bInt = (b >= 0 ? b : b + 256);
             char[] result = new char[2];
             result[0] = hexadecimalChars.charAt(bInt / 16);
             result[1] = hexadecimalChars.charAt(bInt % 16);
