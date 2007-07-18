@@ -34,7 +34,7 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 public class TickerEditorElement extends PropertyEditorResourceElement implements DocumentListener {
     
     private long componentID;
-    private String tickerText;
+    private boolean doNotFireEvent;
     
     public TickerEditorElement() {
         initComponents();
@@ -52,7 +52,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         if (wrapper == null) {
             // UI stuff
-            clearTextField();
+            setText(null);
             setAllEnabled(false);
             return;
         }
@@ -62,7 +62,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
 
         final DesignComponent component = wrapper.getComponent();
         if (component != null) { // existing component
-            if (component.getType() != getTypeID()) {
+            if (!component.getType().equals(getTypeID())) {
                 throw new IllegalArgumentException("Passed component must have typeID " + getTypeID() + " instead passed " + component.getType()); // NOI18N
             }
 
@@ -84,20 +84,20 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
             }
         }
 
-        tickerText = _tickerText[0];
-        
         // UI stuff
         setAllEnabled(true);
-        tickerTextField.setText(_tickerText[0]);
+        setText(_tickerText[0]);
     }
 
-    private void clearTextField() {
-        tickerTextField.setText(null);
+    private synchronized void setText(String text) {
+        doNotFireEvent = true;
+        tickerTextField.setText(text);
+        doNotFireEvent = false;
     }
     
     private void setAllEnabled(boolean isEnabled) {
         tickerLabel.setEnabled(isEnabled);
-        tickerTextField.setEditable(isEnabled);
+        tickerTextField.setEnabled(isEnabled);
     }
     
     public void insertUpdate(DocumentEvent e) {
@@ -112,8 +112,10 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
         textChanged();
     }
     
-    private void textChanged() {
-        fireElementChanged(componentID, TickerCD.PROP_STRING, MidpTypes.createStringValue(tickerText));
+    private synchronized void textChanged() {
+        if (isShowing() && !doNotFireEvent) {
+            fireElementChanged(componentID, TickerCD.PROP_STRING, MidpTypes.createStringValue(tickerTextField.getText()));
+        }
     }
 
     /** This method is called from within the constructor to

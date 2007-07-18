@@ -42,6 +42,7 @@ import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPr
 import java.util.*;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 
 /**
  *
@@ -86,7 +87,7 @@ public class ImageItemCD extends ComponentDescriptor {
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Alternate Text", PropertyEditorString.createInstance(), PROP_ALT_TEXT)
                 .addProperty("Appearance", PropertyEditorComboBox.createInstance(getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE)
-                .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE);
+                .addProperty("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE);
     }
     
     private static Presenter createSetterPresenter() {

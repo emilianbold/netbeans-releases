@@ -240,7 +240,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
         final DesignComponent component = wrapper.getComponent();
         if (component != null) { // existing component
-            if (component.getType() != getTypeID()) {
+            if (!component.getType().equals(getTypeID())) {
                 throw new IllegalArgumentException("Passed component must have typeID " + getTypeID() + " instead passed " + component.getType()); // NOI18N
             }
 
