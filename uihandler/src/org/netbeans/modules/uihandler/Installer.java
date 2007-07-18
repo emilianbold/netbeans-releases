@@ -31,10 +31,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.Writer;
+import java.io.Reader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -613,8 +613,10 @@ public class Installer extends ModuleInstall {
         protected String msg;
         protected boolean report;//property tells me wheather I'm in report mode
         protected boolean okToExit;
+        protected ReportPanel reportPanel;
         private URL url;
         private boolean dialogCreated;
+        private boolean checkingResult;
         
         public Submit(String msg) {
             this.msg = msg;
@@ -809,7 +811,18 @@ public class Installer extends ModuleInstall {
             if (submit) { // NOI18N
                 final List<LogRecord> recs = getLogs();
                 saveUserName();
-                recs.add(getUserData(true));
+                LogRecord userData = getUserData(true);
+                recs.add(userData);
+                if ((report)&&!(reportPanel.asAGuest())){
+                    try{
+                        if (!checkUserName()){
+                            reportPanel.showWrongPassword();
+                            return;
+                        }
+                    }catch(InterruptedException exc){
+                        LOG.log(Level.INFO, "PASSWORD CHECKING FAILED", exc);// NOI18N
+                    }
+                }
                 RP.post(new Runnable() {
                     public void run() {
                         uploadAndPost(recs, url[0]);
@@ -860,6 +873,29 @@ public class Installer extends ModuleInstall {
             }
         }
         
+        private boolean checkUserName() throws InterruptedException{
+            checkingResult=true;
+            RequestProcessor.Task checking;
+            checking = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ExceptionsSettings settings = new ExceptionsSettings();
+                String login = settings.getUserName();
+                String passwd = settings.getPasswd();
+                try {
+                    char[] array = new char[100];
+                    URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
+                    URLConnection connection = url.openConnection();
+                    Reader reader = new InputStreamReader(connection.getInputStream());
+                    int length = reader.read(array);
+                    checkingResult = new Boolean(new String(array, 0, length));
+                } catch (Exception exception) {
+                    Logger.getLogger(Installer.class.getName()).log(Level.INFO, "CHECKING PASSWORD FAILED", exception); // NOI18N
+                }
+            }
+            });
+            checking.waitFinished(3000);
+            return checkingResult;
+        }
         
         private void uploadAndPost(List<LogRecord> recs, URL u) {
             URL nextURL = null;
@@ -934,7 +970,6 @@ public class Installer extends ModuleInstall {
         private Dialog d;
         private SubmitPanel panel;
         private HtmlBrowser browser;
-        private ReportPanel reportPanel;
         
         public SubmitInteractive(String msg) {
             super(msg);

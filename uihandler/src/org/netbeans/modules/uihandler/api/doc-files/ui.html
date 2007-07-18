@@ -249,12 +249,7 @@
 |  you need to be a registered user. If you're not registered,                  |
 |  you can <a href="http://www.netbeans.org/servlets/Join">register here</a>,                                                       |
 |  or you can send a report as a guest.                                         |
-|                                                                               |
-|  Your NetBeans.org username: |____________________| [x]Send report as a guest |
-|  Password: |______________________________________| Checking password         |
-|  ---------------------------------------------------------------------------  |
-|                                                                               |
-|  Summary:       |__________________________________________________________|  |
+|  Summary:  |_______________________________________________________________|  |
 |  Describe what you were doing when the exception occured:                     |
 |   _________________________________________________________________________   |
 |  |                                                                         |  |
@@ -266,21 +261,24 @@
 |  |                                                                         |  |
 |  |                                                                         |  |
 |  |_________________________________________________________________________|  |
+|  ---------------------------------------------------------------------------  |
+|  Username: |____________________| (Your NetBeans.org username)                |
+|  Password: |____________________| Username or password is wrong               |
+|            [x]Send report as a guest                                          |
 |  The report contains UI gesture data collected prior to the exception.        |
-|  [[_V_iew Data]]                             [[_S_ubmit Data]]   [[_C_ancel]] | 
+|  [[_V_iew Data]]                             [[_N_ext >]]   [[_C_ancel]] | 
 +-------------------------------------------------------------------------------+
 </pre>
 <p>
  User can fill his user name. After that we could contact him for more information,
  but this item is not needed, so he can check send report as a guest button.
  Issues from not registered users won't be so usefull, but better then nothing.
- Checking password label is disabled. Since user writes some password it becomes 
- enabled and the password is checked. Checking password message is changed to 
- "Password is wrong" and "Password is corect" after verification.
- Password is verifed, so that user knows the password was filled correctly.
  Summary is going to be initially set to exception class and exception message, 
  if there is some, but we are giving user a possibility to change this item. 
  User can fill short description what has happen to him.
+ After pressing Next button password is checked and report is send directly for 
+ corect password. For wrong password "Username or password is wrong" message
+ is shown and dialog stays enabled.
 </p>
 <p>
   After pressing <q>View Data</q> Examination Dialog appears, and <q>Hide data</q>
