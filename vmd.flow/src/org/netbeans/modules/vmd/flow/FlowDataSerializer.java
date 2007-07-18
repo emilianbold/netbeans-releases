@@ -52,7 +52,8 @@ public class FlowDataSerializer implements DataSerializer {
     public Node serializeData (DataObjectContext context, DesignDocument document, Document file) {
         FlowAccessController accessController = document.getListenerManager ().getAccessController (FlowAccessController.class);
         FlowScene scene = accessController.getScene ();
-        Node node = null;
+        Node node = file.createElement (FLOW_DOCUMENT_NODE);
+        setAttribute (file, node, VERSION_ATTR, VERSION_VALUE_1); // NOI18N
 
         Set<?> objects = scene.getObjects ();
         for (Object o : objects) {
@@ -62,12 +63,6 @@ public class FlowDataSerializer implements DataSerializer {
                 if (widget != null) {
                     Point location = widget.getPreferredLocation ();
                     if (location != null) {
-
-                        if (node == null) {
-                            node = file.createElement (FLOW_DOCUMENT_NODE);
-                            setAttribute (file, node, VERSION_ATTR, VERSION_VALUE_1); // NOI18N
-                        }
-
                         Node data = file.createElement (NODE_NODE);
                         setAttribute (file, data, COMPONENTID_ATTR, Long.toString (descriptor.getRepresentedComponent ().getComponentID ()));
                         setAttribute (file, data, DESCRIPTORID_ATTR, descriptor.getDescriptorID ());
@@ -107,6 +102,7 @@ public class FlowDataSerializer implements DataSerializer {
     }
 
     private void deserializeDataVersion1 (DesignDocument document, Node data, FlowScene scene) {
+        boolean isAnythingLoaded = false;
         for (Node node : getChildNode (data)) {
             if (NODE_NODE.equals (node.getNodeName ())) {
                 long componentID = Long.parseLong (getAttributeValue (node, COMPONENTID_ATTR));
@@ -118,10 +114,14 @@ public class FlowDataSerializer implements DataSerializer {
                     continue;
                 FlowNodeDescriptor descriptor = new FlowNodeDescriptor (representedComponent, descriptorid);
                 Widget widget = scene.findWidget (descriptor);
-                if (widget != null)
+                if (widget != null) {
                     widget.setPreferredLocation (new Point (x, y));
+                    isAnythingLoaded = true;
+                }
             }
         }
+        if (! isAnythingLoaded)
+            scene.layoutScene ();
     }
 
     private static String getAttributeValue (Node node, String attr) {
