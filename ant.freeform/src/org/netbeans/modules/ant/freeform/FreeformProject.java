@@ -178,7 +178,7 @@ public final class FreeformProject implements Project {
             if (usesAntScripting()) {
                 return new ImageIcon(Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/freeform-project.png", true)); // NOI18N
             } else {
-                return new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.gif", true)); // NOI18N
+                return new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true)); // NOI18N
             }
         }
         
