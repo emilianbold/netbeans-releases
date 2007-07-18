@@ -111,7 +111,6 @@ public class RakeSupport {
             desc = new ExecutionDescriptor(displayName, pwd, rake);
         }
 
-        desc.debug(true);
         desc.allowInput();
         desc.fileLocator(fileLocator);
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
