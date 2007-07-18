@@ -49,8 +49,8 @@ import org.openide.util.Utilities;
 public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     private TreePathHandle treePathHandle = null;
-    private Collection overriddenByMethods = null; // methods that override the method to be renamed
-    private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
+    private Collection<ExecutableElement> overriddenByMethods = null; // methods that override the method to be renamed
+    private Collection<ExecutableElement> overridesMethods = null; // methods that are overridden by the method to be renamed
     private boolean doCheckName = true;
     
     private RenameRefactoring refactoring;
@@ -135,10 +135,18 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
             overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
             fireProgressListenerStep();
+            if (el.getModifiers().contains(Modifier.NATIVE)) {
+                preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
+            }
             if (!overriddenByMethods.isEmpty()) {
                 String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
                         new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
                 preCheckProblem = createProblem(preCheckProblem, false, msg);
+            }
+            for (ExecutableElement e : overriddenByMethods) {
+                if (e.getModifiers().contains(Modifier.NATIVE)) {
+                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", e));
+                }
             }
             overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
             fireProgressListenerStep();
@@ -146,6 +154,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 boolean fatal = false;
                 for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
                     ExecutableElement method = (ExecutableElement) iter.next();
+                    if (method.getModifiers().contains(Modifier.NATIVE)) {
+                        preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", method));
+                    }
                     if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
                         fatal = true;
                         break;
