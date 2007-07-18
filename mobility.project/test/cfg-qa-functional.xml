@@ -38,6 +38,16 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 -->    
+
+    <testbag testattribs="commit and mobility" executor="ide" name="Mobility Pack Validation">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="validation/NewProjectFileTest.class/testCreateNewMobileApplication"/>
+                <include name="validation/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
+                <include name="validation/NewProjectFileTest.class/testCompileMobileMIDPProject"/>
+            </patternset>
+        </testset>
+    </testbag>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-reuse" antfile="build-qa-functional.xml" target="runidetest-reuse"/>
