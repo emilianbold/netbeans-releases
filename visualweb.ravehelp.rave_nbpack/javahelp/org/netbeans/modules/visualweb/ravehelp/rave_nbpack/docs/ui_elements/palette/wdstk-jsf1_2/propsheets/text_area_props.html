@@ -95,13 +95,18 @@ that the correct value is entered by a user. If the conditions defined by the va
       <ul class="note">
     <li>Setting this property also sets the value of the <code>validatorExpression</code> property. If you define your own validate method, do not separately change the value of the <code>validatorExpression</code> property, or you could lose the connection to your validate method.</li>
 </ul>
-    </li>
+  </li>
 </ul>
 
 <h3>Behavior</h3>
 <ul>
+  <li><b>autoSave.</b><code> Type: long </code><br>
+Indicates how often to check for changes and automatically save the  Text Area component for server side processing using the JavaServer Faces Extensions partial lifecycle. The value of this property is an interval measured in milliseconds. Data is submitted  only if the Text Area component has been modified during this interval. The default value, 0, indicates that auto-save is turned off. A negative number has the same effect as zero.</li>
+  <li><b>autoValidate.</b><code> Type: boolean</code><br>
+ Selecting this property causes an AJAX request to the validator on the component to be triggered when the value is changed, and, if the validation passes, the contents of the Text Area component to be submitted for server side processing using the JSFX partial lifecycle.
+ By default, this property is unselected (false) and no auto-validation occurs. Setting <code>autoValidate</code> also sets the <code>ajaxify</code> property to true. Additionally, if you set <code>autoValidate</code>, you must  provide a validator for this component. (What happens if you set it and there's no validator?) See the <tt>validatorExpression</tt> property above for more information on providing a validator. </li>
   <li><b>disabled.</b><code> Type: boolean</code><br>
-    If selected, indicates that the component should never receive focus or be included in a submit. Use this property when the component does not apply to the page. See the note under the <code>readOnly</code> property concerning the effects of using the <code>disabled</code> property versus the effects of using the <code>readOnly</code> property.</li>
+  If selected, indicates that the component should never receive focus or be included in a submit. Use this property when the component does not apply to the page. See the note under the <code>readOnly</code> property concerning the effects of using the <code>disabled</code> property versus the effects of using the <code>readOnly</code> property.</li>
   <li><b>readOnly.</b><code> Type: boolean</code><br>
     If selected, makes it impossible for the user to enter values, but still makes it possible for the component's value to be submitted.
 Use this property when the component does apply but must not be changed.       

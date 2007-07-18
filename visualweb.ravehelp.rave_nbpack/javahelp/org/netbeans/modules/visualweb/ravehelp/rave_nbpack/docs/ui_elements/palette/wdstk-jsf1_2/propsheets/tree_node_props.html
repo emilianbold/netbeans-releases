@@ -21,7 +21,7 @@
     <param name="viewerStyle" value="javax.help.Popup">
     <param name="viewerSize" value="385,450">
     <param name="text" value="Navigator window"></object>&nbsp;
-      </object>
+      
 </p>
 <ul class="note">
   <li>The Tree Node component by default is a container for an image. If you want to edit the tree node's image component, select the image part of the tree node in the Visual Designer. </li>
@@ -62,15 +62,6 @@
 The label describing the tree node. </li>
 </ul>
 
-<h3>Events</h3>
-<ul>
-  <li><b>action.</b> Indicates the name of the method that is called when the user selects the node. If the action property is bound to an action method, the page is submitted when the user selects the node.
-      <ul class="note">
-        <li> The JSP tag for this property is <code>actionExpression</code>. </li>
-      </ul>
-      <p>Set this property by right-clicking the component in the Visual Designer and choosing Edit action Event Handler. The IDE opens the Java editor for the current page and positions the cursor in the action method, which by default is named <code><i>component-id</i>_action</code>. For example, for a tree node with ID <code>treeNode1</code>, the method is named <code>treeNode1_action</code>.</p>
-  </li>
-</ul>
 <h3>Behavior</h3>
 <ul>
   <li><b>target.</b><code> Type: String</code><br>
@@ -106,7 +97,15 @@ A method expression representing  an action listener method that is notified whe
   <li><b>rendered.</b><code> Type: boolean</code><br>
 	  If selected, the tree node is to be rendered and processed on any subsequent page submission. If not selected, the tree node does not appear on the page at all, not even as a hidden component. You can bind this property to a JavaBeans property that determines when the tree node does get rendered. For example, an airline reservation form might show a tree node for frequent flyers and not show it for the general public. To bind this property, right-click the component in the Visual Designer and choose Use Binding, and then select the All radio button to display all properties so you can select the <code>rendered</code> property. </li>
 </ul>
-
+<h3>Events</h3>
+<ul>
+  <li><b>action.</b> Indicates the name of the method that is called when the user selects the node. If the action property is bound to an action method, the page is submitted when the user selects the node.
+      <ul class="note">
+        <li> The JSP tag for this property is <code>actionExpression</code>. </li>
+      </ul>
+      <p>Set this property by right-clicking the component in the Visual Designer and choosing Edit action Event Handler. The IDE opens the Java editor for the current page and positions the cursor in the action method, which by default is named <code><i>component-id</i>_action</code>. For example, for a tree node with ID <code>treeNode1</code>, the method is named <code>treeNode1_action</code>.</p>
+  </li>
+</ul>
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
 	<dd><a href="../tree_node.html">Tree Node Component</a></dd>

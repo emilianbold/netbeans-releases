@@ -63,13 +63,15 @@ The URL of the target document or resource for the hyperlink component that is a
 
 <h3>Behavior</h3>
 <ul>
+  <li><b>indicators.</b><code> Type: List </code><br>
+An array of com.sun.webui.jsf.model.Indicator objects listing types of alerts. Each Indicator object holds a custom defined type and an associated image. Any of these user-defined type can be used in addition to the standard types error, warning,  information, or success, and can be specified in the <code>type</code> property.</li>
   <li><b>linkToolTip.</b><code> Type: String </code><br>
-Sets the HTML <code>title</code> attribute for the hyperlink defined by the <code>linkText</code> and <code>linkAction</code>, <code>linkTarget</code>, or <code>linkURL</code> properties. The text value of this property displays if the user hovers the mouse cursor over the hyperlink. 
-<ul class="note">
-  <li>If the component is disabled, the tooltip will not display in most browsers. 
-    </li>
-</ul>
-</li>
+  Sets the HTML <code>title</code> attribute for the hyperlink defined by the <code>linkText</code> and <code>linkAction</code>, <code>linkTarget</code>, or <code>linkURL</code> properties. The text value of this property displays if the user hovers the mouse cursor over the hyperlink. 
+  <ul class="note">
+      <li>If the component is disabled, the tooltip will not display in most browsers. 
+      </li>
+  </ul>
+  </li>
   <li><b>visible.</b><code> Type: boolean</code><br>
   Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. One common use for this property is to hide the Alert until it is needed on the page.  The Alert can be made visible either by the server or by a client-side JavaScript call.</li>
 </ul>
@@ -85,7 +87,7 @@ Optionally specifies the position of the alert component in the tab order of the
   <li><b>rendered.</b><code> Type: boolean</code><br>
 If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. If you need the component to be hidden but still processed when the page is submitted, deselect the <code>visible</code> property instead of this property. </li>
   <li><b>type.</b><code> Type: String </code><br>
-The category of the alert: error, warning,  information, or successs. The category determines the icon that displays with the alert.</li>
+The category of the alert: error, warning,  information, or success. The category determines the icon that displays with the alert.</li>
 </ul>
 <h3>Events</h3>
 <ul>
