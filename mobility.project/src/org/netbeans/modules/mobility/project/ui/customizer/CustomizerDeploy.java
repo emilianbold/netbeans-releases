@@ -201,6 +201,11 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
     }
     
     public void initValues(ProjectProperties props, String configuration) {
+        for ( DeploymentPlugin p : Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class)).allInstances() ){
+            if (p instanceof CustomizerPanel){
+                ((CustomizerPanel)p).initValues(props, configuration);
+            }
+        }
         this.vps = VisualPropertySupport.getDefault(props);
         pp=props;
         config=configuration;
