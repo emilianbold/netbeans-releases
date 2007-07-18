@@ -75,6 +75,16 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
         initComponents();
         updateErrors();
 
+        // XXX #100175 Do not hardcode font sizes.
+        // But how to provide larger font nicely?
+        Font titleFont = jLabel3.getFont();
+        if (titleFont != null) {
+            int size = titleFont.getSize();
+            float newSize = 2 * size;
+            Font newFont = titleFont.deriveFont(newSize);
+            jLabel3.setFont(newFont);
+        }
+        
         continueButton.addActionListener(this);
         textArea.setEnabled(false);
 
@@ -161,13 +171,13 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
         jScrollPane1 = new javax.swing.JScrollPane();
         exceptions = new javax.swing.JTextArea();
 
+        setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         setLayout(new java.awt.GridBagLayout());
 
-        setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         jPanel2.setBackground(java.awt.Color.red);
-        jLabel3.setFont(new java.awt.Font("Dialog", 1, 24));
+
         jLabel3.setForeground(java.awt.Color.white);
-        jLabel3.setText(NbBundle.getMessage(RenderErrorPanelImpl.class, "CompRenderError"));
+        jLabel3.setText(NbBundle.getMessage(RenderErrorPanelImpl.class, "CompRenderError")); // NOI18N
         jPanel2.add(jLabel3);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -185,7 +195,7 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(textArea, gridBagConstraints);
 
-        continueButton.setText(org.openide.util.NbBundle.getBundle(RenderErrorPanelImpl.class).getString("Continue"));
+        continueButton.setText(org.openide.util.NbBundle.getBundle(RenderErrorPanelImpl.class).getString("Continue")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 11);
@@ -206,9 +216,7 @@ public class RenderErrorPanelImpl extends JPanel implements ActionListener, JsfF
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jScrollPane1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 
     // XXX

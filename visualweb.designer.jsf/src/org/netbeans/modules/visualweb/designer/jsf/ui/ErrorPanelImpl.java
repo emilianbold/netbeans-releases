@@ -136,6 +136,16 @@ implements JsfForm.ErrorPanel {
         initComponents();
         updateErrors();
 
+        // XXX #100175 Do not hardcode font sizes.
+        // But how to provide larger font nicely?
+        Font titleFont = jLabel3.getFont();
+        if (titleFont != null) {
+            int size = titleFont.getSize();
+            float newSize = 2 * size;
+            Font newFont = titleFont.deriveFont(newSize);
+            jLabel3.setFont(newFont);
+        }
+        
         convertButton.setText(NbBundle.getMessage(ErrorPanelImpl.class, "Convert"));
         previewButton.setText(NbBundle.getMessage(ErrorPanelImpl.class, "Preview"));
         convertButton.addActionListener(new ActionListener() {
@@ -274,13 +284,13 @@ implements JsfForm.ErrorPanel {
         listScrollPane = new javax.swing.JScrollPane();
         errorList = new javax.swing.JList();
 
+        setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         setLayout(new java.awt.GridBagLayout());
 
-        setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         jPanel2.setBackground(java.awt.Color.red);
-        jLabel3.setFont(new java.awt.Font("Dialog", 1, 24));
+
         jLabel3.setForeground(java.awt.Color.white);
-        jLabel3.setText(NbBundle.getMessage(ErrorPanelImpl.class, "SourceFileError"));
+        jLabel3.setText(NbBundle.getMessage(ErrorPanelImpl.class, "SourceFileError")); // NOI18N
         jPanel2.add(jLabel3);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -297,12 +307,10 @@ implements JsfForm.ErrorPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(textArea, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 11);
         add(convertButton, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -325,9 +333,7 @@ implements JsfForm.ErrorPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(listScrollPane, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private static void convertToXHTML(/*WebForm webform*/FacesModel facesModel) {
 //        FacesModel model = webform.getModel();
