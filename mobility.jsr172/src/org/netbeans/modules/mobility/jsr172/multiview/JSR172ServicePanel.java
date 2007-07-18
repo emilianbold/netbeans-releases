@@ -183,7 +183,7 @@ public class JSR172ServicePanel extends SectionInnerPanel implements PropertyCha
     
     private void buttonGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonGenerateActionPerformed
         buttonGenerate.setEnabled(false);
-        dataObject.generate(false);
+        dataObject.generate();
     }//GEN-LAST:event_buttonGenerateActionPerformed
     
     

@@ -646,7 +646,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     
     private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
 //        generateButton.setEnabled(false);
-        dataObject.generate(false);
+        dataObject.generate();
     }//GEN-LAST:event_generateButtonActionPerformed
     
     

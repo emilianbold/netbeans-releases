@@ -160,8 +160,7 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
         configuration.getServerConfigutation().setProjectPath(path);
         e2eDO.setConfiguration(configuration);
         
-        final Boolean b = (Boolean)templateWizard.getProperty(PROP_CREATE_MIDLET);
-        e2eDO.generate(b != null && b.booleanValue());
+        e2eDO.generate();
         
         final Set<DataObject> set = new HashSet<DataObject>();
         set.add(e2eDO);

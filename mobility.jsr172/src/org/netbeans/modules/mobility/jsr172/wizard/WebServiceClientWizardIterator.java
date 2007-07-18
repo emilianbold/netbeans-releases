@@ -64,7 +64,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
     public static final String WSDL_DOWNLOAD_FILE = "wsdlDownloadedPath"; // NOI18N
     public static final String WSDL_PACKAGE_NAME = "wsdlPackageName"; // NOI18N
     public static final String JSR172_CLIENT_NAME = "clientName"; // NOI18N
-    static String PROP_CREATE_MIDLET = "createMIDlet"; // NOI18N
+    public static final String PROP_DATABINDING = "DataBinding"; // NOI18N
     
     private int index = 0;
     private WizardDescriptor.Panel [] panels;
@@ -200,6 +200,8 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         clientConfiguration.setProjectName(ProjectUtils.getInformation(project).getName());
         final Properties prop = new Properties();
         prop.put("cldc11", "true");
+        Boolean propDataBinding = (Boolean) wiz.getProperty( PROP_DATABINDING );
+        prop.put( PROP_DATABINDING, propDataBinding != null && propDataBinding.booleanValue() ? "true" : "false" );
         clientConfiguration.setProperties(prop);
         
         final ClassDescriptor classDescriptor = new ClassDescriptor(packageName + "." + clientName, sg.getName());
@@ -214,8 +216,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         configuration.setServices(list);
         e2eDO.setConfiguration(configuration);
         
-        final Boolean b = (Boolean)wiz.getProperty(PROP_CREATE_MIDLET);
-        e2eDO.generate(b != null && b.booleanValue());
+        e2eDO.generate();
         Set<DataObject> result;
         result = new HashSet();
         result.add(e2eDO);

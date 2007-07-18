@@ -69,7 +69,7 @@ public class GenerateAction extends CookieAction {
     
     protected void performAction( final Node[] activatedNodes ) {
         final E2EDataObject dataObject = (E2EDataObject)activatedNodes[0].getCookie( E2EDataObject.class );
-        dataObject.generate(false);
+        dataObject.generate();
     }
     
 }

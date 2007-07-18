@@ -114,7 +114,7 @@ public class WsdlUpdater implements WsdlRetriever.MessageReceiver, Cancellable{
                                 final BufferedOutputStream bos = new BufferedOutputStream(localFile.getOutputStream(flck));
                                 bos.write(retriever.getWsdl());
                                 bos.close();
-                                doj.generate(false);
+                                doj.generate();
                             } catch (IOException e){
                                 ErrorManager.getDefault().notify(e);
                             } finally {

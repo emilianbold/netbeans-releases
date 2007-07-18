@@ -160,12 +160,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jLabel1 = new javax.swing.JLabel();
         jTxtCreatedFile = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
-        jCheckCreateMidlet = new javax.swing.JCheckBox();
+        jCheckGenerateDataBinding = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLblChooseSource, NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSource"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLblChooseSource, NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSource")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -175,15 +175,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         btnGrpWsdlSource.add(jRbnServiceURL);
         jRbnServiceURL.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_WsdlSourceUrl").charAt(0));
-        jRbnServiceURL.setText(NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceUrl"));
+        jRbnServiceURL.setText(NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceUrl")); // NOI18N
         jRbnServiceURL.setFocusable(false);
         jRbnServiceURL.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRbnServiceURLActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -191,36 +189,33 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         jLblWsdlURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_WsdlUrl").charAt(0));
         jLblWsdlURL.setLabelFor(jTxtWsdlURL);
-        jLblWsdlURL.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlUrl"));
+        jLblWsdlURL.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlUrl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 6, 6);
         add(jLblWsdlURL, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jTxtWsdlURL, gridBagConstraints);
-        jTxtWsdlURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_WsdlSourceUrl"));
-        jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceUrl"));
+        jTxtWsdlURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_WsdlSourceUrl")); // NOI18N
+        jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceUrl")); // NOI18N
 
         jBtnGetWsdl.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_RetrieveWsdl").charAt(0));
-        jBtnGetWsdl.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_RetrieveWsdl"));
+        jBtnGetWsdl.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_RetrieveWsdl")); // NOI18N
         jBtnGetWsdl.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnGetWsdlActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jBtnGetWsdl, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLblLocalFNDescription, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_LocalFNDescription"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLblLocalFNDescription, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_LocalFNDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -228,15 +223,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         add(jLblLocalFNDescription, gridBagConstraints);
 
         jBtnProxy.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_ProxySettings").charAt(0));
-        jBtnProxy.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ProxySettings"));
+        jBtnProxy.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ProxySettings")); // NOI18N
         jBtnProxy.setFocusable(false);
         jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnProxyActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -246,33 +239,29 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         jLblLocalFilename.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_LocalFilename").charAt(0));
         jLblLocalFilename.setLabelFor(jTxtLocalFilename);
-        jLblLocalFilename.setText(NbBundle.getMessage(ClientInfo.class, "LBL_LocalFilename"));
+        jLblLocalFilename.setText(NbBundle.getMessage(ClientInfo.class, "LBL_LocalFilename")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 12, 6);
         add(jLblLocalFilename, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         add(jTxtLocalFilename, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         add(jLblDummy, gridBagConstraints);
 
         btnGrpWsdlSource.add(jRbnFilesystem);
         jRbnFilesystem.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_WsdlSourceFilesystem").charAt(0));
-        jRbnFilesystem.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceFilesystem"));
+        jRbnFilesystem.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSourceFilesystem")); // NOI18N
         jRbnFilesystem.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRbnFilesystemActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -280,36 +269,32 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         jLblWsdlFile.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_WsdlFilename").charAt(0));
         jLblWsdlFile.setLabelFor(jTxtWsdlFile);
-        jLblWsdlFile.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilename"));
+        jLblWsdlFile.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilename")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 12, 6);
         add(jLblWsdlFile, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         add(jTxtWsdlFile, gridBagConstraints);
-        jTxtWsdlFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_WsdlSourceFilesystem"));
-        jTxtWsdlFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceFile"));
+        jTxtWsdlFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_WsdlSourceFilesystem")); // NOI18N
+        jTxtWsdlFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceFile")); // NOI18N
 
         jBtnBrowse.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_Browse").charAt(0));
-        jBtnBrowse.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Browse"));
+        jBtnBrowse.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Browse")); // NOI18N
         jBtnBrowse.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         add(jBtnBrowse, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -318,23 +303,22 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         jLblClientName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientInfo.class, "MNM_ClientName").charAt(0));
         jLblClientName.setLabelFor(jTxtClientName);
-        jLblClientName.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ClientName"));
+        jLblClientName.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ClientName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         add(jLblClientName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         add(jTxtClientName, gridBagConstraints);
-        jTxtClientName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_ClientName"));
-        jTxtClientName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_ClientName"));
+        jTxtClientName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_ClientName")); // NOI18N
+        jTxtClientName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_ClientName")); // NOI18N
 
         jLblProject.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_Project").charAt(0));
         jLblProject.setLabelFor(jTxtProject);
-        jLblProject.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Project"));
+        jLblProject.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
@@ -349,7 +333,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         jLblPackageName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/jsr172/wizard/Bundle").getString("MNM_PackageName").charAt(0));
         jLblPackageName.setLabelFor(jCbxPackageName);
-        jLblPackageName.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_PackageName"));
+        jLblPackageName.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_PackageName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
@@ -366,7 +350,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientInfo.class, "MNM_CreatedFile").charAt(0));
         jLabel1.setLabelFor(jTxtCreatedFile);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_CreatedFile"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_CreatedFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
@@ -378,23 +362,21 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 6);
         add(jTxtCreatedFile, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
 
-        jCheckCreateMidlet.setMnemonic(org.openide.util.NbBundle.getMessage(ClientInfo.class, "MNM_SampleMidlet").charAt(0));
-        jCheckCreateMidlet.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_SampleMidlet"));
-        jCheckCreateMidlet.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        jCheckCreateMidlet.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jCheckGenerateDataBinding.setMnemonic(org.openide.util.NbBundle.getMessage(ClientInfo.class, "MNM_SampleMidlet").charAt(0));
+        jCheckGenerateDataBinding.setText(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_SampleMidlet")); // NOI18N
+        jCheckGenerateDataBinding.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jCheckGenerateDataBinding.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        add(jCheckCreateMidlet, gridBagConstraints);
-
+        add(jCheckGenerateDataBinding, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -403,9 +385,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
         OptionsDisplayer.getDefault().open( "General" );//NOI18N
@@ -472,7 +452,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private javax.swing.JButton jBtnGetWsdl;
     private javax.swing.JButton jBtnProxy;
     private javax.swing.JComboBox jCbxPackageName;
-    private javax.swing.JCheckBox jCheckCreateMidlet;
+    private javax.swing.JCheckBox jCheckGenerateDataBinding;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLblChooseSource;
     private javax.swing.JLabel jLblClientName;
@@ -587,7 +567,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         }
         d.putProperty(WebServiceClientWizardIterator.WSDL_PACKAGE_NAME, getPackageName());
         d.putProperty(WebServiceClientWizardIterator.JSR172_CLIENT_NAME, jTxtClientName.getText().trim());
-        d.putProperty(WebServiceClientWizardIterator.PROP_CREATE_MIDLET, new Boolean(jCheckCreateMidlet.isSelected()));
+        d.putProperty( WebServiceClientWizardIterator.PROP_DATABINDING, new Boolean( jCheckGenerateDataBinding.isSelected()));
     }
     
     void read(final WizardDescriptor d) {
@@ -630,17 +610,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             enableWsdlSourceFields(wsdlSource == WSDL_FROM_SERVICE, wsdlSource == WSDL_FROM_FILE);
             btnGrpWsdlSource.setSelected(getSelectedRadioButton(wsdlSource).getModel(), true);
             
-            final Boolean b = (Boolean)d.getProperty(WebServiceClientWizardIterator.PROP_CREATE_MIDLET);
-            if (b == null || b.booleanValue()){
-                jCheckCreateMidlet.setSelected(true);
+            final Boolean b = (Boolean) d.getProperty( WebServiceClientWizardIterator.PROP_DATABINDING );
+            if( b != null && b.booleanValue()) {
+                jCheckGenerateDataBinding.setSelected( true );
             } else {
-                jCheckCreateMidlet.setSelected(false);
-            }
-            
-            final boolean isSuitable = Util.isSuitableProjectConfiguration(p);
-            jCheckCreateMidlet.setSelected(isSuitable);
-            jCheckCreateMidlet.setEnabled(isSuitable);
-            
+                jCheckGenerateDataBinding.setSelected( false );
+            }                        
         } finally {
             settingFields = false;
         }

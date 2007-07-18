@@ -385,7 +385,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         return "";
     }
     
-    public synchronized void generate(final boolean generateMidlet){
+    public synchronized void generate(){
         generating = true;
         firePropertyChange(PROP_GENERATING, Boolean.FALSE, Boolean.TRUE);
         SwingUtilities.invokeLater(new Runnable() {
