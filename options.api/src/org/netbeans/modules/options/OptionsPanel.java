@@ -62,7 +62,6 @@ import org.openide.util.Utilities;
 
 
 public class OptionsPanel extends JPanel {
-    private CategoryModel model = CategoryModel.getInstance();
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
@@ -95,15 +94,15 @@ public class OptionsPanel extends JPanel {
     }
     
     private String getCategoryID(String categoryID) {
-        return categoryID == null ? model.getCurrentCategoryID() : categoryID;
+        return categoryID == null ? CategoryModel.getInstance().getCurrentCategoryID() : categoryID;
     }
         
     void initCurrentCategory (final String categoryID) {                    
         //generalpanel should be moved to core/options and then could be implemented better
         //generalpanel doesn't need lookup
         boolean isGeneralPanel = "General".equals(getCategoryID(categoryID));//NOI18N
-        if (model.isLookupInitialized() || isGeneralPanel) {
-            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
+        if (CategoryModel.getInstance().isLookupInitialized() || isGeneralPanel) {
+            setCurrentCategory(CategoryModel.getInstance().getCategory(getCategoryID(categoryID)));
             initActions();                        
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -119,7 +118,7 @@ public class OptionsPanel extends JPanel {
                             final Cursor cursor = frame.getCursor();
                             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
+                            setCurrentCategory(CategoryModel.getInstance().getCategory(getCategoryID(categoryID)));
                             initActions();
                             // reset cursor
                             frame.setCursor(cursor);
@@ -132,7 +131,7 @@ public class OptionsPanel extends JPanel {
     }
     
     private void setCurrentCategory (final CategoryModel.Category category) {
-        CategoryModel.Category oldCategory = model.getCurrent();
+        CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
         if (oldCategory != null) {
             (buttons.get(oldCategory.getID())).setNormal ();
         }
@@ -140,45 +139,45 @@ public class OptionsPanel extends JPanel {
             (buttons.get(category.getID())).setSelected ();
         }
         
-        model.setCurrent(category);                
+        CategoryModel.getInstance().setCurrent(category);                
         category.update(coltrollerListener, false);
         JComponent component = category.getComponent();        
         final Dimension size = component.getSize();
         pOptions.add(component, category.getCategoryName());
         cLayout.show(pOptions, category.getCategoryName());
         checkSize (size);
-        /*if (model.getCurrent() != null) {
-            ((CategoryButton) buttons.get (model.getCurrentCategoryID())).requestFocus();
+        /*if (CategoryModel.getInstance().getCurrent() != null) {
+            ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
         } */       
         firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
     }
         
     HelpCtx getHelpCtx () {
-        return model.getHelpCtx ();
+        return CategoryModel.getInstance().getHelpCtx ();
     }
     
     void update () {
-        model.update(coltrollerListener, true);
+        CategoryModel.getInstance().update(coltrollerListener, true);
     }
     
     void save () {
-        model.save();
+        CategoryModel.getInstance().save();
     }
     
     void cancel () {
-        model.cancel();    
+        CategoryModel.getInstance().cancel();    
     }
     
     boolean dataValid () {
-        return model.dataValid();
+        return CategoryModel.getInstance().dataValid();
     }
     
     boolean isChanged () {
-        return model.isChanged();
+        return CategoryModel.getInstance().isChanged();
     }
     
     boolean needsReinit() {
-        return model.needsReinit();
+        return CategoryModel.getInstance().needsReinit();
     }
     
     // private methods .........................................................
@@ -216,7 +215,7 @@ public class OptionsPanel extends JPanel {
      
         categoryName = getCategoryID(categoryName);
         if (categoryName != null) {
-            CategoryModel.Category c = model.getCategory(getCategoryID(categoryName));
+            CategoryModel.Category c = CategoryModel.getInstance().getCategory(getCategoryID(categoryName));
             
             CategoryButton b = (CategoryButton) buttons.get(categoryName);
             if (b != null) {
@@ -255,9 +254,9 @@ public class OptionsPanel extends JPanel {
         buttons = new LinkedHashMap<String, CategoryButton>();
         
         // add new buttons
-        String[] names = model.getCategoryIDs();
+        String[] names = CategoryModel.getInstance().getCategoryIDs();
         for (int i = 0; i < names.length; i++) {
-            CategoryModel.Category category = model.getCategory(names[i]);
+            CategoryModel.Category category = CategoryModel.getInstance().getCategory(names[i]);
             addButton (category);            
         }
         
@@ -361,7 +360,7 @@ public class OptionsPanel extends JPanel {
         
     private class SelectCurrentAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            CategoryModel.Category highlightedB = model.getCategory(model.getHighlitedCategoryID());            
+            CategoryModel.Category highlightedB = CategoryModel.getInstance().getCategory(CategoryModel.getInstance().getHighlitedCategoryID());            
             if (highlightedB != null) {
                 setCurrentCategory(highlightedB);
             }
@@ -370,13 +369,13 @@ public class OptionsPanel extends JPanel {
     
     private class PreviousAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (model.getPreviousCategory());
+            setCurrentCategory (CategoryModel.getInstance().getPreviousCategory());
         }
     }
     
     private class NextAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {            
-            setCurrentCategory (model.getNextCategory());
+            setCurrentCategory (CategoryModel.getInstance().getNextCategory());
         }
     }
     
@@ -449,13 +448,13 @@ public class OptionsPanel extends JPanel {
                 setBackground(highlighted);
             }
             if (!category.isHighlited()) {
-                if (model.getHighlitedCategoryID() != null) {
-                    CategoryButton b = (CategoryButton)buttons.get(model.getHighlitedCategoryID());
+                if (CategoryModel.getInstance().getHighlitedCategoryID() != null) {
+                    CategoryButton b = (CategoryButton)buttons.get(CategoryModel.getInstance().getHighlitedCategoryID());
                     if (b != null && !b.category.isCurrent()) {
                         b.setNormal();
                     }
                 }
-                model.setHighlited(category,true);
+                CategoryModel.getInstance().setHighlited(category,true);
             }
         }
         
@@ -463,27 +462,27 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mousePressed (MouseEvent e) {
-            if (!isMac && model.getCurrent() != null) {
+            if (!isMac && CategoryModel.getInstance().getCurrent() != null) {
                 setSelected ();
             }
         }
 
         public void mouseReleased (MouseEvent e) {
-            if (!category.isCurrent() && category.isHighlited() && model.getCurrent() != null) {
+            if (!category.isCurrent() && category.isHighlited() && CategoryModel.getInstance().getCurrent() != null) {
                 setCurrentCategory(category);
             }
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (!category.isCurrent() && model.getCurrent() != null) {
+            if (!category.isCurrent() && CategoryModel.getInstance().getCurrent() != null) {
                 setHighlighted ();
             } else {
-                model.setHighlited(model.getCategory(model.getHighlitedCategoryID()),false);
+                CategoryModel.getInstance().setHighlited(CategoryModel.getInstance().getCategory(CategoryModel.getInstance().getHighlitedCategoryID()),false);
             }
         }
 
         public void mouseExited (MouseEvent e) {
-            if (!category.isCurrent() && !isMac && model.getCurrent() != null) {
+            if (!category.isCurrent() && !isMac && CategoryModel.getInstance().getCurrent() != null) {
                 setNormal ();
             }
         }

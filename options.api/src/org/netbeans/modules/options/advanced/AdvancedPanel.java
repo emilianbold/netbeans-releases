@@ -31,6 +31,8 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.netbeans.modules.options.*;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /**
@@ -38,15 +40,18 @@ import org.netbeans.modules.options.*;
  *
  * @author Jan Jancura
  */
-public final class AdvancedPanel extends JPanel {
-
-    
-    JTabbedPane     tabbedPanel;
-    private final Model   model = new Model ();
-    
+public final class AdvancedPanel extends JPanel {    
+    JTabbedPane     tabbedPanel;    
+    private LookupListener listener = new LookupListenerImpl();
+    private Model   model = new Model (listener);
+    private ChangeListener changeListener = new ChangeListener () {
+            public void stateChanged(ChangeEvent e) {
+                handleTabSwitched();
+            }
+        };
     
     AdvancedPanel () {}
-    
+        
     public void update () {
         String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
         model.update (category);        
@@ -79,27 +84,41 @@ public final class AdvancedPanel extends JPanel {
     void init (Lookup masterLookup) {
         // init components
         tabbedPanel = new JTabbedPane();        
-        tabbedPanel.setBorder (null);
-        tabbedPanel.addChangeListener(new ChangeListener () {
-            public void stateChanged(ChangeEvent e) {
-                firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
-                String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
-                if(tabbedPanel.getSelectedComponent() instanceof JLabel) {                                                            
-                    tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel (category));                    
-                }
-                model.update(category);
-            }
-        });
+        tabbedPanel.setBorder (null);        
         
         // define layout
         setLayout (new BorderLayout ());
         add (tabbedPanel, BorderLayout.CENTER);
-        
-        Iterator it = model.getCategories ().iterator ();
-        while (it.hasNext ()) {
+        initTabbedPane (masterLookup);
+    }
+    
+    private void initTabbedPane(Lookup masterLookup) {
+        tabbedPanel.removeChangeListener(changeListener);
+        tabbedPanel.removeAll();
+        Iterator it = model.getCategories().iterator();
+        while (it.hasNext()) {
             String category = (String) it.next ();
             tabbedPanel.addTab(category, new JLabel(category));
         }
-        model.setLoookup (masterLookup);
+        tabbedPanel.addChangeListener(changeListener);
+        handleTabSwitched();
+    }
+
+    private void handleTabSwitched() {
+        firePropertyChange(org.netbeans.spi.options.OptionsPanelController.PROP_HELP_CTX, null, null);
+        final int selectedIndex = tabbedPanel.getSelectedIndex() >= 0 ? tabbedPanel.getSelectedIndex() : 0;
+        String category = tabbedPanel.getTitleAt(selectedIndex);
+        if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
+            tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel(category));
+        }
+        model.update(category);
+    }
+    
+    private class LookupListenerImpl implements LookupListener {
+        public void resultChanged(LookupEvent ev) {
+            Lookup masterLookup = model.getLookup();
+            model = new Model(listener);
+            initTabbedPane(masterLookup);
+        }        
     }
 }

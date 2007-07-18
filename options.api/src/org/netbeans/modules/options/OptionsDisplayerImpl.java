@@ -44,6 +44,8 @@ import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -59,6 +61,7 @@ public class OptionsDisplayerImpl {
     private static String title = loc("CTL_Options_Dialog_Title");    
     private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());    
     private boolean modal;
+    static LookupListener lookupListener = new LookupListenerImpl();
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -67,7 +70,7 @@ public class OptionsDisplayerImpl {
     public boolean isOpen() {
         return dialog != null;
     }
-    
+        
     public void showOptionsDialog (String categoryID) {
         if (isOpen()) {
             // dialog already opened
@@ -270,6 +273,13 @@ public class OptionsDisplayerImpl {
                 }
             });
         }
+    }
+    
+    private static class LookupListenerImpl implements LookupListener {
+        public void resultChanged(LookupEvent ev) {
+            descriptorRef = new WeakReference<DialogDescriptor> (null);
+        }
+        
     }
 }
 

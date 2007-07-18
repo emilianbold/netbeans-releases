@@ -274,7 +274,8 @@ public final class CategoryModel implements LookupListener {
 
     public void resultChanged(LookupEvent ev) {
         synchronized(CategoryModel.class) {
-            categoriesValid = false;
+            categoriesValid = false;            
+            OptionsDisplayerImpl.lookupListener.resultChanged(ev);
             INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
         }
     }

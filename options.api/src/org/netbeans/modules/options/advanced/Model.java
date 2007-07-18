@@ -36,6 +36,8 @@ import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -49,6 +51,12 @@ public final class Model extends TabbedPanelModel {
     private Map<String, JComponent> categoryToPanel = new HashMap<String, JComponent> ();
     private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
     private Lookup masterLookup;
+    private LookupListener lkpListener;
+    private Result<AdvancedOption> lkpResult;
+
+    public Model(LookupListener listener) {
+        this.lkpListener = listener;
+    }
 
     
     public List getCategories () {
@@ -151,7 +159,10 @@ public final class Model extends TabbedPanelModel {
         initialized = true;
         
         Lookup lookup = Lookups.forPath("OptionsDialog/Advanced"); // NOI18N
-        Iterator<? extends AdvancedOption> it = lookup.lookup (new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
+        lkpResult = lookup.lookup(new Lookup.Template<AdvancedOption>(AdvancedOption.class));
+        lkpResult.addLookupListener(lkpListener);
+        lkpListener = null;
+        Iterator<? extends AdvancedOption> it = lkpResult.
                 allInstances ().iterator ();
         while (it.hasNext ()) {
             AdvancedOption option = it.next ();
