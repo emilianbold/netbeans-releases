@@ -1033,6 +1033,9 @@ public class CodeCompleter implements Completable {
                 while ((id == RubyTokenId.ERROR) || (id == RubyTokenId.STRING_LITERAL) ||
                         (id == RubyTokenId.QUOTED_STRING_LITERAL) ||
                         (id == RubyTokenId.REGEXP_LITERAL) || (id == RubyTokenId.EMBEDDED_RUBY)) {
+                    if (id == RubyTokenId.QUOTED_STRING_LITERAL) {
+                        isQuoted = true;
+                    }
                     if (!ts.movePrevious()) {
                         return false;
                     }
@@ -2669,10 +2672,22 @@ public class CodeCompleter implements Completable {
             return ((MethodElement)element).getParameters();
         }
         
+        @Override
         public String[] getParamListDelimiters() {
-            // Module.require: insert quotes!
-            if (getName().equals("require") && "Kernel".equals(element.getIn())) { // NOI18N
-                return new String[] { " '", "'" };
+            String n = getName();
+            String in = element.getIn();
+            if ("Module".equals(in)) {
+                // Module.attr_ methods typically shouldn't use parentheses
+                if (n.startsWith("attr_") || n.equals("include")) {
+                    return new String[] { " ", " " };
+                }
+            } else if ("Kernel".equals(in)) {
+                // Module.require: insert quotes!
+                if (n.equals("require")) { // NOI18N
+                    return new String[] { " '", "'" };
+                } else if (n.equals("p")) {
+                    return new String[] { " ", " " };
+                }
             }
             
             if (forceCompletionSpaces()) {
