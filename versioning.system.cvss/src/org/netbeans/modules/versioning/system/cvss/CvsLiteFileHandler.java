@@ -139,7 +139,6 @@ class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandl
         }
         command[2] = file.getAbsolutePath();
         try {
-            System.out.println(command[1]);
             Runtime.getRuntime().exec(command);
         } catch (Exception e) {
             

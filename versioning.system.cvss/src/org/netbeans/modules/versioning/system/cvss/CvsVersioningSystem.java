@@ -28,6 +28,7 @@ import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.file.FileHandler;
+import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
@@ -110,6 +111,7 @@ public class CvsVersioningSystem {
         defaultGlobalOptions = CvsVersioningSystem.createGlobalOptions();
         sah = new CvsLiteAdminHandler();
         workdirFileHandler = new CvsLiteFileHandler();
+        FileUtils.setFileReadOnlyHandler(workdirFileHandler);
         workdirGzippedFileHandler = new CvsLiteGzippedFileHandler();
         fileStatusCache = new FileStatusCache(this);
         filesystemHandler  = new FilesystemHandler(this);
