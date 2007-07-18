@@ -15,8 +15,9 @@ fi
 #For more info about "cvspurge" take a look 
 #at http://www.red-bean.com/cvsutils/
 
+set +x
 for module in `ls | grep -v "CVS"`; do
-    cvspurge $module;
+    cvspurge $module > /dev/null
     ERROR_CODE=$?
 
     if [ $ERROR_CODE != 0 ]; then
@@ -24,3 +25,4 @@ for module in `ls | grep -v "CVS"`; do
 	rm -rf $module;
     fi
 done
+set -x
