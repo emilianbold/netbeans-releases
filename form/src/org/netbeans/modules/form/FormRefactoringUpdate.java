@@ -86,6 +86,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     private boolean transactionDone;
 
+    private boolean formFileRenameDone;
+
     private List<RefactoringElementImplementation> preFileChanges;
 
     private List<BackupFacility.Handle> backups;
@@ -139,11 +141,11 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             return;
         }
 
-        // As "transactions" we do updates only in the content of the source
-        // file, registered by the refactoring guarded block handler. The file
-        // itself is not changed (moved/renamed etc). Our transaction is called
-        // after retouche commits its changes to the source. After all
-        // transactions are done, the source file is saved automatically.
+        // As "transactions" we do updates for changes affecting only the
+        // content of the source file, not changing the file's name or location.
+        // Our transaction is called after retouche commits its changes to the
+        // source. After all transactions are done, the source file is saved
+        // automatically.
 
         switch (refInfo.getChangeType()) {
         case VARIABLE_RENAME:
@@ -195,12 +197,13 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             return;
         }
         if (transactionDone) { // could be registered redundantly as file change
+            processCustomCode();
             return;
         }
 
-        // As "file changes" we do updates that react on changes of the file's
-        // name or location. We need the source file to be already renamed/moved.
-        // The file changes are run after the "transactions".
+        // As "file changes" we do updates that react on changes of the source
+        // file's name or location. We need the source file to be already
+        // renamed/moved. The file changes are run after the "transactions".
 
         if (preFileChanges != null) {
             for (RefactoringElementImplementation change : preFileChanges) {
@@ -224,6 +227,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             packageRename();
             break;
         }
+
+        processCustomCode();
     }
 
     // RefactoringElementImplementation (registered via RefactoringElementsBag.addFileChange)
@@ -320,6 +325,38 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             // refactoring) and because no component has changed we can load the
             // form and regenerate to get the new resource names into code
             updateForm(true);
+        }
+    }
+
+    /**
+     * Tries to update the fragments of custom code in the .form file according
+     * to the refactoring change. The implementation is quite simple and 
+     * super-ugly. It goes through the form file, finds relevant attributes,
+     * and blindly replaces given "old name" with a "new name". Should mostly
+     * work when a component variable or class is renamed. Should be enough
+     * though, since the usage of custom code is quite limited.
+     */
+    private void processCustomCode() {
+        if (isGuardedCodeChanging() && !formFileRenameDone) {
+            String oldName = refInfo.getOldName();
+            String newName = refInfo.getNewName();
+            if (oldName != null && newName != null) {
+                boolean replaced = replaceClassOrPkgName(oldName, newName, false);
+                if (replaced) {
+                    final FormEditorSupport fes = formDataObject.getFormEditorSupport();
+                    if (fes.isOpened()) { // need to regenerate the code
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                formEditor = fes.reloadFormEditor();
+                                updateForm(true);
+                            }
+                        });
+                    } else if (prepareForm(true)) {
+                        updateForm(true);
+                    }
+                }
+                formFileRenameDone = false; // not to block redo
+            }
         }
     }
 
@@ -478,8 +515,17 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
    // -----
 
-    private static final String COMPONENT_MARK = "<Component "; // NOI18N
-    private static final String CLASS_MARK = " class=\""; // NOI18N
+    /**
+     * Elements and attributes that are used to search in when trying to replace
+     * a non-FQN name (identifier) in custom code of a form.
+     */
+    private static final String[] FORM_ELEMENTS_ATTRS = {
+        "<Component ", " class=\"", // NOI18N
+        "<AuxValue name=\"JavaCodeGenerator_", " value=\"", // NOI18N
+        "<Property ", " preCode=\"", // NOI18N
+        "<Property ", " postCode=\"", // NOI18N
+        "<Connection ", " code=\"" // NOI18N
+    };
 
     /**
      * Replace the class or package name directly in the form file. It is
@@ -512,12 +558,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             shortName = false;
         } else {
             shortName = !oldName.contains("."); // NOI18N
-            if (!shortName) {
-                oldStr = new String[] { oldName };
-                newStr = new String[] { newName };
-            } else { // will use different algorithm
-                oldStr = newStr = null;
-            }
+            oldStr = new String[] { oldName };
+            newStr = new String[] { newName };
         }
 
         java.io.OutputStream os = null;
@@ -547,22 +589,39 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             } else {
                 // The replaced name is short with no '.', so it is too risky
                 // to do plain search/replace over the entire file content.
-                // Search only in the specific attribute of the component element.
-                // TODO: also in custom code fragments...
+                // Search only in the specific elements and attributes.
                 StringBuilder buf = new StringBuilder((int)formFile.getSize());
                 boolean anyChange = false;
                 String line = reader.readLine();
                 while (line != null) {
-                    if (line.trim().startsWith(COMPONENT_MARK)) {
-                        int i = line.indexOf(CLASS_MARK);
-                        if (i > 0) {
-                            int i2 = line.indexOf(oldName);
-                            if (i2 == i +  CLASS_MARK.length()) {
-                                int i3 = i2 + oldName.length();
-                                char c = line.charAt(i3);
-                                if (c == '\"' || c == '.') { // NOI18N
-                                    line = line.substring(0, i2) + newName + line.substring(i3);
-                                    anyChange = true;
+                    String trimLine = line.trim();
+                    for (int i=0; i < FORM_ELEMENTS_ATTRS.length; i+=2) {
+                        if (trimLine.startsWith(FORM_ELEMENTS_ATTRS[i])) {
+                            String attr = FORM_ELEMENTS_ATTRS[i+1];
+                            int idx = line.indexOf(attr);
+                            if (idx > 0) {
+                                // get the value of the attribute - string enclosed in ""
+                                int idx1 = idx1 = idx + attr.length();
+                                if (!attr.endsWith("\"")) { // NOI18N
+                                    while (idx1 < line.length() && line.charAt(idx1) != '\"') { // NOI18N
+                                        idx1++;
+                                    }
+                                    idx1++;
+                                }
+                                int idx2 = idx1;
+                                while (idx2 < line.length() && line.charAt(idx2) != '\"') { // NOI18N
+                                    idx2++;
+                                }
+                                if (idx1 < line.length() && idx2 < line.length()) {
+                                    String sub = line.substring(idx1, idx2);
+                                    if (sub.contains(oldName)) {
+                                        NameReplacer rep = new NameReplacer(oldStr, newStr, idx2 - idx1);
+                                        rep.append(sub);
+                                        if (rep.anythingChanged()) {
+                                            line = line.substring(0, idx1) + rep.toString() + line.substring(idx2);
+                                            anyChange = true;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -596,6 +655,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             }
             lock.releaseLock();
         }
+        formFileRenameDone = true; // we don't need to do processCustomCode
         return true;
     }
 
@@ -687,7 +747,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
         private boolean canStartHere() {
             return lastChar != '.' && lastChar != '/'
-                   && !Character.isJavaIdentifierPart(lastChar);
+                   && (lastChar <= ' ' || !Character.isJavaIdentifierPart(lastChar));
+                   // surprisingly 0 is considered as valid char
         }
 
         private boolean canEndHere(char next) {
