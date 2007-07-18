@@ -76,12 +76,14 @@ import org.netbeans.modules.visualweb.css2.LineBox;
 import org.netbeans.modules.visualweb.css2.LineBoxGroup;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
+import org.netbeans.modules.visualweb.css2.SpaceBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
 
 import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
+import org.w3c.dom.Text;
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -2011,19 +2013,33 @@ public class InteractionManager {
 
                     // Fix such that text selection swiping in grid
                     // mode isn't totally bjorken
-                    if (((selBox.getBoxType() == BoxType.TEXT) ||
-                            (selBox.getBoxType() == BoxType.SPACE)) &&
-                            ((insertModeBox != null) && isBelow(insertModeBox, selBox))) {
-                        TextBox tb = (TextBox)selBox;
+                    if (((selBox.getBoxType() == BoxType.TEXT) || (selBox.getBoxType() == BoxType.SPACE))
+                    && ((insertModeBox != null) && isBelow(insertModeBox, selBox))) {
+                        // XXX #110083 Possible ClassCastException
+//                        TextBox tb = (TextBox)selBox;
+                        Text selBoxText;
+                        DomPosition selBoxFirstPosition;
+                        if (selBox instanceof TextBox) {
+                            TextBox tb = (TextBox)selBox;
+                            selBoxText = tb.getNode();
+                            selBoxFirstPosition = tb.getFirstPosition();
+                        } else if (selBox instanceof SpaceBox) {
+                            SpaceBox sb = (SpaceBox)selBox;
+                            selBoxText = sb.getNode();
+                            selBoxFirstPosition = sb.getFirstPosition();
+                        } else {
+                            selBoxText = null;
+                            selBoxFirstPosition = DomPosition.NONE;
+                        }
 
-                        if ((tb.getNode() != null) &&
+                        if ((selBoxText != null)
 //                                (DesignerUtils.checkPosition(tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()) != Position.NONE)) {
 //                                (ModelViewMapper.isValidPosition(tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()))) {
-                                (ModelViewMapper.isValidPosition(webform, tb.getFirstPosition(), false, /*webform*/webform.getManager().getInlineEditor()))) {
+                        && (ModelViewMapper.isValidPosition(webform, selBoxFirstPosition, false, /*webform*/webform.getManager().getInlineEditor()))) {
                             // You've clicked directly on text while in
                             // flow mode, and the text is not part of a
                             // jsf component: don't initiate a drag!
-                            if (!sm.isBelowSelected(tb) && !sm.isSelectionEmpty()) {
+                            if (!sm.isBelowSelected(selBox) && !sm.isSelectionEmpty()) {
                                 sm.clearSelection(true);
                             }
 

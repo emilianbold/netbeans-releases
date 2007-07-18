@@ -2212,6 +2212,11 @@ public final class ModelViewMapper {
 
 //        PageBox pageBox = webform.getPane().getPageBox();
         CssBox box = findBox(pageBox, pos);
+        
+        // XXX #110083 Possible NPE.
+        if (box == null) {
+            return DomPosition.NONE;
+        }
 
         if (box.getBoxType() == BoxType.TEXT) {
             TextBox tb = (TextBox)box;
