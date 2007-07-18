@@ -16,9 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project;
-
 
 import org.netbeans.modules.bpel.project.ui.customizer.BpelProjectCustomizerProvider;
 import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
@@ -35,7 +33,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 
-//import org.netbeans.modules.xml.wsdl.refactoring.reference.WSDLReferenceStorageFactory;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.bpel.project.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
@@ -73,7 +70,6 @@ import org.w3c.dom.Text;
  * @author Chris Webster
  */
 public final class BpelproProject implements Project, AntProjectListener, ProjectPropertyProvider {
-    
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/bpel/project/resources/bpelProject.png")); // NOI18N
     public static final String SOURCES_TYPE_BPELPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
@@ -97,8 +93,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         genFilesHelper = new GeneratedFilesHelper(helper);
-        //    CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(helper.getStandardPropertyEvaluator().getProperty("src.dir"));
-        
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         BpelProjectHelper.getInstance().setProject(this);
@@ -118,7 +112,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     }
     
     private PropertyEvaluator createEvaluator() {
-        // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         return helper.getStandardPropertyEvaluator();
     }
     
@@ -148,17 +141,10 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
         
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_BPELPRO, srcJavaLabel, /*XXX*/null, null);
-        // Fix for issue 95595: catalogsupport expects certain types of source roots
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}",
                 org.netbeans.modules.xml.catalogsupport.ProjectConstants.SOURCES_TYPE_XML,
-                srcJavaLabel, /*XXX*/null, null);
-//        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+                srcJavaLabel, null, null);
         
-     /*   sourcesHelper.addTypedSourceRoot(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverPath(),
-                               BpelProjectXmlCatalogProvider.TYPE_RETRIEVED,
-                               BpelProjectXmlCatalogProvider.TYPE_RETRIEVED,
-                               null,
-                               null) ;*/
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -168,20 +154,15 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
-//B            new ProjectWebServicesSupportProvider(),
-            // XXX the helper should not be exposed
             helper,
             spp,
             new BpelproActionProvider( this, helper, refHelper ),
             new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
-//            new IcanproCustomizerProvider( this, helper, refHelper ),
             new BpelProjectCustomizerProvider(this),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(this),
             new BpelProjectOperations(this),
-//            new WSDLReferenceStorageFactory(),
-//            new WSDLRenameRefactoringPlugin(this),
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
@@ -191,26 +172,20 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                     new String[] {
                 "${"+IcanproProjectProperties.BUILD_DIR+"}",
                 "${"+IcanproProjectProperties.DIST_DIR+"}"}
-            )
-            , new DefaultProjectCatalogSupport(this, helper, refHelper),
-            // new BpelProjectXmlCatalogProvider()
-            
+            ),
+            new DefaultProjectCatalogSupport(this, helper, refHelper),
         });
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
             Info info = (Info)getLookup().lookup(ProjectInformation.class);
             info.firePropertyChange(ProjectInformation.PROP_NAME);
             info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
     
-    public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored
-        //TODO: should not be ignored!
-    }
+    public void propertiesChanged(AntProjectEvent ev) {}
     
     String getBuildXmlName() {
         String storedName = helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.BUILD_FILE);
@@ -233,13 +208,11 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     /** Timeout within which request to show alert will be ignored. */
     private static int BROKEN_ALERT_TIMEOUT = 1000;
     
-    
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 if (nl.getLength() == 1) {
                     nl = nl.item(0).getChildNodes();
@@ -257,7 +230,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
                 Element nameEl;
                 if (nl.getLength() == 1) {
@@ -268,7 +240,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                     }
                 } else {
                     nameEl = data.getOwnerDocument().createElementNS(BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+                    data.insertBefore(nameEl, data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 helper.putPrimaryConfigurationData(data, true);
@@ -320,7 +292,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
-        
     }
     
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
@@ -337,14 +308,10 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                     BpelproProject.class.getResource("resources/build.xsl"),
                     false);
         }
-        
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        
-        ProjectOpenedHookImpl(Project project) {
-//            super(project);
-        }
+        ProjectOpenedHookImpl(Project project) {}
         
         protected void projectOpened() {
             try {
@@ -385,11 +352,17 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                 BrokenReferencesSupport.showAlert();
             }
             sourcesRegistryHelper.register();
-//            super.projectOpened();
+
+            // vlv
+            // todo start here
+//System.out.println();
+//System.out.println();
+//System.out.println("OPEN");
+//System.out.println();
+//System.out.println();
         }
         
         protected void projectClosed() {
-            // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(BpelproProject.this);
             } catch (IOException e) {
@@ -397,9 +370,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             }
             sourcesRegistryHelper.unregister();
             projectCloseSupport.fireProjectClosed();
-//            super.projectClosed();
         }
-        
     }
     
     /**
@@ -423,44 +394,20 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         public String getJbiServiceAssemblyType() {
             return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX);
         }
-        
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         
-        // List of primarily supported templates
-        
         private static final String[] TYPES = new String[] {
-            /*
-            "java-classes",        // NOI18N
-            "ejb-types",            // NOI18N
-            "java-beans",           // NOI18N
-            "oasis-XML-catalogs",   // NOI18N
-            "XML",                  // NOI18N
-            "ant-script",           // NOI18N
-            "ant-task",             // NOI18N
-            "simple-files"          // NOI18N
-             */
             "SOA",
             "XML",                  // NOI18N
             "simple-files"          // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-//            "Templates/CAPS/schema.xsd",
-//            "Templates/CAPS/untitled.bpel",
-//            "Templates/CAPS/untitled.wsdl",
             "Templates/SOA/Process.bpel", // NOI18N
             "Templates/XML/retrieveXMLResource",    // NOI18N
             "Templates/XML/WSDL.wsdl",    // NOI18N
-            /*
-            "Templates/J2EE/Session", // NOI18N
-            "Templates/J2EE/RelatedCMP", // NOI18N
-            "Templates/J2EE/Entity",  // NOI18N
-            "Templates/J2EE/Message", //NOI18N
-            "Templates/J2EE/WebService", // NOI18N
-            "Templates/Classes/Class.java" // NOI18N
-             */
         };
         
         public String[] getRecommendedTypes() {
@@ -470,12 +417,9 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
-        
     }
     
     public IcanproProjectProperties getProjectProperties() {
         return new IcanproProjectProperties(this, helper, refHelper);
     }
-    
-    
 }

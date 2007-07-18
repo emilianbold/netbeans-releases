@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project;
 
 import java.io.IOException;
@@ -34,7 +33,6 @@ public class BpelproProjectType implements AntBasedProjectType {
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-bpelpro/1";
     public static final String PRIVATE_CONFIGURATION_NAME = "data";
     public static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-bpelpro-private/1";
-    
     
     public BpelproProjectType() {
         int i = 0;
@@ -57,5 +55,4 @@ public class BpelproProjectType implements AntBasedProjectType {
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
-    
 }
