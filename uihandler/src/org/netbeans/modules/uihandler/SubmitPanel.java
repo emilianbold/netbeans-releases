@@ -21,37 +21,48 @@ package org.netbeans.modules.uihandler;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.ChoiceView;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author  Jaroslav Tulach
  */
 public class SubmitPanel extends javax.swing.JPanel 
-implements ExplorerManager.Provider, PropertyChangeListener {
+implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comparator<Object> {
     
     /** Creates new form SubmitPanel */
     public SubmitPanel() {
         manager = new ExplorerManager();
         
         initComponents();
-    
+
         EditorKit betterXML = CloneableEditorSupport.getEditorKit("text/xml");
         if (betterXML != null) {
-            record.setEditorKit(betterXML);
             text.setEditorKit(betterXML);
         }
+    }
+    
+    @Override
+    public void addNotify() {
+        super.addNotify();
         
+        text.addCaretListener(this);
         manager.addPropertyChangeListener(this);
     }
     
@@ -63,84 +74,71 @@ implements ExplorerManager.Provider, PropertyChangeListener {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        tabs = new javax.swing.JTabbedPane();
-        structured = new javax.swing.JPanel();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        listView1 = new org.openide.explorer.view.ListView();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        record = new javax.swing.JEditorPane();
-        raw = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        text = new javax.swing.JEditorPane();
+        try {
+            remove = new javax.swing.JComboBox();
+            jLabel1 = new javax.swing.JLabel();
+            jScrollPane2 = new javax.swing.JScrollPane();
+            text = new javax.swing.JEditorPane();
 
-        setPreferredSize(new java.awt.Dimension(640, 480));
-        setLayout(new java.awt.BorderLayout());
+            setPreferredSize(new java.awt.Dimension(640, 480));
 
-        tabs.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
+            remove.setModel(null );
+        } catch (Exception ex) {
+        }
+        remove = new ChoiceView();
+        remove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeActionPerformed(evt);
+            }
+        });
 
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-
-        listView1.setTraversalAllowed(false);
-        jSplitPane1.setLeftComponent(listView1);
-
-        record.setEditable(false);
-        jScrollPane1.setViewportView(record);
-
-        jSplitPane1.setRightComponent(jScrollPane1);
-
-        org.jdesktop.layout.GroupLayout structuredLayout = new org.jdesktop.layout.GroupLayout(structured);
-        structured.setLayout(structuredLayout);
-        structuredLayout.setHorizontalGroup(
-            structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(structuredLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        structuredLayout.setVerticalGroup(
-            structuredLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(structuredLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        tabs.addTab(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "MSG_TabRaw"), structured); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "SubmitPanel.jLabel1.text_1")); // NOI18N
 
         text.setEditable(false);
         jScrollPane2.setViewportView(text);
 
-        org.jdesktop.layout.GroupLayout rawLayout = new org.jdesktop.layout.GroupLayout(raw);
-        raw.setLayout(rawLayout);
-        rawLayout.setHorizontalGroup(
-            rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(rawLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(remove, 0, 360, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        rawLayout.setVerticalGroup(
-            rawLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, rawLayout.createSequentialGroup()
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(remove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
                 .addContainerGap())
         );
-
-        tabs.addTab(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "MSG_Tab_Text"), raw); // NOI18N
-
-        add(tabs, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_removeActionPerformed
 
     public ExplorerManager getExplorerManager() {
         return manager;
     }
     
-    public void addRecord(LogRecord r) {
+    public void addRecord(LogRecord r, Node owner) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
+            int offset = text.getDocument().getLength();
+            owner.setValue("offset", offset); // NOI18N
             LogRecords.write(os, r);
-            text.getDocument().insertString(text.getDocument().getLength(), os.toString("UTF-8"), null); // NOI18N
+            text.getDocument().insertString(offset, os.toString("UTF-8"), null); // NOI18N
             text.getCaret().setDot(0);
         } catch (IOException ex) {
             Installer.LOG.log(Level.WARNING, null, ex);
@@ -149,56 +147,62 @@ implements ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
-    private void clearRecord() {
-        try {
-            record.getDocument().remove(0, record.getDocument().getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger("global").log(Level.SEVERE,
-                ex.getMessage(), ex);
-        }
-}
     
     public void propertyChange(PropertyChangeEvent ev) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName())) {
             Node[] arr = getExplorerManager().getSelectedNodes();
             if (arr.length != 1) {
-                clearRecord();
                 return;
             }
-            
-            LogRecord data = arr[0].getLookup().lookup(LogRecord.class);
-            if (data == null) {
-                clearRecord();
-                return;
+
+            Object o = arr[0].getValue("offset"); // NOI18N
+            if (o instanceof Integer) {
+                text.removeCaretListener(this);
+                text.getCaret().setDot((Integer)o);
+                text.addCaretListener(this);
+                text.requestFocus();
             }
-            
-            try {
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                LogRecords.write(os, data);
-                os.close();
-                record.setText(os.toString());
-                record.getCaret().setDot(0);
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.SEVERE,
-                    ex.getMessage(), ex);
-                clearRecord();
-            }
-            
         }
     }
     
+    public void caretUpdate(CaretEvent e) {
+        int offset = text.getCaretPosition();
+        
+        Node[] arr = getExplorerManager().getRootContext().getChildren().getNodes(true);
+        int index = Arrays.binarySearch(arr, offset, this);
+        if (index < -1) {
+            index = -index - 2;
+        }
+        if (index >= 0 && index < arr.length) {
+            try {
+                getExplorerManager().removePropertyChangeListener(this);
+                getExplorerManager().setSelectedNodes(new Node[]{arr[index]});
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                getExplorerManager().addPropertyChangeListener(this);
+            }
+        }
+    }
+
+    public int compare(Object o1, Object o2) {
+        if (o1 instanceof Node) o1 = ((Node)o1).getValue("offset"); // NOI18N
+        if (o2 instanceof Node) o2 = ((Node)o2).getValue("offset"); // NOI18N
+        
+        if (o1 instanceof Integer && o2 instanceof Integer) {
+            return ((Integer)o1) - ((Integer)o2);
+        }
+        throw new IllegalArgumentException("o1: " + o1 + " o2: " + o2); // NOI18N
+    }
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSplitPane jSplitPane1;
-    private org.openide.explorer.view.ListView listView1;
-    private javax.swing.JPanel raw;
-    private javax.swing.JEditorPane record;
-    private javax.swing.JPanel structured;
-    private javax.swing.JTabbedPane tabs;
+    private javax.swing.JComboBox remove;
     javax.swing.JEditorPane text;
     // End of variables declaration//GEN-END:variables
     
     
-    private ExplorerManager manager;    
+    private ExplorerManager manager;
 }

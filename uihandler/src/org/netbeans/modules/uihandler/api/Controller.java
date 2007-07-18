@@ -103,14 +103,7 @@ public final class Controller {
         }
         
         public void run() {
-            if (EventQueue.isDispatchThread()) {
-                return;
-            }
-            try {
-                Installer.displaySummary("WELCOME_URL", true, false); // NOI18N
-            } finally {
-                EventQueue.invokeLater(this);
-            }
+            Installer.displaySummary("WELCOME_URL", true, false); // NOI18N
         }
     }
 }

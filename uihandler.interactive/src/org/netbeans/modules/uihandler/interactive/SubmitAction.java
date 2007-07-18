@@ -45,15 +45,9 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 
-public final class SubmitAction extends CallableSystemAction 
-implements Runnable {
+public final class SubmitAction extends CallableSystemAction {
     
     public void performAction() {
-        SwingUtilities.invokeLater(this);
-    }
-    
-    public void run() {
-        setEnabled(false);
         Controller.getDefault().submit();
     }
     
@@ -98,8 +92,6 @@ implements Runnable {
             tachoOk = new ImageIcon(Utilities.loadImage("org/netbeans/modules/uihandler/tachometer-ok.png"));
             setIcon(tacho);
             setToolTipText(NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction"));
-
-            addActionListener(SubmitAction.get(SubmitAction.class));
         }
     
         public void propertyChange(PropertyChangeEvent arg0) {

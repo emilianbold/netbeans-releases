@@ -628,7 +628,7 @@ public class Installer extends ModuleInstall {
         protected abstract Object showDialogAndGetValue(DialogDescriptor dd);
         protected abstract void closeDialog();
         protected abstract void alterMessage(DialogDescriptor dd);
-        protected abstract void viewData();
+        protected abstract boolean viewData();
         protected abstract void assignInternalURL(URL u);
         protected abstract void saveUserName();
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
@@ -843,8 +843,7 @@ public class Installer extends ModuleInstall {
             }
             
             if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
-                viewData();
-                if (e.getSource() instanceof AbstractButton) {
+                if (viewData() && (e.getSource() instanceof AbstractButton)) {
                     AbstractButton abut = (AbstractButton)e.getSource();
                     String alt = (String) abut.getClientProperty("alt"); // NOI18N
                     if (alt != null) {
@@ -1025,7 +1024,7 @@ public class Installer extends ModuleInstall {
             d = null;
         }
         
-        protected void viewData() {
+        protected boolean  viewData() {
             if (panel == null) {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
@@ -1034,28 +1033,22 @@ public class Installer extends ModuleInstall {
                 recs.add(getUserData(false));
                 root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-                LinkedList<Node> reverted = new LinkedList<Node>();
+                LinkedList<Node> nodes = new LinkedList<Node>();
                 for (LogRecord r : recs) {
-                    reverted.addFirst(UINode.create(r));
-                    panel.addRecord(r);
+                    Node n = UINode.create(r);
+                    nodes.add(n);
+                    panel.addRecord(r, n);
                 }
-                root.getChildren().add(reverted.toArray(new Node[0]));
+                root.getChildren().add(nodes.toArray(new Node[0]));
                 panel.getExplorerManager().setRootContext(root);
             }
             
-            if (report) {
-                if (dd.getMessage() == reportPanel) {
-                    dd.setMessage(panel);
-                } else {
-                    dd.setMessage(reportPanel);
-                }
-            } else {
-                if (dd.getMessage() == browser) {
-                    dd.setMessage(panel);
-                } else {
-                    dd.setMessage(browser);
-                }
-            }
+            DialogDescriptor viewDD = new DialogDescriptor(panel, "Data");
+            viewDD.setModal(true);
+            viewDD.setOptions(new Object[] { DialogDescriptor.CLOSED_OPTION  });
+            Dialog view = DialogDisplayer.getDefault().createDialog(viewDD);
+            view.setVisible(true);
+            return false;
         }
         protected void assignInternalURL(URL u) {
             if (browser != null) {
@@ -1110,8 +1103,9 @@ public class Installer extends ModuleInstall {
         protected void closeDialog() {
         }
         
-        protected void viewData() {
+        protected boolean viewData() {
             assert false;
+            return false;
         }
         protected synchronized void assignInternalURL(URL u) {
             urlComputed = true;
