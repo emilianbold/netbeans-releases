@@ -152,7 +152,7 @@ public class ValidatorPropertyEditor extends PropertyEditorBase implements
                 FacesDesignContext designContext = (FacesDesignContext) designProperty.getDesignBean().getDesignContext();
                 ResolveResult result = designContext.resolveBindingExprToBean(expression);
                 DesignBean lbean = result.getDesignBean();
-                if (lbean.getInstance() instanceof Validator)
+                if (lbean != null && lbean.getInstance() instanceof Validator)
                     return lbean.getInstanceName();
                 return expression;
             }
