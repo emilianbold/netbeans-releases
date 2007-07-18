@@ -42,7 +42,6 @@
     <tocitem text="Configuring General IDE Settings" >
       <tocitem text="Using the Options Window" target="configure.options" />
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
-      <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
 
       <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
@@ -85,49 +84,6 @@
 
 <tocitem text="Java Project Basics" >
   <tocitem text="Editing Source Files" >
-    <tocitem text="About Editing Source Files" target="editing.about"/>
-    <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
-    <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref"/>
-    <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
-    <tocitem text="Keystroke Savers: Quick Reference" target="editor.keystroke-savers"/>
-    <tocitem text="Identifying Errors in Source Code" target="editing_error-marks"/>
-    <tocitem text="Using Editor Hints to Fix Code" target="editing.hints"/>
-    <tocitem text="Formatting Code" target="editing.formatting"/>
-    <tocitem text="Finding and Replacing Text" target="editing.find"/>
-    <tocitem text="Regular Expressions For Finding and Replacing Text" target="editing.find_regexp"/>
-    <tocitem text="Folding Blocks of Code in Java Files" target="editor.hiding"/>
-    <tocitem text="Folding Blocks of Code in JSP or HTML Files" target="editor.hiding-jsp"/>
-    <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
-    <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
-    <tocitem text="Using Code Completion" >
-      <tocitem text="About" target="editing.codecompletion" />
-      <tocitem text="Completing a Java Expression" target="editing.completing-exp"/>
-      <tocitem text="Completing a JSP or HTML Tag" target="editing.completing-tag"/>
-      <tocitem text="Setting the Completion Box Delay" target="editing.settingdelay"/>
-      <tocitem text="Disabling Automatic Completion " target="editing.disablingdelay"/>
-      <tocitem text="Setting Code Completion Shortcuts" target="editing.settingccshortcuts"/>
-      <tocitem text="Code Completion Javadoc Box" target="editing.completing-javadoc-box"/>  
-    </tocitem>
-    <tocitem text="Using Code Templates and Macros" >
-      <tocitem text="About" target="editing.macros" />
-      <tocitem text="Inserting Code From a Template" target="editing.abbreviations"/>
-      <tocitem text="Code Template Abbreviations: Quick Reference" target="shortcuts.abbreviations-list"/>
-      <tocitem text="Recording a Macro" target="editing.macros.recording"/>
-      <tocitem text="Editing a Macro" target="editing.macros.editing"/>
-      <tocitem text="Running a Macro" target="editing.macros.invoking"/>
-    </tocitem>
-      <tocitem text="Using the Word Match Feature" target="editing.wordmatch"/>
-      <tocitem text="Using the Jump List" target="editing.jumplist"/>
-      <tocitem text="Managing Java Import Statements" target="editing.fastimport-task"/>
-
-    <tocitem text="Generating a Try-Catch Block" target="editing.surround_try-catch" />
-
-    <tocitem text="Java Annotations in Source Code" target="editing_javaannotations" />
-    <tocitem text="Working With Beans">
-
-      <tocitem text="Generating Getter and Setter Methods" target="beans.getset" />
-    </tocitem>
-
     <tocitem text="Editing XML Documents" >
       <tocitem text="About Editing XML Documents" target="xml_about" />
       <tocitem text="Working with XML Documents" target="xml_overview" />
@@ -168,12 +124,8 @@
     </tocitem>
 
     <tocitem text="Configuring the Source Editor" >
-      <tocitem text="About" target="editing.configuring"/>    
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting"/>
-      <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
-      <tocitem text="Setting Tab Behavior" target="editing.tabs"/>
     </tocitem>
-    <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   </tocitem>
   <tocitem text="Refactoring Java Source">
     <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 

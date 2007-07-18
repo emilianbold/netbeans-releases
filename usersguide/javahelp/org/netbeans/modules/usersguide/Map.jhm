@@ -53,57 +53,6 @@
 
 
 
-<mapID target="editing.about" url="editing/editing_about.html" />
-<mapID target="editing.opening" url="editing/opening.html" />
-<mapID target="editing.hints" url="editing/editing_hints.html" />
-<mapID target="editing.surround_try-catch" url="editing/surround_try-catch.html" />
-
-<!--also CSH for Find in editor:-->
-<mapID target="editing.find" url="editing/find.html" />
-<mapID target="editing.find_regexp" url="editing/find_regexp.html" />
-
-<mapID target="editing.formatting" url="editing/formatting.html" />
-<mapID target="editing.tabs" url="editing/tabs.html" />
-<mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
-<mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
-<mapID target="editing.completing-tag" url="editing/codecompletion/completing-tag.html" />
-<mapID target="editing.completing-javadoc-box" url="editing/codecompletion/completing-javadoc-box.html" />
-<mapID target="editing.settingdelay" url="editing/codecompletion/settingdelay.html" />
-<mapID target="editing.disablingdelay" url="editing/codecompletion/disabling.html" />
-<mapID target="editing.settingccshortcuts" url="editing/codecompletion/settingshortcuts.html" />
-<mapID target="editing.macros" url="editing/macros/intro.html" />
-
-<!--also used for Abbreviations dialog for the various editor types in the Options window: -->
-<mapID target="editing.abbreviations" url="editing/macros/abbreviations.html" />
-<mapID target="editing.macros.recording" url="editing/macros/recording.html" />
-<mapID target="editing.macros.editing" url="editing/macros/editing.html" />
-<mapID target="editing.macros.invoking" url="editing/macros/invoking.html" />
-<mapID target="editing.jumplist" url="editing/jumplist.html" />
-<mapID target="editing.wordmatch" url="editing/wordmatch.html" />
-<mapID target="editing.fastimport-task" url="editing/fastimport.html" />
-<mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
-<mapID target="editing.configuring" url="editing/configuring/configuring.html" />
-<mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
-<mapID target="editing.indentation" url="editing/configuring/indentation.html" />
-<mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
-<mapID target="editing_javaannotations" url="editing/editing_javaannotations.html" />
-<mapID target="editing.tasks" url="editing/tasks_viewing.html" />
-<mapID target="editor.hiding" url="editing/editor_hiding.html" />
-<mapID target="editor.hiding-jsp" url="editing/editor_hiding-jsp.html" />
-<mapID target="editor.keystroke-savers" url="editing/editor_keystroke-savers.html" />
-<mapID target="editor.quickref" url="editing/editor_quickref.html" />
-<mapID target="editor.navigation" url="editing/editor_navigation.html" />
-<mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
-
-<!--also CSH for: 
-  1. Print Fonts and Colors dialog box (called from Print Fonts and Colors properties of the various editors 
-under Print Settings in the Options window) 
-  2. Fonts and Colors dialog box
-(called from Fonts and Colors properties of the various editors under Editor Settings)
- 3. Children nodes of Print Settings, since Fonts and Colors is the only property-->
-<mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
-
-<mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 
 
 <mapID target="refactor.aboutRefactoring" url="refactor/aboutRefactoring.html" />
@@ -235,11 +184,7 @@ under Print Settings in the Options window)
 <!-- Favorites window :-->
 <mapID target="org.netbeans.modules.favorites.Tab" url="project/csh/proj_fav_window.html" />
 
-<!-- Navigator window :-->
-<mapID target="navigator.java" url="editing/csh/nav_window.html" />
 
-<!--TODO window -->
-<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="editing/todo_window_csh.html" />
 
 
 
@@ -286,41 +231,6 @@ under Print Settings in the Options window)
 <mapID target="netbeans.optionsDialog.keymaps" url="configure/options-shortcuts.html" />
 
 
-<!--CSH page for Fast Import dialog-->
-<mapID target="editing.fastimport" url="editing/fastimport.html" />
-
-<!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes :-->
-<mapID target="editing.printing" url="editing/configuring/printing.html" />
-<!-- This is a csh mapping for the indentation node in the Options window :-->
-<mapID target="org.netbeans.core.services.IndentEngines" url="editing/configuring/indentation.html" />
-<!-- These are csh pages hooked up to Editor Settings nodes of Options window :-->
-<mapID target="editing.global" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.java" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.html" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.plain" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
-
-
-<!--CSH for Java Editor-->
-<mapID target="org.netbeans.modules.editor.java.JavaKit" url="editing/csh/about_source_editor.html" />
-
-<!--CSH for XML Editor-->
-<mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="editing/csh/about_source_editor.html" />
-
-
-<!--topic for Java Editor toolbar - linked to from Java Editor topic-->
-<mapID target="java_editor_toolbar" url="editing/csh/java_editor_toolbar.html" />
-
-<!--topic for margin glyphs - linked to from Java Editor topic-->
-<mapID target="editor_glyphs" url="editing/csh/editor_glyphs.html" />
-
-<!--topic for error stripe - linked to from Java Editor topic-->
-<mapID target="editing_error-stripe" url="editing/csh/editing_error-stripe.html" />
-
-<!--CSH for Options - Editing Beans Property-->
-<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/options_beans_prop_classic.html" />
-
 <!--CSH - Whenever main window or a menu item is in focus when Help is clicked:-->
 <mapID target="org.netbeans.core.windows.view.ui.MainWindow" url="pending.html" />
 
@@ -347,8 +257,6 @@ under Print Settings in the Options window)
 
 
 <!-- To Do window help :-->
-<mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
-<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView " url="editing/todo_window_csh.html" />
 <mapID target="org.netbeans.modules.tasklist.docscan.Settings" url="configure/options_todo_settings.html" /> 
 
 
@@ -572,14 +480,6 @@ under Print Settings in the Options window)
         
 
 
-
-
-<!-- map ids to other help sets :-->
-<mapID target="org.netbeans.modules.editor.html.HTMIndentEngine" 
-  url="editing/configuring/indentation.html" />
-
-<mapID target="org.netbeans.modules.web.core.syntax.JspIndentEngine" 
-  url="editing/configuring/indentation.html" />
 
 
 <!-- XML Module CSH :-->
