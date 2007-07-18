@@ -24,7 +24,6 @@ import java.io.IOException;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
 import org.apache.jasper.Options;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -70,7 +69,7 @@ public class ExtractPageData {
         PageInfo pageInfo = comp.getPageInfo();
         
 	JspConfig jspConfig = options.getJspConfig();
-	JspConfig.JspProperty jspProperty =
+	JspProperty jspProperty =
 			jspConfig.findJspProperty(ctxt.getJspFile());
 
     /*

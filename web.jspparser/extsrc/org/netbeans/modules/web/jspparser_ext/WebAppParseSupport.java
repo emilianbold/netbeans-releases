@@ -45,7 +45,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node;
@@ -62,6 +61,7 @@ import org.apache.jasper.compiler.TldLocationsCache;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.jspparser_ext.OptionsImpl;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 
 /** Class that provides JSP parsing support for one web application. It caches 
  * some useful data on a per-webapp basis.<br>
@@ -180,22 +180,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
     }
     
-    private static Pattern rePatternMyFaces = Pattern.compile(".*myfaces-impl.*\\.jar.*");      // NOI18N
+//    private static Pattern rePatternMyFaces = Pattern.compile(".*myfaces-impl.*\\.jar.*");      // NOI18N
     private static Pattern rePatternCommonsLogging = Pattern.compile(".*commons-logging.*\\.jar.*");        // NOI18N
-    /** Returns whether the jar is excluded by the parser, because should be on the parser
-     *  system classpath. 
-     **/
-    private boolean isParserSystemJar(URL path){
-        String name = path.getFile();
-        if (name.endsWith("!/")) name = name.substring(0, name.length()-2);
-        int index = name.lastIndexOf('/')+1;
-        
-        if (index > 0)
-            name = name.substring(index).trim();
-        // fix for issue #77134 - NetBeans5.5 editor cannot resolve some MyFaces taglibs
-        Matcher m = rePatternMyFaces.matcher(path.getFile());
-        return (m.matches() || getParserSystemJar().contains(name));
-    }
+    
     
     private boolean isUnexpectedLibrary(URL url){
         Matcher m = rePatternCommonsLogging.matcher(url.getFile());
@@ -220,10 +207,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
         Hashtable tomcatTable = new Hashtable();
         Hashtable loadingTable = new Hashtable();
-        HashSet systemJars = new HashSet();
         FileObject libDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/lib");  //NOI18N
         URL helpurl;
-        boolean isSystemJar;
         
         if (libDir != null) {
             Enumeration libDirKids = libDir.getChildren(false);
@@ -231,13 +216,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 FileObject elem = (FileObject)libDirKids.nextElement();
                 if (elem.getExt().equals("jar")) {      //NOI18N
                     helpurl = findInternalURL(elem);
-                    isSystemJar = isParserSystemJar(helpurl);
-                    if (!isUnexpectedLibrary(helpurl) /*&& !isSystemJar*/){
+                    if (!isUnexpectedLibrary(helpurl)) {
                         tomcatTable.put(helpurl, helpurl);
                         loadingTable.put(helpurl, helpurl);
                         registerTimeStamp(elem, false);
                     }
-                    if (isSystemJar) systemJars.add(helpurl);           
                 }
             }
         }
@@ -252,13 +235,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             FileObject[] roots = cp.getRoots();
             for (int i = 0; i < roots.length; i++){
                 helpurl = findInternalURL(roots[i]);
-                isSystemJar = isParserSystemJar(helpurl);
-                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl) /*&& !isSystemJar*/){
+                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)) {
                     loadingTable.put(helpurl, helpurl);
                     tomcatTable.put(helpurl, findExternalURL(roots[i]));
                     registerTimeStamp(roots[i], false);
                 }
-                if (isSystemJar && !systemJars.contains(helpurl)) systemJars.add(helpurl);
             }
         }
         // libraries and built classes are on the execution classpath
@@ -270,13 +251,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             FileObject [] roots = cp.getRoots();
             for (int i = 0; i < roots.length; i++){
                 helpurl = findInternalURL(roots[i]);
-                isSystemJar = isParserSystemJar(helpurl);
-                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl) /*&& !isSystemJar*/){
+                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)) {
                     loadingTable.put(helpurl, helpurl);
                     tomcatTable.put(helpurl, findExternalURL(roots[i]));
                     registerTimeStamp(roots[i], false);
                 }
-                if (isSystemJar && !systemJars.contains(helpurl)) systemJars.add(helpurl);
             }
         }
         FileObject classesDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/classes");  //NOI18N
@@ -304,31 +283,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         if (files == null)
             files = new File[0];
         
-        URL urls[] = new URL[files.length + systemJars.size()];
-        try {
-            for (int i = 0; i < files.length; i++) {
-                urls[i] = files[i].toURI().toURL();
-            }
-            iter = systemJars.iterator();
-            for (int i = files.length; i < urls.length; i++)
-                urls[i] = (URL)iter.next();
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }
-        
         waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
-        waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, new JasperSystemClassLoader(urls, Thread.currentThread().getContextClassLoader()));
-        if (parserDebugLevel > 3) {
-            String clString;
-            // print out webapp classloader
-            clString = "wa class loader   : " + waClassLoader; // NOI18N
-            System.out.println(clString); 
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, clString); // NOI18N
-            // print out context class loader
-            clString = "ctxt class loader : " + waContextClassLoader; // NOI18N
-            System.out.println(clString); 
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, clString); // NOI18N
-        }
+        waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
+        
     }
     
     private URL findInternalURL(FileObject fo) {
@@ -544,31 +501,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         return true;
     }
-    
-    /**
-     * Parser system jars, are jars, which are excluded from the parsing. 
-     * These jar has to be putted in different "system parser" classloader.
-     */
-    private Set getParserSystemJar(){
-        if (parserSystemJars == null){
-            TldLocationsCache lc = diskOptions.getTldLocationsCache();
-            try {
-                Field systemsJar = TldLocationsCache.class.getDeclaredField("systemJars"); //NOI18N
-                systemsJar.setAccessible(true);
-                parserSystemJars = (HashSet)systemsJar.get(lc);
-            } catch (IllegalArgumentException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            } catch (SecurityException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            } catch (NoSuchFieldException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        return parserSystemJars;
-    }
-    
+       
     private Map getMappingsByReflection(TldLocationsCache lc) throws IOException {
         try {
             if (!isClassPathCurrent || !checkMappingsAreCurrent()) {
@@ -579,7 +512,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 mappingsF.setAccessible(true);
                 // Before new parsing, the old mappings in the TldLocationCache has to be cleared. Else there are
                 // stored the old mappings.
-                ((Hashtable)mappingsF.get(lc)).clear();
+                mappings = (Map)mappingsF.get(lc);
+                // the mapping doesn't have to be initialized yet
+                if(mappings != null)
+                    mappings.clear();
                 
                 Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
                 compThread.setContextClassLoader(waContextClassLoader);
@@ -591,6 +527,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
                 
+                // obtain the current mappings after parsing. 
                 mappings = (Map)mappingsF.get(lc);
                 //------------------------- construct the cache -----------------------------
                 // Obtain all files, which were parsed and store the lastchange time to the cache.
@@ -727,7 +664,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         File file;
         for (int i = 0 ; i < roots.length; i++){
             URL url = findInternalURL(roots[i]);
-            if (!isParserSystemJar(url) && !isUnexpectedLibrary(url)){
+            if (!isUnexpectedLibrary(url)) {
                 fo = roots[i]; 
                 file =  null;
                 try {
@@ -775,6 +712,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     // JasperException - usual
                     // ArrayIndexOutOfBoundsException - see issue 20919
                     // Throwable - see issue 21169, related to Tomcat bug 7124
+ //TODO has to be returned back to track all errors.                     
                     ErrorManager.getDefault().annotate(e, NbBundle.getMessage(WebAppParseSupport.class, "MSG_errorDuringJspParsing"));
                     if (parserDebugLevel > 0) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

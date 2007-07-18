@@ -64,12 +64,14 @@ public class JspParserImpl implements JspParserAPI {
     
     private static void initReflection() {
         if (webAppParserImplConstructor == null) {
-            File files[] = new File[4];
+            File files[] = new File[5];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
             files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false);
             //files[2] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false);
             files[2] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false);
             files[3] = InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false);
+            //Glassfish V2
+            files[4] = InstalledFileLocator.getDefault().locate("ant/lib/ant-launcher.jar", null, false);
             
             try {
                 URL urls[] = new URL[files.length];

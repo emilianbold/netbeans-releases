@@ -89,7 +89,7 @@ public class GetParseData {
             //   errDispatcher));
 
             JspConfig jspConfig = options.getJspConfig();
-            JspConfig.JspProperty jspProperty =
+            JspProperty jspProperty =
                             jspConfig.findJspProperty(ctxt.getJspFile());
 
             /*

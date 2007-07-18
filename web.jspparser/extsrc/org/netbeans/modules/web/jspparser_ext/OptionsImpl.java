@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.jspparser_ext;
 
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.apache.jasper.JspC;
 import org.apache.jasper.Options;
@@ -32,6 +33,8 @@ import org.apache.jasper.compiler.TldLocationsCache;
  */
 public class OptionsImpl implements Options {
 
+    private static final Logger LOGGER = Logger.getLogger(OptionsImpl.class.getName());
+    
     /**
      * Cache for the TLD locations
      */
@@ -50,7 +53,7 @@ public class OptionsImpl implements Options {
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
         tldLocationsCache = new TldLocationsCache(context, this, true);
-        jspConfig = new JspConfig(context);
+        jspConfig = new JspConfig(context, this);
         tagPluginManager = new TagPluginManager(context);
     }
     
@@ -80,7 +83,7 @@ public class OptionsImpl implements Options {
     
     public boolean getFork() {
         // should not be needed
-        throw new UnsupportedOperationException();
+        return false;
     }
     
     public String getIeClassId() {
@@ -194,5 +197,25 @@ public class OptionsImpl implements Options {
     public boolean isTldValidationEnabled() {
         return false;
     }
+    
+    // ----------------- Glassfish V2 --------------
+    
+    public boolean genStringAsByteArray() {
+        throw new UnsupportedOperationException("Not supported yet. genStringAsByteArray");
+    }
+    
+    public boolean isDefaultBufferNone() {
+        throw new UnsupportedOperationException("Not supported yet. isDefaultBufferNone");
+    }
+    
+    public boolean isValidationEnabled() {
+        LOGGER.fine("isValidationEnabled");
+        return false;
+    }
+    
+    public boolean getSaveBytecode() {
+        throw new UnsupportedOperationException("Not supported yet. getSaveBytecode");
+    }
+    
     
 }
