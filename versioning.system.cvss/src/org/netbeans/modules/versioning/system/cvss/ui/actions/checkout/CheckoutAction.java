@@ -326,10 +326,7 @@ public final class CheckoutAction extends SystemAction {
             OpenProjects.getDefault().open(projects, false);
 
             // set as main project and expand
-            ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
-            Lookup ctx = Lookups.singleton(p);
-            Action ctxAction = action.createContextAwareInstance(ctx);
-            ctxAction.actionPerformed(new ActionEvent(this, 0, ""));    // NOI18N
+            OpenProjects.getDefault().setMainProject(p);
             ProjectUtilities.selectAndExpandProject(p);
         }
     }
