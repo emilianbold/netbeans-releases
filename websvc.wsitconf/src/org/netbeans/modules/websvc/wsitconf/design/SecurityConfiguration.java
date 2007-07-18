@@ -122,9 +122,9 @@ public class SecurityConfiguration implements WSConfiguration {
         boolean set = false;
         if (binding != null) {
             set = SecurityPolicyModelHelper.isSecurityEnabled(binding);
-        }
-        if (set && (scl == null)) {
-            scl = new  WsitServiceChangeListener(binding);
+            if (scl == null) {
+                scl = new  WsitServiceChangeListener(binding);
+            }
             serviceModel.addServiceChangeListener(scl);
         }
         return set;
@@ -162,10 +162,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
 
     public void unset() {
-        if (scl != null) {
-            serviceModel.removeServiceChangeListener(scl);
-        }
-        
+       
         if (binding == null) return;
         if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
             SecurityPolicyModelHelper.disableSecurity(binding, true);
@@ -183,7 +180,7 @@ public class SecurityConfiguration implements WSConfiguration {
     
     @Override
     public void finalize() {
-        if (scl != null) {
+        if ((scl != null) && (serviceModel != null)) {
             serviceModel.removeServiceChangeListener(scl);
         }
         if (binding != null) {

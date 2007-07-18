@@ -24,6 +24,7 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -53,7 +54,10 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
 
     public void operationAdded(MethodModel method) {
         BindingOperation bO = Util.generateOperation(b, Util.getPortType(b), method.getOperationName(), method.getImplementationClass());
-        ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bO, ComboConstants.PROF_MUTUALCERT);
+        if (SecurityPolicyModelHelper.isSecurityEnabled(b)) {
+            String profile = ProfilesModelHelper.getSecurityProfile(b);
+            ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bO, profile);
+        }
         WSITModelSupport.save(b);
     }
 
