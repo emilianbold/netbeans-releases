@@ -62,8 +62,5 @@ public class BrokenDataSourceSupport {
         else
             return !problemDatasources.isEmpty();
     }
-
-    public static boolean dataSourceExistsCheck(Project project, String item) {
-        return DataSourceResolver.getInstance().dataSourceExists(project, item);
-    }
+   
 }

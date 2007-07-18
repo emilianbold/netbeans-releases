@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 
-import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 
 import java.util.ArrayList;

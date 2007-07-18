@@ -30,10 +30,6 @@ package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoListener;
-import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoManager;
-import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfo;
-import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoListener;
-import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManager;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
@@ -58,12 +54,11 @@ import org.openide.util.Lookup;
  *
  * @author John Baker
  */
-public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInfoListener {
+public class DataSourceResolver implements DataSourceInfoListener {
     private static final int TRUE = 1;
     private static final int FALSE = 0;
     private static final int RESET = -1;
     private static DataSourceResolver dataSourceResolver;
-    private JdbcDriverInfo jdbcDriverInfo = null;
     private String dataSourceInfo = null;
 
     /** Creates a new instance of DataSourceResolver */
@@ -77,17 +72,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
         return dataSourceResolver;
     }
 
-    public void jdbcDriverInfoModified(org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoEvent modelEvent) {
-        jdbcDriverInfo = modelEvent.getJdbcDriverInfoDs();
-    }
-
-    public void jdbcDriverInfoAdded(org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoEvent modelEvent) {
-        jdbcDriverInfo = modelEvent.getJdbcDriverInfoDs();
-    }
-
-    public void jdbcDriverInfoRemoved(org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoEvent modelEvent) {
-        ; // no-op
-    }
+   
 
     public void dataSourceInfoModified(org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoEvent modelEvent) {
         dataSourceInfo = modelEvent.getDataSourceInfoId();
@@ -99,108 +84,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
 
     public void dataSourceInfoRemoved(org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoEvent modelEvent) {
         ; // no-op
-    }
-
-    public Set getProblemDataSources(Project project) {
-        int match; // TRUE if data source in context matches data source in project
-        Set<String> problemDataSources = null;
-
-        //***** CHECK IDE STARTUP
-//        System.err.println("jb: BEFORE DATASOURCE CHECK - " + Calendar.getInstance().getTime());
-
-        // collect the datasources JNDI names from DataSourceInfoManager
-        Set ideDataSources = DataSourceInfoManager.getInstance().getSortedDataSourceNames();
-        
-        // collect all the JNDI names used in the project
-        String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(project );
-        String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(project);
-        
-        // If both project and IDE don't have any then match is TRUE
-        if (ideDataSources.isEmpty() && (dynamicDataSources.length == 0 && hardCodedDataSources.length == 0))
-            match = TRUE;
-        // Test for match if both project and IDE have data sources
-        else {
-            //  Check if dynamicDataSources  & hardCodedDataSources  are available in the ideDataSources
-            //  If not found, add them to the Set problemDataSources
-            problemDataSources = new HashSet<String>();
-            Iterator ideDs = ideDataSources.iterator();
-            String ideDsName;
-            
-            // Check for any missing hardcoded data sources, add if any by comparing the IDE data sources with the project's
-            for (int i=0; i < hardCodedDataSources.length; i++) {
-                // parse connection string, java:/comp/env/jdbc/XXX, to retrieve just the JNDI /jdbc/XXXX
-                String projectDsName = hardCodedDataSources[i].substring(hardCodedDataSources[i].indexOf("jdbc")+"jdbc/".length());
-                match = RESET; // reset flag
-                
-                while (ideDs.hasNext()) {
-                    ideDsName = (String)ideDs.next();
-                    
-                    if (ideDsName.equals(projectDsName)) {
-                        match = TRUE;
-                        break; // data source match made, stop checking
-                    } else
-                        match = FALSE;
-                }
-                
-                if (match == FALSE)
-                    if (!problemDataSources.contains(projectDsName))
-                        problemDataSources.add(projectDsName);
-                
-                // reset iterator
-                ideDs = ideDataSources.iterator();
-            }
-            
-            // Check for any missing dynamic data sources, add if any
-            for (int i=0; i < dynamicDataSources.length; i++) {
-                // parse connection string, java:/comp/env/jdbc/XXX, to retrieve just the JNDI /jdbc/XXXX
-                String projectDsName = dynamicDataSources[i].substring(dynamicDataSources[i].indexOf("jdbc")+"jdbc/".length());
-                match = RESET;  //reset
-                
-                while (ideDs.hasNext()) {
-                    ideDsName = (String)ideDs.next();
-                    
-                    if (ideDsName.equals(projectDsName)) {
-                        match = TRUE;
-                        break; // data source match made, stop checking
-                    } else
-                        match = FALSE;
-                }
-                
-                // handle case if context.xml has no entries
-                if (ideDataSources.isEmpty())
-                    match = FALSE;
-                
-                // Add any projects that have problem data sources (no data sources in context)
-                if (match == FALSE)
-                    if (!problemDataSources.contains(projectDsName))
-                        problemDataSources.add(projectDsName);
-                
-                // reset iterator
-                ideDs = ideDataSources.iterator();
-            }
-            
-            // *** for testing purposes only
-//            Iterator testProb = problemDataSources.iterator();
-//            while (testProb.hasNext()) {
-//                System.err.println(" Project = " + project.toString() + "  ## missing datasource = " + (String)testProb.next());
-//            }
-        }
-        
-//        System.err.println("jb: AFTER DATASOURCE CHECK - " + Calendar.getInstance().getTime());
-        
-        return problemDataSources;
-    }
-    
-    
-    // Checks if datasource already exists.
-    public boolean dataSourceExists(Project project, String item) {
-        ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(project);
-        DataSourceInfo dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(item);
-        if (dsInfo == null)
-            return false;
-        else
-            return projectDataSourceManager.matchDataSourceInfo(projectDataSourceManager.getDataSourceWithName(item), dsInfo);
-    }
+    }              
     
     // if a project data source does not have a corresponding connetion then return true
     public boolean isDataSourceMissing(Project project, String prjDsName) {
@@ -237,68 +121,10 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
         }
         
         return null;
-    }                
-    
-    public JDBCDriver addDriver(DataSourceInfo dsInfo) {
-        JDBCDriver driver = null ;
-        
-        try {
-            // Add the driver
-            JarFile jf;
-            String drv;
-            String jarName = "";
-            
-            JdbcDriverInfo jdbcInfo = JdbcDriverInfoManager.getInstance().getCurrentJdbcDriverInfo();
-            List jars  = jdbcInfo.getJarNames();
-            Iterator jar = jars.iterator();
-            while (jar.hasNext())
-                jarName = (String) jar.next();
-            
-            String userDir = System.getProperty("netbeans.user"); // NOI18N
-            URL url = (new File(userDir + System.getProperty("file.separator") + "jdbc-drivers" + System.getProperty("file.separator") + jarName)).toURL();
-            driver = JDBCDriver.create(dsInfo.getName(), jdbcInfo.getDisplayName(), jdbcInfo.getDriverClassName(), new URL[] {url});
-            JDBCDriverManager.getDefault().addDriver(driver);
-            
-        } catch (DatabaseException de) {
-            de.printStackTrace();
-        } catch(MalformedURLException mue) {
-            ErrorManager.getDefault().notify(mue);
-        }
-        
-        return driver;
-    }
-    
-    // check to see if the Data Source has been resolved
-    private boolean dataSourceResolved(Project currentProject, String item) {
-        String[] remainingDataSources = getProblemDataSourceInstances(currentProject);
-        boolean resolved = true;
-        
-        for (int i=0; i<remainingDataSources.length; i++) {
-            if (remainingDataSources[i].equals(item)) {
-                resolved = false;
-                break;
-            }
-        }
-        
-        return resolved;
-    }
+   }                                
     
     
-// return String array of the missing data sources
-    public String[] getProblemDataSourceInstances(Project currentProject) {
-        String[] instances;
-        
-        Set problemDataSources = getProblemDataSources(currentProject);
-        instances = new String[problemDataSources.size()];
-        Iterator dataSourceItem = problemDataSources.iterator();
-        
-        int i = 0;
-        while (dataSourceItem.hasNext()) {
-            instances[i++] = (String)dataSourceItem.next();
-        }
-        
-        return instances;
-    }
+
     
     private boolean updateProject(Project project, DataSourceInfo dsInfo) {
         boolean needAdd = false;
@@ -315,96 +141,7 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
         
     }
     
-    // Check if any project resources are missing.  If any are missing then add to the project
-    public void updateProjectDataSources(Project project) {                
-        // get list of all data sources used in the project
-        String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(project );
-        String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(project);
-        boolean missing = false;
-        DataSourceInfo dsInfo = null;
-        Set<RequestedJdbcResource> ret = new HashSet<RequestedJdbcResource>();
-        DesignTimeDataSourceService dataSourceService = null;
-        RequestedJdbcResource reqResource = null;
-        Iterator<RequestedJdbcResource> prjDataResources = null;
-        
-        // make sure project doesn't have any dynamic data sources
-        if (dynamicDataSources != null && hardCodedDataSources != null) {
-            dataSourceService = (DesignTimeDataSourceService)Lookup.getDefault().
-                    lookup(DesignTimeDataSourceService.class);
-            
-            // Update project's resources if server resources not found, based on a project's dynamic data sources
-            for (int i=0; i<dynamicDataSources.length; i++) {
-                dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(dynamicDataSources[i].substring(dynamicDataSources[i].indexOf("jdbc")+"jdbc/".length()));
-                
-               // see if the server has the project's data sources'
-                ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(project);
-                
-                // retrieve a list of server data sources
-                Set<RequestedJdbcResource> serverDataSources = dataSourceService.getServerDataSources(project);
-                Iterator<RequestedJdbcResource> serverDataSourcesIterator = serverDataSources.iterator();
-                
-                // if (!serverDataSources.isEmpty()) {  // may not be needed if resolve data sources code executed previously has taken care of this use case
-                
-                // iterate through the app server datasources
-                while (serverDataSourcesIterator.hasNext()) {
-                    RequestedJdbcResource requestedJdbcResource = serverDataSourcesIterator.next();
-                    
-                    // if a project datasource doesn't match a server datasource then add a resource to the project
-                    if (!projectDataSourceManager.matchDataSourceInfo(requestedJdbcResource, dsInfo)) {
-                        missing = true;
-                    }                    
-                }
-                
-                // if the project's resources are missing (the setup folder plus resource files) then add 
-                if (missing) {
-                    reqResource = new RequestedJdbcResource("jdbc/" + // NOI18N
-                            dsInfo.getName(),
-                            dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
-                            dsInfo.getPassword(), null);
-                    dataSourceService.updateProjectDataSource(project, reqResource);
-                }
-                
-                missing = false;
-            }
-        
-        
-        // need to repeat the above for hardcoded datasources            
-        // Update project's resources if server resources not found, based on a project's hardcoded data sources
-            for (int i=0; i<hardCodedDataSources.length; i++) {
-                dsInfo = DataSourceInfoManager.getInstance().getDataSourceInfoByName(hardCodedDataSources[i].substring(hardCodedDataSources[i].indexOf("jdbc")+"jdbc/".length()));
-                
-               // see if the server has the project's data sources'
-                ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(project);
-                
-                // retrieve a list of server data sources
-                Set<RequestedJdbcResource> serverDataSources = dataSourceService.getServerDataSources(project);
-                Iterator<RequestedJdbcResource> serverDataSourcesIterator = serverDataSources.iterator();
-                
-                // if (!serverDataSources.isEmpty()) {  // may not be needed if resolve data sources code executed previously has taken care of this use case
-                
-                // iterate through the app server datasources
-                while (serverDataSourcesIterator.hasNext()) {
-                    RequestedJdbcResource requestedJdbcResource = serverDataSourcesIterator.next();
-                    
-                    // if a project datasource doesn't match a server datasource then add a resource to the project
-                    if (!projectDataSourceManager.matchDataSourceInfo(requestedJdbcResource, dsInfo)) {
-                        missing = true;
-                    }                    
-                }
-                
-                // if the project's resources are missing (the setup folder plus resource files) then add 
-                if (missing) {
-                    reqResource = new RequestedJdbcResource("jdbc/" + // NOI18N
-                            dsInfo.getName(),
-                            dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
-                            dsInfo.getPassword(), null);
-                    dataSourceService.updateProjectDataSource(project, reqResource);
-                }
-                
-                missing = false;
-            } // end, iterate through the data sources
-        } // end, make sure project doesn't have any dynamic data sources
-        
-    } 
+   
+    
  
 }
