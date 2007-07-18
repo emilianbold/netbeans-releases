@@ -240,7 +240,7 @@ public class IndentFactory implements IndentTask.Factory {
                 }
                 indentProperties.put (
                     l,
-                    new Object[] {patterns, start, end, endToStart}
+                    patterns.isEmpty() ? null : new Object[] {patterns, start, end, endToStart}
                 );
             }
             return indentProperties.get (l);
