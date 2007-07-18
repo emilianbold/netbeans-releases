@@ -194,7 +194,7 @@ public class CreateId implements Fix {
                     }
                     
                     ModifiersTree toAnnotate = accessType == AccessType.FIELD ?
-                        fieldTree.getModifiers() : mutatorTree.getModifiers();
+                        fieldTree.getModifiers() : accesorTree.getModifiers();
                     
                     AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NOI18N
                     
