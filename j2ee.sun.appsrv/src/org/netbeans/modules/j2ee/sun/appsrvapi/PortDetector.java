@@ -131,7 +131,14 @@ public class PortDetector {
         (byte)0x00, (byte)0x03, (byte)0x01, (byte)0x00,
         // The following is a HTTP request, some HTTP servers won't
         // respond unless the following is also sent
-        (byte) 'G', (byte) 'E', (byte) 'T', (byte) ' ', (byte) '/', (byte) ' ',
+        (byte) 'G', (byte) 'E', (byte) 'T', (byte) ' ', (byte) '/', 
+        // change the detector to request something that the monitor knows to filter
+        //  out.  This will work-around 109891. Use the longest filtered prefix to 
+        //  avoid false positives....
+        (byte) 'c', (byte) 'o', (byte) 'm', (byte) '_', (byte) 's', (byte) 'u', 
+        (byte) 'n', (byte) '_', (byte) 'w', (byte) 'e', (byte) 'b', (byte) '_',
+        (byte) 'u', (byte) 'i',
+        (byte) ' ',
         (byte) 'H', (byte) 'T', (byte) 'T', (byte) 'P', (byte) '/', (byte) '1',
         (byte) '.', (byte) '0', (byte)'\n', (byte)'\n'
     };
