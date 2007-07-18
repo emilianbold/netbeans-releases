@@ -16,6 +16,8 @@ package org.netbeans.modules.uml.reporting;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,11 +29,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
+
 import org.netbeans.modules.uml.reporting.dataobjects.DataObjectFactory;
 import org.netbeans.modules.uml.reporting.dataobjects.ElementDataObject;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -44,16 +49,20 @@ import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.reporting.dataobjects.DiagramData;
 import org.netbeans.modules.uml.reporting.wizard.ReportWizardSettings;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.controls.projecttree.DefaultNodeFactory;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
+import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl;
+
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -72,8 +81,10 @@ public class ReportTask extends Thread implements Cancellable
     private IElement startingPoint;
     private ProjectTreeBuilderImpl m_Builder;
     private boolean success = true;
+    
     private static InputOutput inputOutput = IOProvider.getDefault().getIO(
-            NbBundle.getMessage(ReportTask.class, "TITLE_ReportOutput"),false);
+        NbBundle.getMessage(ReportTask.class, "TITLE_ReportOutput"),false);
+    
     private File reportDir;
     private ArrayList diagrams = new ArrayList();
     private ArrayList packages = new ArrayList();
@@ -81,7 +92,7 @@ public class ReportTask extends Thread implements Cancellable
     private HashMap < String, String > elementFileMap = new HashMap < String, String > ();
     private HashMap < String, String > diagramFileMap = new HashMap < String, String > ();
     private HashMap < String, String > packageFileMap = new HashMap < String, String > ();
-    private static ArrayList<String> opened = new ArrayList < String > ();
+    
     public static String FRAME = "-frame";
     public static String HTML_EXT = ".html";
     public static String OVERVIEW_FILE = "overview.html";
@@ -90,6 +101,8 @@ public class ReportTask extends Thread implements Cancellable
     public static String JPG_EXT = ".jpg";
     public static String IMAGE_EXT = ".png";
     
+    private static ArrayList<String> opened = new ArrayList < String > ();
+
     private static String[] files = {
         "org/netbeans/modules/uml/reporting/templates/zoom.js",
         "org/netbeans/modules/uml/reporting/templates/behaviour.js",
@@ -98,6 +111,22 @@ public class ReportTask extends Thread implements Cancellable
         "org/netbeans/modules/uml/reporting/templates/help.html",
         //	"org/netbeans/modules/uml/reporting/templates/element-index.html",
     };
+    
+    // image files used by the report being generated
+    private static List<String> imageFilenames = new ArrayList<String>();
+    
+    // add image files that are always used in every report
+    static
+    {
+        imageFilenames.add("zoom-in.png"); // NOI18N
+        imageFilenames.add("zoom-out.png");  // NOI18N
+        imageFilenames.add("fit-to-window.png"); // NOI18N
+        imageFilenames.add("diagrams-root-node.png"); // NOI18N
+        imageFilenames.add("package.png"); // NOI18N
+        imageFilenames.add("checked.png"); // NOI18N
+        imageFilenames.add("unchecked.png"); // NOI18N
+        imageFilenames.add("inherit.gif"); // NOI18N
+    }
     
     
     public ReportTask(ReportWizardSettings settings)
@@ -428,33 +457,135 @@ public class ReportTask extends Thread implements Cancellable
     {
         File images = new File(getReportDir() + File.separator + "images");
         images.mkdirs();
+        String toFolder = images.getAbsolutePath() + File.separatorChar;
+        images = null;
+        
         IConfigManager configMgr = ProductHelper.getConfigManager();
+        
         if (configMgr != null)
         {
             String fromDir = configMgr.getDefaultConfigLocation();
-            fromDir = fromDir + File.separator + "WebReportSupport" + File.separator + "Gif";
             
-            File from = new File(fromDir);
-            // Check that the from directory exists
-            if (from.exists())
+            fromDir = fromDir + File.separator + "WebReportSupport" + 
+                File.separator + "images" + File.separatorChar;
+            
+            for (String filename: imageFilenames)
             {
-                File[] gifFiles = from.listFiles();
-                if (gifFiles != null)
+                File imageFile = new File(fromDir +
+                    File.separatorChar + filename);
+                
+                if (imageFile != null)
                 {
-                    for (int x = 0; x < gifFiles.length; x++)
-                    {
-                        File gifFile = gifFiles[x];
-                        if (gifFile != null)
-                        {
-                            UMLXMLManip.copyFile(gifFile.getAbsolutePath(),
-                                    images+File.separator+gifFile.getName());
-                        }
-                    }
+                    UMLXMLManip.copyFile(
+                        imageFile.getAbsolutePath(),
+                        toFolder + imageFile.getName());
                 }
             }
         }
     }
     
+    
+//    private void copyImages()
+//    {
+//        File images = new File(getReportDir() + File.separator + "images");
+//        images.mkdirs();
+//        IConfigManager configMgr = ProductHelper.getConfigManager();
+//        if (configMgr != null)
+//        {
+//            String fromDir = configMgr.getDefaultConfigLocation();
+//            fromDir = fromDir + File.separator + "WebReportSupport" + File.separator + "Gif";
+//            
+//            File from = new File(fromDir);
+//            // Check that the from directory exists
+//            if (from.exists())
+//            {
+//                File[] gifFiles = from.listFiles();
+//                if (gifFiles != null)
+//                {
+//                    for (int x = 0; x < gifFiles.length; x++)
+//                    {
+//                        File gifFile = gifFiles[x];
+//                        if (gifFile != null)
+//                        {
+//                            UMLXMLManip.copyFile(gifFile.getAbsolutePath(),
+//                                    images+File.separator+gifFile.getName());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+    
+    
+//    private void copyImages()
+//    {
+//        FileInputStream sourceFIS = null;
+//        FileOutputStream destFOS = null;
+//        
+//        String imagesFolder = 
+//            getReportDir() + File.separator + "images" + File.separator; // NOI18N
+//        
+//        File images = new File(imagesFolder);
+//        images.mkdirs();
+//        
+//        try
+//        {
+//            ImageUtil imageUtil = ImageUtil.instance();
+//            
+//            for (String filename: imageFilenames)
+//            {
+//                File imageFile = imageUtil.getImageFile(filename);
+//                
+//                if (imageFile != null)
+//                {
+//                    sourceFIS = new FileInputStream(imageFile);
+//                    
+//                    destFOS = new FileOutputStream(
+//                        new File(imagesFolder + filename));
+//                    
+//                    FileUtil.copy(sourceFIS, destFOS);
+//
+//                    sourceFIS.close();
+//                    destFOS.close();
+//                }
+//            }
+//        }
+//
+//
+//        catch (FileNotFoundException ex)
+//        {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        
+//        catch (IOException ex)
+//        {
+//            Exceptions.printStackTrace(ex);
+//        }
+//
+//        
+//        finally
+//        {
+//            try
+//            {
+//                if (sourceFIS != null)
+//                    sourceFIS.close();
+//                
+//                if (destFOS != null)
+//                    destFOS.close();
+//            }
+//            
+//            catch (IOException ex2)
+//            {
+//                Exceptions.printStackTrace(ex2);
+//            }
+//        }
+//    }
+    
+    public static void addToImageList(String imageFilename)
+    {
+        if (!imageFilenames.contains(imageFilename))
+            imageFilenames.add(imageFilename);
+    }
     
     public String getDirectoryPath(ITreeItem pItem)
     {
@@ -590,19 +721,18 @@ public class ReportTask extends Thread implements Cancellable
         String filename = "";
         String template;
         
-        log(NbBundle.getMessage(ReportTask.class, "Log_generating_summary_files"));
+        log(NbBundle.getMessage(ReportTask.class, "Log_generating_summary_files")); // NOI18N
         
         // 1. generate alldiagrams.html
         
-        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/alldiagrams.html");
+        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/alldiagrams.html"); // NOI18N
         template = buffer.toString();
-        template = template.replaceAll("%ALL_DIAGRAMS%",
-                NbBundle.getMessage(ElementDataObject.class, "Category_AllDiagrams"));
+        template = template.replaceAll("%ALL_DIAGRAMS%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Category_AllDiagrams")); // NOI18N
         buffer = new StringBuilder();
         
         ITreeDiagram[] treeDiagrams = new ITreeDiagram[diagrams.size()];
         diagrams.toArray(treeDiagrams);
-        
         Arrays.sort(treeDiagrams, comparator);
         
         for (int i=0; i<treeDiagrams.length; i++)
@@ -615,26 +745,36 @@ public class ReportTask extends Thread implements Cancellable
                 <A HREF="diagram1.html" title="class diagram in javax.swing" target="elementFrame">Class Diagram</A>
                 <BR>
              */
-            buffer.append("<img src=\"images/" + DiagramTypesManager.instance().
-                    getOpenIcon(diagram.getDiagram().getDiagram()) +
-                    ".png" + "\" border=n>&nbsp;<A HREF=\"" + link + "\" target=\"elementframe\">" + pname + "</A>\n<BR>\n"); // NOI18N
+//            buffer.append("<img src=\"images/" + DiagramTypesManager.instance().
+//                    getOpenIcon(diagram.getDiagram().getDiagram()) +
+//                    ".png" + "\" border=n>&nbsp;<A HREF=\"" + link + 
+//                    "\" target=\"elementframe\">" + pname + "</A>\n<BR>\n"); // NOI18N
+            
+            String imageName = ImageUtil.instance().getDiagramTypeImageName(
+                diagram.getDiagram().getDiagram().getDiagramKind());
+            
+            ReportTask.addToImageList(imageName);
+            
+            buffer.append("<img src=\"images/" + imageName + 
+                "\" border=n>&nbsp;<A HREF=\"" + link +  // NOI18N
+                "\" target=\"elementframe\">" + pname + "</A>\n<BR>\n"); // NOI18N
         }
         
         String content = buffer.toString();
         template = template.replace("%DIAGRAM_CONTENT%", content); // NOI18N
-        template = template.replaceAll("%CHARSET%", 
-                System.getProperty("file.encoding"));
+        template = template.replaceAll("%CHARSET%", // NOI18N
+            System.getProperty("file.encoding")); // NOI18N
         filename = getReportDir() + File.separator + "alldiagrams.html"; // NOI18N
         makePage(filename, template.toString());
         
         
         // 2. generate allelements.html
-        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/allelements.html");
+        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/allelements.html"); // NOI18N
         template = buffer.toString();
-        template = template.replaceAll("%ALL_ELEMENTS%",
-                NbBundle.getMessage(ElementDataObject.class, "Category_AllElements"));
-        template = template.replaceAll("%CHARSET%", 
-                System.getProperty("file.encoding"));
+        template = template.replaceAll("%ALL_ELEMENTS%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Category_AllElements")); // NOI18N
+        template = template.replaceAll("%CHARSET%", // NOI18N
+                System.getProperty("file.encoding")); // NOI18N
                 
         buffer = new StringBuilder();
         
@@ -661,29 +801,29 @@ public class ReportTask extends Thread implements Cancellable
             }
             else
             {
-//				buffer.append(pname + "\n<BR>\n"); // NOI18N
+//              buffer.append(pname + "\n<BR>\n"); // NOI18N
             }
         }
-        template = template.replace("%ELEMENT_CONTENT%", buffer.toString());
-        filename = getReportDir() + File.separator + "allelements.html";
+        template = template.replace("%ELEMENT_CONTENT%", buffer.toString()); // NOI18N
+        filename = getReportDir() + File.separator + "allelements.html"; // NOI18N
         makePage(filename, template);
         
         
         // 3. generate overview.html
         
-        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/overview.html");
+        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/overview.html"); // NOI18N
         template = buffer.toString();
-        template = template.replace("%PROJECT_NAME%", m_CurrentProject.getName());
-        template = template.replaceAll("%OVERVIEW%", 
-                NbBundle.getMessage(ElementDataObject.class, "Header_Overview"));
-        template = template.replaceAll("%ALL_ELEMENTS%", 
-                NbBundle.getMessage(ElementDataObject.class, "Category_AllElements"));
-        template = template.replaceAll("%ALL_DIAGRAMS%", 
-                NbBundle.getMessage(ElementDataObject.class, "Category_AllDiagrams"));
-        template = template.replaceAll("%PACKAGES%", 
-                NbBundle.getMessage(ElementDataObject.class, "Category_Package"));
-        template = template.replaceAll("%CHARSET%", 
-                System.getProperty("file.encoding"));
+        template = template.replace("%PROJECT_NAME%", m_CurrentProject.getName()); // NOI18N
+        template = template.replaceAll("%OVERVIEW%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Overview")); // NOI18N
+        template = template.replaceAll("%ALL_ELEMENTS%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Category_AllElements")); // NOI18N
+        template = template.replaceAll("%ALL_DIAGRAMS%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Category_AllDiagrams")); // NOI18N
+        template = template.replaceAll("%PACKAGES%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Category_Package")); // NOI18N
+        template = template.replaceAll("%CHARSET%",  // NOI18N
+                System.getProperty("file.encoding")); // NOI18N
         StringBuilder buff = new StringBuilder();
         
         items = new ITreeItem[packages.size()];
@@ -698,13 +838,13 @@ public class ReportTask extends Thread implements Cancellable
             {
                 pname = ((IPackage)(items[i].getData().getModelElement())).getFullyQualifiedName(false);
                 if (items[i].getData().getModelElement() instanceof IProject)
-                    pname = "&lt;" + NbBundle.getMessage(ReportTask.class,"default_package") + ">";
+                    pname = "&lt;" + NbBundle.getMessage(ReportTask.class,"default_package") + ">"; // NOI18N
                 link = link.substring(0, link.indexOf(HTML_EXT)) + FRAME + HTML_EXT;
                 /* sample html section
                 <FONT CLASS="FrameItemFont"><A HREF="java/applet/package-frame.html" target="packageFrame">java.applet</A></FONT>
                 <BR>
                  */
-                buff.append("<FONT CLASS=\"FrameItemFont\"><A HREF=\"" + link + "\"target=\"packageFrame\">" + pname + "</A></FONT><BR>\n");
+                buff.append("<FONT CLASS=\"FrameItemFont\"><A HREF=\"" + link + "\"target=\"packageFrame\">" + pname + "</A></FONT><BR>\n"); // NOI18N
             }
         }
         template = template.replace("%PACKAGE_CONTENT%", buff.toString());
@@ -714,22 +854,22 @@ public class ReportTask extends Thread implements Cancellable
         
         // 4. generate overview-summary.html
         
-        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/overview-summary.html");
+        buffer = readTemplate("org/netbeans/modules/uml/reporting/templates/overview-summary.html"); // NOI18N
         template = buffer.toString();
-        template = template.replace("%PROJECT_NAME%", projectName);
-        template = template.replace("%PROJECT_DESCRIPTION%", projectDoc);
-        template = template.replaceAll("%OVERVIEW%", 
-                NbBundle.getMessage(ElementDataObject.class, "Header_Overview"));
-        template = template.replaceAll("%PACKAGE%", 
-                NbBundle.getMessage(ElementDataObject.class, "Header_Package"));
-        template = template.replaceAll("%ELEMENT%", 
-                NbBundle.getMessage(ElementDataObject.class, "Header_Element"));
-        template = template.replaceAll("%DIAGRAM%", 
-                NbBundle.getMessage(ElementDataObject.class, "Header_Diagram"));
-        template = template.replaceAll("%HELP%", 
-                NbBundle.getMessage(ElementDataObject.class, "Header_Help"));
-        template = template.replaceAll("%CHARSET%", 
-                System.getProperty("file.encoding"));
+        template = template.replace("%PROJECT_NAME%", projectName); // NOI18N
+        template = template.replace("%PROJECT_DESCRIPTION%", projectDoc); // NOI18N
+        template = template.replaceAll("%OVERVIEW%",  // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Overview")); // NOI18N
+        template = template.replaceAll("%PACKAGE%",  // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Package")); // NOI18N
+        template = template.replaceAll("%ELEMENT%",  // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Element")); // NOI18N
+        template = template.replaceAll("%DIAGRAM%",  // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Diagram")); // NOI18N
+        template = template.replaceAll("%HELP%",  // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Help")); // NOI18N
+        template = template.replaceAll("%CHARSET%",  // NOI18N
+                System.getProperty("file.encoding")); // NOI18N
         
         buff = new StringBuilder();
         
@@ -749,12 +889,12 @@ public class ReportTask extends Thread implements Cancellable
         
         if (packages.size()>0)
         {
-            buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\n");
-            buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n");
-            buff.append("<TH ALIGN=\"left\" COLSPAN=\"2\"><FONT SIZE=\"+2\">\n");
-            buff.append("<B>" + projectName + " " +
-                    NbBundle.getMessage(ReportTask.class,"packages") + "</B></FONT></TH>\n");
-            buff.append("</TR>\n");
+            buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\n"); // NOI18N
+            buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\n"); // NOI18N
+            buff.append("<TH ALIGN=\"left\" COLSPAN=\"2\"><FONT SIZE=\"+2\">\n"); // NOI18N
+            buff.append("<B>" + projectName + " " + // NOI18N
+                    NbBundle.getMessage(ReportTask.class,"packages") + "</B></FONT></TH>\n"); // NOI18N
+            buff.append("</TR>\n"); // NOI18N
             
             
             for (int i=0; i<items.length; i++)
@@ -768,23 +908,23 @@ public class ReportTask extends Thread implements Cancellable
                 pname = pkg.getFullyQualifiedName(false);
                 
                 if (pkg instanceof IProject)
-                    pname = "&lt;" + NbBundle.getMessage(ReportTask.class,"default_package") + ">";
+                    pname = "&lt;" + NbBundle.getMessage(ReportTask.class,"default_package") + ">"; // NOI18N
                 
                 link = (String)elementFileMap.get(pkg.getXMIID());
                 doc = StringUtilities.unescapeHTML(pkg.getDocumentation());
                 
                 if (doc==null || doc.trim().equals(""))
-                    doc = "&nbsp;";
+                    doc = "&nbsp;"; // NOI18N
                 
-                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\n");
-                buff.append("<TD WIDTH=\"20%\"><B><A HREF=\"" + link + "\">" + pname + "</A></B></TD>\n");
-                buff.append("<TD>" + doc + "</TD>\n");
-                buff.append("</TR>\n");
+                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\n"); // NOI18N
+                buff.append("<TD WIDTH=\"20%\"><B><A HREF=\"" + link + "\">" + pname + "</A></B></TD>\n"); // NOI18N
+                buff.append("<TD>" + doc + "</TD>\n"); // NOI18N
+                buff.append("</TR>\n"); // NOI18N
             }
-            buff.append("</TABLE>\n");
+            buff.append("</TABLE>\n"); // NOI18N
         }
-        template = template.replace("%PACKAGE_TABLE%", buff.toString());
-        filename = getReportDir() + File.separator + "overview-summary.html";
+        template = template.replace("%PACKAGE_TABLE%", buff.toString()); // NOI18N
+        filename = getReportDir() + File.separator + "overview-summary.html"; // NOI18N
         makePage(filename, template);
     }
     
@@ -798,15 +938,15 @@ public class ReportTask extends Thread implements Cancellable
         
         if (loader!=null)
         {
-            if (resource.indexOf(".html") > -1)
+            if (resource.indexOf(".html") > -1) // NOI18N
             {
-                localized = resource.substring(0, resource.indexOf(".html")) + "_" +
-                        Locale.getDefault() + ".html";
+                localized = resource.substring(0, resource.indexOf(".html")) + "_" + // NOI18N
+                        Locale.getDefault() + ".html"; // NOI18N
                 is = loader.getResourceAsStream(localized);
                 if (is==null)
                 {
-                    localized = resource.substring(0, resource.indexOf(".html")) + "_" +
-                            Locale.getDefault().getLanguage() + ".html";
+                    localized = resource.substring(0, resource.indexOf(".html")) + "_" + // NOI18N
+                            Locale.getDefault().getLanguage() + ".html"; // NOI18N
                     is = loader.getResourceAsStream(localized);
                 }
             }
@@ -848,7 +988,7 @@ public class ReportTask extends Thread implements Cancellable
     
     private void initLog()
     {
-        TopComponent tc = WindowManager.getDefault().findTopComponent("output");
+        TopComponent tc = WindowManager.getDefault().findTopComponent("output"); // NOI18N
         tc.open();
         tc.requestActive();
         tc.toFront();
@@ -870,7 +1010,7 @@ public class ReportTask extends Thread implements Cancellable
     {
         
         String rptDir = getReportDir();
-        String fileLaunch = rptDir + File.separator + "index.html";
+        String fileLaunch = rptDir + File.separator + "index.html"; // NOI18N
         
         File locationFile = new File(fileLaunch);
         

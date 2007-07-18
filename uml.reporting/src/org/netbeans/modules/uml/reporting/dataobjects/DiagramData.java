@@ -55,7 +55,7 @@ public class DiagramData extends ElementDataObject {
     private static int VIEWPORT_WIDTH = 1000;
     private static int VIEWPORT_HEIGHT = 700;
     private static int ZOOM_WIDTH = 120;
-    private static String FULL_DIAGRAM_FILE_SUFFIX = "_full.html";
+    private static String FULL_DIAGRAM_FILE_SUFFIX = "_full.html"; // NOI18N
     private int fitToScaleIndex =0;
     private int full_size_index = 0;
 //    private double[] s = {0.5, 1};  // predefined fixed scales
@@ -106,14 +106,18 @@ public class DiagramData extends ElementDataObject {
             
             page.append(getHTMLHeader());
             page.append(getNavBar());
-            if (diagName != null && diagName.length() > 0) {
-                page.append("<HR><H2>" + pDiagram.getDiagramKind2() + " " + diagName + "</H2>");
-                page.append("<P><PRE>" + doc + "</PRE></P>\r\n");
-                page.append("<P ALIGN=\"CENTER\"><A HREF=\"" + name +
-                        ReportTask.HTML_EXT + "\"><IMG SRC=\"" +
-                        ReportTask.getPathToReportRoot(pDiagram) +
-                        "images/FitToWindow.png\" BORDER=n></A>&nbsp;</P>");
-                page.append("<HR>\r\n");
+            
+            if (diagName != null && diagName.length() > 0) 
+            {
+                page.append("<HR><H2>" + pDiagram.getDiagramKind2() + " " + diagName + "</H2>"); // NOI18N
+                page.append("<P><PRE>" + doc + "</PRE></P>\r\n"); // NOI18N
+            
+                page.append("<P ALIGN=\"CENTER\"><A HREF=\"" + name + // NOI18N
+                    ReportTask.HTML_EXT + "\"><IMG SRC=\"" + // NOI18N
+                    ReportTask.getPathToReportRoot(pDiagram) + // NOI18N
+                    "images/fit-to-window.png\" BORDER=n></A>&nbsp;</P>"); // NOI18N
+                
+                page.append("<HR>\r\n"); // NOI18N
             }
             
             IETRect pMainRect = pDetails.getGraphicBoundingRect();
@@ -123,9 +127,11 @@ public class DiagramData extends ElementDataObject {
                 int nMainRectTop = pMainRect.getBottom();
                 int nMainRectRight = pMainRect.getRight();
                 
-                str = "<IMG SRC=\"" + jpg + "\" USEMAP=\"#MAP0-0\" BORDER=0 COORDS=\"" + nMainRectLeft + nMainRectTop + nMainRectRight + nMainRectBottom + "\">";
+                str = "<IMG SRC=\"" + jpg + "\" USEMAP=\"#MAP0-0\" BORDER=0 COORDS=\"" +  // NOI18N
+                    nMainRectLeft + nMainRectTop + nMainRectRight + nMainRectBottom + "\">"; // NOI18N
+                
                 page.append(str);
-                page.append("<MAP NAME=\"MAP0-0\">");
+                page.append("<MAP NAME=\"MAP0-0\">"); // NOI18N
                 
                 // Process each item in the graphic
                 if (pDetails != null) {
@@ -176,10 +182,11 @@ public class DiagramData extends ElementDataObject {
                     }
                 }
             }
-            page.append("<HR>\r\n");
+            
+            page.append("<HR>\r\n"); // NOI18N
             page.append(getNavBar());
-            page.append("</BODY>\r\n");
-            page.append("</HTML>");
+            page.append("</BODY>\r\n"); // NOI18N
+            page.append("</HTML>"); // NOI18N
             
             if (id2 == null || id2.length() == 0) {
                 id2 = name;
@@ -229,10 +236,10 @@ public class DiagramData extends ElementDataObject {
                     // COORDS= "x1,y1,x2,y2" Where x1,y1 are the coordinates of the
                     // upper-left corner of the rectangle and x2,y2 are the coordinates
                     // of the lower-right coordinates of the rectangle.
-                    str = "<AREA SHAPE=\"RECT\" COORDS=\"" + nTempRectLeft + ", " +
-                            nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom +
-                            "\" HREF=\"" + ReportTask.getPathToReportRoot(diagram) +
-                            ReportTask.getLinkTo(pLoc.getElement()) + "\" ALT=\"" + name + "\">";
+                    str = "<AREA SHAPE=\"RECT\" COORDS=\"" + nTempRectLeft + ", " + // NOI18N
+                        nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom + // NOI18N
+                        "\" HREF=\"" + ReportTask.getPathToReportRoot(diagram) + // NOI18N
+                        ReportTask.getLinkTo(pLoc.getElement()) + "\" ALT=\"" + name + "\">"; // NOI18N
                 }
             }
         }
@@ -277,10 +284,10 @@ public class DiagramData extends ElementDataObject {
                     // COORDS= "x1,y1,x2,y2" Where x1,y1 are the coordinates of the
                     // upper-left corner of the rectangle and x2,y2 are the coordinates
                     // of the lower-right coordinates of the rectangle.
-                    str = "<AREA SHAPE=\"RECT\" COORDS=\"" + nTempRectLeft + ", " +
-                            nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom +
-                            "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) +
-                            ReportTask.getLinkTo(pLoc.getElement())  + "\" ALT=\"" + name + "\">";
+                    str = "<AREA SHAPE=\"RECT\" COORDS=\"" + nTempRectLeft + ", " + // NOI18N
+                        nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom + // NOI18N
+                        "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) + // NOI18N
+                        ReportTask.getLinkTo(pLoc.getElement())  + "\" ALT=\"" + name + "\">"; // NOI18N
                 }
             }
         }
@@ -300,7 +307,7 @@ public class DiagramData extends ElementDataObject {
      *
      */
     private String createLineForLink(int nMainRectBottom, IEdgeMapLocation pEdgeLoc) {
-        String str = "";
+        String str = ""; // NOI18N
         if (nMainRectBottom > 0 && pEdgeLoc != null) {
             // Get the basic graphic map information
             String currID = pEdgeLoc.getElementXMIID();
@@ -312,21 +319,21 @@ public class DiagramData extends ElementDataObject {
                 // Get the node specific stuff
                 ETList < IETPoint > pPointsList = pEdgeLoc.getPoints();
                 if (pPointsList != null && pPointsList.size() > 0) {
-                    str = "<AREA SHAPE=\"POLY\" COORDS=\"";
+                    str = "<AREA SHAPE=\"POLY\" COORDS=\""; // NOI18N
                     int ptCount = pPointsList.size();
                     
                     for (int i = 0; i < ptCount; i++) {
                         IETPoint pPoint = pPointsList.item(i);
                         Integer x = new Integer(pPoint.getX());
                         Integer y = new Integer(pPoint.getY());
-                        str += x.toString() + ",";
+                        str += x.toString() + ","; // NOI18N
                         str += y.toString();
                         
                         if (i + 1 != ptCount)
-                            str += ",";
+                            str += ","; // NOI18N
                     }
-                    str += "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) +
-                            ReportTask.getLinkTo(pEdgeLoc.getElement()) + "\" ALT=\"" + name + "\">";
+                    str += "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) + // NOI18N
+                        ReportTask.getLinkTo(pEdgeLoc.getElement()) + "\" ALT=\"" + name + "\">"; // NOI18N
                     
                 }
             }
@@ -378,28 +385,31 @@ public class DiagramData extends ElementDataObject {
         String fullDiagramFile = name + FULL_DIAGRAM_FILE_SUFFIX;
         
         StringBuilder page = new StringBuilder();
-        page.append("<HTML>\n");
-        page.append("	<HEAD>\n");
-        page.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + System.getProperty("file.encoding") + "\">\n");
-        String str = "<TITLE>" + diagName + "</TITLE>\n";
-        page.append(str + "\n");
+        page.append("<HTML>\n"); // NOI18N
+        page.append("	<HEAD>\n"); // NOI18N
+        
+        page.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" +  // NOI18N
+            System.getProperty("file.encoding") + "\">\n"); // NOI18N
+        
+        String str = "<TITLE>" + diagName + "</TITLE>\n"; // NOI18N
+        page.append(str + "\n"); // NOI18N
         String scriptPath = getJavaScriptPath(pDiagram);
         String script = getScript(scriptPath, name, imageString);
-        page.append(script + "\n");
-        page.append("	</HEAD>\n");
+        page.append(script + "\n"); // NOI18N
+        page.append("	</HEAD>\n"); // NOI18N
         String body = getBody(scriptPath, diagName, fullDiagramFile);
-        page.append(body + "\n");
-        page.append("</HTML>");
+        page.append(body + "\n"); // NOI18N
+        page.append("</HTML>"); // NOI18N
         
         return makePage(filename, page.toString());
     }
     
     
     private String getJavaScriptPath(IDiagram diagram) {
-        String path ="..";
+        String path =".."; // NOI18N
         IPackage pkg = diagram.getOwningPackage();
         while (!pkg.equals(pkg.getProject())) {
-            path = path + "/..";
+            path = path + "/.."; // NOI18N
             pkg=pkg.getOwningPackage();
         }
         return path;
@@ -430,21 +440,21 @@ public class DiagramData extends ElementDataObject {
         body = body.replaceAll("SCRIPT_PATH", scriptPath); // NOI18N
         body = body.replaceAll("%DIAGRAM_NAME%", getDiagram().getDiagramKind2() + " " + diagramName); // NOI18N
         
-        body = body.replaceAll("%DIAGRAM_DOC%", "<PRE>" + 
-            StringUtilities.unescapeHTML(getDiagram().getDocumentation()) + "</PRE>");
+        body = body.replaceAll("%DIAGRAM_DOC%", "<PRE>" +  // NOI18N
+            StringUtilities.unescapeHTML(getDiagram().getDocumentation()) + "</PRE>"); // NOI18N
         
         body = body.replaceAll("FULL_DIAGRAM_HTML", fileName); // NOI18N
-        body = body.replace("%BRAND%", NbBundle.getMessage(DiagramData.class, "brand"));
-        body = body.replaceAll("%OVERVIEW%",
-                NbBundle.getMessage(ElementDataObject.class, "Header_Overview"));
-        body = body.replaceAll("%PACKAGE%",
-                NbBundle.getMessage(ElementDataObject.class, "Header_Package"));
-        body = body.replaceAll("%ELEMENT%",
-                NbBundle.getMessage(ElementDataObject.class, "Header_Element"));
-        body = body.replaceAll("%DIAGRAM%",
-                NbBundle.getMessage(ElementDataObject.class, "Header_Diagram"));
-        body = body.replaceAll("%HELP%",
-                NbBundle.getMessage(ElementDataObject.class, "Header_Help"));
+        body = body.replace("%BRAND%", NbBundle.getMessage(DiagramData.class, "brand")); // NOI18N
+        body = body.replaceAll("%OVERVIEW%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Overview")); // NOI18N
+        body = body.replaceAll("%PACKAGE%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Package")); // NOI18N
+        body = body.replaceAll("%ELEMENT%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Element")); // NOI18N
+        body = body.replaceAll("%DIAGRAM%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Diagram")); // NOI18N
+        body = body.replaceAll("%HELP%", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Help")); // NOI18N
         return body;
     }
     
@@ -493,8 +503,8 @@ public class DiagramData extends ElementDataObject {
                         if (pDetails!=null) {
                             int width = (int) (pDetails.getFrameBoundingRect().getWidth() * scales[i]);
                             int height = (int) (pDetails.getFrameBoundingRect().getHeight() * scales[i]);
-                            imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.IMAGE_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, ");
-                            imageString.append("\n");
+                            imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.IMAGE_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, "); // NOI18N
+                            imageString.append("\n"); // NOI18N
                             if (i == full_size_index) {
                                 details = pDetails;
                             }

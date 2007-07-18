@@ -30,6 +30,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.reporting.ReportTask;
+import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -66,22 +67,22 @@ public class StateMachineData extends ClassData
         for (int i=0; i<list.size(); i++)
         {
             INamedElement node = (INamedElement)list.get(i);
-            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
             
             String doc = getBriefDocumentation(
                 StringUtilities.unescapeHTML(node.getDocumentation()));
             
-            if (doc == null || doc.trim().equals(""))
-                doc = "&nbsp;";
-            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-            buff.append("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(node) +
-                    "\" title=\"" + node.getElementType() + " in " + node.getName() +
-                    "\">" + node.getName() + "</A></B></TD>\r\n");
-            buff.append("<TD>" + doc + "</TD>\r\n");
-            buff.append("</TR>\r\n");
+            if (doc == null || doc.trim().equals("")) // NOI18N
+                doc = "&nbsp;"; // NOI18N
+            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+            buff.append("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(node) + // NOI18N
+                    "\" title=\"" + node.getElementType() + " in " + node.getName() + // NOI18N
+                    "\">" + node.getName() + "</A></B></TD>\r\n"); // NOI18N
+            buff.append("<TD>" + doc + "</TD>\r\n"); // NOI18N
+            buff.append("</TR>\r\n"); // NOI18N
         }
         
-        buff.append("</TABLE>\r\n&nbsp;\r\n");
+        buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
         return buff.toString();
     }
     
@@ -118,21 +119,22 @@ public class StateMachineData extends ClassData
         
         ETList<IState> states = getElement().getSubmachinesStates();
         ETList<INamedElement> elements = getElement().getContainedElements();
-        String doc = "";
+        String doc = ""; // NOI18N
         boolean result = false;
+        
         try
         {
             FileOutputStream fo = new FileOutputStream(file);
             OutputStreamWriter out = new OutputStreamWriter(fo);
             
             out.write(getHTMLHeader());
-            out.write("<BODY BGCOLOR=\"white\">\r\n");
+            out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("<HR>\r\n");
-            out.write("<H2>\r\n");
-            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n");
-            out.write("<BR>\r\n");
-            out.write(getElementType() + " " + getElement().getName() + "</H2>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
+            out.write("<H2>\r\n"); // NOI18N
+            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n"); // NOI18N
+            out.write("<BR>\r\n"); // NOI18N
+            out.write(getElementType() + " " + getElement().getName() + "</H2>\r\n"); // NOI18N
             
             out.write(getDependencies());
             out.write(getEnclosingDiagrams());
@@ -155,58 +157,76 @@ public class StateMachineData extends ClassData
             // sub machine state summary
             if (states.size()>0)
             {
-                out.write("<!-- =========== SUBMACHINE STATE SUMMARY =========== -->\r\n\r\n");
-                out.write(getSummaryHeader("sub_machine_state_summary",
-                        NbBundle.getMessage(StateMachineData.class, "Sub_Machine_State_Summary")));
+                out.write("<!-- =========== SUBMACHINE STATE SUMMARY =========== -->\r\n\r\n"); // NOI18N
+                
+                out.write(getSummaryHeader("sub_machine_state_summary", // NOI18N
+                    NbBundle.getMessage(StateMachineData.class, "Sub_Machine_State_Summary"))); // NOI18N
                 
                 for (int i=0; i<states.size(); i++)
                 {
                     IState state = (IState)states.get(i);
-                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
                     doc = getBriefDocumentation(StringUtilities.unescapeHTML(
                         state.getDocumentation()));
                     
-                    if (doc == null || doc.trim().equals(""))
-                        doc = "&nbsp;";
-                    String type = state.getElementType().replaceAll(" ", "");
+                    if (doc == null || doc.trim().equals("")) // NOI18N
+                        doc = "&nbsp;"; // NOI18N
+                    
+                    String type = state.getElementType().replaceAll(" ", ""); // NOI18N
                     String name = state.getName();
-                    if (name==null || name.equals(""))
+                    
+                    if (name==null || name.equals("")) // NOI18N
                         name = state.getElementType();
-                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                    out.write("<TD WIDTH=\"15%\"><img src=\"" +
-                            ReportTask.getPathToReportRoot(getElement()) + "images/" +
-                            state.getElementType() + ".png" +
-                            "\" border=n>&nbsp<B><A HREF=\"" + getLinkTo(state) +
-                            "\" title=\"" + state.getElementType() + " in " + name +
-                            "\">" + name + "</A></B></TD>\r\n");
-                    out.write("<TD>" + doc + "</TD>\r\n");
-                    out.write("</TR>\r\n");
+                
+                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                    
+                    String imageName = CommonResourceManager.instance()
+                        .getIconDetailsForElementType(state.getElementType());
+
+                    if (imageName.lastIndexOf("/") > -1)
+                        imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+                    
+                    ReportTask.addToImageList(imageName);
+
+                    out.write("<TD WIDTH=\"15%\"><img src=\"" + // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) + 
+                        "images/" + imageName + // NOI18N
+                        "\" border=n>&nbsp<B><A HREF=\"" + getLinkTo(state) + // NOI18N
+                        "\" title=\"" + state.getElementType() + " in " + name + // NOI18N
+                        "\">" + name + "</A></B></TD>\r\n"); // NOI18N
+
+                    out.write("<TD>" + doc + "</TD>\r\n"); // NOI18N
+                    out.write("</TR>\r\n"); // NOI18N
                 }
-                out.write("</TABLE>\r\n&nbsp;\r\n");
+
+                out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
             }
             
             
             // contained elements summary
             if (elements!=null && elements.size()>0)
             {
-                out.write("<!-- =========== CONTAINED ELEMENTS SUMMARY =========== -->\r\n\r\n");
-                out.write(getSummaryHeader("contained_element_summary",
-                        NbBundle.getMessage(StateMachineData.class, "Contained_Element_Summary")));
+                out.write("<!-- =========== CONTAINED ELEMENTS SUMMARY =========== -->\r\n\r\n"); // NOI18N
+                
+                out.write(getSummaryHeader("contained_element_summary", // NOI18N
+                    NbBundle.getMessage(StateMachineData.class, "Contained_Element_Summary"))); // NOI18N
+                
                 out.write(getSummaryTable(elements));
             }
             
-            out.write("<HR>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("</BODY>\r\n</HTML>");
+            out.write("</BODY>\r\n</HTML>"); // NOI18N
             out.close();
             result = true;
-            
         }
+
         catch (Exception e)
         {
             ErrorManager.getDefault().notify(e);
         }
+        
         return result;
     }
 }

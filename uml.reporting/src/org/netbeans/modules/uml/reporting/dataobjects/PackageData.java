@@ -29,6 +29,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
@@ -37,8 +38,11 @@ import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.reporting.ReportTask;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
+
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -171,22 +175,27 @@ public class PackageData extends ElementDataObject
             OutputStreamWriter out = new OutputStreamWriter(fo);
             
             out.write(getHTMLHeader());
-            out.write("<BODY BGCOLOR=\"white\">\r\n\r\n");
+            out.write("<BODY BGCOLOR=\"white\">\r\n\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("<HR>\r\n<H2>\r\n");
+            out.write("<HR>\r\n<H2>\r\n"); // NOI18N
+            
             if (getElement().getElementType().equals(AbstractModelElementNode.ELEMENT_TYPE_PROJECT))
-                out.write(NbBundle.getMessage(PackageData.class,"package")  + " &lt;" +
-                        NbBundle.getMessage(ReportTask.class,"default_package") +
-                        ">\r\n");
+                out.write(NbBundle.getMessage(PackageData.class,"package")  + " &lt;" + // NOI18N
+                        NbBundle.getMessage(ReportTask.class,"default_package") + // NOI18N
+                        ">\r\n"); // NOI18N
             else
-                out.write(getElementType() + " " + getElement().getFullyQualifiedName(false) + "\r\n");
-            out.write("</H2>\r\n");
+            {
+                out.write(getElementType() + " " +  // NOI18N
+                    getElement().getFullyQualifiedName(false) + "\r\n"); // NOI18N
+            }
+            
+            out.write("</H2>\r\n"); // NOI18N
             
             out.write(getDependencies());
             out.write(getEnclosingDiagrams());
             
-            out.write(getDocumentation() + "\r\n");
-            out.write("<BR>\r\n");
+            out.write(getDocumentation() + "\r\n"); // NOI18N
+            out.write("<BR>\r\n"); // NOI18N
             
             // property summary
             out.write(getProperties());
@@ -206,14 +215,16 @@ public class PackageData extends ElementDataObject
                 INamedElement[] elements = getElementByType(type);
                 if (elements.length > 0)
                 {
-                    out.write("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\"> \r\n");
-                    out.write("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n");
-                    out.write("<TH ALIGN=\"left\" COLSPAN=\"2\"><FONT SIZE=\"+2\">\r\n");
-                    out.write("<B>" + NbBundle.getMessage(PackageData.class,
-                            "ElementType_" + type) + " " +
-                            NbBundle.getMessage(PackageData.class, "Header_Summary") +
-                            "</B></FONT></TH>\r\n");
-                    out.write("</TR>\r\n");
+                    out.write("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\"> \r\n"); // NOI18N
+                    out.write("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n"); // NOI18N
+                    out.write("<TH ALIGN=\"left\" COLSPAN=\"2\"><FONT SIZE=\"+2\">\r\n"); // NOI18N
+                    
+                    out.write("<B>" + NbBundle.getMessage(PackageData.class, // NOI18N
+                        "ElementType_" + type) + " " + // NOI18N
+                        NbBundle.getMessage(PackageData.class, "Header_Summary") + // NOI18N
+                        "</B></FONT></TH>\r\n"); // NOI18N
+                    
+                    out.write("</TR>\r\n"); // NOI18N
                     
                     for (int j=0; j<elements.length; j++)
                     {
@@ -224,27 +235,27 @@ public class PackageData extends ElementDataObject
                             element.getDocumentation()));
                         
                         String name = element.getName();
-                        if (name==null || name.equals(""))
-                            name = NbBundle.getMessage(PackageData.class, "unnamed");
-                        if (doc == null || doc.trim().equals(""))
-                            doc = "&nbsp;";
-                        out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                        out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(element) +
+                        if (name==null || name.equals("")) // NOI18N
+                            name = NbBundle.getMessage(PackageData.class, "unnamed"); // NOI18N
+                        if (doc == null || doc.trim().equals("")) // NOI18N
+                            doc = "&nbsp;"; // NOI18N
+                        out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                        out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(element) + // NOI18N
                                 "\" title=\"" + type + " in " + name +
-                                "\">" + name + "</A></B></TD>\r\n");
-                        out.write("<TD>" + doc + "</TD>\r\n");
-                        out.write("</TR>\r\n");
+                                "\">" + name + "</A></B></TD>\r\n"); // NOI18N
+                        out.write("<TD>" + doc + "</TD>\r\n"); // NOI18N
+                        out.write("</TR>\r\n"); // NOI18N
                     }
-                    out.write("</TABLE>\r\n&nbsp;\r\n<P>\r\n");
+                    out.write("</TABLE>\r\n&nbsp;\r\n<P>\r\n"); // NOI18N
                 }
             }
             
             // diagrams
             out.write(getDiagramSummary());
             
-            out.write("<HR>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("</BODY>\r\n</HTML>");
+            out.write("</BODY>\r\n</HTML>"); // NOI18N
             out.close();
             result = result && true;
         }
@@ -263,26 +274,31 @@ public class PackageData extends ElementDataObject
     public boolean generatePackageFrameHTML(File file)
     {
         boolean result = false;
+        
         try
         {
             FileOutputStream fo = new FileOutputStream(file);
             OutputStreamWriter out = new OutputStreamWriter(fo);
             
             out.write(getHTMLHeader());
-            out.write("<BODY BGCOLOR=\"white\">");
-            out.write("<img src=\"" + ReportTask.getPathToReportRoot(getElement()) + "images/Package.png" + "\" border=n>&nbsp");
-            out.write("<FONT size=\"+1\" CLASS=\"FrameTitleFont\">");
+            out.write("<BODY BGCOLOR=\"white\">"); // NOI18N
+            
+            out.write("<img src=\"" + // NOI18N
+                ReportTask.getPathToReportRoot(getElement()) 
+                + "images/package.png" + "\" border=n>&nbsp"); // NOI18N
+            
+            out.write("<FONT size=\"+1\" CLASS=\"FrameTitleFont\">"); // NOI18N
             
             if (getElement().getElementType().equals(AbstractModelElementNode.ELEMENT_TYPE_PROJECT))
             {
-                out.write("<A HREF=\"" + getLinkTo(getElement()) + "\" target=\"elementframe\">" +
-                        "&lt;" + NbBundle.getMessage(ReportTask.class,"default_package") +
-                        ">" + "</A></FONT>\r\n");
+                out.write("<A HREF=\"" + getLinkTo(getElement()) + "\" target=\"elementframe\">" + // NOI18N
+                    "&lt;" + NbBundle.getMessage(ReportTask.class,"default_package") + // NOI18N
+                    ">" + "</A></FONT>\r\n"); // NOI18N
             }
             else
             {
-                out.write("<A HREF=\"" + getLinkTo(getElement()) + "\" target=\"elementframe\">" +
-                        pkg.getFullyQualifiedName(false) + "</A></FONT>\r\n");
+                out.write("<A HREF=\"" + getLinkTo(getElement()) + "\" target=\"elementframe\">" + // NOI18N
+                    pkg.getFullyQualifiedName(false) + "</A></FONT>\r\n"); // NOI18N
             }
             
             // different element type
@@ -290,74 +306,109 @@ public class PackageData extends ElementDataObject
             {
                 String type = elementTypes[i];
                 INamedElement[] elements = getElementByType(type);
+                
                 if (elements.length > 0)
                 {
-                    String category = NbBundle.getMessage(PackageData.class, "Category_" + elementTypes[i]);
-                    out.write("<TABLE BORDER=\"0\" WIDTH=\"100%\">");
-                    out.write("<TR>\r\n");
-                    out.write("<TD NOWRAP><img src=\"" +
-                            ReportTask.getPathToReportRoot(getElement()) +
-                            "images/" + type + ".png" +
-                            "\" border=n>&nbsp;<FONT size=\"+1\" CLASS=\"FrameHeadingFont\">" +
-                            category + "</FONT>&nbsp;<FONT CLASS=\"FrameItemFont\">\r\n");
+                    String category = NbBundle.getMessage(
+                        PackageData.class, "Category_" + elementTypes[i]); // NOI18N
+                    
+                    out.write("<TABLE BORDER=\"0\" WIDTH=\"100%\">"); // NOI18N
+                    out.write("<TR>\r\n"); // NOI18N
+                    
+                    String imageName = CommonResourceManager.instance()
+                        .getIconDetailsForElementType(type);
+                    
+                    if (imageName.lastIndexOf("/") > -1)
+                        imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+                    
+                    ReportTask.addToImageList(imageName);
+
+                    out.write("<TD NOWRAP><img src=\"" + // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) +
+                        "images/" + imageName + // NOI18N
+                        "\" border=n>&nbsp;<FONT size=\"+1\" CLASS=\"FrameHeadingFont\">" + // NOI18N
+                        category + "</FONT>&nbsp;<FONT CLASS=\"FrameItemFont\">\r\n"); // NOI18N
                     
                     for (int j=0; j<elements.length; j++)
                     {
                         INamedElement element = elements[j];
                         String name = element.getName();
+                        
                         if (name==null || name.equals(""))
-                            name = NbBundle.getMessage(PackageData.class, "unnamed");
-                        out.write("<BR>\r\n");
-                        out.write("<A HREF=\"" + getLinkTo(element) + "\" title=\"" +
-                                category + " in " + getElementName() +
-                                "\" target=\"elementframe\">" +
-                                name + "</A>\r\n");
+                            name = NbBundle.getMessage(PackageData.class, "unnamed"); // NOI18N
+                        
+                        out.write("<BR>\r\n"); // NOI18N
+                        
+                        out.write("<A HREF=\"" + getLinkTo(element) + "\" title=\"" + // NOI18N
+                            category + " in " + getElementName() + // NOI18N
+                            "\" target=\"elementframe\">" + // NOI18N
+                            name + "</A>\r\n"); // NOI18N
                     }
-                    out.write("</FONT></TD>\r\n");
-                    out.write("</TR>\r\n</TABLE>\r\n\r\n<BR>\r\n");
+                    
+                    out.write("</FONT></TD>\r\n"); // NOI18N
+                    out.write("</TR>\r\n</TABLE>\r\n\r\n<BR>\r\n"); // NOI18N
                 }
             }
             
             // diagrams
             ITreeItem[] items = getDiagrams();
-            String type = NbBundle.getMessage(PackageData.class, "Category_Diagram");
+            
+            String type = NbBundle.getMessage(
+                PackageData.class, "Category_Diagram"); // NOI18N
+            
             if (items.length>0)
             {
-                out.write("<TABLE BORDER=\"0\" WIDTH=\"100%\">");
-                out.write("<TR>\r\n");
-                out.write("<TD NOWRAP><FONT size=\"+1\" CLASS=\"FrameHeadingFont\">" +
-                        type + "</FONT>&nbsp;<FONT CLASS=\"FrameItemFont\">\r\n");
+                out.write("<TABLE BORDER=\"0\" WIDTH=\"100%\">"); // NOI18N
+                out.write("<TR>\r\n"); // NOI18N
+                out.write("<TD NOWRAP><FONT size=\"+1\" CLASS=\"FrameHeadingFont\">" + // NOI18N
+                    type + "</FONT>&nbsp;<FONT CLASS=\"FrameItemFont\">\r\n"); // NOI18N
                 
             }
+            
             for (int i=0; i<items.length; i++)
             {
                 IDiagram diagram = items[i].getData().getDiagram().getDiagram();
                 if (diagram == null)
-                    diagram = ReportTask.loadDiagram(items[i].getData().getDiagram().getFilename());
+                {
+                    diagram = ReportTask.loadDiagram(
+                        items[i].getData().getDiagram().getFilename());
+                }
+                
                 if (diagram != null)
                 {
-                    out.write("<BR>\r\n");
-                    out.write("<img src=\"" + ReportTask.getPathToReportRoot(getElement()) + "images/" + DiagramTypesManager.instance().
-                            getOpenIcon(diagram) +
-                            ".png" + "\" border=n>&nbsp;<A HREF=\"" +
-                            getLinkToDiagram(items[i].getData().getDiagram()) +
-                            "\" title=\"" + type + " in " + getElementName() +
-                            "\" target=\"elementframe\">" + diagram.getName() + "</A>\r\n");
+                    out.write("<BR>\r\n"); // NOI18N
+                    
+                    String imageName = ImageUtil.instance()
+                        .getDiagramTypeImageName(diagram.getDiagramKind());
+                    
+                    if (imageName.lastIndexOf("/") > -1)
+                        imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+                    
+                    ReportTask.addToImageList(imageName);
+
+                    out.write("<img src=\"" + // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) + 
+                        "images/" + imageName +
+                        "\" border=n>&nbsp;<A HREF=\"" + // NOI18N
+                        getLinkToDiagram(items[i].getData().getDiagram()) +
+                        "\" title=\"" + type + " in " + getElementName() + // NOI18N
+                        "\" target=\"elementframe\">" + // NOI18N
+                        diagram.getName() + "</A>\r\n"); // NOI18N
                 }
             }
-            out.write("</FONT></TD>\r\n");
-            out.write("</TR>\r\n</TABLE>\r\n\r\n");
             
-            out.write("</BODY>\r\n</HTML>");
+            out.write("</FONT></TD>\r\n"); // NOI18N
+            out.write("</TR>\r\n</TABLE>\r\n\r\n"); // NOI18N
+            out.write("</BODY>\r\n</HTML>"); // NOI18N
             out.close();
             result = true;
         }
+        
         catch (Exception e)
         {
             ErrorManager.getDefault().notify(e);
         }
         return result;
-        
     }
     
     private class DisplayNameComparator implements Comparator

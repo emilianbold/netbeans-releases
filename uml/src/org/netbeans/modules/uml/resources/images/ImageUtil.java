@@ -19,9 +19,17 @@
 package org.netbeans.modules.uml.resources.images;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,12 +90,45 @@ public class ImageUtil
         return self;
     }
     
+    public FileInputStream getImageFileInputStream(String imageName)
+    {
+        try
+        {
+            java.net.URL url = getClass().getResource(imageName);
+            
+            if (url == null)
+            {
+                throw new ImageUtil.ImageFileNotFoundException(
+                    "Image file \"" + imageName + // NOI18N
+                    "\" could not be found in the images folder: " + // NOI18N
+                    IMAGE_FOLDER);
+            }
+            
+            return new java.io.FileInputStream(url.getPath());
+        }
+        
+        catch (FileNotFoundException ex)
+        {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    public File getImageFile(String imageName)
+    {
+        return InstalledFileLocator.getDefault()
+            .locate(imageName, "org.netbeans.modules.uml", false); // NOI18N
+    }
+
+    
     public Icon getIcon(String imageName)
     {
         URL url = getClass().getResource(imageName);
         if (url == null)
+        {
             throw new ImageFileNotFoundException("Image file \"" + imageName + // NOI18N
                 "\" could not be found in the images folder: " + IMAGE_FOLDER); // NOI18N
+        }
         
         return new ImageIcon(url);
     }
@@ -106,6 +147,46 @@ public class ImageUtil
             
             return icon;
         }
+    }
+
+    
+    public String getDiagramTypeImageName(int diagramKind)
+    {
+        switch (diagramKind)
+        {
+        case IDiagramKind.DK_ACTIVITY_DIAGRAM:
+            return DIAGRAM_ICON_ACTIVITY;
+            
+        case IDiagramKind.DK_CLASS_DIAGRAM:
+            return DIAGRAM_ICON_CLASS;
+
+        case IDiagramKind.DK_COLLABORATION_DIAGRAM:
+            return DIAGRAM_ICON_COLLABORATION;
+
+        case IDiagramKind.DK_COMPONENT_DIAGRAM:
+            return DIAGRAM_ICON_COMPONENT;
+
+        case IDiagramKind.DK_DEPLOYMENT_DIAGRAM:
+            return DIAGRAM_ICON_DEPLOYMENT;
+
+        case IDiagramKind.DK_SEQUENCE_DIAGRAM:
+            return DIAGRAM_ICON_SEQUENCE;
+
+        case IDiagramKind.DK_STATE_DIAGRAM:
+            return DIAGRAM_ICON_STATE;
+
+        case IDiagramKind.DK_USECASE_DIAGRAM:
+            return DIAGRAM_ICON_USECASE;
+
+        default: // IDiagramKind.DK_DIAGRAM
+            return DIAGRAM_ICON_DEFAULT;
+        }
+    }
+    
+    
+    public Icon getDiagramTypeIcon(int diagramKind)
+    {
+        return getIcon(getDiagramTypeImageName(diagramKind));
     }
     
     

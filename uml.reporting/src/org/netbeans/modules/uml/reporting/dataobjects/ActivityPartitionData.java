@@ -31,6 +31,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.reporting.ReportTask;
+import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -95,14 +96,14 @@ public class ActivityPartitionData extends ActivityGroupData
             String doc = "";
             
             out.write(getHTMLHeader());
-            out.write("<BODY BGCOLOR=\"white\">\r\n");
+            out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("<HR>\r\n");
-            out.write("<H2>\r\n");
-            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n");
-            out.write("<BR>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
+            out.write("<H2>\r\n"); // NOI18N
+            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n"); // NOI18N
+            out.write("<BR>\r\n"); // NOI18N
             
-            out.write(getElementType() + " " + getElement().getName() + "</H2>\r\n");
+            out.write(getElementType() + " " + getElement().getName() + "</H2>\r\n"); // NOI18N
             
             out.write(getDependencies());
             
@@ -112,12 +113,12 @@ public class ActivityPartitionData extends ActivityGroupData
             {
                 if (owner!=null)
                 {
-                    out.write("<DL>\r\n");
+                    out.write("<DL>\r\n"); // NOI18N
                     out.write("<DT><B>" + NbBundle.getMessage(
-                            ActivityPartitionData.class, "Super_Partition") + ": </B><DD><A HREF=\"" +
-                            getLinkTo(owner) + "\" >" +
-                            ((IActivityPartition)owner).getName() + "</A></DD>\r\n");
-                    out.write("</DL>\r\n");
+                            ActivityPartitionData.class, "Super_Partition") + ": </B><DD><A HREF=\"" + // NOI18N
+                            getLinkTo(owner) + "\" >" + // NOI18N
+                            ((IActivityPartition)owner).getName() + "</A></DD>\r\n"); // NOI18N
+                    out.write("</DL>\r\n"); // NOI18N
                 }
             }
             
@@ -141,35 +142,45 @@ public class ActivityPartitionData extends ActivityGroupData
             ETList<IActivityNode> nodes = getElement().getNodeContents();
             if (nodes.size()>0)
             {
-                out.write("<!-- =========== ACTIVITY NODE SUMMARY =========== -->\r\n\r\n");
-                out.write(getSummaryHeader("contained_node_summary",
-                        NbBundle.getMessage(ActivityPartitionData.class, "Contained_Node_Summary")));
+                out.write("<!-- =========== ACTIVITY NODE SUMMARY =========== -->\r\n\r\n"); // NOI18N
+                out.write(getSummaryHeader("contained_node_summary", // NOI18N
+                        NbBundle.getMessage(ActivityPartitionData.class, "Contained_Node_Summary"))); // NOI18N
                 
                 for (int i=0; i<nodes.size(); i++)
                 {
                     IActivityNode node = (IActivityNode)nodes.get(i);
-                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
                     doc = getBriefDocumentation(
                         StringUtilities.unescapeHTML(node.getDocumentation()));
                     
                     if (doc == null || doc.trim().equals(""))
-                        doc = "&nbsp;";
+                        doc = "&nbsp;"; // NOI18N
                     
                     String name = node.getName();
                     if (name==null || name.equals(""))
                         name = node.getElementType();
-                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                    out.write("<TD WIDTH=\"15%\"><img src=\"" +
-                            ReportTask.getPathToReportRoot(getElement()) + "images/" +
-                            node.getElementType() + ".png" +
-                            "\" border=n>&nbsp<B><A HREF=\"" + getLinkTo(node) +
-                            "\" title=\"" + node.getElementType() + " in " + name +
-                            "\">" + name + "</A></B></TD>\r\n");
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n");
-                    out.write("</TR>\r\n");
+                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                    
+                    String imageName = CommonResourceManager.instance()
+                        .getIconDetailsForElementType(node.getElementType());
+
+                    if (imageName.lastIndexOf("/") > -1)
+                        imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+                    
+                    ReportTask.addToImageList(imageName);
+                    
+                    out.write("<TD WIDTH=\"15%\"><img src=\"" + // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) + 
+                        "images/" + imageName + // NOI18N
+                        "\" border=n>&nbsp<B><A HREF=\"" + getLinkTo(node) + // NOI18N
+                        "\" title=\"" + node.getElementType() + " in " +  // NOI18N
+                        name + "\">" + name + "</A></B></TD>\r\n"); // NOI18N
+
+                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n"); // NOI18N
+                    out.write("</TR>\r\n"); // NOI18N
                 }
-                out.write("</TABLE>\r\n&nbsp;\r\n");
+                out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
             }
             
             // sub partition summary
@@ -177,33 +188,33 @@ public class ActivityPartitionData extends ActivityGroupData
             ETList<IActivityPartition> subs = getElement().getSubPartitions();
             if (subs.size()>0)
             {
-                out.write("<!-- =========== SUB PARTITION SUMMARY =========== -->\r\n\r\n");
-                out.write(getSummaryHeader("sub_partition_summary",
-                        NbBundle.getMessage(ActivityPartitionData.class, "Sub_Partition_Summary")));
+                out.write("<!-- =========== SUB PARTITION SUMMARY =========== -->\r\n\r\n"); // NOI18N
+                out.write(getSummaryHeader("sub_partition_summary", // NOI18N
+                        NbBundle.getMessage(ActivityPartitionData.class, "Sub_Partition_Summary"))); // NOI18N
                 
                 for (int i=0; i<subs.size(); i++)
                 {
                     IActivityPartition sub = subs.get(i);
-                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
                     doc = getBriefDocumentation(
                         StringUtilities.unescapeHTML(sub.getDocumentation()));
                     
                     if (doc == null || doc.trim().equals(""))
-                        doc = "&nbsp;";
-                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                    out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(sub) +
+                        doc = "&nbsp;"; // NOI18N
+                    out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                    out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(sub) + // NOI18N
                             "\" title=\"" + sub.getName() + " in " + getElement().getName() +
-                            "\">" + sub.getName() + "</A></B></TD>\r\n");
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n");
-                    out.write("</TR>\r\n");
+                            "\">" + sub.getName() + "</A></B></TD>\r\n"); // NOI18N
+                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n"); // NOI18N
+                    out.write("</TR>\r\n"); // NOI18N
                 }
-                out.write("</TABLE>\r\n&nbsp;\r\n");
+                out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
             }
             
-            out.write("<HR>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("</BODY>\r\n</HTML>");
+            out.write("</BODY>\r\n</HTML>"); // NOI18N
             out.close();
             result = true;
             

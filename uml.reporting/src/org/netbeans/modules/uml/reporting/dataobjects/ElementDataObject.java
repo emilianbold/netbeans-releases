@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -40,12 +41,14 @@ import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.reporting.ReportTask;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.controls.projecttree.DefaultNodeFactory;
 import org.netbeans.modules.uml.ui.support.DiagramBuilder;
-import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
+import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IPresentationTarget;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl;
+
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -55,46 +58,47 @@ public class ElementDataObject implements Report
     private IElement element;
     private String name;
     private String type;
-    public static String Property_Alias = NbBundle.getMessage(ElementDataObject.class, "Property_Alias");
-    public static String Property_Visibility = NbBundle.getMessage(ElementDataObject.class, "Property_Visibility");
-    public static String Property_Final = NbBundle.getMessage(ElementDataObject.class, "Property_Final");
-    public static String Property_Transient = NbBundle.getMessage(ElementDataObject.class, "Property_Transient");
-    public static String Property_Abstract = NbBundle.getMessage(ElementDataObject.class, "Property_Abstract");
-    public static String Property_Leaf = NbBundle.getMessage(ElementDataObject.class, "Property_Leaf");
-    public static String Property_ActivityKind = NbBundle.getMessage(ElementDataObject.class, "Property_ActivityKind");
-    public static String Property_SingleCopy = NbBundle.getMessage(ElementDataObject.class, "Property_SingleCopy");
-    public static String Property_MultipleInvocation = NbBundle.getMessage(ElementDataObject.class, "Property_MultipleInvocation");
-    public static String Property_Synchronous = NbBundle.getMessage(ElementDataObject.class, "Property_Synchronous");
-    public static String Property_Kind = NbBundle.getMessage(ElementDataObject.class, "Property_Kind");
-    public static String Property_GroupKind = NbBundle.getMessage(ElementDataObject.class, "Property_GroupKind");
-    public static String Property_Activity = NbBundle.getMessage(ElementDataObject.class, "Property_Activity");
-    public static String Property_Ordering = NbBundle.getMessage(ElementDataObject.class, "Property_Ordering");
-    public static String Property_External = NbBundle.getMessage(ElementDataObject.class, "Property_External");
-    public static String Property_Dimension = NbBundle.getMessage(ElementDataObject.class, "Property_Dimension");
-    public static String Property_Container = NbBundle.getMessage(ElementDataObject.class, "Property_Container");
-    public static String Property_Instantiation = NbBundle.getMessage(ElementDataObject.class, "Property_Instantiation");
-    public static String Property_FileName = NbBundle.getMessage(ElementDataObject.class, "Property_FileName");
-    public static String Property_Reentrant = NbBundle.getMessage(ElementDataObject.class, "Property_Reentrant");
-    public static String Property_SubmachineState = NbBundle.getMessage(ElementDataObject.class, "Property_SubmachineState");
-    public static String Property_Simple = NbBundle.getMessage(ElementDataObject.class, "Property_Simple");
-    public static String Property_Orthogonal = NbBundle.getMessage(ElementDataObject.class, "Property_Orthogonal");
-    public static String Property_Composite = NbBundle.getMessage(ElementDataObject.class, "Property_Composite");
-    public static String Property_Reflexive = NbBundle.getMessage(ElementDataObject.class, "Property_Reflexive");
-    public static String Property_Derived = NbBundle.getMessage(ElementDataObject.class, "Property_Derived");
-    public static String Property_Static = NbBundle.getMessage(ElementDataObject.class, "Property_Static");
-    public static String Property_Volatile = NbBundle.getMessage(ElementDataObject.class, "Property_Volatile");
-    public static String Property_Type = NbBundle.getMessage(ElementDataObject.class, "Property_Type");
-    public static String Property_Client_Changeability = NbBundle.getMessage(ElementDataObject.class, "Property_Client_Changeability");
-    public static String Property_Multiplicity = NbBundle.getMessage(ElementDataObject.class, "Property_Multiplicity");
-    public static String Property_Participant = NbBundle.getMessage(ElementDataObject.class, "Property_Participant");
-    public static String Property_Navigable = NbBundle.getMessage(ElementDataObject.class, "Property_Navigable");
-    public static String Property_Operator = NbBundle.getMessage(ElementDataObject.class, "Property_Operator");
-    public static String Property_Deployment_Location = NbBundle.getMessage(ElementDataObject.class, "Property_Deployment_Location");
-    public static String Property_Execution_Location = NbBundle.getMessage(ElementDataObject.class, "Property_Execution_Location");
-    public static String Property_Multiple_Invocation = NbBundle.getMessage(ElementDataObject.class, "Property_Multiple_Invocation");
-    public static String Property_Default = NbBundle.getMessage(ElementDataObject.class, "Property_Default");
-    public static String Property_Primary_Key = NbBundle.getMessage(ElementDataObject.class, "Property_Primary_Key");
-    public static String Property_Redefined = NbBundle.getMessage(ElementDataObject.class, "Property_Redefined");
+    
+    public static String Property_Alias = NbBundle.getMessage(ElementDataObject.class, "Property_Alias"); // NOI18N
+    public static String Property_Visibility = NbBundle.getMessage(ElementDataObject.class, "Property_Visibility"); // NOI18N
+    public static String Property_Final = NbBundle.getMessage(ElementDataObject.class, "Property_Final"); // NOI18N
+    public static String Property_Transient = NbBundle.getMessage(ElementDataObject.class, "Property_Transient"); // NOI18N
+    public static String Property_Abstract = NbBundle.getMessage(ElementDataObject.class, "Property_Abstract"); // NOI18N
+    public static String Property_Leaf = NbBundle.getMessage(ElementDataObject.class, "Property_Leaf"); // NOI18N
+    public static String Property_ActivityKind = NbBundle.getMessage(ElementDataObject.class, "Property_ActivityKind"); // NOI18N
+    public static String Property_SingleCopy = NbBundle.getMessage(ElementDataObject.class, "Property_SingleCopy"); // NOI18N
+    public static String Property_MultipleInvocation = NbBundle.getMessage(ElementDataObject.class, "Property_MultipleInvocation"); // NOI18N
+    public static String Property_Synchronous = NbBundle.getMessage(ElementDataObject.class, "Property_Synchronous"); // NOI18N
+    public static String Property_Kind = NbBundle.getMessage(ElementDataObject.class, "Property_Kind"); // NOI18N
+    public static String Property_GroupKind = NbBundle.getMessage(ElementDataObject.class, "Property_GroupKind"); // NOI18N
+    public static String Property_Activity = NbBundle.getMessage(ElementDataObject.class, "Property_Activity"); // NOI18N
+    public static String Property_Ordering = NbBundle.getMessage(ElementDataObject.class, "Property_Ordering"); // NOI18N
+    public static String Property_External = NbBundle.getMessage(ElementDataObject.class, "Property_External"); // NOI18N
+    public static String Property_Dimension = NbBundle.getMessage(ElementDataObject.class, "Property_Dimension"); // NOI18N
+    public static String Property_Container = NbBundle.getMessage(ElementDataObject.class, "Property_Container"); // NOI18N
+    public static String Property_Instantiation = NbBundle.getMessage(ElementDataObject.class, "Property_Instantiation"); // NOI18N
+    public static String Property_FileName = NbBundle.getMessage(ElementDataObject.class, "Property_FileName"); // NOI18N
+    public static String Property_Reentrant = NbBundle.getMessage(ElementDataObject.class, "Property_Reentrant"); // NOI18N
+    public static String Property_SubmachineState = NbBundle.getMessage(ElementDataObject.class, "Property_SubmachineState"); // NOI18N
+    public static String Property_Simple = NbBundle.getMessage(ElementDataObject.class, "Property_Simple"); // NOI18N
+    public static String Property_Orthogonal = NbBundle.getMessage(ElementDataObject.class, "Property_Orthogonal"); // NOI18N
+    public static String Property_Composite = NbBundle.getMessage(ElementDataObject.class, "Property_Composite"); // NOI18N
+    public static String Property_Reflexive = NbBundle.getMessage(ElementDataObject.class, "Property_Reflexive"); // NOI18N
+    public static String Property_Derived = NbBundle.getMessage(ElementDataObject.class, "Property_Derived"); // NOI18N
+    public static String Property_Static = NbBundle.getMessage(ElementDataObject.class, "Property_Static"); // NOI18N
+    public static String Property_Volatile = NbBundle.getMessage(ElementDataObject.class, "Property_Volatile"); // NOI18N
+    public static String Property_Type = NbBundle.getMessage(ElementDataObject.class, "Property_Type"); // NOI18N
+    public static String Property_Client_Changeability = NbBundle.getMessage(ElementDataObject.class, "Property_Client_Changeability"); // NOI18N
+    public static String Property_Multiplicity = NbBundle.getMessage(ElementDataObject.class, "Property_Multiplicity"); // NOI18N
+    public static String Property_Participant = NbBundle.getMessage(ElementDataObject.class, "Property_Participant"); // NOI18N
+    public static String Property_Navigable = NbBundle.getMessage(ElementDataObject.class, "Property_Navigable"); // NOI18N
+    public static String Property_Operator = NbBundle.getMessage(ElementDataObject.class, "Property_Operator"); // NOI18N
+    public static String Property_Deployment_Location = NbBundle.getMessage(ElementDataObject.class, "Property_Deployment_Location"); // NOI18N
+    public static String Property_Execution_Location = NbBundle.getMessage(ElementDataObject.class, "Property_Execution_Location"); // NOI18N
+    public static String Property_Multiple_Invocation = NbBundle.getMessage(ElementDataObject.class, "Property_Multiple_Invocation"); // NOI18N
+    public static String Property_Default = NbBundle.getMessage(ElementDataObject.class, "Property_Default"); // NOI18N
+    public static String Property_Primary_Key = NbBundle.getMessage(ElementDataObject.class, "Property_Primary_Key"); // NOI18N
+    public static String Property_Redefined = NbBundle.getMessage(ElementDataObject.class, "Property_Redefined"); // NOI18N
     public static String navBar1;
     public static String navBar2;
     public static String navBar3;
@@ -105,50 +109,50 @@ public class ElementDataObject implements Report
     {
         StringBuilder buffer = new StringBuilder();
         
-        buffer.append("<!-- ========= START OF NAVBAR ======= -->\r\n");
-        buffer.append("<A NAME=\"navbar_top\"></A>\r\n");
-        buffer.append("<A HREF=\"#skip-navbar_top\" title=\"Skip navigation links\"></A>\r\n");
-        buffer.append("<TABLE BORDER=\"0\" WIDTH=\"100%\" CELLPADDING=\"1\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n");
-        buffer.append("<TR>\r\n");
-        buffer.append("<TD COLSPAN=2 BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">\r\n");
-        buffer.append("<A NAME=\"navbar_top_firstrow\"></A>\r\n");
-        buffer.append("<TABLE BORDER=\"0\" CELLPADDING=\"0\" CELLSPACING=\"3\" SUMMARY=\"\">\r\n");
-        buffer.append("  <TR ALIGN=\"center\" VALIGN=\"top\">\r\n");
+        buffer.append("<!-- ========= START OF NAVBAR ======= -->\r\n"); // NOI18N
+        buffer.append("<A NAME=\"navbar_top\"></A>\r\n"); // NOI18N
+        buffer.append("<A HREF=\"#skip-navbar_top\" title=\"Skip navigation links\"></A>\r\n"); // NOI18N
+        buffer.append("<TABLE BORDER=\"0\" WIDTH=\"100%\" CELLPADDING=\"1\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n"); // NOI18N
+        buffer.append("<TR>\r\n"); // NOI18N
+        buffer.append("<TD COLSPAN=2 BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">\r\n"); // NOI18N
+        buffer.append("<A NAME=\"navbar_top_firstrow\"></A>\r\n"); // NOI18N
+        buffer.append("<TABLE BORDER=\"0\" CELLPADDING=\"0\" CELLSPACING=\"3\" SUMMARY=\"\">\r\n"); // NOI18N
+        buffer.append("  <TR ALIGN=\"center\" VALIGN=\"top\">\r\n"); // NOI18N
         
         navBar1 = buffer.toString();
         
         buffer = new StringBuilder();
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1Rev\">    <FONT CLASS=\"NavBarFont1Rev\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Package") + "</B></FONT>&nbsp;</TD>\r\n");
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Element") + "</FONT>&nbsp;</TD>\r\n");
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Diagram") + "</FONT>&nbsp;</TD>\r\n");
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1Rev\">    <FONT CLASS=\"NavBarFont1Rev\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Package") + "</B></FONT>&nbsp;</TD>\r\n"); // NOI18N
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Element") + "</FONT>&nbsp;</TD>\r\n"); // NOI18N
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Diagram") + "</FONT>&nbsp;</TD>\r\n"); // NOI18N
         
         navBar2 = buffer.toString();
         
         buffer = new StringBuilder();
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Package") + "</FONT>&nbsp;</TD>\r\n");
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Element") + "</FONT>&nbsp;</TD>\r\n");
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1Rev\">    <FONT CLASS=\"NavBarFont1Rev\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Diagram") + "</B></FONT>&nbsp;</TD>\r\n");
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Package") + "</FONT>&nbsp;</TD>\r\n"); // NOI18N
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Element") + "</FONT>&nbsp;</TD>\r\n"); // NOI18N
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1Rev\">    <FONT CLASS=\"NavBarFont1Rev\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Diagram") + "</B></FONT>&nbsp;</TD>\r\n"); // NOI18N
         
         navBar3 = buffer.toString();
         
         buffer = new StringBuilder();
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Package") + "</FONT>&nbsp;</TD>\r\n");
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1Rev\">    <FONT CLASS=\"NavBarFont1Rev\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Element") + "</B></FONT>&nbsp;</TD>\r\n");
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Diagram") + "</FONT>&nbsp;</TD>\r\n");
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Package") + "</FONT>&nbsp;</TD>\r\n"); // NOI18N
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1Rev\">    <FONT CLASS=\"NavBarFont1Rev\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Element") + "</B></FONT>&nbsp;</TD>\r\n"); // NOI18N
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <FONT CLASS=\"NavBarFont1\">" + NbBundle.getMessage(ElementDataObject.class, "Header_Diagram") + "</FONT>&nbsp;</TD>\r\n"); // NOI18N
         
         navBar4 = buffer.toString();
         
         buffer = new StringBuilder();
-        buffer.append("  </TR>\r\n");
-        buffer.append("</TABLE>\r\n");
-        buffer.append("</TD>\r\n");
-        buffer.append("<TD ALIGN=\"right\" VALIGN=\"top\" ROWSPAN=3><EM>\r\n");
-        buffer.append("<b>" + NbBundle.getMessage(ElementDataObject.class, "brand") + "</b>\r\n");
-        buffer.append("</TD>\r\n");
-        buffer.append("</TR>\r\n");
-        buffer.append("</TABLE>\r\n");
-        buffer.append("<A NAME=\"skip-navbar_top\"></A>\r\n");
-        buffer.append("<!-- ========= END OF NAVBAR ========= -->\r\n\r\n");
+        buffer.append("  </TR>\r\n"); // NOI18N
+        buffer.append("</TABLE>\r\n"); // NOI18N
+        buffer.append("</TD>\r\n"); // NOI18N
+        buffer.append("<TD ALIGN=\"right\" VALIGN=\"top\" ROWSPAN=3><EM>\r\n"); // NOI18N
+        buffer.append("<b>" + NbBundle.getMessage(ElementDataObject.class, "brand") + "</b>\r\n"); // NOI18N
+        buffer.append("</TD>\r\n"); // NOI18N
+        buffer.append("</TR>\r\n"); // NOI18N
+        buffer.append("</TABLE>\r\n"); // NOI18N
+        buffer.append("<A NAME=\"skip-navbar_top\"></A>\r\n"); // NOI18N
+        buffer.append("<!-- ========= END OF NAVBAR ========= -->\r\n\r\n"); // NOI18N
         
         navBar5 = buffer.toString();
     }
@@ -204,13 +208,13 @@ public class ElementDataObject implements Report
         if (doc.length()>0)
         {
             StringBuilder buff = new StringBuilder();
-            buff.append("<P><PRE>\r\n");
+            buff.append("<P><PRE>\r\n"); // NOI18N
             buff.append(doc);
-            buff.append("</PRE></P>");
-            buff.append("<HR>\r\n");
+            buff.append("</PRE></P>"); // NOI18N
+            buff.append("<HR>\r\n"); // NOI18N
             return buff.toString();
         }
-        return "";
+        return ""; // NOI18N
     }
     
     
@@ -344,12 +348,12 @@ public class ElementDataObject implements Report
     {
         StringBuilder buff = new StringBuilder();
         
-        buff.append("<A NAME=\"" + anchorName + "\"></A>\r\n");
-        buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n");
-        buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n");
-        buff.append("<TH ALIGN=\"left\" COLSPAN=\"2\"><FONT SIZE=\"+2\">\r\n");
-        buff.append("<B>" + header + "</B></FONT></TH>\r\n");
-        buff.append("</TR>\r\n");
+        buff.append("<A NAME=\"" + anchorName + "\"></A>\r\n"); // NOI18N
+        buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n"); // NOI18N
+        buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n"); // NOI18N
+        buff.append("<TH ALIGN=\"left\" COLSPAN=\"2\"><FONT SIZE=\"+2\">\r\n"); // NOI18N
+        buff.append("<B>" + header + "</B></FONT></TH>\r\n"); // NOI18N
+        buff.append("</TR>\r\n"); // NOI18N
         
         return buff.toString();
     }
@@ -358,13 +362,13 @@ public class ElementDataObject implements Report
     public String getDetailHeader(String anchor, String header)
     {
         StringBuilder buff = new StringBuilder();
-        buff.append("<A NAME=\"" + anchor + "\"></A>\r\n");
-        buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n");
-        buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n");
-        buff.append("<TH ALIGN=\"left\" COLSPAN=\"1\"><FONT SIZE=\"+2\">\r\n");
-        buff.append("<B>" + header + "</B></FONT></TH>\r\n");
-        buff.append("</TR>\r\n");
-        buff.append("</TABLE>\r\n");
+        buff.append("<A NAME=\"" + anchor + "\"></A>\r\n"); // NOI18N
+        buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n"); // NOI18N
+        buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n"); // NOI18N
+        buff.append("<TH ALIGN=\"left\" COLSPAN=\"1\"><FONT SIZE=\"+2\">\r\n"); // NOI18N
+        buff.append("<B>" + header + "</B></FONT></TH>\r\n"); // NOI18N
+        buff.append("</TR>\r\n"); // NOI18N
+        buff.append("</TABLE>\r\n"); // NOI18N
         
         return buff.toString();
     }
@@ -375,7 +379,7 @@ public class ElementDataObject implements Report
     public String getVisibility(INamedElement element)
     {
         int v = element.getVisibility();
-        return NbBundle.getMessage(ElementDataObject.class, "Visibility"+v);
+        return NbBundle.getMessage(ElementDataObject.class, "Visibility"+v); // NOI18N
     }
     
     
@@ -394,19 +398,19 @@ public class ElementDataObject implements Report
         StringBuilder buff = new StringBuilder();
         if (stypes.size()>0)
         {
-            buff.append("<!-- =========== STEREOTYPE SUMMARY =========== -->\r\n\r\n");
-            buff.append(getSummaryHeader("stereotype_summary",
-                    NbBundle.getMessage(ElementDataObject.class, "Stereotype_Summary")));
+            buff.append("<!-- =========== STEREOTYPE SUMMARY =========== -->\r\n\r\n"); // NOI18N
+            buff.append(getSummaryHeader("stereotype_summary", // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class, "Stereotype_Summary"))); // NOI18N
             
             for (int i=0; i<stypes.size(); i++)
             {
                 IStereotype stype = (IStereotype)stypes.get(i);
-                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n");
-                buff.append(stype.getName() + "\r\n");
-                buff.append("</TD>\r\n</TR>\r\n");
+                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n"); // NOI18N
+                buff.append(stype.getName() + "\r\n"); // NOI18N
+                buff.append("</TD>\r\n</TR>\r\n"); // NOI18N
             }
-            buff.append("</TABLE>\r\n&nbsp;\r\n");
+            buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
         }
         return buff.toString();
     }
@@ -418,7 +422,7 @@ public class ElementDataObject implements Report
         for (int i=0; i<taggedValues.size(); i++)
         {
             ITaggedValue value = taggedValues.get(i);
-            if (value.getName().equals("documentation"))
+            if (value.getName().equals("documentation")) // NOI18N
                 taggedValues.remove(value);
         }
         
@@ -426,20 +430,20 @@ public class ElementDataObject implements Report
         
         if (taggedValues.size()>0)
         {
-            buff.append("<!-- =========== TAGGED VALUE SUMMARY =========== -->\r\n\r\n");
-            buff.append(getSummaryHeader("tagged_value_summary",
-                    NbBundle.getMessage(ElementDataObject.class, "Tagged_Value_Summary")));
+            buff.append("<!-- =========== TAGGED VALUE SUMMARY =========== -->\r\n\r\n"); // NOI18N
+            buff.append(getSummaryHeader("tagged_value_summary", // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class, "Tagged_Value_Summary"))); // NOI18N
             
             for (int i=0; i<taggedValues.size(); i++)
             {
                 ITaggedValue value = taggedValues.get(i);
-                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n");
-                buff.append(value.getName() + "</TD>\r\n");
-                buff.append("<TD>" + value.getDataValue() + "\r\n");
-                buff.append("</TD>\r\n</TR>\r\n");
+                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n"); // NOI18N
+                buff.append(value.getName() + "</TD>\r\n"); // NOI18N
+                buff.append("<TD>" + value.getDataValue() + "\r\n"); // NOI18N
+                buff.append("</TD>\r\n</TR>\r\n"); // NOI18N
             }
-            buff.append("</TABLE>\r\n&nbsp;\r\n");
+            buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
         }
         return buff.toString();
     }
@@ -451,20 +455,20 @@ public class ElementDataObject implements Report
         StringBuilder buff = new StringBuilder();
         if (constraints.size()>0)
         {
-            buff.append("<!-- =========== CONSTRAINT SUMMARY =========== -->\r\n\r\n");
-            buff.append(getSummaryHeader("constraint_summary",
-                    NbBundle.getMessage(ElementDataObject.class, "Constraint_Summary")));
+            buff.append("<!-- =========== CONSTRAINT SUMMARY =========== -->\r\n\r\n"); // NOI18N
+            buff.append(getSummaryHeader("constraint_summary", // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class, "Constraint_Summary"))); // NOI18N
             
             for (int i=0; i<constraints.size(); i++)
             {
                 IConstraint constraint = constraints.get(i);
-                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-                buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n");
-                buff.append(constraint.getName() + "</TD>\r\n");
-                buff.append("<TD>" + constraint.getExpression() + "\r\n");
-                buff.append("</TD>\r\n</TR>\r\n");
+                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+                buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n"); // NOI18N
+                buff.append(constraint.getName() + "</TD>\r\n"); // NOI18N
+                buff.append("<TD>" + constraint.getExpression() + "\r\n"); // NOI18N
+                buff.append("</TD>\r\n</TR>\r\n"); // NOI18N
             }
-            buff.append("</TABLE>\r\n&nbsp;\r\n");
+            buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
         }
         return buff.toString();
     }
@@ -475,32 +479,43 @@ public class ElementDataObject implements Report
     {
         StringBuilder buff = new StringBuilder();
         ITreeItem[] diagrams = getDiagrams();
+        
         if (diagrams.length>0)
         {
-            buff.append("<!-- =========== DIAGRAM SUMMARY =========== -->\r\n\r\n");
-            buff.append(getSummaryHeader("diagram_summary",
-                    NbBundle.getMessage(ElementDataObject.class, "Diagram_Summary")));
+            buff.append("<!-- =========== DIAGRAM SUMMARY =========== -->\r\n\r\n"); // NOI18N
+            
+            buff.append(getSummaryHeader("diagram_summary", // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Diagram_Summary"))); // NOI18N
             
             for (int i=0; i<diagrams.length; i++)
             {
-                IDiagram diagram = diagrams[i].getData().getDiagram().getDiagram();
+                IDiagram diagram = 
+                    diagrams[i].getData().getDiagram().getDiagram();
+                
                 if (diagram == null)
-                    diagram = ReportTask.loadDiagram(diagrams[i].getData().getDiagram().getFilename());
-                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+                {
+                    diagram = ReportTask.loadDiagram(
+                        diagrams[i].getData().getDiagram().getFilename());
+                }
                 
-                buff.append("<TD WIDTH=\"15%\"><IMG src=\"" + ReportTask.getPathToReportRoot(getElement()) +
-                        "images/" + DiagramTypesManager.instance().getOpenIcon(diagram) +
-                        ".png" + "\" border=n>&nbsp;<B><A HREF=\"" +
-                        getLinkToDiagram(diagrams[i].getData().getDiagram()) +
-                        "\">" + diagram.getName() + "</A></B></TD>\r\n");
+                buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                 
-                buff.append("<TD>" + getBriefDocumentation(
+                String imageName = ImageUtil.instance()
+                    .getDiagramTypeImageName(diagram.getDiagramKind());
+
+                buff.append("<TD WIDTH=\"15%\"><IMG src=\"" +  // NOI18N
+                    ReportTask.getPathToReportRoot(getElement()) +
+                    "images/" + imageName + "\" border=n>&nbsp;<B><A HREF=\"" + // NOI18N
+                    getLinkToDiagram(diagrams[i].getData().getDiagram()) +
+                    "\">" + diagram.getName() + "</A></B></TD>\r\n"); // NOI18N
+                
+                buff.append("<TD>" + getBriefDocumentation( // NOI18N
                     StringUtilities.unescapeHTML(diagram.getDocumentation())) 
-                    + "</TD>\r\n");
+                    + "</TD>\r\n"); // NOI18N
                 
-                buff.append("</TR>\r\n");
+                buff.append("</TR>\r\n"); // NOI18N
             }
-            buff.append("</TABLE>\r\n&nbsp;\r\n");
+            buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
         }
         return buff.toString();
     }
@@ -520,7 +535,7 @@ public class ElementDataObject implements Report
             return new Object[] {((INamedElement)getElement()).getAlias(),
             getVisibility((INamedElement)getElement())};
         else
-            return new Object[] {"&nbsp;", "&nbsp;"};
+            return new Object[] {"&nbsp;", "&nbsp;"}; // NOI18N
     }
     
     
@@ -533,14 +548,14 @@ public class ElementDataObject implements Report
     {
         StringBuilder buff = new StringBuilder();
         
-        buff.append("<!-- =========== PROPERTY SUMMARY =========== -->\r\n");
+        buff.append("<!-- =========== PROPERTY SUMMARY =========== -->\r\n"); // NOI18N
         if (displayHeader)
-            buff.append(getSummaryHeader("property_summary",
-                    NbBundle.getMessage(ElementDataObject.class, "Properties")));
+            buff.append(getSummaryHeader("property_summary", // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class, "Properties"))); // NOI18N
         else
         {
-            buff.append("<A NAME=\"" + "property_summary" + "\"></A>\r\n");
-            buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n");
+            buff.append("<A NAME=\"" + "property_summary" + "\"></A>\r\n"); // NOI18N
+            buff.append("<TABLE BORDER=\"1\" WIDTH=\"100%\" CELLPADDING=\"3\" CELLSPACING=\"0\" SUMMARY=\"\">\r\n"); // NOI18N
             
         }
         
@@ -551,40 +566,40 @@ public class ElementDataObject implements Report
         {
             String property = properties[i];
             Object value = values[i];
-            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-            buff.append("<TD WIDTH=\"15%\"><B>" + property + "</B></TD>\r\n");
+            buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
+            buff.append("<TD WIDTH=\"15%\"><B>" + property + "</B></TD>\r\n"); // NOI18N
             if (value instanceof Boolean)
             {
                 if (((Boolean)value).booleanValue() == true)
                 {
-                    buff.append("<TD><IMG src=\"" +
+                    buff.append("<TD><IMG src=\"" + // NOI18N
                             ReportTask.getPathToReportRoot(getElement()) +
-                            "images/checked.png" + "\" border=n></TD>\r\n");
+                            "images/checked.png" + "\" border=n></TD>\r\n"); // NOI18N
                 }
                 else
-                    buff.append("<TD><IMG src=\"" +
+                    buff.append("<TD><IMG src=\"" + // NOI18N
                             ReportTask.getPathToReportRoot(getElement()) +
-                            "images/unchecked.png" + "\" border=n></TD>\r\n");
+                            "images/unchecked.png" + "\" border=n></TD>\r\n"); // NOI18N
                 
             }
             else if (value instanceof IElement && displayLink((IElement)value))
             {
-                buff.append("<TD><B><A HREF=\"" + getLinkTo((IElement)value) + "\">" +
-                        value.toString() + "</A></B></TD>\r\n");
+                buff.append("<TD><B><A HREF=\"" + getLinkTo((IElement)value) + "\">" + // NOI18N
+                        value.toString() + "</A></B></TD>\r\n"); // NOI18N
             }
             else if (value!=null)
             {
                 String v = value.toString();
-                if (v.equals(""))
-                    v = "&nbsp;";
-                buff.append("<TD>" + v + "</TD>\r\n");
+                if (v.equals("")) // NOI18N
+                    v = "&nbsp;"; // NOI18N
+                buff.append("<TD>" + v + "</TD>\r\n"); // NOI18N
             }
             else
-                buff.append("<TD>&nbsp;</TD>\r\n");
+                buff.append("<TD>&nbsp;</TD>\r\n"); // NOI18N
             
-            buff.append("</TR>\r\n");
+            buff.append("</TR>\r\n"); // NOI18N
         }
-        buff.append("</TABLE>\r\n&nbsp;\r\n");
+        buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
         
         return buff.toString();
     }
@@ -600,28 +615,39 @@ public class ElementDataObject implements Report
         
         if (targets.size()>0)
         {
-            buff.append("<DL>\r\n");
-            buff.append("<DT><B>" +
-                    NbBundle.getMessage(ElementDataObject.class, "All_Enclosing_Diagrams") + ":</B><DD>");
+            buff.append("<DL>\r\n"); // NOI18N
+            
+            buff.append("<DT><B>" + NbBundle.getMessage(ElementDataObject.class,
+                "All_Enclosing_Diagrams") + ":</B><DD>"); // NOI18N
             
             for (int i=0; i<targets.size(); i++)
             {
                 IProxyDiagram proxy = targets.get(i).getProxyDiagram();
+                
                 if (!diagrams.contains(proxy.getFilename()))
                 {
                     diagrams.add(proxy.getFilename());
+                    
                     if (proxy.getDiagram() == null)
                         ReportTask.loadDiagram(proxy.getFilename());
                     
-                    buff.append("<IMG src=\"" +
-                            ReportTask.getPathToReportRoot(getElement()) +
-                            "images/" + DiagramTypesManager.instance().getOpenIcon(proxy.getDiagram()) +
-                            ".png" + "\" border=n>&nbsp;<A HREF=\"" + getLinkToDiagram(proxy) +
-                            "\" >" + proxy.getName() + "</A>&nbsp;&nbsp");
+                    String imageName = ImageUtil.instance()
+                        .getDiagramTypeImageName(
+                        proxy.getDiagram().getDiagramKind());
+
+                    ReportTask.addToImageList(imageName);
+
+                    buff.append("<IMG src=\"" + // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) +
+                        "images/" + imageName + "\" border=n>&nbsp;<A HREF=\"" + // NOI18N
+                        getLinkToDiagram(proxy) + "\" >" + // NOI18N
+                        proxy.getName() + "</A>&nbsp;&nbsp"); // NOI18N
                 }
             }
-            buff.append("</DD></DT>\r\n</DL>\r\n");
+            
+            buff.append("</DD></DT>\r\n</DL>\r\n"); // NOI18N
         }
+        
         return buff.toString();
     }
     
@@ -672,59 +698,88 @@ public class ElementDataObject implements Report
         // list all client classes
         if (clients.size()>0)
         {
-            buff.append("<DL>\r\n");
-            buff.append("<DT><B>" +
-                    NbBundle.getMessage(ElementDataObject.class, "All_Dependency_Clients") + ":</B><DD>");
+            buff.append("<DL>\r\n"); // NOI18N
+            
+            buff.append("<DT><B>" + // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, 
+                "All_Dependency_Clients") + ":</B><DD>"); // NOI18N
             
             for (int i=0; i<clients.size(); i++)
             {
                 INamedElement client = clients.get(i);
                 String type = (String)map.get(client);
                 String name = client.getName();
-                if (name==null || name.equals(""))
+                
+                if (name == null || name.equals("")) // NOI18N
                     name = client.getExpandedElementType();
-                String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot(getElement()) +
-                        "images/" + type + ".png\" ALT=\"(" + type + ") \">";
-                buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" + getLinkTo(client) +
-                        "\" title=\"dependency in " +
-                        client.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + name + "</A>");
+                
+                String imageName = CommonResourceManager.instance()
+                    .getIconDetailsForElementType(type);
+
+                if (imageName.lastIndexOf("/") > -1)
+                    imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+                
+                ReportTask.addToImageList(imageName);
+                
+                String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
+                    getElement()) + "images/" + imageName + // NOI18N
+                    "\" ALT=\"(" + type + ") \">"; // NOI18N
+                
+                buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
+                    getLinkTo(client) + "\" title=\"dependency in " + // NOI18N
+                    client.getOwningPackage().getFullyQualifiedName(false) +
+                    "\">" + name + "</A>"); // NOI18N
                 
                 if (i < clients.size()-1)
-                    buff.append(", ");
+                    buff.append(", "); // NOI18N
             }
-            buff.append("</DD>\r\n");
-            buff.append("</DL>\r\n");
+            
+            buff.append("</DD>\r\n"); // NOI18N
+            buff.append("</DL>\r\n"); // NOI18N
         }
         
         // list all supplier classes
         if (suppliers.size() > 0)
         {
-            buff.append("<DL>\r\n");
-            buff.append("<DT><B>" +
-                    NbBundle.getMessage(ElementDataObject.class, "All_Dependency_Suppliers") + ":</B><DD>");
+            buff.append("<DL>\r\n"); // NOI18N
+            
+            buff.append("<DT><B>" + NbBundle.getMessage(ElementDataObject.class,  // NOI18N
+                "All_Dependency_Suppliers") + ":</B><DD>"); // NOI18N
             
             for (int i=0; i<suppliers.size(); i++)
             {
                 INamedElement supplier = suppliers.get(i);
                 String type = (String)map.get(supplier);
                 String name = supplier.getName();
+
                 if (name==null || name.equals(""))
                     name = supplier.getExpandedElementType();
+
+                String imageName = CommonResourceManager.instance()
+                    .getIconDetailsForElementType(type);
+
+                if (imageName.lastIndexOf("/") > -1)
+                    imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
                 
-                String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot(getElement()) +
-                        "images/" + type + ".png\" ALT=\"(" + type + ") \">";
-                buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" + getLinkTo(supplier) +
-                        "\" title=\"dependency in " +
-                        supplier.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + name + "</A>");
+                ReportTask.addToImageList(imageName);
+
+                String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
+                    getElement()) + "images/" + imageName +  // NOI18N
+                    "\" ALT=\"(" + type + ") \">"; // NOI18N
+                
+                buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
+                    getLinkTo(supplier) + "\" title=\"dependency in " + // NOI18N
+                    supplier.getOwningPackage().getFullyQualifiedName(false) +
+                    "\">" + name + "</A>"); // NOI18N
                 
                 if (i < suppliers.size()-1)
-                    buff.append(", ");
+                    buff.append(", "); // NOI18N
             }
-            buff.append("</DD>\r\n");
-            buff.append("</DL>\r\n");
+            
+            buff.append("</DD>\r\n"); // NOI18N
+            buff.append("</DL>\r\n"); // NOI18N
         }
+        
         return buff.toString();
     }
     
@@ -741,16 +796,16 @@ public class ElementDataObject implements Report
             OutputStreamWriter out = new OutputStreamWriter(fo);
             
             out.write(getHTMLHeader());
-            out.write("<BODY BGCOLOR=\"white\">\r\n");
+            out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("<HR>\r\n");
-            out.write("<H2>\r\n");
-            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n");
-            out.write("<BR>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
+            out.write("<H2>\r\n"); // NOI18N
+            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n"); // NOI18N
+            out.write("<BR>\r\n"); // NOI18N
             if (getElement() instanceof INamedElement)
-                out.write(getElementType() + " " + ((INamedElement)getElement()).getName() + "</H2>\r\n");
+                out.write(getElementType() + " " + ((INamedElement)getElement()).getName() + "</H2>\r\n"); // NOI18N
             else
-                out.write(getElementType() + "</H2>\r\n");
+                out.write(getElementType() + "</H2>\r\n"); // NOI18N
             
             out.write(getDependencies());
             
@@ -771,9 +826,9 @@ public class ElementDataObject implements Report
             out.write(getConstraintsSummary());
             
             
-            out.write("<HR>\r\n");
+            out.write("<HR>\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("</BODY>\r\n</HTML>");
+            out.write("</BODY>\r\n</HTML>"); // NOI18N
             out.close();
             result = true;
             
@@ -794,14 +849,14 @@ public class ElementDataObject implements Report
     public String getHTMLHeader()
     {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n");
-        buffer.append("<HTML>\r\n");
-        buffer.append("<HEAD>\r\n");
-        buffer.append("<TITLE>" + getElement().getElementType() + "</TITLE>\r\n");
-        buffer.append("<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=" + getCharset() + "\">\r\n");
-        buffer.append("<LINK REL =\"stylesheet\" TYPE=\"text/css\" HREF=\"" +
-                ReportTask.getPathToReportRoot(getElement()) + "stylesheet.css\" TITLE=\"Style\">");
-        buffer.append("</HEAD>\r\n");
+        buffer.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n"); // NOI18N
+        buffer.append("<HTML>\r\n"); // NOI18N
+        buffer.append("<HEAD>\r\n"); // NOI18N
+        buffer.append("<TITLE>" + getElement().getElementType() + "</TITLE>\r\n"); // NOI18N
+        buffer.append("<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=" + getCharset() + "\">\r\n"); // NOI18N
+        buffer.append("<LINK REL =\"stylesheet\" TYPE=\"text/css\" HREF=\"" + // NOI18N
+                ReportTask.getPathToReportRoot(getElement()) + "stylesheet.css\" TITLE=\"Style\">"); // NOI18N
+        buffer.append("</HEAD>\r\n"); // NOI18N
         
         return buffer.toString();
     }
@@ -811,8 +866,8 @@ public class ElementDataObject implements Report
     {
         StringBuilder buffer = new StringBuilder(navBar1);
         
-        buffer.append("  <TD BGCOLOR=\"#FFFFFF\" CLASS=\"NavBarCell1\"> &nbsp;<A HREF=\"" + ReportTask.getPathToReportRoot(getElement()) + "overview-summary.html\"><FONT CLASS=\"NavBarFont1\"><B>" +
-                NbBundle.getMessage(ElementDataObject.class, "Header_Overview") + "</B></FONT></A>&nbsp;</TD>\r\n");
+        buffer.append("  <TD BGCOLOR=\"#FFFFFF\" CLASS=\"NavBarCell1\"> &nbsp;<A HREF=\"" + ReportTask.getPathToReportRoot(getElement()) + "overview-summary.html\"><FONT CLASS=\"NavBarFont1\"><B>" + // NOI18N
+                NbBundle.getMessage(ElementDataObject.class, "Header_Overview") + "</B></FONT></A>&nbsp;</TD>\r\n"); // NOI18N
         if (getElement() instanceof IPackage)
         {
             buffer.append(navBar2);
@@ -826,7 +881,7 @@ public class ElementDataObject implements Report
             buffer.append(navBar4);
         }
         
-        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <A HREF=\"" + ReportTask.getPathToReportRoot(getElement()) + "help.html\"><FONT CLASS=\"NavBarFont1\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Help") + "</B></FONT></A>&nbsp;</TD>\r\n");
+        buffer.append("  <TD BGCOLOR=\"#EEEEFF\" CLASS=\"NavBarCell1\">    <A HREF=\"" + ReportTask.getPathToReportRoot(getElement()) + "help.html\"><FONT CLASS=\"NavBarFont1\"><B>" + NbBundle.getMessage(ElementDataObject.class, "Header_Help") + "</B></FONT></A>&nbsp;</TD>\r\n"); // NOI18N
         buffer.append(navBar5);
         
         return buffer.toString();
@@ -837,6 +892,6 @@ public class ElementDataObject implements Report
     
     protected String getCharset()
     {
-        return System.getProperty("file.encoding");
+        return System.getProperty("file.encoding"); // NOI18N
     }
 }
