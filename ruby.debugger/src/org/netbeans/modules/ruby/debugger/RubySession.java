@@ -130,7 +130,7 @@ public final class RubySession {
         DebuggerManager.getDebuggerManager().removeDebuggerListener(sessionListener);
         proxy.removeRubyDebugEventListener(listener);
         if (terminate) {
-            proxy.finish();
+            proxy.finish(true);
         }
     }
 
@@ -145,7 +145,9 @@ public final class RubySession {
         try {
             return proxy.checkConnection() ? proxy.readThreadInfo() : EMPTY_THREAD_INFOS;
         } catch (RubyDebuggerException e) {
-            Util.LOGGER.log(Level.INFO, "Cannot read thread information", e);
+            if (proxy.checkConnection()) {
+                Util.LOGGER.log(Level.INFO, "Cannot read thread information", e);
+            }
             return EMPTY_THREAD_INFOS;
         }
     }
@@ -231,6 +233,9 @@ public final class RubySession {
             activeThread = thread;
             try {
                 RubyFrame frame = getTopFrame();
+                if (frame == null) {
+                    return;
+                }
                 EditorUtil.markCurrent(resolveAbsolutePath(frame.getFile()), frame.getLine() - 1);
                 if (contextProvider != null) {
                     contextProvider.fireModelChanges();

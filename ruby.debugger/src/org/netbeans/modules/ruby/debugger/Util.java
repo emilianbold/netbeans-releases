@@ -44,7 +44,7 @@ public final class Util {
     static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide";
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.6"; // NOI18N
+    static final String RDEBUG_IDE_VERSION = "0.1.7"; // NOI18N
     
     private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     private static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
