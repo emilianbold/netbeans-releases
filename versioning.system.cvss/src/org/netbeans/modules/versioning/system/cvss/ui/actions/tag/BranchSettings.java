@@ -201,6 +201,8 @@ class BranchSettings extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfName, gridBagConstraints);
+        tfName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BranchSettings.class, "ACSN_BranchForm_Name")); // NOI18N
+        tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BranchSettings.class, "ACSD_BranchForm_Name")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, bundle.getString("CTL_BranchForm_BrowseBranch")); // NOI18N
         jButton1.setToolTipText(bundle.getString("TT_BranchForm_Browse")); // NOI18N
@@ -228,6 +230,8 @@ class BranchSettings extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfBaseTagName, gridBagConstraints);
+        tfBaseTagName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BranchSettings.class, "ACSN_BranchForm_TagName")); // NOI18N
+        tfBaseTagName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BranchSettings.class, "ACSD_BranchForm_TagName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseBranches(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseBranches
