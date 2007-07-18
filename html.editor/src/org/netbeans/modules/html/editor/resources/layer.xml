@@ -19,7 +19,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-
     <folder name="DTDs">
         <folder name="3_2">
             <file name="catalog" url="DTDs/3_2/catalog"/>
@@ -73,11 +72,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Services">
             <folder name="IndentEngine">
-        	<file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
-            	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-            	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                <file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
                     <attr name="template" boolvalue="true"/>
-        	</file>
+                </file>
                 <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
@@ -91,6 +90,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="html">
                 <attr name="createDataObject" boolvalue="false"/>
+                <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance"/>
+                
                 <file name="language.nbs" url="HTML.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/html/editor/resources/html.png"/>
                 </file>
@@ -118,10 +119,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                 </folder>
             
+                <!-- FoldManager and SideBar are provided by Schlieman engine -->
                 <!--<folder name="FoldManager">
                     <file name="org-netbeans-modules-html-editor-folding-HTMLFoldManagerFactory.instance"/>
                 </folder>
-                
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-html-editor-folding-HTMLCodeFoldingSideBarFactory.instance"/>
                     <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-html-editor-folding-HTMLCodeFoldingSideBarFactory.instance" boolvalue="true"/>
@@ -133,16 +134,15 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
 
                 <folder name="Popup">
-                     <file name="ViewAction.instance">
+                    <file name="ViewAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ViewAction"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-
+                    
                     <file name="SeparatorAfterView.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1166"/>
                     </file>
-
                     <file name="format">
                         <attr name="position" intvalue="1333"/>
                     </file>
@@ -150,26 +150,13 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1666"/>
                     </file>
-
-                    
-                    
-                    <file name="SeparatorFolding.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="4100"/>
-                    </file>
-                                        
-                    
-                    
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
                     </file>
-                    
-                    
                     <file name="SeparatorAfterFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4300"/>
                     </file>
-                    
                 </folder>
             </folder>
         </folder>
@@ -182,3 +169,4 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 </filesystem>
+

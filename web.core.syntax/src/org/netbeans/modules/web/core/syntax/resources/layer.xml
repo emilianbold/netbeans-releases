@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-jsp">
                 <attr name="createDataObject" boolvalue="false"/>
                 <file name="language.nbs" url="JSP.nbs"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="FontsColors">

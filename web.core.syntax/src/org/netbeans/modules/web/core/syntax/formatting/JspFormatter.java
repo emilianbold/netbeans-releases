@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiSyntax;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.netbeans.modules.web.core.syntax.*;
@@ -41,6 +43,7 @@ import org.netbeans.editor.ext.html.HTMLFormatter;
 import org.netbeans.editor.ext.java.JavaFormatter;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.java.JavaKit;
+import org.openide.util.Exceptions;
 
 /**
  * Formatter for JSP files.
@@ -50,6 +53,8 @@ import org.netbeans.modules.editor.java.JavaKit;
 public class JspFormatter extends HTMLFormatter {
     private JavaFormatter jFormatter;
     
+    private static final Logger LOGGER = Logger.getLogger(JspFormatter.class.getName());
+    
     /** Creates a new instance of HTMLFormater */
     public JspFormatter(Class kitClass) {
         super(kitClass);
@@ -57,7 +62,7 @@ public class JspFormatter extends HTMLFormatter {
     }
     
     @Override public Writer reformat(final BaseDocument doc, final int startOffset, final int endOffset,
-            final boolean indentOnly) throws BadLocationException, IOException{
+            final boolean indentOnly) throws BadLocationException {
         super.reformat(doc, startOffset, endOffset, indentOnly);
         
         List<ScriptletBlock> scripletBlocks = new LinkedList<ScriptletBlock>();
@@ -102,7 +107,11 @@ public class JspFormatter extends HTMLFormatter {
         while (token != null);
         
         for (ScriptletBlock sb : scripletBlocks){
-            extFormatterReformat(doc, sb.getStart(), Math.min(sb.getEnd(), endOffset), indentOnly);
+            try {
+                extFormatterReformat(doc, sb.getStart(), java.lang.Math.min(sb.getEnd(), endOffset), indentOnly);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
         }
         
         return null;
