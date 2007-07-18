@@ -121,10 +121,10 @@ public class Constants {
     public static final String JAVA_EXT = "java"; //NI18N
     
     public enum MimeType {
-        XML("application/xml", "Xml"),
-        JSON("application/json", "Json"),
-        TEXT("text/plain", "Text"),
-        HTML("text/html", "Html");
+        XML("application/xml", "Xml"),      //NOI18N
+        JSON("application/json", "Json"),   //NOI18N
+        TEXT("text/plain", "Text"),         //NOI18N
+        HTML("text/html", "Html");          //NOI18N
         
         private String value;
         private String suffix;
@@ -147,5 +147,24 @@ public class Constants {
         }
     }
     
-    public enum HttpMethodType { GET, PUT, POST, DELETE }
+    public enum HttpMethodType {
+        GET("get"),             //NOI18N
+        PUT("put"),             //NOI18N
+        POST("post"),           //NOI18N
+        DELETE("delete");       //NOI18N
+        
+        private String prefix; 
+        
+        HttpMethodType(String prefix) {
+            this.prefix = prefix;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+    }
 }
