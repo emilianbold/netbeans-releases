@@ -29,7 +29,6 @@ package org.netbeans.modules.visualweb.dataconnectivity.customizers;
 import org.netbeans.modules.visualweb.dataconnectivity.Log;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo.TestConnectionResults;
-import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoManager;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DatasourceConnectionListener;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DatabaseMetaDataHelper;
