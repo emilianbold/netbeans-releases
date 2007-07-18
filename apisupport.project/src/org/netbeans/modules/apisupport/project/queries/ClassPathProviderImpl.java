@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -244,12 +246,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
                 extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
             } else {
-                String classpathEval = project.evaluator().evaluate(classpathS);
-                List<PathResourceImplementation> entries = new ArrayList<PathResourceImplementation>();
-                addPathFromProjectEvaluated(entries, classpathEval);
-                extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(entries));
+                List<String> relevantProperties = new ArrayList<String>();
+                Matcher m = Pattern.compile("\\$\\{([^{}]+)\\}").matcher(classpathS);
+                while (m.find()) {
+                    relevantProperties.add(m.group(1));
+                }
+                ClassPathImplementation ecuCompile = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                        project.getProjectDirectoryFile(), project.evaluator(),
+                        relevantProperties.toArray(new String[relevantProperties.size()]));
+                extraCompilationUnitsCompile.put(pkgroot, ClassPathFactory.createClassPath(ecuCompile));
                 // Add <built-to> dirs and JARs for ClassPath.EXECUTE.
-                entries = new ArrayList<PathResourceImplementation>(entries);
+                List<PathResourceImplementation> extraEntries = new ArrayList<PathResourceImplementation>();
                 for (Element kid : Util.findSubElements(pkgrootEl)) {
                     if (!kid.getLocalName().equals("built-to")) { // NOI18N
                         continue;
@@ -260,9 +267,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     if (text == null) {
                         continue;
                     }
-                    addPathFromProjectEvaluated(entries, text);
+                    addPathFromProjectEvaluated(extraEntries, text);
                 }
-                extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(entries));
+                extraCompilationUnitsExecute.put(pkgroot, ClassPathFactory.createClassPath(
+                        ClassPathSupport.createProxyClassPathImplementation(ecuCompile, ClassPathSupport.createClassPathImplementation(extraEntries))));
             }
         }
     }
