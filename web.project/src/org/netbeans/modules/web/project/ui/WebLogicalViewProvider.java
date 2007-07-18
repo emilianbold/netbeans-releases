@@ -655,7 +655,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         // For checking projects that use database connections to see if these connections are available
         private class BrokenDatasourceAction extends AbstractAction implements Runnable, ConnectionListener {
             private volatile boolean brokenDatasource;
-            private volatile boolean firstTime = false;
             private RequestProcessor.Task task = null;
             
             public BrokenDatasourceAction() {
@@ -737,9 +736,8 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                             fireIconChange();
                             fireOpenedIconChange();
                             fireDisplayNameChange(null, null);
-                            if (brokenDatasource && !firstTime && !isVisualWebLegacyProject()) {
+                            if (brokenDatasource && !isVisualWebLegacyProject()) {
                                 BrokenDatasourceSupport.showAlert();
-                                firstTime = true;
                             }
                         }
                     });
