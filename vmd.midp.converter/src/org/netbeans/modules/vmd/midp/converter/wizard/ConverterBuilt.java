@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SplashScreenDismissCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenFailureCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessCommandEventSourceCD;
@@ -73,11 +74,11 @@ public class ConverterBuilt {
 
         String columns = item.getPropertyValue ("columnNames"); // NOI18N
         if (columns != null)
-            table.writeProperty (SimpleTableModelCD.PROP_COLUMN_NAMES, ConverterUtil.decryptStringArrayArray (columns, SimpleTableModelCD.TYPEID_COLUMN_NAMES, 1));
+            table.writeProperty (SimpleTableModelCD.PROP_COLUMN_NAMES, ConverterUtil.decryptStringArrayArray (columns, TableModelCD.TYPEID_COLUMN_NAMES, 1));
 
         String values = item.getPropertyValue ("values"); // NOI18N
         if (values != null)
-            table.writeProperty (SimpleTableModelCD.PROP_VALUES, ConverterUtil.decryptStringArrayArray (values, SimpleTableModelCD.TYPEID_VALUES, 2));
+            table.writeProperty (SimpleTableModelCD.PROP_VALUES, ConverterUtil.decryptStringArrayArray (values, TableModelCD.TYPEID_VALUES, 2));
     }
 
     // Created: YES, Adds: NO

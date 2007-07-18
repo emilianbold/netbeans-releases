@@ -26,19 +26,15 @@ import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox;
 import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
 
 /**
  * @author Karol Harezlak
@@ -67,14 +63,14 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_TASK, CancellableTaskCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
         );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK) // TODO
-                   .addProperty("Task", PropertyEditorResourcesComboBox.create(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); //NOI18N
+                   .addProperty("Task", PropertyEditorResourcesComboBox.create(CancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); //NOI18N
     }
 
     private Presenter createSetterPresenter () {
@@ -89,14 +85,14 @@ public final class WaitScreenCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // accept
-            new MidpAcceptTrensferableKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK),
+            new MidpAcceptTrensferableKindPresenter().addType(CancellableTaskCD.TYPEID, PROP_TASK),
             //properties
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK),
-            new MidpAcceptProducerKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK)
+            new MidpAcceptProducerKindPresenter().addType(CancellableTaskCD.TYPEID, PROP_TASK)
         );
     }
 

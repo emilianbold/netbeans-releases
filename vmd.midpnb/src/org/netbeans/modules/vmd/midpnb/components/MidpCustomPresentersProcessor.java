@@ -20,15 +20,19 @@
 
 package org.netbeans.modules.vmd.midpnb.components;
 
-import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PresentersProcessor;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
-import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
-import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
-import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -41,11 +45,11 @@ public final class MidpCustomPresentersProcessor extends PresentersProcessor {
 
     protected void postProcessPresenters (DesignDocument document, ComponentDescriptor descriptor, ArrayList<Presenter> presenters) {
         if (document.getDescriptorRegistry ().isInHierarchy (ResourcesCategoryCD.TYPEID, descriptor.getTypeDescriptor ().getThisType ())) {
-            presenters.add (new AcceptTypePresenter (SimpleCancellableTaskCD.TYPEID));
-            presenters.add (new AcceptTypePresenter (SimpleTableModelCD.TYPEID));
+            presenters.add (new AcceptTypePresenter (CancellableTaskCD.TYPEID));
+            presenters.add (new AcceptTypePresenter (TableModelCD.TYPEID));
             presenters.add (new AcceptTypePresenter (SVGImageCD.TYPEID));
              // actions
-            presenters.add(AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 30, SimpleTableModelCD.TYPEID, SimpleCancellableTaskCD.TYPEID, SVGImageCD.TYPEID));
+            presenters.add(AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 30, TableModelCD.TYPEID, CancellableTaskCD.TYPEID, SVGImageCD.TYPEID));
         }
     }
 

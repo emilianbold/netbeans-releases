@@ -29,8 +29,8 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.openide.util.NbBundle;
 
 import java.util.Arrays;
@@ -68,14 +68,14 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_TASK, SimpleCancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_TASK, CancellableTaskCD.TYPEID, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
         );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK)
-                .addProperty("Task", PropertyEditorResourcesComboBox.create(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); // NOI18N
+                .addProperty("Task", PropertyEditorResourcesComboBox.create(CancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); // NOI18N
     }
 
     private Presenter createSetterPresenter () {
@@ -89,13 +89,13 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // accept
-            new MidpAcceptTrensferableKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK),
+            new MidpAcceptTrensferableKindPresenter().addType(CancellableTaskCD.TYPEID, PROP_TASK),
             // properties
             createPropertiesPresenter (),
             // code
             createSetterPresenter (),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK),new MidpAcceptProducerKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK),new MidpAcceptProducerKindPresenter().addType(CancellableTaskCD.TYPEID, PROP_TASK)
         );
     }
     

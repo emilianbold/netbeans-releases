@@ -23,26 +23,13 @@ import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
-import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
-import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,20 +41,13 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_32.png"; // NOI18N
-    
     public static final String PROP_CODE = "executableMethodBody"; //NOI18N
-    
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
     
     public SimpleCancellableTaskCD() {
     }
     
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(CancellableTaskCD.TYPEID, TYPEID, true, true);
     }
     
     public VersionDescriptor getVersionDescriptor() {
@@ -76,9 +56,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     
     @Override
     public void postInitialize(DesignComponent component) {
-        component.writeProperty (ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (component, "task"));
         component.writeProperty(PROP_CODE, MidpTypes.createJavaCodeValue("// write task-execution user code here")); // NOI18N
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
@@ -87,11 +65,11 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
                 );
     }
     
-    //     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-    //        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-    //                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-    //                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
-    //    }
+//     private static DefaultPropertiesPresenter createPropertiesPresenter() {
+//        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
+//                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+//                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
+//    }
     
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
@@ -100,27 +78,14 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createSetter("setExecutable", MidpVersionable.MIDP_2).addParameters(ExecutableParameter.PARAM_EXECUTABLE));
     }
     
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
-        super.gatherPresenters(presenters);
-    }
-    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                //info
-                ResourcesSupport.createResourceInfoResolver(),
-                // properties
-                //            createPropertiesPresenter(),
-                // setter
-                createSetterPresenter(),
-                MidpCodePresenterSupport.createAddImportPresenter(),
-                // inspector
-                new InspectorFolderComponentPresenter(true),
-                InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
-                // screen
-                new ResourceSRItemPresenter(InfoPresenter.NameType.TERTIARY)
-                );
+            // properties
+//            createPropertiesPresenter(),
+            // setter
+            createSetterPresenter(),
+            MidpCodePresenterSupport.createAddImportPresenter()
+        );
     }
     
     private static class ExecutableParameter implements Parameter {

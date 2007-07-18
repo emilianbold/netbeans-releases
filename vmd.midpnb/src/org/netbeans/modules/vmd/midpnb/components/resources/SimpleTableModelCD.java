@@ -20,31 +20,17 @@
 package org.netbeans.modules.vmd.midpnb.components.resources;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
-import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
-import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
-import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,37 +42,21 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SimpleTableModel"); // NOI18N
 
-    public static final TypeID TYPEID_VALUES = MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType().getArrayType ();
-    public static final TypeID TYPEID_COLUMN_NAMES = MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType ();
-
     public static final String PROP_VALUES = "values"; // NOI18N
     public static final String PROP_COLUMN_NAMES = "columnNames"; // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_32.png"; // NOI18N
-    
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
-    
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(TableModelCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP;
     }
 
-    @Override
-    public void postInitialize (DesignComponent component) {
-        component.writeProperty (ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (component, "tableModel"));
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
-    }
-    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_VALUES, TYPEID_VALUES, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor (PROP_COLUMN_NAMES, TYPEID_COLUMN_NAMES, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_VALUES, TableModelCD.TYPEID_VALUES, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor (PROP_COLUMN_NAMES, TableModelCD.TYPEID_COLUMN_NAMES, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
         );
     }
     
@@ -104,26 +74,13 @@ public class SimpleTableModelCD extends ComponentDescriptor {
             .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).setArrayParameter(PROP_COLUMN_NAMES).addParameters (PROP_COLUMN_NAMES)); // NOI18N
     }
 
-    @Override
-    protected void gatherPresenters(ArrayList<Presenter> presenters) {
-        DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
-        super.gatherPresenters(presenters);
-    }
-    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-            //info
-            ResourcesSupport.createResourceInfoResolver(),
             // properties
             createPropertiesPresenter (),
             // code
             createSetterPresenter (),
-            MidpCodePresenterSupport.createAddImportPresenter (),
-             // inspector
-            new InspectorFolderComponentPresenter(true),
-            InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
-             // screen
-            new ResourceSRItemPresenter(InfoPresenter.NameType.TERTIARY)
+            MidpCodePresenterSupport.createAddImportPresenter ()
         );
     }
     
