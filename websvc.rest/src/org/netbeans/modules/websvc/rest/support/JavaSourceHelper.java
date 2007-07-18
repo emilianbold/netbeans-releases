@@ -61,6 +61,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
@@ -803,7 +804,7 @@ public class JavaSourceHelper {
             AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, Constants.HTTP_METHOD_ANNOTATION);
             AnnotationMirror mirrorProduceMime = findAnnotation(anmirs, Constants.PRODUCE_MIME_ANNOTATION);
             
-            if (annotationHasAttributeValue(mirrorHttpMethod, Constants.HTTP_GET_METHOD) &&
+            if (annotationHasAttributeValue(mirrorHttpMethod, HttpMethodType.GET.name()) &&
                     annotationHasAttributeValue(mirrorProduceMime, MimeType.XML.value())) {
                 TypeMirror tm = method.getReturnType();
                 if (tm.getKind() == TypeKind.DECLARED) {

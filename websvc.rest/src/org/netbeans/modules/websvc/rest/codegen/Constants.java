@@ -30,13 +30,13 @@ public class Constants {
     public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
     
     public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
-  
+    
     public static final String URI_TEMPLATE = REST_API_PACKAGE + "UriTemplate";        //NOI18N
     
     public static final String HTTP_METHOD = REST_API_PACKAGE + "HttpMethod";         //NOI18N
     
     public static final String PRODUCE_MIME = REST_API_PACKAGE + "ProduceMime";        //NOI18N
-
+    
     public static final String CONSUME_MIME = REST_API_PACKAGE + "ConsumeMime";    //NOI18N
     
     public static final String URI_PARAM = REST_API_PACKAGE + "UriParam";  //NOI18N
@@ -46,11 +46,11 @@ public class Constants {
     public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
     
     public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
-      
+    
     public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
     
     public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.HttpContext";    //NOI18N
-      
+    
     public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
@@ -70,7 +70,7 @@ public class Constants {
     public static final String XML_ROOT_ELEMENT = "javax.xml.bind.annotation.XmlRootElement";             //NOI18N
     
     public static final String XML_ELEMENT = "javax.xml.bind.annotation.XmlElement";                 //NOI18N
-        
+    
     public static final String XML_ATTRIBUTE = "javax.xml.bind.annotation.XmlAttribute";                 //NOI18N
     
     public static final String XML_TRANSIENT = "javax.xml.bind.annotation.XmlTransient";                 //NOI18N
@@ -82,15 +82,15 @@ public class Constants {
     public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
     
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
- 
+    
     public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
-     
+    
     public static final String URI_TEMPLATE_ANNOTATION = "UriTemplate"; //NOI18N
     
     public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
     
     public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
-
+    
     public static final String HTTP_METHOD_ANNOTATION = "HttpMethod";   //NOI18N
     
     public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
@@ -99,20 +99,12 @@ public class Constants {
     
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
    
-    public static final String HTTP_GET_METHOD = "GET";             //NOI18N
-    
-    public static final String HTTP_PUT_METHOD = "PUT";             //NOI18N
-    
-    public static final String HTTP_POST_METHOD = "POST";             //NOI18N
-    
-    public static final String HTTP_DELETE_METHOD = "DELETE";             //NOI18N
-    
     public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
     
     public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
-       
+    
     public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
     
     public static final Modifier[] PRIVATE = new Modifier[] { Modifier.PRIVATE };
@@ -125,50 +117,7 @@ public class Constants {
     public static final Modifier[] PUBLIC_STATIC = new Modifier[] {
         Modifier.PUBLIC, Modifier.STATIC
     };
-    
-    public static final String[] CONTAINER_IMPORTS = {
-        URI_TEMPLATE,
-        HTTP_METHOD,
-        PRODUCE_MIME,
-        RESPONSE_BUILDER,
-        HTTP_CONTEXT,
-        URI_INFO
-    };
-    
-    public static final String[] ITEM_IMPORTS = {
-        URI_TEMPLATE,
-        URI_PARAM,
-        HTTP_METHOD,
-        PRODUCE_MIME,
-        CONSUME_MIME,
-        HTTP_CONTEXT,
-        URI_INFO,
-        WEB_APPLICATION_EXCEPTION,
-        NO_RESULT_EXCEPTION
-    };
-    
-    public static final String[] CONTAINER_CONVERTER_IMPORTS = {
-        XML_ROOT_ELEMENT,
-        XML_ELEMENT,
-        XML_TRANSIENT,
-        XML_ATTRIBUTE,
-        ARRAY_LIST_TYPE
-    };
-    
-    public static final String[] ITEM_CONVERTER_IMPORTS = {
-        XML_ROOT_ELEMENT,
-        XML_ELEMENT,
-        XML_TRANSIENT,
-        XML_ATTRIBUTE
-    };
-    
-    public static final String[] REF_CONVERTER_IMPORTS = {
-        XML_ROOT_ELEMENT,
-        XML_ELEMENT,
-        XML_TRANSIENT,
-        XML_ATTRIBUTE
-    };
-
+   
     public static final String JAVA_EXT = "java"; //NI18N
     
     public enum MimeType {
@@ -198,4 +147,5 @@ public class Constants {
         }
     }
     
+    public enum HttpMethodType { GET, PUT, POST, DELETE }
 }

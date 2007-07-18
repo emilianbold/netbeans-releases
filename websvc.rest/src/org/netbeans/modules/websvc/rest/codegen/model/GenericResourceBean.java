@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
-import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean.HttpMethodType;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 
 /**
@@ -35,7 +35,7 @@ import org.netbeans.modules.websvc.rest.wizard.Util;
  */
 public class GenericResourceBean {
     public static final String RESOURCE_SUFFIX = "Resource";
-    public static enum HttpMethodType { GET, PUT, POST, DELETE }
+
     public static final MimeType[] supportedMimeTypes = new MimeType[] { 
         MimeType.XML,  // first one is default
         MimeType.JSON,
