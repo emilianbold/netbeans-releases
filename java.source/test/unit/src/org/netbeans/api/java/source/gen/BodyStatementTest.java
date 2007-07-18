@@ -90,6 +90,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("test99445"));
 //        suite.addTest(new BodyStatementTest("test101717"));
 //        suite.addTest(new BodyStatementTest("testModifyingIf"));
+//        suite.addTest(new BodyStatementTest("testRenameInParens"));
         return suite;
     }
     
@@ -1459,7 +1460,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -1488,7 +1489,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -1520,7 +1521,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             
             public void run(WorkingCopy workingCopy)
                     throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -1573,7 +1574,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             
             public void run(WorkingCopy workingCopy)
                     throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
@@ -1647,7 +1648,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -1701,7 +1702,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
@@ -1753,7 +1754,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -1805,7 +1806,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
@@ -1853,7 +1854,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
@@ -1908,7 +1909,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
@@ -1951,7 +1952,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
@@ -2017,7 +2018,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -2075,7 +2076,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
@@ -2121,7 +2122,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -2176,7 +2177,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -2219,7 +2220,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree)clazz.getMembers().get(1);
@@ -2248,6 +2249,64 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testRenameInParens() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "\n" +
+            "class FileType {\n" +
+            "\n" +
+            "    File f = new File(\"aaa\");\n" +
+            "\n" +
+            "    void m() throws FileNotFoundException {\n" +
+            "        boolean b = false;\n" +
+            "        new FileInputStream((f));\n" +
+            "    }\n" +
+            "}\n");
+         String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "import java.io.FileInputStream;\n" +
+            "import java.io.FileNotFoundException;\n" +
+            "\n" +
+            "class FileType {\n" +
+            "\n" +
+            "    File f = new File(\"aaa\");\n" +
+            "\n" +
+            "    void m() throws FileNotFoundException {\n" +
+            "        boolean b = false;\n" +
+            "        new FileInputStream((file));\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(2);
+                BlockTree block = method.getBody();
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(1);
+                NewClassTree nct = (NewClassTree) est.getExpression();
+                ParenthesizedTree pareni = (ParenthesizedTree) nct.getArguments().get(0);
+                workingCopy.rewrite(pareni.getExpression(), make.Identifier("file"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
