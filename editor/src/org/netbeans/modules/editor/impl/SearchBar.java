@@ -400,6 +400,7 @@ public final class SearchBar extends JToolBar {
 
     private void looseFocus() {
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
+        FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
 
         if (component.isEnabled()) {
