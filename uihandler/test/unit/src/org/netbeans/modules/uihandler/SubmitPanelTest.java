@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import junit.framework.TestCase;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -45,7 +46,8 @@ public class SubmitPanelTest extends TestCase {
 
     public void testAddRecord() throws Exception {
         LogRecord r = new LogRecord(Level.FINE, "Skákal pes, přes oves, přes zelenou louku");
-        instance.addRecord(r);
+        Node n = Node.EMPTY.cloneNode();
+        instance.addRecord(r, n);
         
         String res = instance.text.getDocument().getText(0, instance.text.getDocument().getLength());
         
@@ -53,6 +55,8 @@ public class SubmitPanelTest extends TestCase {
         if (res.indexOf(r.getMessage()) == -1) {
             fail("Localized message is not distorted:\n"+res);
         }
+        
+        assertEquals("Offset at right position", 0, n.getValue("offset"));
     }
     
 }
