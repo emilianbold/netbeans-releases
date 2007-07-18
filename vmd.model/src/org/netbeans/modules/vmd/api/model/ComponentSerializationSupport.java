@@ -86,7 +86,8 @@ public class ComponentSerializationSupport {
         assert projectType != null  &&  typeDescriptor != null  &&  properties != null  &&  presenters != null;
 
         serializeComponentDescriptor (projectType, typeDescriptor, null, properties, presenters);
-        serializeComponentProducer (projectType, typeDescriptor.getThisType (), paletteDescriptor);
+        if (typeDescriptor.isCanInstantiate ())
+            serializeComponentProducer (projectType, typeDescriptor.getThisType (), paletteDescriptor);
     }
 
     private static void serializeComponentDescriptor (String projectType, TypeDescriptor typeDescriptor, PaletteDescriptor paletteDescriptor, List<PropertyDescriptor> properties, List<PresenterSerializer> presenters) {
