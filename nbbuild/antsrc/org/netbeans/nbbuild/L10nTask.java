@@ -357,7 +357,7 @@ public class L10nTask extends MatchingTask {
         } //for topdirs
         
         // Tar everything
-        log("ABOUT TO MAKE THE BIG TAR: "+distDir+"/l10n101067-"+buildNumber+".tar.gz", Project.MSG_INFO);
+        log("ABOUT TO MAKE THE BIG TAR: "+distDir+"/l10n-"+buildNumber+".tar.gz", Project.MSG_INFO);
         
         // Check to make sure that the build dir exists,
         // & that there are little tars to tar... or we get a "basedir dne"
@@ -365,7 +365,7 @@ public class L10nTask extends MatchingTask {
         
         File bd = new File(buildDir);
         if (bd.exists()) {
-            File tarFile = new File(buildDir+"/l10n101067-"+buildNumber+".tar");
+            File tarFile = new File(buildDir+"/l10n-"+buildNumber+".tar");
             
             Tar tar = (Tar)p.createTask("tar");
             tar.setBasedir(bd);
@@ -378,11 +378,11 @@ public class L10nTask extends MatchingTask {
             
             if ( tarFile.exists() ) {
                 GZip gzip = (GZip)p.createTask("gzip");
-                gzip.setSrc(new File(buildDir+"/l10n101067-"+buildNumber+".tar"));
-                gzip.setZipfile(new File(distDir+"/l10n101067-"+buildNumber+".tar.gz"));
+                gzip.setSrc(new File(buildDir+"/l10n-"+buildNumber+".tar"));
+                gzip.setZipfile(new File(distDir+"/l10n-"+buildNumber+".tar.gz"));
                 gzip.execute();
             } else {
-                log("NO tar file, can't gzip"+buildDir+"/l10n101067-"+buildNumber+".tar", Project.MSG_WARN);
+                log("NO tar file, can't gzip"+buildDir+"/l10n-"+buildNumber+".tar", Project.MSG_WARN);
             }
         } else {
             log("No files in builddir.  No kit to build", Project.MSG_WARN);
