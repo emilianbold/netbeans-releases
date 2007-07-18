@@ -64,7 +64,6 @@ public class SecurityConfiguration implements WSConfiguration {
     
     private ServiceModel serviceModel;
     private ServiceChangeListener scl;
-    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
 
     private ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     private Binding binding;
@@ -78,7 +77,7 @@ public class SecurityConfiguration implements WSConfiguration {
         this.implementationFile = implementationFile;
         this.project = FileOwnerQuery.getOwner(implementationFile);
         this.serviceModel = ServiceModel.getServiceModel(implementationFile);
-        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+        setListener();
         this.cl = new ComponentListener() {
             private void update() {
                 boolean enabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
@@ -118,28 +117,29 @@ public class SecurityConfiguration implements WSConfiguration {
         return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security");
     }
   
+    private void setListener() {
+        if (scl == null) {
+            scl = new  WsitServiceChangeListener(service, implementationFile, project);
+        }
+        if ((scl != null) && (serviceModel != null)) {
+            serviceModel.addServiceChangeListener(scl);
+        }
+    }
+    
     public boolean isSet() {
         boolean set = false;
+        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, null);
         if (binding != null) {
             set = SecurityPolicyModelHelper.isSecurityEnabled(binding);
-            if (scl == null) {
-                scl = new  WsitServiceChangeListener(binding);
-            }
-            serviceModel.addServiceChangeListener(scl);
         }
         return set;
     }
         
     public void set() {
-        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
-        
+        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, null);
         if (binding == null) return;
-        if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
 
-            if (scl == null) {
-                scl = new  WsitServiceChangeListener(binding);
-            }
-            serviceModel.addServiceChangeListener(scl);
+        if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
             
             // default profile with the easiest setup
             ProfilesModelHelper.setSecurityProfile(binding, ComboConstants.PROF_MUTUALCERT);
@@ -162,7 +162,6 @@ public class SecurityConfiguration implements WSConfiguration {
     }
 
     public void unset() {
-       
         if (binding == null) return;
         if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
             SecurityPolicyModelHelper.disableSecurity(binding, true);

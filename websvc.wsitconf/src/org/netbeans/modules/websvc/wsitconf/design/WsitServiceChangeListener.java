@@ -19,6 +19,8 @@
 package org.netbeans.modules.websvc.wsitconf.design;
 
 import java.util.Collection;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
@@ -33,6 +35,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -40,12 +43,14 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
  */
 public class WsitServiceChangeListener implements ServiceChangeListener {
 
-    WSDLModel model;
-    Binding b;
+    Service service;
+    FileObject implFile;
+    Project project;
     
-    public WsitServiceChangeListener(Binding b) {
-        this.model = b.getModel();
-        this.b = b;
+    public WsitServiceChangeListener(Service service, FileObject implFile, Project project) {
+        this.service = service;
+        this.implFile = implFile;
+        this.project = project;
     }
 
     public void propertyChanged(String propertyName, String oldValue, String newValue) {
@@ -53,52 +58,59 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
     }
 
     public void operationAdded(MethodModel method) {
-        BindingOperation bO = Util.generateOperation(b, Util.getPortType(b), method.getOperationName(), method.getImplementationClass());
-        if (SecurityPolicyModelHelper.isSecurityEnabled(b)) {
-            String profile = ProfilesModelHelper.getSecurityProfile(b);
-            ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bO, profile);
+        Binding binding = WSITModelSupport.getBinding(service, implFile, project, false, null);
+        if (binding != null) {
+            BindingOperation bO = Util.generateOperation(binding, Util.getPortType(binding), method.getOperationName(), method.getImplementationClass());
+            if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
+                String profile = ProfilesModelHelper.getSecurityProfile(binding);
+                ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bO, profile);
+            }
+            WSITModelSupport.save(binding);
         }
-        WSITModelSupport.save(b);
     }
 
     public void operationRemoved(MethodModel method) {
-        String methodName = method.getOperationName();
-        Definitions d = model.getDefinitions();
-        Collection<Message> messages = d.getMessages();
-        Collection<BindingOperation> bOperations = b.getBindingOperations();
-        PortType portType = (PortType) d.getPortTypes().toArray()[0];
-        Collection<Operation> operations = portType.getOperations();
-        
-        boolean isTransaction = model.isIntransaction();
-        if (!isTransaction) {
-            model.startTransaction();
-        }
-        
-        try {
-            for (BindingOperation bOperation : bOperations) {
-                if (methodName.equals(bOperation.getName())) {
-                    ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bOperation, ComboConstants.NONE);
-                    b.removeBindingOperation(bOperation);
-                }
-            }
+        Binding binding = WSITModelSupport.getBinding(service, implFile, project, false, null);
+        if (binding != null) {
+            WSDLModel model = binding.getModel();
+            String methodName = method.getOperationName();
+            Definitions d = model.getDefinitions();
+            Collection<Message> messages = d.getMessages();
+            Collection<BindingOperation> bOperations = binding.getBindingOperations();
+            PortType portType = (PortType) d.getPortTypes().toArray()[0];
+            Collection<Operation> operations = portType.getOperations();
 
-            for (Operation o : operations) {
-                if (methodName.equals(o.getName())) {
-                    portType.removeOperation(o);
-                }
-            }
-
-            for (Message m : messages) {
-                if (methodName.equals(m.getName()) || (methodName + "Response").equals(m.getName())) {
-                    d.removeMessage(m);
-                }
-            }
-        } finally {
+            boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
-                model.endTransaction();
+                model.startTransaction();
             }
+
+            try {
+                for (BindingOperation bOperation : bOperations) {
+                    if (methodName.equals(bOperation.getName())) {
+                        ProfilesModelHelper.setMessageLevelSecurityProfilePolicies(bOperation, ComboConstants.NONE);
+                        binding.removeBindingOperation(bOperation);
+                    }
+                }
+
+                for (Operation o : operations) {
+                    if (methodName.equals(o.getName())) {
+                        portType.removeOperation(o);
+                    }
+                }
+
+                for (Message m : messages) {
+                    if (methodName.equals(m.getName()) || (methodName + "Response").equals(m.getName())) {
+                        d.removeMessage(m);
+                    }
+                }
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
+            }
+            WSITModelSupport.save(binding);
         }
-        WSITModelSupport.save(b);
     }
 
     public void operationChanged(MethodModel oldMethod, MethodModel newMethod) { }
