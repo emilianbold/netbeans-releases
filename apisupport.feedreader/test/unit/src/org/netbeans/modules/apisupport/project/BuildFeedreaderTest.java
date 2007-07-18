@@ -31,6 +31,7 @@ import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Tests Feedreader sample.
@@ -99,8 +100,10 @@ public class BuildFeedreaderTest extends TestBase {
         ExecutorTask et = ActionUtils.runTarget(buildScript, targets, null);
         et.waitFinished();
         System.out.println("-----------------------------------------");
+        // ant task executor returns 0 on win and jdk 1.5.0_xxx
+        boolean win15 = Utilities.isWindows() && System.getProperty("java.version").startsWith("1.5.0_");
         
-        return et.result();
+        return (win15)? 0: et.result();
     }
     
     /**
@@ -108,6 +111,7 @@ public class BuildFeedreaderTest extends TestBase {
      */
     public void testBuildJNLP() throws Exception {
         int ret = runAntTargetsOnFeedreader(new String[] {"build-jnlp"});
+        assertFileExists("dist/feedreader.war");
         assertEquals("build-jnlp ant target should return zero - build successful", 0 , ret);
     }
     
@@ -116,6 +120,7 @@ public class BuildFeedreaderTest extends TestBase {
      */
     public void testBuildZip() throws Exception {
         int ret = runAntTargetsOnFeedreader(new String[] {"build-zip"});
+        assertFileExists("dist/feedreader.zip");
         assertEquals("build-zipant target should return zero - build successful", 0 , ret);
     }
     
@@ -132,6 +137,11 @@ public class BuildFeedreaderTest extends TestBase {
      */
     public void testBuildNBMs() throws Exception {
         int ret = runAntTargetsOnFeedreader(new String[] {"nbms"});
+        assertFileExists("build/updates/com-sun-syndication-fetcher.nbm");
+        assertFileExists("build/updates/com-sun-syndication.nbm");
+        assertFileExists("build/updates/org-jdom.nbm");
+        assertFileExists("build/updates/org-myorg-feedreader.nbm");
+        assertFileExists("build/updates/updates.xml");
         assertEquals("build ant target should return zero - build successful", 0 , ret);
     }
     
@@ -140,7 +150,16 @@ public class BuildFeedreaderTest extends TestBase {
      */
     public void testClean() throws Exception {
         int ret = runAntTargetsOnFeedreader(new String[] {"clean"});
+        assertFalse("Empty build",new File(feedFolder,"build").exists());
+        assertFalse("Empty dist",new File(feedFolder,"dist").exists());
+        
         assertEquals("clean ant target should return zero - build successful", 0 , ret);
+    }
+
+    private void assertFileExists(String relPath) {
+        assertTrue("Feed reader folder exists",feedFolder.exists());
+        File f = new File (feedFolder,relPath);
+        assertTrue("File ${feedreader}/" + relPath,f.exists());
     }
     
 }
