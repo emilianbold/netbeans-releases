@@ -21,7 +21,10 @@
 package org.netbeans.modules.search;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openidex.search.SearchType;
