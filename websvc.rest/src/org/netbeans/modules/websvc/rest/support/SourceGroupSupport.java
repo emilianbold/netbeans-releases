@@ -97,7 +97,7 @@ public class SourceGroupSupport {
         }
     }
 
-    public static SourceGroup getFolderSourceGroup(SourceGroup[] sourceGroups, FileObject folder) {
+    public static SourceGroup findSourceGroupForFile(SourceGroup[] sourceGroups, FileObject folder) {
         for (int i = 0; i < sourceGroups.length; i++) {
             if (FileUtil.isParentOf(sourceGroups[i].getRootFolder(), folder)) {
                 return sourceGroups[i];
@@ -119,7 +119,7 @@ public class SourceGroupSupport {
         Project project = FileOwnerQuery.getOwner(folder);
         SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
-        SourceGroup sg = getFolderSourceGroup(sources, folder);
+        SourceGroup sg = findSourceGroupForFile(sources, folder);
         return getPackageForFolder(sg, folder);
     }
 

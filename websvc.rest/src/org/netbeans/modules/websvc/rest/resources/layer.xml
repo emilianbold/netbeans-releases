@@ -7,25 +7,27 @@
             <file name="RESTServicesFromEntities">         
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromEntitiesIterator" />
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromEntitiesIterator"/>
                 <!--attr name="templateCategory" stringvalue="web-services"/-->
-                <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromEntities.html"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromEntities.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
             <file name="RESTServicesFromPatterns">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.GenericRESTServicesIterator" />
-                <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromPatterns.html"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.GenericRESTServicesIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromPatterns.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+            </file>
+            <file name="clientStub">
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.ClientStubWizardIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/clientStub.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
             <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template"/>
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template"/>
@@ -43,10 +45,10 @@
     
     <folder name="RestComponents">
         <folder name="Google">
-            <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/google-map.xml" />
+            <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/google-map.xml"/>
         </folder>
         <folder name="Yahoo">
-            <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/yahoo-ns.xml" />
+            <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/yahoo-ns.xml"/>
         </folder>
     </folder>    
     
