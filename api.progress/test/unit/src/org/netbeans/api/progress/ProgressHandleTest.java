@@ -184,6 +184,7 @@ public class ProgressHandleTest extends NbTestCase {
                     //this could help in corner cases when sleep alone doesn't help
                 }
             });
+            Thread.sleep(600);
         } catch (InterruptedException exc) {
             System.out.println("interrupted");
         }
