@@ -169,7 +169,6 @@
 	<mapID target="projrave_connect_data_working_with_databases" url="connect_data/working_with_databases.html"/>
 	<mapID target="projrave_connect_data_working_with.databases" url="connect_data/working_with_databases.html"/>
 	<mapID target="projrave_credits" url="credits.html"/>
-	<mapID target="projrave_general_process" url="general_process.html"/>
 	<mapID target="projrave_glossary_beanprop" url="glossary/glossary_beanprop.html"/>
 	<mapID target="projrave_glossary_bound" url="glossary/glossary_bound.html"/>
 	<mapID target="projrave_glossary_constrained" url="glossary/glossary_constrained.html"/>

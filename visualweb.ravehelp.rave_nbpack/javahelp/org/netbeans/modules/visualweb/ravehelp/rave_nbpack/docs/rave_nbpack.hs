@@ -3,7 +3,7 @@
                          "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 
 <helpset version="2.0" xml:lang="en">
-	<title>NetBeans Visual Web Pack Help</title>
+	<title>NetBeans Web Applications Help</title>
 	<maps>
 		<homeID>about_webapps</homeID>
 		<mapref location="rave_nbpackMap.jhm"/>
