@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -141,7 +142,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
     
     /** Returns array of actions for all test types in selected project. */
     private Action[] actions() {
-        Project project = (Project)context.lookup(Project.class);
+        Project project = context.lookup(Project.class);
         // It should not happen but issue 86977 claims it happens.
         if(project == null) {
             return null;
@@ -150,7 +151,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
             // do not create sub menu for non-NbModuleProject
             return null;
         }
-        ArrayList actions = new ArrayList();
+        List<Action> actions = new ArrayList<Action>();
 
         String[] testTypes = findTestTypes(project);
         if(testTypes.length > 0) {
@@ -181,7 +182,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
                 actions.add(null);
             }
         }
-        return (Action[])actions.toArray(new Action[actions.size()]);
+        return actions.toArray(new Action[actions.size()]);
     }
     
     private AbstractAction createAction(String displayName, final Project project, 
@@ -189,9 +190,10 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
         
         return new AbstractAction(displayName) {
             /** Enabled only if one project is selected and test/build.xml exists. */
+            @Override
             public boolean isEnabled() {
                 // enable only if one project is selected
-                if(context.lookup(new Lookup.Template(Project.class)).allInstances().size() == 1) {
+                if(context.lookup(new Lookup.Template<Project>(Project.class)).allInstances().size() == 1) {
                     return findTestBuildXml(project) != null;
                 }
                 return false;
@@ -233,7 +235,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
             ErrorManager.getDefault().notify(ex);
             return false;
         }
-        AntProjectCookie apc = (AntProjectCookie)d.getCookie(AntProjectCookie.class);
+        AntProjectCookie apc = d.getCookie(AntProjectCookie.class);
         Iterator iter;
         try {
             iter = TargetLister.getTargets(apc).iterator();
@@ -291,7 +293,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
             return new String[0];
         }
         FileObject[] fos = testFO.getChildren(); // NOI18N
-        ArrayList testTypes = new ArrayList();
+        List<String> testTypes = new ArrayList<String>();
         for(int i=0;i<fos.length;i++) {
             if(fos[i].getExt().equalsIgnoreCase("xml") && fos[i].getName().matches("build-.*")) {  // NOI18N
                 String testType = fos[i].getName().substring(fos[i].getName().indexOf('-')+1);
@@ -300,7 +302,7 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
                 }
             }
         }
-        String [] result = (String[])testTypes.toArray(new String[testTypes.size()]);
+        String [] result = testTypes.toArray(new String[testTypes.size()]);
         Arrays.sort(result);
         return result;
     }
