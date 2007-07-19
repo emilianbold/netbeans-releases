@@ -50,15 +50,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-rubyproject-gems-GemAction.instance"/>
                 <attr name="position" intvalue="600"/>
             </file>
-            </folder>
+        </folder>
         <folder name="Window">
             <folder name="Other">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.Bundle"/>
                 <file name="IrbAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
+                    <attr name="position" intvalue="900"/>
                 </file>
             </folder>
-            </folder>
+        </folder>
     </folder>
 
     <folder name="Templates">
