@@ -1,0 +1,84 @@
+class Xyz < Test::Unit::TestCase
+ ^c,class
+class Xyz < Test::Unit::TestCase
+  ^cl,class
+class Xyz < Test::Unit::TestCase
+   ^cla,class
+class Xyz < Test::Unit::TestCase
+    ^clas,class
+class Xyz < Test::Unit::TestCase
+     ^class,class
+class Xyz < Test::Unit::TestCase
+       ^X,Xyz
+class Xyz < Test::Unit::TestCase
+        ^Xy,Xyz
+class Xyz < Test::Unit::TestCase
+         ^Xyz,Xyz
+class Xyz < Test::Unit::TestCase
+             ^T,Test
+class Xyz < Test::Unit::TestCase
+              ^Te,Test
+class Xyz < Test::Unit::TestCase
+               ^Tes,Test
+class Xyz < Test::Unit::TestCase
+                ^Test,Test
+class Xyz < Test::Unit::TestCase
+                   ^U,Unit
+class Xyz < Test::Unit::TestCase
+                    ^Un,Unit
+class Xyz < Test::Unit::TestCase
+                     ^Uni,Unit
+class Xyz < Test::Unit::TestCase
+                      ^Unit,Unit
+class Xyz < Test::Unit::TestCase
+                         ^T,TestCase
+class Xyz < Test::Unit::TestCase
+                          ^Te,TestCase
+class Xyz < Test::Unit::TestCase
+                           ^Tes,TestCase
+class Xyz < Test::Unit::TestCase
+                            ^Test,TestCase
+class Xyz < Test::Unit::TestCase
+                             ^TestC,TestCase
+class Xyz < Test::Unit::TestCase
+                              ^TestCa,TestCase
+class Xyz < Test::Unit::TestCase
+                               ^TestCas,TestCase
+class Xyz < Test::Unit::TestCase
+                                ^TestCase,TestCase
+  x = File.exists?("foo")
+   ^x,x
+  x = File.exists?("foo")
+       ^F,File
+  x = File.exists?("foo")
+        ^Fi,File
+  x = File.exists?("foo")
+         ^Fil,File
+  x = File.exists?("foo")
+          ^File,File
+  x = File.exists?("foo")
+            ^e,exists
+  x = File.exists?("foo")
+             ^ex,exists
+  x = File.exists?("foo")
+              ^exi,exists
+  x = File.exists?("foo")
+               ^exis,exists
+  x = File.exists?("foo")
+                ^exist,exists
+  x = File.exists?("foo")
+                 ^exists,exists
+  x = File.exists?("foo")
+                    ^"",""
+  x = File.exists?("foo")
+                     ^"",""
+  x = File.exists?("foo")
+                      ^"",""
+  x = File.exists?("foo")
+                       ^"",""
+end
+ ^e,end
+end
+  ^en,end
+end
+   ^end,end

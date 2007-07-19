@@ -1,0 +1,196 @@
+require "foo/bar"
+ ^r,require
+require "foo/bar"
+  ^re,require
+require "foo/bar"
+   ^req,require
+require "foo/bar"
+    ^requ,require
+require "foo/bar"
+     ^requi,require
+require "foo/bar"
+      ^requir,require
+require "foo/bar"
+       ^require,require
+require "foo/bar"
+         ^"",""
+require "foo/bar"
+          ^f,f
+require "foo/bar"
+           ^fo,fo
+require "foo/bar"
+            ^foo,foo
+require "foo/bar"
+             ^foo/,foo/
+require "foo/bar"
+              ^foo/b,foo/b
+require "foo/bar"
+               ^foo/ba,foo/ba
+require "foo/bar"
+                ^foo/bar,foo/bar
+require 'foo/bar'
+ ^r,require
+require 'foo/bar'
+  ^re,require
+require 'foo/bar'
+   ^req,require
+require 'foo/bar'
+    ^requ,require
+require 'foo/bar'
+     ^requi,require
+require 'foo/bar'
+      ^requir,require
+require 'foo/bar'
+       ^require,require
+require 'foo/bar'
+         ^"",""
+require 'foo/bar'
+          ^f,f
+require 'foo/bar'
+           ^fo,fo
+require 'foo/bar'
+            ^foo,foo
+require 'foo/bar'
+             ^foo/,foo/
+require 'foo/bar'
+              ^foo/b,foo/b
+require 'foo/bar'
+               ^foo/ba,foo/ba
+require 'foo/bar'
+                ^foo/bar,foo/bar
+require("foo/bar")
+ ^r,require
+require("foo/bar")
+  ^re,require
+require("foo/bar")
+   ^req,require
+require("foo/bar")
+    ^requ,require
+require("foo/bar")
+     ^requi,require
+require("foo/bar")
+      ^requir,require
+require("foo/bar")
+       ^require,require
+require("foo/bar")
+         ^"",""
+require("foo/bar")
+          ^f,f
+require("foo/bar")
+           ^fo,fo
+require("foo/bar")
+            ^foo,foo
+require("foo/bar")
+             ^foo/,foo/
+require("foo/bar")
+              ^foo/b,foo/b
+require("foo/bar")
+               ^foo/ba,foo/ba
+require("foo/bar")
+                ^foo/bar,foo/bar
+x = "a\nb\"c"
+ ^x,x
+x = "a\nb\"c"
+     ^"",""
+x = "a\nb\"c"
+      ^"",""
+x = "a\nb\"c"
+       ^\,\
+x = "a\nb\"c"
+        ^\n,\n
+x = "a\nb\"c"
+         ^"",""
+x = "a\nb\"c"
+          ^\,\
+x = "a\nb\"c"
+           ^\",\"
+x = "a\nb\"c"
+            ^"",""
+y = /d\s\/ef/
+ ^y,y
+y = /d\s\/ef/
+     ^"",""
+y = /d\s\/ef/
+      ^"",""
+y = /d\s\/ef/
+       ^\,\
+y = /d\s\/ef/
+        ^"",""
+y = /d\s\/ef/
+         ^\,\
+y = /d\s\/ef/
+          ^"",""
+y = /d\s\/ef/
+           ^"",""
+y = /d\s\/ef/
+            ^"",""
+z = 'g\'hi'
+ ^z,z
+z = 'g\'hi'
+     ^"",""
+z = 'g\'hi'
+      ^"",""
+z = 'g\'hi'
+       ^\,\
+z = 'g\'hi'
+        ^\',\'
+z = 'g\'hi'
+         ^"",""
+z = 'g\'hi'
+          ^"",""
+class Foo
+ ^c,class
+class Foo
+  ^cl,class
+class Foo
+   ^cla,class
+class Foo
+    ^clas,class
+class Foo
+     ^class,class
+class Foo
+       ^F,Foo
+class Foo
+        ^Fo,Foo
+class Foo
+         ^Foo,Foo
+def foo
+ ^d,def
+def foo
+  ^de,def
+def foo
+   ^def,def
+def foo
+     ^f,foo
+def foo
+      ^fo,foo
+def foo
+       ^foo,foo
+  puts "foo"
+   ^p,puts
+  puts "foo"
+    ^pu,puts
+  puts "foo"
+     ^put,puts
+  puts "foo"
+      ^puts,puts
+  puts "foo"
+        ^"",""
+  puts "foo"
+         ^"",""
+  puts "foo"
+          ^"",""
+  puts "foo"
+           ^"",""
+end
+ ^e,end
+end
+  ^en,end
+end
+   ^end,end
+end
+ ^e,end
+end
+  ^en,end
+end
+   ^end,end

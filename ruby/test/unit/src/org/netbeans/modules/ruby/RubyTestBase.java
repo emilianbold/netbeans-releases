@@ -12,6 +12,7 @@ package org.netbeans.modules.ruby;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,16 +43,16 @@ import org.openide.loaders.DataObject;
  * @author Tor Norbye
  */
 public abstract class RubyTestBase extends NbTestCase {
-    
+
     public RubyTestBase(String testName) {
         super(testName);
         System.setProperty("ruby.interpreter", FileUtil.toFile(findJRuby().getFileObject("bin/jruby")).getAbsolutePath());
     }
-    
+
     protected ParserResult parse(FileObject fileObject) {
         RubyParser parser = new RubyParser();
         int caretOffset = -1;
-        
+
         ParserFile file = new DefaultParserFile(fileObject, null, false);
         String sequence = "";
         ParseListener listener = new DefaultParseListener();
@@ -60,13 +61,14 @@ public abstract class RubyTestBase extends NbTestCase {
             EditorCookie cookie = dobj.getCookie(EditorCookie.class);
             Document doc = cookie.openDocument();
             sequence = doc.getText(0, doc.getLength());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex){
             fail(ex.toString());
         }
         ParserResult result = parser.parseBuffer(file, caretOffset, -1, sequence, listener, RubyParser.Sanitize.NEVER);
         return result;
     }
-    
+
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {
@@ -74,17 +76,17 @@ public abstract class RubyTestBase extends NbTestCase {
         }
         FileObject fo = FileUtil.toFileObject(wholeInputFile);
         assertNotNull(fo);
-        
+
         return fo;
     }
-    
+
     protected Node getRootNode(String relFilePath) {
         FileObject fileObject = getTestFile(relFilePath);
         ParserResult result = parse(fileObject);
         assertNotNull(result);
         RubyParseResult rpr = (RubyParseResult)result;
         Node root = rpr.getRootNode();
-        
+
         return root;
     }
 
@@ -102,25 +104,26 @@ public abstract class RubyTestBase extends NbTestCase {
         assertTrue(jruby.exists());
         try {
             jruby = jruby.getCanonicalFile();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex){
             fail(ex.toString());
         }
         assertTrue(jruby.exists());
         FileObject fo = FileUtil.toFileObject(jruby);
         assertNotNull(fo);
-        
+
         return fo;
-    }    
-    
+    }
+
     // Locate as many Ruby files from the JRuby distribution as possible: libs, gems, etc.
-     protected List<FileObject> findJRubyRubyFiles() {
-         List<FileObject> l = new ArrayList<FileObject>();
-         addRubyFiles(l, findJRuby());
-         
-         return l;
-     }
-     
-     private void addRubyFiles(List<FileObject> list, FileObject parent) {
+    protected List<FileObject> findJRubyRubyFiles() {
+        List<FileObject> l = new ArrayList<FileObject>();
+        addRubyFiles(l, findJRuby());
+
+        return l;
+    }
+
+    private void addRubyFiles(List<FileObject> list, FileObject parent) {
         for (FileObject child : parent.getChildren()) {
             if (child.isFolder()) {
                 addRubyFiles(list, child);
@@ -128,62 +131,65 @@ public abstract class RubyTestBase extends NbTestCase {
                 list.add(child);
             }
         }
-     }
+    }
 
-     private String readFile(final FileObject rakeTargetFile) {
+    private String readFile(final FileObject rakeTargetFile) {
         try {
             final StringBuilder sb = new StringBuilder(5000);
             rakeTargetFile.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
 
-                        if (rakeTargetFile == null) {
-                            return;
-                        }
+                public void run() throws IOException {
 
-                        InputStream is = rakeTargetFile.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-                        while (true) {
-                            String line = reader.readLine();
-
-                            if (line == null) {
-                                break;
-                            }
-
-                            sb.append(line);
-                            sb.append('\n');
-                        }
+                    if (rakeTargetFile == null) {
+                        return;
                     }
-                });
+
+                    InputStream is = rakeTargetFile.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+                    while (true) {
+                        String line = reader.readLine();
+
+                        if (line == null) {
+                            break;
+                        }
+
+                        sb.append(line);
+                        sb.append('\n');
+                    }
+                }
+            });
 
             if (sb.length() > 0) {
                 return sb.toString();
             } else {
                 return null;
             }
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe){
             ErrorManager.getDefault().notify(ioe);
 
             return null;
         }
-     }
-     
-     protected BaseDocument getDocument(String s) {
-         try {
-             BaseDocument doc = new BaseDocument(null, false);
-             doc.putProperty(org.netbeans.api.lexer.Language.class,  RubyTokenId.language());
+    }
 
-             doc.insertString(0, s, null);
+    protected BaseDocument getDocument(String s) {
+        try {
+            BaseDocument doc = new BaseDocument(null, false);
+            doc.putProperty(org.netbeans.api.lexer.Language.class, RubyTokenId.language());
 
-             return doc;
-         } catch (Exception ex) {
-             fail(ex.toString());
-             return null;
-         }
-     }
+            doc.insertString(0, s, null);
 
-     protected BaseDocument getDocument(FileObject fo) {
-         try {
+            return doc;
+        }
+        catch (Exception ex){
+            fail(ex.toString());
+            return null;
+        }
+    }
+
+    protected BaseDocument getDocument(FileObject fo) {
+        try {
 //             DataObject dobj = DataObject.find(fo);
 //             assertNotNull(dobj);
 //
@@ -191,26 +197,26 @@ public abstract class RubyTestBase extends NbTestCase {
 //             assertNotNull(ec);
 //
 //             return (BaseDocument)ec.openDocument();
-             
-             return getDocument(readFile(fo));
-         } catch (Exception ex) {
-             fail(ex.toString());
-             return null;
-         }
-     }
-     
-     public CompilationInfo getInfo(String file) throws Exception {
+            return getDocument(readFile(fo));
+        }
+        catch (Exception ex){
+            fail(ex.toString());
+            return null;
+        }
+    }
+
+    public CompilationInfo getInfo(String file) throws Exception {
         FileObject fileObject = getTestFile(file);
-        
+
         String text = readFile(fileObject);
         BaseDocument doc = getDocument(text);
 
         CompilationInfo info = new TestCompilationInfo(fileObject, doc, text);
-        
+
         return info;
-     }
-     
-     protected static String readFile(NbTestCase test, File f) throws Exception {
+    }
+
+    protected static String readFile(File f) throws Exception {
         FileReader r = new FileReader(f);
         int fileLen = (int)f.length();
         CharBuffer cb = CharBuffer.allocate(fileLen);
@@ -219,5 +225,54 @@ public abstract class RubyTestBase extends NbTestCase {
         return cb.toString();
     }
 
-    
+    protected File getDataFile(String relFilePath) {
+        // Check whether token dump file exists
+        // Try to remove "/build/" from the dump file name if it exists.
+        // Otherwise give a warning.
+        File inputFile = new File(getDataDir(), relFilePath);
+        String inputFilePath = inputFile.getAbsolutePath();
+        boolean replaced = false;
+        if (inputFilePath.indexOf("/build/test/") != -1) {
+            inputFilePath = inputFilePath.replace("/build/test/", "/test/");
+            replaced = true;
+        }
+        if (!replaced && inputFilePath.indexOf("/test/work/sys/") != -1) {
+            inputFilePath = inputFilePath.replace("/test/work/sys/", "/test/unit/");
+            replaced = true;
+        }
+        if (!replaced) {
+            System.err.println("Warning: Attempt to use dump file " +
+                    "from sources instead of the generated test files failed.\n" +
+                    "Patterns '/build/test/' or '/test/work/sys/' not found in " + inputFilePath
+            );
+        }
+        inputFile = new File(inputFilePath);
+        
+        return inputFile;
+    }
+
+    protected void assertDescriptionMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
+        File rubyFile = getDataFile(relFilePath);
+        if (!rubyFile.exists()) {
+            NbTestCase.fail("File " + rubyFile + " not found.");
+        }
+
+        File goldenFile = getDataFile(relFilePath + (includeTestName ? ("." + getName()) : "") + ext);
+        if (!goldenFile.exists()) {
+            if (!goldenFile.createNewFile()) {
+                NbTestCase.fail("Cannot create file " + goldenFile);
+            }
+            FileWriter fw = new FileWriter(goldenFile);
+            try {
+                fw.write(description);
+            }
+            finally{
+                fw.close();
+            }
+            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+        }
+
+        String expected = readFile(goldenFile);
+        assertEquals(expected, description);
+    }
 }

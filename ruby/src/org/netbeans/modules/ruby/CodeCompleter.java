@@ -566,6 +566,18 @@ public class CodeCompleter implements Completable {
                     if (q != -1) {
                         prefix = prefix.substring(q + 2);
                     }
+                    
+                    // The identifier chars identified by RubyLanguage are a bit too permissive;
+                    // they include things like "=", "!" and even "&" such that double-clicks will
+                    // pick up the whole "token" the user is after. But "=" is only allowed at the
+                    // end of identifiers for example.
+                    for (int i = prefix.length()-2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
+                        char c = prefix.charAt(i);
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            prefix = prefix.substring(i+1);
+                            break;
+                        }
+                    }
 
                     return prefix;
                 }

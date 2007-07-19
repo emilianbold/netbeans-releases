@@ -51,7 +51,9 @@ class TestCompilationInfo extends CompilationInfo {
         this.text = text;
         this.doc = doc;
         setParser(new RubyParser());
-        source = Source.forFileObject(fileObject);
+        if (fileObject != null) {
+            source = Source.forFileObject(fileObject);
+        }
     }
 
     public String getText() {
