@@ -267,8 +267,8 @@ public class LanguagesEditorKit extends NbEditorKit {
         
         //HACK:
         c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "in-place-refactoring");
-        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_T, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "comment");
-        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK+ InputEvent.SHIFT_DOWN_MASK), "uncomment");
+        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), "comment");
+        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "uncomment");
     }
     
     public String getContentType() {
