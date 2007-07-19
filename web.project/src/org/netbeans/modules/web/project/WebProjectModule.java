@@ -68,8 +68,9 @@ public class WebProjectModule extends ModuleInstall {
                             .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)); //NOI18N
-                    
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)) //NOI18N
+                            .append(':') // NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("ant/lib/ant-launcher.jar", null, false)); //NOI18N
                     String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
                     String jspc_cp = sb.toString();
                     if (jspc_cp_old == null || !jspc_cp_old.equals(jspc_cp)) {
