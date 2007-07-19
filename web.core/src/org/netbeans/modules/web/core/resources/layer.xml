@@ -260,17 +260,17 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="JSPPalette">
 
-        <folder name="HTML.shadow">
+        <file name="HTML.shadow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
             <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
             <attr name="position" intvalue="100"/>
-        </folder>
+        </file>
         
-        <folder name="HTML_Forms.shadow">
+        <file name="HTML_Forms.shadow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
             <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
             <attr name="position" intvalue="200"/>
-        </folder>
+        </file>
 
         <folder name="JSP">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
