@@ -60,13 +60,26 @@ import org.netbeans.modules.j2ee.persistence.wizard.WizardProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+/**
+ * Generates EJB facades for entity classes.
+ * 
+ * @author Martin Adamek, Erno Mononen
+ */ 
 public final class EjbFacadeWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    
+
+    private static final String FACADE_SUFFIX = "Facade"; //NO18N
+    private static final String FACADE_REMOTE_SUFFIX = FACADE_SUFFIX + "Remote"; //NO18N
+    private static final String FACADE_LOCAL_SUFFIX = FACADE_SUFFIX + "Local"; //NO18N
+    private static final String EJB_LOCAL = "javax.ejb.Local"; //NO18N
+    private static final String EJB_REMOTE = "javax.ejb.Remote"; //NO18N
+    private static final String EJB_STATELESS = "javax.ejb.Stateless"; //NO18N
+
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
@@ -76,7 +89,6 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
     private WizardDescriptor.Panel[] getPanels() {
         return panels;
     }
-    
     
     public Set instantiate() throws IOException {
         List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
@@ -101,11 +113,9 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
             final String simpleClassName = Util.simpleClassName(entityClass);
             final String variableName = simpleClassName.toLowerCase().charAt(0) + simpleClassName.substring(1);
             final String facadeNameBase = pkg + "." + simpleClassName;
-            //            String classBean = JMIUtils.uniqueClassName(facadeNameBase + "Facade", targetFolder);
-            final String classBean = getUniqueClassName(facadeNameBase + "Facade", targetFolder);
-            //            classBean = classBean.substring(classBean.lastIndexOf(".") + 1);
+            final String classBean = getUniqueClassName(facadeNameBase + FACADE_SUFFIX, targetFolder);
             
-            final FileObject sourceFile = GenerationUtils.createClass(targetFolder, classBean, null);// name must be made unique
+            final FileObject sourceFile = GenerationUtils.createClass(targetFolder, classBean, null);
             createdFiles.add(sourceFile);
             createdFiles.addAll(generate(sourceFile, targetFolder, classBean, pkg, panel.isRemote(), panel.isLocal()));
             
@@ -121,10 +131,8 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         final String simpleClassName = Util.simpleClassName(entityClass);
         final String variableName = simpleClassName.toLowerCase().charAt(0) + simpleClassName.substring(1);
         final String facadeNameBase = pkg + "." + simpleClassName;
-        //            String classBean = JMIUtils.uniqueClassName(facadeNameBase + "Facade", targetFolder);
-        //        final String classBean = getUniqueClassName(facadeNameBase + "Facade", targetFolder);
         
-        final FileObject facade = GenerationUtils.createClass(targetFolder, classBean + "Facade", null);
+        final FileObject facade = GenerationUtils.createClass(targetFolder, classBean + FACADE_SUFFIX, null);
         createdFiles.add(facade);
         JavaSource source = JavaSource.forFileObject(facade);
         source.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -136,7 +144,7 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                 for (Tree typeDeclaration : cut.getTypeDecls()){
                     if (Tree.Kind.CLASS == typeDeclaration.getKind()){
                         ClassTree clazz = (ClassTree) typeDeclaration;
-                        AnnotationTree annotations = make.Annotation(make.Identifier("javax.ejb.Stateless"), Collections.<ExpressionTree>emptyList());
+                        AnnotationTree annotations = make.Annotation(make.Identifier(EJB_STATELESS), Collections.<ExpressionTree>emptyList());
                         ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
                         ClassTree modifiedClass =
                                 make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), Collections.<Tree>emptyList());
@@ -145,15 +153,15 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
                         FileObject local = null;
                         FileObject remote = null;
                         if (hasLocal){
-                            String classLocal = getUniqueClassName(facadeNameBase + "FacadeLocal", targetFolder);
+                            String classLocal = getUniqueClassName(facadeNameBase + FACADE_LOCAL_SUFFIX, targetFolder);
                             classLocal = Util.simpleClassName(classLocal);
-                            local = createInterface(classLocal, "javax.ejb.Local", targetFolder);
+                            local = createInterface(classLocal, EJB_LOCAL, targetFolder);
                             createdFiles.add(local);
                         }
                         if (hasRemote){
-                            String classRemote = getUniqueClassName(facadeNameBase + "FacadeRemote", targetFolder);
+                            String classRemote = getUniqueClassName(facadeNameBase + FACADE_REMOTE_SUFFIX, targetFolder);
                             classRemote = Util.simpleClassName(classRemote);
-                            remote = createInterface(classRemote, "javax.ejb.Remote", targetFolder);
+                            remote = createInterface(classRemote, EJB_REMOTE, targetFolder);
                             createdFiles.add(remote);
                         }
                         EntityManagerGenerator generator = new EntityManagerGenerator(facade, classBean);
@@ -216,15 +224,18 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
     }
     
     String getUniqueClassName(String candidateName, FileObject targetFolder){
-        return candidateName; // TODO: RETOUCHE
+        return FileUtil.findFreeFileName(targetFolder, candidateName, "java"); //NO18N
     }
-    
     
     /**
      * Creates an interface with the given <code>name</code>, annotated with an annotation
      * of the given <code>annotationType</code>. <i>Package private visibility just because of tests</i>.
-     * @param
-     * @param
+     * 
+     * @param name the name for the interface
+     * @param annotationType the FQN of the annotation
+     * @param targetFolder the folder to which the interface is generated
+     * 
+     * @return the generated interface.
      */
     FileObject createInterface(String name, final String annotationType, FileObject targetFolder) throws IOException{
         FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
@@ -253,6 +264,15 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         
     }
     
+    /**
+     * Adds a method to the given interface.
+     * 
+     * @param name the name of the method.
+     * @param returnType the return type of the method.
+     * @param parameterName the name of the parameter for the method.
+     * @param parameterType the FQN type of the parameter.
+     * @param target the target interface.
+     */ 
     void addMethodToInterface(final String name, final String returnType, final String parameterName,
             final String parameterType, final FileObject target) throws IOException {
         
