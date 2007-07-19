@@ -80,10 +80,10 @@ public class RubyTypeSearcher implements TypeSearcher {
     }
     
     private class RubyTypeDescriptor extends GsfTypeDescriptor {
-        private IndexedClass cls;
+        private final IndexedClass cls;
         private String projectName;
         private Icon projectIcon;
-        private Helper helper;
+        private final Helper helper;
         private boolean isLibrary;
         private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
         

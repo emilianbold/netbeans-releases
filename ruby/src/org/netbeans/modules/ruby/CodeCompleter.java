@@ -358,7 +358,6 @@ public class CodeCompleter implements Completable {
 
     private boolean caseSensitive;
     private int anchor;
-    private HtmlFormatter formatter;
 
     public CodeCompleter() {
     }
@@ -801,8 +800,6 @@ public class CodeCompleter implements Completable {
 
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
-        boolean done = true;
-
         // Look in the token stream for constructs of the type
         //   foo.x^
         // or
@@ -817,7 +814,7 @@ public class CodeCompleter implements Completable {
             }
 
             // If we're not sure we're only looking for a method, don't abort after this
-            done = call.isMethodExpected();
+            boolean done = call.isMethodExpected();
 
             boolean skipInstanceMethods = call.isStatic();
 
@@ -1245,8 +1242,6 @@ public class CodeCompleter implements Completable {
     public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix,
         NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
-        this.formatter = formatter;
-
 
         int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (astOffset == -1) {
@@ -1285,6 +1280,7 @@ public class CodeCompleter implements Completable {
         // and I don't want to pass dozens of parameters from method to method; just pass
         // a request context with supporting info needed by the various completion helpers i
         CompletionRequest request = new CompletionRequest();
+        request.formatter = formatter;
         request.lexOffset = lexOffset;
         request.astOffset = astOffset;
         request.index = index;
@@ -1744,24 +1740,24 @@ public class CodeCompleter implements Completable {
         return ((pos.getStartOffset() >= lineBegin) && (pos.getStartOffset() <= lineEnd));
     }
 
-    /** Return true iff the name looks like an operator name */
-    private boolean isOperator(String name) {
-        // If a name contains not a single letter, it is probably an operator - especially
-        // if it is a short name
-        int n = name.length();
-
-        if (n > 2) {
-            return false;
-        }
-
-        for (int i = 0; i < n; i++) {
-            if (Character.isLetter(name.charAt(i))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    //    /** Return true iff the name looks like an operator name */
+    //    private boolean isOperator(String name) {
+    //        // If a name contains not a single letter, it is probably an operator - especially
+    //        // if it is a short name
+    //        int n = name.length();
+    //
+    //        if (n > 2) {
+    //            return false;
+    //        }
+    //
+    //        for (int i = 0; i < n; i++) {
+    //            if (Character.isLetter(name.charAt(i))) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
 
     @SuppressWarnings("unchecked")
     private void addLocals(Node node, Map<String, Node> variables) {
@@ -1954,12 +1950,12 @@ public class CodeCompleter implements Completable {
 
     private String loadResource(String basename) {
         // TODO: I18N
-        InputStream is =
-            new BufferedInputStream(CodeCompleter.class.getResourceAsStream("resources/" +
-                    basename));
+        InputStream is = null;
         StringBuilder sb = new StringBuilder();
 
         try {
+            is = new BufferedInputStream(CodeCompleter.class.getResourceAsStream("resources/" +
+                    basename));
             //while (is)
             while (true) {
                 int c = is.read();
@@ -1976,11 +1972,13 @@ public class CodeCompleter implements Completable {
             }
         } catch (IOException ie) {
             Exceptions.printStackTrace(ie);
-
+        } finally {
             try {
-                is.close();
-            } catch (IOException ie2) {
-                Exceptions.printStackTrace(ie2);
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ie) {
+                Exceptions.printStackTrace(ie);
             }
         }
 
@@ -2518,7 +2516,7 @@ public class CodeCompleter implements Completable {
         return ParameterInfo.NONE;
     }
     
-    private class CompletionRequest {
+    private static class CompletionRequest {
         private TokenHierarchy<Document> th;
         private CompilationInfo info;
         private AstPath path;
@@ -2531,6 +2529,7 @@ public class CodeCompleter implements Completable {
         private NameKind kind;
         private QueryType queryType;
         private FileObject fileObject;
+        private HtmlFormatter formatter;
     }
 
     private abstract class RubyCompletionItem implements CompletionProposal {
@@ -2584,6 +2583,7 @@ public class CodeCompleter implements Completable {
 
         public String getLhsHtml() {
             ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
             formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
@@ -2629,6 +2629,7 @@ public class CodeCompleter implements Completable {
 
         public String getLhsHtml() {
             ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
             formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
@@ -2658,6 +2659,7 @@ public class CodeCompleter implements Completable {
         }
 
         public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
             formatter.reset();
 
             String in = ((MethodElement)element).getIn();
@@ -2799,8 +2801,8 @@ public class CodeCompleter implements Completable {
 
     private class KeywordItem extends RubyCompletionItem {
         private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
-        private String keyword;
-        private String description;
+        private final String keyword;
+        private final String description;
 
         KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request) {
             super(null, anchorOffset, request);
@@ -2818,6 +2820,7 @@ public class CodeCompleter implements Completable {
 
         public String getRhsHtml() {
             if (description != null) {
+                HtmlFormatter formatter = request.formatter;
                 formatter.reset();
                 formatter.appendText(description);
 
@@ -2847,6 +2850,7 @@ public class CodeCompleter implements Completable {
         }
 
         public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
             formatter.reset();
 
             String in = ((ClassElement)element).getIn();
@@ -2895,8 +2899,8 @@ public class CodeCompleter implements Completable {
     
     private class SymbolHashItem extends RubyCompletionItem {   
         private static final String RUBY_SYMBOL = "org/netbeans/modules/ruby/symbol.png"; //NOI18N
-        private String name;
-        private String symbol;
+        private final String name;
+        private final String symbol;
         
         SymbolHashItem(Element element, String name, String symbol, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);

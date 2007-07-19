@@ -23,7 +23,6 @@ import java.util.Set;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.elements.IndexedElement;
 
 
 /**

@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.ruby.lexer.RubyCommentLexer;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;

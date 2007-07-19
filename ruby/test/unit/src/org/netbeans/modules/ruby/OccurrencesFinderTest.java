@@ -93,7 +93,7 @@ public class OccurrencesFinderTest extends RubyTestBase {
 
         String text = info.getText();
 
-        int caretDelta = caretLine.indexOf("^");
+        int caretDelta = caretLine.indexOf('^');
         assertTrue(caretDelta != -1);
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
         int lineOffset = text.indexOf(caretLine);

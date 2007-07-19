@@ -62,7 +62,7 @@ public final class RubyIndex {
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static final String RUBYHOME_URL = "ruby:"; // NOI18N
-    private Index index;
+    private final Index index;
 
     /** Creates a new instance of RubyIndex */
     public RubyIndex(Index index) {
@@ -137,7 +137,7 @@ public final class RubyIndex {
         //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
         //            return;
         //        }
-        String field = null;
+        String field;
 
         switch (kind) {
         case EXACT_NAME:
@@ -270,34 +270,21 @@ public final class RubyIndex {
         //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
         //            return;
         //        }
-        String field = null;
+        String field = RubyIndexer.FIELD_METHOD_NAME;
         NameKind originalKind = kind;
+        if (kind == NameKind.EXACT_NAME) {
+            // I can't do exact searches on methods because the method
+            // entries include signatures etc. So turn this into a prefix
+            // search and then compare chopped off signatures with the name
+            kind = NameKind.PREFIX;
+        }
 
-        switch (kind) {
         // No point in doing case insensitive searches on method names because
         // method names in Ruby are always case insensitive anyway
         //            case CASE_INSENSITIVE_PREFIX:
         //            case CASE_INSENSITIVE_REGEXP:
         //                field = RubyIndexer.FIELD_CASE_INSENSITIVE_METHOD_NAME;
         //                break;
-        case EXACT_NAME:
-            // I can't do exact searches on methods because the method
-            // entries include signatures etc. So turn this into a prefix
-            // search and then compare chopped off signatures with the name
-            kind = NameKind.PREFIX;
-
-        case PREFIX:
-        case CAMEL_CASE:
-        case REGEXP:
-        case CASE_INSENSITIVE_PREFIX:
-        case CASE_INSENSITIVE_REGEXP:
-            field = RubyIndexer.FIELD_METHOD_NAME;
-
-            break;
-
-        default:
-            throw new UnsupportedOperationException(kind.toString());
-        }
 
         search(field, name, kind, result, scope);
 

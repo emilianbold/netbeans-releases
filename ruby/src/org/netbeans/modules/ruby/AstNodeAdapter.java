@@ -42,8 +42,8 @@ import org.openide.util.Enumerations;
 @SuppressWarnings("unchecked")
 class AstNodeAdapter implements ParserResult.AstTreeNode {
     private static final boolean HIDE_NEWLINE_NODES = false;
-    private Node node;
-    private AstNodeAdapter parent;
+    private final Node node;
+    private final AstNodeAdapter parent;
     private AstNodeAdapter[] children;
 
     AstNodeAdapter(AstNodeAdapter parent, Node node) {

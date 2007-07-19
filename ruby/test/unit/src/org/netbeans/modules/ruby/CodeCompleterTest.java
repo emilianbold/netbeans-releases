@@ -44,14 +44,6 @@ public class CodeCompleterTest extends RubyTestBase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
 //    public void testCompletion1() throws Exception {
 //        System.setProperty("ruby.interpreter", FileUtil.toFile(findJRuby().getFileObject("bin/jruby")).getAbsolutePath());
 //        LanguageRegistry registry = LanguageRegistry.getInstance();

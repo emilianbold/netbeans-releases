@@ -21,42 +21,31 @@ package org.netbeans.modules.ruby.elements;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.List;
 import java.util.List;
 import java.util.Set;
 import java.util.Set;
 
-import org.jruby.ast.ArgsNode;
-import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.ConstNode;
-import org.jruby.ast.DefnNode;
-import org.jruby.ast.DefsNode;
 import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
-import org.jruby.ast.ListNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.Node;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
-import org.jruby.parser.RubyParserResult;
-import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.Modifier;
-import org.openide.filesystems.FileObject;
 
 
 /**

@@ -20,9 +20,9 @@ import org.netbeans.api.gsf.FormattingPreferences;
 
 public class IndentPrefs extends FormattingPreferences {
 
-    private int hanging;
+    private final int hanging;
 
-    private int indent;
+    private final int indent;
 
     public IndentPrefs(int indent, int hanging) {
         super();

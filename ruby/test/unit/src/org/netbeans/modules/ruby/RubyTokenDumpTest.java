@@ -37,9 +37,6 @@ public class RubyTokenDumpTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
                 RubyTokenId.language());

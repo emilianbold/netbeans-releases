@@ -41,8 +41,8 @@ import org.openide.filesystems.FileObject;
  * @author tor
  */
 class TestCompilationInfo extends CompilationInfo {
-    private String text;
-    private Document doc;
+    private final String text;
+    private final Document doc;
     private Source source;
     private ParserResult result;
     

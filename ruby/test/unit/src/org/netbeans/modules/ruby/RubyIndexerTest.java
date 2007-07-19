@@ -44,7 +44,7 @@ public class RubyIndexerTest extends RubyTestBase {
     
     private class TestIndex extends Index {
         private int documentNumber;
-        private String localUrl;
+        private final String localUrl;
         
         public TestIndex(String localUrl) {
             // Leave the end
@@ -55,7 +55,7 @@ public class RubyIndexerTest extends RubyTestBase {
             this.localUrl = localUrl;
         }
         
-        private StringBuilder sb = new StringBuilder();
+        private final StringBuilder sb = new StringBuilder();
         @Override
         public String toString() {
             return sb.toString().replace(localUrl, "<TESTURL>");

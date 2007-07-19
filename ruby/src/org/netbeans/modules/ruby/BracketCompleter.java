@@ -92,7 +92,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("ruby.cont.comment"); // NOI18N
     
     /** Tokens which indicate that we're within a literal string */
-    private static TokenId[] STRING_TOKENS = // XXX What about RubyTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
+    private final static TokenId[] STRING_TOKENS = // XXX What about RubyTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
         {
             RubyTokenId.STRING_LITERAL, RubyTokenId.QUOTED_STRING_LITERAL, RubyTokenId.CHAR_LITERAL,
             RubyTokenId.STRING_END, RubyTokenId.QUOTED_STRING_END
@@ -100,7 +100,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
     /** Tokens which indicate that we're within a regexp string */
     // XXX What about RubyTokenId.REGEXP_BEGIN?
-    private static TokenId[] REGEXP_TOKENS = { RubyTokenId.REGEXP_LITERAL, RubyTokenId.REGEXP_END };
+    private static final TokenId[] REGEXP_TOKENS = { RubyTokenId.REGEXP_LITERAL, RubyTokenId.REGEXP_END };
 
     /** When != -1, this indicates that we previously adjusted the indentation of the
      * line to the given offset, and if it turns out that the user changes that token,

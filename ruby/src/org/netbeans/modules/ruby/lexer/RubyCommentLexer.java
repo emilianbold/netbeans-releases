@@ -53,8 +53,8 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
             "arg", "args", "yield", "yields", "notnew", "not-new", "not_new", "doc", "nodoc",
             "stopdoc", "startdoc", "enddoc", "main", "title", "section", "include"
         };
-    private LexerInput input;
-    private TokenFactory<RubyCommentTokenId> tokenFactory;
+    private final LexerInput input;
+    private final TokenFactory<RubyCommentTokenId> tokenFactory;
     private boolean inWord;
     private String[] markers;
 

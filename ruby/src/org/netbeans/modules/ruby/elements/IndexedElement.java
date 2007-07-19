@@ -44,7 +44,7 @@ public abstract class IndexedElement extends RubyElement {
     protected final RubyIndex index;
     protected final String require;
     protected final Set<Modifier> modifiers;
-    private String attributes;
+    private final String attributes;
     private int docLength = -1;
     private Document document;
     private FileObject fileObject;

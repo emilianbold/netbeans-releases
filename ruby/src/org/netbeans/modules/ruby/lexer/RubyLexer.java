@@ -64,7 +64,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
     /** This is still not working; I wonder if release() is called correctly at all times...*/
     private static final boolean REUSE_LEXERS = false;
     private static RubyLexer cached;
-    private RubyYaccLexer lexer;
+    private final RubyYaccLexer lexer;
     private LexerSource lexerSource;
     private boolean inRegexp;
     private LexerInput input;
@@ -557,11 +557,11 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         /** Bit set when we need to set commandStart in RubyYaccLexer */
         private static final int SET_COMMAND_START = 32;
 
-        private StrTerm strTerm;
+        private final StrTerm strTerm;
         private int localState;
-        private LexState lexState;
+        private final LexState lexState;
         private Object strTermState;
-        private RubyYaccLexer.HeredocContext heredocContext;
+        private final RubyYaccLexer.HeredocContext heredocContext;
 
         JRubyLexerRestartInfo(RubyLexer rubyLexer) {
             strTerm = rubyLexer.lexer.getStrTerm();
@@ -739,7 +739,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         }
     }
 
-    private class LexerInputReader extends Reader {
+    private static class LexerInputReader extends Reader {
         private LexerInput input;
 
         LexerInputReader(LexerInput input) {

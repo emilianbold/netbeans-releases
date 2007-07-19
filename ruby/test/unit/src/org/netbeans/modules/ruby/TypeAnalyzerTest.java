@@ -10,7 +10,6 @@ package org.netbeans.modules.ruby;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.ruby.AstPath;
 import org.openide.filesystems.FileObject;
 
 /**

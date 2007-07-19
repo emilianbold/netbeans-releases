@@ -202,7 +202,7 @@ public class AstPath implements Iterable<Node> {
 
     /** Return an iterator that returns the elements from the leaf back up to the root */
     public Iterator<Node> iterator() {
-        return new LeafToRootIterator();
+        return new LeafToRootIterator(path);
     }
 
     /** REturn an iterator that starts at the root and walks down to the leaf */
@@ -212,13 +212,13 @@ public class AstPath implements Iterable<Node> {
 
     /** Return an iterator that walks from the leaf back up to the root */
     public ListIterator<Node> leafToRoot() {
-        return new LeafToRootIterator();
+        return new LeafToRootIterator(path);
     }
 
-    private class LeafToRootIterator implements ListIterator<Node> {
-        private ListIterator<Node> it;
+    private static class LeafToRootIterator implements ListIterator<Node> {
+        private final ListIterator<Node> it;
 
-        private LeafToRootIterator() {
+        private LeafToRootIterator(ArrayList<Node> path) {
             it = path.listIterator(path.size());
         }
 

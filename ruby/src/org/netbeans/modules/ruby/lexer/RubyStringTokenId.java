@@ -27,8 +27,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.ruby.lexer.RubyStringLexer;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;

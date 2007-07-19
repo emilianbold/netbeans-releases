@@ -74,7 +74,7 @@ class RDocFormatter {
 
     /**  State during rdoc generation: in suppressed comments (#--) section */
     private boolean noComment;
-    private StringBuilder sb = new StringBuilder(500);
+    private final StringBuilder sb = new StringBuilder(500);
 
     /** Creates a new instance of RDocFormatter */
     public RDocFormatter() {
@@ -676,7 +676,7 @@ class RDocFormatter {
         int g = c.getGreen();
         int b = c.getBlue();
         StringBuffer result = new StringBuffer();
-        result.append("#"); //NOI18N
+        result.append('#');
 
         String rs = Integer.toHexString(r);
         String gs = Integer.toHexString(g);

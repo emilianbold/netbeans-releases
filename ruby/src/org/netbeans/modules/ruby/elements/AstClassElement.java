@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.Colon2Node;
+import org.jruby.ast.Colon3Node;
 import org.jruby.ast.Node;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.types.INameNode;
@@ -22,23 +23,16 @@ public class AstClassElement extends AstElement implements ClassElement {
     public String getName() {
         if (name == null) {
             if (node instanceof ClassNode) {
-                Node n = ((ClassNode)node).getCPath();
-
-                if (n instanceof Colon2Node) {
-                    Colon2Node c2n = (Colon2Node)n;
-                    name = c2n.getName();
-                } else if (n instanceof INameNode) {
-                    name = ((INameNode)n).getName();
-                } else {
-                    name = n.toString();
-                }
+                Colon3Node n = ((ClassNode)node).getCPath();
+                
+                name = n.getName();
             } else if (node instanceof SClassNode) {
                 Node n = ((SClassNode)node).getReceiverNode();
 
                 // What if it's a selfnode?
-                if (n instanceof Colon2Node) {
-                    Colon2Node c2n = (Colon2Node)n;
-                    name = c2n.getName();
+                if (n instanceof Colon3Node) {
+                    Colon3Node c3n = (Colon3Node)n;
+                    name = c3n.getName();
                 } else if (n instanceof INameNode) {
                     name = ((INameNode)n).getName();
                 } else {

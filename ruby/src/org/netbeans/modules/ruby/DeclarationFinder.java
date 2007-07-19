@@ -730,7 +730,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
     /** A result from findRailsTarget which computes sections that have special
      * hyperlink semantics - like link_to, render :partial, render :action, :controller etc.
      */
-    private class RailsTarget {
+    private static class RailsTarget {
         RailsTarget(String type, String name, OffsetRange range) {
             this.type = type;
             this.range = range;

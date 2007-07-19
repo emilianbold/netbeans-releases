@@ -28,9 +28,6 @@ public class RubyStringLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
     public void test() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testStrings.rb.txt",
                 RubyStringTokenId.languageDouble());

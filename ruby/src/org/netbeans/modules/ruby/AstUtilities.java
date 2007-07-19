@@ -336,7 +336,7 @@ public class AstUtilities {
 
         try {
             doc = info.getDocument();
-        } catch (Exception e) {
+        } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
 
@@ -951,7 +951,6 @@ public class AstUtilities {
      */
     public static OffsetRange getLValueRange(AssignableNode node) {
         assert node instanceof INameNode;
-        assert node instanceof AssignableNode;
 
         ISourcePosition pos = node.getPosition();
         OffsetRange range =
@@ -1193,7 +1192,7 @@ public class AstUtilities {
             Node node = it.next();
 
             if (node instanceof ModuleNode || node instanceof ClassNode) {
-                Node cpath = ((IScopingNode)node).getCPath();
+                Colon3Node cpath = ((IScopingNode)node).getCPath();
 
                 if (cpath == null) {
                     continue;
@@ -1205,8 +1204,8 @@ public class AstUtilities {
 
                 if (cpath instanceof Colon2Node) {
                     sb.append(getFqn((Colon2Node)cpath));
-                } else if (cpath instanceof INameNode) {
-                    sb.append(((INameNode)cpath).getName());
+                } else {
+                    sb.append(cpath.getName());
                 }
             }
         }

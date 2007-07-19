@@ -36,7 +36,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -1095,10 +1094,10 @@ public class LexUtilities {
          * The full LHS is not computed.
          */
         public static final Call UNKNOWN = new Call(null, null, false, false);
-        private String type;
-        private String lhs;
-        private boolean isStatic;
-        private boolean methodExpected;
+        private final String type;
+        private final String lhs;
+        private final boolean isStatic;
+        private final boolean methodExpected;
 
         public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
             this.type = type;

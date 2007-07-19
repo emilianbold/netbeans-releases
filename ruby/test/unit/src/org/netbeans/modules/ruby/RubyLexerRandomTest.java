@@ -43,9 +43,6 @@ public class RubyLexerRandomTest extends TestCase {
         System.setProperty("netbeans.debug.lexer.test", "true");
     }
 
-    protected void tearDown() throws java.lang.Exception {
-    }
-
     public void testRandom() throws Exception {
         test(0);
     }

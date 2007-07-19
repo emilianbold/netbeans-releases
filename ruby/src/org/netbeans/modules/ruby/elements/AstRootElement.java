@@ -6,8 +6,8 @@ import org.openide.filesystems.FileObject;
 
 
 public class AstRootElement extends AstElement {
-    private FileObject fileObject;
-    private RubyParserResult result;
+    private final FileObject fileObject;
+    private final RubyParserResult result;
 
     public AstRootElement(FileObject fo, Node node, RubyParserResult result) {
         super(node);

@@ -13,7 +13,7 @@ import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Modifier;
 
 
-public class AstFieldElement extends AstElement implements Element {
+public class AstFieldElement extends AstElement {
     public AstFieldElement(Node node) {
         super(node);
     }

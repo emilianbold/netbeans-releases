@@ -19,7 +19,6 @@
 package org.netbeans.modules.ruby.lexer;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -34,9 +33,9 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 public final class RubyStringLexer implements Lexer<RubyStringTokenId> {
     private static final int EOF = LexerInput.EOF;
-    private LexerInput input;
-    private TokenFactory<RubyStringTokenId> tokenFactory;
-    private boolean substituting;
+    private final LexerInput input;
+    private final TokenFactory<RubyStringTokenId> tokenFactory;
+    private final boolean substituting;
 
     /**
      * A Lexer for ruby strings

@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  */
 public class RubyParser implements Parser {
     private int currentErrorOffset;
-    private PositionManager positions = new RubyPositionManager();
+    private final PositionManager positions = new RubyPositionManager();
 
     /**
      * Creates a new instance of RubyParser
@@ -554,10 +554,10 @@ public class RubyParser implements Parser {
         return null;
     }
 
-    private class RubyElementHandle<T extends Element> extends ElementHandle<T> {
-        private Node root;
-        private T object;
-        private FileObject fileObject;
+    private static class RubyElementHandle<T extends Element> extends ElementHandle<T> {
+        private final Node root;
+        private final T object;
+        private final FileObject fileObject;
 
         private RubyElementHandle(Node root, T object, FileObject fileObject) {
             this.root = root;

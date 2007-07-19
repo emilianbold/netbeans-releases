@@ -28,12 +28,6 @@ public class RubyLexAllTest extends RubyTestBase {
         super(testName);
     }
 
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
     public void testLexAll() throws BadLocationException {
         // Find ruby files
         List<FileObject> files = findJRubyRubyFiles();

@@ -9,7 +9,7 @@ import org.netbeans.api.gsf.ElementKind;
 
 
 public class AstModuleElement extends AstElement implements ModuleElement {
-    String fqn;
+    private String fqn;
     private String extendWith;
 
     public AstModuleElement(Node node) {

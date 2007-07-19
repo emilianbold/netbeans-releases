@@ -32,7 +32,7 @@ import org.netbeans.api.gsf.Modifier;
  * @author Tor Norbye
  */
 public class KeywordElement implements Element {
-    private String name;
+    private final String name;
 
     /** Creates a new instance of DefaultComKeyword */
     public KeywordElement(String name) {

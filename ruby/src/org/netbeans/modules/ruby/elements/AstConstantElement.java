@@ -5,7 +5,7 @@ import org.netbeans.api.gsf.ElementKind;
 
 
 public class AstConstantElement extends AstElement {
-    ConstDeclNode constNode;
+    private ConstDeclNode constNode;
 
     public AstConstantElement(ConstDeclNode node) {
         super(node);

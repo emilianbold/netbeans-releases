@@ -46,7 +46,6 @@ import org.netbeans.api.gsf.Indexer;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
@@ -193,12 +192,12 @@ public class RubyIndexer implements Indexer {
     }
 
     private static class TreeAnalyzer {
-        private ParserFile file;
+        private final ParserFile file;
         private String url;
         private String requires;
-        private RubyParseResult result;
-        private BaseDocument doc;
-        private Index index;
+        private final RubyParseResult result;
+        private final BaseDocument doc;
+        private final Index index;
 
         private TreeAnalyzer(Index index, RubyParseResult result) {
             this.index = index;
@@ -209,6 +208,8 @@ public class RubyIndexer implements Indexer {
 
             if (fo != null) {
                 this.doc = AstUtilities.getBaseDocument(fo, true);
+            } else {
+                this.doc = null;
             }
 
             try {
@@ -309,7 +310,7 @@ public class RubyIndexer implements Indexer {
                     handleActionViewHelpers();
                     
                     return;
-                } else if ("action_web_service.rb".equals(fileName)) { // NOI18N
+                //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
                     // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
                     // Gotta make this shiznit smarter!
                     //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N

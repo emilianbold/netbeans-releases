@@ -9,11 +9,6 @@ package org.netbeans.modules.ruby;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
-
-import org.netbeans.modules.ruby.RubyMimeResolver;
-
 
 /**
  *

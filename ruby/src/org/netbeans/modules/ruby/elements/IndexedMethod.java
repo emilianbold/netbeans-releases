@@ -26,7 +26,6 @@ import java.util.Set;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Modifier;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.elements.IndexedElement;
 
 
 /**
@@ -43,7 +42,7 @@ import org.netbeans.modules.ruby.elements.IndexedElement;
 public final class IndexedMethod extends IndexedElement implements MethodElement {
     private String[] args;
     private String name;
-    protected List<String> parameters;
+    private List<String> parameters;
     private boolean smart;
     private boolean attribute;
 
