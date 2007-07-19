@@ -28,7 +28,9 @@ import java.util.Iterator;
 import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.codegen.EntityRESTServicesCodeGenerator;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -49,6 +51,7 @@ import org.openide.util.UserCancelException;
  * Copy of j2ee/utilities Util class
  */
 public class Util {
+    public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
@@ -326,4 +329,22 @@ public class Util {
         return types;
     }
     
+    public static SourceGroup[] getSourceGroups(Project project) {
+        SourceGroup[] sourceGroups = null;
+
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] docRoot = sources.getSourceGroups(TYPE_DOC_ROOT);
+        SourceGroup[] srcRoots = SourceGroupSupport.getJavaSourceGroups(project);
+            
+        if (docRoot != null && srcRoots != null) {
+            sourceGroups = new SourceGroup[docRoot.length + srcRoots.length];
+            System.arraycopy(docRoot, 0, sourceGroups, 0, docRoot.length);
+            System.arraycopy(srcRoots, 0, sourceGroups, docRoot.length, srcRoots.length);
+        }
+            
+        if (sourceGroups==null || sourceGroups.length==0) {
+            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        }
+        return sourceGroups;
+    }
 }

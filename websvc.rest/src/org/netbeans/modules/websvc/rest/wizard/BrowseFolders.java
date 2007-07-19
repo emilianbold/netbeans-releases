@@ -64,7 +64,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     /** Creates new form BrowseFolders */
     public BrowseFolders( SourceGroup[] folders, Class target, String preselectedFileName  ) {
         initComponents();
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseFolders.class, (target == DataFolder.class?"ACSD_BrowseFolders":"ACSD_BrowseFiles")));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseFolders.class, (target == DataFolder.class?"LBL_BrowseFolders":"LBL_BrowseFiles")));
 
         this.folders = folders;
         this.target = target;

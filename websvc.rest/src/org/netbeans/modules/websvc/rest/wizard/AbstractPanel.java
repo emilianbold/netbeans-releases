@@ -115,4 +115,7 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         fireChangeEvent(e);
     }
     
+    public String getName() {
+        return panelName;
+    }
 }
