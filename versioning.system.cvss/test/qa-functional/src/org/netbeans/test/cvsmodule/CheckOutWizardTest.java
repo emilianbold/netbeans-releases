@@ -79,7 +79,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CheckOutWizardTest("testInvokeCheckoutWizard"));
+        /*suite.addTest(new CheckOutWizardTest("testInvokeCheckoutWizard"));
         suite.addTest(new CheckOutWizardTest("testCancelCheckoutWizard"));
         suite.addTest(new CheckOutWizardTest("testCheckoutWizardLocal"));
         suite.addTest(new CheckOutWizardTest("testCheckoutWizardFork"));
@@ -97,7 +97,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         suite.addTest(new CheckOutWizardTest("testRepositoryBrowsing"));
         suite.addTest(new CheckOutWizardTest("testAliasBrowsing"));
         suite.addTest(new CheckOutWizardTest("testBranchBrowsing"));
-        suite.addTest(new CheckOutWizardTest("testTagBrowsing"));
+        suite.addTest(new CheckOutWizardTest("testTagBrowsing"));*/
         suite.addTest(new CheckOutWizardTest("testCheckWizardFinish"));
         //debug
         //suite.addTest(new CheckOutWizardTest("testCheckWizardFinish"));
@@ -1000,8 +1000,10 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         
             //System.out.println(CVSroot);
-            OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oo = OutputOperator.invoke();
+            //System.out.println(CVSroot);
+        
+            OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
             oto.waitText("Checking out finished");
             cvss.stop();
             in.close();

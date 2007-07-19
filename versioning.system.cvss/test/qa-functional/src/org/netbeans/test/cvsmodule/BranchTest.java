@@ -102,12 +102,11 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+
+        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         TestKit.closeProject(projectName);
         new ProjectsTabOperator().tree().clearSelection();
-        String CVSroot;
-        OutputOperator oo = OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -124,8 +123,9 @@ public class BranchTest extends JellyTestCase {
         PseudoCvsServer cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         cvss.ignoreProbe();
-        CVSroot = cvss.getCvsRoot();
+        String CVSroot = cvss.getCvsRoot();
         sessionCVSroot = CVSroot;
+        //System.out.println(sessionCVSroot);
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
@@ -142,13 +142,14 @@ public class BranchTest extends JellyTestCase {
         
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
+        File cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
         tmp.mkdirs();
         work.mkdirs();
         tmp.deleteOnExit();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         in.close();
-        moduleCheck.setModule(projectName);        
+        moduleCheck.setModule("ForImport");        
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
         
         //Pseudo CVS server for finishing check out wizard
@@ -162,11 +163,13 @@ public class BranchTest extends JellyTestCase {
         //combo.setSelectedItem(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
+        Thread.sleep(3000);
         
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        OutputOperator oo = OutputOperator.invoke();
+        //System.out.println(CVSroot);
+        
+        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
         oto.waitText("Checking out finished");
-        Thread.sleep(1000);
         cvss.stop();
         in.close();
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
@@ -178,9 +181,10 @@ public class BranchTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         
         //create new elements for testing
-        TestKit.createNewElements(projectName);
+        TestKit.createNewElementsCommitCvs11(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
+
     
     public void removeAllData() throws Exception {
         TestKit.closeProject(projectName);
