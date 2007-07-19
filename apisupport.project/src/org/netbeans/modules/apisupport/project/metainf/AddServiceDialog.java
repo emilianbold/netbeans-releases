@@ -18,11 +18,16 @@
  */
 package org.netbeans.modules.apisupport.project.metainf;
 
+import java.util.StringTokenizer;
+import javax.swing.JButton;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
@@ -45,6 +50,25 @@ public class AddServiceDialog extends javax.swing.JPanel {
     public AddServiceDialog(Project project) {
         initComponents();
         this.project = project;
+        okButton = new JButton();
+        cancelButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(AddServiceDialog.class, "CTL_OK")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(AddServiceDialog.class, "CTL_CANCEL")); // NOI18N
+        okButton.setEnabled(false);
+        classField.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                checkJavaFile();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkJavaFile();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkJavaFile();
+            }
+        });
     }
     
     /** This method is called from within the constructor to
@@ -54,6 +78,7 @@ public class AddServiceDialog extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         classField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
@@ -79,7 +104,7 @@ public class AddServiceDialog extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(classField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 299, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)))
+                        .add(browseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -91,15 +116,19 @@ public class AddServiceDialog extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(classField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        classField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServiceDialog.class, "AddServiceDialog.classField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServiceDialog.class, "AddServiceDialog.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        Sources sources = (Sources) project.getLookup().lookup(Sources.class);    
+        Sources sources = project.getLookup().lookup(Sources.class);    
         SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA); 
         
-        ProjectInformation inf = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         if (groups.length > 0) {
             Node srcNode = PackageView.createPackageView(groups[0]);
             try {
@@ -109,7 +138,7 @@ public class AddServiceDialog extends javax.swing.JPanel {
                 // try find a java file
                 DataObject dobj = null;
                 do {
-                    dobj =  (DataObject) node.getLookup().lookup(DataObject.class);
+                    dobj =  node.getLookup().lookup(DataObject.class);
                     node = node.getParentNode();
                 } while (dobj == null && node != null);
                 if (dobj != null) {
@@ -127,6 +156,7 @@ public class AddServiceDialog extends javax.swing.JPanel {
                     }
                     
                 }
+                checkJavaFile();
             } catch (UserCancelException uc) {
                 // cancel button  clicked
             }
@@ -135,10 +165,45 @@ public class AddServiceDialog extends javax.swing.JPanel {
         
     }//GEN-LAST:event_browseButtonActionPerformed
     
+    
+    private void checkJavaFile() {
+        String path = classField.getText();
+        FileObject root = ((NbModuleProject)project).getSourceDirectory();
+        boolean status = false;
+        // check if class already exists
+        // checking validity of inner classes is missing
+        StringTokenizer tokenizer = new StringTokenizer(path,"."); // NOI18N
+        while (tokenizer.hasMoreTokens()) {
+            String name = tokenizer.nextToken();
+            FileObject childFo = root.getFileObject(name);
+            if (childFo != null) {
+                if (childFo.isFolder()) {
+                    root = childFo;
+                } else {
+                    status = "java".equals(childFo.getExt()); // NOI18N
+                    break;
+                }
+            } else {
+                status =  root.getFileObject(name + ".java") != null; // NOI18N
+                break;
+            }
+        }
+        okButton.setEnabled(status);
+    }
     public String getClassName() {
         return classField.getText();
     }
+
+    public JButton getCancelButton() {
+        return cancelButton;
+    }
+
+    public JButton getOkButton() {
+        return okButton;
+    }
     
+    private JButton okButton;
+    private JButton cancelButton;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JTextField classField;

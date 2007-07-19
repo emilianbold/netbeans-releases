@@ -19,6 +19,8 @@
 package org.netbeans.modules.apisupport.project.metainf;
 
 import java.lang.ref.WeakReference;
+import javax.swing.JButton;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -40,12 +42,13 @@ public final class AddService extends CookieAction {
                     org.openide.util.NbBundle.getMessage(AddService.class, "LBL_Add_Service_Class"),
                     0,
                     NotifyDescriptor.PLAIN_MESSAGE,
-                    new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION },
+                    new Object[] { panel.getOkButton(),panel.getCancelButton() },
                     null
                 );
-                Object res = DialogDisplayer.getDefault().notify(dd);
                 
-                if (res == NotifyDescriptor.OK_OPTION) {
+                Object res = DialogDisplayer.getDefault().notify(dd);
+                System.out.println(res);
+                if (res == panel.getOkButton()) {
                     String classServiceName = panel.getClassName();
                     if (classServiceName != null) {
                         node.addService(node.getName(),classServiceName);
