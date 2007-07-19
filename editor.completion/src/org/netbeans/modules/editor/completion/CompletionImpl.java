@@ -646,14 +646,21 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 int caretOffset = c.getSelectionStart();
                 if (anchorOffset > -1  && caretOffset - anchorOffset < commonText.length()) {
                     commonText = commonText.subSequence(caretOffset - anchorOffset, commonText.length());
+
+                    Document doc = getActiveDocument();
+                    BaseDocument baseDoc = null;
+                    if(doc instanceof BaseDocument)
+                        baseDoc = (BaseDocument)doc;
+                        
                     // Insert the missing end part of the prefix
-                    BaseDocument doc = (BaseDocument)getActiveDocument();
-                    doc.atomicLock();
+                    if(baseDoc != null)
+                        baseDoc.atomicLock();
                     try {
                         doc.insertString(caretOffset, commonText.toString(), null);
                     } catch (BadLocationException e) {
                     } finally {
-                        doc.atomicUnlock();
+                        if(baseDoc != null)
+                            baseDoc.atomicUnlock();
                     }
                 }
             }
@@ -792,15 +799,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     
     private int getCompletionPreSelectionIndex(List<CompletionItem> items) {
         String prefix = null;
-        BaseDocument doc = (BaseDocument)getActiveDocument();
-        int caretOffset = getActiveComponent().getSelectionStart();
-        try {
-            int[] block = Utilities.getIdentifierBlock(doc, caretOffset);
-            if (block != null) {
-                block[1] = caretOffset;
-                prefix = doc.getText(block);
+        if(getActiveDocument() instanceof BaseDocument) {
+            BaseDocument doc = (BaseDocument)getActiveDocument();
+            int caretOffset = getActiveComponent().getSelectionStart();
+            try {
+                int[] block = Utilities.getIdentifierBlock(doc, caretOffset);
+                if (block != null) {
+                    block[1] = caretOffset;
+                    prefix = doc.getText(block);
+                }
+            } catch (BadLocationException ble) {
             }
-        } catch (BadLocationException ble) {
         }
         if (prefix != null && prefix.length() > 0) {
             int idx = 0;
