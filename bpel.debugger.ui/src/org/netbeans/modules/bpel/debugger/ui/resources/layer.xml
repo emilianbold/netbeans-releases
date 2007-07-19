@@ -35,39 +35,27 @@
     <folder name="Menu">
         <folder name="Window">
             <folder name="Debug">
-                <folder name="BPEL">
-                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.debugger.resources.Bundle"/>
-                    <attr name="position" intvalue="1100"/>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Variable.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Variable.instance"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Process.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Process.instance"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
+                <file name="Separator.instance" url="Separator.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="5000"/>
+                </file>
+                <file name="org-netbeans-modules-bpel-debugger-ui-action-Variable.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Variable.instance"/>
+                    <attr name="position" intvalue="5100"/>
+                </file>
+                <file name="org-netbeans-modules-bpel-debugger-ui-action-Process.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Process.instance"/>
+                    <attr name="position" intvalue="5200"/>
+                </file>
 
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Console.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Console.instance"/>
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Breakpoints.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Sessions.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow">
-                      <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    </folder>
+                <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance"/>
+                    <attr name="position" intvalue="5300"/>
+                </file>
+                <file name="org-netbeans-modules-bpel-debugger-ui-action-Console.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Console.instance"/>
+                    <attr name="position" intvalue="5400"/>
+                </file>
             </folder>
         </folder>
     </folder>
