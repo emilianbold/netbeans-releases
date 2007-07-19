@@ -19,18 +19,21 @@
 
 package org.netbeans.modules.ruby.debugger.model;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.ruby.debugger.ContextProviderWrapper;
 import org.netbeans.modules.ruby.debugger.RubySession;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 import org.rubyforge.debugcommons.model.RubyValue;
 import org.rubyforge.debugcommons.model.RubyVariable;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
@@ -40,13 +43,13 @@ import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
 /**
  * @author Martin Krauskopf
  */
-public class VariablesModel implements TreeModel, NodeModel, TableModel {
+public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel {
     
     private static final String GLOBAL = "Global Variables"; // NOI18N
     public static final String LOCAL =
-            "org/netbeans/modules/debugger/resources/localsView/LocalVariable"; // NOI18N
+            "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     public static final String CLASS =
-            "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
+            "org/netbeans/modules/debugger/resources/watchesView/SuperVariable.gif"; // NOI18N
     
     protected final RubySession rubySession;
     protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -140,6 +143,10 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         assert node != ROOT;
         // TODO use different icons
         if (node == GLOBAL) {
@@ -196,5 +203,33 @@ public class VariablesModel implements TreeModel, NodeModel, TableModel {
             throws UnknownTypeException {
         throw new UnknownTypeException(node);
     }
-    
+
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+        return null;
+    }
+
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

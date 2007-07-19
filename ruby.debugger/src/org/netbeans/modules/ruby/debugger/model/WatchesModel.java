@@ -43,7 +43,7 @@ import static org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID;
 public final class WatchesModel extends VariablesModel {
     
     public static final String WATCH =
-            "org/netbeans/modules/debugger/resources/watchesView/Watch"; // NOI18N
+            "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
     
     private WatchesListener listener;
     
@@ -104,11 +104,11 @@ public final class WatchesModel extends VariablesModel {
     }
     
     @Override
-    public String getIconBase(Object node) throws UnknownTypeException {
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (node == ROOT || node instanceof Watch) {
             return WATCH;
         } else {
-            return super.getIconBase(node);
+            return super.getIconBaseWithExtension(node);
         }
     }
     
