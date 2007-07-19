@@ -53,6 +53,7 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -117,7 +118,10 @@ public final class FileUtil extends Object {
             throw new IOException(folder.getAbsolutePath());
         }
         FileObject rootFo = FileUtil.toFileObject(root);
-        assert rootFo != null : root.getAbsolutePath();
+        if (rootFo == null) {
+            throw new IllegalStateException("Cannot get a FileObject for " + root + " while trying to create " + folder +
+                "; URLMapper's=" + Lookup.getDefault().lookupAll(URLMapper.class));
+        }
         final String relativePath = getRelativePath(root, folder);                                
         try {
             retval = FileUtil.createFolder(rootFo,relativePath);        
