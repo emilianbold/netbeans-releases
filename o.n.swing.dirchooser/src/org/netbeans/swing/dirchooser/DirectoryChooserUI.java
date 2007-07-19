@@ -971,8 +971,13 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void updateTree(final File file) {
         // fixed bug #97522
-        if(updateWorker != null && !updateWorker.isFinished()) {
-            updateWorker.cancel();
+        if(updateWorker != null) {
+            // try to cancel previous update if possible
+            if (!updateWorker.isFinished()) {
+                updateWorker.cancel();
+            }
+            // #105642 - wait for previous update, to keep time order
+            updateWorker.waitFinished();
         }
         
         updateWorker = RequestProcessor.getDefault().post(new Runnable() {
