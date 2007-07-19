@@ -19,30 +19,15 @@
 
 package org.netbeans.modules.ruby.javaint;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.table.DefaultTableModel;
-//import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
-//import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
-//import org.netbeans.api.java.platform.PlatformsCustomizer;
-//import org.netbeans.api.java.platform.Specification;
-//import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-//import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
-//import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-//import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 
-/** Customizer for general project attributes.
+/** 
+ * Customizer for general project attributes.
  *
  * @author  phrebejk
  */
@@ -173,7 +158,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(includeJavaCheckbox, "Include Java");
+        org.openide.awt.Mnemonics.setLocalizedText(includeJavaCheckbox, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "IncludeJava")); // NOI18N
         includeJavaCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
