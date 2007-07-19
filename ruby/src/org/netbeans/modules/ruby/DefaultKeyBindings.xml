@@ -28,7 +28,5 @@ copy of this file in ide/applemenu. Check whether I need to do something there!
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="goto-help" key="O-F1"/>
     <bind actionName="goto-declaration" key="O-G"/>
-    <bind actionName="select-element-next" key="OS-UP"/>
-    <bind actionName="select-element-previous" key="OS-DOWN"/>
     <bind actionName="ruby-goto-test" key="OS-E"/>
 </bindings>
