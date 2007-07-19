@@ -33,6 +33,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
@@ -90,7 +91,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
 
     // -----
 
-    private static class SaveListener implements ActionListener {
+    private static class SaveListener implements ActionListener, Runnable {
 
         private Project project;
         private ProjectCustomizerPanel panel;
@@ -100,6 +101,10 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         }
 
         public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(this);
+        }
+
+        public void run() {
             DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
             // read properties from the common Application category panel
             // and store them to the application properties file
@@ -130,6 +135,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
                     }
                 }
             }
+            resMap.save();
         }
 
         private static void storeValue(String key, String value, DesignResourceMap resMap) {
