@@ -19,20 +19,9 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
@@ -56,6 +45,10 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**

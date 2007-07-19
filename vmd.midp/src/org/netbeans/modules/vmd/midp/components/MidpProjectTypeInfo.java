@@ -33,7 +33,7 @@ public class MidpProjectTypeInfo extends ProjectTypeInfo {
     }
 
     public String getIconResource () {
-        return "org/netbeans/modules/vmd/midp/resources/design.gif"; // NOI18N
+        return "org/netbeans/modules/vmd/midp/resources/design.png"; // NOI18N
     }
 
     public TypeID getRootCDTypeID () {

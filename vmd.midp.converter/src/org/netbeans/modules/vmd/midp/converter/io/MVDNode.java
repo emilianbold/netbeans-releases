@@ -33,7 +33,7 @@ import javax.swing.*;
  */
 public final class MVDNode extends FilterNode {
 
-    private static final String ICON_RESOURCE = "org/netbeans/modules/vmd/midp/converter/resources/design.gif"; // NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/vmd/midp/converter/resources/design.png"; // NOI18N
 
     public MVDNode (MVDDataObject dataObject) {
         super (JavaDataSupport.createJavaNode (dataObject.getPrimaryFile ()));
