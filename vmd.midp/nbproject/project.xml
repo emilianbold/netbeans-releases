@@ -379,6 +379,7 @@
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.element</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.eventhandler</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.imagechooser</package>
+                <package>org.netbeans.modules.vmd.midp.propertyeditors.resource.elements</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.timezone</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.usercode</package>
                 <package>org.netbeans.modules.vmd.midp.screen</package>
