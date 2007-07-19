@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -47,7 +46,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorColorChooser;
@@ -116,9 +114,9 @@ public final class LoginScreenCD extends ComponentDescriptor {
                    .addProperty("Username Label", PropertyEditorString.createInstance(), PROP_USERNAME_LABEL)
                    .addProperty("Password Label", PropertyEditorString.createInstance(), PROP_PASSWORD_LABEL)
                    .addProperty("Use Login Button", PropertyEditorBooleanUC.createInstance(false), PROP_USE_LOGIN_BUTTON)
-                   .addProperty("Login Title", PropertyEditorString.createInstance(), PROP_LOGIN_TITLE);
-
-                   
+                   .addProperty("Login Title", PropertyEditorString.createInstance(), PROP_LOGIN_TITLE)
+                   .addProperty("Background Color", new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
+                   .addProperty("Foreground Color", new PropertyEditorColorChooser(true), PROP_FRG_COLOR);
     }
     
     private Presenter createSetterPresenter () {
