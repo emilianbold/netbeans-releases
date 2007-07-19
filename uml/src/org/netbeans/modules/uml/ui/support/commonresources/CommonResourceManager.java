@@ -93,12 +93,16 @@ public class CommonResourceManager implements ICommonResourceManager
       m_ElementNameIconMap.put("ActivityPartition", RESOURCE_BUNDLE.getString("IDI_ACTIVITYPARTITION"));
       m_ElementNameIconMap.put("Actor", RESOURCE_BUNDLE.getString("IDI_ACTOR"));
       m_ElementNameIconMap.put("Aggregation", RESOURCE_BUNDLE.getString("IDI_AGGREGATION"));
+      m_ElementNameIconMap.put("Navigable_Aggregation", RESOURCE_BUNDLE.getString("IDI_NAV_AGGREGATION"));
+      m_ElementNameIconMap.put("Composition", RESOURCE_BUNDLE.getString("IDI_COMPOSITION"));
+      m_ElementNameIconMap.put("Navigable_Composition", RESOURCE_BUNDLE.getString("IDI_NAV_COMPOSITION"));
       m_ElementNameIconMap.put("AliasedType", RESOURCE_BUNDLE.getString("IDI_ALIASEDTYPE"));
       m_ElementNameIconMap.put("Argument", RESOURCE_BUNDLE.getString("IDI_ARGUMENT"));
       m_ElementNameIconMap.put("Artifact", RESOURCE_BUNDLE.getString("IDI_ARTIFACT"));
       m_ElementNameIconMap.put("AssemblyConnector", RESOURCE_BUNDLE.getString("IDI_ASSEMBLYCONNECTOR"));
       m_ElementNameIconMap.put("AssignmentAction", RESOURCE_BUNDLE.getString("IDI_ASSIGNMENTACTION"));
       m_ElementNameIconMap.put("Association", RESOURCE_BUNDLE.getString("IDI_ASSOCIATION"));
+      m_ElementNameIconMap.put("Navigable_Association", RESOURCE_BUNDLE.getString("IDI_NAV_ASSOCIATION"));
       m_ElementNameIconMap.put("AssociationClass", RESOURCE_BUNDLE.getString("IDI_ASSOCIATIONCLASS"));
       m_ElementNameIconMap.put("AssociationEnd", RESOURCE_BUNDLE.getString("IDI_ASSOCIATIONEND"));
       m_ElementNameIconMap.put("AtomicFragment", RESOURCE_BUNDLE.getString("IDI_ATOMICFRAGMENT"));
