@@ -22,8 +22,12 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-modules-ruby-hints">
         <folder name="rules">
             <folder name="hints">
-                <folder name="general">
+                <folder name="experimental">
+                    <attr name="position" intvalue="300"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.extrahints.Bundle"/>
+
                     <file name="org-netbeans-modules-ruby-extrahints-NestedLocal.instance"/>
+                    <!-- Add your rules here! -->
                 </folder>    
             </folder>    
         </folder>

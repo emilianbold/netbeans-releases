@@ -103,7 +103,7 @@ public class BlockVarReuse implements AstRule {
         }
     }
 
-    private class RenameVarFix implements Fix {
+    private static class RenameVarFix implements Fix {
 
         private CompilationInfo info;
 

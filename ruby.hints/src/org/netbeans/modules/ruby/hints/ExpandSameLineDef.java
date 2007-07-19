@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.ruby.hints;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -104,7 +105,10 @@ public class ExpandSameLineDef implements AstRule {
                     return;
                 }
             }
-            catch (Exception ex){
+            catch (BadLocationException ex){
+                Exceptions.printStackTrace(ex);
+            }
+            catch (IOException ex){
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -127,7 +131,7 @@ public class ExpandSameLineDef implements AstRule {
         return NbBundle.getMessage(ExpandSameLineDef.class, "ExpandLineDesc");
     }
 
-    private class ExpandLineFix implements Fix {
+    private static class ExpandLineFix implements Fix {
 
         private CompilationInfo info;
 

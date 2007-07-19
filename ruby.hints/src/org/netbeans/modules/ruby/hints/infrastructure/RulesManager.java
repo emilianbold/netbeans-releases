@@ -59,7 +59,7 @@ import org.openide.util.NbPreferences;
 public class RulesManager {
 
     // The logger
-    public static Logger LOG = Logger.getLogger("org.netbeans.modules.ruby.hints"); // NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.ruby.hints"); // NOI18N
 
     // Extensions of files
     private static final String INSTANCE_EXT = ".instance";
@@ -216,7 +216,7 @@ public class RulesManager {
             return rules;
         }
 
-        HashMap<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject,DefaultMutableTreeNode>();
+        //HashMap<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject,DefaultMutableTreeNode>();
 
         // XXX Probably not he best order
         Enumeration e = folder.getData( true );

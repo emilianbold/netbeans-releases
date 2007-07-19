@@ -71,7 +71,7 @@ public class HintsSettings {
     }
       
     public static boolean isShowInTaskList( Rule hint, Preferences preferences ) {
-        Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
+//        Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
 // XXX This is bogus        
 //        return preferences.getBoolean(IN_TASK_LIST_KEY, HINTS_ACCESSOR.isShowInTaskListDefault(hint));
         return true;

@@ -226,7 +226,7 @@ public class RubyHintsProvider implements HintsProvider {
         this.testSuggestions = testSuggestions;
     }
     
-    private class FixWrapper implements Fix {
+    private static class FixWrapper implements Fix {
         private org.netbeans.modules.ruby.hints.spi.Fix fix;
         
         FixWrapper(org.netbeans.modules.ruby.hints.spi.Fix fix) {

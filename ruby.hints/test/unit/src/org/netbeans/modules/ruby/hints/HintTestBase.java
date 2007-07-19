@@ -269,7 +269,7 @@ public abstract class HintTestBase extends RubyTestBase {
         return null;
     }
     
-    private class ComputedHints {
+    private static class ComputedHints {
         ComputedHints(CompilationInfo info, List<ErrorDescription> hints, int caretOffset) {
             this.info = info;
             this.hints = hints;

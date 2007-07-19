@@ -69,8 +69,12 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
         update();
           
-        errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );       
+        errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );
         
+        // Expand all
+        for(int lastRow = errorTree.getRowCount(); lastRow >= 0; --lastRow) {
+            errorTree.expandRow(lastRow);
+        }        
     }
     
     /** This method is called from within the constructor to
