@@ -764,8 +764,8 @@ public class CasualDiff {
         int[] bodyPos = getBounds(oldT.body);
         copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
-        
-        PositionEstimator est = EstimatorFactory.deprecated(((TryTree) oldT).getCatches(), ((TryTree) newT).getCatches(), workingCopy);
+        copyTo(localPointer, localPointer = bodyPos[1]);
+        PositionEstimator est = EstimatorFactory.deprecated(oldT.getCatches(), newT.getCatches(), workingCopy);
         localPointer = diffList(oldT.catchers, newT.catchers, localPointer, est, Measure.DEFAULT, printer);
         
         if (oldT.finalizer != null) {
