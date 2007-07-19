@@ -1237,7 +1237,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist,-package-tmp-war-without-manifest,-package-tmp-war-with-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,-package-tmp-war-without-manifest,-package-tmp-war-with-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
