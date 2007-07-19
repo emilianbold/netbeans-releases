@@ -219,10 +219,18 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	String options = ""; // NOI18N 
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB ) {
+            String libName = getOutputValue();
+            int sep = libName.lastIndexOf('/');
+            if (sep >= 0 && libName.length() > 1)
+                libName = libName.substring(sep+1);
+            // FIXUP: should be move to Platform...
             if (cs.isSunCompiler())
                 options += "-G "; // NOI18N
             else if (cs.isGnuCompiler() && (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL || getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC)) {
                 options += "-G "; // NOI18N
+            }
+            else if (cs.isGnuCompiler() && getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                options += "-dynamiclib -install_name " + libName + " "; // NOI18N
             }
             else if (cs.isGnuCompiler()) {
                 options += "-shared "; // NOI18N
@@ -232,8 +240,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
         }
 	options += getOutputOptions() + " "; // NOI18N
 	options += getStripOption().getOption() + " "; // NOI18N
-	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB && // FIXUP: should move to Platform
+	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB &&
                 cs.isSunCompiler()) {
+            // FIXUP: should move to Platform
 	    options += getKpicOption().getOption() + " "; // NOI18N
 	    options += getNorunpathOption().getOption() + " "; // NOI18N
 	    options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N

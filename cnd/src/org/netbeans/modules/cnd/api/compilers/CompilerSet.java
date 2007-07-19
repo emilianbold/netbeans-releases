@@ -203,7 +203,7 @@ public class CompilerSet {
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor(name));
         
         if (cs == null) {
-            if (name.startsWith("Sun")) {
+            if (name.startsWith("Sun")) { // NOI18N
                 cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun12);
                 if (cs == null) {
                     cs = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.Sun11);
@@ -492,7 +492,7 @@ public class CompilerSet {
                 return tool;
             }
         }
-        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], "");
+        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
     }
     
     /**
@@ -506,7 +506,7 @@ public class CompilerSet {
             if (tool.getKind() == kind)
                 return tool;
         }
-        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], "");
+        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
     }
     
     public boolean isValid() {

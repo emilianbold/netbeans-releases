@@ -934,7 +934,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 bundle.getString("LBL_Config_General"), // NOI18N
                 null,
                 item,
-                folder);
+                folder,
+		isCompilerConfiguration);
         CustomizerNode[] customizerNodes;
         if (isCompilerConfiguration && folder == null) {
             CustomizerNode clCustomizerNode = new CCompilerCommandLineNode("CCommandLine", getString("LBL_COMMAND_LINE"), null, item, folder); // NOI18N
@@ -952,11 +953,13 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     class CCompilerCustomizerNode extends CustomizerNode {
         private Item item;
         private Folder folder;
-        
-        public CCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder) {
+	private boolean isCompilerConfiguration;
+	
+        public CCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder, boolean isCompilerConfiguration) {
             super(name, displayName, children);
             this.item = item;
             this.folder = folder;
+	    this.isCompilerConfiguration = isCompilerConfiguration;
         }
         
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
@@ -970,7 +973,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
+            return new HelpCtx(isCompilerConfiguration ? "ProjectPropsCompiling" : "ProjectPropsParser"); // NOI18N
         }
     }
     
@@ -1011,7 +1014,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 bundle.getString("LBL_Config_General"), // NOI18N
                 null,
                 item,
-                folder);
+                folder,
+		isCompilerConfiguration);
         CustomizerNode[] customizerNodes;
         if (isCompilerConfiguration && folder == null) {
             CustomizerNode clCustomizerNode = new CCCompilerCommandLineNode("CCCommandLine", getString("LBL_COMMAND_LINE"), null, item, folder); // NOI18N
@@ -1029,11 +1033,13 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     class CCCompilerCustomizerNode extends CustomizerNode {
         private Item item;
         private Folder folder;
-        
-        public CCCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder) {
+	private boolean isCompilerConfiguration;
+	
+        public CCCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder, boolean isCompilerConfiguration) {
             super(name, displayName, children);
             this.item = item;
             this.folder = folder;
+	    this.isCompilerConfiguration = isCompilerConfiguration;
         }
         
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
@@ -1048,7 +1054,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
+            return new HelpCtx(isCompilerConfiguration ? "ProjectPropsCompiling" : "ProjectPropsParser"); // NOI18N
         }
     }
     
@@ -1104,7 +1110,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     class FortranCompilerCustomizerNode extends CustomizerNode {
         private Item item;
-        
+	
         public FortranCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item) {
             super(name, displayName, children);
             this.item = item;

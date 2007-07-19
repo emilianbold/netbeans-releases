@@ -157,7 +157,7 @@ public interface CallStackFrame {
     
     public abstract void addType(String key);
     
-    public abstract void addType(String key, String value);
+    public abstract void addType(String key, Object o);
     
     public abstract Object getType(String key);
 }

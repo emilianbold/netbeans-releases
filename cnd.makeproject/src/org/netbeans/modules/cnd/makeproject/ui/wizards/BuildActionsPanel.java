@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.MakefileFileFilter;
+import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
@@ -354,6 +354,10 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
             ElfStaticLibraryFileFilter.getInstance(),
             PeDynamicLibraryFileFilter.getInstance()};
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            filters = new FileFilter[] {MachOExecutableFileFilter.getInstance(),
+            ElfStaticLibraryFileFilter.getInstance(),
+            ElfDynamicLibraryFileFilter.getInstance()};
         } else {
             filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
             ElfStaticLibraryFileFilter.getInstance(),

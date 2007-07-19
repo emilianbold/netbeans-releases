@@ -125,7 +125,7 @@ public class CsmContext {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append("\nlast element is " + csmLastObject);
+        buf.append("\nlast element is " + csmLastObject); // NOI18N
         buf.append("\ncontext for offset ").append(offset); //NOI18N
         if (isEmpty()) {
             buf.append(" empty"); //NOI18N

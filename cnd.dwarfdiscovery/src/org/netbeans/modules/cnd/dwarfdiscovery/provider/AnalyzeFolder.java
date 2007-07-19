@@ -186,10 +186,10 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 for (int i = 0; i < ff.length; i++) {
                     if (ff[i].isFile()) {
                         String name = ff[i].getName();
-                        if (name.endsWith(".o") ||
-                            name.endsWith(".so") ||
-                            name.endsWith(".a") ||
-                            isExecutable(ff[i])){ // NOI18N
+                        if (name.endsWith(".o") ||  // NOI18N
+                            name.endsWith(".so") ||  // NOI18N
+                            name.endsWith(".a") ||  // NOI18N
+                            isExecutable(ff[i])){
                             String path = ff[i].getAbsolutePath();
                             if (Utilities.isWindows()) {
                                 path = path.replace('\\', '/');
@@ -206,7 +206,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     private boolean isExecutable(File file){
         String name = file.getName();
         if (Utilities.isWindows()) {
-            return name.endsWith(".exe") || name.endsWith(".dll");
+            return name.endsWith(".exe") || name.endsWith(".dll");  // NOI18N
         } else if (Utilities.isUnix()){
             // FIXUP: There are no way to detect "executable".
             return name.indexOf('.') < 0;

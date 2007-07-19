@@ -2069,7 +2069,7 @@ public class Term extends JComponent implements Accessible {
 
     void fireSelectionExtentChanged() {
 	Extent new_extent = getSelectionExtent();
-	firePropertyChange("selectionExtent", old_extent, new_extent);
+	firePropertyChange("selectionExtent", old_extent, new_extent); // NOI18N
 	old_extent = new_extent;
     }
 

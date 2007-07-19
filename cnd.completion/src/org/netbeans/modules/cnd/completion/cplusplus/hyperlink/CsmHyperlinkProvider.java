@@ -98,7 +98,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 // else it is more useful to jump to definition of function
                 CsmFunctionDefinition definition = ((CsmFunction)csmObject).getDefinition();
                 if (definition != null) {
-                    if (csmFile == definition.getContainingFile() &&
+                    if (csmFile.equals(definition.getContainingFile()) &&
                             (definition.getStartOffset() <= offset &&
                             offset <= definition.getBody().getStartOffset())
                             ) {
@@ -115,7 +115,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 }
             }else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
                 CsmFunctionDefinition definition = (CsmFunctionDefinition)csmObject;
-                if (csmFile == definition.getContainingFile() &&
+                if (csmFile.equals(definition.getContainingFile()) &&
                         (definition.getStartOffset() <= offset &&
                         offset <= definition.getBody().getStartOffset())
                         ) {

@@ -65,7 +65,7 @@ public class FriendTestCase extends TraceModelTestBase {
         assertTrue("File not found "+testFile.getAbsolutePath(),testFile.exists());
         performModelTest(testFile, System.out, System.err);
         checkFriend();
-        for(FileImpl file : getProject().getAllFiles()){
+        for(FileImpl file : getProject().getAllFileImpls()){
             file.stateChanged(true);
             file.scheduleParsing(true);
         }

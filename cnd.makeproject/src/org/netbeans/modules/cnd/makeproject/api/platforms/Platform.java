@@ -29,7 +29,8 @@ public abstract class Platform {
     public static final int PLATFORM_SOLARIS_INTEL = 1;
     public static final int PLATFORM_LINUX = 2;
     public static final int PLATFORM_WINDOWS = 3;
-    public static final int PLATFORM_GENERIC = 4;
+    public static final int PLATFORM_MACOSX = 4;
+    public static final int PLATFORM_GENERIC = 5;
     
     private static int defaultPlatform = -1;
     
@@ -80,6 +81,8 @@ public abstract class Platform {
                 defaultPlatform = Platform.PLATFORM_SOLARIS_INTEL;
             else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
                 defaultPlatform = Platform.PLATFORM_SOLARIS_SPARC;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_MAC)
+                defaultPlatform = Platform.PLATFORM_MACOSX;
             else 
                 defaultPlatform = Platform.PLATFORM_GENERIC;
         }

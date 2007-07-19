@@ -100,7 +100,7 @@ public final class LibProjectImpl extends ProjectBase {
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(FileImpl base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+    public FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         if( ONLY_LEX_SYS_INCLUDES ) {
             return super.onFileIncluded(base, file, preprocHandler, GATHERING_MACROS);
         } else {

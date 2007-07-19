@@ -66,18 +66,18 @@ public class HybridRepository implements Repository {
         }
     }
     
+    public final Persistent tryGet(Key key) {
+	Object value  = cache.get(key);
+	if (value instanceof Persistent) {
+	    return (Persistent)value;
+	} else if (value instanceof SoftReference ) {
+	    return ((SoftReference<Persistent>)value).get();
+	}
+	return null;
+    }
+    
     public Persistent get(Key key) {
-        Object value  = cache.get(key);
-        Persistent data = null;
-        
-        if (value != null) {
-            if (value instanceof Persistent) {
-                data = (Persistent)value;
-            } else if (value instanceof SoftReference ) {
-                data = ((SoftReference<Persistent>)value).get();
-            }
-        }
-        
+        Persistent data = tryGet(key);
         if (data == null) {
             data = diskRepository.get(key);
             

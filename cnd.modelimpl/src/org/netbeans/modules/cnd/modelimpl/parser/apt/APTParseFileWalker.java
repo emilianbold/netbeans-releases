@@ -50,7 +50,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     
     private boolean createMacroAndIncludes;
     
-    public APTParseFileWalker(FileImpl base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
+    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
         super(base, apt, file, preprocHandler);
         this.createMacroAndIncludes = false;
     }
@@ -98,7 +98,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     
     protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException {
         try {
-            return inclFileOwner.onFileIncluded(getStartFile(), inclPath, getPreprocHandler(), mode);
+            return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
         } finally {

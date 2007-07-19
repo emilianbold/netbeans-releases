@@ -229,12 +229,16 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         return manager;
     }
     
-    public void projectOpened(CsmProject project) {
+    public void projectOpened(final CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT OPENED " + project); // NOI18N
-        if (model != null) {
-            model.openProject(project);
-            setupRootContext(model.getRoot());
-        }
+	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    public void run() {
+		if (model != null) {
+		    model.openProject(project);
+		    setupRootContext(model.getRoot());
+		}
+	    }
+	}, "Class View: creating project node"); // NOI18N
     }
     
     public void projectClosed(CsmProject project) {

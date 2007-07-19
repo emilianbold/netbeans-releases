@@ -24,7 +24,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
@@ -32,6 +31,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -326,6 +326,10 @@ public class MakefileConfiguration {
                 addChoosableFileFilter(PeExecutableFileFilter.getInstance());
                 addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
                 addChoosableFileFilter(PeDynamicLibraryFileFilter.getInstance());
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                addChoosableFileFilter(MachOExecutableFileFilter.getInstance());
+                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
+                addChoosableFileFilter(ElfDynamicLibraryFileFilter.getInstance());
             } else {
                 addChoosableFileFilter(ElfExecutableFileFilter.getInstance());
                 addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());

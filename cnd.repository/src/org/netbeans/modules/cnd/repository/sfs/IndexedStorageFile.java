@@ -56,8 +56,8 @@ class IndexedStorageFile extends FileStorage {
     private long usedSize;
     
     public IndexedStorageFile(final File basePath, final String name, final boolean create ) throws IOException {
-        dataFile =  new File(basePath, name + "-data");
-        indexFile = new File(basePath, name + "-index");
+        dataFile =  new File(basePath, name + "-data"); // NOI18N
+        indexFile = new File(basePath, name + "-index"); // NOI18N
         fileStatistics = new FileStatistics();
         boolean filesExists = (dataFile.exists() && indexFile.exists());
         fileRWAccess = createFileRWAccess(dataFile);

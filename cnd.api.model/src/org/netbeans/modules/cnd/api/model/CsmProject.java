@@ -30,8 +30,8 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
     CsmNamespace getGlobalNamespace();
     
     /*
-     * Waits until the each project of the file is parsed.
-     * If the file is already parsed, immediately returns.
+     * Waits until each file of the project is parsed.
+     * If all files file are already parsed, immediately returns.
      */
     void waitParse();
     
@@ -42,7 +42,7 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      * Finds namespace by its qualified name
      *
      * TODO: what if different projects contain namespaces with equal FQN?
-     * Now we assume that these namespaces are represented via different instances...
+     * Now we assume that these namespaces are represented via different instances.
      * Probably this is not correct
      */
     CsmNamespace findNamespace( String qualifiedName );
@@ -76,6 +76,11 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      * Gets the collection of heaher project files.
      */
     Collection<CsmFile> getHeaderFiles();
+    
+    /**
+     * Gets the collection of all (source and heaher) project files.
+     */
+    Collection<CsmFile> getAllFiles();
     
     /**
      * Gets the collection of libraries of the project.

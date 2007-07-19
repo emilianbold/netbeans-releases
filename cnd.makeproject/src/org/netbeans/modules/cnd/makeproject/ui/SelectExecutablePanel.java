@@ -31,6 +31,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -42,6 +43,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private JList exeList;
     private FileFilter elfExecutableFileFilter = ElfExecutableFileFilter.getInstance();
     private FileFilter exeExecutableFileFilter = PeExecutableFileFilter.getInstance();
+    private FileFilter machOExecutableFileFilter = MachOExecutableFileFilter.getInstance();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
@@ -106,7 +108,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             errorText = getString("NO_EXE_ERROR");
         else if (!exe.exists())
             errorText = getString("EXE_DOESNT_EXISTS");
-        else if (exe.isDirectory() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe)))
+        else if (exe.isDirectory() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe)))
             errorText = getString("FILE_NOT_AN_EXECUTABLE");
         if (errorText != null) {
             errorLabel.setText(errorText);
@@ -146,6 +148,10 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                     continue;
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                     if (exeExecutableFileFilter.accept(files[i]))
+                        filesAdded.add(files[i].getPath());
+                }
+                else if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+                    if (machOExecutableFileFilter.accept(files[i]))
                         filesAdded.add(files[i].getPath());
                 }
                 else {
@@ -270,6 +276,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         FileFilter[] filters;
         if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance()};
+        } if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
+            filters = new FileFilter[] {MachOExecutableFileFilter.getInstance()};
         } else {
             filters = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
         }

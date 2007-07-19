@@ -48,10 +48,12 @@ import org.openide.util.Utilities;
  */
 public class GdbProxyEngine {
     
+    private static final int MIN_TOKEN = 100;
+    
     private PrintStream toGdb;
     private GdbDebuggerImpl debugger;
     private GdbProxy gdbProxy;
-    private int nextToken = 100;
+    private int nextToken = MIN_TOKEN;
     
     private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
@@ -64,14 +66,14 @@ public class GdbProxyEngine {
      * @param stepIntoProject - a flag to stop at first source line
      */
     public GdbProxyEngine(GdbDebuggerImpl debugger, GdbProxy gdbProxy, List debuggerCommand,
-                    String[] debuggerEnvironment, String workingDirectory) throws IOException {
+                    String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
         
-        if (Utilities.isUnix()) {
-            String xterm = gdbProxy.getXTERMvalue(debuggerEnvironment);
-            String externalTerminal = gdbProxy.openExternalProgramIOWindow(this, xterm, debuggerEnvironment);
-            if (externalTerminal != null) {
+        if (Utilities.isUnix() && termpath != null) {
+            ExternalTerminal eterm = new ExternalTerminal(debugger, termpath);
+            String tty = eterm.getTty();
+            if (tty != null) {
                 debuggerCommand.add("-tty"); // NOI18N
-                debuggerCommand.add(externalTerminal);
+                debuggerCommand.add(tty);
             }
         }
         this.debugger = debugger;
@@ -199,7 +201,7 @@ public class GdbProxyEngine {
                 break;
                 
             case '~': // console-stream-output
-                debugger.consoleStreamOutput(msg.substring(2, msg.length() - 1));
+                debugger.consoleStreamOutput(token, msg.substring(2, msg.length() - 1));
                 break;
                 
             case '@': // target-stream-output

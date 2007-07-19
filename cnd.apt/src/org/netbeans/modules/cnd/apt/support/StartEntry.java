@@ -32,8 +32,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Alexander Simon
  */
-public class StartEntry implements Persistent, SelfPersistent{
+public final class StartEntry implements Persistent, SelfPersistent{
     private String startFile;
+    //private boolean isCPP; // TODO: flag to be used for understanding C/C++ lang
     private Key startFileProject;
     public StartEntry(String startFile, Key startFileProject) {
         this.startFile = FilePathCache.getString(startFile);

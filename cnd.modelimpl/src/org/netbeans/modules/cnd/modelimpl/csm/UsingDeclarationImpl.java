@@ -56,6 +56,10 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     }
     
     public CsmDeclaration getReferencedDeclaration() {
+        return getReferencedDeclaration(null);
+    }   
+
+    public CsmDeclaration getReferencedDeclaration(Resolver resolver) {
         // TODO: process preceding aliases
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
@@ -68,7 +72,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                 // resolve all before last ::
                 String[] partial = new String[rawName.length - 1];
                 System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset).resolve(partial);
+                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.NAMESPACE);
                 if (CsmKindUtilities.isNamespace(result)) {
                     String lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
@@ -88,7 +92,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
             _setReferencedDeclaration(referencedDeclaration);                
         }
         return referencedDeclaration;
-    }   
+    }
     
     private CsmDeclaration _getReferencedDeclaration() {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {

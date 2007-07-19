@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -36,7 +35,7 @@ public class GdbVariable {
     
     private String name;
     private String type;
-    private String realtype;
+    private Object realtype;
     private String value;
     private String derefValue;
     private List<GdbVariable> children;
@@ -65,12 +64,24 @@ public class GdbVariable {
         this.type = type;
     }
     
-    public String getRealType() {
+    public Object getRealType() {
+        if (realtype == null) {
+            if (GdbUtils.isSimple(type) || GdbUtils.isSimplePointer(type)) {
+                realtype = type;
+            } else {
+                CallStackFrame csf = getDebugger().getCurrentCallStackFrame();
+                if (csf != null && type != null) { // csf can be null if we're processing a response after killing the session
+                    if (type.endsWith("{...}")) { // NOI18N - Anonymous struct/union/type
+                        realtype = csf.getType('$' + name);
+                    } else if (type.endsWith("]")) { // NOI18N
+                        realtype = type;
+                    } else {
+                        realtype = csf.getType(getDebugger().trimKey(type));
+                    }
+                }
+            }
+        }
         return realtype;
-    }
-    
-    public void setRealType(String realtype) {
-        this.realtype = realtype;
     }
     
     public String getValue() {
@@ -83,33 +94,28 @@ public class GdbVariable {
     
     public void setDerefedValue(String derefValue) {
         this.derefValue = derefValue;
-        if (type.indexOf('[') != -1) {
-            parseArray(this, derefValue.substring(1, derefValue.length() - 1));
-        } else if (derefValue.charAt(0) == '{') {
-            String type = getRealType();
-            if (type.indexOf("struct") != -1 || type.indexOf("class") != -1) { // NOI18N
-                parseStructOrUnion(getTypeMap(), derefValue.substring(1, derefValue.length() - 1));
-            }
-        }
-    }
-    
-    private Map getTypeMap() {
-        Object o = getDebugger().getCurrentCallStackFrame().getType(realtype);
-        if (o instanceof Map) {
-            return (Map) o;
-        } else {
-            return null;
-        }
     }
     
     public List<GdbVariable> getChildren() {
-        if (children.size() == 0) {
-            if (GdbUtils.isArray(realtype)) {
-                parseArray(this, value.substring(1, value.length() - 1));
-            } else if (GdbUtils.isStructOrUnion(realtype)) {
-                parseStructOrUnion(getTypeMap(), value.substring(1, value.length() - 1));
-            } else if (GdbUtils.isClass(realtype)) {
-                parseClass(getTypeMap(), value.substring(1, value.length() - 1));
+        if (children.size() == 0 && !Thread.currentThread().getName().equals("GdbReaderRP")) {
+            if (getRealType() != null) {
+                if (!GdbUtils.isFunctionPointer(getRealType()) || GdbUtils.isArray(getRealType())) {
+                    if (GdbUtils.isArray(getRealType())) {
+                        parseArray(this, value.substring(1, value.length() - 1));
+                    } else if (GdbUtils.isStructOrUnion(getRealType())) {
+                        if (value.charAt(0) == '{') {
+                            parseStructUnionClass(value.substring(1, value.length() - 1));
+                        } else if (value.charAt(0) == '(' && derefValue != null) {
+                            // derefValue can be null if we're dereferencing an unititialized variable
+                            parseStructUnionClass(derefValue.substring(1, derefValue.length() - 1));
+                        }
+                    } else if (GdbUtils.isClass(getRealType())) {
+                        parseStructUnionClass(value.substring(1, value.length() - 1));
+                    }
+                    for (GdbVariable child : children) {
+                        child.children = child.getChildren();
+                    }
+                }
             }
         }
         return children;
@@ -125,16 +131,17 @@ public class GdbVariable {
         int size = 0;
         String c_type = "";// NOI18N
         int pos2;
-        int size2 = 0;
+        int size2 = -1;
         GdbVariable child;
+        String rt = (String) var.getRealType();
         
         try {
-            pos = var.type.indexOf('[');
-            size = Integer.valueOf(var.type.substring(pos + 1, var.type.indexOf(']')));
-            c_type = var.type.substring(0, pos).trim();
-            pos2 = var.type.indexOf('[', pos + 1);
+            pos = rt.indexOf('[');
+            size = Integer.valueOf(rt.substring(pos + 1, rt.indexOf(']')));
+            c_type = rt.substring(0, pos).trim();
+            pos2 = rt.indexOf('[', pos + 1);
             if (pos2 != -1) {
-                size2 = Integer.valueOf(var.type.substring(pos2 + 1, var.type.indexOf(']', pos2)));
+                size2 = Integer.valueOf(rt.substring(pos2 + 1, rt.indexOf(']', pos2)));
             }
         } catch (Exception ex) {
         }
@@ -143,9 +150,13 @@ public class GdbVariable {
             var.children.add(child);
             if (info.charAt(start) == '{') {
                 pos = GdbUtils.findMatchingCurly(info, start);
-                child.type = c_type + "[" + size2 + "]"; // NOI18N
                 child.value = info.substring(start, pos);
-                parseArray(child, child.value.substring(1, child.value.length() - 1));
+                if (size2 != -1) {
+                    child.type = c_type + "[" + size2 + "]"; // NOI18N
+                    parseArray(child, child.value.substring(1, child.value.length() - 1));
+                } else {
+                    child.type = c_type;
+                }
                 start = GdbUtils.firstNonWhite(info, pos + 1);
             } else {
                 pos = GdbUtils.findNextComma(info, start);
@@ -160,16 +171,24 @@ public class GdbVariable {
         }
     }
     
-    private void parseStructOrUnion(Map map, String info) {
+    private void parseStructUnionClass(String info) {
+        Map<String, Object> map = (Map) getRealType();
         int start = 0;
         int pos;
         String name;
-        String type;
+        String type = null;
         String value; 
         
         children.clear();
         while (start != -1 && (pos = info.indexOf('=', start)) != -1) {
             name = info.substring(start, pos - 1);
+            if (name.startsWith("static ")) { // NOI18N
+                name = name.substring(7).trim();
+            } else if (name.startsWith("const ")) { // NOI18N
+                name = name.substring(6).trim();
+            } else if (name.startsWith("mutable ")) { // NOI18N
+                name = name.substring(8).trim();
+            }
             start = GdbUtils.firstNonWhite(info, pos + 1);
             if (info.charAt(start) == '{') {
                 pos = GdbUtils.findMatchingCurly(info, start);
@@ -187,51 +206,21 @@ public class GdbVariable {
                 }
             }
 
-            Object o;
-            if (map != null && (o = map.get(name)) != null && o instanceof String) {
-                type = (String) o;
-            } else {
-                type = "";
+            Object o = map.get(name);
+            if (o instanceof String) {
+                type = o.toString();
+                getDebugger().addTypeCompletion(type);
+            } else if (name.charAt(0) == '<' && name.charAt(name.length() - 1) == '>') {
+                String superclass = name.substring(1, name.length() - 1);
+                getDebugger().addTypeCompletion(superclass);
+                name = "super"; // NOI18N
+                type = "class " + superclass; // NOI18N
+            } else if (name.startsWith("_vptr$")) { // NOI18N
+                name = null; // skip this - its not a real field
             }
-            children.add(new GdbVariable(name, type, value));
-            start = GdbUtils.firstNonWhite(info, start + value.length() + 1);
-        }
-    }
-    
-    private void parseClass(Map map, String info) {
-        int start = 0;
-        int pos;
-        String name;
-        String type;
-        String value; 
-        
-        children.clear();
-        while (start != -1 && (pos = info.indexOf('=', start)) != -1) {
-            name = info.substring(start, pos - 1);
-            start = GdbUtils.firstNonWhite(info, pos + 1);
-            if (info.charAt(start) == '{') {
-                pos = GdbUtils.findMatchingCurly(info, start);
-                if (pos == -1) {
-                    value = info.substring(start); // mis-formed string...
-                } else {
-                    value = info.substring(start, pos);
-                }
-            } else {
-                pos = GdbUtils.findNextComma(info, start);
-                if (pos == -1) {
-                    value = info.substring(start);
-                } else {
-                    value = info.substring(start, pos - 1);
-                }
+            if (name != null) {
+                children.add(new GdbVariable(name, type, value));
             }
-
-            Object o;
-            if (map != null && (o = map.get(name)) != null && o instanceof String) {
-                type = (String) o;
-            } else {
-                type = "";
-            }
-            children.add(new GdbVariable(name, type, value));
             start = GdbUtils.firstNonWhite(info, start + value.length() + 1);
         }
     }

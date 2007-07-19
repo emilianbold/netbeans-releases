@@ -52,6 +52,10 @@ public class HashMapRepository implements Repository {
         return map.get(key);
     }
 
+    public Persistent tryGet(Key key) {
+	return map.get(key);
+    }
+    
     public void remove(Key key) {
         map.remove(key);
     }

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -55,14 +54,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
  * @author Vladimir Voskresensky
  */
 public class FileElementsCollector {
-    private CsmFile destFile;
+    private final CsmFile destFile;
     private int destOffset;
-    private CsmProject onlyInProject;
+    private final CsmProject onlyInProject;
     
     private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
     
-    private ProjectBase project;
-    private FileElementsCollector parentResolver;
+    private final ProjectBase project;
     
 //    public FileElementsCollector(CsmOffsetable offsetable) {
 //        this(offsetable.getContainingFile(), offsetable.getStartOffset(), null);
@@ -72,6 +70,7 @@ public class FileElementsCollector {
         this.destFile = file;
         this.project = (ProjectBase) file.getProject();
         this.destOffset = offset;
+        this.onlyInProject = onlyInProject;
     }
     
     //private CsmNamespace currentNamespace;
@@ -244,16 +243,6 @@ public class FileElementsCollector {
     }
     
     private CsmFunction getFunctionDeclaration(CsmFunctionDefinition fd){
-        if (fd instanceof FunctionDefinitionImpl) {
-            FileElementsCollector parent = parentResolver;
-            while(parent != null) {
-                if (parent.destOffset == destOffset && parent.destFile == destFile) {
-                    return null;
-                }
-                parent = parent.parentResolver;
-            }
-// FIXUP?            return ((FunctionDefinitionImpl)fd).getDeclaration(this);
-        }
         return fd.getDeclaration();
     }
     
@@ -292,8 +281,8 @@ public class FileElementsCollector {
         }
         visitedFiles.add(file);
         
-        for (Iterator iter = file.getIncludes().iterator(); iter.hasNext();) {
-            CsmInclude inc = (CsmInclude) iter.next();
+        for (Iterator<CsmInclude> iter = file.getIncludes().iterator(); iter.hasNext();) {
+            CsmInclude inc = iter.next();
             // check that include is above the end offset
             if (inc.getEndOffset() < this.destOffset) {
                 CsmFile incFile = inc.getIncludeFile();

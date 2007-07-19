@@ -61,7 +61,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText()) // NOI18N
-               + "', tokenID=" + this.token.getTokenID() 
+               + "', tokenID=" + this.token.getTokenID() // NOI18N
                + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
     }    
 }

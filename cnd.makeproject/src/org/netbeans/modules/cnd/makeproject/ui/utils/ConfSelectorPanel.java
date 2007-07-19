@@ -76,9 +76,9 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         if (actionButtons != null) {
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 2;
+            gridBagConstraints.gridy = 0;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+            gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
             for (int i = 0; i < actionButtons.length; i++) {
                 gridBagConstraints.gridy++;
                 buttonPanel.add(actionButtons[i], gridBagConstraints);
@@ -211,7 +211,10 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         buttonPanel.add(selectAllButton, gridBagConstraints);
 
         deselectAllButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("DESELECT_ALL_BUTTON_MN").charAt(0));
@@ -224,9 +227,8 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         buttonPanel.add(deselectAllButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

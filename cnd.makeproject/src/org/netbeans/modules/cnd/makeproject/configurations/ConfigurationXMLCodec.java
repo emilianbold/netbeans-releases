@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.Stack;
 import java.util.Vector;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -41,13 +40,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 
 /**
@@ -279,6 +277,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ((MakeConfiguration) currentConf).getFortranRequired().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
+            if (descriptorVersion <= 37 && set == 4) {
+                set = Platform.PLATFORM_GENERIC;
+            }
             ((MakeConfiguration)currentConf).getPlatform().setValue(set);
         } else if (element.equals(DEPENDENCY_CHECKING)) {
             boolean ds = currentText.equals(TRUE_VALUE);

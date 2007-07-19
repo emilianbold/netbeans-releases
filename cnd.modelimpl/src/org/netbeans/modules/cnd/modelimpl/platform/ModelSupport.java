@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -117,14 +118,14 @@ public class ModelSupport implements PropertyChangeListener {
         this.model = model;
         
         openedProjects = new HashSet();
-        if (TRACE_STARTUP) System.out.println("Model support: Inited");
+        if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 
         if (TopComponent.getRegistry().getOpened().size() > 0){
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init");
+            if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init"); // NOI18N
             postponeParse = false;
             openProjects();
         } else {
-            if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects");
+            if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects"); // NOI18N
             postponeParse = true;
         }
         
@@ -136,10 +137,10 @@ public class ModelSupport implements PropertyChangeListener {
 	try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
 	    if (TRACE_STARTUP) System.out.println("Model support event:"+evt.getPropertyName());
 	    if(!postponeParse  && evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
-		if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS");
+		if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
 		openProjects();
 	    } else if (postponeParse && evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
-		if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED");
+		if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED"); // NOI18N
 		postponeParse = false;
 		TopComponent.getRegistry().removePropertyChangeListener(this);
 		RequestProcessor.getDefault().post(new Runnable(){
@@ -219,16 +220,27 @@ public class ModelSupport implements PropertyChangeListener {
             onProjectItemChanged(fileItem);
         }
         
-        public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
-            for (List<NativeFileItem> list : divideByProjects(fileItems)){
-                onProjectItemChanged(list);
-            }
+        public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
+	    // FIXUP for #109425
+	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+		public void run() {
+		    for (List<NativeFileItem> list : divideByProjects(fileItems)){
+			onProjectItemChanged(list);
+		    }
+		}
+	    }, "Applying property changes"); // NOI18N
+	    
         }
         
         public void filesPropertiesChanged() {
-            for(NativeProject project : getNativeProjects()){
-                filesPropertiesChanged(project.getAllSourceFiles());
-            }
+	    // FIXUP for #109425
+	    CsmModelAccessor.getModel().enqueue(new Runnable() {
+		public void run() {
+		    for(NativeProject project : getNativeProjects()){
+			filesPropertiesChanged(project.getAllSourceFiles());
+		    }
+		}
+	    }, "Applying property changes"); // NOI18N
         }
 	
 	public void projectDeleted(NativeProject nativeProject) {

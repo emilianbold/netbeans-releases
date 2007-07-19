@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -50,7 +51,7 @@ abstract class ProjectComponent implements Persistent, SelfPersistent {
     
     public ProjectComponent(DataInput in) throws IOException {
 	key = KeyFactory.getDefaultFactory().readKey(in);
-	//System.err.printf("<<< Reading %s key %s\n", this, key);
+	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("< ProjectComponent: Reading %s key %s\n", this, key);
     }
     
     public Key getKey() {
@@ -58,12 +59,17 @@ abstract class ProjectComponent implements Persistent, SelfPersistent {
     }
     
     public void put() {
-	//System.err.printf(">>> Putting %s by key %s\n", this, key);
+	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Hanging %s by key %s\n", this, key);
+	RepositoryUtils.hang(key, this);
+    }
+
+    private void putImpl() {
+	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Putting %s by key %s\n", this, key);
 	RepositoryUtils.put(key, this);
     }
     
     public void write(DataOutput out) throws IOException {
-	//System.err.printf(">>> Writing %s by key %s\n", this, key);
+	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);
 	writeKey(key, out);
     }
     
@@ -73,6 +79,15 @@ abstract class ProjectComponent implements Persistent, SelfPersistent {
     
     public static void writeKey(Key key, DataOutput out) throws IOException {
 	KeyFactory.getDefaultFactory().writeKey(key, out);
+    }
+    
+    public static void setStable(Key key) {
+	Persistent p = RepositoryUtils.tryGet(key);
+	if( p != null ) {
+	    assert p instanceof  ProjectComponent;
+	    ProjectComponent pc = (ProjectComponent) p;
+	    pc.putImpl();
+	}
     }
 }
 

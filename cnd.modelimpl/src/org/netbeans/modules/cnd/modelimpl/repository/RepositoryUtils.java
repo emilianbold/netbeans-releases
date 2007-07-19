@@ -63,6 +63,15 @@ public class RepositoryUtils {
         return (T)out;
     }
     
+    public static Persistent tryGet(Key key) {
+	assert key != null;
+	Persistent out = RepositoryAccessor.getRepository().tryGet(key);
+	if (TRACE_REPOSITORY_ACCESS) {
+	    System.err.printf("%d:trying key %s got %s", nextIndex(), key, out);
+	}
+	return out;
+    }
+    
     public static Persistent get(Key key) {
         assert key != null;
         long time = 0;
@@ -147,21 +156,25 @@ public class RepositoryUtils {
             uid = csmObj.getUID();
             assert uid != null;
             Key key = UIDtoKey(uid);
-            if (key != null) {
-                long time = 0;
-                int index = 0;
-                if (TRACE_REPOSITORY_ACCESS) {
-                    index = nextIndex();
-                    time = System.currentTimeMillis();
-                    System.err.println(index + ":hanging key " + key);
-                }
-                RepositoryAccessor.getRepository().hang(key, (Persistent)csmObj);
-                if (TRACE_REPOSITORY_ACCESS) {
-                    time = System.currentTimeMillis() - time;
-                    System.err.println(index + ":hung in " + time + "ms the key " + key);
-                }
-            }
+	    hang(key, (Persistent)csmObj);
         }
+    }
+    
+    public static void hang(Key key, Persistent obj) {
+	if (key != null) {
+	    long time = 0;
+	    int index = 0;
+	    if (TRACE_REPOSITORY_ACCESS) {
+		index = nextIndex();
+		time = System.currentTimeMillis();
+		System.err.println(index + ":hanging key " + key);
+	    }
+	    RepositoryAccessor.getRepository().hang(key, obj);
+	    if (TRACE_REPOSITORY_ACCESS) {
+		time = System.currentTimeMillis() - time;
+		System.err.println(index + ":hung in " + time + "ms the key " + key);
+	    }
+	}
     }
     
     public static <T extends CsmOffsetableDeclaration> List<CsmUID<T>> put(List<T> decls) {
@@ -213,14 +226,19 @@ public class RepositoryUtils {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
     
-    /**
-     * @deprecated use closeUnit(Key, Set<String>, boolean) instead 
-     */
-    public static void closeUnit(String unitName, boolean cleanRepository) {
-	RepositoryListenerImpl.instance().onExplicitClose(unitName);
-        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository, Collections.EMPTY_SET);
+    public static void closeUnit(String unitName,  Set<String> requiredUnits) {
+	closeUnit(unitName, requiredUnits, TraceFlags.PERSISTENT_REPOSITORY);
     }
 
+    public static void closeUnit(String unitName,  Set<String> requiredUnits, boolean cleanRepository) {
+	RepositoryListenerImpl.instance().onExplicitClose(unitName);
+        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository, requiredUnits);
+    }
+    
+    public static void closeUnit(Key key, Set<String> requiredUnits) {
+	closeUnit(key, requiredUnits, TraceFlags.PERSISTENT_REPOSITORY);
+    }
+    
     public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
         assert key != null;
         String unitName = key.getUnit();

@@ -33,6 +33,7 @@ public class Platforms {
             platforms.add(new PlatformSolarisIntel());
             platforms.add(new PlatformLinux());
             platforms.add(new PlatformWindows());
+            platforms.add(new PlatformMacOSX());
             platforms.add(new PlatformGeneric());
         }
     }

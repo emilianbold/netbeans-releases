@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.Timer;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.api.*;
 import org.netbeans.modules.cnd.repository.spi.*;
@@ -40,13 +41,13 @@ public class RepositoryListenerImpl implements RepositoryListener {
     private static final RepositoryListenerImpl instance = new RepositoryListenerImpl();
     
     /** Interval, in seconds, after which implicitely opened unit should be closed */
-    private static final int IMPLICIT_CLOSE_INTERVAL = Integer.getInteger("cnd.implicit.close.interval", 10);
+    private static final int IMPLICIT_CLOSE_INTERVAL = Integer.getInteger("cnd.implicit.close.interval", 10); // NOI18N
     
     /** A shutdown hook to guarantee that repository is shutted down */
     private static class RepositoryShutdownHook extends Thread {
 	
 	public RepositoryShutdownHook() {
-	    setName("Repository Shutdown Hook Thread");
+	    setName("Repository Shutdown Hook Thread"); // NOI18N
 	}
 	
 	public void run() {
@@ -157,11 +158,19 @@ public class RepositoryListenerImpl implements RepositoryListener {
 	synchronized (lock) {
 	    UnitTimer unitTimer = unitTimers.remove(unitName);
 	    if( unitTimer != null ) {
-		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: closing implicitely opened unit%s\n", unitName);
+		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: scheduling closure for %s\n", unitName);
 		unitTimer.cancel();
-		RepositoryUtils.closeUnit(unitName, ! TraceFlags.PERSISTENT_REPOSITORY);
+		scheduleClosing(unitName, Collections.EMPTY_SET);
 	    }
 	}
     }
     
+    private void scheduleClosing(final String unitName,  final Set<String> requiredUnits) {
+	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    public void run() {
+		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: closing implicitely opened unit%s\n", unitName);
+		RepositoryUtils.closeUnit(unitName, Collections.EMPTY_SET);
+	    }
+	}, "Closing implicitly opened project"); // NOI18N
+    }
 }

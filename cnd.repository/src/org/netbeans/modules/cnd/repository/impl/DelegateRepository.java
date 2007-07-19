@@ -58,6 +58,10 @@ public final class DelegateRepository implements Repository {
     public Persistent get(Key key) {
         return delegate.get(key);
     }
+    
+    public Persistent tryGet(Key key) {
+	return delegate.tryGet(key);
+    }
 
     public void remove(Key key) {
         delegate.remove(key);

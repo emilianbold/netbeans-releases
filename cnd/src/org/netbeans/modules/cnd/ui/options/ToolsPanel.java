@@ -118,6 +118,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public ToolsPanel() {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
+        cbGdbRequired.setName("gdb"); // NOI18N
+        cbCRequired.setName("c"); // NOI18N
+        cbCppRequired.setName("c++"); // NOI18N
+        cbFortranRequired.setName("fortran"); // NOI18N
         changed = false;
         instance = this;
         currentCompilerSet = null;
@@ -1433,7 +1437,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbGdbRequired.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_RequiredGdb"));
         cbGdbRequired.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbGdbRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbGdbRequired.setName("gdb");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
@@ -1442,7 +1445,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCRequired.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_RequiredCompiler_C"));
         cbCRequired.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbCRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbCRequired.setName("c");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1453,7 +1455,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCppRequired.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_RequiredCompiler_Cpp"));
         cbCppRequired.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbCppRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbCppRequired.setName("c++");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1464,7 +1465,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbFortranRequired.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("LBL_RequiredCompiler_Fortran"));
         cbFortranRequired.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbFortranRequired.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbFortranRequired.setName("fortran");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;

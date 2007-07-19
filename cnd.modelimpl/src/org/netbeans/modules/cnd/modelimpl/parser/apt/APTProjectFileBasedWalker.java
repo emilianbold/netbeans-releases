@@ -41,15 +41,15 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final FileImpl file;
-    private final FileImpl startFile;
+    private final ProjectBase startProject;
     private int mode;
     
-    public APTProjectFileBasedWalker(FileImpl startFile, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
+    public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler);
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
-        this.startFile = startFile;
-        assert startFile != null;
+        this.startProject = startProject;
+        assert startProject != null;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine())) {
-                ProjectBase startProject = getStartFile().getProjectImpl();
+                ProjectBase startProject = this.getStartProject();
                 if (startProject != null) {
                     ProjectBase inclFileOwner = LibraryManager.getInsatnce().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);
                     try {
@@ -79,7 +79,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                 }
             }
         }
-        postInclude(apt, included);
+	postInclude(apt, included);
     }
     
     abstract protected FileImpl includeAction(ProjectBase inclFileOwner, String inclPath, int mode, APTInclude apt) throws IOException;
@@ -91,8 +91,8 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
         return this.file;
     }
 
-    protected FileImpl getStartFile() {
-        return this.startFile;
+    protected ProjectBase getStartProject() {
+	return this.file.getProjectImpl();
     }
     
     protected void setMode(int mode) {

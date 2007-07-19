@@ -297,7 +297,7 @@ class Line {
 	// cursor, but that is issue 21577 and is not easy to solve.
 
 	if (length == 0)
-	    return "\n";
+	    return "\n"; // NOI18N
 
 	if (ecol >= length) {
 	    // The -1 snuffs out the newline.

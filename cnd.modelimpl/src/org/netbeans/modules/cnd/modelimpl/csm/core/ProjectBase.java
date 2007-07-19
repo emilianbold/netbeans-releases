@@ -76,7 +76,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
-        this.status = Status.Initial;
+        setStatus(Status.Initial);
         this.name = ProjectNameCache.getString(name);
         init(model, platformProject);
         NamespaceImpl ns = new NamespaceImpl(this);
@@ -108,6 +108,11 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             Terminator.create(this);
         }
         needParseOrphan = ModelSupport.instance().needParseOrphan(platformProject);
+    }
+    
+    private void setStatus(Status newStatus) {
+	//System.err.printf("CHANGING STATUS %s -> %s for %s (%s)\n", status, newStatus, name, getClass().getName());
+	status = newStatus;
     }
     
     protected static void cleanRepository(Object platformProject, String name) {
@@ -173,9 +178,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         } else if( platformProject instanceof String ) {
             result = (String) platformProject;
         } else if( platformProject == null ) {
-	    throw new IllegalArgumentException("Incorrect platform project: null");
+	    throw new IllegalArgumentException("Incorrect platform project: null"); // NOI18N
         } else {
-	    throw new IllegalArgumentException("Incorrect platform project class: " + platformProject.getClass());
+	    throw new IllegalArgumentException("Incorrect platform project class: " + platformProject.getClass()); // NOI18N
         }
         return ProjectNameCache.getString(result);
     }
@@ -440,7 +445,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     protected synchronized void ensureFilesCreated() {
         if( status ==  Status.Initial || status == Status.Restored ) {
             try {
-                status = (status == Status.Initial) ? Status.AddingFiles : Status.Validating;
+                setStatus( (status == Status.Initial) ? Status.AddingFiles : Status.Validating );
                 long time = 0;
                 if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
                     System.err.println("suspend queue");
@@ -476,7 +481,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 }
                 ParserQueue.instance().onEndAddingProjectFiles(this);
             } finally {
-                status = Status.Ready;
+                setStatus(Status.Ready);
             }
         }
     }
@@ -625,8 +630,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      * Is called after project is added to model
      * and all listeners are notified
      */
-    public void onAddedToModel() {
+    public final void onAddedToModel() {
         final boolean isRestored = status == Status.Restored;
+	//System.err.printf("onAddedToModel isRestored=%b status=%s for %s (%s) \n", isRestored, status, name, getClass().getName());
         if( status == Status.Initial || status == Status.Restored ) {
             Runnable r = new Runnable() {
                 public void run() {
@@ -652,10 +658,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 //	}
 //	System.err.printf("AWOKE...\n");
         
-        boolean restored = (status == Status.Restored);
         ensureFilesCreated();
         ensureChangedFilesEnqueued();
-        if( restored ) {
+        if( isRestored ) {
             ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
         }
         waitParseImpl();
@@ -691,7 +696,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         
         Set<FileImpl> candidates = new HashSet<FileImpl>();
         Set<FileImpl> removedPhysically = new HashSet<FileImpl>();
-        for( FileImpl file : getAllFiles() ) {
+        for( FileImpl file : getAllFileImpls() ) {
             if( ! file.getFile().exists() ) {
                 removedPhysically.add(file);
             } else if( projectFiles != null ) { // they might be null for library
@@ -832,7 +837,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(FileImpl base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+    public FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         try {
             disposeLock.readLock().lock();
             if( isProjectDisposed ) {
@@ -1181,7 +1186,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     private void disposeFiles() {
         List<FileImpl> list;
 //        synchronized (fileContainer) {
-        list = getFileContainer().getFiles();
+        list = getFileContainer().getFileImpls();
         getFileContainer().clear();
 //        }
         for (FileImpl file : list){
@@ -1300,7 +1305,17 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             }
         } finally {
             disposeLock.readLock().unlock();
+            ProjectComponent.setStable(declarationsSorageKey);
+            ProjectComponent.setStable(fileContainerKey);
+            ProjectComponent.setStable(graphStorageKey);
         }
+    }
+    
+    /**
+     * CsmProject implementation
+     */
+    public Collection<CsmFile> getAllFiles() {
+        return (Collection<CsmFile>) getFileContainer().getFiles();
     }
     
     /**
@@ -1308,13 +1323,13 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      * but unfortunately there already is such method,
      * and it is used intensively
      */
-    public Collection<FileImpl> getAllFiles() {
-        return getFileContainer().getFiles();
+    public Collection<FileImpl> getAllFileImpls() {
+        return getFileContainer().getFileImpls();
     }
     
     public Collection<CsmFile> getSourceFiles() {
         List<CsmFile> res = new ArrayList<CsmFile>();
-        for(FileImpl file : getAllFiles()){
+        for(FileImpl file : getAllFileImpls()){
             if (file.isSourceFile()) {
                 res.add(file);
             }
@@ -1324,7 +1339,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     public Collection<CsmFile> getHeaderFiles() {
         List<CsmFile> res = new ArrayList<CsmFile>();
-        for(FileImpl file : getAllFiles()){
+        for(FileImpl file : getAllFileImpls()){
             //if (file.isHeaderFile()) {
             if (!file.isSourceFile()) {
                 res.add(file);
@@ -1389,7 +1404,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                     if (TRACE_PP_STATE_OUT) System.err.println("before restoring " + preprocHandler); // NOI18N
                     APTIncludeHandler inclHanlder = preprocHandler.getIncludeHandler();
                     assert inclHanlder != null;
-                    FileImpl csmFile = getStartFile(inclHanlder);
+		    ProjectBase startProject = getStartProject(inclHanlder);
+                    //FileImpl csmFile = getStartFile(inclHanlder);
+		    FileImpl csmFile = startProject.getFile(new File(inclHanlder.getStartEntry().getStartFile()));
                     if (csmFile == null) {
                         preprocHandler.setState(oldState);
                         return preprocHandler;
@@ -1405,7 +1422,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                         // for testing remember restored file
                         long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
                         int stackSize = inclStack.size();
-                        APTWalker walker = new APTRestorePreprocStateWalker(csmFile, aptLight, csmFile,
+                        APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile,
                                 preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
                         walker.visit();
                         if (REMEMBER_RESTORED) {
@@ -1434,13 +1451,12 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return preprocHandler;
     }
 
-    public static FileImpl getStartFile(final APTIncludeHandler inclHanlder) {
+    public static ProjectBase getStartProject(final APTIncludeHandler inclHanlder) {
         // start from the first file, then use include stack
         String startFile = inclHanlder.getStartEntry().getStartFile();
         Key key = inclHanlder.getStartEntry().getStartFileProject();
         ProjectBase prj = (ProjectBase)RepositoryUtils.get(key);
-        FileImpl csmFile = prj.getFile(new File(startFile));
-        return csmFile;
+        return prj;
     }
     
     public APTFile getAPTLight(CsmFile csmFile) throws IOException {
@@ -1620,23 +1636,35 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     protected ProjectBase(DataInput aStream) throws IOException {
-        this.status = Status.Restored;
+	
+        setStatus(Status.Restored);
+	
         assert aStream != null;
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
-        assert aFactory != null;
+        assert aFactory != null : "default UID factory can not be bull";
         
         this.name = ProjectNameCache.getString(aStream.readUTF());
-        assert this.name != null;
+        assert this.name != null : "project name can not be null";
+	
         String unitName = aStream.readUTF();
+	
         this.globalNamespaceUID = aFactory.readUID(aStream);
+	assert  globalNamespaceUID != null : "globalNamespaceUID can not be null";
+	
         aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
         aFactory.readStringToUIDMap(this.classifiers, aStream, QualifiedNameCache.getManager());
         
         fileContainerKey = ProjectComponent.readKey(aStream);
+	assert fileContainerKey != null : "fileContainerKey can not be null";
+	
         declarationsSorageKey = ProjectComponent.readKey(aStream);
+	assert declarationsSorageKey != null : "declarationsSorageKey can not be null";
+	
         graphStorageKey = ProjectComponent.readKey(aStream);
+	assert graphStorageKey != null : "graphStorageKey can not be null";
 	
 	this.fqn = PersistentUtils.readUTF(aStream);
+	assert fqn != null : "fqn can not be null";
         
         this.model = (ModelImpl) CsmModelAccessor.getModel();
         

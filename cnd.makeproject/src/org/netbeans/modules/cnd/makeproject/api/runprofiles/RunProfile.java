@@ -238,7 +238,7 @@ public class RunProfile implements ConfigurationAuxObject {
         
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                StringTokenizer st = new StringTokenizer(path, ":");
+                StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
 
                 while (st.hasMoreTokens()) {
                     String dir = st.nextToken();

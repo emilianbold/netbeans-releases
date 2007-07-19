@@ -26,6 +26,9 @@ import java.util.*;
  * @author Vladimir Kvasihn
  */
 public interface Resolver {
+    public static final int NAMESPACE = 1 << 0;
+    public static final int CLASSIFIER = 1 << 1;
+    public static final int ALL = NAMESPACE | CLASSIFIER;
 
     /**
      * Resolves classifier (class/enum/typedef) or namespace name.
@@ -39,7 +42,7 @@ public interface Resolver {
      *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
      *  CsmNamespace
      */
-    public CsmObject resolve(String[] nameTokens);
+    public CsmObject resolve(String[] nameTokens, int interestedKind);
     
     /**
      * Resolves classifier (class/enum/typedef) or namespace name.
@@ -52,6 +55,6 @@ public interface Resolver {
      *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
      *  CsmNamespace
      */
-    public CsmObject resolve(String qualifiedName);
+    public CsmObject resolve(String qualifiedName, int interestedKind);
 
 }

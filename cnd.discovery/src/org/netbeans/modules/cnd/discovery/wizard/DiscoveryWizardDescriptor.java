@@ -34,7 +34,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("unchecked") // NOI18N
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor{
     public static final String PROJECT = "DW:project"; // NOI18N
     public static final String PRIVIDER = "DW:provider"; // NOI18N

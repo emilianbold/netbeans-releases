@@ -38,7 +38,7 @@ public class TimerRecord {
         tname = Thread.currentThread().getName();
         time = System.currentTimeMillis();
         if (message != null && message.length() > 0) {
-            this.message = message + ": ";
+            this.message = message + ": "; // NOI18N
         } else {
             this.message = "";
         }
@@ -56,24 +56,24 @@ public class TimerRecord {
         StringBuilder s = new StringBuilder();
         
         if (type == RecordType.Title) {
-            s.append("\n\nGdbTimer Report: " + message);
+            s.append("\n\nGdbTimer Report: " + message); // NOI18N
         } else {
-            s.append("    ");
+            s.append("    "); // NOI18N
             s.append(message);
             if (type == RecordType.Start) {
-                s.append("Started at ");
+                s.append("Started at "); // NOI18N
             } else if (type == RecordType.Mark) {
-                s.append("Marked at ");
+                s.append("Marked at "); // NOI18N
             } else if (type == RecordType.Stop) {
-                s.append("Stopped at ");
+                s.append("Stopped at "); // NOI18N
             } else if (type == RecordType.Restart) {
-                s.append("Restarteded at ");
+                s.append("Restarteded at "); // NOI18N
             }
             if (relativeTo < 0) {
                 s.append(time);
             } else {
                 s.append(time - relativeTo);
-                s.append(" ms");
+                s.append(" ms"); // NOI18N
         }
         }
         return s.toString();

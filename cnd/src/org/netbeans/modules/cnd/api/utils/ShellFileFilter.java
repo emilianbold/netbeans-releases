@@ -109,7 +109,7 @@ public class ShellFileFilter extends javax.swing.filechooser.FileFilter {
     private ResourceBundle bundle;
     private String getString(String s) {
 	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ElfExecutableFileFilter.class);
+	    bundle = NbBundle.getBundle(ShellFileFilter.class);
 	}
 	return bundle.getString(s);
     }

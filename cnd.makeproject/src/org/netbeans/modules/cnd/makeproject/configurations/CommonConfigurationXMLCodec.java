@@ -46,6 +46,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V38:
+ *   Added Mac OS X platform == 4 and changed Generic platform to 5
  * V37:
  *   Moved active configuration (DEFAULT_CONF_ELEMENT) to private
  * V36:
@@ -72,7 +74,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 37;
+    protected final static int CURRENT_VERSION = 38;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N

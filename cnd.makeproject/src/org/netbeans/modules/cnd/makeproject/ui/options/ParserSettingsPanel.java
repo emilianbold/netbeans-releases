@@ -56,6 +56,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         tabbedPane.getAccessibleContext().setAccessibleName(getString("COMPILERS_TABBEDPANE_AN"));
         tp = ToolsPanel.getToolsPanel();
         if (tp != null) {
+            // This gets called from commitValidation and tp is null - its not a run-time problem
+            // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
             tp.addCompilerSetChangeListener(this);
         }
     }

@@ -22,12 +22,10 @@ package org.netbeans.modules.cnd.classview;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
@@ -134,11 +132,15 @@ public class ProjectsKeyArray extends Children.Keys {
                 }
             }
         }
-        myProjects = new HashMap<CsmProject,SortedName>();
+        myProjects = createProjectsMap();
         for(CsmProject p : newProjects){
             myProjects.put(p,getSortedName(p,false));
         }
         resetKeys();
+    }
+    
+    private java.util.Map<CsmProject, SortedName> createProjectsMap() {
+	return new java.util.concurrent.ConcurrentHashMap<CsmProject,SortedName>();
     }
     
     protected Node[] createNodes(Object object) {
@@ -161,7 +163,7 @@ public class ProjectsKeyArray extends Children.Keys {
     
     
     protected void addNotify() {
-        myProjects = new HashMap<CsmProject,SortedName>();
+        myProjects = createProjectsMap();
         resetProjects();
         super.addNotify();
     }

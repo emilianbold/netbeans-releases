@@ -302,7 +302,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }    
     
     public void fileParsingFinished(CsmFile file) {
-        if (file == getCsmFile()) {
+        if (file.equals(getCsmFile())) {
 	    fileParsedOrProjectLoaded(file);
         }
     }

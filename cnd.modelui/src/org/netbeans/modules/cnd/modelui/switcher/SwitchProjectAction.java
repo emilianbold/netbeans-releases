@@ -42,6 +42,7 @@ public class SwitchProjectAction extends NodeAction {
     
     private JCheckBoxMenuItem presenter;
     private ModelImpl model;
+    private static boolean running = false;
     
     private enum State {
         Enabled, Disabled, Indeterminate
@@ -83,17 +84,17 @@ public class SwitchProjectAction extends NodeAction {
     private JMenuItem getPresenter() {
         final Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
         if( projects == null ) {
-            presenter.setEnabled(false);
+            presenter.setEnabled(!running);
             presenter.setSelected(false);
         }
         else {
             State state = getState(projects);
             if( state == State.Indeterminate ) {
-                presenter.setEnabled(false);
+                presenter.setEnabled(!running);
                 presenter.setSelected(false);
             }
             else {
-                presenter.setEnabled(true);
+                presenter.setEnabled(!running);
                 presenter.setSelected(state == State.Enabled);
             }
         }
@@ -148,6 +149,9 @@ public class SwitchProjectAction extends NodeAction {
         if( model == null ) {
             return false;
         }
+	if( running ) {
+	    return false;
+	}
         Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
         if( projects == null) {
             return false;
@@ -160,8 +164,14 @@ public class SwitchProjectAction extends NodeAction {
     }
     
     /** Actually nobody but us call this since we have a presenter. */
-    public void performAction(Node[] activatedNodes) {
-        performAction(getNativeProjects(getActivatedNodes()));
+    public void performAction(final Node[] activatedNodes) {
+	running = true;
+	model.enqueue(new Runnable() {
+	    public void run() {
+		performAction(getNativeProjects(getActivatedNodes()));
+		running = false;
+	    }
+	}, "Switching code model ON/OFF"); //NOI18N
     }
     
     private void performAction(Collection<NativeProject> projects) {

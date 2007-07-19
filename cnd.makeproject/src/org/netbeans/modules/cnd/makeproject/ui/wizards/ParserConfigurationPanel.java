@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
@@ -531,6 +532,10 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
                     ElfStaticLibraryFileFilter.getInstance(),
                     PeDynamicLibraryFileFilter.getInstance()};
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                filters = new FileFilter[] {MachOExecutableFileFilter.getInstance(),
+                    ElfStaticLibraryFileFilter.getInstance(),
+                    ElfDynamicLibraryFileFilter.getInstance()};
             } else {
                 filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
                     ElfStaticLibraryFileFilter.getInstance(),

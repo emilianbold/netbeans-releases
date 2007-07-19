@@ -72,23 +72,23 @@ public class FriendResolverImpl extends CsmFriendResolver {
             if (CsmKindUtilities.isFriendClass(friend)){
                 CsmFriendClass cls = (CsmFriendClass) friend;
                 CsmClass reference = cls.getReferencedClass() ;
-                if (reference == friendDecl){
+                if (friendDecl.equals(reference)){
                     return true;
                 }
-                if (containingClass != null && reference == containingClass) {
+                if (containingClass != null && containingClass.equals(reference)) {
                     return true;
                 }
             } else if (CsmKindUtilities.isFriendMethod(friend)){
-                if (friend == friendDecl) {
+                if (friendDecl.equals(friend)) {
                     return true;
                 }
                 CsmFriendFunction fun = (CsmFriendFunction) friend;
                 CsmFunction ref = fun.getReferencedFunction();
-                if (ref == friendDecl) {
+                if (friendDecl.equals(ref)) {
                     return true;
                 }
                 if (ref != null && CsmKindUtilities.isFunctionDefinition(ref)){
-                    if (((CsmFunctionDefinition)ref).getDeclaration() == friendDecl){
+                    if (friendDecl.equals(((CsmFunctionDefinition)ref).getDeclaration())){
                         return true;
                     }
                 }

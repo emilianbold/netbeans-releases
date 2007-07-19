@@ -36,6 +36,10 @@ public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyCh
 	this.inheritValues = inheritValues;
         this.editor = editor;
         initComponents();
+        // The following line was copied from the generated code (which was reset to default)
+        // so I can add an NOI18N comment
+        allOptionsTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveBackground")); // NOI18N
+        
 	additionalLabel.setText(texts[2]);
 	allLabel.setText(texts[3]);
         setPreferredSize(new java.awt.Dimension(400, 300));
@@ -82,7 +86,6 @@ public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
         add(allLabel, gridBagConstraints);
 
-        allOptionsTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveBackground"));
         allOptionsTextArea.setEditable(false);
         allOptionsTextArea.setLineWrap(true);
         allOptionsTextArea.setWrapStyleWord(true);

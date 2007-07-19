@@ -160,8 +160,7 @@ public class ModelSource implements SourceFileProperties {
         if (what == null) {
             return;
         }
-        for (Object o : what.getIncludes()){
-            CsmInclude include = (CsmInclude)o;
+        for (CsmInclude include : what.getIncludes()){
             CsmFile resolved = include.getIncludeFile();
             if (resolved == null){
                 // unresolved include

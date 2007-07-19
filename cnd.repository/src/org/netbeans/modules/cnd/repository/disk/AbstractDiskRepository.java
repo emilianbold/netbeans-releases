@@ -37,4 +37,8 @@ public abstract class AbstractDiskRepository implements RepositoryWriter {
     public abstract void close() throws IOException;
     
     abstract public int getFragmentationPercentage() throws IOException;    
+    
+    public Persistent tryGet(Key key) {
+	return null;
+    }
 }

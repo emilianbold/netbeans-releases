@@ -33,6 +33,7 @@ import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ClassNode;
@@ -115,8 +116,12 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
             return (CsmCompoundClassifier)object;
         } else{
             CsmTypedef def = (CsmTypedef) object;
-            return (CsmCompoundClassifier)def.getType().getClassifier();
+	    CsmType type = def.getType();
+	    if( type != null ) {
+		return (CsmCompoundClassifier)type.getClassifier();
+	    }
         }
+	return null;
     }
     
     protected CsmOffsetableDeclaration findDeclaration(PersistentKey declId){

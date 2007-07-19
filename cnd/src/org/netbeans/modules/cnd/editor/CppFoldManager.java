@@ -207,9 +207,8 @@ final class CppFoldManager extends CppFoldManagerBase
 			try {
 			    FoldHierarchyTransaction t = getOperation().openTransaction();
 			    try {
-				log.log(Level.FINE, "CFM.updateFolds$X1.run: Calling " +
-					"processUpdateFoldRequest for " +
-					getShortName() + " [" +
+				log.log(Level.FINE, "CFM.updateFolds$X1.run: Calling " + // NOI18N
+					"processUpdateFoldRequest for " + getShortName() + " [" + // NOI18N
 					Thread.currentThread().getName() + "]"); // NOI18N
 //                                System.out.println("=========== " + getShortName() + " ===========");
 //                                System.out.println(hierarchy.toString());

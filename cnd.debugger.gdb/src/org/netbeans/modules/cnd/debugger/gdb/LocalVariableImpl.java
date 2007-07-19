@@ -75,61 +75,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
 	    debugger = (GdbDebuggerImpl) currentEngine.lookupFirst(null, GdbDebugger.class);
 	}
         
-        // evaluate expression to Value
-        //String value = debugger.evaluateIn (expression);
-        String value = expression;
-        // Adjust value according to the type
-        if(type.equals("char *")) { // NOI18N
-            // There are 2 values: pointer and string
-            // First check if pointer is changed
-            // Second check if string value is changed
-            // Only one of them can be changed at once.
-            String strAddr = null;
-            String strValue = null;
-            int i = expression.indexOf(' ');
-            if (i >= 0) {
-                strAddr = expression.substring(0, i);
-                strValue = expression.substring(i+1);
-            } else {
-                if (expression.startsWith("0x")) { // NOI18N
-                    strAddr = expression;
-                } else {
-                    strValue = expression;
-                }
-            }
-            String oldValue = getValue();
-            if (strAddr != null) {
-                if (!oldValue.startsWith(strAddr)) {
-                    // Pointer is changed
-                    strAddr = expression;
-                    debugger.setVariableValue(name, strAddr);
-                }
-            }
-            // Compare string value
-            i = oldValue.indexOf(' ');
-            if (i >= 0) {
-                String oldstrValue = oldValue.substring(i+1);
-                if (!oldstrValue.equals(strValue)) {
-                    // String value is changed
-                    // Now let's update it in memory byte-by-byte
-                    for (int n = 0; n < strValue.length(); n++) {
-                        char c = strValue.charAt(n);
-                        if (c != oldstrValue.charAt(n)) {
-                            if (n < 2) break; // First 2 characters must match (\")
-                            int k = n - 2;
-                            debugger.setVariableValue(name + "[" + k + "]", "'" + c + "'"); // NOI18N
-                        }
-                    }
-                }
-            } else {
-                // Something wrong
-            }
-            return;
-        }
-        debugger.setVariableValue(name, value);
-        // set new value to this model
-        // setInnerValue (value);
-        // refresh tree
+        debugger.getGdbProxy().data_evaluate_expression(name + "=" + expression);
     }
     
     public String getType() {

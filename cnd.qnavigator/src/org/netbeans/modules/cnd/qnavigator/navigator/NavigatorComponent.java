@@ -122,7 +122,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
         if (!data.isEmpty()) {
             CndDataObject cdo = (CndDataObject)data.iterator().next();
             if (!cdo.equals(curData)) {
-                detachFromModel(curModel);
+		detachFromModel(curModel);
                 curData = cdo;
                 setNewContent(cdo);
             }
@@ -178,7 +178,15 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     /********** non public stuff **********/
     
-    private void setNewContent(DataObject cdo) {
+    private void setNewContent(final DataObject cdo) {
+	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	    public void run() {
+		setNewContentImpl(cdo);
+	    }
+	}, "Updating QuickNavigator Content"); //NOI18N
+    }
+    
+    private void setNewContentImpl(DataObject cdo) {
         NavigatorPanelUI ui = getPanelUI();
         curModel = new NavigatorModel(cdo, ui, this);
         CsmModelAccessor.getModel().addProgressListener(curModel);
@@ -193,10 +201,12 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     private void detachFromModel(NavigatorModel model) {
-        CsmModelAccessor.getModel().removeProgressListener(model);
-        CsmModelAccessor.getModel().removeModelListener(model);
-        model.removeBusyListener(this);
-        model.removeNotify();
+	if( model != null ) {
+	    CsmModelAccessor.getModel().removeProgressListener(model);
+	    CsmModelAccessor.getModel().removeModelListener(model);
+	    model.removeBusyListener(this);
+	    model.removeNotify();
+	}
     }
     
     private NavigatorPanelUI getPanelUI() {

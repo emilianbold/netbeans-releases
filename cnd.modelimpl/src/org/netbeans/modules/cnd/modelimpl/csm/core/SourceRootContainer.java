@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public class SourceRootContainer {
     public void fixFolder(String path){
         projectRoots.put(path,new Integer(Integer.MAX_VALUE/2));
     }
-
+    
     public void addSources(List<NativeFileItem> items){
         for( NativeFileItem nativeFileItem : items ) {
             addFile(nativeFileItem.getFile());
@@ -51,7 +52,21 @@ public class SourceRootContainer {
     }
     
     public void addFile(File file){
-        String path = FileUtil.normalizeFile(file).getParent();
+        File parentFile = FileUtil.normalizeFile(file).getParentFile();
+        String path = parentFile.getAbsolutePath();
+        addPath(path);
+        String canonicalPath;
+        try {
+            canonicalPath = parentFile.getCanonicalPath();
+            if (!path.equals(canonicalPath)) {
+                addPath(canonicalPath);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private void addPath(final String path) {
         Integer integer = projectRoots.get(path);
         if (integer == null){
             projectRoots.put(path,new Integer(1));
@@ -65,7 +80,7 @@ public class SourceRootContainer {
             removeFile(nativeFileItem.getFile());
         }
     }
-
+    
     public void removeFile(File file){
         String path = FileUtil.normalizeFile(file).getParent();
         Integer integer = projectRoots.get(path);

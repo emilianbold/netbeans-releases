@@ -111,7 +111,7 @@ public class DiscoveryProjectGenerator {
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
-            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) {
+            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
             int i = path.lastIndexOf('/');

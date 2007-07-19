@@ -558,7 +558,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 
             } else if (methodParms.length == 0 && parmTypeCnt == 1) { // for cases like f(void)
                 CsmType t = (CsmType)parmTypeList.get(0);
-                if (t != null && "void".equals(t.getText())) { // best match
+                if (t != null && "void".equals(t.getText())) { // best match // NOI18N
                     ret.clear();
                     ret.add(m);
                 }

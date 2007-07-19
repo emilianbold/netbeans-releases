@@ -29,6 +29,7 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectSettingsValidatorKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -67,11 +68,20 @@ public class ProjectSettingsValidator {
 	if( nativeProject == null ) {
 	    return;
 	}
+	long time = 0;
+	if( TraceFlags.TIMING ) {
+	    System.err.printf("ProjectSettingsValidator.storeSettings for %s\n", csmProject.getName());
+	    time = System.currentTimeMillis();
+	}
 	data = new Data();
 	updateMap(nativeProject.getAllHeaderFiles());
 	updateMap(nativeProject.getAllSourceFiles());
 	Key key = new ProjectSettingsValidatorKey(csmProject.getQualifiedName());
 	RepositoryUtils.put(key, data);
+	if( TraceFlags.TIMING ) {
+	    time = System.currentTimeMillis() - time;
+	    System.err.printf("ProjectSettingsValidator.storeSettings for %s took %d ms\n", csmProject.getName(), time);
+	}
     }
     
     private void updateMap(List<NativeFileItem> items) {

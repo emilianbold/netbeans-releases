@@ -1579,8 +1579,8 @@ public class TraceModel {
 	}
 	
 	private boolean hasNonEmptyIncludes(CsmFile fileImpl) {
-		for (Iterator it = fileImpl.getIncludes().iterator(); it.hasNext();) {
-			CsmInclude inc = (CsmInclude) it.next();
+		for (Iterator<CsmInclude> it = fileImpl.getIncludes().iterator(); it.hasNext();) {
+			CsmInclude inc = it.next();
 			if( inc.getIncludeFile() != null ) {
 				return true;
 			}

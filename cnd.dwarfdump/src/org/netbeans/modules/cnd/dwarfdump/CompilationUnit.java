@@ -102,7 +102,7 @@ public class CompilationUnit {
             String dir = getCompilationDir();
             String name = getSourceFileName();
             if (dir != null) {
-                if (name.startsWith("/")) {
+                if (name.startsWith("/")) { // NOI18N
                     result = new File(name).getCanonicalPath();
                 } else {
                     result = new File(dir + File.separator + name).getCanonicalPath();
@@ -123,7 +123,7 @@ public class CompilationUnit {
         String dir = getCompilationDir();
         String name = getSourceFileName();
         if (dir != null) {
-            if (name.startsWith("/")) {
+            if (name.startsWith("/")) { // NOI18N
                 result = new File(name).getAbsolutePath();
             } else {
                 result = new File(dir + File.separator + name).getAbsolutePath();

@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.modelutil;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -37,6 +38,8 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -238,46 +241,73 @@ public class CsmUtilities {
 	return csmProject;
     }
     
-    public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing) {
-        // FIXUP: need to use NativeFileItemCookie
-	CsmFile csmFile = null;
-	try {
-	    csmFile = getCsmFile(dobj.getPrimaryFile(), waitParsing);
-	} catch (NullPointerException exc) {
-	    exc.printStackTrace();
+    public static CsmFile[] getCsmFiles(DataObject dobj) {
+	if( dobj != null ) {
+	    NativeFileItemSet set = (NativeFileItemSet) dobj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+	    if( set == null ) {
+		FileObject fo = dobj.getPrimaryFile();
+		if( fo != null ) {
+		    File file = FileUtil.normalizeFile(FileUtil.toFile(fo));
+		    CsmFile csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
+		    if( csmFile != null ) {
+			return new CsmFile[] { csmFile };
+		    }
+		}
+	    }
+	    else {
+		List<CsmFile> l = new ArrayList(set.size());
+		for( NativeFileItem item : set ) {
+		    CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+		    if( csmProject != null ) {
+			CsmFile file = csmProject.findFile(item.getFile().getAbsolutePath());
+			if( file != null ) {
+			    l.add(file);
+			}
+		    }
+		}
+		return (CsmFile[]) l.toArray(new CsmFile[l.size()]);
+	    }
 	}
-	return csmFile;
+	return new CsmFile[0];
+    }
+    
+    public static CsmFile[] getCsmFiles(FileObject fo) {
+	try {
+	    return getCsmFiles(DataObject.find(fo));
+	} catch (DataObjectNotFoundException ex) {
+	    return new CsmFile[0];
+	}
+    }
+    
+    
+    public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing) {
+	CsmFile[] files = getCsmFiles(dobj);
+	if( files == null || files.length == 0 ) {
+	    return null;
+	}
+	else {
+	    if( waitParsing ) {
+		try {
+		    files[0].scheduleParsing(true);
+		} catch (InterruptedException ex) {		    
+		    // ignore
+		}
+	    }
+	    return files[0];
+	}
     }
     
     public static CsmFile getCsmFile(FileObject fo, boolean waitParsing) {
-        // FIXUP: till we have NativeFileItemCookie
-	CsmFile csmFile = null;
-	try {
-	    //Project prj = FileOwnerQuery.getOwner(fo);
-            //NativeProject nativeProject = null;
-            //if (prj != null) {
-            //    nativeProject = (NativeProject) prj.getLookup().lookup(NativeProject.class);
-            //} 
-            //CsmProject csmPrj = CsmModelAccessor.getModel().getProject(nativeProject);
-            File file = FileUtil.normalizeFile(FileUtil.toFile(fo));
-            //if (csmPrj != null) {
-            //    csmFile = csmPrj.findFile(file.getAbsolutePath());
-            //} else {
-                // search in projects
-                csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
-            //}
-	} catch (NullPointerException exc) {
-	    exc.printStackTrace();
+	if( fo == null ) {
+	    return null;
 	}
-        if( csmFile != null && waitParsing) {
-            try {
-                csmFile.scheduleParsing(true);
-            } catch (InterruptedException ex) {
-                // ignore
-                //ex.printStackTrace();
-            }
-        }
-	return csmFile;
+	else {
+	    try {
+		return getCsmFile(DataObject.find(fo), waitParsing);
+	    } catch (DataObjectNotFoundException ex) {
+		return null;
+	    }
+	}
     }
     
 
@@ -672,7 +702,7 @@ public class CsmUtilities {
         sb.append(')');
         if (CsmKindUtilities.isMethodDeclaration(fun)){
             if( ((CsmMethod) fun).isConst() ) {
-                sb.append(" const");
+                sb.append(" const"); // NOI18N
             }
         }
 	// TODO: as soon as we extract APTStringManager into a separate module,

@@ -63,7 +63,6 @@ public class GdbProxy implements GdbMiDefinitions {
     private GdbProxyEngine engine;
     private GdbLogger gdbLogger;
     
-//    private String      shortProgramName;
     private String      signalHandlerBreakpoint;
     private String      externalTerminal;
     private String      externalTerminalPID;
@@ -71,7 +70,6 @@ public class GdbProxy implements GdbMiDefinitions {
     private Vector      evaluatedVariables;
     
     // SHELL commands
-    private final String SH_CMD_KILL      = "kill -9 "; // NOI18N
     private final String DIR_TMP          = "/tmp"; // NOI18N
     
     // String constants
@@ -81,7 +79,7 @@ public class GdbProxy implements GdbMiDefinitions {
     
     // Log file
     private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
-
+    
     /**
      * Creates a new instance of GdbProxy
      *
@@ -92,7 +90,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * @throws IOException Pass this on to the caller
      */
     public GdbProxy(GdbDebuggerImpl debugger, String debuggerCommand,
-            String[] debuggerEnvironment, String workingDirectory) throws IOException {
+            String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
         this.debugger = debugger;
         
         evaluatedExpressions = new Vector();
@@ -107,7 +105,7 @@ public class GdbProxy implements GdbMiDefinitions {
         dc.add("--interpreter=mi"); // NOI18N
         
         gdbLogger = new GdbLogger(debugger, this);
-        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory);
+        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath);
     }
     
     protected GdbProxyEngine getProxyEngine() {
@@ -142,9 +140,9 @@ public class GdbProxy implements GdbMiDefinitions {
     public int environment_cd(String dir) {
         double ver = debugger.getGdbVersion();
         if (ver > 6.3) {
-            return engine.sendCommand("-environment-cd " + dir); // NOI18N
+            return engine.sendCommand("-environment-cd  \"" + dir + "\""); // NOI18N
         } else {
-            return engine.sendCommand("directory " + dir); // NOI18N
+            return engine.sendCommand("directory \"" + dir + "\""); // NOI18N
         }
     }
     
@@ -406,11 +404,19 @@ public class GdbProxy implements GdbMiDefinitions {
     }
     
     /**
+     * Send "set new-console" to the debugger
+     * This command tells gdb to execute inferior program with console.
+     */
+    public int set_new_console() {
+        return engine.sendCommand(CLI_CMD_SET_NEW_CONSOLE);
+    }
+    
+    /**
      * Request the type of a symbol. As of gdb 6.6, this is unimplemented so we send a
      * non-mi command "ptype". We should only be called when symbol is in scope.
      */
     public int symbol_type(String symbol) {
-        return engine.sendCommand("ptype " + symbol);
+        return engine.sendCommand("ptype " + symbol); // NOI18N
     }
     
     /**
@@ -419,7 +425,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * of abstract data structures (structs and classes). Its the same for other types.
      */
     public int whatis(String symbol) {
-        return engine.sendCommand("whatis " + symbol);
+        return engine.sendCommand("whatis " + symbol); // NOI18N
     }
     
     /**
@@ -506,12 +512,12 @@ public class GdbProxy implements GdbMiDefinitions {
         final String strQuote = "\""; // NOI18N
         int i;
         if (name == null || name.length() == 0) {
-            throw new IllegalStateException("Internal error: expression is not specified");
+            throw new IllegalStateException("Internal error: expression is not specified"); // NOI18N
         }
         if (name.indexOf(' ') >= 0) {
             if (name.indexOf('\"') < 0) {
                 // Add double quotes
-                name = '"' + name + '"';
+                name = '"' + name + '"'; // NOI18N
             } else {
                 if (name.startsWith(strQuote) && name.endsWith(strQuote)) {
                     // Nothing to do
@@ -601,343 +607,6 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int gdb_exit() {
         return engine.sendCommand(MI_CMD_GDB_EXIT);
-    }
-    
-    /**
-     * Send "set new-console" to the debugger
-     * This command tells gdb to execute inferior program with console.
-     */
-    public int set_new_console() {
-        return engine.sendCommand(CLI_CMD_SET_NEW_CONSOLE);
-    }
-    
-    /**
-     * Creates external terminal for program I/O (input, output)
-     *
-     * @param xterm - short or full name of external terminal
-     * @param env   - environment settings from project properties
-     * @return null if terminal is not created, otherwise return terminal name
-     */
-    // FIXME - Not a gdb/mi command
-    protected String openExternalProgramIOWindow(GdbProxyEngine engine, String xterm, String[] env) {
-        String SessionID = "_" +  System.currentTimeMillis(); // NOI18N
-        String cmd;
-        String dir = DIR_TMP;
-        String fn = "loop" + SessionID + ".sh"; // NOI18N
-        String fnl = "loop" + SessionID + ".log"; // NOI18N
-        String reply = null;
-        //String shScript = "trap \"i=0;\" 1 2 3 4 5 6 7 8 9 10 12 13 14 15; while [ true ]; do sleep 10; done;"; // NOI18N
-        String shScript = "while [ true ]; do sleep 10; done;"; // NOI18N
-        String term = null;
-        String termBinary = null;
-        String termDisplay = null;
-        String termOptions = " -title \"Debugging\" "; // NOI18N
-        termOptions += " -background white "; // NOI18N
-        termOptions += " -foreground darkblue "; // NOI18N
-        termOptions += " -aw "; // NOI18N
-        termOptions += " -e "; // NOI18N
-        Thread t = new Thread();
-        int timeout = 1000; // Wait not longer than 1000 milliseconds (1 second)
-        int notimeout=0; // Don't wait
-        //long t1 = System.currentTimeMillis();
-        // TEMPORARY CODE. Try to create external terminal
-        // /usr/dt/bin/dtterm -title "Debugging"  -background blue
-        //        -foreground white  -aw -e /bin/sh /tmp/loop.sh &
-        if (Utilities.isWindows()) {
-            return null; // IZ 81533 (gdb will create console)
-        }
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            // Check if there is xterm
-            if (termBinary == null) {
-                if ((xterm == null) || (xterm.endsWith("xterm"))) { // NOI18N
-                    termBinary = "/usr/openwin/bin/xterm"; // NOI18N
-                    File f = new File(termBinary);
-                    if (!f.exists()) {
-                        //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): /usr/openwin/bin/xterm does not exist"); // DEBUG // NOI18N
-                        log.warning("/usr/openwin/bin/xterm does not exist"); // NOI18N
-                        termBinary = null;
-                    }
-                }
-            }
-            // Check if there is dtterm
-            if (termBinary == null) {
-                termBinary = "/usr/dt/bin/dtterm"; // NOI18N
-                File f = new File(termBinary);
-                if (!f.exists()) {
-                    //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): /usr/dt/bin/dtterm does not exist"); // DEBUG // NOI18N
-                    log.warning("/usr/dt/bin/dtterm does not exist"); // NOI18N
-                    termBinary = null;
-                }
-            }
-            if (termBinary == null) {
-                //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): No external terminal available"); // DEBUG // NOI18N
-                log.severe("ERROR: No external terminal available"); // NOI18N
-                return null;
-            }
-            // Generate script "fn" to get device name and process ID
-            cmd = "rm -f " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "rm -f " + fnl; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "echo 'tty > " + fnl + "' > " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "echo 'echo $$ >> " + fnl + "' >> " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "echo '" + shScript + "' >> " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            try {
-                t.sleep(100); // Wait while script "fn" is saved.
-                // Probably we shall check that it is saved.
-            } catch (InterruptedException tie100) {
-                // sleep 100 milliseconds
-            }
-            // Start external terminal
-            cmd = termBinary;
-            cmd += termOptions;
-            cmd += " /bin/sh " + fn + " &"; // NOI18N
-            engine.executeExternalCommand(cmd, dir, notimeout);
-            // Get external terminal device name
-            cmd = "head -1 " + fnl; // NOI18N
-            for (int  i=0; i < 99; i++) {
-                try {
-                    t.sleep(100); // Wait while xterm is started.
-                } catch (InterruptedException tie100) {
-                    // sleep 100 milliseconds
-                }
-                term = engine.executeExternalCommand(cmd, dir, timeout);
-                if (term == null) continue;
-                if (term.startsWith("/dev/")) break; // NOI18N
-            }
-            if (term != null) {
-                if (term.startsWith("/dev/")) { // NOI18N
-                    //System.err.println("INFO: GdbProxy.openExternalProgramIOWindow(): external terminal device name "+term); // DEBUG // NOI18N
-                    //log.info("External terminal device name "+term); // NOI18N
-                } else {
-                    //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): Invalid external terminal device name "+term); // DEBUG // NOI18N
-                    log.severe("ERROR: Invalid external terminal device name "+term); // NOI18N
-                    term = null;
-                }
-            } else {
-                //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): Cannot get external terminal device name"); // DEBUG // NOI18N
-                log.severe("ERROR: Cannot get external terminal device name"); // NOI18N
-                term = null;
-            }
-            if (term != null) {
-                if (term.endsWith("\n")) { // NOI18N
-                    int l = term.length();
-                    term=term.substring(0, l-1);
-                }
-                // Get process ID to kill terminal when debugging session is over
-                cmd = "tail -1 " + fnl; // NOI18N
-                externalTerminalPID = engine.executeExternalCommand(cmd, dir, timeout);
-                if (externalTerminalPID.lastIndexOf(' ') > 0) {
-                    // There are spaces - this is not a valid PID
-                    //System.err.println("WARNING: GdbProxy.openExternalProgramIOWindow(): Cannot get external terminal process ID"); // DEBUG // NOI18N
-                    log.warning("Cannot get external terminal process ID"); // NOI18N
-                    externalTerminalPID = null;
-                }
-            }
-            // Remove temporary files
-            cmd = "rm -f " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, notimeout); // Don't wait
-            cmd = "rm -f " + fnl; // NOI18N
-            engine.executeExternalCommand(cmd, dir, notimeout); // Don't wait
-            //System.err.println("INFO: GdbProxy.openExternalProgramIOWindow(): External terminal device name "+term); // DEBUG // NOI18N
-            //System.err.println("INFO: GdbProxy.openExternalProgramIOWindow(): External terminal process ID "+externalTerminalPID); // DEBUG // NOI18N
-            //log.info("External terminal device name "+term); // NOI18N
-            //log.info("External terminal process ID "+externalTerminalPID); // NOI18N
-            return term;
-        } else {
-            // Linux or generic Unix
-            termBinary = "/usr/bin/xterm"; // NOI18N
-            File f = new File(termBinary);
-            if (!f.exists()) {
-                //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): /usr/bin/xterm does not exist"); // DEBUG // NOI18N
-                log.warning("/usr/bin/xterm does not exist"); // NOI18N
-                log.severe("No external terminal available"); // NOI18N
-                return null;
-            }
-            // Generate script "fn" to get device name and process ID
-            cmd = "rm -f " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "rm -f " + fnl; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "echo 'tty > " + fnl + "' > " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            cmd = "echo 'echo $$ >> " + fnl + "' >> " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            //cmd = "echo 'while [ true ]; do sleep 10; done' >> " + fn; // NOI18N
-            cmd = "echo '" + shScript + "' >> " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, timeout);
-            try {
-                t.sleep(100); // Wait while script "fn" is saved.
-                // Probably we shall check that it is saved.
-            } catch (InterruptedException tie100) {
-                // sleep 100 milliseconds
-            }
-            // Start external terminal
-            cmd = termBinary;
-            cmd += termOptions;
-            cmd += " /bin/sh " + fn + " &"; // NOI18N
-            engine.executeExternalCommand(cmd, dir, notimeout); // Don't wait
-            // Get external terminal device name
-            cmd = "head -1 " + fnl; // NOI18N
-            for (int  i=0; i < 99; i++) {
-                try {
-                    t.sleep(100); // Wait while xterm is started.
-                } catch (InterruptedException tie100) {
-                    // sleep 100 milliseconds
-                }
-                term = engine.executeExternalCommand(cmd, dir, timeout);
-                if (term == null) continue;
-                if (term.startsWith("/dev/")) break; // NOI18N
-            }
-            if (term != null) {
-                if (term.startsWith("/dev/")) { // NOI18N
-                    //System.err.println("INFO: GdbProxy.openExternalProgramIOWindow(): external terminal device name "+term); // DEBUG // NOI18N
-                    //log.info("External terminal device name "+term); // NOI18N
-                } else {
-                    //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): Invalid external terminal device name "+term); // DEBUG // NOI18N
-                    log.severe("ERROR: Invalid external terminal device name "+term); // NOI18N
-                    term = null;
-                }
-            } else {
-                //System.err.println("ERROR: GdbProxy.openExternalProgramIOWindow(): Cannot get external terminal device name"); // DEBUG // NOI18N
-                log.severe("ERROR: Cannot get external terminal device name"); // NOI18N
-                term = null;
-            }
-            if (term != null) {
-                if (term.endsWith("\n")) { // NOI18N
-                    int l = term.length();
-                    term=term.substring(0, l-1);
-                }
-                // Get process ID to kill terminal when debugging session is over
-                cmd = "tail -1 " + fnl; // NOI18N
-                externalTerminalPID = engine.executeExternalCommand(cmd, dir, timeout);
-                if (externalTerminalPID.lastIndexOf(' ') > 0) {
-                    // There are spaces - this is not a valid PID
-                    //System.err.println("WARNING: GdbProxy.openExternalProgramIOWindow(): Cannot get external terminal process ID"); // DEBUG // NOI18N
-                    log.warning("Cannot get external terminal process ID"); // NOI18N
-                    externalTerminalPID = null;
-                }
-            }
-            // Remove temporary files
-            cmd = "rm -f " + fn; // NOI18N
-            engine.executeExternalCommand(cmd, dir, notimeout); // Don't wait
-            cmd = "rm -f " + fnl; // NOI18N
-            engine.executeExternalCommand(cmd, dir, notimeout); // Don't wait
-            //System.err.println("INFO: GdbProxy.openExternalProgramIOWindow(): External terminal device name "+term); // DEBUG // NOI18N
-            //System.err.println("INFO: GdbProxy.openExternalProgramIOWindow(): External terminal process ID "+externalTerminalPID); // DEBUG // NOI18N
-            //log.info("External terminal device name "+term); // NOI18N
-            //log.info("External terminal process ID "+externalTerminalPID); // NOI18N
-        }
-        return term;
-    }
-    
-    /** Closes External Program I/O Window (external terminal) */
-    // FIXME - Should move all PIO stuff to its own file
-    public void closeExternalProgramIOWindow() {
-        if (externalTerminalPID != null) {
-            debugger.kill(9, Long.valueOf(externalTerminalPID.trim()));
-            externalTerminalPID = null;
-        }
-    }
-    
-    /**
-     * Parses message from gdb and updates name, numchild, type
-     * fields in variable structure (gdbVariables element)
-     * Message format: ^done,name="var1",numchild="0",type="int"
-     *
-     * @param info Message from gdb
-     * @param objIndex String value of index in gdbVariables list
-     */
-    // FIXME - Not a gdb/mi command
-    public void updateVariableType(String info, String objIndex) {
-        String name = null;
-        String numchild = null;
-        String type = null;
-        String pattern1 = ",name=\"";     // NOI18N
-        String pattern2 = ",numchild=\""; // NOI18N
-        String pattern3 = ",type=\"";     // NOI18N
-        String pattern4 = "\",";     // NOI18N
-        String pattern5 = "\"";     // NOI18N
-        int i, j;
-        Integer I = new Integer(objIndex);
-        int index = I.intValue();
-        // Get name
-        i = info.indexOf(pattern1);
-        if (i >= 0) {
-            i = i + pattern1.length();
-            j = info.indexOf(pattern4, i);
-            if (j > i) {
-                name = info.substring(i, j);
-            }
-        }
-        // Get numchild
-        i = info.indexOf(pattern2);
-        if (i >= 0) {
-            i = i + pattern2.length();
-            j = info.indexOf(pattern4, i);
-            if (j > i) {
-                numchild = info.substring(i, j);
-            }
-        }
-        // Get type
-        i = info.indexOf(pattern3);
-        if (i >= 0) {
-            i = i + pattern3.length();
-            j = info.indexOf(pattern5, i);
-            if (j > i) {
-                type = info.substring(i, j);
-            }
-        }
-        // Update element in gdbVariables
-//        synchronized (gdbVariables) {
-//            if (index < gdbVariables.size()) {
-//                List list = (List) gdbVariables.get(index);
-//                if (list != null) {
-//                    if (list.size() >= 6) {
-//                        list.set(1, name);
-//                        list.set(3, type);
-//                        list.set(5, numchild);
-//                        gdbVariables.set(index, list);
-//                    }
-//                }
-//            }
-//        }
-    }
-    
-    /**
-     * Merges system environment with environment from project profile
-     * and returns XTERM value. Returns null if XTERM is not set
-     * Used code from org.openide.execution.NbProcessDescriptor
-     *
-     * @param envp - environment from project profile
-     * @return String xterm - value of environment variable XTERM
-     */
-    // FIXME - Not a gdb/mi command
-    protected String getXTERMvalue(String[] envp) {
-        String xterm = null;
-        Iterator it = System.getProperties().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String prop = (String) entry.getKey();
-            if (prop.equals("Env-XTERM")) { // NOI18N
-                xterm = (String)entry.getValue();
-            }
-        }
-        for (int i = 0; i < envp.length; i++) {
-            String nameval = envp[i];
-            int idx = nameval.indexOf('='); // NOI18N
-            if (idx > 0) {
-                String Name = nameval.substring(0, idx);
-                if (Name.equals("XTERM")) { // NOI18N
-                    //log.fine("DEBUG: getXTERMvalue(): "+nameval.substring(0, idx)+"="+nameval.substring(idx + 1));
-                    xterm = nameval.substring(idx + 1);
-                }
-            }
-        }
-        return xterm;
     }
     
 } /* End of public class GdbProxy */

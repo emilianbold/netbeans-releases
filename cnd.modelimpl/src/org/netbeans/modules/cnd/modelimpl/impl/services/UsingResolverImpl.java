@@ -88,7 +88,7 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         }
         
         private boolean valid(CsmFile file, int offset, CsmProject onlyInProject) {
-            return this.file == file && this.offset == offset && this.onlyInProject == onlyInProject;
+            return this.file.equals(file) && this.offset == offset && this.onlyInProject == onlyInProject;
         }
     }
     

@@ -49,8 +49,6 @@ import org.openide.util.WeakSet;
  */
 public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
         
-    private static boolean      verbose = false;
-    
     /** Nest array elements when array length is bigger then this. */
     private static final int ARRAY_CHILDREN_NESTED_LENGTH = 100;
     
@@ -251,22 +249,29 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (debugger.getState() != debugger.STATE_STOPPED) {
-                            if (verbose)
-                                System.out.println("LTM cancel started task " + task); // NOI18N
                             return;
                         }
+                        debugger.waitForTypeCompletionCompletion();
                         ltm.fireTreeChanged();
                     }
                 }, 500);
-            } else {
-                if ((e.getPropertyName() == debugger.PROP_STATE) && (debugger.getState() != debugger.STATE_STOPPED) && (task != null)) {
-                    // debugger has been resumed
-                    // =>> cancel task
-                    task.cancel();
-                    if (verbose)
-                        System.out.println("LTM cancel task " + task); // NOI18N
-                    task = null;
+            } else if ((e.getPropertyName() == debugger.PROP_STATE) && (debugger.getState() != debugger.STATE_STOPPED) && (task != null)) {
+                // debugger has been resumed
+                // =>> cancel task
+                task.cancel();
+                task = null;
+            } else if (e.getPropertyName().equals(debugger.PROP_LOCALS_VIEW_UPDATE)) {
+                final LocalsTreeModel ltm = getModel();
+                if (ltm == null) {
+                    return;
                 }
+                task = RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if (debugger.getState() == debugger.STATE_STOPPED) {
+                            ltm.fireTreeChanged();
+                        }
+                    }
+                });
             }
         }
     }
@@ -299,12 +304,12 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
      * @param node a expanded node
      */
     public void nodeExpanded(Object node) {
-//        if (node instanceof AbstractVariable) {
-//            AbstractVariable var = (AbstractVariable) node;
-//            if (var.expandChildren()) {
-//                fireTreeChanged();
-//            }
-//        }
+        if (node instanceof AbstractVariable) {
+            AbstractVariable var = (AbstractVariable) node;
+            if (var.expandChildren()) {
+                fireTreeChanged();
+            }
+        }
         synchronized (this) {
             expandedNodes.add(node);
             collapsedNodes.remove(node);

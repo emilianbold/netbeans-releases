@@ -143,7 +143,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
 
     private CsmClassifier renderClassifier(String ancName, Resolver parent) {
         CsmClassifier result = null;
-        CsmObject o = ResolverFactory.createResolver(this, parent).resolve(ancName);
+        CsmObject o = ResolverFactory.createResolver(this, parent).resolve(ancName, Resolver.CLASSIFIER);
         if( CsmKindUtilities.isClassifier(o) ) {
             result = (CsmClassifier) o;
         }

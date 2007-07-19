@@ -75,7 +75,7 @@ public final class ReferencesSupport {
         DataObject dataObject = DataObject.find(fileObject);
         EditorCookie  cookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
         if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie.");
+            throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
         
         StyledDocument doc = cookie.openDocument();

@@ -51,6 +51,13 @@ public interface Repository {
      * @return an object corresponding to key or null if there is no such one
      */
     Persistent get(Key key); 
+
+    /**
+     * retrieve object if it resides in memory cache; 
+     * @param key the key of object to get
+     * @return an object corresponding to key or null if there is no such object in memory cache
+     */
+    Persistent tryGet(Key key);
     
     /**
      * stop storing object

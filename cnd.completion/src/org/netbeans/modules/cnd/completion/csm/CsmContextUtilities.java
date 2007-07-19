@@ -195,8 +195,8 @@ public class CsmContextUtilities {
             return;
         }
         visitedFiles.add(file);
-        for (Iterator iter = file.getIncludes().iterator(); iter.hasNext();) {
-            CsmInclude inc = (CsmInclude) iter.next();
+        for (Iterator<CsmInclude> iter = file.getIncludes().iterator(); iter.hasNext();) {
+            CsmInclude inc = iter.next();
             CsmFile incFile = inc.getIncludeFile();
             if( incFile != null ) {
                 if (own) {
@@ -374,7 +374,7 @@ public class CsmContextUtilities {
         // XXX: in fact better to start from end
         for (Iterator it = context.iterator(); it.hasNext();) {
             CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
-            if (obj == elem.getScope()) {
+            if (obj.equals(elem.getScope())) {
                 return true;
             }
         }

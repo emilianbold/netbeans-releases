@@ -81,7 +81,11 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
     public CsmClass getReferencedClass() {
-        CsmObject o = resolve();
+        return getReferencedClass(null);
+    }
+
+    public CsmClass getReferencedClass(Resolver resolver) {
+        CsmObject o = resolve(resolver);
         return (o instanceof CsmClass) ? (CsmClass) o : (CsmClass) null;
     }
     
@@ -92,9 +96,8 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         return new String[0];
     }
     
-    private CsmObject resolve() {
-        Resolver resolver = ResolverFactory.createResolver(this);
-        return resolver.resolve(nameParts);
+    private CsmObject resolve(Resolver resolver) {
+        return ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
     }
 
     public void dispose() {

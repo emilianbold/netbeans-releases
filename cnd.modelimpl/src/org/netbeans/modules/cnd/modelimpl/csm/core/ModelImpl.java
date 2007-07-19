@@ -232,12 +232,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if (SwingUtilities.isEventDispatchThread()) {
             Runnable task = new Runnable() {
                                 public void run() {
-                                    _closeProject2(csmProject, platformProjectKey, ! TraceFlags.PERSISTENT_REPOSITORY);
+                                    _closeProject2(csmProject, platformProjectKey);
                                 }
                             };
             this.enqueue(task, "Model: Closing Project "); // NOI18N
         } else {
-            _closeProject2(csmProject, platformProjectKey, ! TraceFlags.PERSISTENT_REPOSITORY);
+            _closeProject2(csmProject, platformProjectKey);
         }           
     }
     
@@ -260,6 +260,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         } else {
             _closeProject2(csmProject, platformProjectKey, true);
         }        
+    }
+    
+    private void _closeProject2(ProjectBase csmProject, Object platformProjectKey) {
+	_closeProject2(csmProject, platformProjectKey, !TraceFlags.PERSISTENT_REPOSITORY);
     }
     
     private void _closeProject2(ProjectBase csmProject, Object platformProjectKey, boolean cleanRepository) {
@@ -298,6 +302,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         }
     }
 
+    /*package-local*/ void disposeProject(final ProjectBase prj) {
+	disposeProject(prj, !TraceFlags.PERSISTENT_REPOSITORY);
+    }
+    
     /*package-local*/ void disposeProject(final ProjectBase prj, boolean cleanRepository) {
         assert prj != null;
         String name = prj.getName();
@@ -366,10 +374,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     /*package-local*/ void fireProjectOpened(final ProjectBase csmProject) {
+        csmProject.onAddedToModel();
         for ( CsmModelListener listener : modelListeners ) {
             listener.projectOpened(csmProject);
         }
-        csmProject.onAddedToModel();
     }
     
     private void fireProjectClosed(CsmProject csmProject) {
@@ -475,7 +483,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         // clearFileExistenceCache all opened projects, UIDs will be removed in disposeProject
         for (Iterator projIter =prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
-            disposeProject(project, ! TraceFlags.PERSISTENT_REPOSITORY);
+            disposeProject(project);
         }
         
         cleanModel();      
@@ -573,12 +581,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private void disableProject2(final ProjectBase csmProject) {
         csmProject.setDisposed();
         Project project = findProjectByNativeProject(ModelSupport.instance().getNativeProject(csmProject.getPlatformProject()));
-        new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.FALSE);
-        this.enqueue(new Runnable() {
-            public void run() {
-                disableProject3(csmProject);
-            }
-        }, "Disabling code model for project " + csmProject.getName()); // NOI18N
+	if( project != null ) {
+	    new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.FALSE);
+	}
+	// that's a caller's responsibility to launch disabling in a separate thread
+        disableProject3(csmProject);
     }
     
     private void disableProject3(ProjectBase csmProject) {
@@ -634,7 +641,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         synchronized( lock ) {
             disabledProjects.remove(nativeProject);
         }
-        new CodeAssistanceOptions(findProjectByNativeProject(nativeProject)).setCodeAssistanceEnabled(Boolean.TRUE);        
+	Project project = findProjectByNativeProject(nativeProject);
+	if( project != null ) {
+	    new CodeAssistanceOptions(project).setCodeAssistanceEnabled(Boolean.TRUE);        
+	}
         addProject(nativeProject, nativeProject.getProjectDisplayName(), Boolean.TRUE);
 	//ProjectBase csmProject = (ProjectBase) _getProject(nativeProject);
 	//fireProjectOpened(csmProject);

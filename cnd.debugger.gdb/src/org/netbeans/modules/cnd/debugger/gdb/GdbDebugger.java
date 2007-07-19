@@ -28,6 +28,7 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.spi.debugger.ContextProvider;
 
 /**
@@ -41,32 +42,24 @@ import org.netbeans.spi.debugger.ContextProvider;
  */
 public abstract class GdbDebugger {
 
-    /** Name of property for state of debugger. */
     public static final String          PROP_STATE = "state"; // NOI18N
-    /** Name of property for current thread. */
     public static final String          PROP_CURRENT_THREAD = "currentThread"; // NOI18N
-    /** Name of property for current stack frame. */
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
-    /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
+    public static final String          PROP_LOCALS_VIEW_UPDATE = "loclsViewUpdate"; // NOI18N
 
-    /** Suspend property value constant. */
-    //public static final int             SUSPEND_ALL = EventRequest.SUSPEND_ALL;
-    /** Suspend property value constant. */
-    //public static final int             SUSPEND_EVENT_THREAD = EventRequest.SUSPEND_EVENT_THREAD;
-   
-    public static final String             STATE_NONE = "state_none"; // NOI18N
-    public static final String             STATE_STARTING = "state_starting"; // NOI18N
-    public static final String             STATE_LOADING = "state_loading"; // NOI18N
-    public static final String             STATE_READY = "state_ready"; // NOI18N
-    public static final String             STATE_RUNNING = "state_running"; // NOI18N
-    public static final String             STATE_STOPPED = "state_stopped"; // NOI18N
-    public static final String             STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
-    public static final String             STATE_EXITED  = "state_exited"; // NOI18N
+    public static final String          STATE_NONE = "state_none"; // NOI18N
+    public static final String          STATE_STARTING = "state_starting"; // NOI18N
+    public static final String          STATE_LOADING = "state_loading"; // NOI18N
+    public static final String          STATE_READY = "state_ready"; // NOI18N
+    public static final String          STATE_RUNNING = "state_running"; // NOI18N
+    public static final String          STATE_STOPPED = "state_stopped"; // NOI18N
+    public static final String          STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
+    public static final String          STATE_EXITED  = "state_exited"; // NOI18N
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */
-    public static final int                GDB_TMP_BREAKPOINT = 1;
-    public static final int                GDB_INVISIBLE_BREAKPOINT = 2;
+    public static final int             GDB_TMP_BREAKPOINT = 1;
+    public static final int             GDB_INVISIBLE_BREAKPOINT = 2;
     
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -76,29 +69,9 @@ public abstract class GdbDebugger {
 
     /** ID of GDB Debugger SessionProvider */
     public static final String          SESSION_PROVIDER_ID = "netbeans-cnd-GdbSessionProvider"; // NOI18N
-    
 
-    
-// XXX - I don't think this is used (in JPDA which is where I copied it from)
-//    /**
-//     * This utility method helps to start a new Cnd debugger session. 
-//     * Its implementation use {@link LaunchingDICookie} and 
-//     * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
-//     *
-//     * @param mainClassName a name or main class
-//     * @param args command line arguments
-//     * @param classPath a classPath
-//     * @param suspend if true session will be suspended
-//     */
-//    public static void launch(String progName, String[] args, boolean suspend) {
-//        DebuggerManager.getDebuggerManager().startDebugging(
-//            DebuggerInfo.create(SESSION_ID, new Object[] {})
-//        );
-//    }
-    
-    public abstract ContextProvider getLookup();
-
-
+     public abstract ContextProvider getLookup();
+     
     /**
      * This utility method helps to start a new Cnd debugger session. 
      *
@@ -279,6 +252,8 @@ public abstract class GdbDebugger {
      */
     public abstract void fixClasses(Map classes);
     
+    public abstract String trimKey(String key);
+    
     /**
      * Adds property change listener.
      *
@@ -310,4 +285,6 @@ public abstract class GdbDebugger {
     public abstract void removePropertyChangeListener(String propertyName, PropertyChangeListener l);
     
     public abstract void addTypeCompletion(String key);
+    public abstract void waitForTypeCompletionCompletion();
+    public abstract GdbProxy getGdbProxy();
 }

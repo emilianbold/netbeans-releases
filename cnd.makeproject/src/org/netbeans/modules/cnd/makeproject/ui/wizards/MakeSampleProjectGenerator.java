@@ -108,6 +108,12 @@ public class MakeSampleProjectGenerator {
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "cyg", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
             }
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
+                changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+            }
             else {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N

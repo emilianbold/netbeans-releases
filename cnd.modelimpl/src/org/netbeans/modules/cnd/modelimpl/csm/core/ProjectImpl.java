@@ -270,7 +270,7 @@ public final class ProjectImpl extends ProjectBase {
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
 	// we don't need this since ProjectBase persists fqn 
         //aFactory.writeUID(getUID(), aStream);
-        LibraryManager.getInsatnce().write(getUID(),aStream);
+        LibraryManager.getInsatnce().writeProjectLibraries(getUID(),aStream);
     }
 
     public ProjectImpl(DataInput input) throws IOException {
@@ -279,6 +279,6 @@ public final class ProjectImpl extends ProjectBase {
 	// we don't need this since ProjectBase persists fqn 
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-	LibraryManager.getInsatnce().read(getUID(), input);
+	LibraryManager.getInsatnce().readProjectLibraries(getUID(), input);
     }
 }

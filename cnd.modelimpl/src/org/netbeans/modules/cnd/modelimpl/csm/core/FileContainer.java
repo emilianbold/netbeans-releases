@@ -207,10 +207,21 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	put();
     }
     
-    public List<FileImpl> getFiles() {
+    public List<CsmFile> getFiles() {
+	List<CsmFile> res = new ArrayList<CsmFile>(myFiles.values().size());
+	getFiles2(res);
+	return res;
+    }
+    
+    public List<FileImpl> getFileImpls() {
+	List<FileImpl> res = new ArrayList<FileImpl>(myFiles.values().size());
+	getFiles2(res);
+	return res;
+    }
+    
+    public void getFiles2(List res) {
         List<MyFile> files;
         files = new ArrayList<MyFile>(myFiles.values());
-        List<FileImpl> res = new ArrayList<FileImpl>(files.size());
         for(MyFile f : files){
             FileImpl file = null;
             if (TraceFlags.USE_REPOSITORY) {
@@ -221,7 +232,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             }
             res.add(file);
         }
-        return res;
     }
     
     public void clear(){

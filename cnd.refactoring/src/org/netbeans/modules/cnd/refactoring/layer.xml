@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-c">
+                <folder name="Popup">
+                    <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorAfterPaste.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+            <folder name="x-c++">
+                <folder name="Popup">
+                    <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorAfterPaste.instance" boolvalue="true"/>
+                </folder>
+            </folder>            
+        </folder>
+    </folder>
+</filesystem>

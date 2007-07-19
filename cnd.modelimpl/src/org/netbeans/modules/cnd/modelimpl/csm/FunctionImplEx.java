@@ -62,7 +62,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     protected CsmObject findOwner(Resolver parent) {
 	String[] cnn = classOrNspNames;
 	if( cnn != null ) {
-	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn);
+	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
 		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
 		    return (CsmClass) obj;

@@ -155,7 +155,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
             final CsmProject project = file.getProject();
 	    CsmModelAccessor.getModel().enqueue(new Runnable() {
 		public void run() {
-		    if (getCsmFile(project) == file) {
+		    if (file.equals(getCsmFile(project))) {
 			changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
 		    }
 		}
@@ -169,7 +169,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
             final CsmProject project = file.getProject();
 	    CsmModelAccessor.getModel().enqueue(new Runnable() {
 		public void run() {
-		    if (getCsmFile(project) == file) {
+		    if (file.equals(getCsmFile(project))) {
 			changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
 		    }
 		}
@@ -191,7 +191,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
             final CsmProject project = file.getProject();
 	    CsmModelAccessor.getModel().enqueue(new Runnable() {
 		public void run() {
-		    if (getCsmFile(project) == file) {
+		    if (file.equals(getCsmFile(project))) {
 			changeStatus(UpToDateStatus.UP_TO_DATE_OK);
 		    }
 		}
@@ -203,6 +203,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     }
 
     public void projectOpened(CsmProject project) {
+	if( TraceFlags.TRACE_UP_TO_DATE_PROVIDER ) System.err.printf("CppUpToDateStatusProvider.projectOpened %s\n", project);
         CsmFile file = getCsmFile(project);
         if (file == null) {
             changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
@@ -216,7 +217,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     public void projectClosed(CsmProject project) {
         if (uid != null) {
             CsmFile file = getCsmFile(project);
-            if (file == null || file.getProject() == project) {
+            if (file == null || project.equals(file.getProject())) {
                 changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
             }
         }
@@ -243,11 +244,15 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
                     return;
                 }
             }
-            if (file == f) {
+            if (equals(file, f)) {
                 changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
                 filePath = null;
                 uid = null;
             }
         }
+    }
+    
+    private final boolean equals(CsmFile a, CsmFile b) {
+	return (a == null) ? (b == null) : a.equals(b);
     }
 }

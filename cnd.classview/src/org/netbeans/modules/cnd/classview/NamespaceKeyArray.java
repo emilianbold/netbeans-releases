@@ -60,7 +60,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
     public NamespaceKeyArray(ChildrenUpdater childrenUpdater, CsmNamespace namespace){
         super(childrenUpdater, namespace.getProject(),PersistentKey.createKey(namespace));
         CsmProject project = namespace.getProject();
-        if (namespace == project.getGlobalNamespace()){
+        if (namespace.equals(project.getGlobalNamespace())){
             if (!project.isArtificial()) {
                 CsmModelAccessor.getModel().addProgressListener(this);
                 isRootNamespase = true;

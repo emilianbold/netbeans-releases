@@ -161,12 +161,12 @@ public class DwarfSource implements SourceFileProperties{
             return path.substring(base.length()+1);
         } else if (path.startsWith(base + '\\')) {
             return path.substring(base.length() + 1);
-        } else if (!(path.startsWith("/") || path.startsWith("\\") ||
+        } else if (!(path.startsWith("/") || path.startsWith("\\") || // NOI18N
                      path.length() > 2 && path.charAt(2)==':')) {
             return path;
         } else {
-            StringTokenizer stb = new StringTokenizer(base, "\\/");
-            StringTokenizer stp = new StringTokenizer(path, "\\/");
+            StringTokenizer stb = new StringTokenizer(base, "\\/"); // NOI18N
+            StringTokenizer stp = new StringTokenizer(path, "\\/"); // NOI18N
             int match = 0;
             String pstring = null;
             while(stb.hasMoreTokens() && stp.hasMoreTokens()) {
@@ -220,12 +220,12 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
         } else if (Utilities.isUnix()) {
-            if (fileName.startsWith("/net/")){
+            if (fileName.startsWith("/net/")){ // NOI18N
                 try {
                     InetAddress addr = InetAddress.getLocalHost();
                     String host = addr.getHostName();
                     if (host != null && host.length()>0) {
-                        String u = "/net/"+host+"/";
+                        String u = "/net/"+host+"/"; // NOI18N
                         if (fileName.startsWith(u)){
                             fileName = fileName.substring(u.length()-1);
                         }
@@ -240,7 +240,7 @@ public class DwarfSource implements SourceFileProperties{
     private String linkSupport(String name){
         if (Utilities.isWindows()) {
             if (!new File(name).exists()){
-                String link = name+".lnk";
+                String link = name+".lnk"; // NOI18N
                 if (new File(link).exists()){
                     try {
                         LinkReader linkReader = new LinkReader(link);
@@ -251,7 +251,7 @@ public class DwarfSource implements SourceFileProperties{
                         ex.printStackTrace();
                     }
                 } else {
-                    StringTokenizer st = new StringTokenizer(name,"\\/");
+                    StringTokenizer st = new StringTokenizer(name,"\\/"); // NOI18N
                     StringBuilder buf = new StringBuilder();
                     while(st.hasMoreTokens()){
                         String token = st.nextToken();
@@ -262,7 +262,7 @@ public class DwarfSource implements SourceFileProperties{
                         if (token.length()>0 && token.charAt(token.length()-1) != ':'){
                             String path = buf.toString();
                             if (!new File(path).exists()){
-                                link = path+".lnk";
+                                link = path+".lnk"; // NOI18N
                                 if (new File(link).exists()){
                                     try {
                                         LinkReader linkReader = new LinkReader(link);
@@ -306,7 +306,7 @@ public class DwarfSource implements SourceFileProperties{
             compilePath = sourceName.substring(0,i);
             sourceName = sourceName.substring(i+1);
         } else {
-            if (sourceName.startsWith("/")) {
+            if (sourceName.startsWith("/")) { // NOI18N
                 sourceName = getRelativePath(compilePath, sourceName);
             }
         }
@@ -339,8 +339,8 @@ public class DwarfSource implements SourceFileProperties{
                 if (i>0){
                     String value = macro.substring(i+1).trim();
                     if (value.length() >= 2 &&
-                       (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' ||
-                        value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) {
+                       (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
+                        value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
                         value = value.substring(1,value.length()-1);
                     }
                     userMacros.put(PathCache.getString(macro.substring(0,i)), PathCache.getString(value));

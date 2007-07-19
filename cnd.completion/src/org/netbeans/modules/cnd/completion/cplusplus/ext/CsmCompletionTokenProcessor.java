@@ -1782,7 +1782,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             {
                 CsmCompletionExpression kwdExp = top;
                 addTokenTo(kwdExp);
-                kwdExp.setType(kwdExp.getType() + " " + kwdType);
+                kwdExp.setType(kwdExp.getType() + " " + kwdType); // NOI18N
                 errorState = false;
                 break;
             }     

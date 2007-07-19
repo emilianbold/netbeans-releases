@@ -208,7 +208,7 @@ public class DoubleFileStorage extends FileStorage {
         }
         if( Stats.traceDefragmentation ) {
             String text = it.hasNext() ? " finished by timeout" : " completed"; // NOI18N
-            System.out.printf("\t # defragmentinging %s %s; moved: %d remaining: %d \n", 
+            System.out.printf("\t # defragmentinging %s %s; moved: %d remaining: %d \n", // NOI18N
                     getFileByFlag(!activeFlag).getDataFileName(), 
                     text, 
                     cnt, 

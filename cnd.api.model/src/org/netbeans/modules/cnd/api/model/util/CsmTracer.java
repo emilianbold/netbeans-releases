@@ -578,11 +578,11 @@ public class CsmTracer {
     
     public void dumpModel(CsmFile file, String title) {
 	print(title);
-	List includes = file.getIncludes();
+	List<CsmInclude> includes = file.getIncludes();
 	print("Includes:"); // NOI18N
 	if (includes.size() > 0) {
-	    for( Iterator iter = includes.iterator(); iter.hasNext(); ) {
-		CsmInclude o = (CsmInclude) iter.next();
+	    for( Iterator<CsmInclude> iter = includes.iterator(); iter.hasNext(); ) {
+		CsmInclude o = iter.next();
 		print(o.toString());
 	    }
 	} else {

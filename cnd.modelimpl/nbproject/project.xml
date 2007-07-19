@@ -58,15 +58,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.modelutil</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.repository.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -138,14 +129,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.io</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.9.22</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -196,8 +179,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
+                <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.modelimpl.csm</package>
                 <package>org.netbeans.modules.cnd.modelimpl.csm.core</package>
+                <package>org.netbeans.modules.cnd.modelimpl.impl.services</package>
+                <package>org.netbeans.modules.cnd.modelimpl.trace</package>
             </friend-packages>
         </data>
     </configuration>

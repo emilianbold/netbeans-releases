@@ -28,6 +28,7 @@ import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
@@ -44,7 +45,7 @@ import org.openide.util.Utilities;
  */
 public class AdditionalLibrariesListPanel extends ListEditorPanel {
     
-   public static JPanel wrapPanel(ListEditorPanel innerPanel) {
+    public static JPanel wrapPanel(ListEditorPanel innerPanel) {
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -56,7 +57,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         outerPanel.setPreferredSize(new Dimension(500, 250));
         return outerPanel;
     }
-
+    
     public AdditionalLibrariesListPanel(Object[] objects) {
         super(objects);
         getDefaultButton().setVisible(false);
@@ -74,21 +75,25 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         FileFilter[] filters;
         if (Utilities.isWindows()){
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
-                ElfStaticLibraryFileFilter.getInstance(),
-                PeDynamicLibraryFileFilter.getInstance()};
+            ElfStaticLibraryFileFilter.getInstance(),
+            PeDynamicLibraryFileFilter.getInstance()};
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            filters = new FileFilter[] {MachOExecutableFileFilter.getInstance(),
+            ElfStaticLibraryFileFilter.getInstance(),
+            ElfDynamicLibraryFileFilter.getInstance()};
         }  else {
             filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
-                ElfStaticLibraryFileFilter.getInstance(),
-                ElfDynamicLibraryFileFilter.getInstance()};
+            ElfStaticLibraryFileFilter.getInstance(),
+            ElfDynamicLibraryFileFilter.getInstance()};
         }
         FileChooser fileChooser = new FileChooser(
-                    getString("LIBRARY_CHOOSER_TITLE_TXT"),
-                    getString("LIBRARY_CHOOSER_BUTTON_TXT"),
-                    JFileChooser.FILES_ONLY,
-                    false,
-                    filters,
-                    seed,
-                    false);
+                getString("LIBRARY_CHOOSER_TITLE_TXT"),
+                getString("LIBRARY_CHOOSER_BUTTON_TXT"),
+                JFileChooser.FILES_ONLY,
+                false,
+                filters,
+                seed,
+                false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION)
             return null;
@@ -122,7 +127,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         return new String((String) o);
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // NOI18N
     public void editAction(Object o) {
         String s = (String)o;
         

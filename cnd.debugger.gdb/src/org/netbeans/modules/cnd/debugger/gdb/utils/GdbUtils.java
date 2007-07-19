@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -68,77 +69,86 @@ public class GdbUtils {
     private static boolean isCygwin(String message) {
         return Utilities.isWindows() && message.toLowerCase().contains("cygwin"); // NOI18N
     }
-    
-    /** Test if the type of a variable is simple */
-    public static boolean isSimple(String type) {
-        if (type == null) {
+
+    /**
+     *  Ignoring array and pointer information, is this type a keyword type? We may check more
+     *  than one type here as a function type will have all argument types checked.
+     *
+     *  @param type The type to check
+     */
+    public static boolean isSimple(Object type) {
+        if (type == null || type instanceof Map) {
             return false;
-        }
-        type = type.trim();
-        if (type.equals("char") // NOI18N
-                        || type.equals("void") // NOI18N
-                        || type.equals("short") // NOI18N
-                        || type.equals("int") // NOI18N
-                        || type.equals("long") // NOI18N
-                        || type.equals("long int") // NOI18N
-                        || type.equals("long long") // NOI18N
-                        || type.equals("double") // NOI18N
-                        || type.equals("long double") // NOI18N
-                        || type.equals("long unsigned int") // NOI18N
-                        || type.equals("unsigned char") // NOI18N
-                        || type.equals("unsigned short") // NOI18N
-                        || type.equals("unsigned int") // NOI18N
-                        || type.equals("unsigned long") // NOI18N
-                        || type.equals("unsigned long long")) { // NOI18N
-            return true;
         } else {
-            return false;
+            StringTokenizer tok = new StringTokenizer(type.toString().replaceAll("[\\[\\]()<>,:*]", " ")); // NOI18N
+
+            while (tok.hasMoreTokens()) {
+                String token = tok.nextToken();
+                if (!isSimpleTypeKeyword(token) && Character.isJavaIdentifierStart(token.charAt(0))) {
+                    return false;
+                }
+            }
+            return true;
         }
+    }
+
+    public static boolean isSimpleNonArray(Object type) {
+	return type instanceof String && type.toString().indexOf('[') == -1 && isSimple(type.toString());
+    }
+
+    public static boolean isSimplePointer(String type) {
+	return type != null && isSimple(type.replace('*', ' '));
+    }
+    
+    /** Test if the type of a type is a keyword type */
+    public static boolean isSimpleTypeKeyword(String type) {
+        return type != null && type.equals("char") // NOI18N
+            || type.equals("void") // NOI18N
+            || type.equals("short") // NOI18N
+            || type.equals("int") // NOI18N
+            || type.equals("long") // NOI18N
+            || type.equals("float") // NOI18N
+            || type.equals("double") // NOI18N
+            || type.equals("const") // NOI18N
+            || type.equals("volatile") // NOI18N
+            || type.equals("unsigned") // NOI18N
+            || type.equals("signed"); // NOI18N
+    }
+    
+    /** Test if the type of a type is a keyword type */
+    public static boolean isAbstractTypeKeyword(Object o) {
+        String type = null;
+        return o instanceof String && (type = o.toString()) != null && type.equals("struct") // NOI18N
+            || type.equals("union") // NOI18N
+            || type.equals("class"); // NOI18N
     }
     
     /** Test if a variable is a struct or union */
-    public static boolean isStructOrUnion(String type) {
-        if (type == null) {
-            return false;
-        }
-        type = type.trim();
-        return type.startsWith("struct ") || type.startsWith("union ");
+    public static boolean isStructOrUnion(Object type) {
+        return type instanceof Map || (type instanceof String && (type.toString().startsWith("struct ") || type.toString().startsWith("union "))); // NOI18N
     }
     
     /** Test if a variable is a class */
-    public static boolean isClass(String type) {
-        if (type == null) {
-            return false;
-        }
-        return type.trim().startsWith("class ");
+    public static boolean isClass(Object type) {
+        return type instanceof Map || (type instanceof String && type.toString().startsWith("class ")); // NOI18N
     }
     
     /** Test if a variable is an array */
-    public static boolean isArray(String type) {
-        if (type == null) {
-            return false;
-        }
-        type = type.trim();
-        return type.indexOf('[') != -1;
+    public static boolean isArray(Object type) {
+        return type instanceof String && type.toString().endsWith("]"); // NOI18N
     }
     
     /**
      * Test if a variable is a pointer. This method purposely ignores
      * function pointers.
      */
-    public static boolean isPointer(String type) {
-        if (type == null) {
-            return false;
-        }
-        return type.trim().endsWith("*"); // NOI18N
+    public static boolean isPointer(Object type) {
+        return type instanceof String && type.toString().endsWith("*"); // NOI18N
     }
     
     /** Test if a variable is a function pointer */
-    public static boolean isFunctionPointer(String type) {
-        if (type == null) {
-            return false;
-        }
-        return type.trim().endsWith("(*)"); // NOI18N
+    public static boolean isFunctionPointer(Object type) {
+        return type instanceof String && type.toString().contains("(*)("); // NOI18N
     }
     
     /**
@@ -236,7 +246,7 @@ public class GdbUtils {
             // put the value in the map and prepare for the next property
             value = info.substring(i, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.charAt(10) + ":" + value.substring(11);
+                value = value.charAt(10) + ":" + value.substring(11); // NOI18N
             }
             map.put(key, value);
             i = tend + 2;
@@ -278,7 +288,7 @@ public class GdbUtils {
             // put the value in the list and prepare for the next property
             value = info.substring(i, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.charAt(10) + ":" + value.substring(11);
+                value = value.charAt(10) + ":" + value.substring(11); // NOI18N
             }
             list.add(key + "=" + value); // NOI18N
             i = tend + 1;
@@ -377,7 +387,7 @@ public class GdbUtils {
      * @returns The index of the closing ']' or -1 if no match is found
      */
     public static int findMatchingBrace(String s, int idx) {
-        return findMatchingPair("[]", s, idx);
+        return findMatchingPair("[]", s, idx); // NOI18N
     }
     
     /**
@@ -388,7 +398,7 @@ public class GdbUtils {
      * @returns The index of the closing '}' or -1 if no match is found
      */
     public static int findMatchingCurly(String s, int idx) {
-        return findMatchingPair("{}", s, idx);
+        return findMatchingPair("{}", s, idx); // NOI18N
     }
     
     /**
@@ -399,7 +409,7 @@ public class GdbUtils {
      * @returns The index of the closing ')' or -1 if no match is found
      */
     public static int findMatchingParen(String s, int idx) {
-        return findMatchingPair("()", s, idx);
+        return findMatchingPair("()", s, idx); // NOI18N
     }
     
     /**
@@ -410,7 +420,7 @@ public class GdbUtils {
      * @returns The index of the closing ')' or -1 if no match is found
      */
     public static int findMatchingLtGt(String s, int idx) {
-        return findMatchingPair("<>", s, idx);
+        return findMatchingPair("<>", s, idx); // NOI18N
     }
     
     /**

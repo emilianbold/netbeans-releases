@@ -34,12 +34,15 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class RunDialogPanel extends javax.swing.JPanel {
     private DocumentListener modifiedValidateDocumentListener = null;
@@ -347,12 +350,21 @@ public class RunDialogPanel extends javax.swing.JPanel {
             seed = FileChooser.getCurrectChooserFile().getPath();
         if (seed.length() == 0)
             seed = System.getProperty("user.home"); // NOI18N
+        
+        FileFilter[] filter;
+        if (Utilities.isWindows()){
+            filter = new FileFilter[] {PeExecutableFileFilter.getInstance()};
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            filter = new FileFilter[] {MachOExecutableFileFilter.getInstance()};
+        } else {
+            filter = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
+        }
         // Show the file chooser
         FileChooser fileChooser = new FileChooser(
                 getString("SelectExecutable"),
                 getString("SelectLabel"),
                 FileChooser.FILES_ONLY,
-                new FileFilter[] {ElfExecutableFileFilter.getInstance()},
+                filter,
                 seed,
                 false
                 );

@@ -56,14 +56,18 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     }
     
     public CsmNamespace getReferencedNamespace() {
+        return getReferencedNamespace(null);
+    }
+    
+    public CsmNamespace getReferencedNamespace(Resolver resolver) {
         // TODO: process preceding aliases
         CsmNamespace referencedNamespace = _getReferencedNamespace();
         if (referencedNamespace == null) {
             _setReferencedNamespace(null);
             CsmObject result = ResolverFactory.createResolver(
                     getContainingFile(),
-                    startOffset).
-                    resolve(name);
+                    startOffset, resolver).
+                    resolve(name, Resolver.NAMESPACE);
             if (result != null && result instanceof CsmNamespaceDefinition) {
                 result = ((CsmNamespaceDefinition)result).getNamespace();
             }

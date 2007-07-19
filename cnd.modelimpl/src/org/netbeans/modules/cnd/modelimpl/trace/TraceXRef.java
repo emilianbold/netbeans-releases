@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,11 +41,8 @@ import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileUtil;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
+
 
 /**
  *
@@ -82,8 +78,8 @@ public class TraceXRef extends TraceModel {
                     System.err.println("No object with name " + declarationName + " in model");
                 }
             } else if ((refFile.length() > 0) && (line > 0) && (column > 0)) {
-                System.out.println("looking for object on position: line=" + line + " column="+column);
-                System.out.println("in file:" + refFile);
+                System.out.println("looking for object on position: line=" + line + " column="+column); // NOI18N
+                System.out.println("in file:" + refFile); // NOI18N
                 CsmFile file = getCsmFile(refFile);
                 if (!(file instanceof FileImpl)) {
                     System.err.println("No CsmFile was found with name: " + refFile);
@@ -106,14 +102,14 @@ public class TraceXRef extends TraceModel {
                 System.err.println("should be --xref#file_path#1_based_line#1_based_column or --xref#name");
             }
             if (object == null) {
-                System.out.println("Nothing to search");
+                System.out.println("Nothing to search"); // NOI18N
             } else {
-                System.out.println("TARGET OBJECT IS\n  " + CsmTracer.toString(object));
+                System.out.println("TARGET OBJECT IS\n  " + CsmTracer.toString(object)); // NOI18N
                 if (CsmKindUtilities.isNamedElement(object)) {
-                    System.out.println("NAME IS: " + ((CsmNamedElement)object).getName());
+                    System.out.println("NAME IS: " + ((CsmNamedElement)object).getName()); // NOI18N
                 }
                 if (CsmKindUtilities.isDeclaration(object)) {
-                    System.out.println("UNIQUE NAME IS: " + ((CsmDeclaration)object).getUniqueName());
+                    System.out.println("UNIQUE NAME IS: " + ((CsmDeclaration)object).getUniqueName()); // NOI18N
                 }
                 
                 ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
@@ -126,7 +122,7 @@ public class TraceXRef extends TraceModel {
                 }            
                 traceRefs(refs, decl, def, System.out);
                 if (super.isShowTime()) {
-                    System.out.println("search took " + time + "ms");
+                    System.out.println("search took " + time + "ms"); // NOI18N
                 }       
                 ReferenceRepositoryImpl.getDefinitionDeclaration(object);
             }
@@ -207,35 +203,7 @@ public class TraceXRef extends TraceModel {
         }        
     }
     
-    public static final class RefHyperlink implements OutputListener {
-        private final CsmReference ref;
-        public RefHyperlink(CsmReference ref) {
-            this.ref = ref;
-        }
-        public void outputLineSelected(OutputEvent ev) {
-        }
-
-        public void outputLineAction(OutputEvent ev) {
-            CsmUtilities.openSource((CsmOffsetable)ref);
-        }
-
-        public void outputLineCleared(OutputEvent ev) {
-        }
-        
-    }
-    public static void traceRefs(Collection<CsmReference> out, CsmObject targetDecl, CsmObject targetDef, OutputWriter writer) throws IOException {
-        if (out.size() == 0) {
-            writer.println("REFERENCES ARE NOT FOUND"); // NOI18N
-        } else {
-            writer.println("REFERENCES ARE:" ); // NOI18N
-            out = sortRefs(out);
-            for (CsmReference ref : out) {
-                writer.println(toString(ref, targetDecl, targetDef), new RefHyperlink(ref), true);
-            }
-        }        
-    }
-    
-    private static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
+    public static String toString(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         String out = CsmTracer.getOffsetString(ref, true);
         ReferenceRepositoryImpl.ReferenceKind kind = ReferenceRepositoryImpl.getReferenceKind(ref, targetDecl, targetDef);
         String postfix;

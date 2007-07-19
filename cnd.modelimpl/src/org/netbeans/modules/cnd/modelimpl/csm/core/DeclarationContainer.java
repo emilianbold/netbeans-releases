@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
@@ -376,12 +377,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
                         CsmFriend friend = friendUID.getObject();
                         if (CsmKindUtilities.isFriendClass(friend)) {
                             CsmFriendClass cls = (CsmFriendClass) friend;
-                            if (cls.getReferencedClass() == decl){
+                            if (decl.equals(cls.getReferencedClass())){
                                 res.add(cls);
                             }
                         } else if (CsmKindUtilities.isFriendMethod(friend)) {
                             CsmFriendFunction fun = (CsmFriendFunction) friend;
-                            if (fun.getReferencedFunction() == decl){
+                            if (decl.equals(fun.getReferencedFunction())){
                                 res.add(fun);
                             }
                         }
@@ -488,27 +489,21 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2){
-        CsmOffsetableDeclaration decl1 = uid1.getObject();
-        CsmOffsetableDeclaration decl2 = uid2.getObject();
-        if (decl1 != null && decl2 != null){
-            return decl1.getContainingFile() == decl2.getContainingFile();
-        }
-        // assert?
-        return false;
+        return isSameFile(uid1.getObject(), uid2.getObject());
     }
     
     private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmOffsetableDeclaration decl2){
         CsmOffsetableDeclaration decl1 = uid1.getObject();
-        if (decl1 != null && decl2 != null){
-            return decl1.getContainingFile() == decl2.getContainingFile();
-        }
-        // assert?
-        return false;
+        return isSameFile(uid1.getObject(), decl2);
     }
     
     private boolean isSameFile(CsmOffsetableDeclaration decl1, CsmOffsetableDeclaration decl2){
         if (decl1 != null && decl2 != null){
-            return decl1.getContainingFile() == decl2.getContainingFile();
+            CsmFile file1 = decl1.getContainingFile();
+            CsmFile file2 = decl2.getContainingFile();
+            if (file1 != null && file1 != null) {
+                return file1.equals(file2);
+            }
         }
         // assert?
         return false;

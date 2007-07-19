@@ -42,6 +42,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
@@ -202,7 +203,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private CsmObject findOwner() {
 	String[] cnn = classOrNspNames;
 	if( cnn != null ) {
-	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn);
+	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
 		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
 		    return (CsmClass) obj;

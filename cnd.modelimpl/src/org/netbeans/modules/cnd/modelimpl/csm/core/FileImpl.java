@@ -71,6 +71,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
 
+    private static final boolean SKIP_UNNECESSARY_FAKE_FIXES = false;
+    
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
     public static final int SOURCE_C_FILE = 2;
@@ -250,7 +252,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public boolean validate() {
 	synchronized (changeStateLock) {
 	    if( state == State.PARSED ) {
-		if( getBuffer().lastModified() > lastParsed ) {
+		long lastModified = getBuffer().lastModified();
+		if( lastModified > lastParsed ) {
+		    if( TraceFlags.TRACE_VALIDATION ) System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
 		    state = State.MODIFIED;
 		    return false;
 		}
@@ -412,7 +416,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private void _clearIncludes() {
         if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.remove(includes);
+            try {
+                includesLock.writeLock().lock();
+		RepositoryUtils.remove(includes);
+            } finally {
+                includesLock.writeLock().unlock();
+            }
         } else {
             includesOLD.clear();
         }
@@ -498,7 +507,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
-        APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartFile(preprocHandler.getIncludeHandler()), apt, this, preprocHandler);
+        APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getIncludeHandler()), apt, this, preprocHandler);
         return walker.getFilteredTokenStream(getLanguageFilter());
     }
     
@@ -548,7 +557,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert (aptLight != null);
             boolean skip = TraceFlags.CACHE_SKIP_APT_VISIT;
             if (!skip) {
-                APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartFile(preprocHandler.getIncludeHandler()), aptLight, this, preprocHandler);
+                APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getIncludeHandler()), aptLight, this, preprocHandler);
                 walker.addMacroAndIncludes(true);
                 walker.visit();          
             } else {
@@ -564,7 +573,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // init guard info
             setGuardState(preprocHandler, aptFull);
             // make real parse
-            APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartFile(preprocHandler.getIncludeHandler()), aptFull, this, preprocHandler);
+            APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getIncludeHandler()), aptFull, this, preprocHandler);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
@@ -613,6 +622,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 	lastParsed = System.currentTimeMillis();
+	if( TraceFlags.TRACE_VALIDATION ) System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n", 
+		getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified()-lastParsed);
         return ast;
     }
 
@@ -746,7 +757,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public List<CsmOffsetableDeclaration> getDeclarations() {
-        fixFakeRegistrations();
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmOffsetableDeclaration> decls;
             try {
@@ -942,19 +955,41 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
   
     public void scheduleParsing(boolean wait, APTPreprocHandler.State ppState) throws InterruptedException {
         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("> File " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+        boolean fixFakes = false;
         synchronized( stateLock ) {
             //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  sync " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
-            while( ! isParsed() ) {
-                ParserQueue.instance().addFirst(this, ppState, false);
-                //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
-                if( wait ) {
-                    stateLock.wait();
+            if (SKIP_UNNECESSARY_FAKE_FIXES) {
+                if (isParsed()) {
+                    fixFakes = wait;
+                } else {
+                    while( ! isParsed() ) {
+                        ParserQueue.instance().addFirst(this, ppState, false);
+                        //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+                        if( wait ) {
+                            stateLock.wait();
+                        }
+                        else {
+                            return;
+                        }
+                        //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< wait " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+                    }
                 }
-		else {
-		    return;
-		}
-                //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< wait " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+            } else {
+                while( ! isParsed() ) {
+                    ParserQueue.instance().addFirst(this, ppState, false);
+                    //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+                    if( wait ) {
+                        stateLock.wait();
+                    }
+                    else {
+                        return;
+                    }
+                    //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< wait " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
+                }
             }
+        }
+        if (SKIP_UNNECESSARY_FAKE_FIXES && fixFakes) {
+            fixFakeRegistrations();
         }
         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< File " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
     }    
@@ -1069,7 +1104,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public int hashCode() {
 	if( hash == 0 ) {   // we don't need sync here - at worst, we'll calculate the same value twice
-	    hash = getIdentityHashPath(this).hashCode();
+	    String identityHashPath = getProject().getQualifiedName() + "*" + getAbsolutePath(); // NOI18N
+	    hash = identityHashPath.hashCode();
 	}
         return hash;
     }
@@ -1078,16 +1114,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (obj == null || !(obj instanceof CsmFile)) {
             return false;
         }
-        boolean retValue;
-        CsmFile other = (CsmFile)obj;
-        retValue = getIdentityHashPath(this).equals(getIdentityHashPath(other));
-        return retValue;
+	if( obj == this ) {
+	    return true;
+	}
+	CsmFile other = (CsmFile)obj;
+	if( this.getAbsolutePath().equals(other.getAbsolutePath()) ) {
+	    return this.getProject().getQualifiedName().equals(other.getProject().getQualifiedName());
+	}
+	return false;
     }
     
-    private static String getIdentityHashPath(CsmFile file) {
-	return file.getProject().getQualifiedName() + "*" + file.getAbsolutePath(); // NOI18N
-    }
-
     private GuardBlockState getGuardState() {
         return guardState;
     }

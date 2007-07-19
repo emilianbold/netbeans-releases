@@ -132,7 +132,7 @@ public class GdbProfile implements ConfigurationAuxObject {
                     return file.getAbsolutePath();
                 }
                 if (Utilities.isWindows()) {
-                    file = new File(d, name + ".exe");
+                    file = new File(d, name + ".exe"); // NOI18N
                     if (file.exists()) {
                         return file.getAbsolutePath();
                     }

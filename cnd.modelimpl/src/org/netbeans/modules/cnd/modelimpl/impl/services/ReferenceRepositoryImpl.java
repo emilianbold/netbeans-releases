@@ -159,7 +159,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<APTToken>(100);
         boolean destructor = false;
-        if (name.startsWith("~")) {
+        if (name.startsWith("~")) { // NOI18N
             destructor = true;
             name = name.substring(1);
         }
@@ -209,7 +209,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, boolean includeSelfDeclarations) {
         assert targetDecl != null;
         boolean accept = false;
-        if (ref != null && ref.getReferencedObject() == targetDecl) {
+        if (ref != null && targetDecl.equals(ref.getReferencedObject())) {
             if (includeSelfDeclarations) {
                 accept = true;
             } else {
@@ -224,9 +224,9 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         CsmObject owner = ref.getOwner();
         assert owner != null;        
         ReferenceKind kind;
-        if (owner == targetDecl) {
+        if (owner.equals(targetDecl)) {
             kind = ReferenceKind.DECLARATION;
-        } else if (owner == targetDef) {
+        } else if (owner.equals(targetDef)) {
             kind = ReferenceKind.DEFINITION;
         } else {
             kind = ReferenceKind.USAGE;
@@ -287,6 +287,6 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 break;
             }
         }
-        return basePrj.getAllFiles();
+        return basePrj.getAllFileImpls();
     }
 }
