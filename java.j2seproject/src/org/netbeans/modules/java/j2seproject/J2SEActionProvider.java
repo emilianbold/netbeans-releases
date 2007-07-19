@@ -43,6 +43,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -184,7 +185,7 @@ class J2SEActionProvider implements ActionProvider {
             return ;
         }
         
-        Runnable action = new Runnable () {
+        final Runnable action = new Runnable () {
             public void run () {
                 Properties p = new Properties();
                 String[] targetNames;
@@ -217,14 +218,14 @@ class J2SEActionProvider implements ActionProvider {
             }            
         };
         
-//        if (this.bkgScanSensitiveActions.contains(command)) {        
-//            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command)); //NOI18N
-//        }
-//        else {
+        if (this.bkgScanSensitiveActions.contains(command)) {                    
+            ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (J2SEActionProvider.class,"ACTION_"+command));   //NOI18N                    
+        }
+        else {
             action.run();
-//        }
+        }
     }
-
+    
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
