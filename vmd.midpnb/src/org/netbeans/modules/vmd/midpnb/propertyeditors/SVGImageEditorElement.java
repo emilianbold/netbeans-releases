@@ -18,14 +18,9 @@
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -53,9 +48,6 @@ import org.openide.util.Exceptions;
  * @author Anton Chechel
  */
 public class SVGImageEditorElement extends PropertyEditorResourceElement implements DocumentListener {
-
-    private static final int IMAGE_MAX_WIDTH = 90;
-    private static final int BORDER_EDGE_LENGTH = 10;
 
     private long componentID;
     private boolean doNotFireEvent;
@@ -236,39 +228,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         }
     }
 
-//    private class ImagePreview extends JComponent {
-//
-//        static final int IMAGE_MAX_WIDTH = 90;
-//        private static final int BORDER_EDGE_LENGTH = 10;
-//
-//        @Override
-//        public void paint(Graphics g) {
-//            // paint the border
-//            g.setColor(Color.BLACK);
-//            final int rightX = getWidth() - 1;
-//            final int bottomY = getHeight() - 1;
-//            // top left
-//            g.drawLine(0, 0, 0, BORDER_EDGE_LENGTH);
-//            g.drawLine(0, 0, BORDER_EDGE_LENGTH, 0);
-//            // top right
-//            g.drawLine(rightX, 0, rightX, BORDER_EDGE_LENGTH);
-//            g.drawLine(rightX, 0, rightX - BORDER_EDGE_LENGTH, 0);
-//            // bottom left
-//            g.drawLine(0, bottomY, 0, bottomY - BORDER_EDGE_LENGTH);
-//            g.drawLine(0, bottomY, BORDER_EDGE_LENGTH, bottomY);
-//            // bottom right
-//            g.drawLine(rightX, bottomY, rightX, bottomY - BORDER_EDGE_LENGTH);
-//            g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
-//
-//            if (image != null) {
-//                int xOffset = 0;
-//                int yOffset = 0;
-//                xOffset = (getWidth() - image.getWidth(this)) >> 1;
-//                yOffset = (getWidth() - image.getHeight(this)) >> 1;
-//                g.drawImage(image, xOffset, yOffset, this);
-//            }
-//        }
-//    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
