@@ -183,6 +183,7 @@ public class OptionsPanel extends JPanel {
     // private methods .........................................................
 
     private void initUI(String categoryName) {
+        this.getAccessibleContext().setAccessibleDescription(loc("ACS_OptionsPanel"));//NOI18N
         // central panel
         pOptions = new JPanel ();
         cLayout = new CardLayout();

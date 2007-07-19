@@ -89,7 +89,9 @@ public class OptionsDisplayerImpl {
         if (descriptor == null) {
             optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            
             JButton bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
+            bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
             JButton bClassic = (JButton) loc(new JButton(), "CTL_Classic");//NOI18N
+            bClassic.getAccessibleContext().setAccessibleDescription(loc("ACS_ClassicButton"));//NOI18N
             boolean isMac = Utilities.isMac();
             Object[] options = new Object[2];            
             options[0] = isMac ? DialogDescriptor.CANCEL_OPTION : bOK;
