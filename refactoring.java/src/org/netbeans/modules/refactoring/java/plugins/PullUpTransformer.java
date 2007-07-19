@@ -61,6 +61,7 @@ public class PullUpTransformer extends RefactoringVisitor {
             for (int i = 0; i<members.length; i++) {
                 if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
                     njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
+                    rewrite(tree, njuClass);
                 } else {
                     if (members[i].isMakeAbstract()) {
                         

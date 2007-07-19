@@ -57,7 +57,7 @@ public final class MemberInfo<H> {
     }
 
     public enum Group {
-        IMPLEMENTS, METHOD, FIELD;
+        IMPLEMENTS, METHOD, FIELD, TYPE;
     }
     
     /** Creates a new instance of MemberInfo describing a field
@@ -94,17 +94,14 @@ public final class MemberInfo<H> {
 
     public static MemberInfo<ElementHandle> create(Element el, CompilationInfo c) {
         String format = PrintPart.NAME;
-        Group g = null;
+        Group g = Group.TYPE;
         if (el.getKind() == ElementKind.FIELD) {
             format += " : " + PrintPart.TYPE; // NOI18N
             g=Group.FIELD;
         } else if (el.getKind() == ElementKind.METHOD) {
             format += PrintPart.PARAMETERS + " : " + PrintPart.TYPE; // NOI18N
             g=Group.METHOD;
-        } else if (el.getKind().isInterface()) {
-            g=Group.IMPLEMENTS;
-            format = "implements " + format;
-        }
+        } 
 
         MemberInfo mi = new MemberInfo(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, format), UiUtils.getDeclarationIcon(el));
         mi.modifiers = el.getModifiers();
@@ -115,6 +112,7 @@ public final class MemberInfo<H> {
     public static MemberInfo create(Element el, CompilationInfo c, Group group) {
         MemberInfo mi = new MemberInfo(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
         mi.group = group;
+        mi.modifiers = el.getModifiers();
         return mi;
     }
 
