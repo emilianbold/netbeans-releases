@@ -25,19 +25,11 @@ package org.netbeans.modules.compapp.projects.jbi.ui.deployInfo;
  * @author Tientien Li
  */
 public class ComponentObject {
-    // private String id; // 9bfbff60-467d-11d9-9669-0800200c9a66
     private String type; // engine or binding
     private String status; // installed, started, stop
     private String name; // component name
     private String description; // component description
     private boolean enabled; // to deploy or not
-
-    /**
-     * Creates a new ComponentObject object.
-     */
-    public ComponentObject() {
-        super();
-    }
 
     /**
      * Creates a new ComponentObject object.
@@ -54,11 +46,9 @@ public class ComponentObject {
         super();
         this.type = type;
         this.status = status;
-
-        //this.name = name;
+        this.name = name;
         this.description = description;
         this.enabled = enabled;
-        this.name = name;
     }
 
     /**
@@ -73,28 +63,10 @@ public class ComponentObject {
     /**
      * DOCUMENT ME!
      *
-     * @param type DOCUMENT ME!
-     */
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     public String getStatus() {
         return this.status;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param status DOCUMENT ME!
-     */
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     /**
@@ -109,28 +81,10 @@ public class ComponentObject {
     /**
      * DOCUMENT ME!
      *
-     * @param name DOCUMENT ME!
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
      * @return DOCUMENT ME!
      */
     public String getDescription() {
         return this.description;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param description DOCUMENT ME!
-     */
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     /**

@@ -17,29 +17,21 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * NewJPanel_CustomizerJarContent.java
- *
- * Created on June 5, 2006, 11:20 PM
- */
-
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
-
 import javax.swing.JPanel;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/** Customizer for WAR packaging.
+/** 
+ * Customizer for WAR packaging.
  */
-public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Panel, HelpCtx.Provider {
+public class CustomizerJarContent extends JPanel 
+        implements JbiJarCustomizer.Panel, HelpCtx.Provider {
 
     private Dialog dialog;
-    //private final AddFilter filterDlg = new AddFilter();
-    //private DefaultListModel dlm = new DefaultListModel();
     JbiProjectProperties jbiProperties;
     private VisualPropertySupport vps;
     private VisualArchiveIncludesSupport vas;
@@ -48,27 +40,24 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
     /** Creates new form CustomizerCompile */
     public CustomizerJarContent(JbiProjectProperties jbiProperties) {
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeWAR_A11YDesc")); // NOI18N
+        this.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_A11YDesc")); // NOI18N
 
         this.jbiProperties = jbiProperties;
         vps = new VisualPropertySupport(jbiProperties);
         vas = new VisualArchiveIncludesSupport(jbiProperties,
                                             jTableComp,
                                             jTableAddContent,
-                                            jButtonUpdate,
-                                            jButtonConfig,
+                                            jButtonUpdateComponents,
                                             jButtonAddProject,
-                                            jButtonRemove);
-        vas.initTable();
+                                            jButtonRemoveProject);
     }
 
     public void initValues() {
         //vps.register(jTextFieldFileName, JbiProjectProperties.DIST_JAR);
         jTextFieldFileName.setDocument(jbiProperties.DIST_JAR_MODEL);
-        
-        vps.register(vas, JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
-
         vas.initTableValues();
+        vps.register(vas, JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
     }
     
     /** This method is called from within the constructor to
@@ -78,28 +67,28 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabelFileName = new javax.swing.JLabel();
         jTextFieldFileName = new javax.swing.JTextField();
         jLabelExContent = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableComp = new javax.swing.JTable();
-        jButtonUpdate = new javax.swing.JButton();
+        jButtonUpdateComponents = new javax.swing.JButton();
         jLabelAddContent = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTableAddContent = new javax.swing.JTable();
         jButtonAddProject = new javax.swing.JButton();
-        jButtonRemove = new javax.swing.JButton();
-        jButtonConfig = new javax.swing.JButton();
+        jButtonRemoveProject = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         jLabelFileName.setLabelFor(jTextFieldFileName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_FileName_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_FileName_JLabel")); // NOI18N
 
         jTextFieldFileName.setEditable(false);
-        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJarContent.class).getString("ACS_CustomizeWAR_FileName_A11YDesc"));
 
         jLabelExContent.setLabelFor(jTableComp);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Content_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Content_JLabel")); // NOI18N
 
         jTableComp.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -127,11 +116,10 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
         });
         jScrollPane1.setViewportView(jTableComp);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonUpdate, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddFilter_JButton"));
-        jButtonUpdate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddFilter_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonUpdateComponents, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddFilter_JButton")); // NOI18N
 
         jLabelAddContent.setLabelFor(jTableAddContent);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddContent_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddContent_JLabel")); // NOI18N
 
         jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -142,15 +130,11 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
             }
         ));
         jScrollPane2.setViewportView(jTableAddContent);
-        jTableAddContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_AACH_ProjectJarFiles_JLabel"));
+        jTableAddContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_AACH_ProjectJarFiles_JLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddProject_JButton"));
-        jButtonAddProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddProject_A11YDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddProject_JButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Remove_JButton"));
-        jButtonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AdditionalRemove_A11YDesc"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonConfig, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Config_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveProject, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Remove_JButton")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -169,9 +153,8 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                 .add(jButtonAddProject)
-                                .add(jButtonRemove)
-                                .add(jButtonConfig))
-                            .add(jButtonUpdate)))
+                                .add(jButtonRemoveProject))
+                            .add(jButtonUpdateComponents)))
                     .add(layout.createSequentialGroup()
                         .add(jLabelFileName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -179,7 +162,7 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {jButtonAddProject, jButtonConfig, jButtonRemove, jButtonUpdate}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {jButtonAddProject, jButtonRemoveProject, jButtonUpdateComponents}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -192,7 +175,7 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
                 .add(jLabelExContent)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButtonUpdate)
+                    .add(jButtonUpdateComponents)
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE))
                 .add(11, 11, 11)
                 .add(jLabelAddContent)
@@ -202,19 +185,21 @@ public class CustomizerJarContent extends JPanel implements JbiJarCustomizer.Pan
                     .add(layout.createSequentialGroup()
                         .add(jButtonAddProject)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButtonRemove)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButtonConfig)))
+                        .add(jButtonRemoveProject)))
                 .addContainerGap())
         );
+
+        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJarContent.class).getString("ACS_CustomizeWAR_FileName_A11YDesc")); // NOI18N
+        jButtonUpdateComponents.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddFilter_A11YDesc")); // NOI18N
+        jButtonAddProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddProject_A11YDesc")); // NOI18N
+        jButtonRemoveProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AdditionalRemove_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddProject;
-    private javax.swing.JButton jButtonConfig;
-    private javax.swing.JButton jButtonRemove;
-    private javax.swing.JButton jButtonUpdate;
+    private javax.swing.JButton jButtonRemoveProject;
+    private javax.swing.JButton jButtonUpdateComponents;
     private javax.swing.JLabel jLabelAddContent;
     private javax.swing.JLabel jLabelExContent;
     private javax.swing.JLabel jLabelFileName;

@@ -212,7 +212,7 @@ public final class VisualPropertySupport {
      * @param propertyName DOCUMENT ME!
      */
     public void register(VisualArchiveIncludesSupport component, String propertyName) {
-        List value = (List) getAsType(propertyName, List.class);
+        List<VisualClassPathItem> value = (List) getAsType(propertyName, List.class);
         component2property.put(component, propertyName);
         component.setVisualWarItems((value != null) ? value : Collections.EMPTY_LIST);
         component.removeActionListener(componentListener);

@@ -19,12 +19,10 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Properties;
-
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.api.project.libraries.Library;
@@ -32,9 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.openide.util.Exceptions;
-
 import org.openide.util.Utilities;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.openide.filesystems.FileObject;
@@ -102,8 +98,8 @@ public class VisualClassPathItem {
      * @param inDeployment DOCUMENT ME!
      */
     public VisualClassPathItem(
-            Object cpElement, int type, String raw, String eval, boolean inDeployment
-            ) {
+            Object cpElement, int type, String raw, String eval, 
+            boolean inDeployment) {
         this.cpElement = cpElement;
         this.type = type;
         this.raw = raw;
@@ -143,7 +139,7 @@ public class VisualClassPathItem {
             if (projPropFile != null) {
                 InputStream is = null;
                 try {
-                    java.util.Properties p = new java.util.Properties();
+                    Properties p = new Properties();
                     is = projPropFile.getInputStream();
                     p.load(is);
                     asaDescription = p.getProperty("jbi.service-unit.description"); // NOI18N

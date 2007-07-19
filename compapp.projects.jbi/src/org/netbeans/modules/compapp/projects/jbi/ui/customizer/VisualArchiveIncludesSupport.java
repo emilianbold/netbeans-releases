@@ -20,7 +20,6 @@
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
 import org.netbeans.modules.compapp.jbiserver.connectors.HTTPServerConnector;
-import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
@@ -30,47 +29,51 @@ import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentObject;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentTableModel;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentTableRenderer;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.TableSorterUtil;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
-
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Vector;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
-//import org.netbeans.modules.compapp.jbiserver.JbiClassLoader;
 import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.CreateComponentInformation;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
 import org.openide.DialogDescriptor;
-//import org.netbeans.modules.compapp.jbiserver.management.FetchServerInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -78,184 +81,126 @@ import org.openide.filesystems.FileObject;
 /**
  * Handles adding and removing of additional war content.
  *
- * @author 
- * @version 
+ * @author jqian
  */
-
 final class VisualArchiveIncludesSupport {
-    /**
-     * DOCUMENT ME!
-     */
-    static final String JBIPROJ_JAR_LOC = "/org-netbeans-modules-compapp-projects-jbi.jar"; // NOI18N
+    
+    private static final String COMPONENT_INFO_FILE_NAME = "ComponentInformation.xml"; // NOI18N    
+    private static final String ASSEMBLY_INFO_FILE_NAME = "AssemblyInformation.xml"; // NOI18N
+        
     private JbiProjectProperties webProperties;
     
-    /**
-     * DOCUMENT ME!
-     */
-    final Project master;
+    private Project master;    
     
-    /**
-     * DOCUMENT ME!
-     */
-    final JTable classpathTable;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    final JButton addArtifactButton;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    final JButton removeButton;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    final JTable jTableComp;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    final JButton jButtonUpdate;
-    
-    /**
-     * DOCUMENT ME!
-     */
-    final JButton jButtonConfig;
-    private final VisualArchiveIncludesSupport.ClasspathTableModel classpathModel;
-    private Object[][] data;
-    private final ArrayList actionListeners = new ArrayList();
-    private ComponentTableModel mTableModel;
+    private JTable componentTable;    
+    private ComponentTableModel mComponentTableModel;
     private ComponentTableRenderer mTableRenderer;
-    private Vector mColumnNames;
-    private String nbuser;
-    private String compFilename;
-    private String compFileSrc;
-    private String compFileDst;
-    private String jbiFilename;
-    private String jbiFileLoc;
+    private Vector mComponentTableColumnNames;
+    
+    private JTable classpathTable;        
+    private ClasspathTableModel classpathTableModel;
+    private Object[][] data;
+    
+    private JButton addProjectButton;    
+    private JButton removeProjectButton;  
+    private JButton updateComponentsButton;       
+      
+    private List<ActionListener> actionListeners = new ArrayList<ActionListener>();
+    
+    private String compInfoFileLoc;
+    private String assemblyInfoFileLoc;
+    
     private JComboBox comboTarget = null;
     private DefaultComboBoxModel comboModel = null;
-    private List<String> comboValues = new ArrayList<String>();
-    private List<VisualClassPathItem> bindingList = null; 
-    private AntArtifact bcjar = null;
-    private String mModuleDir = null;
+    private List<String> componentNames = new ArrayList<String>();
     
+    private List<VisualClassPathItem> bindingVisualClassPathItems = null; 
+    private AntArtifact bcJar = null;
     
     
     /**
      * Creates a new VisualArchiveIncludesSupport object.
      *
-     * @param webProperties DOCUMENT ME!
-     * @param jTableComp DOCUMENT ME!
-     * @param classpathTable DOCUMENT ME!
-     * @param jButtonUpdate DOCUMENT ME!
-     * @param jButtonConfig DOCUMENT ME!
-     * @param addArtifactButton DOCUMENT ME!
-     * @param removeButton DOCUMENT ME!
+     * @param webProperties 
+     * @param componentTable 
+     * @param classpathTable 
+     * @param updateComponentsButton 
+     * @param addProjectButton 
+     * @param removeProjectButton 
      */
     public VisualArchiveIncludesSupport(
-            JbiProjectProperties webProperties, JTable jTableComp, JTable classpathTable,
-            JButton jButtonUpdate, JButton jButtonConfig, JButton addArtifactButton,
-            JButton removeButton
-            ) {
-        // Remember all buttons
-        this.webProperties = webProperties;
-        this.jTableComp = jTableComp;
-        this.jButtonUpdate = jButtonUpdate;
-        this.jButtonConfig = jButtonConfig;
-        this.jButtonConfig.setEnabled(false);
+            JbiProjectProperties webProperties, 
+            JTable componentTable, 
+            JTable classpathTable,
+            JButton updateComponentsButton, 
+            JButton addProjectButton,
+            JButton removeProjectButton) {
         
-        this.bindingList = webProperties.getBindingList();
+        this.webProperties = webProperties;
+        this.componentTable = componentTable;
+        this.classpathTable = classpathTable;
+        this.updateComponentsButton = updateComponentsButton;
+        this.addProjectButton = addProjectButton;
+        this.removeProjectButton = removeProjectButton;        
+        this.master = webProperties.getProject();       
+                
+        this.bindingVisualClassPathItems = webProperties.getBindingList();
         
         // combobox cell editor for target selection
         comboModel = new DefaultComboBoxModel(new String[] {" "}); // NOI18N
         comboTarget = new JComboBox(comboModel);
         
-        this.classpathTable = classpathTable;
-        this.classpathModel = new VisualArchiveIncludesSupport.ClasspathTableModel();
-        this.classpathTable.setModel(classpathModel);
-        this.classpathTable.getColumnModel().getColumn(0).setHeaderValue(
-                NbBundle.getMessage(VisualArchiveIncludesSupport.class, "TXT_Archive_Item") // NOI18N
-                );
-        this.classpathTable.getColumnModel().getColumn(1).setHeaderValue(
-                NbBundle.getMessage(VisualArchiveIncludesSupport.class, "TXT_Archive_PathInArchive") // NOI18N
-                );
-        this.classpathTable.getColumnModel().getColumn(0).setCellRenderer(
-                new VisualArchiveIncludesSupport.ClassPathCellRenderer()
-                );
-        this.classpathTable.getColumnModel().getColumn(1).setCellEditor(
-                new TargetComboBoxEditor(comboTarget)
-                );
+        initClassPathTable();          
         
-        this.classpathTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        
-        this.addArtifactButton = addArtifactButton;
-        this.removeButton = removeButton;
-        this.master = webProperties.getProject();
-        
+        initComponentTable();
+                
         // Register the listeners
-        VisualArchiveIncludesSupport.ClasspathSupportListener csl = new VisualArchiveIncludesSupport.ClasspathSupportListener();
-        
-        // On all buttons
-        this.jButtonUpdate.addActionListener(csl);
-        this.jButtonConfig.addActionListener(csl);
-        this.addArtifactButton.addActionListener(csl);
-        this.removeButton.addActionListener(csl);
-        
-        // On list selection
-        classpathTable.getSelectionModel().addListSelectionListener(csl);
-        classpathModel.addTableModelListener(csl);
+        ClasspathSupportListener csl = new ClasspathSupportListener();        
+        this.updateComponentsButton.addActionListener(csl);
+        this.addProjectButton.addActionListener(csl);
+        this.removeProjectButton.addActionListener(csl);
+        this.classpathTable.getSelectionModel().addListSelectionListener(csl);
+        classpathTableModel.addTableModelListener(csl);
         
         // Set the initial state of the buttons
         csl.valueChanged(null);
         
-        // init locals
-//        nbuser = "C:/Documents and Settings/jqian/.netbeans/5.5dev";    // TMP
-        nbuser = System.getProperty("netbeans.user"); // NOI18N
-        compFilename = "ComponentInformation.xml"; // NOI18N
-        jbiFilename = "AssemblyInformation.xml"; // NOI18N
-        compFileSrc = nbuser + "/" + compFilename; // NOI18N
-        
-        List os = (List) webProperties.get(JbiProjectProperties.META_INF);
-        
+        // init locals        
         Project p = webProperties.getProject();
         File pf = FileUtil.toFile(p.getProjectDirectory());
         
-        if ((os != null) && (os.size() > 0)) {
-            
+        List os = (List) webProperties.get(JbiProjectProperties.META_INF);        
+        if ((os != null) && (os.size() > 0)) {            
             String path = pf.getPath() + "/" + os.get(0).toString(); // NOI18N
-            compFileDst = path + "/" + compFilename; // NOI18N
-            jbiFileLoc = path + "/" + jbiFilename; // NOI18N
+            compInfoFileLoc = path + "/" + COMPONENT_INFO_FILE_NAME; // NOI18N
+            assemblyInfoFileLoc = path + "/" + ASSEMBLY_INFO_FILE_NAME; // NOI18N
         }
         
-        AntProjectHelper helper = (AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
-        bcjar = helper.createSimpleAntArtifact(
+        AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
+        bcJar = helper.createSimpleAntArtifact(
                 "CAPS.jbiserver:bpelse", "build/BCDeployment.jar", // NOI18N
                 helper.getStandardPropertyEvaluator(), "dist_bc", "clean" // NOI18N
                 );
-        
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        mModuleDir = ep.getProperty(JbiProject.MODULE_INSTALL_DIR);
     }
+    
     
     /**
      * DOCUMENT ME!
      *
      * @param items DOCUMENT ME!
      */
-    public void setVisualWarItems(List items) {
-        Object[][] data = new Object[items.size()][2];
-        this.data = data;
+    public void setVisualWarItems(List<VisualClassPathItem> items) {
+        this.data = new Object[items.size()][2];
         
         for (int i = 0; i < items.size(); i++) {
-            VisualClassPathItem vi = (VisualClassPathItem) items.get(i);
-            classpathModel.setValueAt(vi, i, 0);
-            classpathModel.setValueAt("", i, 1); // NOI18N
+            VisualClassPathItem vi = items.get(i);
+            classpathTableModel.setValueAt(vi, i, 0);
+            classpathTableModel.setValueAt("", i, 1); // NOI18N
         }
         
-        classpathModel.fireTableDataChanged();
+        updateAsaTarget();
+        
+        classpathTableModel.fireTableDataChanged();
     }
     
     /**
@@ -263,11 +208,12 @@ final class VisualArchiveIncludesSupport {
      *
      * @return DOCUMENT ME!
      */
-    public List getVisualWarItems() {
-        ArrayList items = new ArrayList();
+    public List<VisualClassPathItem> getVisualWarItems() {
+        List<VisualClassPathItem> items = new ArrayList<VisualClassPathItem>();
         
-        for (int i = 0; i < data.length; i++)
-            items.add((VisualClassPathItem) classpathModel.getValueAt(i, 0));
+        for (int i = 0; i < data.length; i++) {
+            items.add((VisualClassPathItem) classpathTableModel.getValueAt(i, 0));
+        }
         
         return items;
     }
@@ -278,7 +224,7 @@ final class VisualArchiveIncludesSupport {
      * @param tml DOCUMENT ME!
      */
     public void addTableModelListener(TableModelListener tml) {
-        classpathModel.addTableModelListener(tml);
+        classpathTableModel.addTableModelListener(tml);
     }
     
     /**
@@ -287,7 +233,7 @@ final class VisualArchiveIncludesSupport {
      * @param tml DOCUMENT ME!
      */
     public void removeTableModelListener(TableModelListener tml) {
-        classpathModel.removeTableModelListener(tml);
+        classpathTableModel.removeTableModelListener(tml);
     }
     
     /**
@@ -375,7 +321,7 @@ final class VisualArchiveIncludesSupport {
         }
         
         data = newData;
-        classpathModel.fireTableRowsInserted(data.length,
+        classpathTableModel.fireTableRowsInserted(data.length,
                 (data.length + uniqueArtifacts.size()) - 1);
         
         fireActionPerformed();
@@ -397,7 +343,7 @@ final class VisualArchiveIncludesSupport {
         for (int i = 0; i < n0; i++) {
             if (!sm.isSelectedIndex(i)) {
                 elements.add(data[i]);
-            }else{
+            } else {
                 if (data[i][0] instanceof VisualClassPathItem){
                     aa = ((VisualClassPathItem)data[i][0]).getObject();
                     if ((aa instanceof AntArtifact) &&
@@ -410,7 +356,7 @@ final class VisualArchiveIncludesSupport {
         
         final int n = elements.size();
         data = (Object[][]) elements.toArray(new Object[n][2]);
-        classpathModel.fireTableRowsDeleted(elements.size(), n0 - 1);
+        classpathTableModel.fireTableRowsDeleted(elements.size(), n0 - 1);
         
         if (index >= n) {
             index = n - 1;
@@ -421,24 +367,11 @@ final class VisualArchiveIncludesSupport {
         fireActionPerformed();
     }
     
-    private String parseTargetID(String str) {
-        if (str != null) {
-            int i = str.indexOf(" ["); // NOI18N
-            int j = str.lastIndexOf(']');
-            
-            if ((i > 0) && (j > 0)) {
-                return str.substring(i + 2, j);
-            }
-        }
-        
-        return null;
-    }
-    
     private String getDefaultTarget(String type) {
-        int tsize = comboValues.size();
+        int tsize = componentNames.size();
         
         for (int i = 0; i < tsize; i++) {
-            String val = comboValues.get(i);
+            String val = componentNames.get(i);
             
             if (val.startsWith(type)) {
                 return val;
@@ -448,73 +381,65 @@ final class VisualArchiveIncludesSupport {
         return ""; // NOI18N
     }
     
-    private void updateModels(String jar, String uuid, String desc, String cid) {
-        for (int i = 0, size = classpathModel.getRowCount(); i < size; i++) {
-            VisualClassPathItem vi = (VisualClassPathItem) classpathModel.getValueAt(i, 0);
+    private void updateClassPathTableModel(String jar, String suName, String suDesc, String compName) {
+        for (int i = 0, size = classpathTableModel.getRowCount(); i < size; i++) {
+            VisualClassPathItem vcpi = (VisualClassPathItem) classpathTableModel.getValueAt(i, 0);
             
-            String shortName = vi.getShortName();
+            String shortName = vcpi.getShortName();
             if (shortName.compareTo(jar) == 0 ||
                     // backward compatibility
                     shortName.endsWith(".jar") &&   // NOI18N
                     jar.endsWith("@SEDeployment.jar") &&    // NOI18N
                     shortName.substring(0, shortName.length() - 4).equals(
                     jar.substring(0, jar.length() - 17))) {
-                vi.setAsaDescription(desc);
-                vi.setAsaTarget(cid);
+                vcpi.setAsaDescription(suDesc);
+                vcpi.setAsaTarget(compName);
                 
-                // lookup the targe list
-                for (int j = 0, tsize = comboValues.size(); j < tsize; j++) {
-                    String target = comboValues.get(j);
-                    
-                    if (target.indexOf(cid) > 0) {
-                        classpathModel.setValueAt(target, i, 1);
-                        
-                        return;
-                    }
-                }
+                classpathTableModel.setValueAt(compName, i, 1);
                 
-                // not set yet.. default to the first non-blank traget on the list
-                classpathModel.setValueAt(getDefaultTarget(vi.getAsaType()), i, 1);
-                
-                return;
+//                // lookup the targe list
+//                for (int j = 0, tsize = comboValues.size(); j < tsize; j++) {
+//                    String target = comboValues.get(j);
+//                    
+//                    if (target.indexOf(compName) > 0) {
+//                        classpathTableModel.setValueAt(target, i, 1);
+//                        
+//                        return;
+//                    }
+//                }
+//                
+//                // not set yet.. default to the first non-blank traget on the list
+//                classpathTableModel.setValueAt(getDefaultTarget(vcpi.getAsaType()), i, 1);
+//                
+//                return;
             }
         }
         
         // OK this is not a SE jar..
-        for (VisualClassPathItem vi : bindingList) {
-            if (vi.getAsaTarget().compareTo(cid) == 0) {
-                vi.setAsaDescription(desc);                
+        for (VisualClassPathItem vi : bindingVisualClassPathItems) {
+            if (vi.getAsaTarget().compareTo(compName) == 0) {
+                vi.setAsaDescription(suDesc);                
                 return;
             }
         }
     }
-    
-    private void updateTargetList(String cid) {
-        if (mTableModel != null) {
-            for (int i = 0, size = mTableModel.getRowCount(); i < size; i++) {
-                // String cmp = (String) mTableModel.getValueAt(i, 2) + "-" + (String) mTableModel.getValueAt(i, 3);
-                String cmp = (String) mTableModel.getValueAt(i, 2);
-                if (cid.compareToIgnoreCase(cmp) == 0) {
-                    mTableModel.setValueAt(new Boolean(true), i, 0);
-                    
-                    return;
-                }
-            }
-        }
-    }
-    
-    private void loadAssemblyInfo() {
-        try {
+        
+    // Load AsseemblyInfo.xml and update classpath table and component table's first column
+    private void updateClassPathTable() {
+        try {            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
             
-            Document doc = factory.newDocumentBuilder().parse(new File(jbiFileLoc));
+            Document doc = factory.newDocumentBuilder().parse(new File(assemblyInfoFileLoc));
             
             NodeList serviceUnitNodeList = doc.getElementsByTagName("service-unit"); // NOI18N
-            String name = null;
-            String desc = null;
-            String cid = null;
+            String suName = null;
+            String suDescription = null;
+            String compName = null;
             String jar = null;
+            
+            // a list of component names currently being used in this compapp
+            List<String> compNames = new ArrayList<String>();
             
             for (int i = 0, isize = serviceUnitNodeList.getLength(); i < isize; i++) {
                 NodeList kids = serviceUnitNodeList.item(i).getChildNodes();
@@ -522,240 +447,194 @@ final class VisualArchiveIncludesSupport {
                 for (int k = 0, ksize = kids.getLength(); k < ksize; k++) {
                     Node n = kids.item(k);
                     
-                    if (n.getNodeName().compareTo("identification") == 0) { // NOI18N
+                    if (n.getNodeName().equals("identification")) { // NOI18N
                         NodeList ids = n.getChildNodes();
                         
                         for (int j = 0, jsize = ids.getLength(); j < jsize; j++) {
                             Node m = ids.item(j);
                             
-                            if (m.getNodeName().compareTo("name") == 0) { // NOI18N
-                                name = m.getFirstChild().getNodeValue();
+                            if (m.getNodeName().equals("name")) { // NOI18N
+                                suName = m.getFirstChild().getNodeValue();
                             } else if (m.getNodeName().compareTo("description") == 0) { // NOI18N
-                                desc = m.getFirstChild().getNodeValue();
+                                suDescription = m.getFirstChild() == null ? "" : m.getFirstChild().getNodeValue();
                             }
                         }
-                    } else if (n.getNodeName().compareTo("target") == 0) { // NOI18N
+                    } else if (n.getNodeName().equals("target")) { // NOI18N
                         NodeList ids = n.getChildNodes();
                         
                         for (int j = 0, jsize = ids.getLength(); j < jsize; j++) {
                             Node m = ids.item(j);
                             
-                            if (m.getNodeName().compareTo("component-name") == 0) { // NOI18N
-                                cid = m.getFirstChild().getNodeValue();
-                            } else if (m.getNodeName().compareTo("artifacts-zip") == 0) { // NOI18N
+                            if (m.getNodeName().equals("component-name")) { // NOI18N
+                                compName = m.getFirstChild().getNodeValue();
+                            } else if (m.getNodeName().equals("artifacts-zip")) { // NOI18N
                                 jar = m.getFirstChild().getNodeValue();
-                                
-                                if (jar.startsWith(name)) {
-                                    jar = jar.substring(name.length());
-                                }
                             }
                         }
                     }
                 }
                 
                 if (jar != null) {
-                    updateModels(jar, name, desc, cid);
-                    updateTargetList(cid);
+                    updateClassPathTableModel(jar, suName, suDescription, compName);
+                    compNames.add(compName);
                 }
             }
+            
+            for (int i = 0, size = mComponentTableModel.getRowCount(); i < size; i++) {
+                String name = (String) mComponentTableModel.getValueAt(i, COMPONENT_NAME_COLUMN);
+                mComponentTableModel.setValueAt(compNames.contains(name), i, COMPONENT_IN_DEPLOYMENT_COLUMN);
+            }
         } catch (Exception e) {
-            // A parsing error occurred; the xml input is not valid
+            e.printStackTrace();
         }
+    }  
+    
+    private void initClassPathTable() {
+        
+        this.classpathTableModel = new ClasspathTableModel();
+        this.classpathTable.setModel(classpathTableModel);
+        this.classpathTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        
+        TableColumnModel columnModel = this.classpathTable.getColumnModel();
+        TableColumn firstColumn = columnModel.getColumn(0);
+        TableColumn secondColumn = columnModel.getColumn(1);
+        firstColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_Item")); // NOI18N
+        secondColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_PathInArchive")); // NOI18N
+        firstColumn.setCellRenderer(new ClassPathCellRenderer());
+        secondColumn.setCellEditor(new TargetComboBoxEditor(comboTarget));  
     }
+    
+    private static final int COMPONENT_IN_DEPLOYMENT_COLUMN = 0;
+    private static final int COMPONENT_TYPE_COLUMN = 1;
+    private static final int COMPONENT_NAME_COLUMN = 2;
     
     // Target Component support...
     //--------------------------------------------------------------------------
-    public void initTable() {
-        java.util.Vector datas = new java.util.Vector(1);
+    private void initComponentTable() {
+        Vector datas = new Vector(1);
         
         // setup the table model to  use
-        mColumnNames = new Vector();
-        mColumnNames.addElement(" "); // NOI18N
-        mColumnNames.addElement(org.openide.util.NbBundle.getMessage(VisualArchiveIncludesSupport.class, "Type"));  // NOI18N
-        mColumnNames.addElement(org.openide.util.NbBundle.getMessage(VisualArchiveIncludesSupport.class, "Component_ID"));  // NOI18N
-        mTableModel = new ComponentTableModel(datas, mColumnNames);
+        mComponentTableColumnNames = new Vector();
+        mComponentTableColumnNames.addElement(" "); // NOI18N
+        mComponentTableColumnNames.addElement(NbBundle.getMessage(getClass(), "Type"));  // NOI18N
+        mComponentTableColumnNames.addElement(NbBundle.getMessage(getClass(), "Component_ID"));  // NOI18N
+        mComponentTableModel = new ComponentTableModel(datas, mComponentTableColumnNames);
         
         // setup table sorter to use
-        TableSorterUtil mTableSorter = new TableSorterUtil(mTableModel);
-        
-        // create the table
-        jTableComp.setModel(mTableSorter);
-        
-        // setup the mouse listener to header
-        // mTableSorter.addMouseListenerToHeaderInTable(jTableComp);
-        // setup table attributes
-        jTableComp.setShowHorizontalLines(true);
-        jTableComp.setShowVerticalLines(false);
-        jTableComp.setShowGrid(false);
-        jTableComp.setAutoCreateColumnsFromModel(false);
-        
-        //jTableComp.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        jTableComp.setRowSelectionAllowed(true);
-        jTableComp.setColumnSelectionAllowed(false);
-        jTableComp.getTableHeader().setReorderingAllowed(false);
-        jTableComp.getTableHeader().setAlignmentY(JTable.LEFT_ALIGNMENT);
-        jTableComp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        TableSorterUtil mTableSorter = new TableSorterUtil(mComponentTableModel);
+        componentTable.setModel(mTableSorter);
+        componentTable.setShowHorizontalLines(true);
+        componentTable.setShowVerticalLines(false);
+        componentTable.setShowGrid(false);
+        componentTable.setAutoCreateColumnsFromModel(false);
+        componentTable.setRowSelectionAllowed(true);
+        componentTable.setColumnSelectionAllowed(false);
+        componentTable.getTableHeader().setReorderingAllowed(false);
+        componentTable.getTableHeader().setAlignmentY(JTable.LEFT_ALIGNMENT);
+        componentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         // setup renderer
-        mTableRenderer = new ComponentTableRenderer(mTableModel);
-        jTableComp.getColumnModel().getColumn(0).setCellRenderer(mTableRenderer);
-        jTableComp.getColumnModel().getColumn(1).setCellRenderer(mTableRenderer);
-        jTableComp.getColumnModel().getColumn(2).setCellRenderer(mTableRenderer);
-        jTableComp.getColumnModel().getColumn(0).setMaxWidth(30);
-        jTableComp.getColumnModel().getColumn(1).setPreferredWidth(70);
-        jTableComp.getColumnModel().getColumn(2).setPreferredWidth(300);
+        mTableRenderer = new ComponentTableRenderer(mComponentTableModel);
+        TableColumnModel columnModel = componentTable.getColumnModel();
+        columnModel.getColumn(COMPONENT_IN_DEPLOYMENT_COLUMN).setCellRenderer(mTableRenderer);
+        columnModel.getColumn(COMPONENT_TYPE_COLUMN).setCellRenderer(mTableRenderer);
+        columnModel.getColumn(COMPONENT_NAME_COLUMN).setCellRenderer(mTableRenderer);
+        columnModel.getColumn(COMPONENT_IN_DEPLOYMENT_COLUMN).setMaxWidth(30);
+        columnModel.getColumn(COMPONENT_TYPE_COLUMN).setPreferredWidth(70);
+        columnModel.getColumn(COMPONENT_NAME_COLUMN).setPreferredWidth(300);
         
-        mTableModel.addTableModelListener(new TargetSupportListener());
+        mComponentTableModel.addTableModelListener(new TargetSupportListener());
     }
     
     /**
      * DOCUMENT ME!
      */
     public void initTableValues() {
-        java.util.Vector rowData = loadComponentInfo(false);
-        mTableModel.setDataVector(rowData, mColumnNames);
-        mTableRenderer.setModel(mTableModel);
-        
-        // load the existing assembly info from config
-        loadAssemblyInfo();
-        
-        mTableModel.fireTableDataChanged();
+        updateComponentTable(false);    
+        updateClassPathTable();
     }
     
-    private void updateComboTarget() {
-        comboModel.removeAllElements();
-        comboModel.addElement(" "); // NOI18N
+//    private void updateComboTarget() {
+//        comboModel.removeAllElements();
+//        comboModel.addElement(" "); // NOI18N
+//        
+//        for (int i = 0; i < componentNames.size(); i++) {
+//            comboModel.addElement(componentNames.get(i));
+//        }
+//    }
         
-        for (int i = 0; i < comboValues.size(); i++) {
-            comboModel.addElement(comboValues.get(i));
-        }
-    }
-    
-    private void updateComboTargetWithType(String type) {
-        comboModel.removeAllElements();
-        comboModel.addElement(" "); // NOI18N
+    /**
+     * Update component table with components from ComponentInformation.xml.
+     * Also rebuild componentNames and bindingVisualClassPathItems.
+     */
+    private void updateComponentTable(boolean inDeployment) {
         
-        if ((type == null) || (type.length() < 1)) {
-            return;
-        }
-        
-        for (int i = 0; i < comboValues.size(); i++) {
-            String val = comboValues.get(i);
-            
-            if (val.startsWith(type)) {
-                comboModel.addElement(val);
-            }
-        }
-    }
-    
-    private Vector myLoadComponentInfo(List compList, boolean inDeployment) {
-        java.util.Vector rowData = new java.util.Vector(1);
-        
-        // todo: reading the cache config data if any...
-//        File dst = new File(compFileDst);
-        
-        try {
-            if (compList != null) {
-//            if (dst.exists()) {
-//                JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
-//                List compList = compDoc.getJbiComponentList();
-                Iterator iterator = compList.iterator();
-                JBIComponentStatus component = null;
-                
-                comboValues.clear();
-                bindingList.clear();
-                
-                while ((iterator != null) && (iterator.hasNext() == true)) {
-                    component = (JBIComponentStatus) iterator.next();
-                    
-                    if (component.getType().compareToIgnoreCase("shared-library") == 0) { // NOI18N
-                        continue;
-                    }
-                    
-                    ComponentObject comp = new ComponentObject(
-                            // component.getComponentId(),
-                            component.getType(), component.getState(), component.getName(),
-                            component.getDescription(), inDeployment
-                            ); // update this when loading assembly info
-                    rowData.add(comp);
-                    
-                    // update the target combo model..
-                    //comboValues.addElement(comp.getName() + " [" +comp.getId() + "]");
-                    comboValues.add(component.getName());
-                    
-                    if (component.getType().compareToIgnoreCase("Binding") == 0) { // NOI18N
-                        VisualClassPathItem vi = new VisualClassPathItem(
-                                bcjar, VisualClassPathItem.TYPE_ARTIFACT, "BCDeployment.jar", null, // NOI18N
-                                inDeployment
-                                ); // true);
-                        vi.setAsaTarget(component.getName());
-                        bindingList.add(vi);
-                    }
-                }
-                
-                updateComboTarget();
-            }
-        } catch (Exception ex) {
-            // ex.printStackTrace();
-        }
-        
-        return rowData;
-    }
-    
-    private Vector loadComponentInfo(boolean inDeployment) {
-        java.util.Vector rowData = new java.util.Vector(1);
-        
-        // todo: reading the cache config data if any...
-        File dst = new File(compFileDst);
+        File dst = new File(compInfoFileLoc);
         
         try {
             if (dst.exists()) {
                 JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
                 List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
-                                
-                comboValues.clear();
-                bindingList.clear();
-                
-                for (JBIComponentStatus component : compList) {
-                    
-                    ComponentObject comp = new ComponentObject(
-                            // component.getComponentId(),
-                            component.getType(), component.getState(), component.getName(),
-                            component.getDescription(), inDeployment
-                            ); // update this when loading assembly info
-                    rowData.add(comp);
-                    
-                    // update the target combo model..
-                    //comboValues.addElement(comp.getName() + " [" +comp.getId() + "]");
-                    comboValues.add(component.getName());
-                    
-                    if (component.getType().compareToIgnoreCase("Binding") == 0) { // NOI18N
-                        VisualClassPathItem vi = new VisualClassPathItem(
-                                bcjar, VisualClassPathItem.TYPE_ARTIFACT, "BCDeployment.jar", null, // NOI18N
-                                inDeployment
-                                ); // true);
-                        vi.setAsaTarget(component.getName());
-                        bindingList.add(vi);
-                    }
-                }
-                
-                updateComboTarget();
+                updateComponentTable(compList, inDeployment);
             }
-        } catch (Exception ex) {
-            // ex.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+    }
+                
+    /**
+     * Update component table with components from the given list.
+     * Also rebuild componentNames and bindingVisualClassPathItems.
+     */            
+    private void updateComponentTable(List<JBIComponentStatus> compList, 
+            boolean inDeployment) {
+        
+        Vector rowData = new Vector(1);
+        
+        componentNames.clear();
+        bindingVisualClassPathItems.clear();
+        
+        for (JBIComponentStatus component : compList) {
+            if (component.isSharedLibrary()) {
+                continue;
+            }
+            
+            ComponentObject comp = new ComponentObject(
+                    component.getType(),
+                    component.getState(),
+                    component.getName(),
+                    component.getDescription(),
+                    inDeployment); // update this when loading assembly info
+            rowData.add(comp);
+            
+            componentNames.add(component.getName());
+            
+            if (component.isBindingComponent()) {
+                VisualClassPathItem vi = new VisualClassPathItem(
+                        bcJar, VisualClassPathItem.TYPE_ARTIFACT,
+                        "BCDeployment.jar", null, // NOI18N
+                        inDeployment);
+                vi.setAsaTarget(component.getName());
+                bindingVisualClassPathItems.add(vi);
+            }
         }
         
-        return rowData;
+        mComponentTableModel.setDataVector(
+                rowData, mComponentTableColumnNames);
+        mTableRenderer.setModel(mComponentTableModel);
+        mComponentTableModel.fireTableDataChanged();
+
+        //updateComboTarget();
     }
     
     private void updateAsaTarget() {
-        for (int i = 0, size = classpathModel.getRowCount(); i < size; i++) {
-            VisualClassPathItem vi = (VisualClassPathItem) classpathModel.getValueAt(i, 0);
-            String tid = (String) classpathModel.getValueAt(i, 1);
+        for (int i = 0, size = classpathTableModel.getRowCount(); i < size; i++) {
+            VisualClassPathItem vi = (VisualClassPathItem) classpathTableModel.getValueAt(i, 0);
+            String tid = (String) classpathTableModel.getValueAt(i, 1);
             
             if ((tid == null) || (tid.trim().length() < 1)) {
                 // not set yet.. default to the first non-blank traget on the list
-                classpathModel.setValueAt(getDefaultTarget(vi.getAsaType()), i, 1);
+                classpathTableModel.setValueAt(getDefaultTarget(vi.getAsaType()), i, 1);
             }
         }
     }
@@ -771,26 +650,22 @@ final class VisualArchiveIncludesSupport {
             if (serverIDs.length < 1) {
                 NotifyDescriptor d =
                         new NotifyDescriptor.Message(
-                        NbBundle.getMessage(
-                        JbiActionProvider.class, "MSG_NoInstalledServerError" // NOI18N
-                        ),
+                        NbBundle.getMessage(JbiActionProvider.class, "MSG_NoInstalledServerError"), // NOI18N
                         NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return false;
             }
             
-            NoSelectedServerWarning panel = new NoSelectedServerWarning( serverIDs );
+            NoSelectedServerWarning panel = new NoSelectedServerWarning(serverIDs);
             
             Object[] options = new Object[] {
                 DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION
             };
             DialogDescriptor desc = new DialogDescriptor(
                     panel,
-                    NbBundle.getMessage(
-                    NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title" // NOI18N
-                    ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null
-                    );
+                    NbBundle.getMessage(NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
+                    true, options, options[0], 
+                    DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
             dlg.setVisible(true);
             
@@ -815,21 +690,17 @@ final class VisualArchiveIncludesSupport {
         }
         
         if ((instance == null) || (!selected)) {
-            NotifyDescriptor d =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    JbiActionProvider.class, "MSG_NoSelectedServerError" // NOI18N
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE);
+            String msg = NbBundle.getMessage(
+                    JbiActionProvider.class, "MSG_NoSelectedServerError"); // NOI18N
+            NotifyDescriptor d = 
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
         } else if (!JbiManager.isRunningAppServer(instance)) {
+            String msg = NbBundle.getMessage(
+                    JbiActionProvider.class, "MSG_NoRunningServerError"); // NOI18N
             NotifyDescriptor d =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    JbiActionProvider.class, "MSG_NoRunningServerError" // NOI18N
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE);
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
         }
@@ -837,10 +708,9 @@ final class VisualArchiveIncludesSupport {
         return true;
     }
     
-    private void myFetchInfo() {
+    private void fetchInfo() {
         
         String serverInstance = (String) webProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
-//        System.out.println("VisualArchiveIncludesSupport.myFetchInfo(): serverInstance=" + serverInstance);
         
         if (serverInstance == null) {
             if (!isSelectedServer()) {
@@ -849,12 +719,10 @@ final class VisualArchiveIncludesSupport {
             serverInstance = (String) webProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
             
         } else if (!JbiManager.isRunningAppServer(serverInstance)) {
+            String msg = NbBundle.getMessage(
+                    JbiActionProvider.class, "MSG_NoRunningServerError"); // NOI18N
             NotifyDescriptor d =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    JbiActionProvider.class, "MSG_NoRunningServerError" // NOI18N
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE);
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return;
         }
@@ -903,22 +771,21 @@ final class VisualArchiveIncludesSupport {
             try {
                 adminService = new AdministrationService(httpServerConnector);
             } catch (Exception e) {
-                String msg = e.getMessage();
-                NotifyDescriptor d =
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        e.getMessage(), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
+            
             if (adminService != null) {
                 adminService.constructDocumentObject();
-                JBIComponentDocument componentDocument = adminService.getJBIComponentDocument();
-                componentDocument.dump();    // XXX
-                List compList = componentDocument.getJbiComponentList();
+                JBIComponentDocument componentDocument = 
+                        adminService.getJBIComponentDocument();
+                //componentDocument.dump();   
                 
-                java.util.Vector rowData = myLoadComponentInfo(compList, true);
+                List<JBIComponentStatus> compList = 
+                        componentDocument.getJbiComponentList();                
+                updateComponentTable(compList, true);
                 
-                mTableModel.setDataVector(rowData, mColumnNames);
-                mTableRenderer.setModel(mTableModel);
-                mTableModel.fireTableDataChanged();
                 
                 // TODO: save on OK instead of Update; merge instead of overwrite
 //                try {
@@ -947,7 +814,7 @@ final class VisualArchiveIncludesSupport {
     }
     
     private void updateProperties(JbiProjectProperties prop, 
-            VisualArchiveIncludesSupport.ClasspathTableModel classpathModel) {
+            ClasspathTableModel classpathModel) {
         List<String> targetIDs = new ArrayList<String>();
         VisualClassPathItem vcpi = null;
         List<VisualClassPathItem> javaEEProjs = new ArrayList<VisualClassPathItem>();
@@ -959,7 +826,8 @@ final class VisualArchiveIncludesSupport {
             vcpi = (VisualClassPathItem) classpathModel.getValueAt(i, 0);
             if (vcpi != null) {
                 aa = vcpi.getObject();
-                if ( (aa instanceof AntArtifact) && VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact) aa)){
+                if ( (aa instanceof AntArtifact) && 
+                        VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact) aa)){
                     javaEEProjs.add(vcpi);
                 }
             }
@@ -970,22 +838,20 @@ final class VisualArchiveIncludesSupport {
     }
     
     
-    // Private innerclasses ----------------------------------------------------
+    // -------------------- private inner classes ------------------------------
+    
     private class TargetSupportListener implements TableModelListener {
-        // TableModelListener --------------------------------------
         public void tableChanged(TableModelEvent e) {
-            if ((e.getType() == TableModelEvent.UPDATE) && (e.getColumn() == 0)) {
+            if ((e.getType() == TableModelEvent.UPDATE) && 
+                    (e.getColumn() == COMPONENT_IN_DEPLOYMENT_COLUMN)) {
                 int rn = e.getFirstRow();
-                // String tid = (String) mTableModel.getValueAt(rn, 2) + "-" + (String) mTableModel.getValueAt(rn, 3);
-                String tid = (String) mTableModel.getValueAt(rn, 2);
-                for (int i = 0, size = bindingList.size(); i < size; i++) {
-                    VisualClassPathItem vi = (VisualClassPathItem) bindingList.get(i);
-                    
+                String tid = (String) mComponentTableModel.getValueAt(rn, COMPONENT_NAME_COLUMN);
+                for (VisualClassPathItem vi : bindingVisualClassPathItems) {                    
                     if (vi != null) {
                         String sid = vi.getAsaTarget();
                         
-                        if ((sid != null) && (sid.compareToIgnoreCase(tid) == 0)) {
-                            boolean b = ((Boolean) mTableModel.getValueAt(rn, 0)).booleanValue();
+                        if ((sid != null) && (sid.equalsIgnoreCase(tid))) {
+                            boolean b = ((Boolean) mComponentTableModel.getValueAt(rn, COMPONENT_IN_DEPLOYMENT_COLUMN)).booleanValue();
                             vi.setInDeployment(b);
                         }
                     }
@@ -994,10 +860,10 @@ final class VisualArchiveIncludesSupport {
         }
     }
     
-    private class ClasspathSupportListener implements ActionListener, ListSelectionListener,
-            TableModelListener {
-        // Implementation of ActionListener ------------------------------------
+    private class ClasspathSupportListener
+            implements ActionListener, ListSelectionListener, TableModelListener {
         
+        //--------------------------- ActionListener  --------------------------
         /**
          * Handles button events
          *
@@ -1006,64 +872,59 @@ final class VisualArchiveIncludesSupport {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             
-            if (source == addArtifactButton) {
+            if (source == addProjectButton) {
                 List<String> javaeeAntArtifactTypes = new ArrayList<String>();
                 javaeeAntArtifactTypes.addAll(JbiProjectConstants.JAVA_EE_AA_TYPES);
-                javaeeAntArtifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
+                javaeeAntArtifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);                
                 AntArtifact[] artifacts = AntArtifactChooser.showDialog(
-                        javaeeAntArtifactTypes, master, null, null
-                        );
+                        javaeeAntArtifactTypes, master, null, null);
                 
                 if (artifacts != null) {
                     addArtifacts(artifacts);
                 }
-            } else if (source == removeButton) {
+            } else if (source == removeProjectButton) {
                 removeElements();
-            } else if (source == jButtonUpdate) {
-                // checkRoots();
+            } else if (source == updateComponentsButton) {
                 RequestProcessor.getDefault().post(
                         new Runnable() {
                     public void run() {
-                        myFetchInfo();
+                        fetchInfo();
                     }
                 }
                 );
-            } else if (source == jButtonConfig) {
-                // removeElements();
             }
         }
         
-        // ListSelectionModel --------------------------------------------------
-        
+        //--------------------------- ListSelectionListener --------------------
         /**
          * Handles changes in the selection
          *
          * @param e DOCUMENT ME!
          */
         public void valueChanged(ListSelectionEvent e) {
-            DefaultListSelectionModel sm = (DefaultListSelectionModel) classpathTable.getSelectionModel();
-            int index = sm.getMinSelectionIndex();
+            DefaultListSelectionModel selectionModel = 
+                    (DefaultListSelectionModel) classpathTable.getSelectionModel();
+            int index = selectionModel.getMinSelectionIndex();
             
             // remove enabled only if selection is not empty
             boolean remove = index != -1;
             
             // and when the selection does not contain unremovable item
             if (remove) {
-                VisualClassPathItem vcpi = (VisualClassPathItem) classpathModel.getValueAt(
-                        index, 0
-                        );
+                VisualClassPathItem vcpi = 
+                        (VisualClassPathItem) classpathTableModel.getValueAt(index, 0);
                 
                 if (!vcpi.canDelete()) {
                     remove = false;
                 }
             }
             
-            removeButton.setEnabled(remove);
+            removeProjectButton.setEnabled(remove);
         }
         
-        // TableModelListener --------------------------------------
+        //--------------------------- TableModelListener -----------------------
         public void tableChanged(TableModelEvent e) {
-            updateProperties(webProperties, classpathModel);
+            updateProperties(webProperties, classpathTableModel);
             
             if (e.getColumn() == 1) {
                 //VisualClassPathItem cpItem = (VisualClassPathItem) classpathModel.getValueAt(e.getFirstRow(), 0);
@@ -1074,96 +935,38 @@ final class VisualArchiveIncludesSupport {
     }
     
     private static class ClassPathCellRenderer extends DefaultTableCellRenderer {
-        /**
-         * DOCUMENT ME!
-         *
-         * @param table DOCUMENT ME!
-         * @param value DOCUMENT ME!
-         * @param isSelected DOCUMENT ME!
-         * @param hasFocus DOCUMENT ME!
-         * @param row DOCUMENT ME!
-         * @param column DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+        
         public Component getTableCellRendererComponent(
-                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
-                ) {
-            if (value instanceof VisualClassPathItem) {
-                final VisualClassPathItem item = (VisualClassPathItem) value;
-                setIcon(item.getIcon());
-            }
+                JTable table, Object value, 
+                boolean isSelected, boolean hasFocus, 
+                int row, int column) {
             
-            final String s = (value == null) ? null : value.toString();
-            
-            return super.getTableCellRendererComponent(table, s, isSelected, false, row, column);
+            assert value == null || value instanceof VisualClassPathItem;                 
+            return super.getTableCellRendererComponent(
+                    table,
+                    (value == null) ? null : value.toString(), 
+                    isSelected, false, row, column);
         }
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @author 
-     * @version 
-     */
-    class ClasspathTableModel extends AbstractTableModel {
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
+    private class ClasspathTableModel extends AbstractTableModel {
+        
         public int getColumnCount() {
             return 2; //classpath item name, item location within WAR
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
-        public int getRowCount() {
-            if (data == null) {
-                return 0;
-            }
-            
-            return data.length;
+        public int getRowCount() {            
+            return data == null ? 0 : data.length;
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param row DOCUMENT ME!
-         * @param col DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public Object getValueAt(int row, int col) {
             return data[row][col];
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param row DOCUMENT ME!
-         * @param col DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public boolean isCellEditable(int row, int col) {
-            if (col == 1) {
-                return true;
-            } else {
-                return false;
-            }
+            return col == 1;
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param value DOCUMENT ME!
-         * @param row DOCUMENT ME!
-         * @param col DOCUMENT ME!
-         */
         public void setValueAt(Object value, int row, int col) {
             data[row][col] = value;
             fireTableCellUpdated(row, col);
@@ -1171,45 +974,32 @@ final class VisualArchiveIncludesSupport {
     }
     
     private class TargetComboBoxEditor extends DefaultCellEditor {
-        /**
-         * DOCUMENT ME!
-         */
-        JComboBox combo = null;
         
-        /**
-         * Creates a new TargetComboBoxEditor object.
-         *
-         * @param combo DOCUMENT ME!
-         */
         public TargetComboBoxEditor(JComboBox combo) {
             super(combo);
-            this.combo = combo;
         }
         
-        /**
-         * DOCUMENT ME!
-         *
-         * @param table DOCUMENT ME!
-         * @param value DOCUMENT ME!
-         * @param isSelected DOCUMENT ME!
-         * @param row DOCUMENT ME!
-         * @param column DOCUMENT ME!
-         *
-         * @return DOCUMENT ME!
-         */
         public Component getTableCellEditorComponent(
-                JTable table, Object value, boolean isSelected, int row, int column
-                ) {
-            String type = null;
-            VisualClassPathItem vi = (VisualClassPathItem) classpathModel.getValueAt(row, 0);
+                JTable table, Object value, boolean isSelected, 
+                int row, int column) {
             
-            if (vi != null) {
-                type = vi.getAsaType();
+            VisualClassPathItem vcpi = 
+                    (VisualClassPathItem) classpathTableModel.getValueAt(row, 0);
+            
+            JComboBox comboBox = (JComboBox) getComponent();
+            DefaultComboBoxModel comboModel = (DefaultComboBoxModel) comboBox.getModel();
+            comboModel.removeAllElements();
+            
+            String type = null;
+            if (vcpi != null) {
+                type = vcpi.getAsaType();
             }
             
-            updateComboTargetWithType(type);
+            if (type != null) {
+                comboModel.addElement(type);
+            }
             
-            return combo;
+            return comboBox;
         }
     }
 }
