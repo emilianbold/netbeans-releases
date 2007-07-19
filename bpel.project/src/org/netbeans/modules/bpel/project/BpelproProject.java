@@ -22,9 +22,16 @@ import org.netbeans.modules.bpel.project.ui.customizer.BpelProjectCustomizerProv
 import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.bpel.project.spi.JbiArtifactProvider;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileNotFoundException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -32,6 +39,15 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileLock;
 
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.bpel.project.ui.IcanproCustomizerProvider;
@@ -60,13 +76,16 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
+import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
+import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
- * Represents one ejb module project
  * @author Chris Webster
  */
 public final class BpelproProject implements Project, AntProjectListener, ProjectPropertyProvider {
@@ -192,23 +211,16 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
     }
     
-    // Package private methods -------------------------------------------------
-    
     FileObject getSourceDirectory() {
         String srcDir = helper.getStandardPropertyEvaluator().getProperty("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
     }
     
-    /** Last time in ms when the Broken References alert was shown. */
     private static long brokenAlertLastTime = 0;
-    
-    /** Is Broken References alert shown now? */
     private static boolean brokenAlertShown = false;
-    
-    /** Timeout within which request to show alert will be ignored. */
     private static int BROKEN_ALERT_TIMEOUT = 1000;
     
-    /** Return configured project name. */
+    @SuppressWarnings("unchecked") // NOI18N
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
@@ -225,7 +237,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         });
     }
     
-    /** Store configured project name. */
+    @SuppressWarnings("unchecked") // NOI18N
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
@@ -257,8 +269,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         projectCloseSupport.removeProjectCloseListener(listener);
     } 
 
-    // Private innerclasses ----------------------------------------------------
-    
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -295,7 +305,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     }
     
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-        
         ProjectXmlSavedHookImpl() {}
         
         protected void projectXmlSaved() throws IOException {
@@ -311,74 +320,125 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        ProjectOpenedHookImpl(Project project) {}
-        
-        protected void projectOpened() {
-            try {
-                // Check up on build scripts.
-                genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        BpelproProject.class.getResource("resources/build-impl.xsl"),
-                        true);
-                genFilesHelper.refreshBuildScript(
-                        getBuildXmlName(),
-                        BpelproProject.class.getResource("resources/build.xsl"),
-                        true);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-                    
-                    File f = InstalledFileLocator.getDefault().locate(MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);
-                    if (f != null) {
-                        ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
-                    }
-                    
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(BpelproProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    return null;
-                }
-            });
-            if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
-                BrokenReferencesSupport.showAlert();
-            }
-            sourcesRegistryHelper.register();
+      ProjectOpenedHookImpl(Project project) {}
+      
+      @SuppressWarnings("unchecked") // NOI18N
+      protected void projectOpened() {
+          try {
+              genFilesHelper.refreshBuildScript(
+                      GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                      BpelproProject.class.getResource("resources/build-impl.xsl"),
+                      true);
+              genFilesHelper.refreshBuildScript(
+                      getBuildXmlName(),
+                      BpelproProject.class.getResource("resources/build.xsl"),
+                      true);
+          } catch (IOException e) {
+              ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+          }
+          ProjectManager.mutex().writeAccess(new Mutex.Action() {
+              public Object run() {
+                  EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                  ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+                  File f = InstalledFileLocator.getDefault().locate(MODULE_INSTALL_NAME, MODULE_INSTALL_CBN, false);
 
-            // vlv
-            // todo start here
+                  if (f != null) {
+                      ep.setProperty(MODULE_INSTALL_DIR, f.getParentFile().getPath());
+                  }
+                  helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+
+                  try {
+                      ProjectManager.getDefault().saveProject(BpelproProject.this);
+                  } catch (IOException e) {
+                      ErrorManager.getDefault().notify(e);
+                  }
+                  return null;
+              }
+          });
+          if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+              BrokenReferencesSupport.showAlert();
+          }
+          sourcesRegistryHelper.register();
+          addListenerOnCatalog();
+      }
+      
+      // vlv # 96026
+      private void addListenerOnCatalog() {
 //System.out.println();
 //System.out.println();
-//System.out.println("OPEN");
-//System.out.println();
-//System.out.println();
+//System.out.println("ADD LISTENER");
+        if (myCatalogListener != null) {
+          return;
         }
-        
-        protected void projectClosed() {
-            try {
-                ProjectManager.getDefault().saveProject(BpelproProject.this);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-            sourcesRegistryHelper.unregister();
-            projectCloseSupport.fireProjectClosed();
+        CatalogWriteModel catalog = getCatalog();
+
+        if (catalog == null) {
+          return;
         }
-    }
+        myCatalogListener = new CatalogListener(getProjectDirectory(), catalog);
+        catalog.getCatalogFileObject().addFileChangeListener(myCatalogListener);
+
+        // save catalog.xml
+        FileObject fileObject = catalog.getCatalogFileObject();
+
+        if (fileObject == null) {
+          return;
+        }
+        try {
+          DataObject dataObject = DataObject.find(fileObject);
     
-    /**
-     * Exports the main JAR as an official build product for use from other scripts.
-     * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
-     */
+          if (dataObject == null) {
+            return;
+          }
+          SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+
+          if (saveCookie == null) {
+            return;
+          }
+          saveCookie.save();
+        }
+        catch (DataObjectNotFoundException e) {
+          e.printStackTrace();
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+
+      // vlv
+      private CatalogWriteModel getCatalog() {
+        try {
+          return CatalogWriteModelFactory.getInstance().getCatalogWriteModelForProject(getProjectDirectory());
+        }
+        catch (CatalogModelException e) {
+          return null;
+        }
+      }
+
+      private CatalogListener myCatalogListener;
+
+      protected void projectClosed() {
+//System.out.println("PRJ CLOSED");
+        if (myCatalogListener != null) {
+          CatalogWriteModel catalog = getCatalog();
+
+          if (catalog != null) {
+            catalog.getCatalogFileObject().removeFileChangeListener(myCatalogListener);
+          }
+          myCatalogListener = null;
+        }
+        try {
+          ProjectManager.getDefault().saveProject(BpelproProject.this);
+        }
+        catch (IOException e) {
+          ErrorManager.getDefault().notify(e);
+        }
+        sourcesRegistryHelper.unregister();
+        projectCloseSupport.fireProjectClosed();
+      }
+    }
+
     private final class AntArtifactProviderImpl implements JbiArtifactProvider {
-        
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(BpelproProject.ARTIFACT_TYPE_JBI_ASA + ":" +
@@ -399,15 +459,15 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         
         private static final String[] TYPES = new String[] {
-            "SOA",
-            "XML",                  // NOI18N
-            "simple-files"          // NOI18N
+            "SOA",         // NOI18N
+            "XML",         // NOI18N
+            "simple-files" // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/SOA/Process.bpel", // NOI18N
-            "Templates/XML/retrieveXMLResource",    // NOI18N
-            "Templates/XML/WSDL.wsdl",    // NOI18N
+            "Templates/SOA/Process.bpel",        // NOI18N
+            "Templates/XML/retrieveXMLResource", // NOI18N
+            "Templates/XML/WSDL.wsdl",           // NOI18N
         };
         
         public String[] getRecommendedTypes() {
@@ -420,6 +480,175 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     }
     
     public IcanproProjectProperties getProjectProperties() {
-        return new IcanproProjectProperties(this, helper, refHelper);
+      return new IcanproProjectProperties(this, helper, refHelper);
+    }
+
+    // vlv
+    private static class CatalogListener implements FileChangeListener {
+      public CatalogListener(FileObject project, CatalogWriteModel catalog) {
+//System.out.println();
+//System.out.println();
+//System.out.println("NEW CATALOG LISTENER");
+        myCatalog = catalog;
+        myProject = project;
+        myEntries = null;
+        updateEntries();
+      }
+
+      public void fileChanged(FileEvent event) {
+        updateEntries();
+      }
+
+      public void fileAttributeChanged(FileAttributeEvent event) {
+      }
+
+      public void fileDataCreated(FileEvent event) {
+      }
+
+      public void fileDeleted(FileEvent event) {
+      }
+
+      public void fileFolderCreated(FileEvent event) {
+      }
+
+      public void fileRenamed(FileRenameEvent event) {
+      }
+
+      private void updateEntries() {
+        removeEntries();
+
+        myEntries = new HashMap<FileObject,FileListener>();
+        Collection<CatalogEntry> entries = myCatalog.getCatalogEntries();
+//System.out.println();
+//System.out.println();
+//System.out.println("UPDATE CATALOG");
+
+        for (CatalogEntry entry : entries) {
+//System.out.println("see");
+          String name = getFileName(entry.getSource());
+//System.out.println("        name: " + name);
+//System.out.println("        file: " + new File(name));
+          FileObject source = FileUtil.toFileObject(new File(name));
+
+          if (source == null) {
+            continue;
+          }
+//System.out.println("  source: " + source.getNameExt());
+          FileObject target = myProject.getFileObject(entry.getTarget());
+
+          if (target == null) {
+            continue;
+          }
+//System.out.println("  target: " + target.getNameExt());
+          FileListener listener = new FileListener(target);
+          source.addFileChangeListener(listener);
+
+          myEntries.put(source, listener);
+        }
+      }
+
+      private void removeEntries() {
+        if (myEntries == null) {
+          return;
+        }
+//System.out.println();
+//System.out.println();
+//System.out.println("CLEAR CATALOG");
+        Set<FileObject> files = myEntries.keySet();
+
+        for (FileObject file : files) {
+          file.removeFileChangeListener(myEntries.get(file));
+//System.out.println("  file: " + file.getNameExt());
+        }
+        myEntries.clear();
+      }
+
+      private String getFileName(String file) {
+        file = file.replaceAll("%20", " ");
+
+        if (file.startsWith("file:/")) { // NOI18N
+          file = file.substring(6);
+        }
+        return file;
+      }
+
+      private FileObject myProject;
+      private CatalogWriteModel myCatalog;
+      private HashMap<FileObject,FileListener> myEntries;
+    }
+
+    // vlv
+    private static class FileListener implements FileChangeListener {
+      public FileListener(FileObject target) {
+        myTarget = target;
+        myIsValid = true;
+      }
+
+      public void fileChanged(FileEvent event) {
+        FileObject source = event.getFile();
+//System.out.println();
+//System.out.println();
+//System.out.println("FILE CHANGED: " + myIsValid + " " + myTarget.isValid() + " " + source.getNameExt());
+//System.out.println();
+//System.out.println();
+        if ( !myIsValid) {
+          return;
+        }
+        if ( !myTarget.isValid()) {
+          return;
+        }
+        InputStream input = null;
+        OutputStream output = null;
+        FileLock lock = null;
+        
+        try {
+          input = source.getInputStream();
+          lock = myTarget.lock();
+          output = myTarget.getOutputStream(lock);
+          FileUtil.copy(input, output);
+        }
+        catch (FileNotFoundException e) {
+          e.printStackTrace();
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
+        finally {
+          if (lock != null) {
+            lock.releaseLock();
+          }
+          try {
+            if (output != null) {
+              output.close();
+            }
+            if (input != null) {
+              input.close();
+            }
+          }
+          catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+
+      public void fileAttributeChanged(FileAttributeEvent event) {
+      }
+
+      public void fileDataCreated(FileEvent event) {
+      }
+
+      public void fileDeleted(FileEvent event) {
+        myIsValid = false;
+      }
+
+      public void fileFolderCreated(FileEvent event) {
+      }
+
+      public void fileRenamed(FileRenameEvent event) {
+        myIsValid = false;
+      }
+
+      private boolean myIsValid;
+      private FileObject myTarget;
     }
 }
