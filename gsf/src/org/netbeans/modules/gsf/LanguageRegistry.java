@@ -19,8 +19,6 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +29,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -444,7 +441,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 FileUtil.createData(root,
                     "SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance").
                     // Tweak to put after org-netbeans-editor-GlyphGutter.instance:
-                    setAttribute("position", 1000);
+                    setAttribute("position", 1200);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
