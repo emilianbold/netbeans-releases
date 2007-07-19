@@ -19,6 +19,7 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
@@ -78,6 +80,7 @@ import org.openide.execution.ExecutorTask;
 public final class XTestProjectMenuItem extends AbstractAction implements Presenter.Popup, ContextAwareAction  {
     
     public static final String NAME = NbBundle.getBundle(XTestProjectMenuItem.class).getString("CTL_MenuItem_XTest");
+    private static final String RUN_TEST_DIST = "runtests-dist";
     private Lookup context;
     
     /** Creates XTest sub menu. */
@@ -172,6 +175,8 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
             // "Run "+testTypes[i]+" Tests"
             actions.add(createAction(NbBundle.getMessage(XTestProjectMenuItem.class, "CTL_MenuItem_RunTests", testTypes[i]), // NOI18N
                                      project, testTypes[i], new String[] {"runtests"}, true)); // NOI18N
+            actions.add(createAction(NbBundle.getMessage(XTestProjectMenuItem.class, "CTL_MenuItem_RunTestsDist", testTypes[i]), // NOI18N
+                                     project, testTypes[i], new String[] {RUN_TEST_DIST}, true)); // NOI18N
             if(targetExists(findTestBuildXml(project), "coverage")) { //NOI18N
                 // "Measure "+testTypes[i]+" Tests Coverage"
                 actions.add(createAction(NbBundle.getMessage(XTestProjectMenuItem.class, "CTL_MenuItem_MeasureCoverage", testTypes[i]), // NOI18N
@@ -192,6 +197,10 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
             /** Enabled only if one project is selected and test/build.xml exists. */
             @Override
             public boolean isEnabled() {
+                if (RUN_TEST_DIST.equals(targets[0])) {
+                    NbModuleProject nbprj = project.getLookup().lookup(NbModuleProject.class);
+                    return (nbprj != null) && nbprj.getNbrootFile("nbbuild") != null; // NOI18N
+                }
                 // enable only if one project is selected
                 if(context.lookup(new Lookup.Template<Project>(Project.class)).allInstances().size() == 1) {
                     return findTestBuildXml(project) != null;
@@ -204,21 +213,51 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
                 Properties props = new Properties();
                 props.setProperty("xtest.testtype", testType); // NOI18N
                 try {
-                    ExecutorTask task = ActionUtils.runTarget(findTestBuildXml(project), targets, props);
-                    task.addTaskListener(new TaskListener() {
-                        public void taskFinished(Task task) {
-                            if(((ExecutorTask)task).result() == 0 && showResults) {
-                                if(targets[0].equals("coverage")) { //NOI18N
-                                    showCoverageResults(project);
-                                } else {
-                                    showTestResults(project);
+                    if (targets[0].equals(RUN_TEST_DIST)) {
+                        runTestDist();
+                    } else {
+                        ExecutorTask task = ActionUtils.runTarget(findTestBuildXml(project), targets, props);
+                        task.addTaskListener(new TaskListener() {
+                            public void taskFinished(Task task) {
+                                if(((ExecutorTask)task).result() == 0 && showResults) {
+                                    if(targets[0].equals("coverage")) { //NOI18N
+                                        showCoverageResults(project);
+                                    } else {
+                                        showTestResults(project);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
                 }
+            }
+            /** Run tests from binary test distribution 
+             */
+            private void runTestDist() throws IOException {
+               // build tests
+                    Properties props = new Properties();
+                    final NbModuleProject nbprj = project.getLookup().lookup(NbModuleProject.class);
+                    FileObject buildXml = nbprj.getNbrootFileObject("nbbuild/build.xml"); // NOI18N
+                    props.put("config.modules.test",nbprj.getPathWithinNetBeansOrg()); // NOI18N
+                    if (buildXml != null ) {
+                        ExecutorTask task = ActionUtils.runTarget(buildXml, new String[]{"build-test-dist"}, props); // NOI18N
+                        task.waitFinished();
+                        if (task.result() == 0 ) {
+                          // run tests
+                            String path =  "nbbuild/build/testdist/" + testType + "/xtest-all-" + testType + ".xml"; // NOI18N
+                            props.clear();
+                            File nbDestDir = nbprj.getNbrootFile("nbbuild/netbeans"); // NOI18N
+                            props.put("netbeans.dest.dir",nbDestDir.getCanonicalPath()); // NOI18N
+                            task = ActionUtils.runTarget(nbprj.getNbrootFileObject(path), new String[]{"all"}, props); // NOI18N
+                            task.addTaskListener(new TaskListener() {
+                                public void taskFinished(Task task) {
+                                    showBrowser(nbprj.getNbrootFileObject("nbbuild/build/testdist/" + testType +  "/results/index.html")); // NOI18N
+                                }
+                            });                        
+                        }
+                    }
             }
         };
     }
