@@ -282,7 +282,7 @@ public final class ComponentInstaller {
             this.inSource = inSource;
             TypeID typeID = new TypeID (TypeID.Kind.COMPONENT, fqn);
             typeDescriptor = new TypeDescriptor (new TypeID (TypeID.Kind.COMPONENT, superFQN), typeID, ! isAbstract, ! isFinal);
-            paletteDescriptor = new PaletteDescriptor (MidpPaletteProvider.CATEGORY_CUSTOM, MidpTypes.getSimpleClassName (typeID), fqn, null, null);
+            paletteDescriptor = new PaletteDescriptor (MidpPaletteProvider.CATEGORY_CUSTOM, MidpTypes.getSimpleClassName (typeID), fqn, "org/netbeans/modules/vmd/midp/resources/components/custom_component_16.png", "org/netbeans/modules/vmd/midp/resources/components/custom_component_32.png"); // NOI18N
         }
 
         public String getSuperFQN () {
