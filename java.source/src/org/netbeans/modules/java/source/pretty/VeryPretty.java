@@ -457,6 +457,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = null;
             printAnnotations(tree.mods.annotations);
+            toColExactly(out.leftMargin);
             printFlags(tree.mods.flags);
             if (tree.name == names.init || tree.name.contentEquals(enclClassNamePrev)) {
                 print(enclClassNamePrev);
