@@ -1292,8 +1292,9 @@ public class CasualDiff {
             if (JavaTokenId.WHITESPACE == tokenSequence.token().id()) {
                 String text = tokenSequence.token().text().toString();
                 int index = text.lastIndexOf('\n');
+                startPos = tokenSequence.offset();
                 if (index > -1) {
-                    startPos = tokenSequence.offset() + index + 1;
+                    startPos += index + 1;
                 }
             }
             copyTo(localPointer, startPos);
