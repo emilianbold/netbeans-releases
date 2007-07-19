@@ -20,26 +20,18 @@
 package org.netbeans.modules.uml.core.support.umlutils;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.PartFacade;
-import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-//import org.apache.xpath.XPathAPI;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
-import org.w3c.dom.NamedNodeMap;
 import org.dom4j.Node;
 import java.util.List;
-
 import org.netbeans.modules.uml.common.ETSystem;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -148,11 +140,18 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
   }
 
     private void setAppropriateDisplayName(IPropertyDefinition propDef, Object pDisp) {
-        if (pDisp instanceof PartFacade) {
-            String expandedType = ((IElement) pDisp).getExpandedElementType();
+        String expandedType = null;
+        if (pDisp instanceof IAssociation) {
+             expandedType = ((IElement) pDisp).getExpandedElementType();
+             if (expandedType != null && expandedType.trim().length() > 0)
+             {
+                 propDef.setDisplayName(expandedType.replace('_', ' '));
+             }
+        } 
+        else if (pDisp instanceof PartFacade ) {
+            expandedType = ((IElement) pDisp).getExpandedElementType();
             if (expandedType != null) {
                 expandedType = expandedType.toLowerCase();
-                String dispalyName = null;
                 if  (expandedType.equals("partfacade_class")) {
                     propDef.setDisplayName("PSK_PE_CLASSPARTICIPANT");
                 } else if (expandedType.equals("partfacade_interface")) {
