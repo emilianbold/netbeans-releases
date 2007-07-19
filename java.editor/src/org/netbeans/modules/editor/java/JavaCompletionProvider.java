@@ -24,6 +24,7 @@ import com.sun.source.util.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
@@ -236,9 +237,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             js = JavaSource.forFileObject(fo);
                     }
                     if (js != null) {
-                        if (SourceUtils.isScanInProgress())
+                        Future<Void> f = js.runWhenScanFinished(this, true);
+                        if (!f.isDone()) {
+                            component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
                             resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                        js.runUserActionTask(this, true);
+                            f.get();
+                        }
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);
@@ -254,8 +258,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             resultSet.setAnchorOffset(anchorOffset);
                     }
                 }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             } finally {
                 resultSet.finish();
             }
@@ -324,6 +328,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 resolveToolTip(controller);
             else if (queryType == DOCUMENTATION_QUERY_TYPE)
                 resolveDocumentation(controller);
+            component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
         }
         
         
