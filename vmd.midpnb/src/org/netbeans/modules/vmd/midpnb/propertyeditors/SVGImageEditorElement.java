@@ -15,7 +15,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
+package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,12 +26,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -39,7 +41,9 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -48,16 +52,20 @@ import org.openide.util.Exceptions;
  *
  * @author Anton Chechel
  */
-public class ImageEditorElement extends PropertyEditorResourceElement implements DocumentListener {
+public class SVGImageEditorElement extends PropertyEditorResourceElement implements DocumentListener {
+
+    private static final int IMAGE_MAX_WIDTH = 90;
+    private static final int BORDER_EDGE_LENGTH = 10;
 
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
-    private Image image;
+    private SVGImageComponent imageView;
 
-    public ImageEditorElement() {
+    public SVGImageEditorElement() {
         initComponents();
-        previewPanel.add(new ImagePreview(), BorderLayout.CENTER);
+        imageView = new SVGImageComponent();
+        previewPanel.add(imageView, BorderLayout.CENTER);
         pathTextField.getDocument().addDocumentListener(this);
     }
 
@@ -66,7 +74,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     }
 
     public TypeID getTypeID() {
-        return ImageCD.TYPEID;
+        return SVGImageCD.TYPEID;
     }
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
@@ -96,7 +104,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
-                    _pathText[0] = MidpTypes.getString(component.readProperty(ImageCD.PROP_RESOURCE_PATH));
+                    _pathText[0] = MidpTypes.getString(component.readProperty(SVGImageCD.PROP_RESOURCE_PATH));
                 }
             });
         }
@@ -105,7 +113,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             Map<String, PropertyValue> changes = wrapper.getChanges();
             for (String propertyName : changes.keySet()) {
                 final PropertyValue propertyValue = changes.get(propertyName);
-                if (ImageCD.PROP_RESOURCE_PATH.equals(propertyName)) {
+                if (SVGImageCD.PROP_RESOURCE_PATH.equals(propertyName)) {
                     _pathText[0] = MidpTypes.getString(propertyValue);
                 }
             }
@@ -148,7 +156,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
     private synchronized void textChanged() {
         if (isShowing() && !doNotFireEvent) {
-            fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(pathTextField.getText()));
+            fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(pathTextField.getText()));
         }
         updatePreview();
     }
@@ -156,36 +164,24 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private void updatePreview() {
         String relativePath = pathTextField.getText();
         String path = getSourceFolder().getPath() + relativePath;
-        BufferedImage bufferedImage = null;
+        SVGImage svgImage = null;
         try {
-            bufferedImage = ImageIO.read(new File(path));
-        } catch (IOException ex) {
+            FileObject svgFileObject = FileUtil.toFileObject(new File(path));
+            svgImage = Util.createSVGImage(svgFileObject, true);
+        } catch (IOException e) {
         }
 
-        if (bufferedImage != null) {
-            int width = bufferedImage.getWidth();
-            int height = bufferedImage.getHeight();
+        if (svgImage != null) {
+            int width = svgImage.getViewportWidth();
+            int height = svgImage.getViewportHeight();
             widthTextField.setText(String.valueOf(width));
             heightTextField.setText(String.valueOf(height));
-
-            if (width > ImagePreview.IMAGE_MAX_WIDTH || height > ImagePreview.IMAGE_MAX_WIDTH) {
-                if (width > height) {
-                    width = ImagePreview.IMAGE_MAX_WIDTH;
-                    height = -1;
-                } else {
-                    width = -1;
-                    height = ImagePreview.IMAGE_MAX_WIDTH;
-                }
-                image = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH | Image.SCALE_AREA_AVERAGING);
-            } else {
-                image = bufferedImage;
-            }
         } else {
-            image = null;
             widthTextField.setText(null);
             heightTextField.setText(null);
         }
-        
+        imageView.setImage(svgImage);
+
         previewPanel.invalidate();
         previewPanel.validate();
         previewPanel.repaint();
@@ -222,11 +218,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             }
 
             String extension = getExtension(file);
-            return "png".equals(extension) || "gif".equals(extension) || "jpg".equals(extension); // NOI18N
+            return "svg".equals(extension); // NOI18N
         }
 
         public String getDescription() {
-            return "Image Files";
+            return "SVG Image Files";
         }
 
         private static String getExtension(File file) {
@@ -240,40 +236,39 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         }
     }
 
-    private class ImagePreview extends JComponent {
-
-        static final int IMAGE_MAX_WIDTH = 90;
-        private static final int BORDER_EDGE_LENGTH = 10;
-
-        @Override
-        public void paint(Graphics g) {
-            // paint the border
-            g.setColor(Color.BLACK);
-            final int rightX = getWidth() - 1;
-            final int bottomY = getHeight() - 1;
-            // top left
-            g.drawLine(0, 0, 0, BORDER_EDGE_LENGTH);
-            g.drawLine(0, 0, BORDER_EDGE_LENGTH, 0);
-            // top right
-            g.drawLine(rightX, 0, rightX, BORDER_EDGE_LENGTH);
-            g.drawLine(rightX, 0, rightX - BORDER_EDGE_LENGTH, 0);
-            // bottom left
-            g.drawLine(0, bottomY, 0, bottomY - BORDER_EDGE_LENGTH);
-            g.drawLine(0, bottomY, BORDER_EDGE_LENGTH, bottomY);
-            // bottom right
-            g.drawLine(rightX, bottomY, rightX, bottomY - BORDER_EDGE_LENGTH);
-            g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
-            
-            if (image != null) {
-                int xOffset = 0;
-                int yOffset = 0;
-                xOffset = (getWidth() - image.getWidth(this)) >> 1;
-                yOffset = (getWidth() - image.getHeight(this)) >> 1;
-                g.drawImage(image, xOffset, yOffset, this);
-            }
-        }
-    }
-
+//    private class ImagePreview extends JComponent {
+//
+//        static final int IMAGE_MAX_WIDTH = 90;
+//        private static final int BORDER_EDGE_LENGTH = 10;
+//
+//        @Override
+//        public void paint(Graphics g) {
+//            // paint the border
+//            g.setColor(Color.BLACK);
+//            final int rightX = getWidth() - 1;
+//            final int bottomY = getHeight() - 1;
+//            // top left
+//            g.drawLine(0, 0, 0, BORDER_EDGE_LENGTH);
+//            g.drawLine(0, 0, BORDER_EDGE_LENGTH, 0);
+//            // top right
+//            g.drawLine(rightX, 0, rightX, BORDER_EDGE_LENGTH);
+//            g.drawLine(rightX, 0, rightX - BORDER_EDGE_LENGTH, 0);
+//            // bottom left
+//            g.drawLine(0, bottomY, 0, bottomY - BORDER_EDGE_LENGTH);
+//            g.drawLine(0, bottomY, BORDER_EDGE_LENGTH, bottomY);
+//            // bottom right
+//            g.drawLine(rightX, bottomY, rightX, bottomY - BORDER_EDGE_LENGTH);
+//            g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
+//
+//            if (image != null) {
+//                int xOffset = 0;
+//                int yOffset = 0;
+//                xOffset = (getWidth() - image.getWidth(this)) >> 1;
+//                yOffset = (getWidth() - image.getHeight(this)) >> 1;
+//                g.drawImage(image, xOffset, yOffset, this);
+//            }
+//        }
+//    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -292,31 +287,31 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         heightTextField = new javax.swing.JTextField();
         chooserButton = new javax.swing.JButton();
 
-        pathLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
+        pathLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
 
         pathTextField.setEnabled(false);
 
-        previewLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.previewLabel.text")); // NOI18N
+        previewLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.previewLabel.text")); // NOI18N
         previewLabel.setEnabled(false);
 
         previewPanel.setEnabled(false);
         previewPanel.setPreferredSize(new java.awt.Dimension(100, 100));
         previewPanel.setLayout(new java.awt.BorderLayout());
 
-        widthLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
+        widthLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
         widthLabel.setEnabled(false);
 
         widthTextField.setEditable(false);
         widthTextField.setEnabled(false);
 
-        heightLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
+        heightLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
         heightLabel.setEnabled(false);
 
         heightTextField.setEditable(false);
         heightTextField.setEnabled(false);
 
-        chooserButton.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
+        chooserButton.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
         chooserButton.setEnabled(false);
         chooserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -330,7 +325,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(pathLabel)
-                .addContainerGap(287, Short.MAX_VALUE))
+                .addContainerGap(243, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -343,9 +338,9 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                             .add(widthLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                            .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
-                    .add(pathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
+                            .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                            .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)))
+                    .add(pathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
