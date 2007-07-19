@@ -35,7 +35,7 @@
     <folder name="Menu">
         <folder name="Window">
             <folder name="Debug">
-                <file name="Separator.instance" url="Separator.instance">
+                <file name="Separator.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="5000"/>
                 </file>
