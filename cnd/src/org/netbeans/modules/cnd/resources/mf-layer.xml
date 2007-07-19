@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="position" intvalue="700"/>
         </file> 
         <folder name="CPlusPlus">
+            <attr name="position" intvalue="0"/>
             <file name="ToolsPanelController.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.ToolsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>

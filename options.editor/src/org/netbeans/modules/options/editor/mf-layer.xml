@@ -33,9 +33,11 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="position" intvalue="400"/>
         </file>    
         <folder name="PreviewExamples">
+            <attr name="position" intvalue="0"/>
             <file name="Defaults" url="../colors/AllLanguagesExample"/>
         </folder>
         <folder name="Actions">
+            <attr name="position" intvalue="0"/>
             <folder name="Build">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="BuildMainProject.shadow">

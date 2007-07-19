@@ -28,6 +28,7 @@
     
     <folder name="OptionsDialog">
         <folder name="Advanced">
+            <attr name="position" intvalue="0"/>
             <file name="ToDo.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.tasklist.todo.settings.ToDoOptions"/>
             </file>
