@@ -52,8 +52,8 @@ public final class FactoryRegistry extends Object {
     
     /** Gets lookup result holding script type instances. */
     private static Lookup.Result<I18nSupport.Factory> getSupports() {
-        if(result == null) {
-            result = Lookup.getDefault().lookup(new Lookup.Template<I18nSupport.Factory>(I18nSupport.Factory.class));
+        if (result == null) {
+            result = Lookup.getDefault().lookupResult(I18nSupport.Factory.class);
             result.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent e) {
                     cache.clear();
@@ -78,14 +78,14 @@ public final class FactoryRegistry extends Object {
             // don't have their modules available, see JspI18nSupportFactory.getDataObjectClass.
             Class clazz = factory.getDataObjectClass();
             
-            if(clazz != null && clazz.isAssignableFrom(dataObjectClass)) {
+            if ((clazz != null) && clazz.isAssignableFrom(dataObjectClass)) {
                 candidates.add(factory);
             }
         }
         
-        if(candidates.size() == 0) {
+        if (candidates.size() == 0) {
             return null;
-        } else if(candidates.size() == 1) {
+        } else if (candidates.size() == 1) {
             return candidates.get(0);
         } else {
             I18nSupport.Factory chosen = null;
@@ -94,12 +94,12 @@ public final class FactoryRegistry extends Object {
             // is the lowest one in the class hierarchy.
             for (I18nSupport.Factory fct : candidates) {
                 
-                if(chosen == null) {
+                if (chosen == null) {
                     chosen = fct;
                     continue;
                 }
 
-                if(chosen.getDataObjectClass().isAssignableFrom(fct.getDataObjectClass()) ) {
+                if (chosen.getDataObjectClass().isAssignableFrom(fct.getDataObjectClass()) ) {
                     chosen = fct;
                 }
             }
@@ -123,7 +123,7 @@ public final class FactoryRegistry extends Object {
             // don't have their modules available, see JspI18nSupportFactory.getDataObjectClass.
             Class clazz = factory.getDataObjectClass();
             
-            if(clazz != null && clazz.isAssignableFrom(dataObjectClass)) {
+            if ((clazz != null) && clazz.isAssignableFrom(dataObjectClass)) {
                 cache.add(dataObjectClass);
                 return true;
             }

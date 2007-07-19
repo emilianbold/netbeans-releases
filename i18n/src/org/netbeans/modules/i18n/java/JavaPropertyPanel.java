@@ -26,9 +26,10 @@ import java.util.ResourceBundle;
 import org.netbeans.modules.i18n.PropertyPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
- * Property panel for <code>JavaI18nString</code>'s.
+ * Property panel for {@code JavaI18nString}'s.
  *
  * @author  Peter Zavadsky
  */
@@ -38,7 +39,7 @@ public class JavaPropertyPanel extends PropertyPanel {
     
     /** Creates new form JavaPropertyPanel */
     public JavaPropertyPanel() {
-        bundle = org.openide.util.NbBundle.getBundle(JavaPropertyPanel.class);
+        bundle = NbBundle.getBundle(JavaPropertyPanel.class);
         initComponents();
     }    
     
@@ -49,7 +50,8 @@ public class JavaPropertyPanel extends PropertyPanel {
      */
     private void initComponents() {
         argumentsButton.setVisible(true);
-        argumentsButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_Arguments"));
+        argumentsButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_CTL_Arguments"));                 //NOI18N
         argumentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 argumentsButtonActionPerformed(evt);
@@ -75,7 +77,7 @@ public class JavaPropertyPanel extends PropertyPanel {
             DialogDescriptor.OK_OPTION,
             new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
-                    if(ev.getSource() == DialogDescriptor.OK_OPTION) {
+                    if (ev.getSource() == DialogDescriptor.OK_OPTION) {
                         javaI18nString.setArguments(paramsPanel.getArguments());
                         updateReplaceText();
                         
@@ -96,7 +98,8 @@ public class JavaPropertyPanel extends PropertyPanel {
     protected void updateReplaceText() {
         super.updateReplaceText();
         
-        argumentsButton.setEnabled(i18nString.getReplaceFormat().indexOf("{arguments}") >= 0 ); // NOI18N
+        argumentsButton.setEnabled(
+                i18nString.getReplaceFormat().indexOf("{arguments}") >= 0 ); // NOI18N
     }
 
 }

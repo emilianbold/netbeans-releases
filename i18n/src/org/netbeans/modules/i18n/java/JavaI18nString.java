@@ -48,7 +48,9 @@ public class JavaI18nString extends I18nString {
      */
     protected JavaI18nString(JavaI18nString copy) {
         super(copy);
-        if (arguments == null) return;
+        if (arguments == null) {
+            return;
+        }
         this.arguments = copy.arguments.clone();
     }
     
@@ -68,8 +70,9 @@ public class JavaI18nString extends I18nString {
      * @return Value of property arguments.
      */
     public String[] getArguments() {
-        if(arguments == null)
+        if (arguments == null) {
             arguments = new String[0];
+        }
         return arguments;
     }
     
@@ -85,8 +88,8 @@ public class JavaI18nString extends I18nString {
      * Add java specific replacing values. 
      */
     @Override
-    protected void fillFormatMap(Map map) {
-        map.put("identifier", ((JavaI18nSupport)getSupport()).getIdentifier()); // NOI18N
+    protected void fillFormatMap(Map<String,String> map) {
+        map.put("identifier", ((JavaI18nSupport) getSupport()).getIdentifier()); // NOI18N
 
         // Arguments.
         String[] arguments = getArguments();

@@ -21,7 +21,6 @@
 package org.netbeans.modules.i18n.wizard;
 
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -30,11 +29,11 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultCellEditor;
@@ -84,7 +83,7 @@ final class TestStringWizardPanel extends JPanel {
     private static final int COLUMN_INDEX_VALUE = 3;
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSourceMap();
+    private final Map<DataObject,SourceData> sourceMap = Util.createWizardSourceMap();
 
     /** Table model for <code>stringTable</code>. */
     private final AbstractTableModel tableModel = new TestStringTableModel();
@@ -103,16 +102,14 @@ final class TestStringWizardPanel extends JPanel {
 
         
     /** Sets combo model only for source which were some found strings in. */
-    private void setComboModel(Map sourceMap) {
-        Object[] sources = sourceMap.keySet().toArray();
-        
-        ArrayList nonEmptySources = new ArrayList();
-        
-        for(int i = 0; i < sources.length; i++) {
-            if(!((SourceData)sourceMap.get(sources[i])).getStringMap().isEmpty())
-                nonEmptySources.add(sources[i]);
+    private void setComboModel(Map<DataObject,SourceData> sourceMap) {
+        List<DataObject> nonEmptySources = new ArrayList<DataObject>();
+
+        for (Map.Entry<DataObject,SourceData> entry : sourceMap.entrySet()) {
+            if (!entry.getValue().getStringMap().isEmpty()) {
+                nonEmptySources.add(entry.getKey());
+            }
         }
-        
         sourceCombo.setModel(new DefaultComboBoxModel(nonEmptySources.toArray()));
     }
     
@@ -123,12 +120,12 @@ final class TestStringWizardPanel extends JPanel {
     }
 
     /** Getter for <code>resources</code> property. */
-    public Map getSourceMap() {
+    public Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     } 
     
     /** Setter for <code>resources</code> property. */
-    public void setSourceMap(Map sourceMap) {
+    public void setSourceMap(Map<DataObject,SourceData> sourceMap) {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
@@ -136,19 +133,21 @@ final class TestStringWizardPanel extends JPanel {
     }
     
     /** Gets string map for specified source data object. Utility method. */
-    private Map getStringMap() {
-        SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
+    private Map<HardCodedString,I18nString> getStringMap() {
+        SourceData sourceData = sourceMap.get(sourceCombo.getSelectedItem());
         return sourceData == null ? null : sourceData.getStringMap();
     }
 
     /** Gets hard coded strings user wish to not proceed. */
-    private Set getRemovedStrings() {
-        SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
-        if(sourceData == null)
+    private Set<HardCodedString> getRemovedStrings() {
+        SourceData sourceData = sourceMap.get(sourceCombo.getSelectedItem());
+        if (sourceData == null) {
             return null;
+        }
         
-        if(sourceData.getRemovedStrings() == null)
-            sourceData.setRemovedStrings(new HashSet());
+        if (sourceData.getRemovedStrings() == null) {
+            sourceData.setRemovedStrings(new HashSet<HardCodedString>());
+        }
         
         return sourceData.getRemovedStrings();                    
     }
@@ -156,43 +155,40 @@ final class TestStringWizardPanel extends JPanel {
     /** Inits table component. */
     private void initTable() {
         testStringTable.setDefaultRenderer(HardCodedString.class, new DefaultTableCellRenderer() {
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
                     
-                JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-                HardCodedString hcString = (HardCodedString)value;
+                HardCodedString hcString = (HardCodedString) value;
 
-                if(hcString != null)
-                    label.setText(hcString.getText());
-                else
-                    label.setText(""); // NOI18N
-
+                label.setText((hcString != null)
+                              ? hcString.getText()
+                              : ""); // NOI18N
                 return label;
             }
         });
         
         testStringTable.setDefaultRenderer(I18nString.class, new DefaultTableCellRenderer() {
             
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
 
-                I18nString i18nString = (I18nString)value;
+                I18nString i18nString = (I18nString) value;
 
-                JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 int modelColumn = testStringTable.convertColumnIndexToModel(column);
                 
-                if(i18nString != null) {
-                    if(modelColumn == COLUMN_INDEX_KEY) {
-                        label.setText(i18nString.getKey());
-                    } else {
-                        label.setText(i18nString.getValue());
-                    }
-
-                } else
+                if (i18nString != null) {
+                    label.setText((modelColumn == COLUMN_INDEX_KEY)
+                                  ? i18nString.getKey()
+                                  : i18nString.getValue());
+                } else {
                     label.setText(""); // NOI18N
-                    
+                }
                 
                 return label;
             }
@@ -200,22 +196,23 @@ final class TestStringWizardPanel extends JPanel {
 
         testStringTable.setDefaultEditor(I18nString.class, new DefaultCellEditor(new JTextField()) {
             
+            @Override
             public Component getTableCellEditorComponent(
                 JTable table, Object value,
                 boolean isSelected,
                 int row, int column) {
 
-                I18nString i18nString = (I18nString)value;
+                I18nString i18nString = (I18nString) value;
                 
                 int modelColumn = testStringTable.convertColumnIndexToModel(column);
                 
-                if(modelColumn == COLUMN_INDEX_KEY)
+                if (modelColumn == COLUMN_INDEX_KEY) {
                     value = i18nString == null ? "" : i18nString.getKey(); // NOI18N
-                else if(modelColumn == COLUMN_INDEX_VALUE)
+                } else if (modelColumn == COLUMN_INDEX_VALUE) {
                     value = i18nString == null ? "" : i18nString.getValue(); // NOI18N
-                else
+                } else {
                     value = ""; // NOI18N
-                
+                }
                 return super.getTableCellEditorComponent(table, value, isSelected, row, column);
             }
         });
@@ -284,9 +281,11 @@ final class TestStringWizardPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sourceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceComboActionPerformed
-        if(((SourceData)sourceMap.get(sourceCombo.getSelectedItem())).getStringMap().isEmpty()) {
+        if ((sourceMap.get(sourceCombo.getSelectedItem())).getStringMap().isEmpty()) {
             // There are no hardcoded strings found for this selected source.
-            JLabel label = new JLabel(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_AllI18nStringsSource"));
+            JLabel label = new JLabel(
+                    NbBundle.getMessage(TestStringWizardPanel.class,
+                                        "TXT_AllI18nStringsSource"));   //NOI18N
             label.setHorizontalAlignment(JLabel.CENTER);
             scrollPane.setViewportView(label);
         } else {
@@ -327,12 +326,13 @@ final class TestStringWizardPanel extends JPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             Map stringMap = getStringMap();
             
-            if(stringMap == null)
+            if (stringMap == null) {
                 return null;
+            }
             
-            if(columnIndex == COLUMN_INDEX_CHECK) {
+            if (columnIndex == COLUMN_INDEX_CHECK) {
                 return !getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]) ? Boolean.TRUE : Boolean.FALSE;
-            } else if(columnIndex == COLUMN_INDEX_HARDSTRING) {
+            } else if (columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return stringMap.keySet().toArray()[rowIndex];
             } else {
                 return stringMap.values().toArray()[rowIndex];
@@ -341,33 +341,38 @@ final class TestStringWizardPanel extends JPanel {
         
         /** Overrides superclass method.
          * @return false for all columns but the value and check box column */
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if(columnIndex == COLUMN_INDEX_CHECK || columnIndex == COLUMN_INDEX_VALUE)
-                return true;
-            else
-                return false;
+            return (columnIndex == COLUMN_INDEX_CHECK)
+                   || (columnIndex == COLUMN_INDEX_VALUE);
         }
         
         /** Overrides superclass method. */
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            Map stringMap = getStringMap();
+            Map<HardCodedString,I18nString> stringMap = getStringMap();
             
-            if(stringMap == null)
+            if (stringMap == null) {
                 return;
-            
-            if(columnIndex == COLUMN_INDEX_CHECK && value instanceof Boolean) {
-                Object hardString = stringMap.keySet().toArray()[rowIndex];
+            }
+             
+            if (columnIndex == COLUMN_INDEX_CHECK && value instanceof Boolean) {
+                HardCodedString[] hardCodedStrings
+                        = stringMap.keySet().toArray(new HardCodedString[stringMap.size()]);
+                HardCodedString hardString = hardCodedStrings[rowIndex];
                 
-                Set removedStrings = getRemovedStrings();
+                Set<HardCodedString> removedStrings = getRemovedStrings();
                 
-                if(((Boolean)value).booleanValue())
+                if (((Boolean) value).booleanValue()) {
                     removedStrings.remove(hardString);
-                else
+                } else {
                     removedStrings.add(hardString);
+                }
             }
             
-            if(columnIndex == COLUMN_INDEX_VALUE) {
-                I18nString i18nString = (I18nString)getStringMap().values().toArray()[rowIndex];
+            if (columnIndex == COLUMN_INDEX_VALUE) {
+                Collection<I18nString> i18nStrings = getStringMap().values();
+                I18nString i18nString = i18nStrings.toArray(new I18nString[i18nStrings.size()])[rowIndex];
 
                 i18nString.setValue(value.toString());
             }
@@ -375,25 +380,29 @@ final class TestStringWizardPanel extends JPanel {
         
         /** Overrides superclass method. 
          * @return DataObject.class */
+        @Override
         public Class getColumnClass(int columnIndex) {
-            if(columnIndex == COLUMN_INDEX_CHECK)
+            if (columnIndex == COLUMN_INDEX_CHECK) {
                 return Boolean.class;
-            else if(columnIndex == COLUMN_INDEX_HARDSTRING)
+            } else if (columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return HardCodedString.class;
-            else
+            } else {
                 return I18nString.class;
+            }
         }
 
         /** Overrides superclass method. */
+        @Override
         public String getColumnName(int column) {          
-            if(column == COLUMN_INDEX_HARDSTRING)
-                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_HardString");
-            else if(column == COLUMN_INDEX_KEY)
-                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Key");
-            else if(column == COLUMN_INDEX_VALUE)
-                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Value");
-            else 
+            if (column == COLUMN_INDEX_HARDSTRING) {
+                return NbBundle.getMessage(HardStringWizardPanel.class, "LBL_HardString");
+            } else if (column == COLUMN_INDEX_KEY) {
+                return NbBundle.getMessage(HardStringWizardPanel.class, "LBL_Key");
+            } else if (column == COLUMN_INDEX_VALUE) {
+                return NbBundle.getMessage(HardStringWizardPanel.class, "LBL_Value");
+            } else {
                 return " "; // NOI18N
+            }
         }
     } // End of ResourceTableModel nested class.
 
@@ -437,7 +446,7 @@ final class TestStringWizardPanel extends JPanel {
 
         /** Implements <code>TableCellEditor</code> interface. */
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            i18nString = (I18nString)value;
+            i18nString = (I18nString) value;
             
             return editorComponent;
         }
@@ -448,26 +457,30 @@ final class TestStringWizardPanel extends JPanel {
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public boolean isCellEditable(EventObject anEvent) { 
-            if(anEvent instanceof MouseEvent) { 
+            if (anEvent instanceof MouseEvent) { 
                 // Counts needed to start editing.
-                return ((MouseEvent)anEvent).getClickCount() >= 1;
+                return ((MouseEvent) anEvent).getClickCount() >= 1;
             }
             return true;
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public boolean shouldSelectCell(EventObject anEvent) { 
             return true; 
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public boolean stopCellEditing() {
             fireEditingStopped(); 
             return true;
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public void cancelCellEditing() {
            fireEditingCanceled(); 
         }
@@ -483,8 +496,9 @@ final class TestStringWizardPanel extends JPanel {
     /** <code>WizardDescriptor.Panel</code> used for <code>HardCodedStringPanel</code>. 
      * @see I18nWizardDescriptorPanel
      * @see org.openide.WizardDescriptor.Panel*/
-    public static class Panel extends I18nWizardDescriptor.Panel 
-    implements WizardDescriptor.FinishablePanel, I18nWizardDescriptor.ProgressMonitor {
+    public static class Panel extends I18nWizardDescriptor.Panel
+                              implements WizardDescriptor.FinishablePanel<I18nWizardDescriptor.Settings>,
+                                         I18nWizardDescriptor.ProgressMonitor {
 
         /** Empty label component. */
         private final JLabel emptyLabel;        
@@ -493,7 +507,9 @@ final class TestStringWizardPanel extends JPanel {
         private transient TestStringWizardPanel testStringPanel;
         
         public Panel() {            
-            emptyLabel = new JLabel(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_AllI18nStrings"));
+            emptyLabel = new JLabel(
+                    NbBundle.getMessage(TestStringWizardPanel.class,
+                                        "TXT_AllI18nStrings"));         //NOI18N
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
             emptyLabel.setVerticalAlignment(JLabel.CENTER);            
         }
@@ -504,10 +520,16 @@ final class TestStringWizardPanel extends JPanel {
          * @return this instance */
         protected Component createComponent() {
             JPanel panel = new JPanel();
-            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TestStringWizardPanel.class).getString("ACS_TestStringWizardPanel"));                            
+            panel.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(
+                            TestStringWizardPanel.class,
+                            "ACS_TestStringWizardPanel"));              //NOI18N
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
-            panel.setName(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_FoundMissingResource"));
+            panel.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
+                                    new Integer(2));
+            panel.setName(
+                    NbBundle.getMessage(TestStringWizardPanel.class,
+                                        "TXT_FoundMissingResource"));   //NOI18N
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);                    
             panel.setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
@@ -519,6 +541,7 @@ final class TestStringWizardPanel extends JPanel {
         }
 
         /** Gets if panel is valid. Overrides superclass method. */
+        @Override
         public boolean isValid() {
             return true;
         }
@@ -530,13 +553,14 @@ final class TestStringWizardPanel extends JPanel {
         }
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
-        public void readSettings(Object settings) {
+        @Override
+        public void readSettings(I18nWizardDescriptor.Settings settings) {
 	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
             
             JPanel panel = (JPanel)getComponent();
-            if(foundStrings(getMap())) {
-                if(panel.isAncestorOf(emptyLabel)) {
+            if (foundStrings(getMap())) {
+                if (panel.isAncestorOf(emptyLabel)) {
                     panel.remove(emptyLabel);
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
@@ -545,7 +569,7 @@ final class TestStringWizardPanel extends JPanel {
                     panel.add(getUI(), constraints);
                 }
             } else {
-                if(panel.isAncestorOf(getUI())) {
+                if (panel.isAncestorOf(getUI())) {
                     panel.remove(getUI());
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
@@ -557,11 +581,12 @@ final class TestStringWizardPanel extends JPanel {
         }
         
         /** Stores settings at the end of panel show. Overrides superclass method. */
-        public void storeSettings(Object settings) {
+        @Override
+        public void storeSettings(I18nWizardDescriptor.Settings settings) {
 	    super.storeSettings(settings);
             // Update sources.
-            (getMap()).clear();
-            (getMap()).putAll(getUI().getSourceMap());
+            getMap().clear();
+            getMap().putAll(getUI().getSourceMap());
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
@@ -570,7 +595,9 @@ final class TestStringWizardPanel extends JPanel {
             if (foundStrings(getMap())) {
                 // Replace panel.
                 final ProgressWizardPanel progressPanel = new ProgressWizardPanel(true);
-                progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_Internationalizing"));
+                progressPanel.setMainText(
+                        NbBundle.getMessage(getClass(),
+                                            "LBL_Internationalizing")); //NOI18N
                 progressPanel.setMainProgress(0);
 
                 ((Container)getComponent()).remove(getUI());
@@ -578,49 +605,52 @@ final class TestStringWizardPanel extends JPanel {
                 constraints.weightx = 1.0;
                 constraints.weighty = 1.0;
                 constraints.fill = GridBagConstraints.BOTH;
-                ((Container)getComponent()).add(progressPanel, constraints);
-                ((JComponent)getComponent()).revalidate();
+                ((Container) getComponent()).add(progressPanel, constraints);
+                ((JComponent) getComponent()).revalidate();
                 getComponent().repaint();
 
                 // Add missing key-value pairs into resource.
-                Map sourceMap = getUI().getSourceMap();
-
-                Iterator sourceIterator = sourceMap.keySet().iterator();
+                Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
 
                 // For each source perform the task.
-                for(int i=0; sourceIterator.hasNext(); i++) {
-                    Object source = sourceIterator.next();
-
-                    // Get source data.
-                    SourceData sourceData = (SourceData)sourceMap.get(source);
+                int counterOuter = 0;
+                for (Map.Entry<DataObject,SourceData> srcMapEntry : sourceMap.entrySet()) {
+                    counterOuter++;
+                    DataObject source = srcMapEntry.getKey();
+                    SourceData sourceData = srcMapEntry.getValue();
 
                     // Get i18n support for this source.
                     I18nSupport support = sourceData.getSupport();
 
                     // Get string map.
-                    Map stringMap = sourceData.getStringMap();
+                    Map<HardCodedString,I18nString> stringMap = sourceData.getStringMap();
 
                     // Get removed strings.
-                    Set removed = sourceData.getRemovedStrings();
+                    Set<HardCodedString> removed = sourceData.getRemovedStrings();
+
+                    ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(),
+                                                          ClassPath.SOURCE);                
+                    progressPanel.setSubText(
+                            Util.getString("LBL_Source")        //NOI18N
+                            + " "                               //NOI18N
+                            + cp.getResourceName(source.getPrimaryFile(), '.', false));
 
                     // Do actual replacement.
-                    Iterator it = stringMap.keySet().iterator();
+                    int counterInner = 0;
+                    for (Map.Entry<HardCodedString,I18nString> entry : stringMap.entrySet()) {
+                        counterInner++;
+                        HardCodedString hcString = entry.getKey();
+                        I18nString i18nString = entry.getValue();
 
-                    ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );                
-                    progressPanel.setSubText(Util.getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false)); //NOI18N
-
-                    for(int j=0; it.hasNext(); j++) {
-                        HardCodedString hcString = (HardCodedString)it.next();
-                        I18nString i18nString = (I18nString)stringMap.get(hcString);
-
-                        if(removed != null && removed.contains(hcString))
+                        if ((removed != null) && removed.contains(hcString)) {
                             // Don't proceed.
                             continue;
+                        }
 
                         // Actually put missing property into bundle with origin comment.
                         String comment = i18nString.getComment();
-                        if (source instanceof DataObject && (comment == null || "".equals(comment) ) ) {
-                            DataObject dobj = (DataObject) source;
+                        if ((comment == null) || "".equals(comment)) {
+                            DataObject dobj = source;
                             cp = ClassPath.getClassPath( dobj.getPrimaryFile(), ClassPath.SOURCE );                
                             comment = cp.getResourceName( dobj.getPrimaryFile(), '.', false );
                         }
@@ -630,17 +660,21 @@ final class TestStringWizardPanel extends JPanel {
                         String key = i18nString.getKey();
                         String prev = support.getResourceHolder().getCommentForKey(key);
                         comment += (prev == null ? "" : " " + prev);                // NOI18N
-                        support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), comment, false);
+                        support.getResourceHolder().addProperty(
+                                                        i18nString.getKey(),
+                                                        i18nString.getValue(),
+                                                        comment,
+                                                        false);
 
-                        progressPanel.setSubProgress((int)((j+1)/(float)stringMap.size() * 100));
+                        progressPanel.setSubProgress((int) (counterInner / (float) stringMap.size() * 100));
                     } // End of inner for.
 
                     // Provide additional changes if there are some.
-                    if(support.hasAdditionalCustomizer()) {
+                    if (support.hasAdditionalCustomizer()) {
                         support.performAdditionalChanges();
                     }
 
-                    progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));
+                    progressPanel.setMainProgress((int) (counterOuter / (float) sourceMap.size() * 100));
                 } // End of outer for.
             } // if (foundStrings(getMap()))
         }
@@ -651,15 +685,12 @@ final class TestStringWizardPanel extends JPanel {
 
         /** Indicates if there were found some hardcoded strings in any of selected sources. 
          * @return true if at least one hard coded string was found. */
-        private static boolean foundStrings(Map sourceMap) {
-            Iterator it = sourceMap.keySet().iterator();
-
-            while(it.hasNext()) {
-                SourceData sourceData = (SourceData)sourceMap.get(it.next());
-                if(!sourceData.getStringMap().isEmpty())
+        private static boolean foundStrings(Map<DataObject,SourceData> sourceMap) {
+            for (Map.Entry<DataObject,SourceData> entry : sourceMap.entrySet()) {
+                if (!entry.getValue().getStringMap().isEmpty()) {
                     return true;
+                }
             }
-
             return false;
         }
         

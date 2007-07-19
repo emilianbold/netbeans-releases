@@ -21,7 +21,6 @@
 package org.netbeans.modules.i18n.wizard;
 
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
@@ -30,22 +29,22 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.ChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.i18n.HardCodedString;
+import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.WizardDescriptor;
 
 
 /**
@@ -59,10 +58,10 @@ import org.openide.WizardDescriptor;
 final class AdditionalWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSourceMap();
+    private final Map<DataObject,SourceData> sourceMap = Util.createWizardSourceMap();
     
     /** Sources on which additional modifications coudl happen in this panel. */
-    private final Set viewedSources = new HashSet(0);
+    private final Set<DataObject> viewedSources = new HashSet<DataObject>(0);
 
     /** Additional component. */
     private JComponent additionalComponent = EMPTY_COMPONENT;
@@ -89,36 +88,37 @@ final class AdditionalWizardPanel extends JPanel {
     
     
     /** Sets combo model only for source which support provides additional customizing. */
-    private void setComboModel(Map sourceMap) {
-        Object[] sources = sourceMap.keySet().toArray();
+    private void setComboModel(Map<DataObject,SourceData> sourceMap) {
+        DataObject[] sources = sourceMap.keySet().toArray(new DataObject[0]);
         
-        ArrayList nonEmptySources = new ArrayList();
+        List<DataObject> nonEmptySources = new ArrayList<DataObject>();
 
-        for (int i = 0; i < sources.length; i++) {
-            if(((SourceData)sourceMap.get(sources[i])).getSupport().hasAdditionalCustomizer())
-                nonEmptySources.add(sources[i]);
+        for (DataObject source : sources) {
+            if ((sourceMap.get(source)).getSupport().hasAdditionalCustomizer()) {
+                nonEmptySources.add(source);
+            }
         }
         
         sourceCombo.setModel(new DefaultComboBoxModel(nonEmptySources.toArray()));
         
         // update view
         Object selected = sourceCombo.getSelectedItem();
-        updateAdditionalComponent(selected);
+        updateAdditionalComponent((DataObject) selected);
         
     }
 
     /** Getter for <code>viewedSources</code> property. */
-    Set getViewedSources() {
+    Set<DataObject> getViewedSources() {
         return viewedSources;
     }
 
     /** Getter for <code>sourceMap</code> property. */
-    Map getSourceMap() {
+    Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     }
     
     /** Setter for <code>resources</code> property. */
-    void setSourceMap(Map sourceMap) {
+    void setSourceMap(Map<DataObject,SourceData> sourceMap) {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
@@ -160,15 +160,15 @@ final class AdditionalWizardPanel extends JPanel {
 
     private void sourceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceComboActionPerformed
         Object selected = sourceCombo.getSelectedItem();
-        updateAdditionalComponent(selected);
+        updateAdditionalComponent((DataObject) selected);
     }//GEN-LAST:event_sourceComboActionPerformed
 
-    private void updateAdditionalComponent(Object selected) {
+    private void updateAdditionalComponent(DataObject selected) {
         
         I18nSupport support = null;
         
         if (selected != null) {
-            support = ((SourceData)sourceMap.get(selected)).getSupport();
+            support = (sourceMap.get(selected)).getSupport();
         }
 
         // remove last one
@@ -240,7 +240,8 @@ final class AdditionalWizardPanel extends JPanel {
         }
 
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
-        public void readSettings(Object settings) {
+        @Override
+        public void readSettings(I18nWizardDescriptor.Settings settings) {
    	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
             
@@ -267,20 +268,15 @@ final class AdditionalWizardPanel extends JPanel {
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
-        public void storeSettings(Object settings) {
+        @Override
+        public void storeSettings(I18nWizardDescriptor.Settings settings) {
    	    super.storeSettings(settings);
             // Alter i18n string values if changing additional values could affect them.
-            Map sourceMap = getUI().getSourceMap();
-            Iterator it = getUI().getViewedSources().iterator();
-            
-            while(it.hasNext()) {
-                SourceData sourceData = (SourceData)sourceMap.get(it.next());
-                
-                Object[] hcStrings = sourceData.getStringMap().keySet().toArray();
-                
-                for(int i=0; i<hcStrings.length; i++) {
-                    // Actual replacing of default values.
-                    sourceData.getStringMap().put(hcStrings[i], sourceData.getSupport().getDefaultI18nString((HardCodedString)hcStrings[i]));
+            Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
+            for (DataObject viewedSource : getUI().getViewedSources()) {
+                SourceData sourceData = sourceMap.get(viewedSource);
+                for (Map.Entry<HardCodedString,I18nString> entry : sourceData.getStringMap().entrySet()) {
+                    entry.setValue(sourceData.getSupport().getDefaultI18nString(entry.getKey()));
                 }
             }
             
@@ -297,27 +293,38 @@ final class AdditionalWizardPanel extends JPanel {
             
             showProgressPanel(progressPanel);
             
-            progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_AdditionalIn"));
+            progressPanel.setMainText(NbBundle.getMessage(getClass(), "LBL_AdditionalIn"));
             progressPanel.setMainProgress(0);
             
             // Alter i18n string values if changing additional values could affect them.
-            Map sourceMap = ((AdditionalWizardPanel)getComponent()).getSourceMap();
-            Iterator it = ((AdditionalWizardPanel)getComponent()).getViewedSources().iterator();
+            Map<DataObject,SourceData> sourceMap
+                    = ((AdditionalWizardPanel) getComponent()).getSourceMap();
+            Iterator<DataObject> it = ((AdditionalWizardPanel) getComponent()).getViewedSources().iterator();
             
-            for(int i=0; it.hasNext(); i++) {
-                DataObject source = (DataObject)it.next();
+            for (int i = 0; it.hasNext(); i++) {
+                DataObject source = it.next();
                 
-                SourceData sourceData = (SourceData)sourceMap.get(source);
+                SourceData sourceData = sourceMap.get(source);
                 
-                ClassPath cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );
+                ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(),
+                                                      ClassPath.SOURCE );
 
-                progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_AdditionalIn")+" "+cp.getResourceName( source.getPrimaryFile(), '.', false ) ); // NOI18N
+                progressPanel.setMainText(
+                        NbBundle.getMessage(
+                                getClass(), "LBL_AdditionalIn")        // NOI18N
+                                + " "
+                                + cp.getResourceName(source.getPrimaryFile(),
+                                                     '.',
+                                                     false));
                 
-                Object[] hcStrings = sourceData.getStringMap().keySet().toArray();
+                HardCodedString[] hcStrings
+                        = sourceData.getStringMap().keySet().toArray(new HardCodedString[0]);
                 
-                for(int j=0; i<hcStrings.length; j++) {
+                for(int j=0; i<hcStrings.length; j++) {     //PENDING - bug? 'i' vs. 'j'
                     // Actual replacing of default values.
-                    sourceData.getStringMap().put(hcStrings[j], sourceData.getSupport().getDefaultI18nString((HardCodedString)hcStrings[j]));
+                    sourceData.getStringMap().put(
+                            hcStrings[j],
+                            sourceData.getSupport().getDefaultI18nString(hcStrings[j]));
                 } // End of inner for.
                 
                 progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));                
@@ -326,19 +333,19 @@ final class AdditionalWizardPanel extends JPanel {
 
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
-            ((Container)getComponent()).remove(getUI());
+            ((Container) getComponent()).remove(getUI());
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
-            ((Container)getComponent()).add(progressPanel, constraints);
-            ((JComponent)getComponent()).revalidate();
+            ((Container) getComponent()).add(progressPanel, constraints);
+            ((JComponent) getComponent()).revalidate();
             getComponent().repaint();
         }
         
         /** Resets panel back after monitoring search. Implements <code>ProgressMonitor</code> interface method. */
         public void reset() {
-            Container container = (Container)getComponent();
+            Container container = (Container) getComponent();
             
             if(!container.isAncestorOf(getUI())) {
                 container.removeAll();
@@ -357,13 +364,11 @@ final class AdditionalWizardPanel extends JPanel {
         
         /** Indicates if there are additional customizers in any of selected sources. 
          * @return true if at least one source suport has additional customizer. */
-        private static boolean hasAdditional(Map sourceMap) {
-            Iterator it = sourceMap.keySet().iterator();
-
-            while(it.hasNext()) {
-                SourceData sourceData = (SourceData)sourceMap.get(it.next());
-                if(sourceData.getSupport().hasAdditionalCustomizer())
+        private static boolean hasAdditional(Map<DataObject,SourceData> sourceMap) {
+            for (Map.Entry<DataObject,SourceData> entry : sourceMap.entrySet()) {
+                if (entry.getValue().getSupport().hasAdditionalCustomizer()) {
                     return true;
+                }
             }
 
             return false;

@@ -20,12 +20,12 @@
 
 package org.netbeans.modules.i18n;
 
+import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
-import org.netbeans.api.project.FileOwnerQuery;
 
 
 /**
@@ -39,10 +39,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 public class I18nAction extends NodeAction {
 
     /** Generated sreial version UID. */
-    static final long serialVersionUID =3322896507302889271L;
+    static final long serialVersionUID = 3322896507302889271L;
 
     public I18nAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
     }    
     
     /** 
@@ -50,19 +50,22 @@ public class I18nAction extends NodeAction {
      * @param activatedNodes Currently activated nodes.
      */
     protected void performAction(final Node[] activatedNodes) {
-        if (activatedNodes.length != 1)
+        if (activatedNodes.length != 1) {
             return;
+        }
 
         final Node node = activatedNodes[0];
         DataObject dataObject = node.getCookie(DataObject.class);
-        if (dataObject == null)
+        if (dataObject == null) {
             return;
+        }
 
         EditorCookie editorCookie = node.getCookie(EditorCookie.class);
         if (editorCookie == null) {
             editorCookie = dataObject.getCookie(EditorCookie.class);
-            if (editorCookie == null)
+            if (editorCookie == null) {
                 return;
+            }
         }
 
         editorCookie.open(); 
@@ -77,27 +80,32 @@ public class I18nAction extends NodeAction {
     /** Overrides superclass method. Adds additional test if i18n module has registered factory
      * for this data object to be able to perform i18n action. */
     protected boolean enable(Node[] activatedNodes) {    
-        if (activatedNodes.length != 1)
+        if (activatedNodes.length != 1) {
             return false;
+        }
 
         final Node node = activatedNodes[0];
         DataObject dataObject = node.getCookie(DataObject.class);
-        if (dataObject == null || dataObject.getPrimaryFile() == null)
+        if ((dataObject == null) || (dataObject.getPrimaryFile() == null)) {
             return false;
+        }
 
         EditorCookie editorCookie = node.getCookie(EditorCookie.class);
         if (editorCookie == null) {
             editorCookie = dataObject.getCookie(EditorCookie.class);
-            if (editorCookie == null)
+            if (editorCookie == null) {
                 return false;
+            }
         }
 
-        if (!FactoryRegistry.hasFactory(dataObject.getClass()))
+        if (!FactoryRegistry.hasFactory(dataObject.getClass())) {
             return false;
+        }
 
 	// check that the node has project
-	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null)
+	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) {
             return false;
+        }
 
 	return true;
     }

@@ -59,8 +59,9 @@ public abstract class I18nSupport {
         
         EditorCookie editorCookie = sourceDataObject.getCookie(EditorCookie.class);
         
-        if(editorCookie == null)
+        if (editorCookie == null) {
             throw new IllegalArgumentException("I18N: Illegal data object type"+ sourceDataObject); // NOI18N
+        }
         
         this.document = editorCookie.getDocument();
         
@@ -71,11 +72,12 @@ public abstract class I18nSupport {
     /** Loads document if was not get in constructor should be called after creation if the
      * work on document is necessary. */
     private void loadDocument() throws IOException {
-        if(document == null) {
+        if (document == null) {
             EditorCookie editorCookie = sourceDataObject.getCookie(EditorCookie.class);
 
-            if(editorCookie == null)
+            if (editorCookie == null) {
                 throw new IllegalArgumentException("I18N: Illegal data object type"+ sourceDataObject); // NOI18N
+            }
             
             document = editorCookie.openDocument();
         }
@@ -92,17 +94,17 @@ public abstract class I18nSupport {
 
     /** Gets <code>I18nFinder</code>. */
     public final I18nFinder getFinder() {
-        if(finder == null)
+        if (finder == null) {
             finder = createFinder();
-            
+        }
         return finder;
     }
     
     /** Gets <code>I18nReplacer</code> for this support. */
     public final I18nReplacer getReplacer() {
-        if(replacer == null)
+        if (replacer == null) {
             replacer = createReplacer();
-        
+        }
         return replacer;
     }
 
@@ -194,7 +196,7 @@ public abstract class I18nSupport {
         public void replace(HardCodedString hardString, I18nString i18nString);
     }
 
-    /** Factory inteface for creating <code>I18nSupport</code> instances. */
+    /** Factory inteface for creating {@code I18nSupport} instances. */
     public static abstract class Factory {
         
         /** Gets <code>I18nSupport</code> instance for specified data object and document.

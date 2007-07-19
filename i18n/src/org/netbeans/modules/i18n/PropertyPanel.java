@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -39,8 +40,9 @@ import org.openide.loaders.DataObject;
 
 
 /**
- * Panel which is used for customizing key-value pair (and comment also) encapsulated by <code>I18nString</code> object.
- * It's used inside <code>I18nPanel</code>.
+ * Panel which is used for customizing key-value pair (and comment also)
+ * encapsulated by {@code I18nString} object.
+ * It's used inside {@code I18nPanel}.
  *
  * @author  Peter Zavadsky
  * @see I18nString
@@ -51,13 +53,13 @@ public class PropertyPanel extends JPanel {
     /** property representing the I18String. Change is fired when the i18string changes.
      * Old and new objects are not sent with the notification.
      */
-    public static final String PROP_STRING = "propString"; // NOI18N
+    public static final String PROP_STRING = "propString";              //NOI18N
 
     /** Name for resource property. */
-    public static final String PROP_RESOURCE = "property_resource"; // NOI18N
+    public static final String PROP_RESOURCE = "property_resource";     //NOI18N
     
     /** Helper name for dummy action command. */
-    private static final String DUMMY_ACTION = "dont_proceed"; // NOI18N
+    private static final String DUMMY_ACTION = "dont_proceed";          //NOI18N
     
     /** Customized <code>I18nString</code>. */
     protected I18nString i18nString;
@@ -80,6 +82,7 @@ public class PropertyPanel extends JPanel {
         initAccessibility();
     }
 
+    @Override
     public void setEnabled(boolean ena) {
         super.setEnabled(ena);
         commentText.setEnabled(ena);
@@ -129,13 +132,13 @@ public class PropertyPanel extends JPanel {
     private void updateKey() {       
         String key = i18nString.getKey();
         
-        if(key == null || !key.equals(keyBundleCombo.getSelectedItem()) ) {
+        if ((key == null) || !key.equals(keyBundleCombo.getSelectedItem())) {
             // Trick to avoid firing key selected property change.
             String oldActionCommand = keyBundleCombo.getActionCommand();
             keyBundleCombo.setActionCommand(DUMMY_ACTION);
 
             internalTextChange++;
-            keyBundleCombo.setSelectedItem(key == null ? "" : key); // NOI18N
+            keyBundleCombo.setSelectedItem((key != null) ? key : "");   //NOI18N
             internalTextChange--;
             
             keyBundleCombo.setActionCommand(oldActionCommand);
@@ -149,8 +152,8 @@ public class PropertyPanel extends JPanel {
     private void updateValue() {            
         String value = i18nString.getValue();
         
-        if(!valueText.getText().equals(value)) {
-            valueText.setText(value == null ? "" : value); // NOI18N
+        if (!valueText.getText().equals(value)) {
+            valueText.setText((value != null) ? value : "");            //NOI18N
         }
        
        updateReplaceText();            
@@ -160,8 +163,8 @@ public class PropertyPanel extends JPanel {
     private void updateComment() {
         String comment = i18nString.getComment();
         
-        if(!commentText.getText().equals(comment)) {
-            commentText.setText(comment == null ? "" : comment); // NOI18N
+        if (!commentText.getText().equals(comment)) {
+            commentText.setText((comment != null) ? comment : "");      //NOI18N
         }
     }
     
@@ -177,7 +180,8 @@ public class PropertyPanel extends JPanel {
         keyBundleCombo.setActionCommand(DUMMY_ACTION);
 
         internalTextChange++;
-        keyBundleCombo.setModel(new DefaultComboBoxModel(i18nString.getSupport().getResourceHolder().getAllKeys()));
+        keyBundleCombo.setModel(
+                new DefaultComboBoxModel(i18nString.getSupport().getResourceHolder().getAllKeys()));
         internalTextChange--;
         
         keyBundleCombo.setActionCommand(oldActionCommand);
@@ -187,13 +191,15 @@ public class PropertyPanel extends JPanel {
     
      /** Helper method. Changes resource. */
     private void changeResource(DataObject resource) {
-        if(resource == null)
+        if (resource == null) {
             throw new IllegalArgumentException();
+        }
 
         DataObject oldValue = i18nString.getSupport().getResourceHolder().getResource();
         
-        if(oldValue != null && oldValue.equals(resource))
+        if ((oldValue != null) && oldValue.equals(resource)) {
             return;
+        }
         
         i18nString.getSupport().getResourceHolder().setResource(resource);
         String newResourceValue = i18nString.getSupport().getResourceHolder()
@@ -215,33 +221,40 @@ public class PropertyPanel extends JPanel {
     }        
 
     private boolean isResourceClass(Class clazz) {
-        return Arrays.asList(i18nString.getSupport().getResourceHolder().getResourceClasses()).contains(clazz);
+        return Arrays.asList(
+                i18nString.getSupport().getResourceHolder().getResourceClasses()).contains(clazz);
     }
 
     private String getResourceName(DataObject resource) {
-        if(resource == null) {
-            return ""; // NOI18N
-        }
-        else {
-            String name = Util.getResourceName(file, resource.getPrimaryFile(), '.', false );
-            return name != null ? name : ""; // NOI18N
+        if (resource == null) {
+            return "";                                                  //NOI18N
+        } else {
+            String name = Util.getResourceName(file, resource.getPrimaryFile(), '.', false);
+            return (name != null) ? name : "";                          //NOI18N
         }
     }
 
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_PropertyPanel")); // NOI18N
-        valueText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_valueText")); // NOI18N
-        commentText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_commentText")); // NOI18N
-        replaceFormatButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Format")); // NOI18N
-        replaceFormatTextField.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_replaceFormatTextField")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_BrowseButton")); // NOI18N
-        resourceText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_ResourceText")); // NOI18N
+        this.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_PropertyPanel"));   //NOI18N
+        valueText.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_valueText"));       //NOI18N
+        commentText.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_commentText"));     //NOI18N
+        replaceFormatButton.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_CTL_Format"));      //NOI18N
+        replaceFormatTextField.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_replaceFormatTextField"));//NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_CTL_BrowseButton"));//NOI18N
+        resourceText.getAccessibleContext().setAccessibleDescription(
+                I18nUtil.getBundle().getString("ACS_ResourceText"));    //NOI18N
     }
     
     private void myInitComponents() {
         argumentsButton.setVisible(false);
         // hook the Key combobox edit-field for changes
-        ((javax.swing.JTextField)keyBundleCombo.getEditor().getEditorComponent()).
+        ((JTextField) keyBundleCombo.getEditor().getEditorComponent()).
                 getDocument().addDocumentListener(new DocumentListener() {              
                     public void changedUpdate(DocumentEvent e) { keyBundleTextChanged();}
                     public void insertUpdate(DocumentEvent e) {keyBundleTextChanged();}
@@ -258,12 +271,12 @@ public class PropertyPanel extends JPanel {
     }
     
     private void keyBundleTextChanged() {
-        if (internalTextChange==0) {
-            String key = ((javax.swing.JTextField)keyBundleCombo.getEditor().getEditorComponent()).getText();
+        if (internalTextChange == 0) {
+            String key = ((JTextField) keyBundleCombo.getEditor().getEditorComponent()).getText();
 
             if (!key.equals(i18nString.getKey())) {        
                 i18nString.setKey(key);
-                firePropertyChange(PROP_STRING,null,null);
+                firePropertyChange(PROP_STRING, null, null);
             } 
         }
     }
@@ -271,7 +284,7 @@ public class PropertyPanel extends JPanel {
     private void valueTextChanged() {
         i18nString.setValue(valueText.getText());
 //        updateValue();
-        firePropertyChange(PROP_STRING,null,null);                
+        firePropertyChange(PROP_STRING, null, null);                
     }
     
     
@@ -431,8 +444,7 @@ public class PropertyPanel extends JPanel {
         DataObject template;
         try {
             template = rh.getTemplate(rh.getResourceClasses()[0]);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return;
         }
@@ -460,19 +472,20 @@ public class PropertyPanel extends JPanel {
 
         DialogDescriptor dd = new DialogDescriptor(
             customPanel,
-            I18nUtil.getBundle().getString("LBL_ReplaceStringFormatEditor"),
+            I18nUtil.getBundle().getString("LBL_ReplaceStringFormatEditor"),//NOI18N
             true,
             DialogDescriptor.OK_CANCEL_OPTION,
             DialogDescriptor.OK_OPTION,
             new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
-                    if (ev.getSource() == DialogDescriptor.OK_OPTION) {
-                        String newText = (String)customPanel.getPropertyValue();
+                    final Object source = ev.getSource();
+                    if (source == DialogDescriptor.OK_OPTION) {
+                        String newText = (String) customPanel.getPropertyValue();
                         
-                        if(!newText.equals(replaceFormatTextField.getText())) {
+                        if (!newText.equals(replaceFormatTextField.getText())) {
                             i18nString.setReplaceFormat(newText);                            
                             updateReplaceText();
-                            firePropertyChange(PROP_STRING,null,null);
+                            firePropertyChange(PROP_STRING, null, null);
                             
                             // Reset option as well.
                             I18nUtil.getOptions().setReplaceJavaCode(newText);
@@ -480,7 +493,7 @@ public class PropertyPanel extends JPanel {
                         
                         dialogs[0].setVisible(false);
                         dialogs[0].dispose();
-                    } else if (ev.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                    } else if (source == DialogDescriptor.CANCEL_OPTION) {
                         dialogs[0].setVisible(false);
                         dialogs[0].dispose();
                     }
@@ -491,31 +504,32 @@ public class PropertyPanel extends JPanel {
     }//GEN-LAST:event_replaceFormatButtonActionPerformed
 
     private void keyBundleComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyBundleComboActionPerformed
-        if(DUMMY_ACTION.equals(evt.getActionCommand()))
+        if (DUMMY_ACTION.equals(evt.getActionCommand())) {
             return;
+        }
 
         String key = (String)keyBundleCombo.getSelectedItem();
         i18nString.setKey(key);
         updateKey();
         
         String value = i18nString.getSupport().getResourceHolder().getValueForKey(key);
-        if(value != null) {
+        if (value != null) {
             i18nString.setValue(value);
             updateValue();
         }
         
         String comment = i18nString.getSupport().getResourceHolder().getCommentForKey(key);
-        if(comment != null) {
+        if (comment != null) {
             i18nString.setComment(comment);
             updateComment();
         }
-        firePropertyChange(PROP_STRING,null,null);
+        firePropertyChange(PROP_STRING, null, null);
     }//GEN-LAST:event_keyBundleComboActionPerformed
 
     private void commentTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commentTextFocusLost
         i18nString.setComment(commentText.getText());
         updateComment();
-        firePropertyChange(PROP_STRING,null,null);        
+        firePropertyChange(PROP_STRING, null, null);        
     }//GEN-LAST:event_commentTextFocusLost
 
     private void valueTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_valueTextFocusLost

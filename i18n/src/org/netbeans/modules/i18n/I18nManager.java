@@ -42,7 +42,7 @@ import org.openide.ErrorManager;
 
 
 /**
- * Manages performing of i18n action -> i18n-zation of one source.
+ * Manages performing of i18n action -&gt; i18n-zation of one source.
  *
  * @author   Peter Zavadsky
  */
@@ -74,9 +74,9 @@ public class I18nManager {
     
     /** Gets the only instance of I18nSupport. */
     public static synchronized I18nManager getDefault() {
-        if(manager == null)
+        if (manager == null) {
             manager = new I18nManager();
-            
+        }
         return manager;
     }
     
@@ -96,20 +96,21 @@ public class I18nManager {
         // Initilialize support.
         try {
             initSupport(sourceDataObject);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
             return;
         }
 
         // initialize the component
         final EditorCookie ec = sourceDataObject.getCookie(EditorCookie.class);
-        if(ec == null)
+        if (ec == null) {
             return;
+        }
 
         // Add i18n panel to top component.
         getDialog(sourceDataObject);
         final I18nPanel i18nPanel = i18nPanelWRef.get();
-        i18nPanel.showBundleMessage("TXT_SearchingForStrings");
+        i18nPanel.showBundleMessage("TXT_SearchingForStrings");         //NOI18N
         i18nPanel.getCancelButton().requestFocusInWindow();
         
         final class SearchResultDisplayer implements Runnable {
@@ -124,7 +125,7 @@ public class I18nManager {
                     fillDialogValues();                        
                     i18nPanel.getReplaceButton().requestFocusInWindow();
                 } else {
-                    i18nPanel.showBundleMessage("TXT_NoHardcodedString");
+                    i18nPanel.showBundleMessage("TXT_NoHardcodedString");//NOI18N
                     i18nPanel.getCancelButton().requestFocusInWindow();
 
                 }
@@ -146,11 +147,11 @@ public class I18nManager {
     /** Initializes caret. */
     private void initCaret(EditorCookie ec) {
         JEditorPane[] panes = ec.getOpenedPanes();
-        if(panes == null) {
+        if (panes == null) {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                I18nUtil.getBundle().getString("MSG_CouldNotOpen"), NotifyDescriptor.ERROR_MESSAGE);
+                    I18nUtil.getBundle().getString("MSG_CouldNotOpen"), //NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(message);
-
             return;
         }
 
@@ -162,14 +163,14 @@ public class I18nManager {
     private void highlightHCString() {
         HardCodedString hStr = hcString;
         
-        if(hStr == null) {
+        if (hStr == null) {
             return;
         }
         
         // Highlight found hard coded string.
         Caret caret = caretWRef.get();
         
-        if(caret != null) {
+        if (caret != null) {
             caret.setDot(hStr.getStartPosition().getOffset());
             caret.moveDot(hStr.getEndPosition().getOffset());
         }
@@ -180,7 +181,7 @@ public class I18nManager {
         // Actual find on finder.
         hcString = support.getFinder().findNextHardCodedString();
 
-        if(hcString != null) {
+        if (hcString != null) {
             return true;
         } 
         
@@ -207,7 +208,8 @@ public class I18nManager {
             i18nString = i18nPanelWRef.get().getI18nString();
         } catch (IllegalStateException e) {
             NotifyDescriptor.Message nd = new NotifyDescriptor.Message(
-                I18nUtil.getBundle().getString("EXC_BadKey"), NotifyDescriptor.ERROR_MESSAGE);
+                    I18nUtil.getBundle().getString("EXC_BadKey"),       //NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
             return;
         }
@@ -216,8 +218,9 @@ public class I18nManager {
         support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
         // Provide additional changes if they are available.
-        if(support.hasAdditionalCustomizer())
+        if (support.hasAdditionalCustomizer()) {
             support.performAdditionalChanges();
+        }
         
         // Replace hardcoded string.
         support.getReplacer().replace(hcString, i18nString);
@@ -231,11 +234,11 @@ public class I18nManager {
     
     /** Skips foudn hard coded string and conitnue to search for next one. */
     private void skip() {
-        if(find()) {
+        if (find()) {
             highlightHCString();
             fillDialogValues();
         } else {
-            i18nPanelWRef.get().showBundleMessage("TXT_NoMoreStrings");
+            i18nPanelWRef.get().showBundleMessage("TXT_NoMoreStrings"); //NOI18N
             i18nPanelWRef.get().getCancelButton().requestFocusInWindow();
         }
     }
@@ -244,7 +247,9 @@ public class I18nManager {
     private void showInfo() {
         JPanel infoPanel = support.getInfo(hcString);
 
-        DialogDescriptor dd = new DialogDescriptor(infoPanel, I18nUtil.getBundle().getString("CTL_InfoPanelTitle"));
+        DialogDescriptor dd = new DialogDescriptor(
+                infoPanel,
+                I18nUtil.getBundle().getString("CTL_InfoPanelTitle"));  //NOI18N
         
         dd.setModal(true);
         dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
@@ -273,10 +278,12 @@ public class I18nManager {
         I18nPanel i18nPanel = i18nPanelWRef.get();
 
         // Dialog was not created yet or garbaged already.
-        if(i18nPanel == null) {
+        if (i18nPanel == null) {
             
             // Create i18n panel.
-            i18nPanel = new I18nPanel(support.getPropertyPanel(), project, sourceDataObject.getPrimaryFile() );
+            i18nPanel = new I18nPanel(support.getPropertyPanel(),
+                                      project,
+                                      sourceDataObject.getPrimaryFile());
 
             // Helper final.
             final I18nPanel panel = i18nPanel;
@@ -284,14 +291,16 @@ public class I18nManager {
             // Set button listeners.
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    if(evt.getSource() == panel.getReplaceButton())
+                    final Object source = evt.getSource();
+                    if (source == panel.getReplaceButton()) {
                         replace();
-                    else if(evt.getSource() == panel.getSkipButton())
+                    } else if (source == panel.getSkipButton()) {
                         skip();
-                    else if(evt.getSource() == panel.getInfoButton())
+                    } else if (source == panel.getInfoButton()) {
                         showInfo();
-                    else if(evt.getSource() == panel.getCancelButton())
+                    } else if (source == panel.getCancelButton()) {
                         cancel();
+                    }
                 }
             };
             
@@ -316,8 +325,14 @@ public class I18nManager {
         if (dialog == null) {
             String title = Util.getString("CTL_I18nDialogTitle"); // NOI18N
             DialogDescriptor dd = new DialogDescriptor(
-                i18nPanel, title, false, new Object[] {}, null,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    i18nPanel,
+                    title,
+                    false,
+                    new Object[] {},
+                    null,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.setLocation(80, 80);
             dialogWRef = new WeakReference<Dialog>(dialog);
@@ -331,14 +346,16 @@ public class I18nManager {
     private void showDialog() {
         // Open dialog if available
         Dialog dialog = dialogWRef.get();
-        if (dialog != null)
+        if (dialog != null) {
             dialog.setVisible(true);
+        }
 
         // Set caret visible.
         Caret caret = caretWRef.get();
-        if(caret != null) {
-            if(!caret.isVisible())
+        if (caret != null) { 
+            if (!caret.isVisible()) {
                 caret.setVisible(true);
+            }
         }
     }
     
@@ -346,8 +363,9 @@ public class I18nManager {
      * and 'reconstruct it' to it's original layout. */
     private void closeDialog() {
         Dialog dialog = dialogWRef.get();
-        if (dialog != null)
+        if (dialog != null) {
             dialog.setVisible(false);
+        }
     }
 
 }

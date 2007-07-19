@@ -42,6 +42,7 @@ import org.openide.DialogDisplayer;
 import org.netbeans.api.project.Project;
 import java.util.Map;
 import org.openide.awt.Mnemonics;
+import org.openide.loaders.DataObject;
 
 
 /**
@@ -56,7 +57,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
     public static final Dimension PREFERRED_DIMENSION = new Dimension(500, 300);
     
     /** Hack. In super it's private. */
-    private final WizardDescriptor.Iterator panels;
+    private final WizardDescriptor.Iterator<Settings> panels;
 
     /** Hack. In super it's private. */
     private final Settings settings;
@@ -75,20 +76,32 @@ final class I18nWizardDescriptor extends WizardDescriptor {
     private PropertyChangeListener rootListener;
 
     /** Creates new I18nWizardDescriptor */
-    private I18nWizardDescriptor(WizardDescriptor.Iterator panels, Settings settings) {
+    private I18nWizardDescriptor(WizardDescriptor.Iterator<Settings> panels, Settings settings) {
         super(panels, settings);
         
         Listener listener = new Listener();
 
         // Button init.
-        Mnemonics.setLocalizedText(nextButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Next"));
-        nextButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_NEXT"));
-        Mnemonics.setLocalizedText(previousButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Previous"));
-        previousButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_PREVIOUS"));
-        Mnemonics.setLocalizedText(finishButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Finish"));
-        finishButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_FINISH"));
-        Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(I18nWizardDescriptor.class).getString("ACSD_CANCEL"));
+        Mnemonics.setLocalizedText(
+                nextButton,
+                NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Next"));
+        nextButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(I18nWizardDescriptor.class, "ACSD_NEXT"));
+        Mnemonics.setLocalizedText(
+                previousButton,
+                NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Previous"));
+        previousButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(I18nWizardDescriptor.class, "ACSD_PREVIOUS"));
+        Mnemonics.setLocalizedText(
+                finishButton, 
+                NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Finish"));
+        finishButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(I18nWizardDescriptor.class, "ACSD_FINISH"));
+        Mnemonics.setLocalizedText(
+                cancelButton, 
+                NbBundle.getMessage(I18nWizardDescriptor.class, "CTL_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(I18nWizardDescriptor.class, "ACSD_CANCEL"));
         
         nextButton.addActionListener(listener);
         previousButton.addActionListener(listener);
@@ -104,11 +117,12 @@ final class I18nWizardDescriptor extends WizardDescriptor {
 
     /** Creates I18N wizard descriptor.
      * @return <code>I18nWizardDescriptor</code> instance. */
-    static WizardDescriptor createI18nWizardDescriptor(WizardDescriptor.Iterator panels, Settings settings) {
+    static WizardDescriptor createI18nWizardDescriptor(WizardDescriptor.Iterator<Settings> panels, Settings settings) {
         return new I18nWizardDescriptor(panels, settings);
     }
     
     /** Overrides superclass method. */
+    @Override
     protected synchronized void updateState() {
         // Do superclass typical job.
         super.updateState();
@@ -127,10 +141,11 @@ final class I18nWizardDescriptor extends WizardDescriptor {
                           || ((current instanceof FinishablePanel)
                               && ((FinishablePanel) current).isFinishPanel())));
 
-        if(next)
+        if (next) {
             setValue(nextButton);
-        else
+        } else {
             setValue(finishButton);
+        }
 
         setHelpCtx(current.getHelp());
         
@@ -160,18 +175,19 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         JRootPane rootPane = null;
         
         Component comp = panels.current().getComponent();
-        if(comp instanceof JComponent)
-            rootPane = ((JComponent)comp).getRootPane();
+        if (comp instanceof JComponent) {
+            rootPane = ((JComponent) comp).getRootPane();
+        }
         
-        if(rootPane != null && rootListener == null)
+        if (rootPane != null && rootListener == null)
             // Set listener on root for cases some needless button
             // would like to become default one (the ones from superclass).
             rootPane.addPropertyChangeListener(WeakListeners.propertyChange(
                 rootListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if("defaultButton".equals(evt.getPropertyName())) { // NOI18N
+                        if ("defaultButton".equals(evt.getPropertyName())) { // NOI18N
                             Object newValue = evt.getNewValue();
-                            if(newValue != nextButton && newValue != finishButton) {
+                            if ((newValue != nextButton) && (newValue != finishButton)) {
                                 RequestProcessor.getDefault().post(new Runnable() {
                                     public void run() {
                                         updateDefaultButton();
@@ -189,15 +205,15 @@ final class I18nWizardDescriptor extends WizardDescriptor {
     
     /** Listener to changes in the iterator and panels. 
      * Hack, it's private in super. */
-    private class Listener extends Object implements ActionListener {
+    private class Listener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
-            if(evt.getSource () == nextButton) {
+            if (evt.getSource () == nextButton) {
                 
                 final WizardDescriptor.Panel current = panels.current();
                 
-                if(current instanceof ProgressMonitor) {
+                if (current instanceof ProgressMonitor) {
                     // Do the search job first.
-                    RequestProcessor.getDefault().post(new ProgressThread((ProgressMonitor)current) {
+                    RequestProcessor.getDefault().post(new ProgressThread((ProgressMonitor) current) {
                         public void handleAction() {
                             handleNextButton();
                         }
@@ -205,26 +221,26 @@ final class I18nWizardDescriptor extends WizardDescriptor {
                 } else { 
                     handleNextButton();
                 }
-            } else if(evt.getSource () == previousButton) {
+            } else if (evt.getSource () == previousButton) {
                 panels.previousPanel ();
                 updateState ();
-            } else if(evt.getSource () == finishButton) {
-                final WizardDescriptor.Panel current = panels.current();
+            } else if (evt.getSource () == finishButton) {
+                final WizardDescriptor.Panel<Settings> current = panels.current();
                 
                 current.storeSettings(settings);                
                 setValue(OK_OPTION);
 
-                if(current instanceof ProgressMonitor) {
+                if (current instanceof ProgressMonitor) {
                     // Do the search job first.
-                    RequestProcessor.getDefault().post(new ProgressThread((ProgressMonitor)current) {
+                    RequestProcessor.getDefault().post(new ProgressThread((ProgressMonitor) current) {
                         public void handleAction() {
-                            Dialog dialog = (Dialog)SwingUtilities.getAncestorOfClass(Dialog.class, current.getComponent());
+                            Dialog dialog = (Dialog) SwingUtilities.getAncestorOfClass(Dialog.class, current.getComponent());
                             dialog.setVisible(false);
                             dialog.dispose();
                         }
                     });
                 }
-            } else if(evt.getSource () == cancelButton) {
+            } else if (evt.getSource () == cancelButton) {
                 panels.current().storeSettings(settings);
                 setValue(CANCEL_OPTION);
             }
@@ -308,7 +324,8 @@ final class I18nWizardDescriptor extends WizardDescriptor {
      *
      * @see org.openide.WizardDescriptor.Panel
      */
-    public static abstract class Panel implements WizardDescriptor.Panel {
+    public static abstract class Panel
+            implements WizardDescriptor.Panel<I18nWizardDescriptor.Settings> {
 
         /** Reference to panel. */
         private Component component;
@@ -323,7 +340,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         /** Gets component to display. Implements <code>WizardDescriptor.Panel</code> interface method. 
          * @return this instance */
         public synchronized final Component getComponent() {
-            if(component == null) {
+            if (component == null) {
                 component = createComponent();
             }
 
@@ -340,12 +357,12 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         }
 
         /** Reads settings at the start when the panel comes to play. Implements <code>WizardDescriptor.Panel</code> interface method. */
-        public void readSettings(Object settings) {
-	  this.settings = (I18nWizardDescriptor.Settings)settings;
+        public void readSettings(I18nWizardDescriptor.Settings settings) {
+	  this.settings = settings;
         }
 
         /** Stores settings at the end of panel show. Implements <code>WizardDescriptor.Panel</code> interface method. */
-        public void storeSettings(Object settings) {
+        public void storeSettings(I18nWizardDescriptor.Settings settings) {
         }
 
         /** Implements <code>WizardDescriptor.Panel</code> interface method. */
@@ -355,21 +372,23 @@ final class I18nWizardDescriptor extends WizardDescriptor {
 
         /** Implements <code>WizardDescriptor.Panel</code> interface method. */
         public void removeChangeListener(ChangeListener listener) {
-            if(changeListener != null && changeListener == listener)
+            if ((changeListener != null) && (changeListener == listener)) {
                 changeListener = null;
+            }
         }
 
         /** Fires state changed event. Helper method. */
         public final void fireStateChanged() {
-            if(changeListener != null)
+            if (changeListener != null) {
                 changeListener.stateChanged(new ChangeEvent(this));
+            }
         }
 
         public Project getProject() {
 	  return settings.project;
 	}
 
-        public Map getMap() {
+        public Map<DataObject,SourceData> getMap() {
 	  return settings.map;
 	}
  
@@ -377,11 +396,11 @@ final class I18nWizardDescriptor extends WizardDescriptor {
     } // End of nested class Panel.
 
   public static class Settings {
-    public Settings(Map map, Project project) {
+    public Settings(Map<DataObject,SourceData> map, Project project) {
       this.map = map;
       this.project = project;
     }
-    public Map map;
+    public Map<DataObject,SourceData> map;
     public Project project;
   }
     

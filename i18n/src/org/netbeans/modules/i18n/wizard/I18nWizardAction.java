@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,19 +24,16 @@ import java.awt.Dialog;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
 
 /**
  * Action which runs i18n wizard.
@@ -54,7 +51,7 @@ public class I18nWizardAction extends NodeAction {
     static final long serialVersionUID = 6965968608028644524L;
 
     /** Weak reference to dialog. */
-    private static WeakReference dialogWRef = new WeakReference(null);
+    private static WeakReference<Dialog> dialogWRef = new WeakReference<Dialog>(null);
 
     
     /** 
@@ -67,7 +64,7 @@ public class I18nWizardAction extends NodeAction {
             return false;
         }
         
-        Dialog previous = (Dialog) dialogWRef.get();
+        Dialog previous = dialogWRef.get();
         if (previous == null) return true;
         return previous.isVisible() == false;
     }
@@ -76,7 +73,7 @@ public class I18nWizardAction extends NodeAction {
      * Popup non modal wizard.
      */
     protected void performAction(Node[] activatedNodes) {
-        Dialog dialog = (Dialog) dialogWRef.get();
+        Dialog dialog = dialogWRef.get();
         
         if(dialog != null) {
             dialog.setVisible(false);
@@ -95,21 +92,22 @@ public class I18nWizardAction extends NodeAction {
         initWizard(wizardDesc);
         
         dialog = DialogDisplayer.getDefault().createDialog(wizardDesc);
-        dialogWRef = new WeakReference(dialog);
+        dialogWRef = new WeakReference<Dialog>(dialog);
         dialog.setVisible(true);
     }
 
     /** Gets wizard iterator thru panels used in wizard invoked by this action, 
      * i.e I18N wizard. */
-    private WizardDescriptor.Iterator getWizardIterator() {
-        ArrayList panels = new ArrayList(4);
+    private WizardDescriptor.Iterator<I18nWizardDescriptor.Settings> getWizardIterator() {
+        List<WizardDescriptor.Panel<I18nWizardDescriptor.Settings>> panels
+                = new ArrayList<WizardDescriptor.Panel<I18nWizardDescriptor.Settings>>(4);
         
         panels.add(new SourceWizardPanel.Panel());
         panels.add(new ResourceWizardPanel.Panel());
         panels.add(new AdditionalWizardPanel.Panel());
         panels.add(new HardStringWizardPanel.Panel());
         
-        return new WizardDescriptor.ArrayIterator((WizardDescriptor.Panel[])
+        return new WizardDescriptor.ArrayIterator<I18nWizardDescriptor.Settings>(
             panels.toArray(new WizardDescriptor.Panel[panels.size()])
         );
     }
@@ -121,7 +119,7 @@ public class I18nWizardAction extends NodeAction {
         wizardDesc.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);   // NOI18N
         wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);    // NOI18N
 
-        ArrayList contents = new ArrayList(4);
+        List<String> contents = new ArrayList<String>(4);
         contents.add(Util.getString("TXT_SelectSourcesHelp"));
         contents.add(Util.getString("TXT_SelectResourceHelp"));
         contents.add(Util.getString("TXT_AdditionalHelp"));
@@ -129,7 +127,7 @@ public class I18nWizardAction extends NodeAction {
         
         wizardDesc.putProperty(
             "WizardPanel_contentData",                                          // NOI18N
-            (String[])contents.toArray(new String[contents.size()])
+            contents.toArray(new String[contents.size()])
         ); 
         
         wizardDesc.setTitle(Util.getString("LBL_WizardTitle"));
@@ -148,6 +146,7 @@ public class I18nWizardAction extends NodeAction {
         return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
     }
 
+    @Override
     protected boolean asynchronous() {
       return false;
     }

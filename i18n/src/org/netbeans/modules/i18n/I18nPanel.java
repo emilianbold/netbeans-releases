@@ -33,23 +33,21 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.WeakListeners;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
-import javax.swing.BoxLayout;
 
 
 /**
  * Panel which provides GUI for i18n action.
- * Customizes <code>I18nString</code> object and is used by <code>I18nSupport<code> for i18n-izing 
+ * Customizes {@code I18nString} object and is used by {@code I18nSupport} for i18n-izing 
  * one source.
  *
  * @author  Peter Zavadsky
  */
 public class I18nPanel extends JPanel {
 
-    /** <code>I18nString</code> cusomized in this panel. */
+    /** {@code I18nString} cusomized in this panel. */
     private I18nString i18nString;
     
     /** Helper bundle used for i18n-zing strings in this source.  */
@@ -79,19 +77,22 @@ public class I18nPanel extends JPanel {
      * Creates new I18nPanel.  In order to correctly localize
      * classpath for property bundle chooser, the dialog must know the
      * project and a file to choose the bundle for.
-     * @param propertyPanel panel for customizing i18n strings 
-     * @param project the Project to choose bundles from
-     * @param file the FileObject to choose bundles for
+     *
+     * @param  propertyPanel  panel for customizing i18n strings 
+     * @param  project  the Project to choose bundles from
+     * @param  file  the FileObject to choose bundles for
      */
     public I18nPanel(PropertyPanel propertyPanel, Project project, FileObject file) {
         this(propertyPanel, true, project, file);
     }
 
-    /** Creates i18n panel.
-     * @param propertyPanel panel for customizing i18n strings 
-     * @param withButtons if panel with replace, skip ect. buttons should be added 
-     * @param project the Project to choose bundles from
-     * @param file the FileObject to choose bundles for
+    /**
+     * Creates i18n panel.
+     *
+     * @param  propertyPanel  panel for customizing i18n strings 
+     * @param  withButtons  if panel with replace, skip ect. buttons should be added 
+     * @param  project  the Project to choose bundles from
+     * @param  file  the FileObject to choose bundles for
      */
     public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project, FileObject file) {
         this.project = project;
@@ -107,14 +108,15 @@ public class I18nPanel extends JPanel {
         myInitComponents();
         initAccessibility();        
         
-        if(!withButtons)
+        if (!withButtons) {
             remove(buttonsPanel);
+        }
         
         // create empty panel
         emptyPanel = new EmptyPropertyPanel();
         contentsShown = true;
 
-        showBundleMessage("TXT_SearchingForStrings");
+        showBundleMessage("TXT_SearchingForStrings");                   //NOI18N
     }
 
 
@@ -179,11 +181,13 @@ public class I18nPanel extends JPanel {
 
     
     /** Overrides superclass method to set default button. */
+    @Override
     public void addNotify() {
         super.addNotify();
         
-        if(SwingUtilities.isDescendingFrom(replaceButton, this))
+        if (SwingUtilities.isDescendingFrom(replaceButton, this)) {
             getRootPane().setDefaultButton(replaceButton);
+        }
     }
     
     /** Getter for <code>i18nString</code>. */
@@ -225,29 +229,30 @@ public class I18nPanel extends JPanel {
     private void buttonsEnableDisable() {
         if (contentsShown) {
             enableButtons(ALL_BUTTONS);
-            boolean isBundle = (i18nString != null) && (i18nString.getSupport().getResourceHolder().getResource() != null);
-            boolean keyEmpty = (getI18nString()==null || 
-                                getI18nString().getKey()==null || 
-                                getI18nString().getKey().trim().length()==0);
+            boolean isBundle = (i18nString != null)
+                               && (i18nString.getSupport().getResourceHolder().getResource() != null);
+            boolean keyEmpty = (getI18nString() == null)
+                               || (getI18nString().getKey() == null)
+                               || (getI18nString().getKey().trim().length() == 0);
             replaceButton.setEnabled(isBundle && !keyEmpty);
-        } else  
+        } else {
             enableButtons(CANCEL_BUTTON | HELP_BUTTON);
-        
+        }
     }
 
     public void setDefaultResource(DataObject dataObject) {
         if (dataObject != null) {
             // look for peer Bundle.properties
             FileObject fo = dataObject.getPrimaryFile();
-            ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             
-            FileObject folder = cp.findResource( cp.getResourceName( fo.getParent() ) );
+            FileObject folder = cp.findResource(cp.getResourceName(fo.getParent()));
             
-            while( folder != null && cp.contains( folder ) ) {
+            while (folder != null && cp.contains(folder)) {
                 
-                String rn = cp.getResourceName( folder ) + "/Bundle.properties"; // NOI18N
+                String rn = cp.getResourceName(folder) + "/Bundle.properties"; // NOI18N
                 
-                FileObject peer = cp.findResource( rn );
+                FileObject peer = cp.findResource(rn);
                 if (peer != null) {
                     try {
                         DataObject peerDataObject = DataObject.find(peer);
@@ -269,12 +274,18 @@ public class I18nPanel extends JPanel {
 //    }
     
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_I18nPanel"));        
-        skipButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_SkipButton"));        
-        cancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_CancelButton"));        
-        replaceButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_ReplaceButton"));        
-        infoButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_InfoButton"));        
-        helpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CTL_HelpButton"));        
+        this.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_I18nPanel"));                     //NOI18N
+        skipButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_CTL_SkipButton"));                //NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_CTL_CancelButton"));              //NOI18N
+        replaceButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_CTL_ReplaceButton"));             //NOI18N
+        infoButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_CTL_InfoButton"));                //NOI18N
+        helpButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACS_CTL_HelpButton"));                //NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -357,14 +368,16 @@ public class I18nPanel extends JPanel {
         contentsPanelPlaceholder.add(propertyPanel);
         
       
-        propertyPanel.addPropertyChangeListener(PropertyPanel.PROP_STRING, 
-                                                new PropertyChangeListener() {
-                                                    public void propertyChange(PropertyChangeEvent evt) {
-                                                        buttonsEnableDisable();
-                                                    }
-                                                });
+        propertyPanel.addPropertyChangeListener(
+                PropertyPanel.PROP_STRING, 
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        buttonsEnableDisable();
+                    }
+                });
         
-        propertyPanel.addPropertyChangeListener(PropertyPanel.PROP_RESOURCE,
+        propertyPanel.addPropertyChangeListener(
+                PropertyPanel.PROP_RESOURCE,
 //                WeakListeners.propertyChange(
                     new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
@@ -385,10 +398,10 @@ public class I18nPanel extends JPanel {
       
       String sysprop = System.getProperty("org.openide.actions.HelpAction.DEBUG"); // NOI18N
       
-      if("true".equals(sysprop) || "full".equals(sysprop)) // NOI18N
+      if ("true".equals(sysprop) || "full".equals(sysprop)) { // NOI18N
           System.err.println ("I18n module: Help button showing: " + help); // NOI18N, please do not comment out
-
-      Help helpSystem = (Help)Lookup.getDefault().lookup(Help.class);
+      }
+      Help helpSystem = Lookup.getDefault().lookup(Help.class);
       helpSystem.showHelp(help);
   }//GEN-LAST:event_helpButtonActionPerformed
 

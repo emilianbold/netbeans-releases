@@ -13,31 +13,24 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.i18n.wizard;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.TreeMap;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.properties.PropertiesDataObject;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.DataFilter;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.FilterNode;
-import org.openide.util.*;
-import org.openide.cookies.EditorCookie;
+import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.FileOwnerQuery;
 
@@ -61,8 +54,8 @@ final class Util extends org.netbeans.modules.i18n.Util {
     /** 
      * Create empty settings used in i18n wizards. 
      */
-    public static Map createWizardSourceMap() {
-        return new TreeMap(new DataObjectComparator());
+    public static Map<DataObject,SourceData> createWizardSourceMap() {
+        return new TreeMap<DataObject,SourceData>(new DataObjectComparator());
     }
     
     /** 
@@ -72,28 +65,27 @@ final class Util extends org.netbeans.modules.i18n.Util {
      * @return map with accepted data objects as keys or empty map if no such
      * data objec were found.
      */
-    public static Map createWizardSourceMap(Node[] activatedNodes) {
-        Map sourceMap = createWizardSourceMap();
+    public static Map<DataObject,SourceData> createWizardSourceMap(Node[] activatedNodes) {
+        Map<DataObject,SourceData> sourceMap = createWizardSourceMap();
         
         if (activatedNodes != null && activatedNodes.length > 0) {
             final VisibilityQuery visQuery = VisibilityQuery.getDefault();
-            for (int i = 0; i < activatedNodes.length; i++) {
-                DataObject dobj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
+            for (Node node : activatedNodes) {
+                DataObject dobj = node.getCookie(DataObject.class);
                 if (dobj != null && !visQuery.isVisible(dobj.getPrimaryFile())) {
                     continue;
                 }
 
-                DataObject.Container container = (DataObject.Container) activatedNodes[i].getCookie(DataObject.Container.class);
-                
+                DataObject.Container container = node.getCookie(DataObject.Container.class);
                 if (container != null) {
-                    Iterator it = I18nUtil.getAcceptedDataObjects(container).iterator();
-                    
-                    while(it.hasNext()) {
-                        addSource(sourceMap, (DataObject)it.next());
+                    for (DataObject dataObj : I18nUtil.getAcceptedDataObjects(container)) {
+                        addSource(sourceMap, dataObj);
                     }
                 }
 
-                if (dobj == null) continue;
+                if (dobj == null) {
+                    continue;
+                }
 
                 if (FactoryRegistry.hasFactory(dobj.getClass())) {
                     addSource(sourceMap, dobj);
@@ -109,24 +101,24 @@ final class Util extends org.netbeans.modules.i18n.Util {
      * first resource from the same folder.
      * @param sourceMap settings where to add teh sources
      * @param source source to add */
-    public static void addSource(Map sourceMap, DataObject source) {
-        if(sourceMap.containsKey(source))
+    public static void addSource(Map<DataObject,SourceData> sourceMap,
+                                 DataObject source) {
+        if (sourceMap.containsKey(source)) {
             return;
+        }
         
         DataFolder folder = source.getFolder();
         
-        if(folder == null) {
+        if (folder == null) {
             sourceMap.put(source, null);
             return;
         }
 
         // try to associate Bundle file
 
-        DataObject[] children = folder.getChildren();
-        
-        for(int i = 0; i < children.length; i++) {
-            if(children[i] instanceof PropertiesDataObject) { // PENDING 
-                sourceMap.put(source, new SourceData(children[i]));
+        for (DataObject child : folder.getChildren()) {
+            if (child instanceof PropertiesDataObject) { // PENDING 
+                sourceMap.put(source, new SourceData(child));
                 return;
             }
         }
@@ -141,10 +133,7 @@ final class Util extends org.netbeans.modules.i18n.Util {
             return false;
         }
 
-        for (int i = 0; i<activatedNodes.length; i++) {
-            Object o;
-            DataObject dobj = null;
-            Node node = activatedNodes[i];
+        for (Node node : activatedNodes) {
             
             /*
              * This block of code fixes IssueZilla bug #63461:
@@ -158,9 +147,8 @@ final class Util extends org.netbeans.modules.i18n.Util {
              * Local files are recognized by protocol of the corresponding URL -
              * local files are those that have protocol "file".
              */
-            o = node.getCookie(DataObject.class);
-            if (o != null) {
-                dobj = (DataObject) o;
+            DataObject dobj = node.getCookie(DataObject.class);
+            if (dobj != null) {
                 FileObject primaryFile = dobj.getPrimaryFile();
                 
                 boolean isLocal;
@@ -179,15 +167,21 @@ final class Util extends org.netbeans.modules.i18n.Util {
             }
             
             Object container = node.getCookie(DataObject.Container.class);
-            if (container != null) continue;
+            if (container != null) {
+                continue;
+            }
 //            if (node.getCookie(EditorCookie.class) == null) {
 //                return false;
 //            }
 
-	    if (dobj == null) return false;
+	    if (dobj == null) {
+                return false;
+            }
 	    
 	    // check that the node has project
-	    if (FileOwnerQuery.getOwner(dobj.getPrimaryFile()) == null) return false;
+	    if (FileOwnerQuery.getOwner(dobj.getPrimaryFile()) == null) {
+                return false;
+            }
         }
         return true;
     }
@@ -195,16 +189,10 @@ final class Util extends org.netbeans.modules.i18n.Util {
     /**
      * Compare data objects according their package and name. 
      */
-    private static class DataObjectComparator implements Comparator {
+    private static class DataObjectComparator implements Comparator<DataObject> {
 
         /** Implements <code>Comparator</code> interface. */
-        public int compare(Object o1, Object o2) {
-            if(!(o1 instanceof DataObject) || !(o2 instanceof DataObject))
-                return 0;
-            
-            DataObject d1 = (DataObject)o1;
-            DataObject d2 = (DataObject)o2;
-            
+        public int compare(DataObject d1, DataObject d2) {
             if(d1 == d2)
                 return 0;
             
@@ -219,11 +207,14 @@ final class Util extends org.netbeans.modules.i18n.Util {
         }
         
         /** Implements <code>Comparator</code> interface method. */
+        @Override
         public boolean equals(Object obj) {
-            if(this == obj)
-                return true;
-            else
-                return false;
+            return (this == obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
         }
     }
 

@@ -45,10 +45,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
+import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.SelectorUtils;
-import org.netbeans.modules.properties.UtilConvert; // PENDING
 
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -67,7 +67,7 @@ import org.openide.ErrorManager;
 final class ResourceWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSourceMap();
+    private final Map<DataObject,SourceData> sourceMap = Util.createWizardSourceMap();
 
     /** Table model for resourcesTable. */
     private final ResourceTableModel tableModel = new ResourceTableModel();
@@ -98,7 +98,7 @@ final class ResourceWizardPanel extends JPanel {
     }
     
     /** Setter for <code>resources</code> property. */
-    public void setSourceMap(Map sourceMap) {
+    public void setSourceMap(Map<DataObject,SourceData> sourceMap) {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
@@ -118,6 +118,7 @@ final class ResourceWizardPanel extends JPanel {
     /** Inits table component. */
     private void initTable() {
         resourcesTable.setDefaultRenderer(DataObject.class, new DefaultTableCellRenderer() {
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
                     
@@ -171,10 +172,10 @@ final class ResourceWizardPanel extends JPanel {
     
     
     private void initAccesibility() {        
-        addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_CTL_SelectResource"));
-        addAllButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_CTL_SelectResourceAll"));
-        resourcesTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACSD_resourcesTable"));
-        resourcesTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACSN_resourcesTable"));
+        addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ResourceWizardPanel.class, "ACS_CTL_SelectResource"));//NOI18N
+        addAllButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ResourceWizardPanel.class, "ACS_CTL_SelectResourceAll"));//NOI18N
+        resourcesTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ResourceWizardPanel.class, "ACSD_resourcesTable"));//NOI18N
+        resourcesTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ResourceWizardPanel.class, "ACSN_resourcesTable"));//NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -260,7 +261,7 @@ final class ResourceWizardPanel extends JPanel {
 
         // Feed data.
         for(int i=0; i<selectedRows.length; i++) {
-            DataObject dataObject = (DataObject)resourcesTable.getValueAt(selectedRows[i], 0);
+            DataObject dataObject = (DataObject) resourcesTable.getValueAt(selectedRows[i], 0);
 
             sourceMap.put(dataObject, new SourceData(resource));
             
@@ -277,8 +278,8 @@ final class ResourceWizardPanel extends JPanel {
             return;
 
         // Feed data.
-        for(int i=0; i<resourcesTable.getRowCount(); i++) {
-            DataObject dataObject = (DataObject)resourcesTable.getValueAt(i, 0);
+        for (int i = 0; i < resourcesTable.getRowCount(); i++) {
+            DataObject dataObject = (DataObject) resourcesTable.getValueAt(i, 0);
 
             sourceMap.put(dataObject, new SourceData(resource));
             
@@ -292,9 +293,7 @@ final class ResourceWizardPanel extends JPanel {
     private DataObject selectResource() {
         Project prj = null;
         FileObject fo = null;
-        Iterator it = sourceMap.keySet().iterator();
-        if (it.hasNext()) {
-            DataObject dobj = (DataObject) it.next();
+        for (DataObject dobj : sourceMap.keySet()) {
             fo = dobj.getPrimaryFile();
             prj = FileOwnerQuery.getOwner(fo);
         }
@@ -332,10 +331,11 @@ final class ResourceWizardPanel extends JPanel {
         /** Implements superclass abstract method. */
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-            if(columnIndex == 0) {
+            if (columnIndex == 0) {
                 return sourceMap.keySet().toArray()[rowIndex];
             } else { 
-                SourceData value = (SourceData)sourceMap.values().toArray()[rowIndex];
+                SourceData[] values = new SourceData[0];
+                SourceData value = sourceMap.values().toArray(values)[rowIndex];
                 return value == null ? null : value.getResource();
             }
             
@@ -343,16 +343,17 @@ final class ResourceWizardPanel extends JPanel {
         
         /** Overrides superclass method. 
          * @return DataObject.class */
+        @Override
         public Class getColumnClass(int columnIndex) {
             return DataObject.class;
         }
 
         /** Overrides superclass method. */
+        @Override
         public String getColumnName(int column) {
-            if(column == 0)
-                return NbBundle.getBundle(ResourceWizardPanel.class).getString("CTL_Source");
-            else
-                return NbBundle.getBundle(ResourceWizardPanel.class).getString("CTL_Resource");
+            String msgKey = (column == 0) ? "CTL_Source"                //NOI18N
+                                          : "CTL_Resource";             //NOI18N
+            return NbBundle.getMessage(ResourceWizardPanel.class, msgKey);
         }
     } // End of ResourceTableModel inner class.
     
@@ -366,7 +367,7 @@ final class ResourceWizardPanel extends JPanel {
         private transient ResourceWizardPanel resourcePanel;
         
         /** Indicates whether this panel is used in i18n test wizard or not. */
-        private boolean testWizard;
+        private final boolean testWizard;
 
 
         /** Constructs Panel for i18n wizard. */
@@ -389,11 +390,10 @@ final class ResourceWizardPanel extends JPanel {
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
-            if(testWizard)
-                panel.setName(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SelectTestResource"));
-            else
-                panel.setName(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SelectResource"));
 
+            String msgKey = testWizard ? "TXT_SelectTestResource"       //NOI18N
+                                       : "TXT_SelectResource";          //NOI18N
+            panel.setName(NbBundle.getMessage(ResourceWizardPanel.class, msgKey));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
             
             panel.setLayout(new GridBagLayout());
@@ -407,18 +407,21 @@ final class ResourceWizardPanel extends JPanel {
         }
 
         /** Indicates if panel is valid. Overrides superclass method. */
+        @Override
         public boolean isValid() {
             return !getUI().getSourceMap().containsValue(null);
         }
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
-        public void readSettings(Object settings) {
+        @Override
+        public void readSettings(I18nWizardDescriptor.Settings settings) {
 	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
-        public void storeSettings(Object settings) {
+        @Override
+        public void storeSettings(I18nWizardDescriptor.Settings settings) {
 	    super.storeSettings(settings);
             // Update sources.
             getMap().clear();
@@ -433,25 +436,29 @@ final class ResourceWizardPanel extends JPanel {
             
             showProgressPanel(progressPanel);
             
-            progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_Loading"));
+            progressPanel.setMainText(NbBundle.getMessage(ResourceWizardPanel.class,
+                                                          "TXT_Loading"));//NOI18N
             progressPanel.setMainProgress(0);
             
             // Do search.
-            Map sourceMap = getUI().getSourceMap();
-
-            Iterator sourceIterator = sourceMap.keySet().iterator();
+            Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
+            Iterator<Map.Entry<DataObject,SourceData>> sourceIterator
+                    = sourceMap.entrySet().iterator();
 
             // For each source perform the task.
-            for(int i=0; sourceIterator.hasNext(); i++) {
-                DataObject source = (DataObject)sourceIterator.next();
+            for (int i = 0; sourceIterator.hasNext(); i++) {
+                Map.Entry<DataObject,SourceData> entry = sourceIterator.next();
+                DataObject source = entry.getKey();
 
-                ClassPath cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );                
-                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_Loading") 
-                    + " " + cp.getResourceName( source.getPrimaryFile(), '.', false )); // NOI18N
+                ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE);
+                progressPanel.setMainText(
+                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_Loading")//NOI18N
+                        + " "                                           //NOI18N
+                        + cp.getResourceName(source.getPrimaryFile(), '.', false ));
 
 
                 // retrieve existing sourcedata -- will provide the resource for the new instance
-                SourceData sourceData = (SourceData)sourceMap.get(source);
+                SourceData sourceData = entry.getValue();
                 
                 // prepare new sourcedata
                 // Get i18n support for this source.
@@ -461,22 +468,22 @@ final class ResourceWizardPanel extends JPanel {
                 } catch(IOException ioe) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                     // Remove source from settings.
-                    sourceMap.remove(source);
+                    sourceIterator.remove();
                     continue;
                 }
-                sourceData = new SourceData(sourceData.getResource(), support);
-                sourceMap.put(source, sourceData);
-                
-                cp = ClassPath.getClassPath( source.getPrimaryFile(), ClassPath.SOURCE );
-                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")
-                    + " " + cp.getResourceName( source.getPrimaryFile(), '.', false ) ); // NOI18N
-                
-                // Get string map.
-                Map stringMap = sourceData.getStringMap();
 
+                sourceData = new SourceData(sourceData.getResource(), support);
+                sourceMap.put(source, sourceData);              //PENDING - concurrent modification?
+                
+                cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE );
+                progressPanel.setMainText(
+                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_SearchingIn")//NOI18N
+                        + " "
+                        + cp.getResourceName(source.getPrimaryFile(), '.', false));
+                
                 HardCodedString[] foundStrings;
                 
-                if(testWizard) {
+                if (testWizard) {
                     // Find all i18n-zied hard coded strings in the source.
                     foundStrings = support.getFinder().findAllI18nStrings();
                 } else {
@@ -484,20 +491,22 @@ final class ResourceWizardPanel extends JPanel {
                     foundStrings = support.getFinder().findAllHardCodedStrings();
                 }
 
-                if(foundStrings == null) {
+                if (foundStrings == null) {
                     // Set empty map.
                     sourceData.setStringMap(new HashMap(0));
                     continue;
                 }
 
-                Map map = new HashMap(foundStrings.length); 
+                Map<HardCodedString,I18nString> map
+                        = new HashMap<HardCodedString,I18nString>(foundStrings.length); 
 
-                // Put hard coded string - i18n pairs into map.
-                for(int j=0; j<foundStrings.length; j++) {
-                    if(testWizard && support.getResourceHolder().getValueForKey(UtilConvert.escapePropertiesSpecialChars(foundStrings[j].getText())) != null)
+                // Put <hard coded string, i18n-string> pairs into map.
+                for (HardCodedString hcString : foundStrings) {
+                    if (testWizard && support.getResourceHolder().getValueForKey(hcString.getText())
+                                      != null) {
                         continue;
-                        
-                    map.put(foundStrings[j], support.getDefaultI18nString(foundStrings[j]));
+                    }
+                    map.put(hcString, support.getDefaultI18nString(hcString));
                 }
 
                 progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));
@@ -520,9 +529,9 @@ final class ResourceWizardPanel extends JPanel {
         
         /** Resets panel back after monitoring search. Implements <code>ProgressMonitor</code> interface. */
         public void reset() {
-            Container container = (Container)getComponent();
+            Container container = (Container) getComponent();
             
-            if(!container.isAncestorOf(getUI())) {
+            if (!container.isAncestorOf(getUI())) {
                 container.removeAll();
                 GridBagConstraints constraints = new GridBagConstraints();
                 constraints.weightx = 1.0;
@@ -534,10 +543,8 @@ final class ResourceWizardPanel extends JPanel {
         
         /** Gets help. Implements superclass abstract method. */
         public HelpCtx getHelp() {
-            if(testWizard)
-                return new HelpCtx(I18nUtil.HELP_ID_TESTING);
-            else
-                return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+            return new HelpCtx(testWizard ? I18nUtil.HELP_ID_TESTING
+                                          : I18nUtil.HELP_ID_WIZARD);
         }
         
         private synchronized ResourceWizardPanel getUI() {

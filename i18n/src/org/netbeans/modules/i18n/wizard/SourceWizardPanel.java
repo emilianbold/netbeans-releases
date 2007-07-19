@@ -57,7 +57,8 @@ import org.netbeans.modules.i18n.SelectorUtils;
 final class SourceWizardPanel extends JPanel {
 
     /** Sources selected by user. */
-    private final Map sourceMap = Util.createWizardSourceMap();
+    private final Map<DataObject,SourceData> sourceMap
+            = Util.createWizardSourceMap();
     
     /** This component panel wizard descriptor.
      * @see org.openide.WizardDescriptor.Panel 
@@ -94,12 +95,12 @@ final class SourceWizardPanel extends JPanel {
     
 
     /** Getter for <code>sources</code> property. */
-    public Map getSourceMap() {
+    public Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     }
     
     /** Setter for <code>sources</code> property. */
-    public void setSourceMap(Map sourceMap) {
+    public void setSourceMap(Map<DataObject,SourceData> sourceMap) {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
@@ -255,13 +256,13 @@ final class SourceWizardPanel extends JPanel {
                 SelectorUtils.sourcesNode(prj, SelectorUtils.ALL_FILTER),
                 new NodeAcceptor() {
                     public boolean acceptNodes(Node[] nodes) {
-                        if(nodes == null || nodes.length == 0) {
+                        if (nodes == null || nodes.length == 0) {
                             return false;
                         }
 
-                        for(int i=0; i<nodes.length; i++) {
+                        for (Node node : nodes) {
                             // Has to be data object.
-                            Object dataObject = nodes[i].getCookie(DataObject.class);
+                            Object dataObject = node.getCookie(DataObject.class);
                             if (dataObject == null) {
                                 return false;
                             }
@@ -282,13 +283,13 @@ final class SourceWizardPanel extends JPanel {
             );
             
             for(int i=0; i<selectedNodes.length; i++) {
-                DataObject dataObject = (DataObject)selectedNodes[i].getCookie(DataObject.class);
+                DataObject dataObject = selectedNodes[i].getCookie(DataObject.class);
 
                 if (dataObject instanceof DataFolder) {
                     // recursively add folder content
-                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    Iterator<DataObject> it = I18nUtil.getAcceptedDataObjects((DataFolder) dataObject).iterator();
                     while (it.hasNext()) {
-                        Util.addSource(sourceMap, (DataObject)it.next());
+                        Util.addSource(sourceMap, it.next());
                     }
                 } else {
                     Util.addSource(sourceMap, dataObject);
@@ -315,6 +316,7 @@ final class SourceWizardPanel extends JPanel {
 
     /** List cell rendrerer which uses data object as values. */
     public static class DataObjectListCellRenderer extends DefaultListCellRenderer {
+        @Override
         public Component getListCellRendererComponent(
         JList list,
         Object value,            // value to display
@@ -326,10 +328,10 @@ final class SourceWizardPanel extends JPanel {
 
             DataObject dataObject = (DataObject)value;
 
-            if(dataObject != null) {
-                ClassPath cp = ClassPath.getClassPath( dataObject.getPrimaryFile(), ClassPath.SOURCE );
+            if (dataObject != null) {
+                ClassPath cp = ClassPath.getClassPath(dataObject.getPrimaryFile(), ClassPath.SOURCE );
                                 
-                label.setText(cp.getResourceName( dataObject.getPrimaryFile(), '.', false )); // NOI18N
+                label.setText(cp.getResourceName(dataObject.getPrimaryFile(), '.', false )); // NOI18N
                 label.setIcon(new ImageIcon(dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
             } else {
                 label.setText(""); // NOI18N
@@ -371,31 +373,33 @@ final class SourceWizardPanel extends JPanel {
         }
 
         /** Gets if panel is valid. Overrides superclass method. */
+        @Override
         public boolean isValid() {
-            return !((SourceWizardPanel)getComponent()).getSourceMap().isEmpty();
+            return !((SourceWizardPanel) getComponent()).getSourceMap().isEmpty();
         }
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
-        public void readSettings(Object settings) {
+        @Override
+        public void readSettings(I18nWizardDescriptor.Settings settings) {
 	  super.readSettings(settings);
-	  ((SourceWizardPanel)getComponent()).setSourceMap(getMap());
+	  ((SourceWizardPanel) getComponent()).setSourceMap(getMap());
         }
 
         /** Stores settings at the end of panel show. Overrides superclass method. */
-        public void storeSettings(Object settings) {
-	  super.storeSettings(settings);
+        @Override
+        public void storeSettings(I18nWizardDescriptor.Settings settings) {
+	    super.storeSettings(settings);
 	    super.storeSettings(settings);
             // Update sources.
             getMap().clear();
-            getMap().putAll(((SourceWizardPanel)getComponent()).getSourceMap());
+            getMap().putAll(((SourceWizardPanel) getComponent()).getSourceMap());
         }
         
         /** Gets help. Implements superclass abstract method. */
         public HelpCtx getHelp() {
-            if(testWizard)
-                return new HelpCtx(I18nUtil.HELP_ID_TESTING);
-            else
-                return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+            return new HelpCtx(testWizard
+                               ? I18nUtil.HELP_ID_TESTING
+                               : I18nUtil.HELP_ID_WIZARD);
         }
 
     } // End of nested Panel class.

@@ -22,7 +22,6 @@ package org.netbeans.modules.i18n.java;
 
 
 import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +34,6 @@ import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
-
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.InfoPanel;
 import org.netbeans.modules.i18n.I18nString;
@@ -46,7 +44,6 @@ import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.i18n.regexp.ParseException;
 import org.netbeans.modules.i18n.regexp.Translator;
 import org.netbeans.modules.properties.UtilConvert; // PENDING
-
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -55,6 +52,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.MapFormat;
 import org.openide.util.Lookup;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /** 
@@ -113,29 +111,29 @@ public class JavaI18nSupport extends I18nSupport {
             if (lastResource != null) {
                 FileObject sourceFile = sourceDataObject.getPrimaryFile();
                 FileObject bundleFile = lastResource.getPrimaryFile();
-                ClassPath execClassPath = ClassPath
-                                          .getClassPath(sourceFile,
-                                                        ClassPath.EXECUTE);
+                ClassPath execClassPath = ClassPath.getClassPath(sourceFile,
+                                                                 ClassPath.EXECUTE);
                 if (execClassPath.getResourceName(bundleFile) != null) {
                     resourceHolder.setResource(lastResource);
                 }
             }
         }
 
-        if(hcString == null)
+        if (hcString == null) {
             return i18nString;
+        }
         
         i18nString.setComment(""); // NOI18N
-        i18nString.setKey(hcString.getText().replace(' ', '_' ));
+        i18nString.setKey(hcString.getText().replace(' ', '_'));
         i18nString.setValue(hcString.getText());
-        
+
         // If generation of field is set and replace format doesn't include identifier argument replace it with the default with identifier.
-        if(isGenerateField() && i18nString.getReplaceFormat().indexOf("{identifier}") == -1) // NOI18N
-            i18nString.setReplaceFormat((String)I18nUtil.getReplaceFormatItems().get(0));
-        
+        if (isGenerateField() && i18nString.getReplaceFormat().indexOf("{identifier}") == -1) { // NOI18N
+            i18nString.setReplaceFormat(I18nUtil.getReplaceFormatItems().get(0));
+        }
         return i18nString;
     }
-    
+
     /** Implements <code>I18nSupport</code> superclass abstract method. Gets info panel about found hard string. */
     public JPanel getInfo(HardCodedString hcString) {
         return new JavaInfoPanel(hcString, document);
@@ -143,9 +141,9 @@ public class JavaI18nSupport extends I18nSupport {
 
     /** Getter for identifier. */    
     public String getIdentifier() {
-        if(identifier == null || identifier == "") // NOI18N
+        if ((identifier == null) || (identifier == "")) {               //NOI18N
             createIdentifier();
-        
+        }
         return identifier;
     }
 
@@ -219,14 +217,14 @@ public class JavaI18nSupport extends I18nSupport {
         
         try {
             name = resourceHolder.getResource().getName();
-        } catch(NullPointerException npe) {
+        } catch (NullPointerException npe) {
             identifier = ""; // NOI18N
             return;
         }
 
         // first letter to lowercase
-        if(name.length() > 0) {
-            name = name.substring(0,1).toLowerCase() + name.substring(1);
+        if (name.length() > 0) {
+            name = name.substring(0, 1).toLowerCase() + name.substring(1);
         } else {
             name = name.toLowerCase();
         }
@@ -268,23 +266,30 @@ public class JavaI18nSupport extends I18nSupport {
     }
 
     /** 
-     * Helper method. Gets the string, the piece of code which initializes field resource bundle in the source. E.g.:
-     * <p>
-     * java.util.ResourceBundle <identifier name> = <b>java.util.ResourceBundle.getBundle("<package name></b>")
-     * @return String -> piece of initilizing code. */
+     * Helper method.
+     * Gets the string, the piece of code which initializes field resource
+     * bundle in the source.
+     * E.g.:
+     * <pre><code>java.util.ResourceBundle &lt;identifier name&gt;<br />
+     *           = <b>java.util.ResourceBundle.getBundle(&quot;&lt;package name&gt;</b>&quot;)</code></pre>
+     *
+     * @return  String -&gt; piece of initilizing code.
+     */
     public String getInitString() {
         String initJavaFormat = getInitFormat();
 
         // Create map.
         FileObject fo = resourceHolder.getResource().getPrimaryFile();
-        ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 
         
         Map<String,String> map = new HashMap<String,String>(3);
 
-        map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
-        map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
-        map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
+        map.put("bundleNameSlashes", cp.getResourceName(fo, '/', false));//NOI18N
+        map.put("bundleNameDots", cp.getResourceName(fo, '.', false));  //NOI18N
+        map.put("sourceFileName", (sourceDataObject != null)
+                                  ? sourceDataObject.getPrimaryFile().getName()
+                                  : "");                                //NOI18N
 
         return MapFormat.format(initJavaFormat, map);
         
@@ -435,11 +440,9 @@ public class JavaI18nSupport extends I18nSupport {
                 list.add(hardString);
             }
 
-            if(list.isEmpty())
-                return null;
-            else {
-                return list.toArray(new HardCodedString[list.size()]);
-            }
+            return !list.isEmpty()
+                   ? list.toArray(new HardCodedString[list.size()])
+                   :  null;
         }
         
         /** Finds next string according specified regular expression. */
@@ -447,38 +450,36 @@ public class JavaI18nSupport extends I18nSupport {
             // Reset buffer.
             try {
                 buffer = document.getText(0, document.getLength()).toCharArray();
-            } catch(BadLocationException ble) {
-                if(Boolean.getBoolean("netbeans.debug.exception")) // NOI18N
+            } catch (BadLocationException ble) {
+                if (Boolean.getBoolean("netbeans.debug.exception")) {   //NOI18N
                     ble.printStackTrace();
-                
+                }
                 return null;
             }
 
             // Initialize position.
-            if(lastPosition == null) 
-                position = 0;
-            else
-                position = lastPosition.getOffset();
+            position = (lastPosition == null) 
+                       ? 0
+                       : lastPosition.getOffset();
 
             // Reset hard coded string offsets.
             currentStringStart = -1;
             currentStringEnd = -1;
 
             // Now serious work.
-            while(position < buffer.length) {
+            while (position < buffer.length) {
 
                 char ch = buffer[position];
 
                 // Other chars than '\n' (new line).
-                if(ch != '\n') {
+                if (ch != '\n') {
                     HardCodedString foundHardString = handleCharacter(ch);
-                    
-                    if(foundHardString != null)
+                    if (foundHardString != null) {
                         return foundHardString;
-                    
-                } else
+                    }
+                } else {
                     handleNewLineCharacter();
-
+                }
                 position++;
 
             } // End of while.
@@ -489,21 +490,21 @@ public class JavaI18nSupport extends I18nSupport {
 
         /** Handles state changes according next charcter. */
         protected HardCodedString handleCharacter(char character) {
-            if(state == STATE_JAVA) {
+            if (state == STATE_JAVA) {
                 return handleStateJava(character);
-            } else if(state == STATE_JAVA_A_SLASH) {
+            } else if (state == STATE_JAVA_A_SLASH) {
                 return handleStateJavaASlash(character);
-            } else if(state == STATE_CHAR) {
+            } else if (state == STATE_CHAR) {
                 return handleStateChar(character);
-            } else if(state == STATE_STRING_A_BSLASH) {
+            } else if (state == STATE_STRING_A_BSLASH) {
                 return handleStateStringABSlash(character);
-            } else if(state == STATE_LINECOMMENT) {
+            } else if (state == STATE_LINECOMMENT) {
                 return handleStateLineComment(character);
-            } else if(state == STATE_BLOCKCOMMENT) {
+            } else if (state == STATE_BLOCKCOMMENT) {
                 return handleStateBlockComment(character);
-            } else if(state == STATE_BLOCKCOMMENT_A_STAR) {
+            } else if (state == STATE_BLOCKCOMMENT_A_STAR) {
                 return handleStateBlockCommentAStar(character);
-            } else if(state == STATE_STRING) {
+            } else if (state == STATE_STRING) {
                 return handleStateString(character);
             }
             
@@ -513,19 +514,19 @@ public class JavaI18nSupport extends I18nSupport {
         /** Handles state when new line '\n' char occures. */
         protected void handleNewLineCharacter() {
             // New line char '\n' -> reset the state.
-            if(state == STATE_JAVA 
-                || state == STATE_JAVA_A_SLASH
-                || state == STATE_CHAR
-                || state == STATE_LINECOMMENT
-                || state == STATE_STRING
-                || state == STATE_STRING_A_BSLASH) {
-                    initJavaStringBuffer();
-                    currentStringStart = -1;
-                    currentStringEnd = -1;
-                    state = STATE_JAVA;
-            } else if(state == STATE_BLOCKCOMMENT
-                || state == STATE_BLOCKCOMMENT_A_STAR) {
-                    state = STATE_BLOCKCOMMENT;
+            if (state == STATE_JAVA 
+                    || state == STATE_JAVA_A_SLASH
+                    || state == STATE_CHAR
+                    || state == STATE_LINECOMMENT
+                    || state == STATE_STRING
+                    || state == STATE_STRING_A_BSLASH) {
+                initJavaStringBuffer();
+                currentStringStart = -1;
+                currentStringEnd = -1;
+                state = STATE_JAVA;
+            } else if (state == STATE_BLOCKCOMMENT
+                       || state == STATE_BLOCKCOMMENT_A_STAR) {
+                state = STATE_BLOCKCOMMENT;
             }
         }
         
@@ -535,14 +536,15 @@ public class JavaI18nSupport extends I18nSupport {
          * @return <code>HardCodedString</code> or null if not found yet */
         protected HardCodedString handleStateJava(char character) {
             lastJavaString.append(character);
-            if(character == '/') {
+            if (character == '/') {
                 state = STATE_JAVA_A_SLASH;
-            } else if(character == '"') {
+            } else if (character == '"') {
                 state = STATE_STRING;
-                if(currentStringStart == -1)
+                if (currentStringStart == -1) {
                     // Found start of hard coded string.
                     currentStringStart = position;
-            } else if(character == '\'') {
+                }
+            } else if (character == '\'') {
                 state = STATE_CHAR;
             }
             
@@ -554,7 +556,7 @@ public class JavaI18nSupport extends I18nSupport {
          * @return <code>HardCodedString</code> or null if not found yet */
         protected HardCodedString handleStateJavaASlash(char character) {
             lastJavaString.append(character);
-            if(character == '/') {
+            if (character == '/') {
                 state = STATE_LINECOMMENT;
             } else if(character == '*') {
                 state = STATE_BLOCKCOMMENT;
@@ -569,7 +571,7 @@ public class JavaI18nSupport extends I18nSupport {
         protected HardCodedString handleStateChar(char character) {
             lastJavaString.append(character);
 
-            if(character == '\'') {
+            if (character == '\'') {
                 state = STATE_JAVA;
             }
             
@@ -596,7 +598,7 @@ public class JavaI18nSupport extends I18nSupport {
          * @param character char to proceede 
          * @return <code>HardCodedString</code> or null if not found yet */
         protected HardCodedString handleStateBlockComment(char character) {
-            if(character == '*') {
+            if (character == '*') {
                 state = STATE_BLOCKCOMMENT_A_STAR;
             }
             
@@ -607,7 +609,7 @@ public class JavaI18nSupport extends I18nSupport {
          * @param character char to proceede 
          * @return <code>HardCodedString</code> or null if not found yet */
         protected HardCodedString handleStateBlockCommentAStar(char character) {
-            if(character == '/') {
+            if (character == '/') {
                 state = STATE_JAVA;
                 initJavaStringBuffer();
             } else if (character != '*') {
@@ -621,12 +623,12 @@ public class JavaI18nSupport extends I18nSupport {
          * @param character char to proceede 
          * @return <code>HardCodedString</code> or null if not found yet */
         protected HardCodedString handleStateString(char character) {
-            if(character == '\\') {
+            if (character == '\\') {
                 state = STATE_STRING_A_BSLASH;
-            } else if(character == '"') {
+            } else if (character == '"') {
                 state = STATE_JAVA;
 
-                if((currentStringEnd == -1) && (currentStringStart != -1)) {
+                if ((currentStringEnd == -1) && (currentStringStart != -1)) {
                     // Found end of hard coded string.
                     currentStringEnd = position + 1;
 
@@ -637,10 +639,13 @@ public class JavaI18nSupport extends I18nSupport {
                         Position hardStringStart = document.createPosition(currentStringStart);
                         Position hardStringEnd   = document.createPosition(currentStringEnd);
 
-                        String hardString = document.getText(hardStringStart.getOffset(), foundStringLength);
+                        String hardString = document.getText(hardStringStart.getOffset(),
+                                                             foundStringLength);
 
                         // Retrieve offset of the end of line where was found hard coded string.
-                        String restBuffer = new String(buffer, currentStringEnd, buffer.length - currentStringEnd);
+                        String restBuffer = new String(buffer,
+                                                       currentStringEnd,
+                                                       buffer.length - currentStringEnd);
                         int endOfLine = restBuffer.indexOf('\n');
                         if (endOfLine == -1) {
                             endOfLine = restBuffer.length();
@@ -661,10 +666,13 @@ public class JavaI18nSupport extends I18nSupport {
                             lastPosition = hardStringEnd;
 
                             // Search was successful -> return.
-                            return new HardCodedString(extractString(hardString), hardStringStart, hardStringEnd);
+                            return new HardCodedString(extractString(hardString),
+                                                       hardStringStart,
+                                                       hardStringEnd);
                         }
-                    } catch(BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+                    } catch (BadLocationException ble) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                                         ble);
                     } finally {
                         currentStringStart = -1;
                         currentStringEnd = -1;
@@ -734,10 +742,9 @@ public class JavaI18nSupport extends I18nSupport {
             // this problem.
             // Note: All this shouldn't happen. The reason is 1) bad set reg exp format (in options) or 
             // 2) it's error in this code.
-            String msg = MessageFormat.format(
-                Util.getString("MSG_RegExpCompileError"),
-                new Object[] {hardString}
-            );
+            String msg = NbBundle.getMessage(JavaI18nSupport.class, 
+                                             "MSG_RegExpCompileError",  //NOI18N
+                                             hardString);
             
             Object answer = DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Confirmation(
@@ -795,9 +802,12 @@ public class JavaI18nSupport extends I18nSupport {
         /** Replaces found hard coded string in source. 
          * @param hcString found hard coded string to-be replaced 
          * @param rbString holds replacing values */
-        public void replace(final HardCodedString hcString, final I18nString i18nString) {
-            if(!(i18nString instanceof JavaI18nString))
-                throw new IllegalArgumentException("I18N module: i18nString have to be an instance of JavaI18nString."); // NOI18N
+        public void replace(final HardCodedString hcString,
+                            final I18nString i18nString) {
+            if (!(i18nString instanceof JavaI18nString)) {
+                throw new IllegalArgumentException(
+                        "I18N module: i18nString have to be an instance of JavaI18nString.");//NOI18N
+            }
             
             final String newCode = i18nString.getReplaceString();
 
@@ -809,15 +819,20 @@ public class JavaI18nSupport extends I18nSupport {
             new Runnable() {
                 public void run() {
                     try {
-                        if(hcString.getLength() > 0) {
-                            document.remove(hcString.getStartPosition().getOffset(), hcString.getLength());
+                        if (hcString.getLength() > 0) {
+                            document.remove(hcString.getStartPosition().getOffset(),
+                                            hcString.getLength());
                         }
-                        if(newCode != null && newCode.length() > 0) {
-                            document.insertString(hcString.getEndPosition().getOffset(), newCode, null);
+                        if (newCode != null && newCode.length() > 0) {
+                            document.insertString(hcString.getEndPosition().getOffset(),
+                                                  newCode, null);
                         }
-                    } catch(BadLocationException ble) {
-                        NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                            Util.getString("MSG_CouldNotReplace"), NotifyDescriptor.ERROR_MESSAGE);
+                    } catch (BadLocationException ble) {
+                        NotifyDescriptor.Message message
+                                = new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(JavaI18nSupport.class,
+                                                            "MSG_CouldNotReplace"),//NOI18N
+                                        NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notify(message);
                     }
                 }
@@ -837,20 +852,23 @@ public class JavaI18nSupport extends I18nSupport {
         /** Implements superclass abstract method. */
         protected void setHardCodedString(HardCodedString hcString, StyledDocument document) {
 
-            getStringText().setText(hcString == null ? "" : hcString.getText()); // NOI18N
+            getStringText().setText(hcString == null ? ""               //NOI18N
+                                                     : hcString.getText());
             
             int pos;
 
             String hardLine;
             
-            if(hcString.getStartPosition() == null)
-                hardLine = ""; // NOI18N
-            else {
+            if (hcString.getStartPosition() == null) {
+                hardLine = "";                                          //NOI18N
+            } else {
                 pos = hcString.getStartPosition().getOffset();
 
                 try {
                     Element paragraph = document.getParagraphElement(pos);
-                    hardLine = document.getText(paragraph.getStartOffset(), paragraph.getEndOffset()-paragraph.getStartOffset()).trim();
+                    hardLine = document.getText(paragraph.getStartOffset(),
+                                                paragraph.getEndOffset() - paragraph.getStartOffset())
+                                       .trim();
                 } catch (BadLocationException ble) {
                     hardLine = ""; // NOI18N
                 }
@@ -866,7 +884,7 @@ public class JavaI18nSupport extends I18nSupport {
     } // End of JavaInfoPanel inner class.
     
     
-    /** Factory for <code>JavaI18nSupport</code>. */
+    /** Factory for {@code JavaI18nSupport}. */
     public static class Factory extends I18nSupport.Factory {
         
         /** Implements interface. */
@@ -885,7 +903,7 @@ public class JavaI18nSupport extends I18nSupport {
                     "org.netbeans.modules.java.JavaDataObject", // NOI18N
                     false,
                     Lookup.getDefault().lookup(ClassLoader.class));
-            } catch(ClassNotFoundException cnfe) {
+            } catch (ClassNotFoundException cnfe) {
                 return null;
             }
         }

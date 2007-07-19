@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
+import javax.swing.JLabel;
 
 /**
  * @author  or141057
@@ -51,7 +52,7 @@ public class EmptyPropertyPanel extends javax.swing.JPanel {
     }
     
     
-    private javax.swing.JLabel theLabel;
+    private JLabel theLabel;
     
     public void setBundleText(String textID) throws MissingResourceException {
         theLabel.setText(NbBundle.getMessage(EmptyPropertyPanel.class, textID));

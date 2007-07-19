@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,9 @@ package org.netbeans.modules.i18n.wizard;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.i18n.*;
+import java.util.TreeMap;
+import org.netbeans.modules.i18n.HardCodedString;
+import org.netbeans.modules.i18n.I18nString;
 
 import org.netbeans.modules.i18n.I18nSupport;
 
@@ -52,19 +54,18 @@ final class SourceData {
     private I18nSupport support;
 
     /** Mapping found hard coded strings to i18n strings. */
-    private Map stringMap = new java.util.TreeMap(new HardStringComparator());
+    private Map<HardCodedString,I18nString> stringMap
+            = new TreeMap<HardCodedString,I18nString>(new HardStringComparator());
     
-    private static class HardStringComparator implements java.util.Comparator {
-        public int compare(Object obj, Object obj1) {
-            HardCodedString hcs1 = (HardCodedString)obj;
-            HardCodedString hcs2 = (HardCodedString)obj1;
+    private static class HardStringComparator implements Comparator<HardCodedString> {
+        public int compare(HardCodedString hcs1, HardCodedString hcs2) {
             return hcs1.getStartPosition().getOffset() - 
                     hcs2.getStartPosition().getOffset();
         }
      }
     
     /** Hard coded strings user selected to non-proceed. */
-    private Set removedStrings;
+    private Set<HardCodedString> removedStrings;
 
     
     /** Constructor. */
@@ -92,23 +93,23 @@ final class SourceData {
     }
 
     /** Getter for <code>stringMap</code> property. */
-    public Map getStringMap() {
+    public Map<HardCodedString,I18nString> getStringMap() {
         return stringMap;
     }
     
     /** Setter for <code>stringMap</code> prtoperty. */
-    public void setStringMap(Map stringMap) {
+    public void setStringMap(Map<HardCodedString,I18nString> stringMap) {
         this.stringMap.clear();
         this.stringMap.putAll(stringMap);
     }
     
     /** Getter for <code>removedStrings</code> property. */
-    public Set getRemovedStrings() {
+    public Set<HardCodedString> getRemovedStrings() {
         return removedStrings;
     }
     
     /** Setter for <code>removedStrings</code> property. */
-    public void setRemovedStrings(Set removedStrings) {
+    public void setRemovedStrings(Set<HardCodedString> removedStrings) {
         this.removedStrings = removedStrings;
     }
     

@@ -21,7 +21,6 @@
 package org.netbeans.modules.i18n.wizard;
 
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -30,13 +29,13 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -45,8 +44,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -92,7 +89,7 @@ final class HardStringWizardPanel extends JPanel {
     private static final int COLUMN_INDEX_CUSTOM = 4;
         
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = Util.createWizardSourceMap();
+    private final Map<DataObject,SourceData> sourceMap = Util.createWizardSourceMap();
 
     /** Table model for <code>stringTable</code>. */
     private final AbstractTableModel tableModel = new HardCodedStringTableModel();
@@ -113,14 +110,13 @@ final class HardStringWizardPanel extends JPanel {
 
     
     /** Sets combo model only for source which were some found strings in. */
-    private void setComboModel(Map sourceMap) {
-        Object[] sources = sourceMap.keySet().toArray();
+    private void setComboModel(Map<DataObject,SourceData> sourceMap) {
+        List<DataObject> nonEmptySources = new ArrayList<DataObject>();
         
-        ArrayList nonEmptySources = new ArrayList();
-        
-        for(int i = 0; i < sources.length; i++) {
-            if(!((SourceData)sourceMap.get(sources[i])).getStringMap().isEmpty())
-                nonEmptySources.add(sources[i]);
+        for (Map.Entry<DataObject,SourceData> entry : sourceMap.entrySet()) {
+            if (!entry.getValue().getStringMap().isEmpty()) {
+                nonEmptySources.add(entry.getKey());
+            }
         }
         
         sourceCombo.setModel(new DefaultComboBoxModel(nonEmptySources.toArray()));
@@ -133,12 +129,12 @@ final class HardStringWizardPanel extends JPanel {
     }
 
     /** Getter for <code>resources</code> property. */
-    public Map getSourceMap() {
+    public Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     } 
     
     /** Setter for <code>resources</code> property. */
-    public void setSourceMap(Map sourceMap) {
+    public void setSourceMap(Map<DataObject,SourceData> sourceMap) {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
 
@@ -147,31 +143,28 @@ final class HardStringWizardPanel extends JPanel {
     
     
     /** Gets string map for specified source data object. Utility method. */
-    private Map getStringMap() {
-        SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
+    private Map<HardCodedString,I18nString> getStringMap() {
+        SourceData sourceData = sourceMap.get(sourceCombo.getSelectedItem());
         return sourceData == null ? null : sourceData.getStringMap();
     }
     
     /** Gets hard coded strings user wish to not proceed. */
-    private Set getRemovedStrings() {
-        SourceData sourceData = (SourceData)sourceMap.get(sourceCombo.getSelectedItem());
-        if(sourceData == null)
+    private Set<HardCodedString> getRemovedStrings() {
+        SourceData sourceData = sourceMap.get(sourceCombo.getSelectedItem());
+        if (sourceData == null) {
             return null;
-        
-        if(sourceData.getRemovedStrings() == null) {
+        }
+
+        if (sourceData.getRemovedStrings() == null) {
             // init removed string for the first time
-            Set removed = new HashSet();
+            Set<HardCodedString> removed = new HashSet<HardCodedString>();
             
             // add all strings with empty keys
-            Map stringMap = sourceData.getStringMap(); // map<HardCodedString, I18nString>
-            Iterator hcsIt = stringMap.keySet().iterator(); // hard
-
-            while (hcsIt.hasNext()) {
-                HardCodedString hcString = (HardCodedString)hcsIt.next();
-                I18nString i18nString = (I18nString)stringMap.get(hcString);
-
-                if (i18nString.getKey().equals("")) 
-                    removed.add(hcString);
+            Map<HardCodedString,I18nString> stringMap = sourceData.getStringMap();
+            for (Map.Entry<HardCodedString,I18nString> entry : stringMap.entrySet()) {
+                if (entry.getValue().getKey().equals("")) {
+                    removed.add(entry.getKey());
+                }
             }
             sourceData.setRemovedStrings(removed);
         }
@@ -182,6 +175,7 @@ final class HardStringWizardPanel extends JPanel {
     /** Inits table component. */
     private void initTable() {
         hardStringTable.setDefaultRenderer(HardCodedString.class, new DefaultTableCellRenderer() {
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
                     
@@ -189,11 +183,9 @@ final class HardStringWizardPanel extends JPanel {
 
                 HardCodedString hcString = (HardCodedString)value;
 
-                if(hcString != null)
-                    label.setText(hcString.getText());
-                else
-                    label.setText(""); // NOI18N
-
+                label.setText((hcString != null)
+                              ? hcString.getText()
+                              : ""); // NOI18N
                 return label;
             }
         });
@@ -201,28 +193,27 @@ final class HardStringWizardPanel extends JPanel {
         hardStringTable.setDefaultRenderer(I18nString.class, new DefaultTableCellRenderer() {
             private final JButton dotButton = new JButton("...");               // NOI18N
             
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
 
-                I18nString i18nString = (I18nString)value;
+                I18nString i18nString = (I18nString) value;
                 
                 int modelColumn = hardStringTable.convertColumnIndexToModel(column);
 
-                if(modelColumn == COLUMN_INDEX_CUSTOM)
+                if (modelColumn == COLUMN_INDEX_CUSTOM) {
                     return dotButton;
+                }
                     
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-                if(i18nString != null) {
-                    if(modelColumn == COLUMN_INDEX_KEY) {
-                        label.setText(i18nString.getKey());
-                    } else {
-                        label.setText(i18nString.getValue());
-                    }
-
-                } else
+                if (i18nString != null) {
+                    label.setText((modelColumn == COLUMN_INDEX_KEY)
+                                  ? i18nString.getKey()
+                                  : i18nString.getValue());
+                } else {
                     label.setText(""); // NOI18N
-                    
+                }
                 
                 return label;
             }
@@ -230,6 +221,7 @@ final class HardStringWizardPanel extends JPanel {
 
         hardStringTable.setDefaultEditor(I18nString.class, new DefaultCellEditor(new JTextField()) {
             
+            @Override
             public Component getTableCellEditorComponent(
                 JTable table, Object value,
                 boolean isSelected,
@@ -239,13 +231,13 @@ final class HardStringWizardPanel extends JPanel {
                 
                 int modelColumn = hardStringTable.convertColumnIndexToModel(column);
                 
-                if(modelColumn == COLUMN_INDEX_KEY)
-                    value = i18nString == null ? "" : i18nString.getKey(); // NOI18N
-                else if(modelColumn == COLUMN_INDEX_VALUE)
-                    value = i18nString == null ? "" : i18nString.getValue(); // NOI18N
-                else
+                if (modelColumn == COLUMN_INDEX_KEY) {
+                    value = (i18nString == null) ? "" : i18nString.getKey(); // NOI18N
+                } else if (modelColumn == COLUMN_INDEX_VALUE) {
+                    value = (i18nString == null) ? "" : i18nString.getValue(); // NOI18N
+                } else {
                     value = ""; // NOI18N
-                
+                }
                 return super.getTableCellEditorComponent(table, value, isSelected, row, column);
             }
         });
@@ -269,8 +261,12 @@ final class HardStringWizardPanel extends JPanel {
     }
     
     private void initAccessibility() {        
-        sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACSD_sourceCombo"));
-        hardStringTable.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACSD_hardStringTable"));
+        sourceCombo.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(HardStringWizardPanel.class,
+                                    "ACSD_sourceCombo"));
+        hardStringTable.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(HardStringWizardPanel.class,
+                                    "ACSD_hardStringTable"));
     }
     
     /** This method is called from within the constructor to
@@ -333,7 +329,7 @@ final class HardStringWizardPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sourceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceComboActionPerformed
-        if(((SourceData)sourceMap.get(sourceCombo.getSelectedItem())).getStringMap().isEmpty()) {
+        if((sourceMap.get(sourceCombo.getSelectedItem())).getStringMap().isEmpty()) {
             // There are no hardcoded strings found for this selected source.
             JLabel label = new JLabel(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_NoHardstringsSource"));
             label.setHorizontalAlignment(JLabel.CENTER);
@@ -376,16 +372,17 @@ final class HardStringWizardPanel extends JPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             Map stringMap = getStringMap();
             
-            if(stringMap == null)
+            if (stringMap == null) {
                 return null;
+            }
             
-            if(columnIndex == COLUMN_INDEX_CHECK) {
-                if (getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]))
-                    return Boolean.FALSE ;
-                else
+            if (columnIndex == COLUMN_INDEX_CHECK) {
+                if (getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex])) {
+                    return Boolean.FALSE;
+                } else {
                     return Boolean.TRUE;
-                
-            } else if(columnIndex == COLUMN_INDEX_HARDSTRING) {
+                }
+            } else if (columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return stringMap.keySet().toArray()[rowIndex];
             } else {
                 return stringMap.values().toArray()[rowIndex];
@@ -394,61 +391,71 @@ final class HardStringWizardPanel extends JPanel {
         
         /** Overrides superclass method.
          * @ return true for all columns but first */
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return (columnIndex != COLUMN_INDEX_HARDSTRING);
         }
         
         /** Overrides superclass method. */
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            Map stringMap = getStringMap();
-            if(stringMap == null) return;
+            Map<HardCodedString,I18nString> stringMap = getStringMap();
+            if (stringMap == null) {
+                return;
+            }
 
             switch (columnIndex) {
                 case COLUMN_INDEX_HARDSTRING: return;
                 case COLUMN_INDEX_CUSTOM:
-                    I18nString otherValue = (I18nString)getValueAt(rowIndex, COLUMN_INDEX_KEY);
-                    if (!((I18nString)value).getKey().equals("")) 
+                    I18nString otherValue = (I18nString) getValueAt(rowIndex, COLUMN_INDEX_KEY);
+                    if (!((I18nString) value).getKey().equals("")) 
                         setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
                     else 
                         setValueAt(Boolean.FALSE, rowIndex, COLUMN_INDEX_CHECK);
                     break;
                 case COLUMN_INDEX_CHECK : 
-                    if(value instanceof Boolean) {
+                    if (value instanceof Boolean) {
 
                         // check that the key is not empty and thus it is allowed
                         // to change the value. Display a notification otherwise.
-                        if ((((Boolean)value).booleanValue()==true) && 
-                            ((I18nString)getValueAt(rowIndex, COLUMN_INDEX_KEY)).getKey().equals("")) 
+                        if ((((Boolean) value).booleanValue() == true) && 
+                            ((I18nString) getValueAt(rowIndex, COLUMN_INDEX_KEY)).getKey().equals("")) 
                         { // empty,not allowed
                             String message = NbBundle.getMessage(HardStringWizardPanel.class, "MSG_CANNOT_INSERT_EMPTY_KEYS");
                             NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.INFORMATION_MESSAGE);
                             DialogDisplayer.getDefault().notify(nd);
                         } else {               
-                            Object hardString = stringMap.keySet().toArray()[rowIndex];
+                            Set<HardCodedString> hcStrings = stringMap.keySet();
+                            HardCodedString[] hcStringsArr = hcStrings.toArray(new HardCodedString[hcStrings.size()]);
+                            HardCodedString hardString = hcStringsArr[rowIndex];
 
-                            Set removedStrings = getRemovedStrings();
+                            Set<HardCodedString> removedStrings = getRemovedStrings();
 
-                            if(((Boolean)value).booleanValue())
+                            if (((Boolean) value).booleanValue()) {
                                 removedStrings.remove(hardString);
-                            else
+                            } else {
                                 removedStrings.add(hardString);
+                            }
                         }
                     } 
                     break;
                 case COLUMN_INDEX_KEY :  {
-                    I18nString i18nString = (I18nString)stringMap.values().toArray()[rowIndex];
+                    I18nString i18nString = (I18nString) stringMap.values().toArray()[rowIndex];
                     i18nString.setKey(value.toString());
-                    if (!value.toString().equals("")) 
+                    if (!value.toString().equals("")) {
                         setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
-                    else 
+                    } else {
                         setValueAt(Boolean.FALSE, rowIndex, COLUMN_INDEX_CHECK);
+                    }
                     break;
                 }
 
                 case COLUMN_INDEX_VALUE: {
-                    I18nString i18nString = (I18nString)stringMap.values().toArray()[rowIndex];
+                    I18nString i18nString = (I18nString) stringMap.values().toArray()[rowIndex];
                     i18nString.setValue(value.toString());
-                    if (!i18nString.getKey().equals("")) setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);                    
+                    if (!i18nString.getKey().equals("")) {
+                        setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
+                    }                    
                     break;
                 }
             } // switch (columnIndex)
@@ -458,25 +465,29 @@ final class HardStringWizardPanel extends JPanel {
         
         /** Overrides superclass method. 
          * @return DataObject.class */
+        @Override
         public Class getColumnClass(int columnIndex) {
-            if(columnIndex == COLUMN_INDEX_CHECK)
+            if (columnIndex == COLUMN_INDEX_CHECK) {
                 return Boolean.class;
-            else if(columnIndex == COLUMN_INDEX_HARDSTRING)
+            } else if (columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return HardCodedString.class;
-            else
+            } else {
                 return I18nString.class;
+            }
         }
 
         /** Overrides superclass method. */
+        @Override
         public String getColumnName(int column) {
-            if(column == COLUMN_INDEX_HARDSTRING)
-                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_HardString");
-            else if(column == COLUMN_INDEX_KEY)
-                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Key");
-            else if(column == COLUMN_INDEX_VALUE)
-                return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Value");
-            else 
+            if (column == COLUMN_INDEX_HARDSTRING) {
+                return NbBundle.getMessage(HardStringWizardPanel.class, "LBL_HardString");
+            } else if(column == COLUMN_INDEX_KEY) {
+                return NbBundle.getMessage(HardStringWizardPanel.class, "LBL_Key");
+            } else if(column == COLUMN_INDEX_VALUE) {
+                return NbBundle.getMessage(HardStringWizardPanel.class, "LBL_Value");
+            } else {
                 return " "; // NOI18N
+            }
         }
     } // End of ResourceTableModel nested class.
 
@@ -531,7 +542,7 @@ final class HardStringWizardPanel extends JPanel {
 
         /** Implements <code>TableCellEditor</code> interface. */
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            i18nString = (I18nString)value;
+            i18nString = (I18nString) value;
             
             return editorComponent;
         }
@@ -542,26 +553,30 @@ final class HardStringWizardPanel extends JPanel {
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public boolean isCellEditable(EventObject anEvent) { 
             if(anEvent instanceof MouseEvent) { 
                 // Counts needed to start editing.
-                return ((MouseEvent)anEvent).getClickCount() >= 1;
+                return ((MouseEvent) anEvent).getClickCount() >= 1;
             }
             return true;
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public boolean shouldSelectCell(EventObject anEvent) { 
             return true; 
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public boolean stopCellEditing() {
             fireEditingStopped(); 
             return true;
         }
 
         /** Implements <code>TableCellEditor</code> interface. */
+        @Override
         public void cancelCellEditing() {
            fireEditingCanceled(); 
         }
@@ -578,7 +593,8 @@ final class HardStringWizardPanel extends JPanel {
      * @see I18nWizardDescriptorPanel
      * @see org.openide.WizardDescriptor.Panel*/
     public static class Panel extends I18nWizardDescriptor.Panel 
-    implements WizardDescriptor.FinishablePanel, I18nWizardDescriptor.ProgressMonitor {
+                              implements WizardDescriptor.FinishablePanel<I18nWizardDescriptor.Settings>,
+                                         I18nWizardDescriptor.ProgressMonitor {
 
         /** Empty label component. */
         private final JLabel emptyLabel;
@@ -618,6 +634,7 @@ final class HardStringWizardPanel extends JPanel {
         }
 
         /** Gets if panel is valid. Overrides superclass method. */
+        @Override
         public boolean isValid() {
             return true;
         }
@@ -629,13 +646,14 @@ final class HardStringWizardPanel extends JPanel {
         }
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
-        public void readSettings(Object settings) {
+        @Override
+        public void readSettings(I18nWizardDescriptor.Settings settings) {
 	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
 
             JPanel panel = (JPanel)getComponent();
-            if(foundStrings(getMap())) {
-                if(panel.isAncestorOf(emptyLabel)) {
+            if (foundStrings(getMap())) {
+                if (panel.isAncestorOf(emptyLabel)) {
                     panel.remove(emptyLabel);
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
@@ -644,7 +662,7 @@ final class HardStringWizardPanel extends JPanel {
                     panel.add(getUI(), constraints);
                 }
             } else {
-                if(panel.isAncestorOf(getUI())) {
+                if (panel.isAncestorOf(getUI())) {
                     panel.remove(getUI());
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
@@ -656,7 +674,8 @@ final class HardStringWizardPanel extends JPanel {
         }
 
         /** Stores settings at the end of panel show. Overrides superclass method. */
-        public void storeSettings(Object settings) {
+        @Override
+        public void storeSettings(I18nWizardDescriptor.Settings settings) {
 	    super.storeSettings(settings);
             // Update sources.
 	    getMap().clear();
@@ -670,68 +689,77 @@ final class HardStringWizardPanel extends JPanel {
             if (foundStrings(getMap())) {       
                 // Replace panel.
                 final ProgressWizardPanel progressPanel = new ProgressWizardPanel(true);
-                progressPanel.setMainText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Internationalizing"));
+                progressPanel.setMainText(
+                        NbBundle.getMessage(
+                                HardStringWizardPanel.class,
+                                "LBL_Internationalizing"));             //NOI18N
                 progressPanel.setMainProgress(0);
 
-                ((Container)getComponent()).remove(getUI());
+                ((Container) getComponent()).remove(getUI());
                 GridBagConstraints constraints = new GridBagConstraints();
                 constraints.weightx = 1.0;
                 constraints.weighty = 1.0;
                 constraints.fill = GridBagConstraints.BOTH;
-                ((Container)getComponent()).add(progressPanel, constraints);
-                ((JComponent)getComponent()).revalidate();
+                ((Container) getComponent()).add(progressPanel, constraints);
+                ((JComponent) getComponent()).revalidate();
                 getComponent().repaint();
 
                 // Do replacement job here.
-                Map sourceMap = getUI().getSourceMap();
-
-                Iterator sourceIterator = sourceMap.keySet().iterator();
+                Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
 
                 // For each source perform the task.
-                for(int i=0; sourceIterator.hasNext(); i++) {
-                    Object source = sourceIterator.next();
-
-                    // Get source data.
-                    SourceData sourceData = (SourceData)sourceMap.get(source);
+                int outerCounter = 0;
+                for (Map.Entry<DataObject,SourceData> srcMapEntry : sourceMap.entrySet()) {
+                    outerCounter++;
+                    DataObject source = srcMapEntry.getKey();
+                    SourceData sourceData = srcMapEntry.getValue();
 
                     // Get i18n support for this source.
                     I18nSupport support = sourceData.getSupport();
 
                     // Get string map.
-                    Map stringMap = sourceData.getStringMap();
-                    Object[] stringEntries = stringMap.entrySet().toArray();
+                    Map<HardCodedString,I18nString> stringMap = sourceData.getStringMap();
 
                     // Get removed strings.
                     Set removed = sourceData.getRemovedStrings();
 
                     // Do actual replacement.
-                    ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );
-                    progressPanel.setSubText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false ) );
+                    ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE);
+                    progressPanel.setSubText(
+                            NbBundle.getMessage(
+                                    HardStringWizardPanel.class, "LBL_Source")
+                                    + " "
+                                    + cp.getResourceName(source.getPrimaryFile(), '.', false));
 
-                    for(int j=0; j < stringEntries.length; j++) {
-                        Map.Entry e = (Map.Entry) stringEntries[j];
-                        HardCodedString hcString = (HardCodedString) e.getKey();
-                        I18nString i18nString = (I18nString) e.getValue();
+                    int innerCounter = 0;
+                    for (Map.Entry<HardCodedString,I18nString> entry : stringMap.entrySet()) {
+                        innerCounter++;
+                        HardCodedString hcString = entry.getKey();
+                        I18nString i18nString = entry.getValue();
 
-                        if(removed != null && removed.contains(hcString))
+                        if ((removed != null) && removed.contains(hcString)) {
                             // Don't proceed.
                             continue;
+                        }
 
                         // Put new property into bundle.
-                        support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
+                        support.getResourceHolder().addProperty(
+                                i18nString.getKey(),
+                                i18nString.getValue(),
+                                i18nString.getComment());
 
                         // Replace string in source.
                         support.getReplacer().replace(hcString, i18nString);
 
-                        progressPanel.setSubProgress((int)((j+1)/(float)stringMap.size() * 100));
+                        progressPanel.setSubProgress((int) (innerCounter / (float) stringMap.size() * 100));
                     } // End of inner for.
 
                     // Provide additional changes if there are some.
-                    if(support.hasAdditionalCustomizer()) {
+                    if (support.hasAdditionalCustomizer()) {
                         support.performAdditionalChanges();
                     }
 
-                    progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));
+                    progressPanel.setMainProgress((int) (outerCounter / (float) sourceMap.size() * 100));
                 } // End of outer for.
             } // if (foundStrings(getMap()))
         }
@@ -741,15 +769,12 @@ final class HardStringWizardPanel extends JPanel {
         
         /** Indicates if there were found some hardcoded strings in any of selected sources. 
          * @return true if at least one hard coded string was found. */
-        private static boolean foundStrings(Map sourceMap) {
-            Iterator it = sourceMap.keySet().iterator();
-
-            while(it.hasNext()) {
-                SourceData sourceData = (SourceData)sourceMap.get(it.next());
-                if(!sourceData.getStringMap().isEmpty())
+        private static boolean foundStrings(Map<DataObject,SourceData> sourceMap) {
+            for (Map.Entry<DataObject,SourceData> entry : sourceMap.entrySet()) {
+                if (!entry.getValue().getStringMap().isEmpty()) {
                     return true;
+                }
             }
-
             return false;
         }
         

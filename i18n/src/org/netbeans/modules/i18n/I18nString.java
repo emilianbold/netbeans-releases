@@ -217,6 +217,6 @@ public class I18nString {
      * be arbitrarilly modified.
      * @param subst Map to be filled in with key/value pairs
      */ 
-    protected void fillFormatMap(Map subst) {
+    protected void fillFormatMap(Map<String,String> subst) {
     }
 }
