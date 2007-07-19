@@ -26,6 +26,7 @@ import org.dom4j.Node;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IAggregationKind;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
 public class Aggregation extends Association implements IAggregation
@@ -265,6 +266,27 @@ public class Aggregation extends Association implements IAggregation
 		return assocEnd;
    }   
    
+   public String getExpandedElementType()
+    {
+       boolean isNavigable = false;
+       boolean isComposite = getIsComposite();
+       String expandedType = null;
+       
+       IAssociationEnd partEnd = this.getPartEnd();
+       if (partEnd != null) 
+       {
+           isNavigable = partEnd.getIsNavigable();
+       }
+       
+       if (isComposite)  // composition
+       {
+           expandedType = isNavigable ? IAggregationKind.NAV_COMPOSITION : IAggregationKind.COMPOSITION;
+       }
+       else   // Aggregation
+       {
+           expandedType = isNavigable ? IAggregationKind.NAV_AGGREGATION : IAggregationKind.AGGREGATION;
+       }
+       
+       return expandedType;
+    }
 }
-
-

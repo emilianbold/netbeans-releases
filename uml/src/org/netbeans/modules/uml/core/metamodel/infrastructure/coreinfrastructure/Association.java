@@ -27,25 +27,20 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IBackPointer;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.PreventElementReEntrance;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.Relationship;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationshipEventsHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
-
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import org.dom4j.Node;
 import org.dom4j.Element;
 import org.dom4j.Document;
 import org.dom4j.tree.DefaultDocument;
+import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IAggregationKind;
 
-public class Association extends Classifier implements IAssociation,
-													   IRelationship 
+public class Association extends Classifier implements IAssociation, IRelationship 
 {
 	//	Used to make sure this query remains consistant in the couple of operations
 	//	that use it in this file.
@@ -82,36 +77,36 @@ public class Association extends Classifier implements IAssociation,
 	*/
 	public void removeEnd( IAssociationEnd end )
 	{
-		PreventElementReEntrance reEnt = new PreventElementReEntrance(this);
-        try {
-    		if ( !reEnt.isBlocking() )
+            PreventElementReEntrance reEnt = new PreventElementReEntrance(this);
+            try {
+                if ( !reEnt.isBlocking() )
     		{
-    			RelationshipEventsHelper help = new RelationshipEventsHelper(this);
-    			if (help.firePreEndRemoved(end,null))
-    			{
-    				final IAssociationEnd assocEnd = end;
-    				new ElementConnector<IAssociation>().removeElement(
-    												   this,assocEnd,"UML:Association.end/*",
-    												   new IBackPointer<IAssociation>() 
-    												   {
-    													  public void execute(IAssociation obj) 
-    													  {
-    														 assocEnd.setAssociation(obj);
-    													  }
-    												  }
-    												);
-    				help.fireEndRemoved();		
-    			}
-    			else
-    			{
-    				//Cancel the event
-    			}
+                    RelationshipEventsHelper help = new RelationshipEventsHelper(this);
+                    if (help.firePreEndRemoved(end,null))
+                    {
+                        final IAssociationEnd assocEnd = end;
+                        new ElementConnector<IAssociation>().removeElement(
+                           this,assocEnd,"UML:Association.end/*",
+                           new IBackPointer<IAssociation>() 
+                           {
+                                  public void execute(IAssociation obj) 
+                                  {
+                                         assocEnd.setAssociation(obj);
+                                  }
+                          }
+                        );
+                        help.fireEndRemoved();		
+                    }
+                    else
+                    {
+                            //Cancel the event
+                    }
     		}
-        }
-        finally
-        {
-            reEnt.releaseBlock();
-        }		
+            }
+            finally
+            {
+                reEnt.releaseBlock();
+            }		
 	}
 	
 	/**
@@ -119,9 +114,8 @@ public class Association extends Classifier implements IAssociation,
 	*/
 	public void addEnd( IAssociationEnd end )
 	{
-		RelationshipEventsHelper help = new RelationshipEventsHelper(this);
-		addEnd(help,true,end);
-		
+            RelationshipEventsHelper help = new RelationshipEventsHelper(this);
+            addEnd(help,true,end);
 	}
 	
 	/**
@@ -130,13 +124,13 @@ public class Association extends Classifier implements IAssociation,
 	 */
 	public int getNumEnds()
 	{
-	  ETList<IAssociationEnd>  pEnds = getEnds();
-	  int len = -1;		  
-	  if (pEnds != null)
-	  {
-		 len = pEnds.size();
-	  }
-	  return len;
+            ETList<IAssociationEnd>  pEnds = getEnds();
+            int len = -1;		  
+            if (pEnds != null)
+            {
+                 len = pEnds.size();
+            }
+            return len;
 	}	
 	/**
 	 * Returns the index of this end in the list.  -1 if not found.
@@ -311,18 +305,18 @@ public class Association extends Classifier implements IAssociation,
 	
 	public void addEnd( RelationshipEventsHelper helper, boolean bool , IAssociationEnd end )
 	{
-		final IAssociationEnd assocEnd = end;
-		new ElementConnector<IAssociation>().addChildAndConnect(
-										this,false,"UML:Association.end",
-										"UML:Association.end",assocEnd,
-										 new IBackPointer<IAssociation>() 
-										 {
-											 public void execute(IAssociation obj) 
-											 {
-												assocEnd.setAssociation(obj);
-											 }
-										 }										
-										);
+            final IAssociationEnd assocEnd = end;
+            new ElementConnector<IAssociation>().addChildAndConnect(
+                this,false,"UML:Association.end",
+                "UML:Association.end",assocEnd,
+                new IBackPointer<IAssociation>() 
+                {
+                     public void execute(IAssociation obj) 
+                     {
+                         assocEnd.setAssociation(obj);
+                     }
+                }										
+            );
 	}
 	
 	/**
@@ -490,6 +484,29 @@ public class Association extends Classifier implements IAssociation,
 		}
 		return retObj;
 	}
+        
+        public boolean isNavigable () 
+        {
+            boolean navigable = false;
+            ETList<IAssociationEnd> ends = getEnds();
+            if (ends != null) 
+            {
+                int count = ends.size();
+                for (int i = 0; i < count; i++) 
+                {
+                    IAssociationEnd end = ends.get(i);
+                    if (end.getIsNavigable()) 
+                    {
+                        navigable = true;
+                        break;
+                    }
+                }
+            }
+            return navigable;
+        }
+        
+        public String getExpandedElementType()
+        {
+           return this.isNavigable()? IAggregationKind.NAV_ASSOCIATION : IAggregationKind.ASSOCIATION;
+        }
 }
-
-

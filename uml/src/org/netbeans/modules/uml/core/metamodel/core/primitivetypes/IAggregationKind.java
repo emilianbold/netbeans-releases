@@ -27,8 +27,8 @@ package org.netbeans.modules.uml.core.metamodel.core.primitivetypes;
 /**
  * @author Aztec
  */
-public interface IAggregationKind
-{
+public interface IAggregationKind {
+
     // The end is not an aggregate.
     public static final int AK_NONE = 0;
 
@@ -37,4 +37,11 @@ public interface IAggregationKind
 
     // The end is a composite; therefore, the other end is a part and must have the aggregation value of none. The part is strongly owned by the composite and may not be part of any other composite.
     public static final int AK_COMPOSITE = 2;
+
+    public static final String ASSOCIATION = "Association"; // NOI18N
+    public static final String NAV_ASSOCIATION = "Navigable_Association"; // NOI18N
+    public static final String COMPOSITION = "Composition"; // NOI18N
+    public static final String NAV_COMPOSITION = "Navigable_Composition"; // NOI18N
+    public static final String AGGREGATION = "Aggregation"; // NOI18N
+    public static final String NAV_AGGREGATION = "Navigable_Aggregation"; // NOI18N
 }
