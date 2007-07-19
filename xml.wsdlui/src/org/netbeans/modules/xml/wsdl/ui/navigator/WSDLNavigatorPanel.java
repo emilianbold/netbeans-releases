@@ -76,8 +76,10 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
 
     public void panelDeactivated() {
         TopComponent.getRegistry().removePropertyChangeListener(WSDLNavigatorContent.getDefault());
-        selection.removeLookupListener(this);
-        selection = null;
+        if (selection != null) {
+            selection.removeLookupListener(this);
+            selection = null;
+        }
         // If we set navigator to null its parent tc ref goes away.
         //navigator = null;
         if(WSDLNavigatorContent.getDefault() != null)
@@ -85,6 +87,7 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
     }
 
     public void resultChanged(LookupEvent ev) {
+        if (selection == null) return;
         Collection selected = selection.allInstances();
         if (selected.size() == 1) {
             DataObject dobj = (DataObject) selected.iterator().next();
