@@ -51,7 +51,28 @@ public class WebProjectGenerator {
     /**
      * @param sources list of pairs[relative path, display name]
      */
-    public static void putWebSourceFolder(AntProjectHelper helper, List/*<String>*/ sources) {
+    public static void putWebSourceFolder(AntProjectHelper helper, List<String> sources) {
+        putFolder(WebProjectConstants.TYPE_DOC_ROOT, helper, sources);
+    }
+
+    /**
+     * @param sources list of pairs[relative path, display name]
+     */
+    public static void putWebInfFolder(AntProjectHelper helper, List<String> sources) {
+        putFolder(WebProjectConstants.TYPE_WEB_INF, helper, sources);
+    }
+    
+    // allowed folder types: WebProjectConstants.TYPE_DOC_ROOT, WebProjectConstants.TYPE_WEB_INF
+    private static void putFolder(String folderType, AntProjectHelper helper, List<String> sources) {
+        String label = null;
+        if (WebProjectConstants.TYPE_DOC_ROOT.equals(folderType)) {
+            label = NbBundle.getMessage(WebProjectGenerator.class, "LBL_WebPages");
+        } else if (WebProjectConstants.TYPE_WEB_INF.equals(folderType)) {
+            label = NbBundle.getMessage(WebProjectGenerator.class, "LBL_WebInf");
+        } else {
+            assert false : "Unknown folder type: " + folderType;
+        }
+
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
@@ -63,12 +84,13 @@ public class WebProjectGenerator {
             for (int i = 0; i < l.size(); i++) {
                 Element e = (Element) l.get(i);
                 Element te = Util.findElement(e, "type", Util.NAMESPACE);
-                if (te != null && Util.findText(te).equals("doc_root")) {
+                if (te != null && Util.findText(te).equals(folderType)) {
                     foldersEl.removeChild(e);
                     break;
                 }
-            }        
+            }
         }
+        
         Element viewEl = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(Util.NAMESPACE, "view"); // NOI18N
@@ -84,24 +106,28 @@ public class WebProjectGenerator {
                 Element e = (Element) l.get(i);
                 if (e.hasAttribute("style")) {
                     if (e.getAttribute("style").equals("tree")) {
-                        itemsEl.removeChild(e);
-                        break;
+                        // #110173
+                        Element labelElement = Util.findElement(e, "label", Util.NAMESPACE);
+                        if (labelElement != null && label.equals(Util.findText(labelElement))) {
+                            itemsEl.removeChild(e);
+                            break;
+                        }
                     }
                 }
             }
         }
         
-        Iterator it1 = sources.iterator();
+        Iterator<String> it1 = sources.iterator();
         while (it1.hasNext()) {
-            String path = (String)it1.next();
+            String path = it1.next();
             assert it1.hasNext();
-            String dispname = (String)it1.next();
+            String dispname = it1.next();
             Element sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
             Element el = doc.createElementNS(Util.NAMESPACE, "label"); // NOI18N
             el.appendChild(doc.createTextNode(dispname));
             sourceFolderEl.appendChild(el);
             el = doc.createElementNS(Util.NAMESPACE, "type"); // NOI18N
-            el.appendChild(doc.createTextNode(WebProjectConstants.TYPE_DOC_ROOT));
+            el.appendChild(doc.createTextNode(folderType));
             sourceFolderEl.appendChild(el);
             el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
             el.appendChild(doc.createTextNode(path));
@@ -111,102 +137,36 @@ public class WebProjectGenerator {
             sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
             sourceFolderEl.setAttribute("style", "tree"); // NOI18N
             el = doc.createElementNS(Util.NAMESPACE, "label"); // NOI18N
-            el.appendChild(doc.createTextNode(NbBundle.getMessage(WebProjectGenerator.class, "LBL_WebPages")));
+            el.appendChild(doc.createTextNode(label));
             sourceFolderEl.appendChild(el);
             el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
             el.appendChild(doc.createTextNode(path)); // NOI18N
             sourceFolderEl.appendChild(el);
             Node firstNode = itemsEl.getFirstChild();
             if (firstNode != null) {
-                itemsEl.insertBefore(sourceFolderEl, firstNode);
+                if (WebProjectConstants.TYPE_DOC_ROOT.equals(folderType)) {
+                    insertWebElement(itemsEl, firstNode, sourceFolderEl);
+                } else if (WebProjectConstants.TYPE_WEB_INF.equals(folderType)) {
+                    insertWebInfElement(itemsEl, firstNode, sourceFolderEl);
+                }
             } else {
                 Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
             }
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
-
-    /**
-     * @param sources list of pairs[relative path, display name]
-     */
-    public static void putWebInfFolder(AntProjectHelper helper, List/*<String>*/ sources) {
-        Element data = Util.getPrimaryConfigurationData(helper);
-        Document doc = data.getOwnerDocument();
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
-        if (foldersEl == null) {
-            foldersEl = doc.createElementNS(Util.NAMESPACE, "folders"); // NOI18N
-            Util.appendChildElement(data, foldersEl, rootElementsOrder);
+    
+    private static void insertWebElement(Element itemsEl, Node firstNode, Element sourceFolderEl) {
+        itemsEl.insertBefore(sourceFolderEl, firstNode);
+    }
+    
+    private static void insertWebInfElement(Element itemsEl, Node firstNode, Element sourceFolderEl) {
+        Node secondNode = firstNode.getNextSibling();
+        if (secondNode != null) {
+            itemsEl.insertBefore(sourceFolderEl, secondNode);
         } else {
-            List l = Util.findSubElements(foldersEl);
-            for (int i = 0; i < l.size(); i++) {
-                Element e = (Element) l.get(i);
-                Element te = Util.findElement(e, "type", Util.NAMESPACE);
-                if (te != null && Util.findText(te).equals("web_inf")) {
-                    foldersEl.removeChild(e);
-                    break;
-                }
-            }        
+            Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
         }
-        
-        Element viewEl = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
-        if (viewEl == null) {
-            viewEl = doc.createElementNS(Util.NAMESPACE, "view"); // NOI18N
-            Util.appendChildElement(data, viewEl, rootElementsOrder);
-        }
-        Element itemsEl = Util.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
-        if (itemsEl == null) {
-            itemsEl = doc.createElementNS(Util.NAMESPACE, "items"); // NOI18N
-            Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
-        } else {
-            List l = Util.findSubElements(itemsEl);
-            for (int i = 0; i < l.size(); i++) {
-                Element e = (Element) l.get(i);
-                if (e.hasAttribute("style")) {
-                    if (e.getAttribute("style").equals("tree")) {
-//                        itemsEl.removeChild(e);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        Iterator it1 = sources.iterator();
-        while (it1.hasNext()) {
-            String path = (String)it1.next();
-            assert it1.hasNext();
-            String dispname = (String)it1.next();
-            Element sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
-            Element el = doc.createElementNS(Util.NAMESPACE, "label"); // NOI18N
-            el.appendChild(doc.createTextNode(dispname));
-            sourceFolderEl.appendChild(el);
-            el = doc.createElementNS(Util.NAMESPACE, "type"); // NOI18N
-            el.appendChild(doc.createTextNode(WebProjectConstants.TYPE_WEB_INF));
-            sourceFolderEl.appendChild(el);
-            el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
-            el.appendChild(doc.createTextNode(path));
-            sourceFolderEl.appendChild(el);
-            Util.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
-            
-            sourceFolderEl = doc.createElementNS(Util.NAMESPACE, "source-folder"); // NOI18N
-            sourceFolderEl.setAttribute("style", "tree"); // NOI18N
-            el = doc.createElementNS(Util.NAMESPACE, "label"); // NOI18N
-            el.appendChild(doc.createTextNode(NbBundle.getMessage(WebProjectGenerator.class, "LBL_WebInf")));
-            sourceFolderEl.appendChild(el);
-            el = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
-            el.appendChild(doc.createTextNode(path)); // NOI18N
-            sourceFolderEl.appendChild(el);
-            Node firstNode = itemsEl.getFirstChild();
-            if (firstNode != null) {
-                Node secondNode = firstNode.getNextSibling();
-                if (secondNode != null)
-                    itemsEl.insertBefore(sourceFolderEl, secondNode);
-                else
-                    Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
-            } else {
-                Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
-            }
-        }
-        Util.putPrimaryConfigurationData(helper, data);
     }
     
     /**
