@@ -198,7 +198,6 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         styleStringPanel.setPreferredSize(new java.awt.Dimension(375, 100));
         styleStringPanel.setLayout(new java.awt.GridBagLayout());
 
-       // styleStringScroll.setMaximumSize(new java.awt.Dimension(300, 100));
         styleStringScroll.setPreferredSize(new java.awt.Dimension(300, 100));
 
         styleTextArea.setColumns(50);
@@ -225,6 +224,7 @@ public class StyleBuilderPanel extends JPanel implements PropertyChangeListener{
         gridBagConstraints.weighty = 1.0;
         styleStringPanel.add(styleStringScroll, gridBagConstraints);
 
+        styleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/css/Bundle").getString("CSS_STYLE_MNEMONIC").charAt(0));
         styleLabel.setLabelFor(styleTextArea);
         styleLabel.setText(bundle.getString("CSS_STYLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
