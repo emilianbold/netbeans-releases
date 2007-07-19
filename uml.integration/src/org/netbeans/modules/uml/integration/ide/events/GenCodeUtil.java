@@ -65,10 +65,11 @@ public final class GenCodeUtil
         String[] collectionTypes, 
         boolean useGenerics, 
         IMultiplicity mult,
-	boolean fullyQualified)
+	boolean fullyQualified,
+	ClassInfo container)
     {
+	String  classTypeName = getTypeCodeGenType(classType, fullyQualified, container);	    
 
-	String classTypeName = getTypeCodeGenType(classType, fullyQualified);
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
         {
@@ -236,7 +237,7 @@ public final class GenCodeUtil
 	*/
     }
 
-    public static String getTypeCodeGenType(IClassifier classType, boolean fullyQualified) 
+    public static String getTypeCodeGenType(IClassifier classType, boolean fullyQualified, ClassInfo container) 
     {
 	IClassifier clazz = null;
 	String result = "";
@@ -254,7 +255,7 @@ public final class GenCodeUtil
 		    {
 			if (b.getActual() instanceof IClassifier) 
 			{
-			    String name = getTypeCodeGenType((IClassifier)b.getActual(), fullyQualified);
+			    String name = getTypeCodeGenType((IClassifier)b.getActual(), fullyQualified, container);
 			    if (name != null && ! name.trim().equals(""))
 			    {
 				if (JavaClassUtils.isPrimitive(name)) {
@@ -287,7 +288,17 @@ public final class GenCodeUtil
 	{
 	    clazz = classType;
 	}   
-	result = getTypeName(clazz, fullyQualified) + result;	
+
+	String clazzTypeName;
+	if (fullyQualified || isNameCodeGenConflict(container, clazz)) 
+	{
+	    clazzTypeName = getTypeName(clazz, true);
+	} 
+	else 
+	{
+	    clazzTypeName = getTypeName(clazz, false);
+	}
+	result = clazzTypeName + result;	
 	return result;
     }
 
@@ -298,14 +309,15 @@ public final class GenCodeUtil
         IClassifier classType, 
         String[] collectionTypes, 
         boolean useGenerics, 
-        IMultiplicity mult)
+        IMultiplicity mult, 
+	ClassInfo container)
     {
 	ArrayList<String[]> res = new ArrayList<String[]>();
 	boolean isPrimitive = false;
 
 	ArrayList<String[]> refs;
 	if (classType instanceof IDerivationClassifier) {
-	    refs = getReferredCodeGenTypes(classType);
+	    refs = getReferredCodeGenTypes(classType, container);
 	} else {
 	    String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(classType);
 	    if ( ! ( fqType != null && fqType.length == 2 && fqType[1] != null) ) {	
@@ -322,7 +334,10 @@ public final class GenCodeUtil
 		fqType[1] = fullClassName;
 	    }	   
 	    refs = new ArrayList<String[]>();
-	    refs.add(fqType);
+	    if (! isNameCodeGenConflict(container, classType)) 
+	    {
+		refs.add(fqType);
+	    }
 	    isPrimitive = JavaClassUtils.isPrimitive(fullClassName);
 	}
 
@@ -362,7 +377,7 @@ public final class GenCodeUtil
     }
 
 
-    public static ArrayList<String[]> getReferredCodeGenTypes(IClassifier classType)
+    public static ArrayList<String[]> getReferredCodeGenTypes(IClassifier classType, ClassInfo container)
     {
 	ArrayList<String[]> res = new ArrayList<String[]>();
 
@@ -377,7 +392,7 @@ public final class GenCodeUtil
 		    for (IUMLBinding b : bindings) {
 			if (b.getActual() instanceof IClassifier) {
 			    ArrayList<String[]> refs 
-				= getReferredCodeGenTypes((IClassifier)b.getActual());
+				= getReferredCodeGenTypes((IClassifier)b.getActual(), container);
 			    if (refs != null) {
 				res.addAll(refs);
 			    }
@@ -405,7 +420,7 @@ public final class GenCodeUtil
 	    clazz = classType;
 	}
 	
-	if (clazz != null) {
+	if (clazz != null && ! isNameCodeGenConflict(container, clazz)) {
 	    String[] fqType = GenCodeUtil.getFullyQualifiedCodeGenType(clazz);
 	    if (( fqType != null && fqType.length == 2) ) {	
 		res.add(fqType);	
@@ -476,6 +491,105 @@ public final class GenCodeUtil
 	}
 	return res;
 
+    }
+    
+
+    public static boolean isNameCodeGenConflict(ClassInfo container, IClassifier classType) 
+    {
+	if (container == null) 
+	{
+	    return false;
+	}
+	IClassifier cn = container.getClassElement();
+	if (cn == null) 
+	{
+	    return false;
+	} 
+	if (JavaClassUtils.isAnOwner(cn, classType)) 
+	{
+	    return false;
+	}		
+
+	String typeName = getTypeName(classType, false);
+
+	if (findConflictingByCodeGenName(container, typeName) != null) 
+	{
+	    return true;
+	}
+			
+        ClassInfo owner = container.getOuterClass();
+	if (owner != null) 
+	{
+	    return isNameCodeGenConflict(owner, classType);
+	} 
+	else 
+	{
+	    String cnName = getTypeName(cn, false);
+	    return cnName.equals(typeName);
+	}
+
+    }
+    
+    public static ClassInfo findConflictingByCodeGenName(ClassInfo container, String typeName) 
+    {
+	if (container == null || typeName == null) 
+	{
+	    return null;
+	}
+	int ind = typeName.indexOf(".");
+	String nameToComp;
+	String restOfTypeName;
+	if (ind > -1) 
+	{
+	    restOfTypeName = typeName.substring(ind + 1);
+	    nameToComp = typeName.substring(0, ind);
+	} 
+	else 
+	{
+	    nameToComp = typeName;
+	    restOfTypeName = "";
+	}
+	
+	List<ClassInfo> children = container.getMemberTypes();
+	if (children != null) 
+	{
+	    for(ClassInfo child : children)
+	    {
+		String chName = getTypeName(child.getClassElement(), false);
+		int di = chName.lastIndexOf(".");
+		if (di > -1)
+		{
+		    chName = chName.substring(di + 1);
+		}
+		if (nameToComp.equals(chName)) 
+		{
+		    if (!typeName.equals("")) 
+		    {
+			return child;
+		    } 
+		    else { 
+			ClassInfo cl = findConflictingByCodeGenName(child, restOfTypeName);
+			if (cl != null) 
+			{
+			    return cl;
+			}
+		    }
+		} 
+	    }
+	}
+	ClassInfo owner = container.getOuterClass();
+	if (owner == null) 
+	{
+	    if (typeName.equals(getTypeName(container.getClassElement(), false))) 
+	    {
+		return owner;
+	    }
+	    return null;
+	} 
+	else 
+	{
+	    return findConflictingByCodeGenName(owner, typeName);
+	}
     }
 
 

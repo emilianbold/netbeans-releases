@@ -2397,9 +2397,9 @@ public class ClassInfo extends ElementInfo
     }
 
 
-    public String getCodeGenType(boolean fullyQualified)
+    public String getCodeGenType(boolean fullyQualified, ClassInfo container)
     {
-	return GenCodeUtil.getTypeCodeGenType(getClassElement(), fullyQualified);
+	return GenCodeUtil.getTypeCodeGenType(getClassElement(), fullyQualified, container);
     }
 
 
@@ -2614,7 +2614,7 @@ public class ClassInfo extends ElementInfo
 
 
 	// referred by itself - extends/imports
-	ArrayList<String[]> refs = GenCodeUtil.getReferredCodeGenTypes(mSuperClass);
+	ArrayList<String[]> refs = GenCodeUtil.getReferredCodeGenTypes(mSuperClass, this);
 	if (refs != null) {
 	    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);
 	}
@@ -2622,7 +2622,7 @@ public class ClassInfo extends ElementInfo
 	    Iterator<IClassifier> sis =  superInterfaces.iterator();
 	    while(sis.hasNext()) {
 		IClassifier si = sis.next();
-		refs = GenCodeUtil.getReferredCodeGenTypes(si);
+		refs = GenCodeUtil.getReferredCodeGenTypes(si, this);
 		//refs = GenCodeUtil.getReferredCodeGenTypes(sis.next());
 		if (refs != null) {
 		    GenCodeUtil.mergeReferredCodeGenTypes(res, fqNames, refs);

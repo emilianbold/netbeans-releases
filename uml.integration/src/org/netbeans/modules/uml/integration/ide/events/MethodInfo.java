@@ -413,7 +413,8 @@ public class MethodInfo extends ConstructorInfo
                                           shortNames,
                                           param.isUseGenerics(),
                                           element.getMultiplicity(),
-					  false);
+					  false,
+					  getContainingClass());
     }
 
     /**

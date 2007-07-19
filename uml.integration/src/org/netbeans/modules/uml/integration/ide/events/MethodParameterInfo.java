@@ -268,7 +268,8 @@ public class MethodParameterInfo implements Cloneable
 //            GenCodeUtil.getMultiplicityMaxUpperRange(
 //                getParameterElement().getMultiplicity().getRanges()));
             getParameterElement().getMultiplicity(),
-	    fullyQualified);
+	    fullyQualified,
+	    getParentMethodInfo().getContainingClass());
     }
     
     
@@ -344,7 +345,8 @@ public class MethodParameterInfo implements Cloneable
 				     GenCodeUtil.getCollectionOverrideDataTypes
 				         (getParameterElement().getMultiplicity(), true),
 				     isUseGenerics(),
-				     getParameterElement().getMultiplicity());
+				     getParameterElement().getMultiplicity(),
+				     getParentMethodInfo().getContainingClass());
     }
 
 

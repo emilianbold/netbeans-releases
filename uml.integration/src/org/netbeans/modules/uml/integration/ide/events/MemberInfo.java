@@ -494,7 +494,8 @@ public class MemberInfo extends ElementInfo
 //            GenCodeUtil.getMultiplicityMaxUpperRange(
 //                getAttribute().getMultiplicity().getRanges()));
             getAttribute().getMultiplicity(),
-	    fullyQualified);
+	    fullyQualified,
+	    getContainingClass());
     }
     
 
@@ -895,7 +896,8 @@ public class MemberInfo extends ElementInfo
 				     GenCodeUtil.getCollectionOverrideDataTypes
 				         (getAttribute().getMultiplicity(), true),
 				     isUseGenerics(),
-				     getAttribute().getMultiplicity());
+				     getAttribute().getMultiplicity(),
+				     getContainingClass());
 
     }
 

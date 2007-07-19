@@ -1267,6 +1267,11 @@ public class JavaClassUtils {
 	    return false;
 	}
 
+	if (elem.equals(clazz)) 
+	{
+	    return true;
+	}
+
         IElement owner = clazz.getOwner();
         
         if (owner == null || owner instanceof IProject ||
@@ -1277,14 +1282,7 @@ public class JavaClassUtils {
         
         else if (owner instanceof IClassifier) 
 	{
-	    if (elem.equals((IClassifier)owner)) 
-	    {
-		return true;
-	    }
-	    else 
-	    {
-		return isAnOwner(elem, (IClassifier)owner);
-	    }
+	    return isAnOwner(elem, (IClassifier)owner);	    
 	}
 	else 
             return false;

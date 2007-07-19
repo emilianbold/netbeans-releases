@@ -105,7 +105,7 @@ ${classInfo.getModifierText(classInfo.getModifiers())}
 <#macro NormalClassExtends classInfo >
 <@singleline>
 <#if  classInfo.getSuperClassInfo()?? > 
-extends ${classInfo.getSuperClassInfo().getCodeGenType(false)} 
+extends ${classInfo.getSuperClassInfo().getCodeGenType(false, classInfo)} 
 </#if>
 </@singleline>
 </#macro>
@@ -115,7 +115,7 @@ extends ${classInfo.getSuperClassInfo().getCodeGenType(false)}
 <#if  classInfo.getSuperInterfaceInfos()?? && (classInfo.getSuperInterfaceInfos()?size > 0) >
 implements 
 <#list classInfo.getSuperInterfaceInfos() as interfaceInfo > 
- ${interfaceInfo.getCodeGenType(false)}
+ ${interfaceInfo.getCodeGenType(false, classInfo)}
 <#if interfaceInfo_has_next>
 ,
 </#if>
@@ -130,7 +130,7 @@ implements
 <#if  classInfo.getSuperInterfaceInfos()?? && (classInfo.getSuperInterfaceInfos()?size > 0) >
 extends 
 <#list classInfo.getSuperInterfaceInfos() as interfaceInfo > 
- ${interfaceInfo.getCodeGenType(false)}
+ ${interfaceInfo.getCodeGenType(false, classInfo)}
 <#if interfaceInfo_has_next>
 ,
 </#if>
