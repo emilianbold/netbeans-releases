@@ -221,7 +221,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.cpImpl.setExcludesListener(null);       
             this.cp.removePropertyChangeListener(this);
             this.unregisterFileSystemListener();
-            this.delay.cancel();
         } catch (TooManyListenersException e) {
             throw new IllegalStateException ();
         }
@@ -1668,7 +1667,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 assert sa != null;
                 List<String> classNames = new ArrayList<String>();
                 getFiles (affectedFiles, classCache, classNames, removed);
-                //find dependent files:                
+                //find dependent files:
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
                 ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (rootFO, filter, true, false);
@@ -1979,31 +1978,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.tasks.add (work);
             this.timer.schedule(new DelayTask (work),DELAY);
         }
-        
-        public void cancel () {
-            Work[] toCancel;
-            synchronized (this) {
-                toCancel = this.tasks.toArray (new Work[this.tasks.size()]);
-            }
-            for (Work w : toCancel) {
-                switch (w.workType) {
-                    case COMPILE:
-                    case COMPILE_WITH_DEPENDENCIES:
-                    w = new SingleRootWork (WorkType.DELETE,((SingleRootWork)w).file,
-                        ((SingleRootWork)w).root,((SingleRootWork)w).isFolder,
-                        w.latch);
-                    break;
-                }
-                CompileWorker cw = new CompileWorker (w);
-                try {
-                    cw.run (null);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-        }
-        
-        
+                       
         private class DelayTask extends TimerTask {
             
             final Work work;
