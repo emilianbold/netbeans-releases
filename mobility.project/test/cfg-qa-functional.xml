@@ -25,26 +25,18 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="validation/NewProjectFileTest.class"/>
+                <exclude name="validation/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
             </patternset>
         </testset>
     </testbag>
     
-<!--
-    <testbag testattribs="validation" executor="ide-reuse" name="REUSE">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="validation/MyModuleValidation.class"/>
-            </patternset>
-        </testset>
-    </testbag>
--->    
 
     <testbag testattribs="commit" executor="ide" name="Mobility Pack Validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="validation/NewProjectFileTest.class/testCreateNewMobileApplication"/>
                 <include name="validation/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
-           <!--     <include name="validation/NewProjectFileTest.class/testCompileMobileMIDPProject"/> -->
+                <include name="validation/NewProjectFileTest.class/testCompileMobileMIDPProject"/>
             </patternset>
         </testset>
     </testbag>
