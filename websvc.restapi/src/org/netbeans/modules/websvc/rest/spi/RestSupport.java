@@ -289,9 +289,13 @@ public abstract class RestSupport {
         return "true".equalsIgnoreCase(v) || "on".equalsIgnoreCase(v);
     }
 
+    public void setRestSupport(Boolean v) {
+        setProjectProperty(REST_SUPPORT_ON, v.toString());
+    }
+
     protected void setProjectProperty(String name, String value) {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty(REST_SUPPORT_ON, "true");
+        ep.setProperty(name, value);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         try {
             ProjectManager.getDefault().saveProject(getProject());

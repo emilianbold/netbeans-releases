@@ -64,6 +64,18 @@ public class RestUtils {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         return restSupport != null;
     }
+    
+    public static boolean isRestEnabled(Project project) {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        return restSupport != null && restSupport.isRestSupportOn();
+    }
+
+    public static void setRestEnabled(Project project, Boolean v) {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            restSupport.setRestSupport(v);
+        }
+    }
 
     public static JavaSource createRestConnection(FileObject folder, String pkgName) {
         JavaSource source = JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, folder, pkgName, REST_CONNECTION);

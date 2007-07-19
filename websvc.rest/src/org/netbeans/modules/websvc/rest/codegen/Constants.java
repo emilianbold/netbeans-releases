@@ -167,4 +167,6 @@ public class Constants {
             return prefix;
         }
     }
+    
+    public static final String REST_STUBS = "reststubs"; //NOI18N
 }
