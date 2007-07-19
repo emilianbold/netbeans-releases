@@ -147,23 +147,7 @@
         </folder>
     </folder>
     
-    <folder name="Templates">
-    	<!--  Remove this for now.
-        probably do this from websvc.
-        add wsdl wizard into webservices category -->
-        <!--folder name="WebServices">
-            <file name="WSDL.wsdl" url="WSDL.template">
-                <attr name="position" intvalue="100"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
-                <attr name="templateCategory" stringvalue="wsdl"/>
-            </file>
-            <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
-        </folder-->
-        
+    <folder name="Templates">       
         <folder name="XML">
             <file name="WSDL.wsdl" url="WSDL.template">
                 <attr name="template" boolvalue="true"/>
