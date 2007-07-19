@@ -457,7 +457,6 @@ public final class VeryPretty extends JCTree.Visitor {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = null;
             printAnnotations(tree.mods.annotations);
-            toColExactly(out.leftMargin);
             printFlags(tree.mods.flags);
             if (tree.name == names.init || tree.name.contentEquals(enclClassNamePrev)) {
                 print(enclClassNamePrev);
@@ -1893,11 +1892,9 @@ public final class VeryPretty extends JCTree.Visitor {
                 break;
             }
         }
-        if (comment.indent() >= 0 || comment.style() == Comment.Style.LINE) {
+        if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK) {
             newline();
             toLeftMargin();
-        } else if (comment.style() == Comment.Style.JAVADOC) {
-            newline();
         } else {
             needSpace();
         }
