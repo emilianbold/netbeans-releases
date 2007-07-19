@@ -18,6 +18,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
+ * TODO: test that if you insert x="" and then DELETE the ", it wipes out BOTH of them!
  *
  * @author Tor Norbye
  */

@@ -9,8 +9,6 @@ package org.netbeans.modules.ruby;
 
 import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +17,6 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * Test the "mark occurrences" feature in Ruby
@@ -91,12 +88,7 @@ public class OccurrencesFinderTest extends RubyTestBase {
         return sb.toString();
     }
 
-    private void checkOccurrences(NbTestCase test, String relFilePath, String caretLine) throws Exception {
-        File rubyFile = new File(test.getDataDir(), relFilePath);
-        if (!rubyFile.exists()) {
-            NbTestCase.fail("File " + rubyFile + " not found.");
-        }
-
+    private void checkOccurrences(String relFilePath, String caretLine) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
 
         String text = info.getText();
@@ -116,77 +108,61 @@ public class OccurrencesFinderTest extends RubyTestBase {
 
         String annotatedSource = annotate((BaseDocument)info.getDocument(), occurrences, caretOffset);
 
-        File goldenFile = new File(test.getDataDir(), relFilePath + "." + getName() + ".occurrences");
-        if (!goldenFile.exists()) {
-            if (!goldenFile.createNewFile()) {
-                NbTestCase.fail("Cannot create file " + goldenFile);
-            }
-            FileWriter fw = new FileWriter(goldenFile);
-            try {
-                fw.write(annotatedSource.toString());
-            }
-            finally{
-                fw.close();
-            }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
-        }
-
-        String ruby = readFile(test, goldenFile);
-        assertEquals(ruby, annotatedSource);
+        assertDescriptionMatches(relFilePath, annotatedSource, true, ".occurrences");
     }
 
     public void testApeParams() throws Exception {
         String caretLine = "  def initialize(ar^gs)";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testApeMethodDef() throws Exception {
         String caretLine = "def te^st_entry_posts(entry_collection)";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testApeMethodRef() throws Exception {
         String caretLine = "test_entry_pos^ts";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testApeSymbol() throws Exception {
         String caretLine = "@@debugging = args[:de^bug]";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testApeClassVar() throws Exception {
         String caretLine = "@@deb^ugging = args[:debug]";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testApeInstanceVar() throws Exception {
         String caretLine = "@st^eps[-1] << message";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testApeExitPoints() throws Exception {
         String caretLine = "d^ef might_fail(uri, requested_e_coll = nil, requested_m_coll = nil)";
-        checkOccurrences(this, "testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine);
     }
 
     public void testUnusedExitPoints() throws Exception {
         String caretLine = "d^ef foo(unusedparam, unusedparam2, usedparam)";
-        checkOccurrences(this, "testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine);
     }
 
     public void testUnusedParams() throws Exception {
         String caretLine = "def foo(un^usedparam, unusedparam2, usedparam)";
-        checkOccurrences(this, "testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine);
     }
 
     public void testUnusedParams2() throws Exception {
         String caretLine = "def foo(unusedparam, unusedparam2, us^edparam)";
-        checkOccurrences(this, "testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine);
     }
 
     public void testUnusedParams3() throws Exception {
         String caretLine = "x.each { |unusedblockvar1, usedbl^ockvar2|";
-        checkOccurrences(this, "testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine);
     }
 }

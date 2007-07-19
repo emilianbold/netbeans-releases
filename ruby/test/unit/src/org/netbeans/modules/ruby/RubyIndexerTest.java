@@ -116,77 +116,57 @@ public class RubyIndexerTest extends RubyTestBase {
         
     }
     
-    private void checkIndexer(NbTestCase test, String relFilePath) throws Exception {
-        File rubyFile = new File(test.getDataDir(), relFilePath);
-        if (!rubyFile.exists()) {
-            NbTestCase.fail("File " + rubyFile + " not found.");
-        }
-
+    private void checkIndexer(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         RubyParseResult rpr = (RubyParseResult) info.getParserResult();
 
+        File rubyFile = new File(getDataDir(), relFilePath);
         Index index = new TestIndex(rubyFile.toURI().toURL().toExternalForm());
         RubyIndexer indexer = new RubyIndexer();
         indexer.updateIndex(index, rpr);
         
         String annotatedSource = index.toString();
 
-        File goldenFile = new File(test.getDataDir(), relFilePath + ".indexed");
-        if (!goldenFile.exists()) {
-            if (!goldenFile.createNewFile()) {
-                NbTestCase.fail("Cannot create file " + goldenFile);
-            }
-            FileWriter fw = new FileWriter(goldenFile);
-            try {
-                fw.write(annotatedSource.toString());
-            }
-            finally{
-                fw.close();
-            }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
-        }
-
-        String ruby = readFile(test, goldenFile);
-        assertEquals(ruby, annotatedSource);
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
     }
     
     public void testAnalysis2() throws Exception {
-        checkIndexer(this, "testfiles/ape.rb");
+        checkIndexer("testfiles/ape.rb");
     }
     
     public void testAnalysis() throws Exception {
-        checkIndexer(this, "testfiles/postgresql_adapter.rb");
+        checkIndexer("testfiles/postgresql_adapter.rb");
     }
 
     public void testAnalysis3() throws Exception {
-        checkIndexer(this, "testfiles/date.rb");
+        checkIndexer("testfiles/date.rb");
     }
 
     public void testAnalysis4() throws Exception {
-        checkIndexer(this, "testfiles/resolv.rb");
+        checkIndexer("testfiles/resolv.rb");
     }
 
     public void testUnused() throws Exception {
-        checkIndexer(this, "testfiles/unused.rb");
+        checkIndexer("testfiles/unused.rb");
     }
 
     public void testRails1() throws Exception {
-        checkIndexer(this, "testfiles/action_controller.rb");
+        checkIndexer("testfiles/action_controller.rb");
     }
 
     public void testRails2() throws Exception {
-        checkIndexer(this, "testfiles/action_view.rb");
+        checkIndexer("testfiles/action_view.rb");
     }
     
     public void testRails3() throws Exception {
-        checkIndexer(this, "testfiles/action_mailer.rb");
+        checkIndexer("testfiles/action_mailer.rb");
     }
     
     public void testRails4() throws Exception {
-        checkIndexer(this, "testfiles/action_web_service.rb");
+        checkIndexer("testfiles/action_web_service.rb");
     }
     
     public void testRails5() throws Exception {
-        checkIndexer(this, "testfiles/active_record.rb");
+        checkIndexer("testfiles/active_record.rb");
     }
 }

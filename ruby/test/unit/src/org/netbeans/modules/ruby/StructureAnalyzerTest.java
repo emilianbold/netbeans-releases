@@ -10,8 +10,6 @@ package org.netbeans.modules.ruby;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.gsf.CompilationInfo;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.text.Document;
@@ -19,7 +17,6 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.junit.NbTestCase;
 
 /**
  *
@@ -79,12 +76,7 @@ public class StructureAnalyzerTest extends RubyTestBase {
     }
     
     
-    private void checkStructure(NbTestCase test, String relFilePath) throws Exception {
-        File rubyFile = new File(test.getDataDir(), relFilePath);
-        if (!rubyFile.exists()) {
-            NbTestCase.fail("File " + rubyFile + " not found.");
-        }
-
+    private void checkStructure(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         StructureAnalyzer analyzer = new StructureAnalyzer();
         HtmlFormatter formatter = new HtmlFormatter() {
@@ -144,43 +136,27 @@ public class StructureAnalyzerTest extends RubyTestBase {
         
         String annotatedSource = annotate(info.getDocument(), structure);
 
-        File goldenFile = new File(test.getDataDir(), relFilePath + ".structure");
-        if (!goldenFile.exists()) {
-            if (!goldenFile.createNewFile()) {
-                NbTestCase.fail("Cannot create file " + goldenFile);
-            }
-            FileWriter fw = new FileWriter(goldenFile);
-            try {
-                fw.write(annotatedSource.toString());
-            }
-            finally{
-                fw.close();
-            }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
-        }
-
-        String ruby = readFile(test, goldenFile);
-        assertEquals(ruby, annotatedSource);
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".structure");
     }
     
     public void testAnalysis() throws Exception {
-        checkStructure(this, "testfiles/postgresql_adapter.rb");
+        checkStructure("testfiles/postgresql_adapter.rb");
     }
 
     public void testAnalysis2() throws Exception {
-        checkStructure(this, "testfiles/ape.rb");
+        checkStructure("testfiles/ape.rb");
     }
 
     public void testAnalysis3() throws Exception {
-        checkStructure(this, "testfiles/date.rb");
+        checkStructure("testfiles/date.rb");
     }
 
     public void testAnalysis4() throws Exception {
-        checkStructure(this, "testfiles/resolv.rb");
+        checkStructure("testfiles/resolv.rb");
     }
 
     public void testUnused() throws Exception {
-        checkStructure(this, "testfiles/unused.rb");
+        checkStructure("testfiles/unused.rb");
     }
 
 }
