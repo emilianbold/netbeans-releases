@@ -168,7 +168,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         } catch (IOException ioe) {
             throw ioe;
         } catch (Exception e) {
-            throw (IOException) new IOException(e.toString()).initCause(e);
+            throw (IOException) new IOException("While parsing " + base + ": " + e).initCause(e);
         } finally {
             fileCount = folderCount = attrCount = 0;
             base = null;
@@ -203,11 +203,11 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     protected abstract boolean openURLs();
     
     public void startElement(String ns, String lname, String qname, Attributes attrs) throws SAXException {
-        if (qname == "filesystem") {
+        if (qname.equals("filesystem")) {
             return;
-        } else if (qname == "folder") {
+        } else if (qname.equals("folder")) {
             fileOrFolder(qname, attrs);
-        } else if (qname == "file") {
+        } else if (qname.equals("file")) {
             MemFile file = (MemFile)fileOrFolder(qname, attrs);
             file.contents = null;
             String u = attrs.getValue("url");
@@ -220,7 +220,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             } else {
                 file.ref = null;
             }
-        } else if (qname == "attr") {
+        } else if (qname.equals("attr")) {
             attrCount++;
             MemAttr attr = new MemAttr();
             int len = attrs.getLength();
@@ -292,7 +292,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             }
         }
         if (f == null) {
-            if (qname == "folder") { // NOI18N
+            if (qname.equals("folder")) { // NOI18N
                 f = new MemFolder(base);
                 folderCount++;
             } else {
@@ -317,7 +317,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     }
     
     public void endElement(String ns, String lname, String qname) throws SAXException {
-        if (qname == "file" && buf.length() > 0) {
+        if (qname.equals("file") && buf.length() > 0) {
             String text = buf.toString().trim();
             if (text.length() > 0) {
                 MemFile file = (MemFile)curr.peek();
@@ -329,19 +329,19 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             }
             buf.setLength(0);
         }
-        if (qname == "file" && openURLs()) {
+        if (qname.equals("file") && openURLs()) {
             MemFile file = (MemFile)curr.peek();
             // Only open simple URLs. Assume that JARs are the same JARs with the layers.
             if (file.ref != null && file.ref.toExternalForm().startsWith("jar:file:")) { // NOI18N
                 try {
                     URLConnection conn = file.ref.openConnection();
                     conn.connect();
-                    byte[] buf = new byte[conn.getContentLength()];
+                    byte[] readBuf = new byte[conn.getContentLength()];
                     InputStream is = conn.getInputStream();
                     try {
                         int pos = 0;
-                        while (pos < buf.length) {
-                            int read = is.read(buf, pos, buf.length - pos);
+                        while (pos < readBuf.length) {
+                            int read = is.read(readBuf, pos, readBuf.length - pos);
                             if (read < 1) throw new IOException("Premature EOF on " + file.ref.toExternalForm()); // NOI18N
                             pos += read;
                         }
@@ -349,14 +349,14 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                     } finally {
                         is.close();
                     }
-                    file.contents = buf;
+                    file.contents = readBuf;
                     file.ref = null;
                 } catch (IOException ioe) {
                     throw new SAXException(ioe);
                 }
             }
         }
-        if (qname == "file" || qname == "folder") { // NOI18N
+        if (qname.equals("file") || qname.equals("folder")) { // NOI18N
             curr.pop();
             if (checkingForDuplicates) {
                 int i = currPath.lastIndexOf('/'); // NOI18N
