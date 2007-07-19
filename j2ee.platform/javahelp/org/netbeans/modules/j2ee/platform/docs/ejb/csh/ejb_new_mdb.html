@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -10,28 +10,27 @@
 </head>
 <body>
 <h2>New Message-Driven Bean Wizard</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
 <p>This wizard creates a new <a href="../general/about_msg_driven_beans.html">message-driven 
-  bean</a> in an EJB module project. You open the wizard by right-clicking the 
-  project node or Enterprise Beans node for any EJB module project and choosing 
-  New &gt; Message-Driven Bean.
+    bean</a> in an EJB module project. You open the wizard by right-clicking the 
+    project node or Enterprise Beans node for any EJB module project and choosing 
+New &gt; Message-Driven Bean.</p>
 <p>You set the following information in the wizard:</p>
 <ul>
-  <li><b>EJB Name.</b> Set the name of the session bean in the deployment descriptors 
-    and is the basis for the session bean's class and interface names.</li>
-  <li><b>Location.</b> Select the source folder where you want to create the session 
-    bean files.</li>
+  <li><b>EJB Name.</b> Set the name of the message-driven bean.</li>
+  <li><b>Location.</b> Select the source folder where you want to create the message-driven bean.</li>
   <li><b>Package.</b> Select an existing package or type the name of a new package.</li>
-  <li><b>Destination Type.</b> Select one of the following: 
-    <ul>
-      <li><b>Queue.</b> Uses the point-to-point messaging domain and may have 
-        at most one consumer. </li>
-      <li><b>Topic.</b> Uses the publish-subscribe messaging domain. A bean with 
-        this destination type may have zero, one, or many consumers.</li>
-    </ul>
-  </li>
-</ul>
+  <li><b>Destination.</b> Select one of the following: 
+      <ul>
+          <li>Project Destinations. Select a message destination in your project or click Add to create a new destination.</li>
+          <li>Server Destinations. Select a message destination on the server.</li>
+      </ul> 
 <dl>
+    
+    <p>When you complete the wizard, the IDE creates the message-driven bean in your EJB module project and if necessary adds any JMS resource 
+references to the project's deployment descriptor and server resources.</p>
+    
+    
     <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../general/about_msg_driven_beans.html">About Message-Driven Beans</a></dd>
   <dd><a href="../editing/create_ejb_project.html">Creating an EJB Module Project</a></dd>
@@ -40,9 +39,7 @@
 
 <hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table></body>
 </html>

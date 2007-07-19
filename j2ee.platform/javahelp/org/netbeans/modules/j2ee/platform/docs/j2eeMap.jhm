@@ -524,7 +524,8 @@
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.EntityEJBWizardDescriptor" url="ejb/csh/ejb_new_entity.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.DatabaseTablesPanel" url="ejb/csh/ejb_generate_cmp1.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.EntityClassesPanel" url="ejb/csh/ejb_generate_cmp2.html" />
-    
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationPanel" url="ejb/csh/ejb_new_mdb_destination.html" />
+
     <!-- Enterprise Resources CSH -->
     <!-- These topics are for Enterprise Resources popup menu in Source Editor -->
     <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbPanel" url="ejb/csh/call_ejb.html" />
