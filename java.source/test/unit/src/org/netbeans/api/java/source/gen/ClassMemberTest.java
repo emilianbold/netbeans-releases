@@ -63,6 +63,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("testRenameReturnTypeInAbstract"));
 //        suite.addTest(new ClassMemberTest("testAddInitToVar"));
 //        suite.addTest(new ClassMemberTest("testAddMethodWithDoc"));
+//        suite.addTest(new ClassMemberTest("testAddFieldWithDoc1"));
+//        suite.addTest(new ClassMemberTest("testAddFieldWithDoc2"));
         return suite;
     }
 
@@ -1231,6 +1233,98 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 ClassTree modifiedClazz = make.addClassMember(clazz, m);
                 Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2, "Test comment");
                 make.addComment(m, comment, true);
+                workingCopy.rewrite(clazz, modifiedClazz);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #110211
+    public void testAddFieldWithDoc1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /**\n" +
+            "     * Test comment\n" +
+            "     */\n" +
+            "    String prefix;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree member = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()),
+                        "prefix",
+                        make.Identifier("String"),
+                        null
+                    );
+                // Insert the class before constructor
+                ClassTree modifiedClazz = make.addClassMember(clazz, member);
+                Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2, "Test comment");
+                make.addComment(member, comment, true);
+                workingCopy.rewrite(clazz, modifiedClazz);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #110211
+    public void testAddFieldWithDoc2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /**\n" +
+            "     * Test comment\n" +
+            "     */\n" +
+            "    public String prefix;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree member = make.Variable(
+                        make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        "prefix",
+                        make.Identifier("String"),
+                        null
+                    );
+                // Insert the class before constructor
+                ClassTree modifiedClazz = make.addClassMember(clazz, member);
+                Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2, "Test comment");
+                make.addComment(member, comment, true);
                 workingCopy.rewrite(clazz, modifiedClazz);
             }
         };
