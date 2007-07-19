@@ -77,7 +77,7 @@ public abstract class EJBProblemFinder {
             EjbJar ejbModule = EjbJar.getEjbJar(file);
             
             if (ejbModule == null
-                    || !ejbModule.getJ2eePlatformVersion().equals(EjbProjectConstants.JAVA_EE_5_LEVEL)){
+                    || !EjbProjectConstants.JAVA_EE_5_LEVEL.equals(ejbModule.getJ2eePlatformVersion())){
                 return; // File doesn't belong to EJB project or the EJB version is not supported
             }
             
