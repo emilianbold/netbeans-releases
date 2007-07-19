@@ -16,13 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * CustomizerXMLCatalog.java
- *
- * Created on December 12, 2006, 2:45 PM
- */
-
 package org.netbeans.modules.xml.catalogsupport.ui.customizer;
 
 import java.io.IOException;
@@ -39,7 +32,6 @@ import javax.swing.table.DefaultTableModel;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
@@ -58,7 +50,7 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
     private CatalogWriteModel cwm;
     private List<CatalogEntry> cEntries = Collections.emptyList();
     private List<CatalogEntry> deletedEntries;
-    /** Creates new form CustomizerXMLCatalog */
+
     public CustomizerXMLCatalog(Project project) {
         this.project = project;
         initComponents();
@@ -90,7 +82,6 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
                     }
                 }
             });
-
             // vlv # 109986
             FileObject fileObject = cwm.getCatalogFileObject();
 
@@ -112,8 +103,6 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
         catch (IOException e) {
         }
         catch (CatalogModelException e) {
-        }
-        catch (DataObjectNotFoundException e) {
         }
     }
     
