@@ -41,6 +41,7 @@ import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
+import org.openide.util.Utilities;
 
 /**
  * Implements FileObject methods as simple as possible.
@@ -153,8 +154,19 @@ public abstract class BaseFileObj extends FileObject {
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
         }
+        boolean cannotRename = file2Rename.exists() && !file2Rename.equals(file);
+        //#108690
+        if (cannotRename && Utilities.isMac()) {
+            final File parentFile2 = file2Rename.getParentFile();
+            final File parentFile = file.getParentFile();
+            if (parentFile2 != null && parentFile != null && parentFile.equals(parentFile2)) {
+                if (file2Rename.getName().equalsIgnoreCase(file.getName())) {
+                    cannotRename = false;
+                }
+            }
+        }
 
-        if (file2Rename.exists() && !file2Rename.equals(file)) {
+        if (cannotRename) {
             FileObject parentFo = getExistingParent();
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
