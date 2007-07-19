@@ -209,31 +209,13 @@ public abstract class HintTestBase extends RubyTestBase {
         
         String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
 
-        File goldenFile = new File(test.getDataDir(), relFilePath + "." + getName() + ".hints");
-        if (!goldenFile.exists()) {
-            if (!goldenFile.createNewFile()) {
-                NbTestCase.fail("Cannot create file " + goldenFile);
-            }
-            FileWriter fw = new FileWriter(goldenFile);
-            try {
-                fw.write(annotatedSource.toString());
-            }
-            finally{
-                fw.close();
-            }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
-        }
-
-        String ruby = readFile(test, goldenFile);
-        assertEquals(ruby, annotatedSource);
+        assertDescriptionMatches(relFilePath, annotatedSource, true, ".hints");
     }
     
     protected void applyHint(NbTestCase test, AstRule hint, String relFilePath, 
             String caretLine, String fixDesc) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, caretLine);
         CompilationInfo info = r.info;
-        List<ErrorDescription> result = r.hints;
-        int caretOffset = r.caretOffset;
         
         Fix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
@@ -243,23 +225,7 @@ public abstract class HintTestBase extends RubyTestBase {
         Document doc = info.getDocument();
         String fixed = doc.getText(0, doc.getLength());
 
-        File goldenFile = new File(test.getDataDir(), relFilePath + "." + getName() + ".fixed");
-        if (!goldenFile.exists()) {
-            if (!goldenFile.createNewFile()) {
-                NbTestCase.fail("Cannot create file " + goldenFile);
-            }
-            FileWriter fw = new FileWriter(goldenFile);
-            try {
-                fw.write(fixed.toString());
-            }
-            finally{
-                fw.close();
-            }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
-        }
-
-        String expected = readFile(test, goldenFile);
-        assertEquals(expected, fixed);
+        assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }
     
     public void ensureRegistered(AstRule hint) throws Exception {

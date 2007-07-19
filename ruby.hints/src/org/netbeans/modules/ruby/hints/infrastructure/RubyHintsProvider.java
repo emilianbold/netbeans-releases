@@ -89,13 +89,13 @@ public class RubyHintsProvider implements HintsProvider {
         
         if (descriptions.size() > 0) {
             for (Description desc : descriptions) {
-                ErrorDescription errorDesc = createDescription(desc);
+                ErrorDescription errorDesc = createDescription(desc, info, -1);
                 result.add(errorDesc);
             }
         }
     }
     
-    private ErrorDescription createDescription(Description desc) {
+    private ErrorDescription createDescription(Description desc, CompilationInfo info, int caretPos) {
         // TODO - add a hint to turn off this hint?
         // Should be a utility or infrastructure option!
         Rule rule = desc.getRule();
@@ -107,6 +107,9 @@ public class RubyHintsProvider implements HintsProvider {
             for (org.netbeans.modules.ruby.hints.spi.Fix fix : desc.getFixes()) {
                 fixList.add(new FixWrapper(fix));
             }
+            
+            // Add a hint for disabling this fix
+            fixList.add(new DisableHintFix(desc.getRule(), info, caretPos));
         } else {
             fixList = Collections.emptyList();
         }
@@ -173,7 +176,7 @@ public class RubyHintsProvider implements HintsProvider {
 
         if (descriptions.size() > 0) {
             for (Description desc : descriptions) {
-                ErrorDescription errorDesc = createDescription(desc);
+                ErrorDescription errorDesc = createDescription(desc, info, caretOffset);
                 result.add(errorDesc);
             }
         }
