@@ -80,12 +80,12 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaAddNodeEventsSi
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
-import org.netbeans.modules.uml.core.support.Debug;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataObject;
 import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelElementNode;
 import org.netbeans.modules.uml.palette.PaletteSupport;
+import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
@@ -804,7 +804,7 @@ public class DiagramTopComponent extends CloneableTopComponent
         // Fired a Selection Event in ETEditableCompartment's save method..
         // This is a temporary fix.. need a better way to do this..
         
-        Debug.out.println(" DiagramTopComponent : onSelect.....!!!!!!!!!!!");
+        //Debug.out.println(" DiagramTopComponent : onSelect.....!!!!!!!!!!!");
         // cvc needed the property sheet refresh so I made it a separate method
         SwingUtilities.invokeLater(new Runnable()
         {
@@ -874,9 +874,9 @@ public class DiagramTopComponent extends CloneableTopComponent
         {
             IPresentationElement presEle = selectedItems.get(0);
             
-            if (presEle != null)
+            if (presEle != null) 
                 pEle = presEle.getFirstSubject();
-            
+                
             addSelectedActionCallbacks();
         }
         
@@ -884,7 +884,7 @@ public class DiagramTopComponent extends CloneableTopComponent
             pEle = diagram;
         
         if (pEle != null)
-        {
+        {   
             node = new LocalUMLModelElementNode();
             node.setElement(pEle);
             
@@ -895,9 +895,8 @@ public class DiagramTopComponent extends CloneableTopComponent
                 String name = ((INamedElement)pEle).getName();
                 
                 if (!name.trim().equals(""))
-                    node.setName(((INamedElement)pEle).getName());
+                    node.setName(name);
             }
-            
             else if (pEle instanceof IDiagram)
                 node.setName(((IDiagram)pEle).getName());
             

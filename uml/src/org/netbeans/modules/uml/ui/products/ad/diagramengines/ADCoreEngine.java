@@ -128,7 +128,6 @@ import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.BaseAction;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
 import org.netbeans.modules.uml.ui.products.ad.application.action.IETContextMenuHandler;
-import org.netbeans.modules.uml.ui.products.ad.compartments.ETEditableCompartment;
 import org.netbeans.modules.uml.ui.products.ad.compartments.IStereotypeCompartment;
 import org.netbeans.modules.uml.ui.products.ad.drawEngineManagers.IADInterfaceEventManager;
 import org.netbeans.modules.uml.ui.products.ad.drawengines.IComponentDrawEngine;
@@ -2805,58 +2804,65 @@ public class ADCoreEngine extends DiagramEngine
 		}
 	}
 
-
-        
         /**
-		* Adds the color menu buttons.
-		*
-		* @param pContextMenu[in] The context menu about to be displayed
-		* @param bAddFontMenuItems [in] true if we should add the font menu items
-		*/
+        * Adds the color menu buttons.
+        *
+        * @param pContextMenu[in] The context menu about to be displayed
+        * @param bAddFontMenuItems [in] true if we should add the font menu items
+        */
 	private void addDrawEngineColorMenuItems(IMenuManager manager, TSGraphObject obj, boolean addFontMenus) {
-		IElement pEle = TypeConversions.getElement(obj);
-		if (pEle != null) {
-			String eleType = pEle.getElementType();
-			if (eleType != null && eleType.length() > 0) {
-                                String expandedType = pEle.getExpandedElementType();
-                                
-                                String format = eleType;
-                                
-                                if (expandedType != null) {
-                                    String captionKey = "IDS_" + expandedType.toUpperCase();
-                                    String caption = loadString(captionKey);
-                                    
-                                    if (!caption.equals("!" + captionKey + "!")) {
-                                        format = caption;
-                                    }
-                                }
-                                
-                                //StringUtilities.format(loadString("IDS_ELEMENT_TYPE"), eleType);
-                                
-				if (format.length() > 0) {
-					IMenuManager subMenu = manager.createOrGetSubMenu(format, "org.netbeans.modules.uml.view.drawingarea.edit.popup"); 
-					if (subMenu != null) {
-						if (addFontMenus) {
-							// Edges don't have fill colors or fonts
-							subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_FONTS"), "MBK_CHANGE_SIMILAR_FONT"));  //$NON-NLS-2$
-							subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_FONTCOLOR"), "MBK_CHANGE_SIMILAR_FONT_COLOR"));  //$NON-NLS-2$
-							subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_BKCOLOR"), "MBK_CHANGE_SIMILAR_FILL_COLOR"));  //$NON-NLS-2$
-						}
-						subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_BDCOLOR"), "MBK_CHANGE_SIMILAR_BORDER_COLOR"));  //$NON-NLS-2$
+            String eleType = null;
+            String format = null;
+            
+            IElement pEle = TypeConversions.getElement(obj);
+            if (pEle != null)
+            {
+                String expandedType = pEle.getExpandedElementType();
+                if (pEle instanceof IAssociation) 
+                {
+                    format = expandedType.replace('_', ' ');
+                }
+                else 
+                {
+                    eleType = pEle.getElementType();
+                    if (eleType != null && eleType.length() > 0) 
+                    {
+                        format = eleType;
+                        if (expandedType != null) 
+                        {
+                            String captionKey = "IDS_" + expandedType.toUpperCase();
+                            String caption = loadString(captionKey);
 
-						//manager.add(subMenu);
-					}
-				}
-			}
-		}
+                            if (!caption.equals("!" + captionKey + "!")) 
+                            {
+                                format = caption;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (format != null && format.length() > 0) {
+                IMenuManager subMenu = manager.createOrGetSubMenu(format, "org.netbeans.modules.uml.view.drawingarea.edit.popup"); 
+                if (subMenu != null) {
+                    if (addFontMenus) {
+                        // Edges don't have fill colors or fonts
+                        subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_FONTS"), "MBK_CHANGE_SIMILAR_FONT"));  //$NON-NLS-2$
+                        subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_FONTCOLOR"), "MBK_CHANGE_SIMILAR_FONT_COLOR"));  //$NON-NLS-2$
+                        subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_BKCOLOR"), "MBK_CHANGE_SIMILAR_FILL_COLOR"));  //$NON-NLS-2$
+                    }
+                    subMenu.add(createMenuAction(loadString("IDS_POPUPMENU_BDCOLOR"), "MBK_CHANGE_SIMILAR_BORDER_COLOR"));  //$NON-NLS-2$
+                    //manager.add(subMenu);
+                }
+            }
 	}
 
 	/**
-		* Adds the reset labels button handler
-		*
-		* @param pContextMenu [in] The parent context menu
-		* @param pMenuItems [in] The menu items where we should add these buttons
-		*/
+        * Adds the reset labels button handler
+        *
+        * @param pContextMenu [in] The parent context menu
+        * @param pMenuItems [in] The menu items where we should add these buttons
+        */
 	private void addResetLabelsButton(IMenuManager manager) {
 		IMenuManager subMenu = manager.createSubMenu(loadString("IDS_LABELS_TITLE"), "org.netbeans.modules.uml.view.drawingarea.edit.popup");  //$NON-NLS-2$
 		if (subMenu != null) {
@@ -3760,6 +3766,7 @@ public class ADCoreEngine extends DiagramEngine
                 }
             }
             retVal = bReadOnly ? false : bFlag;
+
 
         }
         else if (id.equals("MBK_SHOW_STEREOTYPE_ICONS") || 
