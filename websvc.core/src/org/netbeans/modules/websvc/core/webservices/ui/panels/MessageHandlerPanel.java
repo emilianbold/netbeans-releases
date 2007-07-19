@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -258,7 +257,7 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
             }
         });
 
-        handlerTableModel = new DefaultTableModel(new String[]{"Handlers","Type"}, 0);
+        handlerTableModel = new DefaultTableModel(new String[]{NbBundle.getMessage(MessageHandlerPanel.class, "HEADING_HANDLERS"),NbBundle.getMessage(MessageHandlerPanel.class, "HEADING_TYPE")}, 0);
         handlerTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         handlerTable.setModel(handlerTableModel);
         jScrollPane2.setViewportView(handlerTable);
