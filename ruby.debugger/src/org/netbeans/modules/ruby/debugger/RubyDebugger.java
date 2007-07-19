@@ -174,7 +174,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
                 && !Util.ensureRubyDebuggerIsPresent(true, getMessage("RubyDebugger.wrong.fast.debugger.required"))) {
             return false;
         }
-        
+
+        if (!jrubySet && !Util.offerToInstallFastDebugger()) {
+            // user really wants classic debugger, ensure it
+            DebuggerPreferences.getInstance().setUseClassicDebugger(true);
+        }
+
         if (jrubySet || prefs.isUseClassicDebugger()) {
             if (!RubyInstallation.getInstance().isValidRuby(true)) {
                 return false;

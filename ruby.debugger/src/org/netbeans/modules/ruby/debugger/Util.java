@@ -120,6 +120,10 @@ public final class Util {
             (RubySession) currentEngine.lookupFirst(null, RubySession.class);
     }
     
+    static boolean offerToInstallFastDebugger() {
+        return Util.ensureRubyDebuggerIsPresent(false, getMessage("RubyDebugger.askMessage"));
+    }
+    
     static boolean ensureRubyDebuggerIsPresent(final boolean strict, final String message) {
         if (Util.isValidRDebugIDEGemInstalled()) {
             turnOnRubyDebugOptions();
