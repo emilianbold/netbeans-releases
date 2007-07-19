@@ -5,10 +5,9 @@
 <toc version="2.0">
 	<tocitem text="Web Application Development">
 		<tocitem text="About Web Applications">
-			<tocitem text="Visual Web Development" target="projrave_intro_creator" />
+			<tocitem text="Visual Web Development" target="about_webapps" />
 			<tocitem text="About Web Applications" target="about_webapps" />
-			<tocitem text="About Visual Web Applications" target="projrave_design_web_app_concepts" />
-			<tocitem text="Introducing Visual Web Development" target="projrave_intro_creator" />
+			<tocitem text="About Visual Web Applications" target="about_webapps" />
 			<tocitem text="Working with Web Applications" target="webapps_process" />
 			<tocitem text="Working With Visual Web Applications" target="projrave_general_process" />
 			<tocitem text="Web Application Tasks: Quick Reference" target="webapps_quickref" />
@@ -17,13 +16,11 @@
 		</tocitem>
 		<tocitem text="Creating and Editing Web Applications">
 			<tocitem text="About Visual Web Projects" target="projrave_projects_aboutprojects" />
+			<tocitem text="About Creating Web Applications" target="about_create_webapps" />
 			<tocitem text="Starting With Visual Web Projects" target="projrave_general_process" />
+			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 			<tocitem text="Working With Visual Web Projects" target="projrave_projects_project_process" />
-			<tocitem text="Creating Web Applications">
-				<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
-				<tocitem text="About Creating Web Applications" target="about_create_webapps" />
-				<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
-			</tocitem>
+			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 			<tocitem text="Web Application Frameworks">
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
 				<tocitem text="JavaServer Faces">
@@ -239,14 +236,12 @@
 		</tocitem>
 		<tocitem text="Building Web Applications">
 			<tocitem text="About Building Web Applications" target="about_build" />
+			<tocitem text="Building a Web Project" target="projrave_projects_howtoprojects_build_project" />
 			<tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
+			<tocitem text="Compiling a File" target="projrave_projects_howtoprojects_compile_file" />
 			<tocitem text="Building a WAR File" target="build_warfile" />
 			<tocitem text="Removing a WAR File" target="build_remove" />
-			<tocitem text="Building and Compiling Visual Web Applications">
-				<tocitem text="Building a Visual Web Project" target="projrave_projects_howtoprojects_build_project" />
-				<tocitem text="Cleaning a Project" target="projrave_projects_howtoprojects_clean_project" />
-				<tocitem text="Compiling a File" target="projrave_projects_howtoprojects_compile_file" />
-			</tocitem>
+			<tocitem text="Cleaning a Project" target="projrave_projects_howtoprojects_clean_project" />
 		</tocitem>
 		<tocitem text="Deploying Web Applications">
 			<tocitem text="About Deploying Web Applications" target="about_deploy" />

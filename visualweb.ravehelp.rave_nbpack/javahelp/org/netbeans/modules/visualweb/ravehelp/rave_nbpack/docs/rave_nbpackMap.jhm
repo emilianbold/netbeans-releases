@@ -169,7 +169,6 @@
 	<mapID target="projrave_connect_data_working_with_databases" url="connect_data/working_with_databases.html"/>
 	<mapID target="projrave_connect_data_working_with.databases" url="connect_data/working_with_databases.html"/>
 	<mapID target="projrave_credits" url="credits.html"/>
-	<mapID target="projrave_design_web_app_concepts" url="design/web_app_concepts.html"/>
 	<mapID target="projrave_general_process" url="general_process.html"/>
 	<mapID target="projrave_glossary_beanprop" url="glossary/glossary_beanprop.html"/>
 	<mapID target="projrave_glossary_bound" url="glossary/glossary_bound.html"/>
@@ -194,7 +193,6 @@
 	<mapID target="projrave_images_sort_name" url="images/sort_name.gif"/>
 	<mapID target="projrave_images_source_pkg" url="images/source_pkg.gif"/>
 	<mapID target="projrave_images_webapp" url="images/webapp.gif"/>
-	<mapID target="projrave_intro_creator" url="intro_creator.html"/>
 	<mapID target="projrave_intro_web_walkthru" url="intro_web_walkthru.html"/>
 	<mapID target="projrave_jsp-jsfel_jsf_expression_language_intro" url="jsp-jsfel/jsf_expression_language_intro.html"/>
 	<mapID target="projrave_jsp-jsfel_jsf_expression_language_intro_literals" url="jsp-jsfel/jsf_expression_language_intro.html#literals"/>

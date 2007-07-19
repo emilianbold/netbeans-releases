@@ -5,7 +5,7 @@
 <helpset version="2.0" xml:lang="en">
 	<title>NetBeans Visual Web Pack Help</title>
 	<maps>
-		<homeID>projrave_intro_creator</homeID>
+		<homeID>about_webapps</homeID>
 		<mapref location="rave_nbpackMap.jhm"/>
 	</maps>
 	<view mergetype="javax.help.AppendMerge">
