@@ -603,6 +603,28 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
 
+        // Help with selecting a component in scroll pane (e.g. JTable of zero size).
+        // Prefer selcting the component rather than the scrollpane if the view port
+        // or header is clicked.
+        if (hitMetaComp != null && !e.isAltDown()
+                && hitMetaComp.getAuxValue("autoScrollPane") != null // NOI18N
+                && hitMetaComp instanceof RADVisualContainer) {
+            RADVisualComponent[] sub = ((RADVisualContainer)hitMetaComp).getSubComponents();
+            Component scroll = (Component) formDesigner.getComponent(hitMetaComp);
+            if (sub.length > 0 && scroll instanceof JScrollPane) {
+                Point p = e.getPoint();
+                convertPointToComponent(p, scroll);
+                Component clicked = SwingUtilities.getDeepestComponentAt(scroll, p.x, p.y);
+                while (clicked != null && clicked != scroll) {
+                    if (clicked instanceof JViewport) {
+                        hitMetaComp = sub[0];
+                        break;
+                    }
+                    clicked = clicked.getParent();
+                }
+            }
+        }
+
         if ((e.isControlDown() || e.isShiftDown()) && !e.isAltDown()) {
             // Control is pressed - add component to selection
             if (hitMetaComp != null)
@@ -1522,13 +1544,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     dispatchToNonVisualTray(e);
                 } else if (!mouseOnVisual(e.getPoint())) {
                     selectOtherComponentsNode();
-                }
-                else { // select component only if there is nothing selected on current position
-                    RADComponent hitMetaComp =
-                        getMetaComponentAt(e.getPoint(), COMP_SELECTED);
-                    if (!formDesigner.isComponentSelected(hitMetaComp)) {   
-                        formDesigner.setSelectedComponent(hitMetaComp);
-                    }
+                } else {
+                    // [we used to only select the component if there was nothing selected
+                    //  on current position, but changed to always select - #94543]
+                    RADComponent hitMetaComp = selectComponent(e);
                     processMouseClickInLayoutSupport(hitMetaComp, e);
                 }
                 draggingEnded = false; // reset flag preventing dragging from start
