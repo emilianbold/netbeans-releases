@@ -60,7 +60,6 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-
 public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
@@ -74,7 +73,7 @@ public class OptionsPanel extends JPanel {
     private Color highlighted = isMac ? new Color(221, 221, 221) : new Color (224, 232, 246);
     private Color highlightedB = new Color (152, 180, 226);
     private Color iconViewBorder = new Color (127, 157, 185);
-    private ControllerListener coltrollerListener = new ControllerListener ();
+    private ControllerListener controllerListener = new ControllerListener ();
     
     private final Color borderMac = new Color(141, 141, 141);
     private final Font labelFontMac = new Font("Lucida Grande", 0, 10);            
@@ -140,7 +139,7 @@ public class OptionsPanel extends JPanel {
         }
         
         CategoryModel.getInstance().setCurrent(category);                
-        category.update(coltrollerListener, false);
+        category.update(controllerListener, false);
         JComponent component = category.getComponent();        
         final Dimension size = component.getSize();
         pOptions.add(component, category.getCategoryName());
@@ -157,7 +156,7 @@ public class OptionsPanel extends JPanel {
     }
     
     void update () {
-        CategoryModel.getInstance().update(coltrollerListener, true);
+        CategoryModel.getInstance().update(controllerListener, true);
     }
     
     void save () {
@@ -218,7 +217,7 @@ public class OptionsPanel extends JPanel {
         if (categoryName != null) {
             CategoryModel.Category c = CategoryModel.getInstance().getCategory(getCategoryID(categoryName));
             
-            CategoryButton b = (CategoryButton) buttons.get(categoryName);
+            CategoryButton b = buttons.get(categoryName);
             if (b != null) {
                 b.setSelected();
             }
@@ -450,7 +449,7 @@ public class OptionsPanel extends JPanel {
             }
             if (!category.isHighlited()) {
                 if (CategoryModel.getInstance().getHighlitedCategoryID() != null) {
-                    CategoryButton b = (CategoryButton)buttons.get(CategoryModel.getInstance().getHighlitedCategoryID());
+                    CategoryButton b = buttons.get(CategoryModel.getInstance().getHighlitedCategoryID());
                     if (b != null && !b.category.isCurrent()) {
                         b.setNormal();
                     }
