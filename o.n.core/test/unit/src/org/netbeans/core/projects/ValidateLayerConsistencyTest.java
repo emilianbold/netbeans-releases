@@ -50,10 +50,10 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
@@ -500,7 +500,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             if (fo.isFolder()) {
-                FileUtil.getOrder(Arrays.asList(fo.getChildren()), true);
+                DataFolder.findFolder(fo).getChildren();
                 assertNull("OpenIDE-Folder-Order attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-Order"));
                 assertNull("OpenIDE-Folder-SortMode attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-SortMode"));
                 String path = fo.getPath();
@@ -530,7 +530,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     });
                 }
             }
-            FileUtil.getOrder(Arrays.asList(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot().getChildren()), true);
+            DataFolder.findFolder(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot()).getChildren();
             assertEquals("No warnings relating to folder ordering in " + multiPath, Collections.emptySet(), new TreeSet<String>(h.errors()));
         }
     }
