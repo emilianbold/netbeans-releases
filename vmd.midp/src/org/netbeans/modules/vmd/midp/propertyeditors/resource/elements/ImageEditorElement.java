@@ -17,6 +17,10 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +32,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -50,9 +53,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
+    private Image image;
 
     public ImageEditorElement() {
         initComponents();
+        previewPanel.add(new ImagePreview(), BorderLayout.CENTER);
         pathTextField.getDocument().addDocumentListener(this);
     }
 
@@ -126,6 +131,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         widthTextField.setEnabled(isEnabled);
         heightLabel.setEnabled(isEnabled);
         heightTextField.setEnabled(isEnabled);
+        chooserButton.setEnabled(isEnabled);
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -149,31 +155,42 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
     private void updatePreview() {
         String relativePath = pathTextField.getText();
-        if (relativePath.length() == 0) {
-            return;
-        }
         String path = getSourceFolder().getPath() + relativePath;
         BufferedImage bufferedImage = null;
         try {
             bufferedImage = ImageIO.read(new File(path));
         } catch (IOException ex) {
         }
-        
+
         if (bufferedImage != null) {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
             widthTextField.setText(String.valueOf(width));
             heightTextField.setText(String.valueOf(height));
-            
-            // TODO
-//            previewPanel.getGraphics().drawImage(bufferedImage, width, height, null);
-//            previewPanel.repaint();
+
+            if (width > ImagePreview.IMAGE_MAX_WIDTH || height > ImagePreview.IMAGE_MAX_WIDTH) {
+                if (width > height) {
+                    width = ImagePreview.IMAGE_MAX_WIDTH;
+                    height = -1;
+                } else {
+                    width = -1;
+                    height = ImagePreview.IMAGE_MAX_WIDTH;
+                }
+                image = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH | Image.SCALE_AREA_AVERAGING);
+            } else {
+                image = bufferedImage;
+            }
         } else {
+            image = null;
             widthTextField.setText(null);
             heightTextField.setText(null);
         }
+        
+        previewPanel.invalidate();
+        previewPanel.validate();
+        previewPanel.repaint();
     }
-    
+
     private FileObject getSourceFolder() {
         String projectID = ProjectUtils.getProjectID(project);
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();
@@ -223,6 +240,42 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         }
     }
 
+    private class ImagePreview extends JComponent {
+
+        static final int IMAGE_MAX_WIDTH = 90;
+        private static final int BORDER_EDGE_WIDTH = 1;
+        private static final int BORDER_GAP = 2;
+        private static final int BORDER_EDGE_LENGTH = 10;
+        private static final int IMAGE_SIZE_OFFSET = (BORDER_GAP + BORDER_EDGE_WIDTH) * 2;
+
+        @Override
+        public void paint(Graphics g) {
+            // paint the border
+            g.setColor(Color.BLACK);
+            final int rightX = getWidth() - 1;
+            final int bottomY = getHeight() - 1;
+            // top left
+            g.drawLine(0, 0, 0, BORDER_EDGE_LENGTH);
+            g.drawLine(0, 0, BORDER_EDGE_LENGTH, 0);
+            // top right
+            g.drawLine(rightX, 0, rightX, BORDER_EDGE_LENGTH);
+            g.drawLine(rightX, 0, rightX - BORDER_EDGE_LENGTH, 0);
+            // bottom left
+            g.drawLine(0, bottomY, 0, bottomY - BORDER_EDGE_LENGTH);
+            g.drawLine(0, bottomY, BORDER_EDGE_LENGTH, bottomY);
+            // bottom right
+            g.drawLine(rightX, bottomY, rightX, bottomY - BORDER_EDGE_LENGTH);
+            g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
+            if (image != null) {
+                int xOffset = 0;
+                int yOffset = 0;
+                xOffset = (getWidth() - image.getWidth(this)) >> 1;
+                yOffset = (getWidth() - image.getHeight(this)) >> 1;
+                g.drawImage(image, xOffset, yOffset, this);
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -250,17 +303,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         previewLabel.setEnabled(false);
 
         previewPanel.setEnabled(false);
-
-        org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
-        previewPanel.setLayout(previewPanelLayout);
-        previewPanelLayout.setHorizontalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
-        );
-        previewPanelLayout.setVerticalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
-        );
+        previewPanel.setPreferredSize(new java.awt.Dimension(100, 100));
+        previewPanel.setLayout(new java.awt.BorderLayout());
 
         widthLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
         widthLabel.setEnabled(false);
@@ -275,6 +319,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         heightTextField.setEnabled(false);
 
         chooserButton.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.chooserButton.text")); // NOI18N
+        chooserButton.setEnabled(false);
         chooserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chooserButtonActionPerformed(evt);
