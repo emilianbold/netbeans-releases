@@ -29,15 +29,16 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.gsfpath.queries.SourceLevelQuery;
+//import org.netbeans.api.gsfpath.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
+//import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -50,7 +51,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
 
-    private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
+    //private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private RubyTargetChooserPanelGUI gui;
     private WizardDescriptor.Panel bottomPanel;
@@ -102,6 +103,43 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
            setErrorMessage( null );
            return false;
         }        
+        
+        if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE ||
+            type == NewRubyFileWizardIterator.TYPE_TEST) {
+            if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_TEST) {
+                if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
+                    setErrorMessage("ERR_RubyTargetChooser_InvalidClass");
+                    return false;
+                }
+                String superclass = gui.getExtends();
+                if (superclass != null && superclass.length() > 0) {
+                    String[] mods = superclass.split("::");
+                    for (String mod : mods) {
+                        if (!RubyUtils.isValidRubyClassName(mod)) {
+                            setErrorMessage("ERR_RubyTargetChooser_InvalidSuperclass");
+                            return false;
+                        }
+                    }
+                }
+            }
+            if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
+                if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
+                    setErrorMessage("ERR_RubyTargetChooser_InvalidModule");
+                    return false;
+                }
+            }
+            String in = gui.getModuleName();
+            if (in != null && in.length() > 0) {
+                String[] mods = in.split("::");
+                for (String mod : mods) {
+                    if (!RubyUtils.isValidRubyClassName(mod)) {
+                        setErrorMessage("ERR_RubyTargetChooser_InvalidInModule");
+                        return false;
+                    }
+                }
+            }
+        }
+        
         if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE) {
             if ( !isValidPackageName( gui.getTargetName() ) ) {
                 setErrorMessage( "ERR_RubyTargetChooser_InvalidPackage" );
@@ -135,30 +173,30 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
-        SpecificationVersion specVersion = null;
-        if (type != NewRubyFileWizardIterator.TYPE_PACKAGE) {
-            String sl = SourceLevelQuery.getSourceLevel(rootFolder);
-            specVersion = sl != null? new SpecificationVersion(sl): null;
-        }
+        //SpecificationVersion specVersion = null;
+        //if (type != NewRubyFileWizardIterator.TYPE_PACKAGE) {
+        //    String sl = SourceLevelQuery.getSourceLevel(rootFolder);
+        //    specVersion = sl != null? new SpecificationVersion(sl): null;
+        //}
         String errorMessage = canUseFileName (rootFolder, gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
         if (gui != null) {
             setLocalizedErrorMessage (errorMessage);
         }
         if (errorMessage!=null) returnValue=false;                
         
-        if (type != NewRubyFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
-            if(isValidPackageRequired){
-                setErrorMessage( "ERR_RubyTargetChooser_CantUseDefaultPackage" );
-                return false;
-            }
-            //Only warning, display it only if everything else is OK.
-            setErrorMessage( "ERR_RubyTargetChooser_DefaultPackage" );            
-        }
-        String templateSrcLev = (String) template.getAttribute("javac.source"); // NOI18N
+//        if (type != NewRubyFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
+//            if(isValidPackageRequired){
+//                setErrorMessage( "ERR_RubyTargetChooser_CantUseDefaultPackage" );
+//                return false;
+//            }
+//            //Only warning, display it only if everything else is OK.
+//            setErrorMessage( "ERR_RubyTargetChooser_DefaultPackage" );            
+//        }
+//        String templateSrcLev = (String) template.getAttribute("javac.source"); // NOI18N
         //Only warning, display it only if everything else id OK.
-        if (specVersion != null && templateSrcLev != null && specVersion.compareTo(new SpecificationVersion(templateSrcLev)) < 0) {
-            setErrorMessage("ERR_RubyTargetChooser_WrongPlatform"); // NOI18N
-        }
+//        if (specVersion != null && templateSrcLev != null && specVersion.compareTo(new SpecificationVersion(templateSrcLev)) < 0) {
+//            setErrorMessage("ERR_RubyTargetChooser_WrongPlatform"); // NOI18N
+//        }
         
         // this enables to display error messages from the bottom panel
         // Nevertheless, the previous error messages have bigger priorities 
@@ -223,6 +261,19 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             }
             Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI ((WizardDescriptor)settings));
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+            
+            if (type == NewRubyFileWizardIterator.TYPE_CLASS || 
+                    type == NewRubyFileWizardIterator.TYPE_TEST) {
+                wizard.putProperty("class", gui.getClassName());
+                wizard.putProperty("module", gui.getModuleName());
+                wizard.putProperty("extend", gui.getExtends());
+            } else if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
+                // NOTE - even when adding a -module-, we will use the "class" textfield
+                // to represent the name of the module, and the "module" text field to represent
+                // modules surrounding the current module
+                wizard.putProperty("module", gui.getClassName());
+                wizard.putProperty("outermodules", gui.getModuleName());
+            }
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
         

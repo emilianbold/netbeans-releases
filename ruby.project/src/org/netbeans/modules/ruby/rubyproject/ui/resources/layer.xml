@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="main.rb" url="main.rb">
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <!-- This is a hack to allow Ruby files to show up in Java projects as well in case you want to mix in Ruby for scripting. -->
                 <attr name="templateCategory" stringvalue="ruby"/>
@@ -75,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="rakefile.rb" url="rakefile.rb">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rakefile.html"/>
@@ -83,29 +85,33 @@ Microsystems, Inc. All Rights Reserved.
             <file name="class.rb" url="class.rb">
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubyclass.html"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyClassTemplateIterator"/>
             </file>
             <file name="module.rb" url="module.rb">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubymodule.html"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyModuleTemplateIterator"/>
             </file>
             <file name="test.rb" url="test.rb">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubytest.html"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTestTemplateIterator"/>
                 <!-- Pending attribute, not yet supported - see #91580 -->
-                <attr name="templateNamePrefix" stringvalue="tc_"/>
+                <attr name="templateNamePrefix" stringvalue=""/>
             </file>
             <file name="suite.rb" url="suite.rb">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubytestsuite.html"/>
@@ -118,6 +124,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Other">
             <file name="main.rb" url="main.rb">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <!-- This is a hack to allow Ruby files to show up in Java projects as well in case you want to mix in Ruby for scripting. -->
                 <attr name="templateCategory" stringvalue="ruby,java-classes"/>

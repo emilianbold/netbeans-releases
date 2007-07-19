@@ -97,4 +97,18 @@ public class RubyTemplates {
         return new NewRubyFileWizardIterator ();
     }
     
+    /** Creates new WizardIterator containing standard Package chooser
+     * @return WizardIterator consisting of one panel containing package chooser
+     */
+    public static WizardDescriptor.InstantiatingIterator createRubyClassTemplateIterator() {
+        return NewRubyFileWizardIterator.classWizard();
+    }
+
+    public static WizardDescriptor.InstantiatingIterator createRubyModuleTemplateIterator() {
+        return NewRubyFileWizardIterator.moduleWizard();
+    }
+    
+    public static WizardDescriptor.InstantiatingIterator createRubyTestTemplateIterator() {
+        return NewRubyFileWizardIterator.testWizard();
+    }
 }

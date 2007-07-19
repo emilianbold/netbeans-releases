@@ -31,20 +31,34 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 //import org.netbeans.spi.gsfpath.project.support.ui.PackageView;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -63,11 +77,18 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private Project project;
+    /** File set except for when we're manually updating values in some of the
+     * dependent text fields */
+    private boolean userEdit = true;
+    /** Flag used to keep track of whether the user has edited the file field manually */
+    private boolean fileEdited;
+    /** Flag used to keep track of whether the user has edited the class field manually */
+    private boolean classEdited;
     private String expectedExtension;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private int type;
     private SourceGroup groups[];
-    private boolean ignoreRootCombo;
+    //private boolean ignoreRootCombo;
     
     /** Creates new form SimpleTargetChooserGUI */
     public RubyTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, int type ) {
@@ -75,11 +96,38 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         this.project = p;
         this.groups = groups;
         
-        initComponents();        
-                
+        initComponents();      
+        
         // BEGIN TOR MODIFICATIONS
+        // NOTE - even when adding a -module-, we will use the "class" textfield
+        // to represent the name of the module, and the "module" text field to represent
+        // modules surrounding the current module
+        if (type == NewRubyFileWizardIterator.TYPE_TEST) {
+            extendsText.setText("Test::Unit::TestCase");
+            type = this.type = NewRubyFileWizardIterator.TYPE_CLASS;
+        }
+
+        if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) {
+            if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
+                extendsLabel.setVisible(false);
+                extendsText.setVisible(false);
+                Mnemonics.setLocalizedText(classLabel, NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_ModuleName_Label")); // NOI18N
+            } else {
+                extendsText.getDocument().addDocumentListener(this);
+            }
+            moduleText.getDocument().addDocumentListener(this);
+            classText.getDocument().addDocumentListener(this);
+        } else {
+            classLabel.setVisible(false);
+            classText.setVisible(false);
+            moduleLabel.setVisible(false);
+            moduleText.setVisible(false);
+            extendsLabel.setVisible(false);
+            extendsText.setVisible(false);
+        }
         packageComboBox.setVisible(false);
         packageLabel.setVisible(false);
+
         // END TOR MODIFICATIONS
         
         if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
@@ -152,9 +200,9 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         // Setup comboboxes 
         rootComboBox.setModel(new DefaultComboBoxModel(groups));
         SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
-        ignoreRootCombo = true;
+        //ignoreRootCombo = true;
         rootComboBox.setSelectedItem( preselectedGroup );                       
-        ignoreRootCombo = false;
+        //ignoreRootCombo = false;
         Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
         if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
             String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
@@ -198,7 +246,11 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
         
         updateText();
-        
+        fileEdited = false;
+        classEdited = false;
+        if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) {
+            classText.selectAll();
+        }
     }
         
     public FileObject getRootFolder() {
@@ -236,6 +288,41 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         }
 
     }
+
+    // BEGIN TOR MODIFICATIONS
+    public String getClassName() {
+        String text = classText.getText().trim();
+        
+        if ( text.length() == 0 ) {
+            return null;
+        }
+        else {
+            return text;
+        }
+    }
+
+    public String getModuleName() {
+        String text = moduleText.getText().trim();
+        
+        if ( text.length() == 0 ) {
+            return null;
+        }
+        else {
+            return text;
+        }
+    }
+
+    public String getExtends() {
+        String text = extendsText.getText().trim();
+        
+        if ( text.length() == 0 ) {
+            return null;
+        }
+        else {
+            return text;
+        }
+    }
+    // END TOR MODIFICATIONS
     
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
@@ -265,8 +352,14 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         bottomPanelContainer = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
+        classLabel = new javax.swing.JLabel();
+        classText = new javax.swing.JTextField();
         documentNameLabel = new javax.swing.JLabel();
         documentNameTextField = new javax.swing.JTextField();
+        moduleLabel = new javax.swing.JLabel();
+        moduleText = new javax.swing.JTextField();
+        extendsLabel = new javax.swing.JLabel();
+        extendsText = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -299,19 +392,59 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        documentNameLabel.setLabelFor(documentNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(documentNameLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_ClassName_Label")); // NOI18N
+        classLabel.setLabelFor(classText);
+        org.openide.awt.Mnemonics.setLocalizedText(classLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_ClassName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        jPanel1.add(classLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
+        jPanel1.add(classText, gridBagConstraints);
+
+        documentNameLabel.setLabelFor(documentNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(documentNameLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_FileName_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         jPanel1.add(documentNameLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/ruby/rubyproject/templates/Bundle"); // NOI18N
         documentNameTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_documentNameTextField")); // NOI18N
+
+        moduleLabel.setLabelFor(moduleText);
+        org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_InModuleName_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        jPanel1.add(moduleLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
+        jPanel1.add(moduleText, gridBagConstraints);
+
+        extendsLabel.setLabelFor(extendsText);
+        org.openide.awt.Mnemonics.setLocalizedText(extendsLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_Extends_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        jPanel1.add(extendsLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
+        jPanel1.add(extendsText, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -397,14 +530,20 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
+    private javax.swing.JLabel classLabel;
+    private javax.swing.JTextField classText;
     private javax.swing.JLabel documentNameLabel;
     private javax.swing.JTextField documentNameTextField;
+    private javax.swing.JLabel extendsLabel;
+    private javax.swing.JTextField extendsText;
     private javax.swing.JLabel fileLabel;
     private javax.swing.JTextField fileTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel moduleLabel;
+    private javax.swing.JTextField moduleText;
     private javax.swing.JComboBox packageComboBox;
     private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField projectTextField;
@@ -434,6 +573,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     // DocumentListener implementation -----------------------------------------
     
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
+        trackEdit(e);
         updateText();
         fireChange();        
     }    
@@ -444,6 +584,79 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         changedUpdate( e );
+    }
+    
+    private void syncFields(JTextComponent textComponent, String value) {
+        try {
+            userEdit = false;
+            textComponent.setText(value);
+        } finally {
+            userEdit = true;
+        }
+    }
+    
+    private void capitalizeFirstChar(final JTextComponent field, DocumentEvent e) {
+        if (e.getType() == DocumentEvent.EventType.REMOVE) {
+            // Don't change the first char when you're deleting it - it would
+            // capitalize the second letter which is inconvenient when you're
+            // backspacing up to change the word
+            return;
+        }
+        
+        String text = field.getText().trim();
+        if (text.length() > 0 && Character.isLowerCase(text.charAt(0))) {
+            // Force uppercase names to help lazy typists
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    String text = field.getText().trim();
+                    if (text.length() > 0 && Character.isLowerCase(text.charAt(0))) {
+                        boolean wasEditing = userEdit;
+                        try {
+                            userEdit = false;
+                            ((AbstractDocument)field.getDocument()).replace(0, 1, ""+Character.toUpperCase(text.charAt(0)), null);
+                        } catch (BadLocationException ble) {
+                            Exceptions.printStackTrace(ble);
+                        } finally {
+                            userEdit = wasEditing;
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    private void trackEdit(DocumentEvent e) {
+        if (userEdit) {
+            Document doc = e.getDocument();
+            if (doc == documentNameTextField.getDocument()) {
+                fileEdited = true;
+                
+                String text = documentNameTextField.getText().trim();
+                if (text.length() == 0) {
+                    fileEdited = false;
+                }
+                if ((type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) && (!classEdited ||
+                        classText.getText().length() == 0)) {
+                    classEdited = false;
+                    syncFields(classText, RubyUtils.underlinedNameToCamel(text));
+                }
+            } else if (doc == classText.getDocument()) {
+                if (e.getType() != DocumentEvent.EventType.REMOVE) {
+                    capitalizeFirstChar(classText, e);
+                }
+                classEdited = true;
+
+                if (!fileEdited || documentNameTextField.getText().trim().length() == 0) {
+                    fileEdited = false;
+                    String text = classText.getText().trim();
+                    syncFields(documentNameTextField, RubyUtils.camelToUnderlinedName(text));
+                }
+            } else if (doc == extendsText.getDocument()) {
+                capitalizeFirstChar(extendsText, e);
+            } else if (doc == moduleText.getDocument()) {
+                capitalizeFirstChar(moduleText, e);
+            }
+        }
     }
     
     // Private methods ---------------------------------------------------------
@@ -487,7 +700,6 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 //    }
         
     private void updateText() {
-        
         SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
         FileObject rootFolder = g.getRootFolder();
         String packageName = getPackageFileName();

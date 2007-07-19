@@ -56,6 +56,9 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
     public static final int TYPE_FILE = 0;
     public static final int TYPE_PACKAGE = 1;
     public static final int TYPE_PKG_INFO = 2;
+    public static final int TYPE_CLASS = 3;
+    public static final int TYPE_MODULE = 4;
+    public static final int TYPE_TEST = 5;
     
     private int type = TYPE_FILE;
     
@@ -74,7 +77,19 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
     public static NewRubyFileWizardIterator packageInfoWizard () {
         return new NewRubyFileWizardIterator( TYPE_PKG_INFO );
     }
-            
+
+    public static NewRubyFileWizardIterator classWizard() {
+        return new NewRubyFileWizardIterator( TYPE_CLASS );
+    }
+
+    public static NewRubyFileWizardIterator moduleWizard() {
+        return new NewRubyFileWizardIterator( TYPE_MODULE );
+    }
+
+    public static NewRubyFileWizardIterator testWizard() {
+        return new NewRubyFileWizardIterator( TYPE_TEST );
+    }
+    
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
         
         // Ask for Ruby folders
@@ -137,8 +152,8 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
             createdFile = FileUtil.createFolder( dir, targetName );
         }
         else {
-            DataObject dTemplate = DataObject.find( template );                
-            DataObject dobj = dTemplate.createFromTemplate( df, targetName );
+            DataObject dTemplate = DataObject.find( template );
+            DataObject dobj = dTemplate.createFromTemplate( df, targetName, wiz.getProperties());
             createdFile = dobj.getPrimaryFile();
         }
         
