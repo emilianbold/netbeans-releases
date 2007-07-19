@@ -39,6 +39,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
@@ -49,7 +50,6 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
- *
  * @author  Ajit
  */
 public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.Provider {
@@ -109,11 +109,11 @@ public class CustomizerXMLCatalog extends javax.swing.JPanel implements HelpCtx.
             }
             saveCookie.save();
         }
-        catch(org.openide.loaders.DataObjectNotFoundException e) {
+        catch (IOException e) {
         }
-        catch(java.io.IOException e) {
+        catch (CatalogModelException e) {
         }
-        catch (CatalogModelException ex) {
+        catch (DataObjectNotFoundException e) {
         }
     }
     
