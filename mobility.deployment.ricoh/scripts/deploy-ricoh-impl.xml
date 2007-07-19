@@ -224,7 +224,8 @@ Microsystems, Inc. All Rights Reserved.
             <echo message="Deploying to webserver [${ricoh.deployment.server.name}] via SCP as ''${ricoh.deployment.server.user}''"/>
             <taskIf unless="ricoh.deployment.scp.sshport" value="">
                 <echo message="Connecting to SSH service on port ${ricoh.deployment.scp.sshport}"/>
-                <scp todir="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.server.dir}" knownhosts="${ricoh.deployment.scp.keyfile}" password="${ricoh.deployment.server.password}" port="${ricoh.deployment.scp.sshport}">
+                <echo message="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.scp.dir} knownhosts=${ricoh.deployment.scp.keyfile} password=${ricoh.deployment.server.password} port=${ricoh.deployment.scp.sshport}"/>
+                <scp verbose="true" todir="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.scp.dir}" knownhosts="${ricoh.deployment.scp.keyfile}" password="${ricoh.deployment.server.password}" port="${ricoh.deployment.scp.sshport}">
                     <fileset dir="${xml.dir}">
                         <include name="Dalp.xml"/>
                     </fileset>
@@ -236,7 +237,7 @@ Microsystems, Inc. All Rights Reserved.
             </taskIf>
             <taskIf if="ricoh.deployment.scp.sshport" value="">
                 <echo message="Connecting to SSH service on port 22"/>
-                <scp todir="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.server.dir}" knownhosts="${ricoh.deployment.scp.keyfile}" password="${ricoh.deployment.server.password}">
+                <scp todir="${ricoh.deployment.server.user}@${ricoh.deployment.server.name}:${ricoh.deployment.scp.dir}" knownhosts="${ricoh.deployment.scp.keyfile}" password="${ricoh.deployment.server.password}">
                     <fileset dir="${xml.dir}">
                         <filename name="Dalp.xml"/>
                     </fileset>

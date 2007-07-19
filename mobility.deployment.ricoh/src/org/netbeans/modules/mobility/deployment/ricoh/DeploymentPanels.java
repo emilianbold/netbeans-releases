@@ -470,7 +470,7 @@ public class DeploymentPanels extends javax.swing.JPanel
             {
                 SSHKeyFileReader reader = new SSHKeyFileReader(this.sshKeyFileTextField.getText());                
                 SSHKeyFileReader.SSHKey key = null;
-                RicohDeploymentCustomizer rdc=(RicohDeploymentCustomizer)this.getParent();
+                RicohDeploymentCustomizer rdc=(RicohDeploymentCustomizer)this.getParent().getParent();
                 
                 try
                 {
@@ -520,7 +520,6 @@ public class DeploymentPanels extends javax.swing.JPanel
 
     private void browseSSHKeyFileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_browseSSHKeyFileButtonActionPerformed
     {//GEN-HEADEREND:event_browseSSHKeyFileButtonActionPerformed
-// TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
