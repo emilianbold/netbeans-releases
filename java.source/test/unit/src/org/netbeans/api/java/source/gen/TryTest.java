@@ -136,8 +136,8 @@ public class TryTest extends GeneratorTestMDRCompat {
             "        try {\n" +
             "            File f = new File(\"auto\");\n" +
             "            FileInputStream fis = new FileInputStream(f);\n" +
-            "        } catch (FileNotFoundException ex) {\n" +
             "        } catch (NullPointerException npe) {\n" +
+            "        } catch (FileNotFoundException ex) {\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -198,8 +198,8 @@ public class TryTest extends GeneratorTestMDRCompat {
             "        try {\n" +
             "            File f = new File(\"auto\");\n" +
             "            FileInputStream fis = new FileInputStream(f);\n" +
-            "        } catch (NullPointerException npe) {\n" +
             "        } catch (FileNotFoundException ex) {\n" +
+            "        } catch (NullPointerException npe) {\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -220,7 +220,7 @@ public class TryTest extends GeneratorTestMDRCompat {
                         null),
                     make.Block(Collections.<StatementTree>emptyList(), false)
                 );
-                workingCopy.rewrite(tt, make.insertTryCatch(tt, 1, njuKec));
+                workingCopy.rewrite(tt, make.addTryCatch(tt, njuKec));
             }
             
         };
