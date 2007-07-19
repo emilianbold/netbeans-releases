@@ -37,7 +37,9 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
@@ -67,7 +69,9 @@ public class CallEjbGenerator {
             MetadataModel<EjbJarMetadata> metadataModel = ejbReference.getEjbModule().getMetadataModel();
             version = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, BigDecimal>() {
                 public BigDecimal run(EjbJarMetadata metadata) throws Exception {
-                    ejbNameArr[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
+                    Ejb ejb = metadata.findByEjbClass(ejbReference.getEjbClass());
+                    iofSession[0] = ejb instanceof Session;
+                    ejbNameArr[0] = ejb.getEjbName();
                     return metadata.getRoot().getVersion();
                 }
             });
@@ -117,7 +121,6 @@ public class CallEjbGenerator {
                         className, 
                         isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
                         ejbName, 
-                        true, 
                         isLocal ? ejbReference.getLocal() : ejbReference.getRemote(), 
                         throwExceptions,
                         isLocal
@@ -179,7 +182,7 @@ public class CallEjbGenerator {
     }
     
     private void generateJNDI(FileObject fileObject, final String className, String homeName, String refName, 
-            boolean narrow, String componentName, boolean throwCheckedExceptions, boolean isLocal) throws IOException {
+            String componentName, boolean throwCheckedExceptions, boolean isLocal) throws IOException {
         String name = "lookup"+refName.substring(refName.lastIndexOf('/')+1);
         String body = null;
         List<String> exceptions = new ArrayList<String>();
@@ -194,7 +197,7 @@ public class CallEjbGenerator {
             body = MessageFormat.format(JNDI_LOOKUP_EJB3, new Object[] {refName, componentName});
         } else if (isTargetJavaSE){
             body = MessageFormat.format(JNDI_LOOKUP_REMOTE_JAVASE, new Object[] {homeName, homeName, sessionCreate});
-        } else if (narrow) {
+        } else if (!isLocal) {
             body = MessageFormat.format(JNDI_LOOKUP_REMOTE, new Object[] {refName, homeName, sessionCreate});
         } else {
             body = MessageFormat.format(JNDI_LOOKUP_LOCAL, new Object[] {refName, homeName, sessionCreate});
@@ -206,7 +209,7 @@ public class CallEjbGenerator {
             if (!isSimplified) {
                 exceptions.add("javax.ejb.CreateException");
             }
-            if (narrow && !isSimplified && !isLocal) {
+            if (!isSimplified && !isLocal) {
                 exceptions.add("java.rmi.RemoteException");
             }
         }
