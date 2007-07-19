@@ -310,6 +310,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Services">
             <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
             <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices"/>
             
             <folder name="Browsers">
@@ -326,6 +327,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
         </folder>
         
         <!-- folder for all recent templates -->
@@ -333,6 +335,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
         </folder>
         
     </folder>

@@ -19,6 +19,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+    <folder name="RecommendedTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="e2e">
+                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="MIDP">
             <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
@@ -32,18 +40,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
         </folder>
-    </folder>
-    <folder name="RecommendedTemplates">
-        <folder name="org.netbeans.modules.kjava.j2meproject">
-            <file name="e2e">
-                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/E2EWebApplication.wsclient"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-    </folder>
-    <!-- Javon templates -->
-    <folder name="Templates">
+        <!-- Javon templates -->
         <folder name="Client">
+            <attr name="position" intvalue="0"/>
             <file name="Client.java" url="../../e2e/templates/ClientTemplate.template">
                  <attr name="template" boolvalue="false"/>
             </file>
@@ -52,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         <folder name="Server">
+            <attr name="position" intvalue="0"/>
             <file name="Servlet.java" url="../../e2e/templates/ServletTemplate.template">
                  <attr name="template" boolvalue="false"/>
             </file>

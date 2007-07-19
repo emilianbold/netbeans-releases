@@ -22,6 +22,7 @@
     <folder name="Templates">
         <folder name="SOA">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
+            <attr name="position" intvalue="1550"/>
             <file name="Process.bpel" url="templates/EmptyBPEL.template">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bp_file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>

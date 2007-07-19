@@ -103,6 +103,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
                     <file name="Self.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createApplication"/>
+                        <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
             </folder>

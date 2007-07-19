@@ -3,10 +3,9 @@
 <filesystem>
     <folder name="Services">
         <folder name="JavaHelp">
-            <!-- Put this main helpset at the top -->
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-ruby-help-helpset.xml" boolvalue="true"/>
-            <file name="org-netbeans-modules-ruby-help-helpset.xml" url="helpsetref.xml"/>
+            <file name="org-netbeans-modules-ruby-help-helpset.xml" url="helpsetref.xml">
+                <attr name="position" intvalue="2700"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

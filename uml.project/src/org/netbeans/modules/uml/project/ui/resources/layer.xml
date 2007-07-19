@@ -70,6 +70,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         
         <folder name="UML">
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.newtemplates.Bundle"/>
+         <attr name="position" intvalue="2000"/>
          <file name="newUMLDiagram">
             <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>

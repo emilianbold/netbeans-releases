@@ -30,6 +30,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <folder name="Templates">
         <folder name="Identity">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.profile.ui.support.Bundle"/>
+            <attr name="position" intvalue="1600"/>
             <folder name="SunDD">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.profile.ui.support.Bundle"/>
                 <file name="sun-web.xml" url="nbres:/org/netbeans/modules/identity/profile/ui/support/resources/sun-web.template"/>

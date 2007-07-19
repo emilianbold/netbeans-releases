@@ -169,10 +169,11 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Merge before 3rd party help: -->
             </folder>
         <folder name="Hidden">
-            <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
-            <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
-            <!-- Otherwise retain original ordering: -->
+            <folder name="CatalogProvider">
+                <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
+                <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
             </folder>
+        </folder>
     </folder>
     
     <folder name="Plugins">

@@ -22,7 +22,9 @@
     
     <folder name="Services">
         <folder name="JavaHelp">
-            <file name="wsdlui-helpset.xml" url="wsdlui-helpset.xml"/>
+            <file name="wsdlui-helpset.xml" url="wsdlui-helpset.xml">
+                <attr name="position" intvalue="2050"/>
+            </file>
         </folder>
         <!-- Recognize text/x-wsdl+xml: -->
         <folder name="MIMEResolver">

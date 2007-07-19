@@ -44,18 +44,20 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-catalog-CatalogEntityResolver.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.api.xml.services.UserCatalog"/>
             </file>
-            <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
-                <attr name="position" intvalue="100"/>
-            </file>
-            <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
-                <attr name="position" intvalue="200"/>
-            </file>
-            <file name="org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
-                <attr name="position" intvalue="300"/>
-            </file>
+            <folder name="CatalogProvider">
+                <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
 
             <!-- Store mounted catalogs per project. -->
             <file name="org-netbeans-modules-xml-catalog-settings-CatalogSettings.settings" url="ProjectSettings.xml">

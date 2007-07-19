@@ -92,6 +92,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="JWS">
+            <attr name="position" intvalue="0"/>
             <file name="jnlp-impl.xml" url="/org/netbeans/modules/javawebstart/resources/jnlp-impl.xml_"/>
         </folder>
         <folder name="Other">
