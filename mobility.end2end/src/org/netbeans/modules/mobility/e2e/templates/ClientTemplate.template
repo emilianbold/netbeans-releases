@@ -56,12 +56,23 @@ public class ${service.getClassName()} {
                 ${mapping.getRegistry().getTypeSerializer( parameter.getType()).toObject( parameter.getType(), parameter.getName())}<#if parameter_has_next>, </#if>
                 </#list>
             };
+            int paramIDs[] = new int[] {
+                <#list method.getParameters() as parameter>
+                ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next>, </#if>
+                </#list>
+            };
         </#if>
-        <#if method.getParameters()?size != 0><#assign invocationParam = "params"/><#else><#assign invocationParam = "_"/></#if>
+        <#if method.getParameters()?size != 0>
+            <#assign invocationParam = "params"/>
+            <#assign invocationParamIDs = "paramIDs"/>
+        <#else>
+            <#assign invocationParam = "_"/>
+            <#assign invocationParamIDs = "null"/>
+        </#if>
         <#if method.getReturnType().getName() == "void"><#rt>
-            invokeServer(${method.getRequestID()}, ${invocationParam});
+            invokeServer(${method.getRequestID()}, ${invocationParam}, ${invocationParamIDs});
         <#else><#rt>
-            return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( method.getReturnType(), "invokeServer("+method.getRequestID()+", "+invocationParam+")" )};
+            return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( method.getReturnType(), "invokeServer("+method.getRequestID()+", "+invocationParam+", "+invocationParamIDs+")" )};
         </#if>
     }
 
@@ -81,7 +92,7 @@ public class ${service.getClassName()} {
      *@exception  IOException  When a communication error or a remove exception
      * occurs
      */
-    private Object invokeServer(int requestID, Object[] parameters) throws IOException {
+    private Object invokeServer(int requestID, Object[] parameters, int[] paramIDs ) throws IOException {
         HttpConnection connection = (HttpConnection) Connector.open( serverURL );
         connection.setRequestMethod(HttpConnection.POST);
         connection.setRequestProperty("Content-Type", "application/octet-stream");
@@ -97,7 +108,8 @@ public class ${service.getClassName()} {
         
         DataOutputStream output = connection.openDataOutputStream();
         
-        writeObject(output, this);
+        // Write invocation code
+        output.writeShort( 1 );
         
         /* Write the byte signifying that only one call
          * is being made.
@@ -106,7 +118,7 @@ public class ${service.getClassName()} {
         
         output.writeInt(requestID);
         for (int i = 0; i < parameters.length; i++ ) {
-            writeObject(output, parameters[i]);
+            writeObject(output, parameters[i], paramIDs[i]);
         }
         
         output.close();
@@ -138,47 +150,27 @@ public class ${service.getClassName()} {
         return returnValue;
     }
 
-    private void writeObject(DataOutputStream out, Object o) throws IOException {
-        if (o == this) {
-            out.writeShort(1 /* invocation code */);
-        } else if (o == null) {
-            out.writeShort(-1);
-        <#assign arrayTypeID = 0/>
-        <#assign hasArrays = false/>
+    /**
+     * Serializes object to the stream with given type id
+     * 
+     * @param out 
+     * @param o object to be serialized to the stream
+     * @param id idetification code of the serialized object
+     */
+    private void writeObject( DataOutputStream out, Object o, int id ) throws IOException {
+        switch( id ) {
         <#list utils.getParameterTypeInstances( service ) as type>
-            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            <#if type.getName() != "void" && !type.isArray()>                
-                } else if(o instanceof ${serializer.instanceOf( type )}) {
-                    out.writeShort(${registry.getRegisteredTypeId( type )});
-                    <#if type.isPrimitive()>
-                        ${serializer.toStream( mapping, type, "out", serializer.fromObject( type, "o" ))}
-                    <#else>
-                        ${serializer.toStream( mapping, type, "out", "o" )}
-                    </#if>
-                    return;
-            </#if>
-            <#if type.isArray()>
-                <#assign hasArrays = true/>
-                <#assign arrayTypeID = registry.getRegisteredTypeId( type )/>
-            </#if>
-        </#list>
-        <#if hasArrays>
-            } else if(o.getClass().isArray()) {
-            out.writeShort(${arrayTypeID});
-            <#list service.getParameterTypes() as type>
-                <#if type.isArray() && type.getName() != "void">
-                    if( o instanceof ${type.getName()}) {
-                        ${type.getName()} array = (${type.getName()}) o;
-                        out.writeShort(${registry.getRegisteredTypeId( type.getComponentType())});
-                        out.writeInt(array.length);
-                        for(int i = 0; i < array.length; i++) {
-                            ${registry.getTypeSerializer( type.getComponentType()).toStream( mapping, type.getComponentType(), "out", "array[i]" )}
-                        }
-                    }
+            case ${registry.getRegisteredTypeId( type )}:
+                <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
+                out.writeShort(${registry.getRegisteredTypeId( type )});
+                <#if type.isPrimitive()>
+                ${serializer.toStream( mapping, type, "out", serializer.fromObject( type, "o" ))}
+                <#else>
+                ${serializer.toStream( mapping, type, "out", "o" )}
                 </#if>
-            </#list>
-        </#if>
-        } else {
+                break;
+        </#list>
+            default:
                 // default if a data type is not supported
                 throw new IllegalArgumentException("Unsupported parameter type: " + o.getClass());
         }
@@ -225,6 +217,5 @@ public class ${service.getClassName()} {
         }
         throw new IllegalArgumentException("Unsupported return type (" + type + ")");
     }
-
 }
 //GEN-END:Client

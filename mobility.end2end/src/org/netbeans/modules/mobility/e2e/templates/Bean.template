@@ -1,16 +1,21 @@
 /*
  *
  */
-
 package ${bean.getPackage()};
+<#assign databinding = mapping.getProperty( "databinding" ) == "true"/>
 
+<#if databinding>
+import org.netbeans.microedition.databinding.DataSet;
+import org.netbeans.microedition.databinding.DataBindingException;
+
+</#if>
 /**
  * 
  */
 <#if bean.getParent().getFullyQualifiedName() == "java.lang.Object">
-public class ${bean.getClassName()} {
+public class ${bean.getClassName()}<#if databinding> implements DataSet</#if> {
 <#else>
-public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualifiedName()} {
+public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualifiedName()}<#if databinding> implements DataSet</#if> {
 </#if>
     <#list bean.getFields() as field>
 
@@ -33,4 +38,61 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
         }
     </#if>
     </#list>
+    <#if databinding>
+    public Class getType(String dataItemName) throws DataBindingException {
+        <#list bean.getFields() as field>
+        <#if field.getType().getPackage() == "java.lang">
+            <#assign propertyType = field.getType().getClassName()/>
+        <#else>
+            <#assign propertyType = field.getType().getFullyQualifiedName()/>
+        </#if>
+        if( "${field.getName()}".equals(dataItemName)) {
+            return ${propertyType}.class;
+        }
+        </#list>
+        throw new IllegalArgumentException( "Invalid data item name " + dataItemName );
+    }
+
+    public Object getValue(String dataItemName) throws DataBindingException {
+        <#list bean.getFields() as field>
+        if( "${field.getName()}".equals( dataItemName )) {
+        <#if field.getType().isPrimitive()>
+            return ${mapping.getRegistry().getTypeSerializer( field.getType()).toObject( field.getType(), field.getName())};
+        <#else>
+            return ${field.getName()};
+        </#if>
+        }
+        </#list>
+        throw new IllegalArgumentException( "Invalid data item name " + dataItemName );
+    }
+
+    public void setValue(String dataItemName, Object value) throws DataBindingException {
+        <#list bean.getFields() as field>
+        if( "${field.getName()}".equals( dataItemName )) {
+            ${field.getName()} = ${mapping.getRegistry().getTypeSerializer( field.getType()).fromObject( field.getType(), "value" )};
+        }
+        </#list>
+        throw new IllegalArgumentException( "Invalid data item name " + dataItemName );
+    }
+
+    public void setAsString(String dataItemName, String value) throws DataBindingException {
+        <#list bean.getFields() as field>
+        if( "${field.getName()}".equals( dataItemName )) {
+        <#assign parsedType = utils.parsePrimitiveType( field.getType(), "value" )/>
+        <#if parsedType != "">
+            ${field.getName()} = ${parsedType};
+            return;
+        <#else>
+            throw new DataBindingException( "Unsupported conversion from String" );
+        </#if>
+        }
+        </#list>
+
+        throw new IllegalArgumentException( "Invalid data item name " + dataItemName );
+    }
+
+    public boolean isReadOnly(String arg0) throws DataBindingException {
+        return false;
+    }
+    </#if>
 }

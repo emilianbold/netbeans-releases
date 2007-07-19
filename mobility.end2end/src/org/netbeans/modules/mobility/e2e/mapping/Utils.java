@@ -85,4 +85,48 @@ public class Utils {
         return Collections.unmodifiableSet( new HashSet( result.values()));
     }
 
+    public static String parsePrimitiveType( ClassData cd, String variable ) {
+        String typeName = cd.getFullyQualifiedName();
+        if( "java.lang.String".equals( typeName )) {
+            return variable;
+        }
+        if( "int".equals( typeName )) { 
+            return "Integer.parseInt( " + variable + " )";
+        } else if( "java.lang.Integer".equals( typeName )) {
+            return "new Integer( " + variable + " )";
+        }
+        if( "boolean".equals( typeName )) {
+            return "Boolean.parseBoolean( " + variable + " )";
+        } else if( "java.lang.Boolean".equals( typeName )) {
+            return "new Boolean( " + variable + " )";
+        }
+        if( "byte".equals( typeName )) {
+            return "Byte.parseByte( " + variable + " )";
+        } else if( "java.lang.Byte".equals( typeName )) {
+            return "new Byte( " + variable + " )";
+        }
+        if( "long".equals( typeName )) {
+            return "Long.parseLong( " + variable + " )";
+        } else if( "java.lang.Long".equals( typeName )) {
+            return "new Long( " + variable + " )";
+        }
+        if( "short".equals( typeName )) {
+            return "Short.parseShort( " + variable + " )";
+        } else if( "java.lang.Short".equals( typeName )) {
+            return "new Short( " + variable + " )";
+        }
+        
+        if( "float".equals( typeName )) {
+            return "Float.parseFloat( " + variable + " )";
+        } else if( "java.lang.Float".equals( typeName )) {
+            return "new Float( " + variable + " )";
+        }
+        if( "double".equals( typeName )) {
+            return "Double.parseDouble( " + variable + " )";
+        } else if( "java.lang.Double".equals( typeName )) {
+            return "new Double( " + variable + " )";
+        }
+        
+        return "";
+    }
 }

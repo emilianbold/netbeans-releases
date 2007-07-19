@@ -269,6 +269,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //        m.setDynamicInvocationSupported( false );
 //        m.setGroupingSupported( cprops.getProperty( "multipleCall" ).equals( TRUE )); // NOI18N
         mapping.setProperty( "create-stubs", cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
+        mapping.setProperty( "databinding", cprops.getProperty( "DataBinding" ));
 //        m.setSynchronousSupported( true );
 //        m.setFloatingPointSupported( true );
         mapping.setClientMapping( jcc );
