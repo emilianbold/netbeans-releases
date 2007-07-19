@@ -43,10 +43,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -147,19 +149,19 @@ class AppFrameworkSupport {
     static String getApplicationClassName(FileObject fileInProject) {
         Project project = FileOwnerQuery.getOwner(fileInProject);
         AuxiliaryConfiguration ac = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        return getApplicationClassName(fileInProject, ac);
+        return getApplicationClassName(fileInProject, project, ac);
     }
 
     static String getApplicationClassName(Project project) {
         FileObject fileRep = getSourceRoot(project);
         if (fileRep != null) {
             AuxiliaryConfiguration ac = project.getLookup().lookup(AuxiliaryConfiguration.class);
-            return getApplicationClassName(fileRep, ac);
+            return getApplicationClassName(fileRep, project, ac);
         }
         return null;
     }
 
-    private static String getApplicationClassName(FileObject fileInProject, AuxiliaryConfiguration ac) {
+    private static String getApplicationClassName(FileObject fileInProject, Project project, AuxiliaryConfiguration ac) {
         String appClassName = null;
         org.w3c.dom.Element appEl = ac.getConfigurationFragment(SWINGAPP_ELEMENT, SWINGAPP_NS, true);
         boolean storedInProject = (appEl != null);
@@ -208,6 +210,11 @@ class AppFrameworkSupport {
                     appEl.appendChild(clsEl);
                 }
                 ac.putConfigurationFragment(appEl, true);
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             if (!fileInProject.isFolder() && (!storedInProject || appClassName == null)) {
                 appClassMap.put(fileInProject, appClassName);
