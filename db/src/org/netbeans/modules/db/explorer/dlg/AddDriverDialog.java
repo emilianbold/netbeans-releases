@@ -316,7 +316,10 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 // from the jar files for the driver.  We can then use
                 // introspection to see if a class in one of these jar files
                 // implements java.sql.Driver
-                URLClassLoader jarloader = createJarLoader();
+                URLClassLoader jarloader = 
+                    new URLClassLoader(
+                        (URL[])drvs.toArray(new URL[drvs.size()]),
+                        this.getClass().getClassLoader());
                 
                 for (int i = 0; i < drvs.size(); i++) {
                     try {
@@ -351,28 +354,6 @@ public class AddDriverDialog extends javax.swing.JPanel {
             }
         }, 0);
     }//GEN-LAST:event_findButtonActionPerformed
-
-    private URLClassLoader createJarLoader() {
-        // For reasons not fully clear to me, we can't just call
-        // toArray() on the drvs list (which is a LinkedList full of URLs).
-        // and cast this to  URL[]: this causes a ClassCastException.
-        //
-        // So, we have to iterate through the whole list to create the
-        // array needed by the URLClassLoader constructor.  Sigh...
-        //
-        // Luckily, this shouldn't be too expensive, as the jar list is
-        // most likely one or two files, and never more than a handful.
-        int numDrivers = drvs.size();
-        URL[] urls = new URL[numDrivers];
-        
-        for ( int i = 0 ; i < numDrivers ; i++) {
-            urls[i] = (URL)drvs.get(i);
-        }
-
-        return new URLClassLoader(
-            urls,
-            this.getClass().getClassLoader());
-    }
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         stopProgress();
