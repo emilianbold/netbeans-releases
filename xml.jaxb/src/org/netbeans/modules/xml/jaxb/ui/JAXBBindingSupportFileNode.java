@@ -29,6 +29,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -48,9 +49,13 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
     private Boolean origLocationType ;
     private FileObject localSchemaRoot;
     private Node nodeDelegate;
-        
-    public JAXBBindingSupportFileNode(Project prj, FileObject xsdFile, FileObject locSchemaRoot, Boolean origLocType, String origLocation) throws IntrospectionException {
+    private FileChangeListener fcl;
+    
+    public JAXBBindingSupportFileNode(Project prj, FileObject xsdFile, 
+            FileObject locSchemaRoot, Boolean origLocType, 
+            String origLocation) throws IntrospectionException {
         super( Children.LEAF, createLookup( xsdFile, prj ) );
+        
         this.xsdFileObject = xsdFile;
         this.origLocation = origLocation;
         this.origLocationType = origLocType;
@@ -59,8 +64,7 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
         this.setValue(JAXBWizModuleConstants.ORIG_LOCATION, this.origLocation);
         this.setValue(JAXBWizModuleConstants.ORIG_LOCATION_TYPE, this.origLocationType);
         this.setValue(JAXBWizModuleConstants.LOC_SCHEMA_ROOT, this.localSchemaRoot);
-        
-        xsdFileObject.addFileChangeListener( new FileChangeListener() {
+        this.fcl =  new FileChangeListener() {
             public void fileAttributeChanged(FileAttributeEvent fae) {
             }
             
@@ -83,7 +87,11 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
             
             public void fileRenamed(FileRenameEvent frenameEvent) {
             }
-        } );
+        } ;
+        
+        FileChangeListener weakFcl = FileUtil.weakFileChangeListener(fcl, 
+                xsdFileObject);
+        xsdFileObject.addFileChangeListener(weakFcl);
         initActions();
         this.setShortDescription(xsdFile.getPath());
     }

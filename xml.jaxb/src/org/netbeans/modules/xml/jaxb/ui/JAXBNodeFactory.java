@@ -17,6 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.jaxb.ui;
+import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEvent;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEventListener;
+import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEventListenerAdapter;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.nodes.Node;
@@ -42,9 +45,10 @@ import org.openide.filesystems.FileObject;
  * @author gpatil
  */
 public class JAXBNodeFactory implements NodeFactory {
-    public static String JAXB_NODE_NAME = "JAXB Bindings" ;
+    public static String JAXB_NODE_NAME = "JAXB Bindings" ; // NOI18N
     private static Logger logger = Logger.getLogger(
-                                              JAXBNodeFactory.class.getName());
+            JAXBNodeFactory.class.getName());
+    
     public JAXBNodeFactory() {
     }
     
@@ -55,13 +59,14 @@ public class JAXBNodeFactory implements NodeFactory {
     private class JAXBRootNodeList  implements NodeList<String> {
         private Project project;
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        private JaxbChangeListener jaxbListener = new JaxbChangeListener();
+        private JAXBWizEventListener modelListener = new ModelListener();
+        
         private List<String> rootKeys = null;
         
         public JAXBRootNodeList(Project prj){
             this.project = prj;
             rootKeys = new ArrayList<String>();
-            ProjectHelper.addModelListner(project, jaxbListener);            
+            ProjectHelper.addModelListener(prj, modelListener);
             updateKeys();
         }
         
@@ -72,7 +77,14 @@ public class JAXBNodeFactory implements NodeFactory {
                 rootKeys.add(JAXB_NODE_NAME);
             }            
         }
-        
+
+        private synchronized void updateKeys(Schemas scs){
+            rootKeys.clear();
+            if (scs != null && scs.sizeSchema() > 0){
+                rootKeys.add(JAXB_NODE_NAME);
+            }            
+        }
+
         public List<String> keys() {
             List<String> immutable = Collections.unmodifiableList(this.rootKeys);
             return immutable;
@@ -87,11 +99,9 @@ public class JAXBNodeFactory implements NodeFactory {
         }
         
         public void addNotify() {
-            //ProjectHelper.addModelListner(project, jaxbListener);
         }
         
         public void removeNotify() {
-            //ProjectHelper.removeModelListner(project, jaxbListener);
         }
         
         public synchronized Node node(String key) {
@@ -114,51 +124,31 @@ public class JAXBNodeFactory implements NodeFactory {
             }
         }
         
-        private final class JaxbChangeListener extends FileChangeAdapter {
-            private void refreshNodes(){
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            JAXBRootNodeList.this.rootKeys.clear();
-                            fireChange();
-                        } catch (Exception ex ){
-                            logger.log(Level.WARNING, "refreshing root nodes.", ex);
-                        }
-                        
-                        try {
-                            updateKeys();
-                        } catch (Exception ex){
-                            logger.log(Level.WARNING, "refreshing root nodes.", ex);
-                        }
-                        fireChange();
-                    }
-                });
-            }
-            
-            public void fileChanged(FileEvent fe) {
-                refreshNodes();
-            }
-            
-            public void fileRenamed(FileEvent fe) {
-                refreshNodes();
-            }
-            
-            public void fileDataCreated(FileEvent fe) {
-                // New file is created, check if config file is created.
-                FileObject fo = ProjectHelper.getFOForBindingConfigFile(project);
-                if ((fo != null) && (fo.isValid())){
-                    // Remove listening on folder, add for the file
-                    ProjectHelper.removeModelListner(project, jaxbListener);
-                    ProjectHelper.addModelListner(project, jaxbListener);
-                    refreshNodes();
-                } else {
-                    logger.log(Level.INFO, "False config create event.");
+        private final class ModelListener extends JAXBWizEventListenerAdapter {
+
+            @Override
+            public void bindingAdded(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){
+                    updateKeys((Schemas) event.getSource());    
+                    fireChange();
                 }
             }
             
-            public void fileDeleted(FileEvent fe) {
-                refreshNodes();
+            @Override
+            public void bindingDeleted(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){
+                    updateKeys((Schemas) event.getSource());    
+                    fireChange();
+                }
             }
+
+            @Override
+            public void configFileEdited(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){
+                    updateKeys((Schemas) event.getSource());    
+                    fireChange();
+                }
+            }            
         }
     }
 }

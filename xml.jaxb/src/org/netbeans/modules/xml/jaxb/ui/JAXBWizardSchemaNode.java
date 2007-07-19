@@ -38,7 +38,6 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSource;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSources;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.actions.DeleteAction;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -46,6 +45,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -135,18 +135,24 @@ public class JAXBWizardSchemaNode extends AbstractNode {
     
     public static class JAXBWizardSchemaNodeChildren extends Children.Keys{
         private Project project;
-        private String packageName;
         private Schema schema;
         
         public JAXBWizardSchemaNodeChildren(Project prj, Schema schema) {
             super();
             this.schema = schema;
-            this.packageName = schema.getPackage();
             this.project = prj;
             this.addNodify();
         }
-        
-        private void setKeys(){
+
+        public void addNodify() {
+            updateKeys();
+            super.addNotify();
+        }        
+
+        public void removeNotify() {
+        }
+                
+        private void updateKeys(){
             List childrenNodes = new ArrayList();
             SchemaSources sss = this.schema.getSchemaSources();
             SchemaSource[] ss = sss.getSchemaSource();
@@ -175,11 +181,11 @@ public class JAXBWizardSchemaNode extends AbstractNode {
         
         public void setSchema(Schema schm){
             this.schema = schm;
-            setKeys();
+            updateKeys();
         }
        
         public void refreshChildren(){
-            setKeys();
+            updateKeys();
         }
         
         protected Node[] createNodes(Object key) {
@@ -275,15 +281,10 @@ public class JAXBWizardSchemaNode extends AbstractNode {
                     xsdNodes = new Node[]{xsdNode};
                 }                
             } catch ( IntrospectionException inse ) {
-                ErrorManager.getDefault().notify( inse );
+                Exceptions.printStackTrace(inse);
             }
             
             return xsdNodes;
         }
-        
-        public void addNodify() {
-            setKeys();
-            super.addNotify();            
-        }        
     }    
 }

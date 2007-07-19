@@ -84,10 +84,10 @@ public class XSLTest extends NbTestCase {
     private void compareStream(InputStream file1, InputStream file2) throws IOException{
         boolean ret = false;
         String str1 = getString(file1);
-        System.out.println("Str1:" + str1 + ":Str1");
+        //System.out.println("Str1:" + str1 + ":Str1");
         String str2 = getString(file2);
-        System.out.println("Str2:" + str2 + ":Str2");        
-        System.out.println("Length:" + str1.length() + ":" + str2.length());                                
+        //System.out.println("Str2:" + str2 + ":Str2");        
+        //System.out.println("Length:" + str1.length() + ":" + str2.length());                                
         assertEquals(str1, str2);
     }
     

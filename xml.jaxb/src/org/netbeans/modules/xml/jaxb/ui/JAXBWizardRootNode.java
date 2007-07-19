@@ -23,15 +23,19 @@ import java.awt.Image;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.modules.xml.jaxb.actions.JAXBRegenerateCodeAction;
-import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEvent;
+import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEventListener;
+import org.netbeans.modules.xml.jaxb.api.model.events.JAXBWizEventListenerAdapter;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -61,7 +65,8 @@ public class JAXBWizardRootNode extends AbstractNode {
     }
     
     public String getDisplayName() {
-        return JAXBNodeFactory.JAXB_NODE_NAME;
+        return NbBundle.getMessage(JAXBWizardRootNode.class, 
+                "LBL_JAXB_Bindings"); //NOI18N
     }
     
     public String getName() {
@@ -101,45 +106,88 @@ public class JAXBWizardRootNode extends AbstractNode {
     
     public static class JAXBWizardRootNodeChildren extends Children.Keys {
         private Project project;
+        private Schemas schemas;
+        private java.util.Map<String, Schema> nameSchemaMap = 
+                new HashMap<String, Schema>();
+        private JAXBWizEventListener modelListener = new ModelListener();
         
         public JAXBWizardRootNodeChildren(Project prj) {
             super();
             project = prj;
-            this.addNodify();
+            this.addNodify();    
+        }
+                
+        public void addNodify() {
+            this.schemas = ProjectHelper.getXMLBindingSchemas(project);
+            this.nameSchemaMap.clear();
+            Schema[] sc = this.schemas.getSchema();
+            for (Schema s: sc){
+                this.nameSchemaMap.put(s.getName(), s);
+            }            
+            
+            updateKeys();
+            super.addNotify();
+            ProjectHelper.addModelListener(this.project, this.modelListener);
+        }
+                
+        public void removeNotify() {
+            ProjectHelper.removeModelListener(this.project, this.modelListener);
+        }
+        
+        public void updateKeys() {            
+            if (this.schemas == null){
+                return ;
+            }            
+            this.setKeys(this.nameSchemaMap.keySet());
+        }
+
+        private void updateBindingKeys(Schemas ss) {
+            this.schemas = ss;
+            this.nameSchemaMap.clear();
+            Schema[] sc = this.schemas.getSchema();
+            for (Schema s: sc){
+                this.nameSchemaMap.put(s.getName(), s);
+            }            
+
+            updateKeys();                
         }
         
         protected Node[] createNodes(Object key) {
             Node[] nodes = null;
-            if ( key instanceof Schema ) {
-                Schema schema = (Schema)key;
-                JAXBWizardSchemaNode pkgNode = new JAXBWizardSchemaNode(
+            if ( key instanceof String ) {
+                Schema schema = this.nameSchemaMap.get((String)key);                
+                JAXBWizardSchemaNode bindingNode = new JAXBWizardSchemaNode(
                         project, schema );
                 nodes = new Node[] {
-                    pkgNode,
+                    bindingNode,
                 };
             }
             
             return nodes;
         }
         
-        public void addNodify() {
-            initNodes();
-            super.addNotify();
-        }
-        
-        public void initNodes() {
-            Schemas scs = ProjectHelper.getXMLBindingSchemas(project);
-            if (scs == null){
-                return ;
+        private final class ModelListener extends JAXBWizEventListenerAdapter {
+            @Override
+            public void bindingAdded(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){
+                    
+                    updateBindingKeys((Schemas) event.getSource());    
+                }
             }
             
-            ArrayList<Schema> childrenNodes =  new ArrayList<Schema>();
-            Schema[] sc = scs.getSchema();
-            for ( int i = 0; i < sc.length; i ++ ) {
-                if ( !childrenNodes.contains( sc[i]) )
-                    childrenNodes.add( sc[i]);
+            @Override
+            public void bindingDeleted(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){
+                    updateBindingKeys((Schemas) event.getSource());    
+                }
             }
-            this.setKeys( childrenNodes );
+
+            @Override
+            public void configFileEdited(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){
+                    updateBindingKeys((Schemas) event.getSource());    
+                }
+            }
         }
     }    
 }

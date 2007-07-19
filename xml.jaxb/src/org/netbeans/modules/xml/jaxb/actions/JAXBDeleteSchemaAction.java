@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.jaxb.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardSchemaNode;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.loaders.DataObject;
@@ -53,7 +54,7 @@ public class JAXBDeleteSchemaAction extends CookieAction {
         if (schemaNode != null){
             Schema schema = schemaNode.getSchema();
             Project prj = schemaNode.getProject();
-            ProjectHelper.removeSchema(prj, schema);
+            ProjectHelper.deleteSchemaFromModel(prj, schema);
         }        
     }
     

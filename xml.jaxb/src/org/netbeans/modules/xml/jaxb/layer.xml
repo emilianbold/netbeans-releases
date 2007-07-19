@@ -21,6 +21,10 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.xml.jaxb.model.JAXBWizLookupProvider.instance"/>
+            </folder>
+            
             <folder name="Nodes">                
                 <file name="org-netbeans-modules-xml-jaxb-ui-JAXBNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -28,6 +32,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.xml.jaxb.model.JAXBWizLookupProvider.instance"/>
+            </folder>
+
             <folder name="Nodes">
                 <file name="org-netbeans-modules-xml-jaxb-ui-JAXBNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -35,6 +43,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>        
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.xml.jaxb.model.JAXBWizLookupProvider.instance"/>
+            </folder>
+            
             <folder name="Nodes">
                 <file name="org-netbeans-modules-xml-jaxb-ui-JAXBNodeFactory.instance">
                     <attr name="position" intvalue="125"/>

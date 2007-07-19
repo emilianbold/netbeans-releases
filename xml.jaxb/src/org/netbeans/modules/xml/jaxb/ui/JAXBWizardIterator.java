@@ -28,6 +28,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -35,6 +37,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -191,8 +194,14 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         if ( wiz.getValue() == TemplateWizard.FINISH_OPTION ) {
                 String pkgName = (String) wiz.getProperty(
                         JAXBWizModuleConstants.PACKAGE_NAME);
-                ProjectHelper.addSchema(project, wiz);
-                ProjectHelper.compileXSDs(project, pkgName, true);
+                try {
+                    Schema nSchema = ProjectHelper.importResources(project, 
+                            wiz);
+                    ProjectHelper.addSchema2Model(project, nSchema);                    
+                    ProjectHelper.compileXSDs(project, pkgName, true);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
                 this.project = null;
         }
     }

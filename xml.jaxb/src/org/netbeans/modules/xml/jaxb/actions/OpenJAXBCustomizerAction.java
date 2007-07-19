@@ -20,6 +20,7 @@
 package org.netbeans.modules.xml.jaxb.actions;
 
 import java.awt.Dialog;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.Catalog;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSource;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSources;
+import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOption;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOptions;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardIterator;
@@ -44,6 +46,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
@@ -173,11 +176,24 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                 
                 if ( descriptor.getValue() == WizardDescriptor.FINISH_OPTION ) {
                     String pkgName = (String) descriptor.getProperty(
-                                          JAXBWizModuleConstants.PACKAGE_NAME);
-                    ProjectHelper.removeSchema(project, schema);
-                    schema = ProjectHelper.addSchema(project, descriptor);
-                    schemaNode.setSchema(schema);
-                    ProjectHelper.compileXSDs(project, pkgName, true);
+                            JAXBWizModuleConstants.PACKAGE_NAME);
+                    try {
+                        // XXX TODO pass old schema so that                         
+                        // If Schema name is changed rename the directory to 
+                        // new name. We should not over write again Schema, 
+                        // Binding and catalog files.
+//                        Schema nSchema = ProjectHelper
+//                                .importResourcesIfrequired(project, descriptor, 
+//                                schema);
+                        Schema nSchema = ProjectHelper.importResources(project, 
+                                descriptor);
+                        
+                        schemaNode.setSchema(nSchema);                        
+                        ProjectHelper.changeSchemaInModel(project, schema, nSchema);                        
+                        ProjectHelper.compileXSDs(project, pkgName, true);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }                        
                 }
             }
         }
