@@ -280,7 +280,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
  ****************************************************************************/
 
     public Tree visitCompilationUnit(CompilationUnitTree tree, Object p) {
-	topLevel = (CompilationUnitTree)tree;
+	topLevel = tree;
 	CompilationUnitTree result = rewriteChildren(topLevel);
 	topLevel = null;
         return result;
