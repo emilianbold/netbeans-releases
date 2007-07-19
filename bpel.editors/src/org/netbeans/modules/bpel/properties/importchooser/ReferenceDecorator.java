@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ui.customizer.AbstractReferenceDecorator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDecorator;
@@ -40,13 +41,16 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class ReferenceDecorator implements ExternalReferenceDecorator {
+public class ReferenceDecorator extends AbstractReferenceDecorator//implements ExternalReferenceDecorator 
+{
     /**
      * The myRefCreator that created this decorator.
      */
     private ExternalReferenceCreator myRefCreator;
     private Utilities.DocumentTypesEnum myDocType;
     private Process myProcess;
+    // Used to generate unique namespace prefixes.
+    private int myPrefixCounter;
     
     /**
      * Creates a new instance of ReferenceDecorator.
@@ -57,6 +61,7 @@ public class ReferenceDecorator implements ExternalReferenceDecorator {
      */
     public ReferenceDecorator(Process process, ExternalReferenceCreator creator,
             Utilities.DocumentTypesEnum docType) {
+        super();
         myProcess = process;
         myRefCreator = creator;
         myDocType = docType;
@@ -130,21 +135,23 @@ public class ReferenceDecorator implements ExternalReferenceDecorator {
     public String getNamespace(Model model) {
         return Util.getTargetNamespace(model);
     }
-    
-    public String generatePrefix(ExternalReferenceNode node) {
-        if (node instanceof ExternalReferenceDataNode) {
-            String namespace = node.getNamespace();
+
+    protected String generatePrefix(Model model) {
+        BpelModel bpelModel = myProcess.getBpelModel();
+        if (model != null) {
+            String namespace = getNamespace(model);
             if (namespace != null && namespace.length() > 0) {
-                ExNamespaceContext nsCont = myProcess.getNamespaceContext();
-                if (nsCont != null) {
-                    String oldPrefix = nsCont.getPrefix(namespace);
-                    if (oldPrefix != null && oldPrefix.length() > 0) {
-                        return oldPrefix;
-                    }
+                String oldPrefix =  NameGenerator.
+                        getNamespacePrefix(namespace, myProcess);
+                if (oldPrefix != null && oldPrefix.length() > 0) {
+                    return oldPrefix;
+                } else {
+                    return NameGenerator.getInstance().generateNamespacePrefix(
+                                null, bpelModel, myPrefixCounter++);
                 }
             }
         }
-        //
         return "";
     }
+
 }
