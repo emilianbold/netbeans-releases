@@ -1,0 +1,28 @@
+File.exists?("foo")
+ ^F,File
+File.exists?("foo")
+  ^Fi,File
+File.exists?("foo")
+   ^Fil,File
+File.exists?("foo")
+    ^File,File
+File.exists?("foo")
+      ^e,exists
+File.exists?("foo")
+       ^ex,exists
+File.exists?("foo")
+        ^exi,exists
+File.exists?("foo")
+         ^exis,exists
+File.exists?("foo")
+          ^exist,exists
+File.exists?("foo")
+           ^exists,exists
+File.exists?("foo")
+              ^"",""
+File.exists?("foo")
+               ^"",""
+File.exists?("foo")
+                ^"",""
+File.exists?("foo")
+                 ^"",""
