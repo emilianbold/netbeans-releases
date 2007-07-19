@@ -112,6 +112,7 @@ public class Provider {
         Provider provider = (Provider)obj;
         if (this.mPartnerLinkName.equals(provider.getPartnerLinkName()) && 
             this.mPortName.equals(provider.getPortName()) && 
+            this.mPartnerLinkNS.equals(provider.getPartnerLinkNamespace()) && 
             this.mPortNameNSPrefix.equals(provider.getPortNameNamespacePrefix())&& 
             this.mMyRoleName.equals(provider.getMyRoleName())){
                 return true;

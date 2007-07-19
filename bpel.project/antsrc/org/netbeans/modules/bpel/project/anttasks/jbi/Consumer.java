@@ -110,6 +110,7 @@ public class Consumer {
         Consumer consumer = (Consumer)obj;
         if (this.mPartnerLinkName.equals(consumer.getPartnerLinkName()) && 
             this.mPortName.equals(consumer.getPortName()) && 
+            this.mPartnerLinkNS.equals(consumer.getPartnerLinkNamespace())&& 
             this.mPortNameNSPrefix.equals(consumer.getPortNameNamespacePrefix())&& 
             this.mPartnerRoleName.equals(consumer.getPartnerRoleName())){
                 return true;
