@@ -23,7 +23,20 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
-
+    <change id="setUseSubstringInQuickSearch">
+        <api name="explorer"/>
+        <summary>Added method TreeView.setUseSubstringInQuickSearch(boolean).</summary>
+        <version major="6" minor="11"/>
+        <date day="11" month="7" year="2007"/>
+        <author login="dstrupl"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no"/>
+        <description>Added method setUseSubstringInQuickSearch(boolean). This
+        method allows using substring search for the typed in text in the quick
+        search feature instead of the (default) prefix search.
+        </description>
+        <class package="org.openide.explorer" name="TreeView" link="yes"/>
+        <issue number="108729"/>
+    </change>
      <change id="extendedDelete">
         <api name="explorer"/>
         <summary>Added an interface and a registration slot

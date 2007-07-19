@@ -190,6 +190,12 @@ public abstract class TreeView extends JScrollPane {
     // default DnD actions
     transient private int allowedDragActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     transient private int allowedDropActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
+    
+    /**
+     * Whether the quick search uses prefix or substring. 
+     * Defaults to false meaning prefix is used.
+     */
+    transient private boolean quickSearchUsingSubstring = false;
 
     /** Constructor.
     */
@@ -383,6 +389,16 @@ public abstract class TreeView extends JScrollPane {
         tree.setShowsRootHandles(!visible);
     }
 
+    /**
+     * Set whether the quick search feature uses substring or prefix
+     * matching for the typed characters. Defaults to prefix (false).
+     * @since 6.11
+     * @param useSubstring <code>true</code> if substring search is used in quick search
+     */
+    public void setUseSubstringInQuickSearch(boolean useSubstring) {
+        quickSearchUsingSubstring = useSubstring;
+    }
+    
     /********** Support for the Drag & Drop operations *********/
     /** Drag support is enabled by default.
     * @return true if dragging from the view is enabled, false
@@ -1705,21 +1721,27 @@ public abstract class TreeView extends JScrollPane {
             while (true) {
                 startIndex = startIndex % size;
 
-                TreePath path = getNextMatch(prefix, startIndex, Position.Bias.Forward);
+                TreePath path = null;
+                if (quickSearchUsingSubstring) {
+                    path = getNextSubstringMatch(prefix, startIndex, Position.Bias.Forward);
+                } else {
+                    path = getNextMatch(prefix, startIndex, Position.Bias.Forward);
+                }
 
                 if ((path != null) && !results.contains(path)) {
                     startIndex = tree.getRowForPath(path);
                     results.add(path);
 
-                    String elementName = ((VisualizerNode) path.getLastPathComponent()).getDisplayName();
+                    if (!quickSearchUsingSubstring) {
+                        String elementName = ((VisualizerNode) path.getLastPathComponent()).getDisplayName();
 
-                    // initialize prefix
-                    if (maxPrefix == null) {
-                        maxPrefix = elementName;
+                        // initialize prefix
+                        if (maxPrefix == null) {
+                            maxPrefix = elementName;
+                        }
+
+                        maxPrefix = findMaxPrefix(maxPrefix, elementName);
                     }
-
-                    maxPrefix = findMaxPrefix(maxPrefix, elementName);
-
                     // try next element
                     startIndex++;
                 } else {
@@ -1738,6 +1760,39 @@ public abstract class TreeView extends JScrollPane {
             }
 
             return res;
+        }
+        
+        /**
+         * Copied and adapted from JTree.getNextMatch(...).
+         */
+        private TreePath getNextSubstringMatch(
+                String substring, int startingRow, Position.Bias bias) {
+
+            int max = getRowCount();
+            if (substring == null) {
+                throw new IllegalArgumentException();
+            }
+            if (startingRow < 0 || startingRow >= max) {
+                throw new IllegalArgumentException();
+            }
+            substring = substring.toUpperCase();
+
+            // start search from the next/previous element froom the 
+            // selected element
+            int increment = (bias == Position.Bias.Forward) ? 1 : -1;
+            int row = startingRow;
+            do {
+                TreePath path = getPathForRow(row);
+                String text = convertValueToText(
+                    path.getLastPathComponent(), isRowSelected(row),
+                    isExpanded(row), true, row, false);
+
+                if (text.toUpperCase().indexOf(substring) >= 0) {
+                    return path;
+                }
+                row = (row + increment + max) % max;
+            } while (row != startingRow);
+            return null;
         }
 
         /**
