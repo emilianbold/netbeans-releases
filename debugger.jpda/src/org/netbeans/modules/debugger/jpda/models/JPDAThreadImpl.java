@@ -309,7 +309,17 @@ public final class JPDAThreadImpl implements JPDAThread {
                     }
                 }
             }
-            List l = threadReference.frames (from, to - from);
+            if (from < 0) {
+                throw new IndexOutOfBoundsException("from = "+from);
+            }
+            if (from >= max) {
+                throw new IndexOutOfBoundsException("from = "+from+" is too high, frame count = "+max);
+            }
+            int length = to - from;
+            if (length < 0 || (from+length) > max) {
+                throw new IndexOutOfBoundsException("from = "+from+", to = "+to+", frame count = "+max);
+            }
+            List l = threadReference.frames (from, length);
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
