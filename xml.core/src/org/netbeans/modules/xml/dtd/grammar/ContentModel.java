@@ -405,13 +405,14 @@ abstract class ContentModel {
         }
 
         public Enumeration possibilities() {            
-            if (terminated() == false) {
-                // we force peer reinitialization
-                if (peer.terminated()) peer.reset();
-                return peer.possibilities();
-            } else {
+            if (peer == null || terminated()) {
                 return org.openide.util.Enumerations.empty();
             }
+            
+            // we force peer reinitialization
+            if (peer.terminated())
+                peer.reset();
+            return peer.possibilities();
         }
 
         protected boolean terminated() {
