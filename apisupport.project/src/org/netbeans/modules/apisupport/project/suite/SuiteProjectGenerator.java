@@ -51,8 +51,8 @@ public class SuiteProjectGenerator {
     /** Generates standalone NetBeans Module. */
     public static void createSuiteProject(final File projectDir, final String platformID) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
