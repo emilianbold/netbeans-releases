@@ -43,6 +43,7 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
@@ -535,49 +536,6 @@ public class Util {
         } else {
             return obj2.equals(obj1);
         }
-    }
-    
-    /**
-     * This method is taken from the org.netbeans.modules.xml.schema.ui.basic.UIUtilities.
-     * It is intended exclusively to show xmltools customizers (Add Import).
-     */
-    public static DialogDescriptor getCustomizerDialog(
-            final Customizer customizer, final String title, final boolean editable) {
-        java.awt.Component component = customizer.getComponent();
-        final DialogDescriptor descriptor =
-                new DialogDescriptor(component, title, true, null);
-        descriptor.setHelpCtx(customizer.getHelpCtx());
-        if(editable) {
-            // customizer's property change listener to enable/disable OK
-            final PropertyChangeListener pcl = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if(evt.getSource()==customizer && evt.getPropertyName().
-                            equals(Customizer.PROP_ACTION_APPLY)) {
-                        descriptor.setValid(((Boolean) evt.getNewValue()).booleanValue());
-                    }
-                }
-            };
-            customizer.addPropertyChangeListener(pcl);
-            // dialog's action listener
-            ActionListener al = new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if (evt.getSource().equals(DialogDescriptor.OK_OPTION) ||
-                            evt.getSource().equals(DialogDescriptor.CANCEL_OPTION) ||
-                            evt.getSource().equals(DialogDescriptor.CLOSED_OPTION)) {
-                        customizer.removePropertyChangeListener(pcl);
-                    }
-                    if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                        try {
-                            customizer.apply();
-                        } catch (IOException ioe) {
-                        }
-                    }
-                }
-            };
-            descriptor.setButtonListener(al);
-        }
-        descriptor.setValid(customizer.canApply());
-        return descriptor;
     }
     
     public static String getTargetNamespace(Model model) {

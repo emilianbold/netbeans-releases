@@ -26,6 +26,7 @@ import org.netbeans.modules.bpel.nodes.ImportContainerNode;
 import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.bpel.properties.importchooser.ImportSchemaCreator;
+import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -72,7 +73,7 @@ public class AddSchemaImportAction extends BpelNodeAction {
                 FormBundle.class, "LBL_AddSchemaImport"); // NOI18N
         ImportSchemaCreator creator = new ImportSchemaCreator(process);
         DialogDescriptor descriptor =
-                Util.getCustomizerDialog(creator, dialogTitle, true);
+                UIUtilities.getCustomizerDialog(creator, dialogTitle, true);
         descriptor.setValid(false);
         Object result = DialogDisplayer.getDefault().notify(descriptor);
     }

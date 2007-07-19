@@ -26,6 +26,7 @@ import org.netbeans.modules.bpel.nodes.ImportContainerNode;
 import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.bpel.properties.importchooser.ImportWSDLCreator;
+import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -72,7 +73,7 @@ public class AddWsdlImportAction extends BpelNodeAction {
                 FormBundle.class, "LBL_AddWsdlImport"); // NOI18N
         ImportWSDLCreator creator = new ImportWSDLCreator(process);
         DialogDescriptor descriptor =
-                Util.getCustomizerDialog(creator, dialogTitle, true);
+                UIUtilities.getCustomizerDialog(creator, dialogTitle, true);
         descriptor.setValid(false);
         Object result = DialogDisplayer.getDefault().notify(descriptor);
     }

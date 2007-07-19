@@ -77,6 +77,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.properties.importchooser.WSDLFileImportDialog;
+import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -1308,7 +1309,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     private void browseWsdlFile(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseWsdlFile
         String title = NbBundle.getMessage(FormBundle.class, "LBL_Select_WSDL_File"); // NOI18N
         WSDLFileImportDialog dialog = new WSDLFileImportDialog(getCurrentWsdlModel());
-        DialogDescriptor descriptor = Util.getCustomizerDialog(dialog, title, true);
+        DialogDescriptor descriptor = UIUtilities.getCustomizerDialog(dialog, title, true);
         descriptor.setValid(false);
         Object result = DialogDisplayer.getDefault().notify(descriptor);
         

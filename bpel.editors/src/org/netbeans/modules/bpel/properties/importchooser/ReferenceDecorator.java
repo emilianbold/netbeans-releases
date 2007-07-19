@@ -21,7 +21,6 @@ package org.netbeans.modules.bpel.properties.importchooser;
 
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -30,7 +29,6 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ui.customizer.AbstractReferenceDecorator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
-import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDecorator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -41,8 +39,7 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class ReferenceDecorator extends AbstractReferenceDecorator//implements ExternalReferenceDecorator 
-{
+public class ReferenceDecorator extends AbstractReferenceDecorator {
     /**
      * The myRefCreator that created this decorator.
      */
