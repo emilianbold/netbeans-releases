@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.model;
 
 import java.io.IOException;
@@ -68,7 +66,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPAddress;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -80,25 +77,18 @@ import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
- *
  * @author Alexey Yarmolenko
  */
 public class PartnerLinkHelper {
     
-    
     private DiagramModel model;
-    /**
-     * Creates a new instance of PartnerlinkHelper
-     */
-    
+
     public PartnerLinkHelper(DiagramModel model) {
         this.model = model;
     }
     
-    
     public void updateMessageFlowLinks(CollapsedPattern collapsedPattern) {
         VisualElement element = collapsedPattern.getFirstElement();
-        
         List<Connection> connections = element.getAllConnections();
         
         for (Connection c : connections){
@@ -106,13 +96,10 @@ public class PartnerLinkHelper {
                 c.remove();
             }
         }
-        
         updateMessageFlowLinks(collapsedPattern.getOMReference(), element);
     }
     
-    
-    private void updateMessageFlowLinks(BpelEntity entity, VisualElement element) 
-    {
+    private void updateMessageFlowLinks(BpelEntity entity, VisualElement element) {
         if (entity instanceof OperationReference &&
                 entity instanceof PartnerLinkReference) {
             List<Connection> conns = element.getAllConnections();
@@ -143,17 +130,11 @@ public class PartnerLinkHelper {
         }
     }
     
-    
-    /**
-     *Iterates over diagram subtree and adds message flow links to diagram elements
-     *@pattern is the root of pattern subtree to process
-     **/
     public void updateMessageFlowLinks(Pattern pattern){
         Object omRef = pattern.getOMReference();
         
         if ( omRef instanceof OperationReference &&
                 omRef instanceof PartnerLinkReference){
-            //remove all old links
             VisualElement elem = pattern.getFirstElement();
             List<Connection> conns = elem.getAllConnections();
             for (Connection c: conns){
@@ -161,8 +142,6 @@ public class PartnerLinkHelper {
                     c.remove();
                 }
             }
-            
-            //establish new link
             VisualElement op = getOperation((BpelEntity) omRef);
             
             if ( op != null ){
@@ -177,19 +156,12 @@ public class PartnerLinkHelper {
                         || omRef instanceof Reply) {
                     c.connect(pattern.getFirstElement(), Direction.LEFT,
                             op, Direction.RIGHT);
-                    
                 }
             }
-            
         }
-        
     }
     
-    /**
-     *Returns the VisualElement representing Operation used by given activity
-     */
     private VisualElement getOperation(BpelEntity entity){
-        
         assert entity instanceof OperationReference;
         assert entity instanceof PartnerLinkReference;
         
@@ -218,119 +190,9 @@ public class PartnerLinkHelper {
         
         return ((PartnerlinkPattern) pattern).getElement(op_ref);
     }
-    /** That method is invoked to retrieve wsdl and
-     * related resources hby given URL.
-     *
-     * WSDL is expected to belong to J2EE WS project having
-     * one (and only one) PortType.
-     *Partner link will be created for that portType
-     **/
     
-//    public void createPartnerLink(final URL wsdlURL){
-//        if (wsdlURL == null) {
-//            return;
-//        }
-//        RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-//                final String name = getServiceName(wsdlURL);
-//
-//                final FileObject wsdl_fo = retrieveWSDL(wsdlURL, name);
-//
-//                if (wsdl_fo == null){
-//                    return;
-//                }
-//
-//                WSDLModel wsdl_model = null;
-//
-//                try {
-//                    wsdl_model = model.getView().getProcessHelper().getWSDLModelFromUri(wsdl_fo.getURL().toURI());
-//                } catch (FileStateInvalidException ex) {
-//                    ex.printStackTrace();
-//                } catch (URISyntaxException ex) {
-//                    ex.printStackTrace();
-//                }
-//
-//
-//                if (wsdl_model == null || wsdl_model.getDefinitions() == null){
-//                    return;
-//                }
-//
-//
-//
-//                wsdl_model.startTransaction();
-//                try{
-//                    Definitions defs = wsdl_model.getDefinitions();
-//
-//                    Collection<PortType> pts = defs.getPortTypes();
-//
-//                    if (pts == null || pts.size() != 1){
-//                        return;
-//                    }
-//
-//                    PortType pt = pts.iterator().next();
-//
-//                    BPELComponentFactory factory = new BPELComponentFactory(wsdl_model);
-//
-//                    final PartnerLinkType plt = factory.createPartnerLinkType(defs);
-//
-//
-//                    defs.addExtensibilityElement(plt);
-//
-//                    plt.setName(name);
-//
-//                    final Role role = factory.createRole(defs);
-//                    plt.setRole1(role);
-//
-//                    role.setName(name + "Provider");
-//                    role.setPortType(role.createReferenceTo(pt, PortType.class));
-//
-//                    final BpelModel bpelModel = model.getView().getBPELModel();
-//                    try {
-//
-//                        bpelModel.invoke( new Callable() {
-//                            public Object call() throws Exception {
-//                                PartnerLink pl = bpelModel
-//                                        .getBuilder()
-//                                        .createPartnerLink();
-//
-//
-//                                try {
-//                                    pl.setName(name + "Link");
-//
-//                                } catch (VetoException ex) {
-//                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//                                }
-//                                pl.setPartnerLinkType(pl.createWSDLReference(plt, PartnerLinkType.class));
-//
-//                                pl.setPartnerRole(pl.createWSDLReference(role, Role.class));
-//                                PartnerLinkContainer plc = bpelModel.getProcess().getPartnerLinkContainer();
-//                                if (plc == null){
-//                                    plc = bpelModel.getBuilder().createPartnerLinkContainer();
-//                                    bpelModel.getProcess().setPartnerLinkContainer(plc);
-//                                }
-//                                plc.insertPartnerLink(pl, 0);
-//
-//
-//                                new ImportRegistrationHelper(bpelModel).addImport(wsdl_fo);
-//                                return pl;
-//                            }
-//                        }, null);
-//                    } catch (Exception ex) {
-//                        ex.printStackTrace();
-//                    }
-//
-//
-//                } finally {
-//                    wsdl_model.endTransaction();
-//                }
-//            }
-//        });
-//
-//
-//    }
     public  PartnerLink createPartnerLink(DataObject dataObj){
         try {
-            
             FileObject fo = dataObj.getPrimaryFile();
             if (fo == null){
                 return null;
@@ -338,12 +200,8 @@ public class PartnerLinkHelper {
             URI uri = fo.getURL().toURI();
             final String name = fo.getName();
             
-            
-            // Start Change to use BusinessProcessHelper
             WSDLModel wsdlModel = model.getView().getProcessHelper().
                     getWSDLModelFromUri(uri);
-            
-            
             
             if (wsdlModel == null){
                 return null;
@@ -360,9 +218,6 @@ public class PartnerLinkHelper {
             final BpelModel bpelModel = model.getView().getBPELModel();
             assert (bpelModel != null):"Broken WSDL model"; //NOI18N
             
-            
-            //this callable contains default befavior(use first PLT)
-            //it will be used if no valid plt will be found
             Callable<PartnerLink> createPLCallable = new Callable<PartnerLink>() {
                 public PartnerLink call() throws Exception {
                     PartnerLink pl = bpelModel.getBuilder().createPartnerLink();
@@ -379,21 +234,15 @@ public class PartnerLinkHelper {
         return null;
     }
     
-    /**
-     * Detects if given PortType is mentioned in at least one service service element
-     **/
     public PartnerLink createPartnerLink(){
-        
         return model
                 .getView()
                 .getBPELModel()
                 .getBuilder()
                 .createPartnerLink();
-        
     }
     
     private boolean isServiceRole(Role role){
-        
         if (role == null || role.getPortType() == null){
             return false;
         }
@@ -404,8 +253,6 @@ public class PartnerLinkHelper {
         }
         
         WSDLModel wsdlModel = pt.getModel();
-        
-        
         Collection<Service> services = wsdlModel.getDefinitions().getServices();
         
         if (services == null){
@@ -426,6 +273,7 @@ public class PartnerLinkHelper {
         }
         return false;
     }
+
     public static void saveModel(Model model){
         DataObject model_do = (DataObject) model
                 .getModelSource()
@@ -445,7 +293,6 @@ public class PartnerLinkHelper {
         }
     }
     public FileObject retrieveWSDL(URL url, String name, boolean retrieveToFlat ){
-        // String name = getServiceName(url);
         FileObject bpel_fo = (FileObject) model
                 .getView()
                 .getBPELModel()
@@ -511,10 +358,8 @@ public class PartnerLinkHelper {
         return wsdl_fo;
         
     }
-    /**
-     */
+
     private void fixSoapAddress(WSDLModel model, boolean retrieveToFlat) {
-        
         Definitions defs = model.getDefinitions();
         if (defs == null){
             return;
@@ -522,8 +367,6 @@ public class PartnerLinkHelper {
         
         model.startTransaction();
         try {
-            
-            
             Collection<Service> svcs = defs.getServices();
             if (svcs == null){
                 return;
@@ -585,7 +428,6 @@ public class PartnerLinkHelper {
                         }
                     }
                 }
-                //fix other WSDL imports
                 Collection<Import> imports = defs.getImports();
                 for (Import imp: imports){
                     String location = imp.getLocation();
@@ -711,38 +553,13 @@ public class PartnerLinkHelper {
         return null;
     }
     private String getServiceName(URL url){
-        
-//        final String SUFFIX = "Service";
         String name = url.getPath();
         int pos = name.lastIndexOf('/');
         if (pos > -1){
             name =  name.substring(pos + 1);
         }
-        
-        
-//        if (!name.toLowerCase().endsWith(SUFFIX.toLowerCase())){
-//            name = name + SUFFIX;
-//        }
-//
         return name;
-        
     }
     
-    
     private static final String PARTNERS_FOLDER = "Partners";
-//    /**
-//     * Calculates the QName for any referencable WSDL Component
-//     */
-//    public static QName getQName(WSDLComponent component) {
-//        String namespace =
-//                component.getModel().getDefinitions().getTargetNamespace();
-//        if (component instanceof Named) {
-//            QName pltQName = new QName(namespace, ((Named)component).getName());
-//            return pltQName;
-//        }
-//        return null;
-//    }
-//
-//
-    
 }
