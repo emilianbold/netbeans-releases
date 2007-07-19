@@ -41,6 +41,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.Test;
 import org.netbeans.core.startup.layers.BinaryCacheManager;
 import org.netbeans.junit.NbTestCase;
@@ -49,6 +51,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
@@ -490,17 +493,46 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public void testFolderOrdering() {
         LayerParseHandler h = new LayerParseHandler();
         Logger.getLogger("org.openide.filesystems.Ordering").addHandler(h);
-        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Set<List<String>> editorMultiFolders = new HashSet<List<String>>();
+        Pattern editorFolder = Pattern.compile("Editors/(application|text)/([^/]+)(/.+|$)");
+        final FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        Enumeration<? extends FileObject> files = sfs.getRoot().getChildren(true);
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             if (fo.isFolder()) {
                 FileUtil.getOrder(Arrays.asList(fo.getChildren()), true);
                 assertNull("OpenIDE-Folder-Order attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-Order"));
                 assertNull("OpenIDE-Folder-SortMode attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-SortMode"));
-                // XXX should also test merged content in the case of Editors/**; see editor/mimelookup/api
+                String path = fo.getPath();
+                Matcher m = editorFolder.matcher(path);
+                if (m.matches()) {
+                    List<String> multiPath = new ArrayList<String>(3);
+                    multiPath.add(path);
+                    if (m.group(2).endsWith("+xml")) {
+                        multiPath.add("Editors/" + m.group(1) + "/xml" + m.group(3));
+                    }
+                    multiPath.add("Editors" + m.group(3));
+                    editorMultiFolders.add(multiPath);
+                }
             }
         }
         assertEquals("No warnings relating to folder ordering", Collections.emptySet(), new TreeSet<String>(h.errors()));
+        for (List<String> multiPath : editorMultiFolders) {
+            List<FileSystem> layers = new ArrayList<FileSystem>(3);
+            for (final String path : multiPath) {
+                FileObject folder = sfs.findResource(path);
+                if (folder != null) {
+                    layers.add(new MultiFileSystem(new FileSystem[] {sfs}) {
+                        protected @Override FileObject findResourceOn(FileSystem fs, String res) {
+                            FileObject f = fs.findResource(path + '/' + res);
+                            return Boolean.TRUE.equals(f.getAttribute("hidden")) ? null : f;
+                        }
+                    });
+                }
+            }
+            FileUtil.getOrder(Arrays.asList(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot().getChildren()), true);
+            assertEquals("No warnings relating to folder ordering in " + multiPath, Collections.emptySet(), new TreeSet<String>(h.errors()));
+        }
     }
 
     private static byte[] getFileContent(FileObject fo) throws IOException {
