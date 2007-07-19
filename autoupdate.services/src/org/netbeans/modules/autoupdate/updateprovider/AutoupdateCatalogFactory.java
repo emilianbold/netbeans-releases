@@ -30,7 +30,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.filesystems.FileObject;
@@ -149,7 +148,7 @@ public class AutoupdateCatalogFactory {
             String id = getPreferences ().get ("ideIdentity", null);
             if (id == null) {
                 // can ignore it, property used only for logging purposes
-                Logger.getAnonymousLogger().warning("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N
+                Logger.getLogger(AutoupdateCatalogFactory.class.getName()).warning("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N
                 id = "";
             }
             String prefix = NbBundle.getBundle (AutoupdateCatalogFactory.class).getString ("URL_Prefix_Hash_Code"); // NOI18N
@@ -192,7 +191,7 @@ public class AutoupdateCatalogFactory {
                             }
                         }
                     } catch (UnsupportedEncodingException ex) {
-                        Logger.getAnonymousLogger ().log (Level.INFO, ex.getMessage (), ex);
+                        Logger.getLogger(AutoupdateCatalogFactory.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                     if (st.hasMoreTokens ())
                         buf.append ('&');
