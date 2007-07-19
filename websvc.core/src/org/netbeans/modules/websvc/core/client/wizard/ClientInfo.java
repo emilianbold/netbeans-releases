@@ -399,13 +399,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     }// </editor-fold>//GEN-END:initComponents
     
     private void jBtnBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowse1ActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         String result = browseProjectServices();
         if (result!=null) jTxtWsdlProject.setText(result);
     }//GEN-LAST:event_jBtnBrowse1ActionPerformed
     
     private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnUrlActionPerformed
-// TODO add your handling code here:
+        // TODO add your handling code here:
         wsdlSource = WSDL_FROM_URL;
         enableWsdlSourceFields(false, false, true);
         descriptorPanel.fireChangeEvent();
@@ -417,7 +417,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     }//GEN-LAST:event_jBtnProxyActionPerformed
     
 	private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowseActionPerformed
-// 		System.out.println("browse for wsdl file...");
+            // 		System.out.println("browse for wsdl file...");
             JFileChooser chooser = new JFileChooser(previousDirectory);
             chooser.setMultiSelectionEnabled(false);
             chooser.setAcceptAllFileFilterUsed(true);
@@ -444,14 +444,14 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 	}//GEN-LAST:event_jBtnBrowseActionPerformed
         
     private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnFilesystemActionPerformed
-//        System.out.println("get from filesystem selected.");
+        //        System.out.println("get from filesystem selected.");
         wsdlSource = WSDL_FROM_FILE;
         enableWsdlSourceFields(false, true, false);
         descriptorPanel.fireChangeEvent();
     }//GEN-LAST:event_jRbnFilesystemActionPerformed
     
     private void jRbnProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnProjectActionPerformed
-//        System.out.println("get from url selected.");
+        //        System.out.println("get from url selected.");
         wsdlSource = WSDL_FROM_PROJECT;
         enableWsdlSourceFields(true, false, false);
         descriptorPanel.fireChangeEvent();
@@ -494,7 +494,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     // End of variables declaration//GEN-END:variables
     
     private void initUserComponents() {
-//        System.out.println("wizard panel created");
+        //        System.out.println("wizard panel created");
         
         setName(NbBundle.getMessage(ClientInfo.class, "TITLE_WebServiceClientWizard")); // NOI18N
         
@@ -562,7 +562,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     }
     
     void store(WizardDescriptor d) {
-//        System.out.println("storing wizard properties");
+        //        System.out.println("storing wizard properties");
         
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL, getDownloadUrl());
@@ -581,7 +581,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     }
     
     void read(WizardDescriptor d) {
-//        System.out.println("reading wizard properties");
+        //        System.out.println("reading wizard properties");
         this.wizardDescriptor = d;
         
         project = Templates.getProject(d);
@@ -628,7 +628,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             else{
                 if((!jsr109OldSupported && !jsr109Supported)
-                || (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
+                        || (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else{
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
@@ -670,8 +670,15 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
             
             jCbxPackageName.setModel(getPackageModel(p));
-            jCbxPackageName.setSelectedItem(getPackageItem((String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME)));
-            
+            String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
+            if(Util.isJavaEE5orHigher(project)){
+                if(pName == null){
+                    jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
+                } else{
+                    jCbxPackageName.setToolTipText("");
+                }
+            }
+            jCbxPackageName.setSelectedItem(getPackageItem(pName));
             // Normalize selection, in case it's unspecified.
             Integer source = (Integer) d.getProperty(ClientWizardProperties.WSDL_SOURCE);
             if(source == null || source.intValue() < WSDL_FROM_PROJECT || source.intValue() > WSDL_FROM_URL) {
@@ -692,7 +699,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             // saved *and* it's in the list that the current project supports.
             WebServicesClientSupport clientSupport =
                     WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
-
+            
             Object selectedStub = d.getProperty(ClientWizardProperties.CLIENT_STUB_TYPE);
             DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
             if(clientSupport != null) {
@@ -708,7 +715,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 //if platform is non-JSR109, select the JAXRPC static stub type
                 //and disable the combobox
                 if ((!jsr109OldSupported && !jsr109Supported)
-                || (!jsr109Supported && jsr109OldSupported && jwsdpSupported)) {
+                        || (!jsr109Supported && jsr109OldSupported && jwsdpSupported)) {
                     selectedStub = getJAXRPCClientStub(clientStubs);
                     jCbxClientType.setEnabled(false);
                 }
@@ -742,8 +749,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         retrieverFailed = false;
         retriever = null;
         if (((projectType != 0 && !Util.isJavaEE5orHigher(project))
-        || (projectType == 0 && jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)))
-        && (wsdlSource != WSDL_FROM_FILE)) {
+                || (projectType == 0 && jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)))
+                && (wsdlSource != WSDL_FROM_FILE)) {
             retriever = new WsdlRetriever(this,
                     wsdlSource==WSDL_FROM_PROJECT?jTxtWsdlProject.getText():jTxtWsdlURL.getText().trim());
             
@@ -768,17 +775,17 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         if(groups.length > 1) {
-// !PW We cannot make the distinction between source and test source roots, so I don't
-// want to merge all the packages at this time.  For now, just pick the first one,
-// and maybe we can do better in the next version.
-//            DefaultComboBoxModel packageModel = new DefaultComboBoxModel();
-//            for(int i = 0; i < groups.length; i++) {
-//                ComboBoxModel model = PackageView.createListView(groups[i]);
-//                for(int j = 0, m = model.getSize(); j < m; j++) {
-//                    packageModel.addElement(model.getElementAt(j));
-//                }
-//            }
-//            result = packageModel;
+            // !PW We cannot make the distinction between source and test source roots, so I don't
+            // want to merge all the packages at this time.  For now, just pick the first one,
+            // and maybe we can do better in the next version.
+            //            DefaultComboBoxModel packageModel = new DefaultComboBoxModel();
+            //            for(int i = 0; i < groups.length; i++) {
+            //                ComboBoxModel model = PackageView.createListView(groups[i]);
+            //                for(int j = 0, m = model.getSize(); j < m; j++) {
+            //                    packageModel.addElement(model.getElementAt(j));
+            //                }
+            //            }
+            //            result = packageModel;
             // Default to showing packages from first source root only for now.
             result = PackageView.createListView(groups[0]);
         } else if(groups.length == 1) {
@@ -815,15 +822,15 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         JRadioButton result = jRbnProject;
         
         switch(selected) {
-            case WSDL_FROM_PROJECT:
-                result = jRbnProject;
-                break;
-            case WSDL_FROM_FILE:
-                result = jRbnFilesystem;
-                break;
-            case WSDL_FROM_URL:
-                result = jRbnUrl;
-                break;
+        case WSDL_FROM_PROJECT:
+            result = jRbnProject;
+            break;
+        case WSDL_FROM_FILE:
+            result = jRbnFilesystem;
+            break;
+        case WSDL_FROM_URL:
+            result = jRbnUrl;
+            break;
         }
         
         return result;
@@ -878,16 +885,16 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         }
         
         // Project selected must support at least one stub type.
-
-// Commented out temporarly (until jax-rpc client support is implemented)
-//        WebServicesClientSupport clientSupport =
-//                WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
-//        List clientStubs = (clientSupport != null) ? clientSupport.getStubDescriptors() : null;
-//        if(clientStubs == null || clientStubs.size() == 0) {
-//            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NoStubsDefined")); // NOI18N
-//            return false; // project with web service client support, but no stub types defined.
-//        }
-
+        
+        // Commented out temporarly (until jax-rpc client support is implemented)
+        //        WebServicesClientSupport clientSupport =
+        //                WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
+        //        List clientStubs = (clientSupport != null) ? clientSupport.getStubDescriptors() : null;
+        //        if(clientStubs == null || clientStubs.size() == 0) {
+        //            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_NoStubsDefined")); // NOI18N
+        //            return false; // project with web service client support, but no stub types defined.
+        //        }
+        
         if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)) {
             SourceGroup[] sgs = JaxWsClientCreator.getJavaSourceGroups(project);
             //no source root -> there must be at least one source root to create JAX-RPC client
@@ -999,18 +1006,20 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         
         String packageName = getPackageName();
         if(packageName == null || packageName.length() == 0) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterJavaPackageName")); // NOI18N
-            return false; // unspecified WSDL file
+            if(!Util.isJavaEE5orHigher(project)){
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterJavaPackageName")); // NOI18N
+                return false; // unspecified WSDL file
+            }
         }
         
-        if(!JaxWsUtils.isJavaPackage(packageName)) {
+        if(packageName != null && packageName.length() > 0 && !JaxWsUtils.isJavaPackage(packageName)) {
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageInvalid")); // NOI18N
             return false; // invalid package name
         }
         
         // Don't allow to create java artifacts to package already used by other service/client
         JaxWsModel jaxWsModel = (JaxWsModel)p.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {
+        if (packageName != null && packageName.length() > 0 && jaxWsModel!=null) {
             Service[] services = jaxWsModel.getServices();
             for (int i=0;i<services.length;i++) {
                 // test service with java artifacts (created from WSDL file)
@@ -1044,22 +1053,22 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, ""); //NOI18N
         }
         
-// Retouche        
-//        if (JavaMetamodel.getManager().isScanInProgress()) {
-//            if (!isWaitingForScan) {
-//                isWaitingForScan = true;
-//                RequestProcessor.getDefault().post(new Runnable() {
-//                    public void run() {
-//                        JavaMetamodel.getManager().waitScanFinished();
-//                        isWaitingForScan = false;
-//                        descriptorPanel.fireChangeEvent();
-//                    }
-//                });
-//            }
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ClientInfo.class, "MSG_ScanningInProgress")); //NOI18N
-//            return false;
-//        } else
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        // Retouche
+        //        if (JavaMetamodel.getManager().isScanInProgress()) {
+        //            if (!isWaitingForScan) {
+        //                isWaitingForScan = true;
+        //                RequestProcessor.getDefault().post(new Runnable() {
+        //                    public void run() {
+        //                        JavaMetamodel.getManager().waitScanFinished();
+        //                        isWaitingForScan = false;
+        //                        descriptorPanel.fireChangeEvent();
+        //                    }
+        //                });
+        //            }
+        //            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ClientInfo.class, "MSG_ScanningInProgress")); //NOI18N
+        //            return false;
+        //        } else
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
         return true;
     }

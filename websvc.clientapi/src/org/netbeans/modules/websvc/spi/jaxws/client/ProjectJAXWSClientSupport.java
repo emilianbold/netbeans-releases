@@ -83,7 +83,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         return null;
     }
     
-    public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
+    public String addServiceClient(String clientName, String wsdlUrl, final String packageName, boolean isJsr109) {
         
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);
@@ -102,7 +102,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 ErrorManager.getDefault().notify(e);
             }
         }
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        final JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
         String finalClientName=clientName;
         boolean clientAdded=false;
         if (jaxWsModel!=null) {
@@ -116,7 +116,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
             if (clientArtifactsFolder!=null) {
                 clientArtifactsFolder.getChildren(true);
             }
-
+            
             FileObject localWsdl=null;
             try {
                 localWsdl = WSUtils.retrieveResource(
@@ -159,15 +159,32 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 writeJaxWsModel(jaxWsModel);
                 clientAdded=true;
                 // generate wsdl model immediately
+                final String clientName2 = finalClientName;
                 try {
                     final WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(localWsdl.getURL());
                     if (modeler!=null) {
                         modeler.setPackageName(packageName);
-                        modeler.setCatalog(catalog.getURL()); 
+                        modeler.setCatalog(catalog.getURL());
                         modeler.generateWsdlModel(new WsdlModelListener() {
                             public void modelCreated(WsdlModel model) {
                                 if (model==null) {
                                     DialogDisplayer.getDefault().notify(new WsImportFailedMessage(modeler.getCreationException()));
+                                }else{
+                                    String packName = packageName;
+                                    if(packName == null){
+                                        WsdlService service = model.getServices().get(0);
+                                        String javaName = service.getJavaName();
+                                        int index = javaName.lastIndexOf(".");
+                                        if(index != -1){
+                                            packName = javaName.substring(0,index );
+                                        }else{
+                                            packName = javaName;
+                                        }
+                                        Client client = jaxWsModel.findClientByName(clientName2);
+                                        client.setPackageName(packName);
+                                        writeJaxWsModel(jaxWsModel);
+                                    }
+                                    runWsimport(packName, clientName2);
                                 }
                             }
                         });
@@ -176,47 +193,41 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                     ErrorManager.getDefault().log(ex.getLocalizedMessage());
                 }
             }
-            if (clientAdded) {
-//                if(!isJsr109){
-//                    try{
-//                        addJaxWs20Library();
-//                    } catch(Exception e){  //TODO handle this
-//                        ErrorManager.getDefault().notify(e);
-//                    }
-//                }
-                final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                final String pkgName = packageName;
-                final String finalName = finalClientName;
-                    try {
-                        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
-                            public Boolean run() throws IOException {
-                                ExecutorTask wsimportTask =
-                                        ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName},null); //NOI18N
-                                if (wsimportTask.result()==0) {
-                                    if (clientArtifactsFolder==null)
-                                        clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
-                                    if (clientArtifactsFolder!=null) {
-                                        FileObject clientArtifactsFolder1 = clientArtifactsFolder.getFileObject(pkgName.replace('.','/'));
-                                        if (clientArtifactsFolder1!=null) {
-                                            wsimportTask=
-                                                ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-compile"},null); //NOI18N
-                                        }
-                                    }
-                                    return Boolean.TRUE;
-                                } else {
-                                    ErrorManager.getDefault().log(ErrorManager.ERROR, 
-                                            NbBundle.getMessage(ProjectJAXWSClientSupport.class, "ERR_wsimportNotCreated",finalName));
-                                    return Boolean.FALSE;
-                                }
-                            }
-                        }).booleanValue();
-                    } catch (MutexException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                return finalClientName;
-            }
+            return finalClientName;
         }
         return null;
+    }
+    
+    private void runWsimport(String packageName, String finalClientName){
+        final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+        final String pkgName = packageName;
+        final String finalName = finalClientName;
+        try {
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
+                    ExecutorTask wsimportTask =
+                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName},null); //NOI18N
+                    if (wsimportTask.result()==0) {
+                        if (clientArtifactsFolder==null)
+                            clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client"); //NOI18N
+                        if (clientArtifactsFolder!=null) {
+                            FileObject clientArtifactsFolder1 = clientArtifactsFolder.getFileObject(pkgName.replace('.','/'));
+                            if (clientArtifactsFolder1!=null) {
+                                wsimportTask=
+                                        ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-compile"},null); //NOI18N
+                            }
+                        }
+                        return Boolean.TRUE;
+                    } else {
+                        ErrorManager.getDefault().log(ErrorManager.ERROR,
+                                NbBundle.getMessage(ProjectJAXWSClientSupport.class, "ERR_wsimportNotCreated",finalName));
+                        return Boolean.FALSE;
+                    }
+                }
+            }).booleanValue();
+        } catch (MutexException e) {
+            ErrorManager.getDefault().notify(e);
+        }
     }
     
     private String findProperClientName(String name, JaxWsModel jaxWsModel) {
@@ -228,7 +239,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 return finalName;
         }
     }
-
+    
     private void writeJaxWsModel(final JaxWsModel jaxWsModel) {
         try {
             final FileObject jaxWsFo = project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml"); //NOI18N
@@ -327,13 +338,13 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     protected abstract void addJaxWs20Library() throws Exception;
     
     public abstract FileObject getWsdlFolder(boolean create) throws IOException;
-
+    
     public String getServiceRefName(Node clientNode) {
         WsdlService service = (WsdlService)clientNode.getLookup().lookup(WsdlService.class);
         String serviceName = service.getName();
         return "service/" + serviceName;
     }
-
+    
     private class WsImportFailedMessage extends NotifyDescriptor.Message {
         public WsImportFailedMessage(Throwable ex) {
             super(NbBundle.getMessage(ProjectJAXWSClientSupport.class,"TXT_CannotGenerateClient",ex.getLocalizedMessage()),
@@ -359,5 +370,5 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         if (clientWsdlFolder==null) clientWsdlFolder = globalWsdlFolder.createFolder("client"); //NOI18N
         return clientWsdlFolder.createFolder(name);
     }
-
+    
 }
