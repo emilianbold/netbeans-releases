@@ -44,8 +44,8 @@ public class RubyUtilsTest extends TestCase {
         assertEquals("Foo::BarBaz", RubyUtils.underlinedNameToCamel("foo/bar_baz"));
         assertEquals("JavaScriptMacrosHelper", RubyUtils.underlinedNameToCamel("java_script_macros_helper"));
     }
-    
-    public void testMethodIdentifiers() {
+
+    public void testClassIdentifiers() {
         assertTrue(RubyUtils.isValidRubyClassName("A"));
         assertTrue(RubyUtils.isValidRubyClassName("AB"));
         assertTrue(RubyUtils.isValidRubyClassName("Abc"));
@@ -54,15 +54,33 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(!RubyUtils.isValidRubyClassName(" Abc"));
         assertTrue(!RubyUtils.isValidRubyClassName(":Abc"));
         assertTrue(!RubyUtils.isValidRubyClassName("def"));
+    }
+
+    public void testMethodIdentifiers() {
         assertTrue(RubyUtils.isValidRubyMethodName("a"));
         assertTrue(RubyUtils.isValidRubyMethodName("ab"));
         assertTrue(RubyUtils.isValidRubyMethodName("ab_"));
         assertTrue(RubyUtils.isValidRubyMethodName("cde?"));
         assertTrue(RubyUtils.isValidRubyMethodName("[]"));
+
         assertTrue(!RubyUtils.isValidRubyMethodName("Abc"));
         assertTrue(!RubyUtils.isValidRubyMethodName(" def"));
         assertTrue(!RubyUtils.isValidRubyMethodName(""));
         assertTrue(!RubyUtils.isValidRubyMethodName("ijk "));
+
+        assertTrue(RubyUtils.isValidRubyMethodName("abc?"));
+        assertTrue(RubyUtils.isValidRubyMethodName("abc="));
+        assertTrue(RubyUtils.isValidRubyMethodName("abc!"));
+        assertTrue(!RubyUtils.isValidRubyMethodName("ab!c"));
+        assertTrue(!RubyUtils.isValidRubyMethodName("ab?c"));
+        assertTrue(!RubyUtils.isValidRubyMethodName("ab=c"));
+
+        
+        assertTrue(RubyUtils.isValidRubyMethodName("abc"));
+        assertTrue(RubyUtils.isValidRubyMethodName("ab_c"));
+        assertTrue(RubyUtils.isValidRubyMethodName("_abc"));
+        assertTrue(RubyUtils.isValidRubyMethodName("abc3"));
+        assertTrue(RubyUtils.isValidRubyMethodName("abcDef"));
         // keywords
         
         for (String s : RUBY_BUILTINS) {
@@ -71,6 +89,24 @@ public class RubyUtilsTest extends TestCase {
         }
     }
 
+    public void testLocalVars() {
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("Abc"));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("abc "));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("ab!c"));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("ab?c"));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("ab=c"));
+
+        assertTrue(RubyUtils.isValidRubyLocalVarName("abc"));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("abc?"));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("abc="));
+        assertTrue(!RubyUtils.isValidRubyLocalVarName("abc!"));
+        assertTrue(RubyUtils.isValidRubyLocalVarName("ab_c"));
+        assertTrue(RubyUtils.isValidRubyLocalVarName("_abc"));
+        assertTrue(RubyUtils.isValidRubyLocalVarName("abc3"));
+        assertTrue(RubyUtils.isValidRubyLocalVarName("abcDef"));
+    
+    }
+    
     private static final String[] RUBY_BUILTINS =
         new String[] {
             // Keywords

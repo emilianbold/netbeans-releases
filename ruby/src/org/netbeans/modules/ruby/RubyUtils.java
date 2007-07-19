@@ -127,6 +127,39 @@ public class RubyUtils {
         return true;
     }
     
+    public static boolean isValidRubyLocalVarName(String name) {
+        if (isRubyKeyword(name)) {
+            return false;
+        }
+        
+        if (name.trim().length() == 0) {
+            return false;
+        }
+
+        if (Character.isUpperCase(name.charAt(0)) || Character.isWhitespace(name.charAt(0))) {
+            return false;
+        }
+        
+        if (!Character.isJavaIdentifierStart(name.charAt(0))) {
+            return false;
+        }
+
+        for (int i = 1; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!Character.isJavaIdentifierPart(c)) {
+                return false;
+            }
+            // Identifier char isn't really accurate - I can have a function named "[]" etc.
+            // so just look for -obvious- mistakes
+            if (Character.isWhitespace(name.charAt(i))) {
+                return false;
+            }
+            
+        }
+
+        return true;
+    }
+    
     public static boolean isValidRubyMethodName(String name) {
         if (isRubyKeyword(name)) {
             return false;
@@ -152,6 +185,15 @@ public class RubyUtils {
                 return false;
             }
             
+        }
+        
+        // !, = and ? can only be in the last position
+        for (int i = 0; i < name.length()-1; i++) {
+            char c = name.charAt(i);
+            
+            if (c == '!' || c == '=' || c == '?') {
+                return false;
+            }
         }
 
         return true;
