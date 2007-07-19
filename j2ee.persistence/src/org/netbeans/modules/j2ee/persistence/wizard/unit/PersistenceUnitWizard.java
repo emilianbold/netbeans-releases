@@ -41,11 +41,12 @@ import org.openide.util.NbBundle;
  */
 
 public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIterator {
-    
+
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private Project project;
     private PersistenceUnitWizardDescriptor descriptor;
+    private static final Logger LOG = Logger.getLogger(PersistenceUnitWizard.class.getName());
     
     public static PersistenceUnitWizard create() {
         return new PersistenceUnitWizard();
@@ -100,7 +101,9 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
     
     public Set instantiate() throws java.io.IOException {
         PersistenceUnit punit = null;
-        if (descriptor.isContainerManaged()) {
+        LOG.fine("Instantiating...");
+            if (descriptor.isContainerManaged()) {
+            LOG.fine("Creating a container managed PU");
             punit = new PersistenceUnit();
             if (descriptor.getDatasource() != null && !"".equals(descriptor.getDatasource())){
                 if (descriptor.isJTA()) {
@@ -114,6 +117,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 punit.setProvider(descriptor.getNonDefaultProvider());
             }
         } else {
+            LOG.fine("Creating an application managed PU");
             punit = ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(),
                     descriptor.getSelectedProvider(), descriptor.getPersistenceConnection());
             punit.setTransactionType("RESOURCE_LOCAL");
@@ -124,14 +128,17 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         punit.setName(descriptor.getPersistenceUnitName());
         ProviderUtil.setTableGeneration(punit, descriptor.getTableGeneration(), project);
         try{
+            LOG.fine("Retrieving PUDataObject");
             PUDataObject pud = ProviderUtil.getPUDataObject(project);
             pud.addPersistenceUnit(punit);
+            LOG.fine("Saving PUDataObject");
             pud.save();
+            LOG.fine("Saved");
             return Collections.singleton(pud.getPrimaryFile());
         } catch (InvalidPersistenceXmlException ipx){
             // just log for debugging purposes, at this point the user has
             // already been warned about an invalid persistence.xml
-            Logger.getLogger(PersistenceUnitWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            LOG.log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
             return Collections.emptySet();
         }
     }
