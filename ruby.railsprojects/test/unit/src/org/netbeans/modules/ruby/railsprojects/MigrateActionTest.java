@@ -165,23 +165,7 @@ public class MigrateActionTest extends RubyTestBase {
 
         String annotatedSource = annotate(menu);
 
-        File goldenFile = new File(test.getDataDir(), relFilePath + "." + getName() + ".menu");
-        if (!goldenFile.exists()) {
-            if (!goldenFile.createNewFile()) {
-                NbTestCase.fail("Cannot create file " + goldenFile);
-            }
-            FileWriter fw = new FileWriter(goldenFile);
-            try {
-                fw.write(annotatedSource.toString());
-            }
-            finally{
-                fw.close();
-            }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
-        }
-
-        String ruby = readFile(test, goldenFile);
-        assertEquals(ruby, annotatedSource);
+        assertDescriptionMatches(relFilePath, annotatedSource, true, ".menu");
     }
     
     public void testMigrations109892() throws Exception {

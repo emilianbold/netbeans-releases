@@ -27,16 +27,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.ruby.RubyUtils;
-
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
@@ -45,6 +41,7 @@ import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -68,9 +65,6 @@ import org.openide.util.actions.SystemAction;
  * @author Tor Norbye
  */
 public final class MigrateAction extends SystemAction implements ContextAwareAction {
-    public static final Logger LOGGER = Logger.getLogger(MigrateAction.class.getName());
-
-
     @Override
     public String getName() {
         return NbBundle.getMessage(MigrateAction.class, "LBL_rake_migrate");
@@ -99,52 +93,29 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
     
     /** Build up a nested menu of migration tasks for the given project */
     static void buildMenu(JMenu menu, RailsProject project) {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Building menu for project");
-        }
-        
-        try {
-            JMenuItem menuitem =
-                new JMenuItem(NbBundle.getMessage(MigrateAction.class, "CurrentVersion"));
-            menuitem.addActionListener(new MigrateMenuItemHandler(project, -1));
-            //menuitem.setToolTipText(target.getDescription());
-            menu.add(menuitem);
+        JMenuItem menuitem =
+            new JMenuItem(NbBundle.getMessage(MigrateAction.class, "CurrentVersion"));
+        menuitem.addActionListener(new MigrateMenuItemHandler(project, -1));
+        //menuitem.setToolTipText(target.getDescription());
+        menu.add(menuitem);
 
-            Map<Integer,String> versions = getVersions(project);
+        Map<Integer,String> versions = getVersions(project);
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Versions = " + versions);
-            }
+        if (!versions.isEmpty()) {
+            menu.addSeparator();
 
-            if (!versions.isEmpty()) {
-                menu.addSeparator();
+            List<Integer> sortedList = new ArrayList<Integer>();
+            sortedList.addAll(versions.keySet());
+            Collections.sort(sortedList);
 
-                List<Integer> sortedList = new ArrayList<Integer>();
-                sortedList.addAll(versions.keySet());
-                Collections.sort(sortedList);
-
-                buildMenu(project, menu, 0, sortedList.size()-1, sortedList, versions);
-            }
-        } catch (Throwable t) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Problem found during menu build");
-                LOGGER.fine(t.toString());
-                t.printStackTrace(); // XXX yuck, remove after 109892 has been tracked down
-            }
+            buildMenu(project, menu, 0, sortedList.size()-1, sortedList, versions);
         }
     }
         
     private static void buildMenu(RailsProject project, JMenu menu, int startIndex, int endIndex, List<Integer> versions, Map<Integer,String> descriptions) {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("building menu from versionmap index " + startIndex + " to " + endIndex);
-        }
-
         int MAX_ITEMS = 20; // Max number of entries to show
         int MENU_COUNT = 15; // Number of menus to create (possibly nested)
         if (endIndex - startIndex > MAX_ITEMS) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Too large - subdividing list");
-            }
             int length = endIndex - startIndex;
             int sqrt = (int)Math.sqrt(length);
             if (sqrt < MENU_COUNT) {
@@ -195,9 +166,6 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
             JMenuItem menuitem = new JMenuItem(NbBundle.getMessage(MigrateAction.class,
                         "VersionX", version, description));
             menuitem.addActionListener(new MigrateMenuItemHandler(project, version));
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Adding menu item for version " + version + " with description " + description);
-            }
             menu.add(menuitem);
         }
     }
@@ -213,30 +181,20 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         versions.put(Integer.valueOf(0), "");
 
         if (migrate == null) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("The migrate directory does not exist in " + projectDir);
-            }
             return Collections.emptyMap();
         }
 
         for (FileObject fo : migrate.getChildren()) {
             String name = fo.getName();
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Considering file " + name);
-            }
             if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE) &&
                     name.matches("^\\d\\d\\d_.*")) { // NOI18N
                 try {
                     int version = Integer.parseInt(fo.getName().substring(0, 3));
                     String description = RubyUtils.underlinedNameToCamel(name.substring(4));
                     versions.put(version, "- " + description);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Adding version " + version + " with description " + description);
-                    }
                 } catch (NumberFormatException nfe) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Unexpected number format exception on " + fo.getName().substring(0,3));
-                    }
+                    // Shouldn't happen since we've prevetted the digits
+                    Exceptions.printStackTrace(nfe);
                 }
             }
         }
