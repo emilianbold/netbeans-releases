@@ -34,11 +34,9 @@ import static org.netbeans.spi.debugger.ui.Constants.BREAKPOINT_ENABLED_COLUMN_I
 public final class BreakpointModel implements NodeModel, TableModel {
     
     public static final String LINE_BREAKPOINT =
-            "org/netbeans/modules/debugger/resources/editor/Breakpoint";
-    public static final String LINE_BREAKPOINT_PC =
-            "org/netbeans/modules/debugger/resources/editor/Breakpoint+PC";
+            "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
     public static final String DISABLED_LINE_BREAKPOINT =
-            "org/netbeans/modules/debugger/resources/editor/DisabledBreakpoint";
+            "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";
     
     private List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     
@@ -58,11 +56,6 @@ public final class BreakpointModel implements NodeModel, TableModel {
             if (!((RubyBreakpoint) node).isEnabled()) {
                 return DISABLED_LINE_BREAKPOINT;
             }
-            //            RubyBreakpoint breakpoint = (RubyBreakpoint) node;
-            //            RubyDebugger debugger = getDebugger();
-            //            if(debugger != null && Utils.contains(debugger.getCurrentLine(), breakpoint.getLine())) {
-            //                return LINE_BREAKPOINT_PC;
-            //            }
             return LINE_BREAKPOINT;
         }
         throw new UnknownTypeException(node);
