@@ -395,6 +395,7 @@ public final class SQLproProject implements Project, AntProjectListener {
         // List of primarily supported templates
 
         private static final String[] TYPES = new String[] {
+			"SOA",
             "XML",                  // NOI18N
             "simple-files"          // NOI18N
         };
