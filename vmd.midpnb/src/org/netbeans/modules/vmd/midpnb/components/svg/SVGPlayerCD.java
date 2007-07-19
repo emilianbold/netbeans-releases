@@ -55,7 +55,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGPlayer"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_player_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_player_64.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_player_32.png"; // NOI18N
 
     public static final String PROP_SVG_IMAGE = "svgImage"; //NOI18N
     public static final String PROP_START_ANIM_IMMEDIATELY = "startAnimationImmediately"; //NOI18N
