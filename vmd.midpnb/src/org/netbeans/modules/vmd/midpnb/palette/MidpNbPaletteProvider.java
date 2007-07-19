@@ -28,6 +28,7 @@ import org.openide.loaders.DataFolder;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
+import java.net.URL;
 
 /**
  *
@@ -47,7 +48,7 @@ public class MidpNbPaletteProvider implements PaletteProvider {
                 if (catFO == null) {
                     DataFolder categoryFolder = DataFolder.create(rootFolder, CATEGORY_SVG);
                     categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midpnb.palette.Bundle"); // NOI18N
-                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midpnb/resources/category_svg_16.png"); // NOI18N
+                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midpnb/resources/category_svg_16.png")); // NOI18N
                     categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
                 }
             } catch (IOException e) {

@@ -25,15 +25,16 @@ import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.palette.wizard.AddToPaletteWizardAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collections;
-import org.openide.loaders.DataObject;
+import java.util.List;
+import java.net.URL;
 
 /**
  *
@@ -66,7 +67,7 @@ public class MidpPaletteProvider implements PaletteProvider {
                     if (catFO == null) {
                         DataFolder categoryFolder = DataFolder.create(rootFolder, categoryName);
                         categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
-                        categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midp/resource/components/category_" + categoryName + "_16.png"); // NOI18N
+                        categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_" + categoryName + "_16.png")); // NOI18N
                         categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
                         order.add(categoryFolder);
                     }
