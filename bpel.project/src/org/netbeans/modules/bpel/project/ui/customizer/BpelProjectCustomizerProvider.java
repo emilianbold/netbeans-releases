@@ -39,7 +39,6 @@ public class BpelProjectCustomizerProvider extends CustomizerProviderImpl {
     private static final String GENERAL = "General";
     private IcanproProjectProperties projectProperties;
 
-    /** Creates a new instance of BpelProjectCustomizerProvider */
     public BpelProjectCustomizerProvider(BpelproProject project) {
         super(project,project.getAntProjectHelper(),project.getReferenceHelper());
     }
@@ -47,9 +46,7 @@ public class BpelProjectCustomizerProvider extends CustomizerProviderImpl {
     protected Map<ProjectCustomizer.Category,JComponent> createCategoriesMap() {
         ProjectCustomizer.Category general = ProjectCustomizer.Category.create(
                 GENERAL,
-                NbBundle.getMessage(BpelProjectCustomizerProvider.class,
-                "LBL_Config_General"), // NOI18N
-                null,
+                NbBundle.getMessage(BpelProjectCustomizerProvider.class, "LBL_Config_General"), // NOI18N
                 null);
         getCategories().add(general);
         Map<ProjectCustomizer.Category,JComponent> map = super.createCategoriesMap();

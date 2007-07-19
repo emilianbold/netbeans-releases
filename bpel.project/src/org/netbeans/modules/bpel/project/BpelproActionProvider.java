@@ -195,7 +195,7 @@ class BpelproActionProvider implements ActionProvider {
         for (int i = 0, size = items.size(); i < size; i++) {
             VisualClassPathItem vi = (VisualClassPathItem) items.get(i);
             AntArtifact aa = (AntArtifact) vi.getObject();
-            String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
+            String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocations()[0].getPath();
             File asa = new File(loc);
             log("Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
             if (! asa.exists()) {
@@ -212,7 +212,7 @@ class BpelproActionProvider implements ActionProvider {
             Iterator it = artifacts.iterator();
             while(it.hasNext()) {
                 AntArtifact aa = (AntArtifact) it.next();
-                String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
+                String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocations()[0].getPath();
                 log("Building dependent project "+ loc + "...");
                 ExecutorTask task = ActionUtils.runTarget(aa.getScriptFile(), new String[] { aa.getTargetName() }, null);
                 task.addTaskListener(antTaskListener);

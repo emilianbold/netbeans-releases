@@ -398,10 +398,10 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
           saveCookie.save();
         }
         catch (DataObjectNotFoundException e) {
-          e.printStackTrace();
+//          e.printStackTrace();
         }
         catch (IOException e) {
-          e.printStackTrace();
+//          e.printStackTrace();
         }
       }
 
@@ -488,7 +488,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
       public CatalogListener(FileObject project, CatalogWriteModel catalog) {
 //System.out.println();
 //System.out.println();
-//System.out.println("NEW CATALOG LISTENER");
+//System.out.println("NEW CATALOG LISTENER " + project);
         myCatalog = catalog;
         myProject = project;
         myEntries = null;
@@ -608,10 +608,10 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
           FileUtil.copy(input, output);
         }
         catch (FileNotFoundException e) {
-          e.printStackTrace();
+//          e.printStackTrace();
         }
         catch (IOException e) {
-          e.printStackTrace();
+//          e.printStackTrace();
         }
         finally {
           if (lock != null) {
@@ -626,7 +626,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             }
           }
           catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
           }
         }
       }
