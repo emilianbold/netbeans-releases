@@ -29,6 +29,7 @@ import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.filesystems.FileUtil;
 import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 
 import java.io.*;
 import java.util.*;
@@ -97,9 +98,14 @@ public class FileStatusCache {
     private final String FILE_STATUS_MAP = DiskMapTurboProvider.ATTR_STATUS_MAP;
 
     private DiskMapTurboProvider cacheProvider;
+    
+    private final List<RefreshRequest> refreshRequests = new ArrayList<RefreshRequest>(10);
+    
+    private final RequestProcessor.Task refreshRequestsTask;
 
     FileStatusCache(CvsVersioningSystem cvsVersioningSystem) {
         this.cvs = cvsVersioningSystem;
+        refreshRequestsTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshRequestRunnable());
         sah = (CvsLiteAdminHandler) cvs.getAdminHandler();
 
         cacheProvider = new DiskMapTurboProvider();
@@ -200,6 +206,17 @@ public class FileStatusCache {
         }
     }
     
+    public void refresh(File file, int repositoryStatus, boolean forceChangeEvent) {
+        refreshLater(new RefreshRequest(file, repositoryStatus, forceChangeEvent));
+    }
+
+    private void refreshLater(RefreshRequest request) {
+        synchronized(refreshRequests) {
+            refreshRequests.add(request);
+        }
+        refreshRequestsTask.schedule(777);
+    }
+
     /**
      * Refreshes the status of the file given the repository status. Repository status is filled
      * in when this method is called while processing server output. 
@@ -208,7 +225,7 @@ public class FileStatusCache {
      * @param repositoryStatus
      * @param forceChangeEvent true to force the cache to fire the change event even if the status of the file has not changed
      */ 
-    public FileInformation refresh(File file, int repositoryStatus, boolean forceChangeEvent) {
+    public FileInformation refreshNow(File file, int repositoryStatus, boolean forceChangeEvent) {
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -266,7 +283,7 @@ public class FileStatusCache {
      * @param repositoryStatus
      */ 
     public FileInformation refresh(File file, int repositoryStatus) {
-        return refresh(file, repositoryStatus, false);
+        return refreshNow(file, repositoryStatus, false);
     }
 
     /**
@@ -683,6 +700,36 @@ public class FileStatusCache {
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
         public Set entrySet() {
             return Collections.EMPTY_SET;
+        }
+    }
+
+    private class RefreshRequestRunnable implements Runnable {
+        public void run() {
+            List<RefreshRequest> toProcess;
+            synchronized(refreshRequests) {
+                toProcess = new ArrayList<RefreshRequest>(refreshRequests);
+                refreshRequests.clear();
+            }
+            refresh(toProcess);              
+        }
+        
+        private void refresh(List<RefreshRequest> requests) {
+            for (RefreshRequest request : requests) {
+                FileStatusCache.this.refreshNow(request.file, request.repositoryStatus, request.forceChangeEvent);
+            }
+        }
+    }
+    
+    private class RefreshRequest {
+        
+        final File    file;
+        final int     repositoryStatus;
+        final boolean forceChangeEvent;
+
+        RefreshRequest(File file, int repositoryStatus, boolean forceChangeEvent) {
+            this.file = file;
+            this.repositoryStatus = repositoryStatus;
+            this.forceChangeEvent = forceChangeEvent;
         }
     }
 }

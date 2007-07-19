@@ -158,7 +158,7 @@ public class UpdateExecutor extends ExecutorSupport {
                 if (c == 'G') c = FileStatusCache.REPOSITORY_STATUS_MODIFIED;
                 if (c == 'C') hasConflict = true;
             }
-            cache.refresh(file, c, true);
+            cache.refreshNow(file, c, true);
             refreshedFiles.add(file);
         }
                 
