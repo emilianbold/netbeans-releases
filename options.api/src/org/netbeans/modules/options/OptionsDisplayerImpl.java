@@ -61,7 +61,7 @@ public class OptionsDisplayerImpl {
     private static String title = loc("CTL_Options_Dialog_Title");    
     private static Logger log = Logger.getLogger(OptionsDisplayerImpl.class.getName ());    
     private boolean modal;
-    static LookupListener lookupListener = new LookupListenerImpl();
+    static final LookupListener lookupListener = new LookupListenerImpl();
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -79,9 +79,11 @@ public class OptionsDisplayerImpl {
             log.fine("Front Options Dialog"); //NOI18N
             return;
         }
-                
-        DialogDescriptor descriptor = (DialogDescriptor) 
-            descriptorRef.get ();
+        
+        DialogDescriptor descriptor = null;
+        synchronized(lookupListener) {
+            descriptor = (DialogDescriptor)descriptorRef.get ();
+        }
         
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
@@ -98,7 +100,9 @@ public class OptionsDisplayerImpl {
             OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bClassic);
             descriptor.setButtonListener(listener);
             optionsPanel.addPropertyChangeListener(listener);
-            descriptorRef = new WeakReference<DialogDescriptor>(descriptor);
+            synchronized(lookupListener) {
+                descriptorRef = new WeakReference<DialogDescriptor>(descriptor);
+            }
             log.fine("Create new Options Dialog"); //NOI18N
         } else {
             optionsPanel = (OptionsPanel) descriptor.getMessage ();            
@@ -245,7 +249,9 @@ public class OptionsDisplayerImpl {
         public void windowClosed(WindowEvent e) {
             optionsPanel.storeUserSize();
             if (optionsPanel.needsReinit()) {
-                descriptorRef = new WeakReference<DialogDescriptor>(null);
+                synchronized (lookupListener) {
+                    descriptorRef = new WeakReference<DialogDescriptor>(null);
+                }
             }
             if (this.originalDialog == dialog) {
                 dialog = null;            
@@ -277,7 +283,9 @@ public class OptionsDisplayerImpl {
     
     private static class LookupListenerImpl implements LookupListener {
         public void resultChanged(LookupEvent ev) {
-            descriptorRef = new WeakReference<DialogDescriptor> (null);
+            synchronized (lookupListener) {
+                descriptorRef = new WeakReference<DialogDescriptor>(null);
+            }
         }
         
     }
