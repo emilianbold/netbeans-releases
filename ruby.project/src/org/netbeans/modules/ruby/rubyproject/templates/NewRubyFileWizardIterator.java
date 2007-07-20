@@ -22,8 +22,10 @@ package org.netbeans.modules.ruby.rubyproject.templates;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -153,7 +155,13 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         }
         else {
             DataObject dTemplate = DataObject.find( template );
-            DataObject dobj = dTemplate.createFromTemplate( df, targetName, wiz.getProperties());
+            
+            // Work around #109569
+            @SuppressWarnings("unchecked")
+            Map<String,Object> props = new HashMap(wiz.getProperties());
+            props.remove("project"); // NOI18N
+
+            DataObject dobj = dTemplate.createFromTemplate( df, targetName, props);
             createdFile = dobj.getPrimaryFile();
         }
         
