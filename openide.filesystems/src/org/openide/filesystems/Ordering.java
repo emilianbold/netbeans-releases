@@ -173,21 +173,96 @@ class Ordering {
     }
 
     static void setOrder(List<FileObject> children) throws IllegalArgumentException, IOException {
-        // XXX Simplistic initial implementation.
-        // http://wiki.netbeans.org/wiki/view/FolderOrdering103187#section-FolderOrdering103187-SettingOrder
-        // gives thoughts on a more sophisticated implementation which may be useful.
-        FileObject d = null;
-        int pos = 100;
+        boolean fullySpecified = true;
         for (FileObject f : children) {
-            FileObject p = f.getParent();
-            if (d == null) {
-                d = p;
-            } else if (d != p) {
-                throw new IllegalArgumentException("All children must have the same parent: " + p.getPath() + " vs. " + d.getPath()); // NOI18N
+            if (findPosition(f) == null) {
+                fullySpecified = false;
+                break;
             }
-            f.setAttribute(ATTR_POSITION, pos);
-            pos += 100;
         }
+        FileObject toBeMoved = null, before = null, after = null;
+        if (fullySpecified) {
+            List<FileObject> oldOrder = getOrder(children, false);
+            if (children.equals(oldOrder)) {
+                // Nothing to do.
+                return;
+            }
+            // First check to see if the change can be represented as a single move.
+            // If so, we prefer to change just one position attribute.
+            int length = children.size();
+            int start = 0;
+            while (start < length && children.get(start).equals(oldOrder.get(start))) {
+                start++;
+            }
+            int end = length - 1;
+            while (end >= 0 && children.get(end).equals(oldOrder.get(end))) {
+                end--;
+            }
+            int rangeLength = end - start + 1;
+            if (rangeLength > 2) {
+                // Check if the permutation within this range is just a rotation by one element.
+                if (children.get(end).equals(oldOrder.get(start)) && children.subList(start, end).equals(oldOrder.subList(start + 1, end + 1))) {
+                    // Left rotation.
+                    toBeMoved = children.get(end);
+                    before = children.get(end - 1);
+                    after = end + 1 < length ? children.get(end + 1) : null;
+                } else if (children.get(start).equals(oldOrder.get(end)) && children.subList(start + 1, end + 1).equals(oldOrder.subList(start, end))) {
+                    // Right rotation.
+                    toBeMoved = children.get(start);
+                    before = start - 1 >= 0 ? children.get(start - 1) : null;
+                    after = children.get(start + 1);
+                }
+            } else if (rangeLength == 2) {
+                // Adjacent swap.
+                if (start == 0) {
+                    // Use space on the left.
+                    toBeMoved = children.get(start);
+                    after = children.get(end);
+                } else if (end == length - 1) {
+                    // Use space on the right.
+                    toBeMoved = children.get(end);
+                    before = children.get(start);
+                } else {
+                    // Prefer to move the one which is closer to its outside neighbor.
+                    Float outLeft = findPosition(children.get(start - 1));
+                    Float outRight = findPosition(children.get(end + 1));
+                    Float left = findPosition(children.get(start));
+                    Float right = findPosition(children.get(end));
+                    if (outLeft != null && outRight != null && left != null && right != null) {
+                        if (left - outLeft < outRight - right) {
+                            toBeMoved = children.get(end);
+                            before = children.get(start);
+                            after = children.get(end + 1);
+                        } else {
+                            toBeMoved = children.get(start);
+                            before = children.get(start - 1);
+                            after = children.get(end);
+                        }
+                    }
+                }
+            } else {
+                assert rangeLength == 0 : oldOrder + " => " + children;
+            }
+        }
+        if (toBeMoved != null) {
+            // Do the swap.
+            if (before == null) {
+                toBeMoved.setAttribute(ATTR_POSITION, Math.round(findPosition(after) - 100));
+            } else if (after == null) {
+                toBeMoved.setAttribute(ATTR_POSITION, Math.round(findPosition(before) + 100));
+            } else {
+                toBeMoved.setAttribute(ATTR_POSITION, Math.round(findPosition(before) + findPosition(after)) / 2);
+            }
+        } else {
+            // More complex rearrangement. Fall back to a crude but correct behavior.
+            int pos = 100;
+            for (FileObject f : children) {
+                f.setAttribute(ATTR_POSITION, pos);
+                pos += 100;
+            }
+        }
+        // Kill off any old relative ordering attributes.
+        FileObject d = children.get(0).getParent();
         for (String attr : NbCollections.iterable(d.getAttributes())) {
             if (attr.indexOf('/') != -1 && d.getAttribute(attr) instanceof Boolean) {
                 d.setAttribute(attr, null);
@@ -198,6 +273,14 @@ class Ordering {
         if (asserts) {
             List<FileObject> actual = getOrder(children, false);
             assert actual.equals(children) : "setOrder(" + children + ") -> " + actual;
+        }
+    }
+    private static Float findPosition(FileObject f) {
+        Object o = f.getAttribute(ATTR_POSITION);
+        if (o instanceof Number) {
+            return ((Number) o).floatValue();
+        } else {
+            return null;
         }
     }
 

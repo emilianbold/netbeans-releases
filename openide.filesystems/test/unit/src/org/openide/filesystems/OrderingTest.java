@@ -218,6 +218,21 @@ public class OrderingTest extends NbTestCase {
         assertEmptyLog();
     }
 
-    // XXX tests of more advanced setOrder behavior, IAE, ...
+    public void testSetOrderConservativeOneJump() throws Exception {
+        apex.setAttribute("position", 17);
+        ball.setAttribute("position", 9);
+        cone.setAttribute("position", 23);
+        dent.setAttribute("position", 5);
+        Ordering.setOrder(Arrays.asList(dent, apex, ball, cone));
+        assertOrder(true, dent, apex, ball, cone);
+        assertEquals(5, dent.getAttribute("position"));
+        assertEquals(23, cone.getAttribute("position"));
+        assertEquals(17, apex.getAttribute("position"));
+        assertEquals(20, ball.getAttribute("position"));
+        assertEmptyLog();
+        // XXX test also complex reorders; swaps with left bias; larger rotations; moves to start or end; {X} => {X} and {} => {}; ad nauseam
+    }
+
+    // XXX test IAE, ...
 
 }
