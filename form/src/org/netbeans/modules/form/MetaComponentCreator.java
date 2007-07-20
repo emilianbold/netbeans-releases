@@ -266,6 +266,7 @@ public class MetaComponentCreator {
             int targetPlacement = getTargetPlacement(preMetaComp.getBeanClass(), targetComp, true, false);
             if (targetPlacement == TARGET_VISUAL) {
                 addVisualComponent2(preMetaComp, targetComp, constraints, true);
+                ResourceSupport.switchComponentToResources(preMetaComp);
             }
             releasePrecreatedComponent();
             return true;
@@ -347,6 +348,10 @@ public class MetaComponentCreator {
         {   // container with new layout...
             createAndAddLayoutComponent((RADVisualComponent)newMetaComp,
                                         (RADVisualContainer)targetComp);
+        }
+
+        if (newMetaComp != null) {
+            ResourceSupport.switchComponentToResources(newMetaComp);
         }
 
         return newMetaComp;
@@ -1355,10 +1360,10 @@ public class MetaComponentCreator {
                 changes.put("text", value); // NOI18N
             }
             if(comp instanceof JCheckBoxMenuItem) {
-                changes.put("selected",new Boolean(true));
+                changes.put("selected", new Boolean(true)); // NOI18N
             }
             if(comp instanceof JRadioButtonMenuItem) {
-                changes.put("selected",new Boolean(true));
+                changes.put("selected", new Boolean(true)); // NOI18N
             }
         } else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
             if ("".equals(((AbstractButton)comp).getText())) { // NOI18N
@@ -1483,17 +1488,19 @@ public class MetaComponentCreator {
             Container menuBar = (Container) menuCont.getBeanInstance();
             RADVisualComponent menuComp = createVisualComponent(JMenu.class);
             try {
-            menuComp.getBeanProperty("text").setValue("File");
-            } catch (Throwable thr) { }
+                menuComp.getBeanProperty("text") // NOI18N
+                        .setValue(FormUtils.getBundleString("CTL_DefaultFileMenu")); // NOI18N
+            } catch (Exception ex) { }
             Component menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(
                     menuBar, menuBar, new Component[] { menu }, 0);
-            
+
             menuComp = createVisualComponent(JMenu.class);
             try {
-            menuComp.getBeanProperty("text").setValue("Edit");
-            } catch (Throwable thr) { }
+                menuComp.getBeanProperty("text") // NOI18N
+                        .setValue(FormUtils.getBundleString("CTL_DefaultEditMenu")); // NOI18N
+            } catch (Exception ex) { }
             menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(
