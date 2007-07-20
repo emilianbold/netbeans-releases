@@ -110,6 +110,10 @@ public class ComponentSerializationSupport {
                 setAttribute (document, paletteNode, XMLComponentDescriptor.TOOLTIP_ATTR, paletteDescriptor.getToolTip ());
             if (paletteDescriptor.getCategoryID () != null)
                 setAttribute (document, paletteNode, XMLComponentDescriptor.PREFERRED_CATEGORYID_ATTR, paletteDescriptor.getCategoryID ());
+            if (paletteDescriptor.getSmallIcon () != null)
+                setAttribute (document, paletteNode, XMLComponentDescriptor.SMALL_ICON_ATTR, paletteDescriptor.getSmallIcon ());
+            if (paletteDescriptor.getLargeIcon () != null)
+                setAttribute (document, paletteNode, XMLComponentDescriptor.LARGE_ICON_ATTR, paletteDescriptor.getLargeIcon ());
             rootNode.appendChild (paletteNode);
         }
             
@@ -158,6 +162,10 @@ public class ComponentSerializationSupport {
             setAttribute (document, rootNode, XMLComponentProducer.TOOLTIP_ATTR, paletteDescriptor.getToolTip ());
         if (paletteDescriptor.getCategoryID () != null)
             setAttribute (document, rootNode, XMLComponentProducer.PREFERRED_CATEGORYID_ATTR, paletteDescriptor.getCategoryID ());
+        if (paletteDescriptor.getSmallIcon () != null)
+            setAttribute (document, rootNode, XMLComponentDescriptor.SMALL_ICON_ATTR, paletteDescriptor.getSmallIcon ());
+        if (paletteDescriptor.getLargeIcon () != null)
+            setAttribute (document, rootNode, XMLComponentDescriptor.LARGE_ICON_ATTR, paletteDescriptor.getLargeIcon ());
 
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
         DataFolder producersFolder = registry.getProducersFolder ();
