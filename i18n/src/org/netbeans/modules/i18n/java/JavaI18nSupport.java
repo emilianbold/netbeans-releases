@@ -124,8 +124,9 @@ public class JavaI18nSupport extends I18nSupport {
         }
         
         i18nString.setComment(""); // NOI18N
-        i18nString.setKey(hcString.getText().replace(' ', '_'));
-        i18nString.setValue(hcString.getText());
+        String text = decodeUnicodeSeq(hcString.getText());
+        i18nString.setKey(text.replace(' ', '_'));
+        i18nString.setValue(text);
 
         // If generation of field is set and replace format doesn't include identifier argument replace it with the default with identifier.
         if (isGenerateField() && i18nString.getReplaceFormat().indexOf("{identifier}") == -1) { // NOI18N
@@ -134,6 +135,192 @@ public class JavaI18nSupport extends I18nSupport {
         return i18nString;
     }
 
+    private static final String octalDigitChars
+                                = "01234567";                           //NOI18N
+    private static final String hexaDigitChars
+                                = "0123456789abcdefABCDEF";             //NOI18N
+
+    /**
+     * Translates Java Unicode sequences (<code>&#x5c;u<i>nnnn</i></code>)
+     * to the corresponding characters.
+     * @param  text  text with or without Unicode sequences
+     * @return  the same text with Unicode sequences replaced with corresponding
+     *          characters; may be the same instance as the passed text
+     *          if there were no valid Unicode sequences present in it
+     * @author  Marian Petras
+     */
+    private static String decodeUnicodeSeq(String text) {
+        final StringBuilder result = new StringBuilder(text.length());
+        final char[] chars = text.toCharArray();
+
+        final int stateInitial = 0;
+        final int stateBackSlash = 1;
+        final int stateUnicode = 2;
+        final int stateOctalValue = 3;
+
+        int state = stateInitial;
+        int unicodeValue = 0;
+        char[] unicodeValueChars = new char[3];
+        int valueBytesRead = 0;
+        int position;
+
+        int charIndex = 0;
+        while (charIndex < chars.length) {
+            char c = chars[charIndex++];
+            switch (state) {
+                case stateInitial:
+                    if (c == '\\') {
+                        state = stateBackSlash;
+                    } else {
+                        result.append(c);
+                    }
+                    break;
+                case stateBackSlash:
+                    if (c == 'u') {
+                        state = stateUnicode;
+                    } else if ((c >= '0') && (c <= '3')) {
+                        unicodeValue = c - '0';
+                        assert (unicodeValue >= 0) && (unicodeValue <= 3);
+                        valueBytesRead = 1;
+                        state = stateOctalValue;
+                    } else {
+                        result.append('\\').append(c);
+                        state = stateInitial;
+                    }
+                    break;
+                case stateOctalValue:
+                    position = octalDigitChars.indexOf(c);
+                    if (position >= 0) {
+                        unicodeValue = (unicodeValue << 3) | position;
+                        valueBytesRead++;
+                    } else {
+                        charIndex--;    //handle the character in the next round
+                    }
+                    if ((position < 0) || (valueBytesRead == 3)) {
+                        appendChar(result, unicodeValue);
+                        state = stateInitial;
+                        valueBytesRead = 0;
+                        unicodeValue = 0;
+                    }
+                    break;
+                case stateUnicode:
+                    position = hexaDigitChars.indexOf(c);
+                    if (position >= 0) {
+                        if (position > 15) {   //one of [A-F] used
+                            position -= 6;     //transform to lowercase
+                        }
+                        assert position <= 15;
+                        unicodeValue = (unicodeValue << 4) | position;
+                        if (++valueBytesRead == 4) {
+                            appendChar(result, unicodeValue);
+                            state = stateInitial;
+                        } else {
+                            unicodeValueChars[valueBytesRead - 1] = c;
+                            /* keep the state at stateUnicode */
+                        }
+                    } else if (c == 'u') {
+                        /*
+                         * Handles \\u.... sequences with multiple
+                         * 'u' characters, such as \\uuu1234 (which is legal).
+                         */
+
+                        /* keep the state at stateUnicode */
+                    } else {
+                        /* append the malformed Unicode sequence: */
+                        result.append('\\');
+                        result.append('u');
+                        for (int i = 0; i < valueBytesRead; i++) {
+                            result.append(unicodeValueChars[i]);
+                        }
+                        result.append(c);
+                        state = stateInitial;
+                    }
+                    if (state != stateUnicode) {
+                        valueBytesRead = 0;
+                        unicodeValue = 0;
+                    }
+                    break;
+                default:
+                    assert false;
+                    throw new IllegalStateException();
+            } //switch (state)
+        } //for-loop
+        switch (state) {
+            case stateInitial:
+                break;
+            case stateBackSlash:
+                result.append('\\');
+                break;
+            case stateOctalValue:
+                assert (valueBytesRead >= 0) && (valueBytesRead < 3);
+                appendChar(result, unicodeValue);
+                break;
+            case stateUnicode:
+                /* append the incomplete Unicode sequence: */
+                assert (valueBytesRead >= 0) && (valueBytesRead < 4);
+                result.append('\\').append('u');
+                for (int i = 0; i < valueBytesRead; i++) {
+                    result.append(unicodeValueChars[i]);
+                }
+                break;
+            default:
+                assert false;
+                throw new IllegalStateException();
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Appends a character to the given buffer.
+     * 
+     * @param  buf  buffer to which a character is to be added
+     * @param  unicodeValue  Unicode value of the character to be appended;
+     *                       must be in range from {@code 0} to {@code 65535}
+     * @return  the passed buffer
+     */
+    private static final StringBuilder appendChar(StringBuilder buf,
+                                                  int unicodeValue)
+                throws IllegalArgumentException {
+        if ((unicodeValue < 0) || (unicodeValue > 0xffff)) {
+            throw new IllegalArgumentException("value out of range: "   //NOI18N
+                                               + unicodeValue);
+        }
+
+        /* append the Unicode character: */
+        if ((unicodeValue >= 0x20) && (unicodeValue != 0x7f)) {
+            buf.append((char) unicodeValue);
+        } else {
+            buf.append('\\');
+            switch (unicodeValue) {
+                case 0x08:
+                    buf.append('b');            //bell
+                    break;
+                case 0x09:
+                    buf.append('t');            //tab
+                    break;
+                case 0x0a:
+                    buf.append('n');            //NL
+                    break;
+                case 0x0c:
+                    buf.append('f');            //FF
+                    break;
+                case 0x0d:
+                    buf.append('r');            //CR
+                    break;
+                default:
+                    buf.append('u');
+                    for (int shift = 12; shift >= 0; shift -= 4) {
+                        buf.append(hexaDigitChars.charAt(
+                                ((unicodeValue >> shift) & 0xf)));
+                    }
+                    break;
+            }
+        }
+
+        return buf;
+    }
+    
     /** Implements <code>I18nSupport</code> superclass abstract method. Gets info panel about found hard string. */
     public JPanel getInfo(HardCodedString hcString) {
         return new JavaInfoPanel(hcString, document);

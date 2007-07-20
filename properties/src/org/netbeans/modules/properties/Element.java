@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -129,6 +129,36 @@ public abstract class Element implements Serializable {
     /** General class for basic elements, which contain value directly. */
     public static abstract class Basic extends Element {
 
+        private static final String hexaDigitChars
+                                    = "0123456789abcdefABCDEF";         //NOI18N
+
+        protected static void appendIsoControlChar(final StringBuilder buf,
+                                                   final char c) {
+            switch (c) {
+            case '\b':
+                buf.append('\\').append('b');
+                break;
+            case '\t':
+                buf.append('\\').append('t');
+                break;
+            case '\n':
+                buf.append('\\').append('n');
+                break;
+            case '\f':
+                buf.append('\\').append('f');
+                break;
+            case '\r':
+                buf.append('\\').append('r');
+                break;
+            default:
+                buf.append('\\').append('u');
+                for (int shift = 12; shift >= 0; shift -= 4) {
+                    buf.append(hexaDigitChars.charAt(
+                                    ((c >> shift) & 0xf)));
+                }
+            }
+        }
+
         /** Parsed value of the element */
         protected String value;
 
@@ -193,8 +223,42 @@ public abstract class Element implements Serializable {
         * @return the string
         */
         public String getDocumentString() {
-            return UtilConvert.saveConvert(value, true) + "=";
+            return escapeSpecialChars(value) + "=";                     //NOI18N
         }
+
+        /**
+         * 
+         * @author  Marian Petras
+         */
+        private static final String escapeSpecialChars(final String text) {
+            StringBuilder buf = new StringBuilder(text.length() + 16);
+
+            final int length = text.length();
+            for (int i = 0; i < length; i++) {
+                char c = text.charAt(i);
+                if (c < 0x20) {
+                    Basic.appendIsoControlChar(buf, c);
+                } else {
+                    switch (c) {
+                    case '#':
+                    case '!':
+                        if (i == 0) {
+                            buf.append('\\');
+                        }
+                        break;
+                    case ' ':
+                    case '=':
+                    case ':':
+                    case '\\':
+                        buf.append('\\');
+                        break;
+                    }
+                    buf.append(c);
+                }
+            }
+            return buf.toString();
+        }
+
     } // End of nested class KeyElem.
     
 
@@ -214,8 +278,31 @@ public abstract class Element implements Serializable {
         */
         public String getDocumentString() {
             // escape outerspaces and continious line marks
-            return UtilConvert.saveConvert(value) + "\n";
+            return escapeSpecialChars(value) + "\n";                    //NOI18N
         }
+
+        /**
+         * 
+         * @author  Marian Petras
+         */
+        private static final String escapeSpecialChars(final String text) {
+            StringBuilder buf = new StringBuilder(text.length() + 16);
+
+            final int length = text.length();
+            for (int i = 0; i < length; i++) {
+                char c = text.charAt(i);
+                if (c < 0x20) {
+                    Basic.appendIsoControlChar(buf, c);
+                } else {
+                    if (c == '\\') {
+                        buf.append('\\');
+                    }
+                    buf.append(c);
+                }
+            }
+            return buf.toString();
+        }
+
     } // End of nested class ValueElem.
 
     /**
@@ -261,7 +348,7 @@ public abstract class Element implements Serializable {
                     // new line
                     if (aChar == '\n') {
                         String line = sb.substring(lineStart, i);
-                        String convertedLine = UtilConvert.saveConvert(line);
+                        String convertedLine = ValueElem.escapeSpecialChars(line);
                         sb.replace(lineStart, i, convertedLine);
 
                         // shift the index:
