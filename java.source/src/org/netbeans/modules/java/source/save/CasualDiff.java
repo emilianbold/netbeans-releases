@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.save;
 import java.util.*;
 import com.sun.source.tree.*;
 import java.util.logging.Logger;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -2057,6 +2058,7 @@ public class CasualDiff {
         diffCommentLists(oldT, newT, oldComments, newComments, true);
     }
     
+    // refactor it! make it better
     private void diffCommentLists(JCTree oldT, JCTree newT, List<Comment>oldList, 
                                   List<Comment>newList, boolean trailing) {
         int lastPos = getOldPos(oldT);
@@ -2072,26 +2074,28 @@ public class CasualDiff {
             }
             else if (!listContains(newList, oldC)) {
                 if  (!listContains(oldList, newC)) {
-                    append(Diff.modify(oldT, newT, oldC, newC));
+//                    append(Diff.modify(oldT, newT, oldC, newC));
                     oldC = safeNext(oldIter);
                     newC = safeNext(newIter);
                 } else {
-                    append(Diff.delete(oldT, newT, oldC));
+//                    append(Diff.delete(oldT, newT, oldC));
                     oldC = safeNext(oldIter);
                 }
             }
             else {
-                append(Diff.insert(lastPos, oldT, newT, newC, trailing));
+                printer.print(newC.getText());
                 newC = safeNext(newIter);
             }
         }
         while (oldC != null) {
-            append(Diff.delete(oldT, newT, oldC));
+//            append(Diff.delete(oldT, newT, oldC));
             oldC = safeNext(oldIter);
         }
         while (newC != null) {
-            append(Diff.insert(lastPos, oldT, newT, newC, trailing));
-            lastPos += newC.endPos() - newC.pos();
+            if (Style.WHITESPACE != newC.style()) {
+                printer.print(newC.getText());
+                lastPos += newC.endPos() - newC.pos();
+            }
             newC = safeNext(oldIter);
         }
     }
