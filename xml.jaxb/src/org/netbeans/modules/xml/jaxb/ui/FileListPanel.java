@@ -69,8 +69,11 @@ public class FileListPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(scrlPnFiles, gridBagConstraints);
+        scrlPnFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileListPanel.class, "ASN_Files")); // NOI18N
+        scrlPnFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileListPanel.class, "ASD_Files")); // NOI18N
 
-        btnAdd.setText(org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindingFiles_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnAdd, org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindingFiles_Add")); // NOI18N
+        btnAdd.setToolTipText(org.openide.util.NbBundle.getMessage(FileListPanel.class, "TT_BindingFilesAddBtn")); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPressedEvent(evt);
@@ -83,7 +86,8 @@ public class FileListPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
         add(btnAdd, gridBagConstraints);
 
-        btnRemove.setText(org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindinfFiles_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnRemove, org.openide.util.NbBundle.getMessage(FileListPanel.class, "LBL_BindinfFiles_Remove")); // NOI18N
+        btnRemove.setToolTipText(org.openide.util.NbBundle.getMessage(FileListPanel.class, "TT_BindingFilesRemoveBtn")); // NOI18N
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPressedEvent(evt);
@@ -95,6 +99,9 @@ public class FileListPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 10);
         add(btnRemove, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileListPanel.class, "ASN_FileList")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileListPanel.class, "ASD_FileList")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnPressedEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPressedEvent

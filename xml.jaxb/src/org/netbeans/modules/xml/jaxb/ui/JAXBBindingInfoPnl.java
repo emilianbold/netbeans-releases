@@ -85,21 +85,26 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        lblSchemaName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaName")); // NOI18N
+        lblSchemaName.setLabelFor(txtSchemaName);
+        org.openide.awt.Mnemonics.setLocalizedText(lblSchemaName, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(lblSchemaName, gridBagConstraints);
+        lblSchemaName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "A11Y_Desc_BindingName")); // NOI18N
 
+        lblPrjName.setLabelFor(txtPrjName);
         lblPrjName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(lblPrjName, gridBagConstraints);
+        lblPrjName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "A11Y_Desc_Lbl_Project")); // NOI18N
 
         lblSchemaFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchamaFile")); // NOI18N
+        lblSchemaFile.setToolTipText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "TTP_SchemaLoc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -109,7 +114,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
 
         schemaSource.add(rdoSelectFromFileSys);
         rdoSelectFromFileSys.setSelected(true);
-        rdoSelectFromFileSys.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromLocalFileSystem")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rdoSelectFromFileSys, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromLocalFileSystem")); // NOI18N
         rdoSelectFromFileSys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rdoSelectFromFileSys.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rdoSelectFromFileSys.addActionListener(new java.awt.event.ActionListener() {
@@ -125,6 +130,8 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 0);
         add(rdoSelectFromFileSys, gridBagConstraints);
+        rdoSelectFromFileSys.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASN_rdb_SelectFromLocalFileSys")); // NOI18N
+        rdoSelectFromFileSys.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_SelectLocal")); // NOI18N
 
         txtSchemaName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -144,6 +151,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(txtSchemaName, gridBagConstraints);
+        txtSchemaName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "A11Y_Desc_BindingNameTxt")); // NOI18N
 
         txtPrjName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -154,6 +162,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(txtPrjName, gridBagConstraints);
+        txtPrjName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "A11Y_Desc_txt_Project")); // NOI18N
 
         txtFilePath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -174,8 +183,10 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 35, 5, 0);
         add(txtFilePath, gridBagConstraints);
+        txtFilePath.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASN_txt_LocalSchema")); // NOI18N
+        txtFilePath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_txt_LocalSchemaPath")); // NOI18N
 
-        btnBrowseFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnBrowseFile, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
         btnBrowseFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSelectionHandler(evt);
@@ -187,9 +198,11 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         add(btnBrowseFile, gridBagConstraints);
+        btnBrowseFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASN_btnBrowseSchema")); // NOI18N
+        btnBrowseFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_BrowseLocalSchema")); // NOI18N
 
         schemaSource.add(rdoSelectURL);
-        rdoSelectURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromURL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rdoSelectURL, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SelectFromURL")); // NOI18N
         rdoSelectURL.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rdoSelectURL.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rdoSelectURL.addActionListener(new java.awt.event.ActionListener() {
@@ -205,6 +218,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 0);
         add(rdoSelectURL, gridBagConstraints);
+        rdoSelectURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_SelectURL")); // NOI18N
 
         txtURL.setEditable(false);
         txtURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_URL_Filler")); // NOI18N
@@ -226,13 +240,19 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 35, 5, 5);
         add(txtURL, gridBagConstraints);
+        txtURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASN_txt_URL")); // NOI18N
+        txtURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_txt_SchemaURL")); // NOI18N
 
-        lblPackageName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_PackageName")); // NOI18N
+        lblPackageName.setLabelFor(txtPackageName);
+        org.openide.awt.Mnemonics.setLocalizedText(lblPackageName, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_PackageName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(lblPackageName, gridBagConstraints);
+        lblPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_lbl_package_name")); // NOI18N
+
+        txtPackageName.setToolTipText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "TTP_PackageName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -241,6 +261,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(txtPackageName, gridBagConstraints);
+        txtPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_txt_PackageName")); // NOI18N
 
         lblOptions.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Options")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -249,13 +270,16 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(lblOptions, gridBagConstraints);
+        lblOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_CompileOoptions")); // NOI18N
 
-        lblSchemaType.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaType")); // NOI18N
+        lblSchemaType.setLabelFor(cmbSchemaType);
+        org.openide.awt.Mnemonics.setLocalizedText(lblSchemaType, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaType")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(lblSchemaType, gridBagConstraints);
+        lblSchemaType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_lbl_SchemaType")); // NOI18N
 
         cmbSchemaType.setModel(getSchemaTypeComboBoxModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -266,6 +290,8 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(cmbSchemaType, gridBagConstraints);
+        cmbSchemaType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_cmb_SchemaType")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -275,7 +301,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
         add(jSeparator1, gridBagConstraints);
 
-        chkbxUseBindingFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseBindingFile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxUseBindingFile, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseBindingFile")); // NOI18N
         chkbxUseBindingFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseBindingFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseBindingFile.addActionListener(new java.awt.event.ActionListener() {
@@ -289,8 +315,9 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(chkbxUseBindingFile, gridBagConstraints);
+        chkbxUseBindingFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_chkbx_UseBindingFiles")); // NOI18N
 
-        chkbxUseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseCatalogFile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxUseCatalogFile, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseCatalogFile")); // NOI18N
         chkbxUseCatalogFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseCatalogFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseCatalogFile.addActionListener(new java.awt.event.ActionListener() {
@@ -304,8 +331,9 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(chkbxUseCatalogFile, gridBagConstraints);
+        chkbxUseCatalogFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_chkbx_UseCatalog")); // NOI18N
 
-        chkbxUseExtension.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseExtension")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxUseExtension, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_UseExtension")); // NOI18N
         chkbxUseExtension.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         chkbxUseExtension.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxUseExtension.addActionListener(new java.awt.event.ActionListener() {
@@ -319,8 +347,9 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(chkbxUseExtension, gridBagConstraints);
+        chkbxUseExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_chkbxUseXtension")); // NOI18N
 
-        btnSelectBindingFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Configure")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnSelectBindingFile, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Configure")); // NOI18N
         btnSelectBindingFile.setEnabled(false);
         btnSelectBindingFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -333,6 +362,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
         add(btnSelectBindingFile, gridBagConstraints);
+        btnSelectBindingFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_btn_Configure")); // NOI18N
 
         cmbBindingFiles.setModel(getBindingFilesComboBoxModel());
         cmbBindingFiles.setEnabled(false);
@@ -344,6 +374,8 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(cmbBindingFiles, gridBagConstraints);
+        cmbBindingFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASN_cmb_importedBindingFiles")); // NOI18N
+        cmbBindingFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_cmb_ImportedBindingFiles")); // NOI18N
 
         txtCatalogFile.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -353,8 +385,10 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(txtCatalogFile, gridBagConstraints);
+        txtCatalogFile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASN_Catalog")); // NOI18N
+        txtCatalogFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "asd_Catalog")); // NOI18N
 
-        btnBrowseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btnBrowseCatalogFile, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_BrowseCatalog")); // NOI18N
         btnBrowseCatalogFile.setEnabled(false);
         btnBrowseCatalogFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -367,7 +401,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
         add(btnBrowseCatalogFile, gridBagConstraints);
-
+        btnBrowseCatalogFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "ASD_btnBrowseCatalog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void focusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_focusLost
@@ -396,17 +430,21 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         this.chkbxVerbose.setMargin(new Insets(5, 5, 5, 5));
         this.chkbxQuiet.setMargin(new Insets(5, 5, 5, 5));        
 
-        chkbxNv.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N
+        //chkbxNv.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxNv, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N        
         chkbxNv.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        chkbxReadOnly.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N
+        //chkbxReadOnly.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxReadOnly, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N        
         chkbxReadOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        chkbxNpa.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N
+        //chkbxNpa.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxNpa, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N        
         chkbxNpa.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
 
-        chkbxVerbose.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N
+        //chkbxVerbose.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxVerbose, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N        
         chkbxVerbose.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         chkbxVerbose.addActionListener(new java.awt.event.ActionListener() {
@@ -415,7 +453,8 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             }
         });
 
-	chkbxQuiet.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet")); // NOI18N
+	//chkbxQuiet.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkbxQuiet, org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet")); // NOI18N        
 	chkbxQuiet.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 	chkbxQuiet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

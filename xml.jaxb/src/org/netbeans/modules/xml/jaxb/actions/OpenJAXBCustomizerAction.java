@@ -172,6 +172,8 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                 DialogDisplayer dd = DialogDisplayer.getDefault();
                 Dialog dlg = dd.createDialog( descriptor );
                 dlg.setTitle(getDialogTitle()); 
+                dlg.getAccessibleContext().setAccessibleDescription(
+                        getDialogTitle());
                 dlg.setVisible( true );
                 
                 if ( descriptor.getValue() == WizardDescriptor.FINISH_OPTION ) {
