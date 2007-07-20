@@ -22,14 +22,16 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Services">
         <folder name="Hidden">
-	    <attr name="chat-Chat.instance/chat-Text.instance" boolvalue="true"/>
-            <file name="chat-Text.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.text.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/collab/channel/chat/text/resources/txtObject.gif"/>
-                <attr name="contentType" stringvalue="text/plain"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentType"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentTypeImpl.create"/>
-            </file>
+            <folder name="Chat">
+                <file name="chat-Text.instance">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.text.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/collab/channel/chat/text/resources/txtObject.gif"/>
+                    <attr name="contentType" stringvalue="text/plain"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentType"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentTypeImpl.create"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>

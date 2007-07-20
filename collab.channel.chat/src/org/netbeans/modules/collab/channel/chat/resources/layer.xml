@@ -22,13 +22,16 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Services">
         <folder name="Hidden">
-            <file name="chat-Chat.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/collab/channel/chat/resources/chat_bubble.png"/>
-                <attr name="contentType" stringvalue="text"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentType"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentTypeImpl.create"/>
-            </file>
+            <folder name="Chat">
+                <file name="chat-Chat.instance">
+                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/collab/channel/chat/resources/chat_bubble.png"/>
+                    <attr name="contentType" stringvalue="text"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentType"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.collab.channel.chat.messagetype.CollabContentTypeImpl.create"/>
+                </file>
+            </folder>
         </folder>
         <folder name="Collaboration">
             <folder name="Channels">
