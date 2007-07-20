@@ -36,10 +36,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Collaboration">
             <folder name="Channels">
                 <file name="org-netbeans-modules-collab-channel-chat-ChatCollabletFactory.instance"/>
+                <!-- XXX CCFS does not exist!
                 <file name="org-netbeans-modules-collab-channel-chat-ChatCollabletFactorySettings.settings" url="ChatCollabletFactorySettings.settings">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.Bundle"/>
                     <attr name="SystemFileSystem.layer" stringvalue="session"/>
                 </file>
+                -->
             </folder>
         </folder>
         <folder name="JavaHelp">

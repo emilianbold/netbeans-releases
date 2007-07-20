@@ -24,10 +24,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Collaboration">
             <folder name="Channels">
 	        <file name="org-netbeans-modules-collab-channel-output-OutputCollabletFactory.instance"/>
+                <!-- XXX OCFS does not exist!
 		<file name="org-netbeans-modules-collab-channel-output-OutputCollabletFactorySettings.settings" url="OutputCollabletFactorySettings.settings">
 		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.output.Bundle"/>
 		    <attr name="SystemFileSystem.layer" stringvalue="session"/>
 		</file>
+                -->
 	    </folder>
 	</folder>
     </folder>
