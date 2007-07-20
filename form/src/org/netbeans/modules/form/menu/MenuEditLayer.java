@@ -357,7 +357,7 @@ public class MenuEditLayer extends JPanel {
                     Node[] oldNodes = (Node[])evt.getOldValue();
                     Node[] newNodes = (Node[])evt.getNewValue();
                     List<RADComponent> selectedNodes = new ArrayList<RADComponent>();
-                    
+
                     for(Node n : newNodes) {
                         if(n instanceof RADComponentNode) {
                             RADComponentNode radn = (RADComponentNode) n;
@@ -591,7 +591,9 @@ public class MenuEditLayer extends JPanel {
             for(RADComponent rad : selectedComponents) {
                 if(isMenuRelatedRADComponent(rad)) {
                     JComponent c = (JComponent) formDesigner.getComponent(rad);
-                    c.setBackground(getNormalBackground(c));
+                    if(c != null) { // could be null if comp was just deleted
+                        c.setBackground(getNormalBackground(c));
+                    }
                 }
             }
 
@@ -943,13 +945,16 @@ public class MenuEditLayer extends JPanel {
     
     // change the look of the component to reflect the fully edited state
     void configureEditedComponent(JComponent c) {
-        p("configuring an edited component");
+        //p("configuring an edited component");
         if(c.getForeground() == Color.LIGHT_GRAY) {
             c.setForeground(getNormalForeground(c));
         }
     }
+    
     void configureEditedComponent(RADComponent c) {
-        configureEditedComponent((JComponent)formDesigner.getComponent(c));
+        if(c != null) {
+            configureEditedComponent((JComponent)formDesigner.getComponent(c));
+        }
     }
 
     //listens to see if this particular menu has been changed
