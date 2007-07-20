@@ -89,7 +89,7 @@ class DiffFacility {
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);
         
-        List diffs = new ComputeDiff(lines1, lines2).diff();
+        List diffs = new ComputeDiff<Line>(lines1, lines2).diff();
         for (Object o : diffs) {
             Difference diff     = (Difference)o; // generify
             int delStart = diff.getDeletedStart();
@@ -171,9 +171,8 @@ class DiffFacility {
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);
         
-        List diffs = new ComputeDiff(lines1, lines2).diff();
-        for (Object o : diffs) {
-            Difference diff     = (Difference)o; // generify
+        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2).diff();
+        for (Difference diff : diffs) {
             int delStart = diff.getDeletedStart();
             int delEnd   = diff.getDeletedEnd();
             int addStart = diff.getAddedStart();

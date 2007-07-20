@@ -157,9 +157,8 @@ public class Reformatter {
         ArrayList<Token<JavaTokenId>> textTokens = new ArrayList<Token<JavaTokenId>>();
         while(textTS.moveNext())
             textTokens.add(textTS.token());
-        List tokenDiffs = new ComputeDiff(sourceTokens, textTokens, new TokenComparator()).diff();
-        for(Object o : tokenDiffs) {
-            Difference tDiff = (Difference)o;
+        List<Difference> tokenDiffs = new ComputeDiff<Token<JavaTokenId>>(sourceTokens, textTokens, new TokenComparator()).diff();
+        for(Difference tDiff : tokenDiffs) {
             int delStart = tDiff.getDeletedStart();
             int delEnd   = tDiff.getDeletedEnd();
             int addStart = tDiff.getAddedStart();
@@ -269,13 +268,12 @@ public class Reformatter {
         LinkedList<Diff> diffs = new LinkedList<Diff>();
         List<String> sourceLines = getLines(source);
         List<String> textLines = getLines(text);
-        List lineDiffs = new ComputeDiff(sourceLines, textLines, new SimpleLineComparator()).diff();
+        List<Difference> lineDiffs = new ComputeDiff<String>(sourceLines, textLines, new SimpleLineComparator()).diff();
         int i = 0;
         int j = 0;
         int lineOffset = offset;
         int lineEndOffset = offset;
-        for (Object l : lineDiffs) {
-            Difference lineDiff = (Difference) l;
+        for (Difference lineDiff : lineDiffs) {
             int lineDelStart = lineDiff.getDeletedStart();
             int lineDelEnd = lineDiff.getDeletedEnd();
             int lineAddStart = lineDiff.getAddedStart();

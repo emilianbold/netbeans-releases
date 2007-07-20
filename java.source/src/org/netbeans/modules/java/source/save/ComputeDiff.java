@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source.save;
@@ -34,21 +34,21 @@ import java.util.*;
  * <p>The file FileDiff.java shows an example usage of this class, in an
  * application similar to the Unix "diff" program.</p>
  */
-public class ComputeDiff {
+public class ComputeDiff<E> {
     /**
      * The source array, AKA the "from" values.
      */
-    protected Object[] a;
+    private E[] a;
     
     /**
      * The target array, AKA the "to" values.
      */
-    protected Object[] b;
+    private E[] b;
     
     /**
      * The list of differences, as <code>Difference</code> instances.
      */
-    protected List diffs = new ArrayList();
+    private List<Difference> diffs = new ArrayList<Difference>();
     
     /**
      * The pending, uncommitted difference.
@@ -58,17 +58,17 @@ public class ComputeDiff {
     /**
      * The comparator used, if any.
      */
-    private Comparator comparator;
+    private Comparator<E> comparator;
     
     /**
      * The thresholds.
      */
-    private TreeMap thresh;
+    private TreeMap<Integer, Integer> thresh;
     
     /**
      * Constructs the Diff object for the two arrays, using the given comparator.
      */
-    public ComputeDiff(Object[] a, Object[] b, Comparator comp) {
+    public ComputeDiff(E[] a, E[] b, Comparator<E> comp) {
         this.a = a;
         this.b = b;
         this.comparator = comp;
@@ -80,7 +80,7 @@ public class ComputeDiff {
      * comparison mechanism between the objects, such as <code>equals</code> and
      * <code>compareTo</code>.
      */
-    public ComputeDiff(Object[] a, Object[] b) {
+    public ComputeDiff(E[] a, E[] b) {
         this(a, b, null);
     }
     
@@ -88,8 +88,9 @@ public class ComputeDiff {
      * Constructs the Diff object for the two collections, using the given
      * comparator.
      */
-    public ComputeDiff(Collection a, Collection b, Comparator comp) {
-        this(a.toArray(), b.toArray(), comp);
+    @SuppressWarnings("unchecked")
+    public ComputeDiff(Collection<E> a, Collection<E> b, Comparator<E> comp) {
+        this((E[]) a.toArray(), (E[]) b.toArray(), comp);
     }
     
     /**
@@ -97,14 +98,15 @@ public class ComputeDiff {
      * comparison mechanism between the objects, such as <code>equals</code> and
      * <code>compareTo</code>.
      */
-    public ComputeDiff(Collection a, Collection b) {
-        this(a, b, null);
+    @SuppressWarnings("unchecked")
+    public ComputeDiff(Collection<E> a, Collection<E> b) {
+        this((E[]) a.toArray(), (E[]) b.toArray(), null);
     }
     
     /**
      * Runs diff and returns the results.
      */
-    public List diff() {
+    List<Difference> diff() {
         traverseSequences();
         
         // add the last difference, if pending:
@@ -251,7 +253,7 @@ public class ComputeDiff {
      * Compares the two objects, using the comparator provided with the
      * constructor, if any.
      */
-    protected boolean equals(Object x, Object y) {
+    protected boolean equals(E x, E y) {
         return comparator == null ? x.equals(y) : comparator.compare(x, y) == 0;
     }
     
@@ -265,7 +267,7 @@ public class ComputeDiff {
         int bStart = 0;
         int bEnd = b.length - 1;
         
-        TreeMap matches = new TreeMap();
+        TreeMap<Integer, Integer> matches = new TreeMap<Integer, Integer>();
         
         while (aStart <= aEnd && bStart <= bEnd && equals(a[aStart], b[bStart])) {
             matches.put(new Integer(aStart++), new Integer(bStart++));
@@ -275,44 +277,44 @@ public class ComputeDiff {
             matches.put(new Integer(aEnd--), new Integer(bEnd--));
         }
         
-        Map bMatches = null;
+        Map<E, List<Integer>> bMatches = null;
         if (comparator == null) {
             if (a.length > 0 && a[0] instanceof Comparable) {
                 // this uses the Comparable interface
-                bMatches = new TreeMap();
+                bMatches = new TreeMap<E, List<Integer>>();
             } else {
                 // this just uses hashCode()
-                bMatches = new HashMap();
+                bMatches = new HashMap<E, List<Integer>>();
             }
         } else {
             // we don't really want them sorted, but this is the only Map
             // implementation (as of JDK 1.4) that takes a comparator.
-            bMatches = new TreeMap(comparator);
+            bMatches = new TreeMap<E, List<Integer>>(comparator);
         }
         
         for (int bi = bStart; bi <= bEnd; ++bi) {
-            Object element   = b[bi];
-            Object key       = element;
-            List   positions = (List)bMatches.get(key);
+            E element = b[bi];
+            E key = element;
+            List<Integer> positions = bMatches.get(key);
             if (positions == null) {
-                positions = new ArrayList();
+                positions = new ArrayList<Integer>();
                 bMatches.put(key, positions);
             }
             positions.add(new Integer(bi));
         }
         
-        thresh = new TreeMap();
-        Map links = new HashMap();
+        thresh = new TreeMap<Integer, Integer>();
+        Map<Integer, Object[]> links = new HashMap<Integer, Object[]>();
         
         for (int i = aStart; i <= aEnd; ++i) {
-            Object aElement  = a[i]; // keygen here.
-            List   positions = (List)bMatches.get(aElement);
+            E aElement = a[i]; // keygen here.
+            List<Integer> positions = bMatches.get(aElement);
             
             if (positions != null) {
                 Integer  k   = new Integer(0);
-                ListIterator pit = positions.listIterator(positions.size());
+                ListIterator<Integer> pit = positions.listIterator(positions.size());
                 while (pit.hasPrevious()) {
-                    Integer j = (Integer)pit.previous();
+                    Integer j = pit.previous();
                     
                     k = insert(j, k);
                     
@@ -327,8 +329,8 @@ public class ComputeDiff {
         }
         
         if (thresh.size() > 0) {
-            Integer  ti   = (Integer)thresh.lastKey();
-            Object[] link = (Object[])links.get(ti);
+            Integer  ti   = thresh.lastKey();
+            Object[] link = links.get(ti);
             while (link != null) {
                 Integer x = (Integer)link[1];
                 Integer y = (Integer)link[2];
@@ -368,7 +370,7 @@ public class ComputeDiff {
      * the given value.
      */
     protected boolean isGreaterThan(Integer index, Integer val) {
-        Integer lhs = (Integer)thresh.get(index);
+        Integer lhs = thresh.get(index);
         return lhs != null && val != null && lhs.compareTo(val) > 0;
     }
     
@@ -377,7 +379,7 @@ public class ComputeDiff {
      * the given value.
      */
     protected boolean isLessThan(Integer index, Integer val) {
-        Integer lhs = (Integer)thresh.get(index);
+        Integer lhs = thresh.get(index);
         return lhs != null && (val == null || lhs.compareTo(val) < 0);
     }
     
@@ -385,7 +387,7 @@ public class ComputeDiff {
      * Returns the value for the greatest key in the map.
      */
     protected Integer getLastValue() {
-        return (Integer)thresh.get(thresh.lastKey());
+        return thresh.get(thresh.lastKey());
     }
     
     /**
@@ -397,7 +399,7 @@ public class ComputeDiff {
         if (thresh.size() == 0) {
             addIdx = new Integer(0);
         } else {
-            Integer lastKey = (Integer)thresh.lastKey();
+            Integer lastKey = thresh.lastKey();
             addIdx = new Integer(lastKey.intValue() + 1);
         }
         thresh.put(addIdx, value);
@@ -415,7 +417,7 @@ public class ComputeDiff {
             if (isNonzero(k)) {
                 hi = k.intValue();
             } else if (thresh.size() > 0) {
-                hi = ((Integer)thresh.lastKey()).intValue();
+                hi = (thresh.lastKey()).intValue();
             }
             
             // off the end?
@@ -428,7 +430,7 @@ public class ComputeDiff {
                 
                 while (lo <= hi) {
                     int     index = (hi + lo) / 2;
-                    Integer val   = (Integer)thresh.get(new Integer(index));
+                    Integer val   = thresh.get(new Integer(index));
                     int     cmp   = j.compareTo(val);
                     
                     if (cmp == 0) {
