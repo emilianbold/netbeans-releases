@@ -112,7 +112,9 @@ public class EjbGroupNode extends NamedBeanGroupNode {
         
         try {
             MetadataModel<EjbJarMetadata> ejbJarModel = getMetadataModel(EjbJarMetadata.class);
-            resultMap = ejbJarModel.runReadAction(new EjbMetadataReader());
+            if(ejbJarModel != null) {
+                resultMap = ejbJarModel.runReadAction(new EjbMetadataReader());
+            }
         } catch (MetadataModelException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
