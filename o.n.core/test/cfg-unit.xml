@@ -36,7 +36,6 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <!-- this includes all tests testing layers -->
                 <include name="**/ValidateLayer*Test.class"/> 
-                <exclude name="**/ValidateLayerConsistencyTest.class/testFolderOrdering"/> <!-- XXX not ready yet -->
                 <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->
             </patternset>
         </testset>
