@@ -80,11 +80,6 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 Exceptions.printStackTrace(donfe);
             }
         }
-        // TODO: rewrite
-//        WebApp webApp = (WebApp) j2eeModule.getMetadataModel(J2eeModule.WEB_XML);
-//        if (webApp != null) {
-//            webApp.addPropertyChangeListener(this);
-//        }
     }
     
     public Lookup getLookup() {
@@ -93,11 +88,6 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     
 
     public void dispose() {
-        // TODO: rewrite
-//        WebApp webApp = (WebApp) j2eeModule.getMetadataModel(J2eeModule.WEB_XML);
-//        if (webApp != null) {
-//            webApp.removePropertyChangeListener(this);
-//        }
     }
 
     public boolean supportsCreateDatasource() {
@@ -160,8 +150,6 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 synchronized (this) {
                     jbossWeb = null;
                 }
-            } else {
-//                super.propertyChange(evt);
             }
         } else if (evt.getOldValue() == null) {
             if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.ResourceRef) {
