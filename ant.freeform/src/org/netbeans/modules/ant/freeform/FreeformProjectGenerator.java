@@ -22,6 +22,8 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -350,6 +353,7 @@ public class FreeformProjectGenerator {
             }
             contextMenuEl.removeChild(ideActionEl);
         }
+        Collections.sort(mappings, new MappingsComparator());
         for (TargetMapping tm : mappings) {
             if (tm.context != null) {
                 // ignore context sensitive actions
@@ -539,6 +543,29 @@ public class FreeformProjectGenerator {
             FileObject fo = helper.getProjectDirectory().getFileObject("build.xml"); // NOI18N
             return fo;
         }
+    }
+    
+    private static class MappingsComparator implements Comparator {
+        
+        private final List<String> actionsOrder = new ArrayList<String>();
+        
+        public MappingsComparator() {
+            actionsOrder.add(ActionProvider.COMMAND_BUILD);
+            actionsOrder.add(ActionProvider.COMMAND_REBUILD);
+            actionsOrder.add(ActionProvider.COMMAND_CLEAN);
+            actionsOrder.add("javadoc"); // NOI18N
+            actionsOrder.add(ActionProvider.COMMAND_RUN);
+            actionsOrder.add("deploy"); // NOI18N
+            actionsOrder.add("redeploy"); // NOI18N
+            actionsOrder.add(ActionProvider.COMMAND_TEST);
+        }
+    
+        public int compare(Object o1, Object o2) {
+            String s1 = ((TargetMapping) o1).name;
+            String s2 = ((TargetMapping) o2).name;
+            return actionsOrder.indexOf(s1) - actionsOrder.indexOf(s2);
+        }
+        
     }
 
 }
