@@ -101,10 +101,10 @@ public class TestCaseResultNode extends FilterNode {
 //    public boolean canCopy() {
 //        return false;
 //    }
-    
-//    public boolean canDestroy() {
-//        return false;
-//    }
+    // overwriting for debugging purpose (See #85289)
+    public boolean canDestroy() {
+        return true;
+    }
     
     public boolean canRename() {
         return false;
