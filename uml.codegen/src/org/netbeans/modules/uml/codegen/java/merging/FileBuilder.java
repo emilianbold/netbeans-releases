@@ -235,8 +235,8 @@ public class FileBuilder
     public static void copyFile(File from, File to)
 	throws IOException
     {
-	BufferedInputStream r = new BufferedInputStream(new FileInputStream(from));
-	BufferedOutputStream w = new BufferedOutputStream(new FileOutputStream(to));
+	BufferedInputStream r = new BufferedInputStream(FileUtil.toFileObject(from).getInputStream());
+	BufferedOutputStream w = new BufferedOutputStream(FileUtil.toFileObject(to).getOutputStream());
 	byte[] buff = new byte[8192];
 	int l = r.read(buff);
 	while(l > -1) {
@@ -453,12 +453,20 @@ public class FileBuilder
     {
 	InputStreamReader r; 
 	OutputStreamWriter w; 
+
+	FileObject fi = FileUtil.toFileObject(new File(oldFileFrom));
+	FileObject fo = FileUtil.toFileObject(new File(oldFileTo));
+	if (fi == null || fo == null) 
+	{
+	    throw new IOException(); // TBD meaningfull message
+	} 
+
 	if (charset != null) {
-	    r = new InputStreamReader(new FileInputStream(oldFileFrom), charset);
-	    w = new OutputStreamWriter(new FileOutputStream(oldFileTo), charset);
+	    r = new InputStreamReader(fi.getInputStream(), charset);
+	    w = new OutputStreamWriter(fo.getOutputStream(), charset);
 	} else {
-	    r = new InputStreamReader(new FileInputStream(oldFileFrom));
-	    w = new OutputStreamWriter(new FileOutputStream(oldFileTo));
+	    r = new InputStreamReader(fi.getInputStream());
+	    w = new OutputStreamWriter(fo.getOutputStream());
 	}
 	BufferedReader br = new BufferedReader(r);
 	BufferedWriter bw = new BufferedWriter(w);
