@@ -102,6 +102,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         messageDestinationRefs = null;
         securityRoles = null;
         servlets = null;
+        serviceRefs = null;
     }
 
     void ensureRoot(MetadataUnit metadataUnit) throws IOException {
