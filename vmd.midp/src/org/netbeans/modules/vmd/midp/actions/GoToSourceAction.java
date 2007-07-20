@@ -19,25 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.actions;
 
-import org.netbeans.api.editor.guards.GuardedSection;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
-import javax.swing.text.StyledDocument;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 /**
  *
@@ -48,59 +39,7 @@ public final class GoToSourceAction extends SystemAction {
     public static final String DISPLAY_NAME = NbBundle.getMessage(GoToSourceAction.class, "NAME_GoToSourceAction"); //NOI18N
     
     public void actionPerformed(ActionEvent e) {
-        final DesignComponent activeComponent = getActiveComponent();
-        if (activeComponent == null)
-            return;
-        final CloneableEditorSupport[] editorSupport = new CloneableEditorSupport[1];
-        activeComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                GoToSourcePresenter presenter = activeComponent.getPresenter(GoToSourcePresenter.class);
-                if (presenter == null)
-                    return;
-                
-                DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(activeComponent.getDocument());
-                if (context == null)
-                    return;
-                editorSupport[0] = context.getCloneableEditorSupport();
-            }
-        });
-        
-        if (editorSupport[0] == null)
-            return;
-        editorSupport[0].edit();
-        
-        activeComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                GoToSourcePresenter presenter = activeComponent.getPresenter(GoToSourcePresenter.class);
-                if (presenter == null)
-                    return;
-                
-                StyledDocument document;
-                try {
-                    document = editorSupport[0].openDocument();
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                    return;
-                }
-                if (document == null)
-                    return;
-                ProjectUtils.requestVisibility("Source"); //NOI18N
-                JEditorPane[] panes = editorSupport[0].getOpenedPanes();
-                if (panes == null || panes.length < 1)
-                    return;
-                JEditorPane pane = panes[0];
-                pane.show(true);
-                Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance(document).getGuardedSections();
-                for (GuardedSection section : iterable) {
-                    if (presenter.matches(section)) {
-                        pane.setCaretPosition(section.getCaretPosition().getOffset());
-                        final DesignDocument d = ActiveDocumentSupport.getDefault().getActiveDocument();
-                        return;
-                    }
-                }
-                
-            }
-        });
+        GoToSourceSupport.goToSourceOfComponent(getActiveComponent());
     }
     
     public String getName() {

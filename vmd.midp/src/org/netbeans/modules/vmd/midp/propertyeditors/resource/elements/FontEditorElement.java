@@ -342,7 +342,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
         @Override
         public String toString() {
-            return "[componentID=" + componentID + ", kind=" + kind + ", face=" + face + ", style=" + style + ", size=" + size + "]";
+            return "[componentID=" + componentID + ", kind=" + kind + ", face=" + face + ", style=" + style + ", size=" + size + "]"; // NOI18N
         }
     }
 
