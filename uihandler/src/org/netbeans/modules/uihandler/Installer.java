@@ -174,7 +174,7 @@ public class Installer extends ModuleInstall {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
         }
     }
     
