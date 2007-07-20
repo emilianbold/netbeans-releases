@@ -416,11 +416,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
         try {
             clazz = jarloader.loadClass(className);
         } catch ( Throwable t ) {
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.FINE, null, t);
+            LOGGER.log(Level.INFO, 
                  "Got an exception trying to load class " +
                  className + " during search for JDBC drivers in " +
-                 " driver jar(s). Skipping this class...", 
-                 t); // NOI18N
+                 " driver jar(s): " + t.getClass().getName() + ": "
+                 + t.getMessage() + ".  Skipping this class..."); // NOI18N
 
             return false;         
         }
