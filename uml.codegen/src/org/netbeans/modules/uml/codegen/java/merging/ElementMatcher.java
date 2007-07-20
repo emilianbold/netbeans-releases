@@ -43,28 +43,35 @@ import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiter
  */
 public class ElementMatcher {
 
-    // indicates that match to be performed using name 
-    // for attribute or type, and signature for method
-    public static final int BASE_MATCH = 0;
 
-    // the match to be performed using marker ID
-    // thus allowing to handle renames or signature changes 
-    // if ID marker is present. 
-    public static final int ID_MARKER_MATCH = 1;
+    public static enum MatchType {
+
+	// the match to be performed using marker ID
+	// thus allowing to handle renames or signature changes 
+	// if ID marker is present. 
+	ID_MARKER_MATCH,
+
+	// indicates that match to be performed using name 
+	// for attribute or type, and signature for method
+	BASE_MATCH,
+	
+	// special case for operations
+	SHORT_PARAM_TYPES
+    }
 
 	
     /**
      *   will return matching node if found, if several found 
      *   only first will be returned, an error will be logged
      */
-    public Node findTypeMatch(IClassifier type, IClassifier scopingType, int matchType) {
+    public Node findTypeMatch(IClassifier type, IClassifier scopingType, MatchType matchType) {
 	return null;		
     }
 
     
     public INamedElement findElementMatch(INamedElement elem, 
 					  IClassifier scopingType, 
-					  int matchType) 
+					  MatchType matchType) 
     {
 	List elems = null;
 	if (elem instanceof IAttribute) {
@@ -82,7 +89,7 @@ public class ElementMatcher {
 
     public INamedElement findElementMatch(INamedElement elem, 
 					  List<? extends INamedElement> elemList, 
-					  int matchType) 
+					  MatchType matchType) 
     {
 	if (elemList != null) {
 	    Iterator iter = elemList.iterator();
@@ -98,7 +105,7 @@ public class ElementMatcher {
     }
 
 
-    public IAttribute findAttributeMatch(IAttribute attr, IClassifier scopingType, int matchType) {
+    public IAttribute findAttributeMatch(IAttribute attr, IClassifier scopingType, MatchType matchType) {
 	List<IAttribute> attrs = Merger.getAttributes(scopingType);
 	for(IAttribute a : attrs) {
 	    boolean isMatch = matchAttributes(attr, a, matchType);
@@ -110,7 +117,7 @@ public class ElementMatcher {
     }
 
 
-    public IOperation findOperationMatch(IOperation oper, IClassifier scopingType, int matchType) {
+    public IOperation findOperationMatch(IOperation oper, IClassifier scopingType, MatchType matchType) {
 	List<IOperation> opers = Merger.getOperations(scopingType);
 	for(IOperation o : opers) {
 	    boolean isMatch = matchOperations(oper, o, matchType);
@@ -122,16 +129,16 @@ public class ElementMatcher {
     }
     
 
-    public boolean matchElements(INamedElement el1, INamedElement el2, int matchType) 
+    public boolean matchElements(INamedElement el1, INamedElement el2, MatchType matchType) 
     {       
-	if (matchType == BASE_MATCH) 
+	if (matchType == MatchType.BASE_MATCH || matchType == MatchType.SHORT_PARAM_TYPES) 
 	{
 	    if (el1 instanceof IOperation) {
 		return matchOperations((IOperation)el1, (IOperation)el2, matchType);
 	    }
 	    return matchElementsByName(el1, el2);	    
 	} 
-	else if (matchType == ID_MARKER_MATCH) 
+	else if (matchType == MatchType.ID_MARKER_MATCH) 
 	{
 	    return matchElementsByMarkerID(el1, el2);
 	}
@@ -139,10 +146,16 @@ public class ElementMatcher {
     }
 
 
-    public boolean matchOperations(IOperation op1, IOperation op2, int matchType) 
+    public boolean matchOperations(IOperation op1, IOperation op2, MatchType matchType) 
     {
-	if (matchType == BASE_MATCH) 
+	if (matchType == MatchType.BASE_MATCH || matchType == MatchType.SHORT_PARAM_TYPES) 
 	{
+	    boolean fqParams = true;
+	    if (matchType == MatchType.SHORT_PARAM_TYPES) 
+	    {
+		fqParams = false;
+	    }
+		fqParams = false;
 	    if (! matchElementsByName(op1, op2)) {
 		return false;
 	    }
@@ -165,14 +178,14 @@ public class ElementMatcher {
 		while(iter1.hasNext()) {
 		    IParameter p1 = iter1.next();
 		    IParameter p2 = iter2.next();
-		    if (! Merger.compareParameters(p1, p2)) {
+		    if (! Merger.compareParameters(p1, p2, fqParams)) {
 			return false;
 		    }
 		}
 		return true;
 	    }	    
 	}
-	else if (matchType == ID_MARKER_MATCH) 
+	else if (matchType == MatchType.ID_MARKER_MATCH) 
 	{
 	    return matchElementsByMarkerID(op1, op2);
 	}
@@ -180,13 +193,13 @@ public class ElementMatcher {
     }
 
 
-    public boolean matchAttributes(IAttribute at1, IAttribute at2, int matchType) 
+    public boolean matchAttributes(IAttribute at1, IAttribute at2, MatchType matchType) 
     {       
-	if (matchType == BASE_MATCH) 
+	if (matchType == MatchType.BASE_MATCH) 
 	{
 	    return matchElementsByName(at1, at2);	    
 	} 
-	else if (matchType == ID_MARKER_MATCH) 
+	else if (matchType == MatchType.ID_MARKER_MATCH) 
 	{
 	    return matchElementsByMarkerID(at1, at2);
 	}
@@ -194,13 +207,13 @@ public class ElementMatcher {
     }
 
 
-    public boolean matchTypes(IClassifier cl1, IClassifier cl2, int matchType) 
+    public boolean matchTypes(IClassifier cl1, IClassifier cl2, MatchType matchType) 
     {
-	if (matchType == BASE_MATCH) 
+	if (matchType == MatchType.BASE_MATCH) 
 	{
 	    return matchElementsByName(cl1, cl2);	    
 	}
-	else if (matchType == ID_MARKER_MATCH) 
+	else if (matchType == MatchType.ID_MARKER_MATCH) 
 	{
 	    return matchElementsByMarkerID(cl1, cl2);
 	}

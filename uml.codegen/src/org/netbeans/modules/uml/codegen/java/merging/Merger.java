@@ -77,7 +77,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.Strings;
 
-
 public class Merger implements IUMLParserEventsSink {
 
     public static final String REGENERATE_MARKER_STRING = "generated";
@@ -349,69 +348,50 @@ public class Merger implements IUMLParserEventsSink {
 		       List<? extends INamedElement> newElems, 
 		       List<? extends INamedElement> oldElems) 
     { 
-	// marker ID based matching
-	for(INamedElement newElem : newElems) {
-	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.ID_MARKER_MATCH);
-	    if (elem != null) {
-		if (! matchedOld.contains(elem)) {
-		    if (ElementMatcher.isMarked(elem) || isOverwriteProp()) 
-		    {
-			fileBuilder.replace(new ElementDescriptor(newElem.getNode()), 
-					    new ElementDescriptor(elem.getNode()),
-					    ElementMatcher.isRegenBody(elem)
-					        ? FileBuilder.HEADER_AND_BODY
-					        : FileBuilder.HEADER_ONLY);
-		    }
-		    addToMatched(matchedNew, newElem);
-		    addToMatched(matchedOld, elem);
-		    // and recursion for nested types
-		    if (newElem instanceof IClassifier) {
-			// TBD if not full body replacement
-			merge((IClassifier)newElem, (IClassifier)elem);
-		    }
-		} 
-		else 
-		{		    
-		    // TBD we've already matched that element
-		    // need to at least log the error
-		}
-		continue;	    
-	    }
-	}
 
-	// base matching, ie. name (signature for operations) based
-	for(INamedElement newElem : newElems) {
-	    if (matchedNew.contains(newElem)) {
-		// has been already matched using ID marker
-		continue;
-	    }
-	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.BASE_MATCH);
-	    if (elem != null) {
-		if (! matchedOld.contains(elem)) 
+	for(ElementMatcher.MatchType mt : ElementMatcher.MatchType.values()) 
+	{
+	    // marker ID based matching
+	    for(INamedElement newElem : newElems) 
+	    {
+		if (mt == ElementMatcher.MatchType.SHORT_PARAM_TYPES 
+		    && ! (newElem instanceof IOperation))
 		{
-		    if (ElementMatcher.isMarked(elem) || isOverwriteProp()) 
-		    {
-			// the element is regenerateable
-			fileBuilder.replace(new ElementDescriptor(newElem.getNode()), 
-					    new ElementDescriptor(elem.getNode()),
-					    ElementMatcher.isRegenBody(elem) 
-					        ? FileBuilder.HEADER_AND_BODY
-					        : FileBuilder.HEADER_ONLY);
-		    }
-		    addToMatched(matchedNew, newElem);	
-		    addToMatched(matchedOld, elem);
-		    // and recursion for nested types
-		    if (newElem instanceof IClassifier) {
-			// TBD if not full body replacement
-			merge((IClassifier)newElem, (IClassifier)elem);
-		    }
-		} 
-		else 
-		{
-		    // TBD we've already matched that element
-		    // need to at least log the error
+		    continue;
 		}
-		
+		if (matchedNew.contains(newElem)) {
+		    // has been already matched using ID marker
+		    continue;
+		}
+		INamedElement elem = matcher.findElementMatch(newElem, oldElems, mt);
+		if (elem != null) 
+		{
+		    if (! matchedOld.contains(elem)) 
+		    {
+			if (ElementMatcher.isMarked(elem) || isOverwriteProp()) 
+			{
+			    fileBuilder.replace(new ElementDescriptor(newElem.getNode()), 
+						new ElementDescriptor(elem.getNode()),
+						ElementMatcher.isRegenBody(elem)
+					            ? FileBuilder.HEADER_AND_BODY
+					            : FileBuilder.HEADER_ONLY);
+			}
+			addToMatched(matchedNew, newElem);
+			addToMatched(matchedOld, elem);
+			// and recursion for nested types
+			if (newElem instanceof IClassifier) 
+			{
+			    // TBD if not full body replacement
+			    merge((IClassifier)newElem, (IClassifier)elem);
+			}
+		    } 
+		    else 
+		    {		    
+			// TBD we've already matched that element
+			// need to at least log the error
+		    }
+		    continue;	    
+		}
 	    }
 	}
 
@@ -480,7 +460,7 @@ public class Merger implements IUMLParserEventsSink {
 	// marker ID based matching	
 	for(INamedElement newElem : newElems) 
 	{
-	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.ID_MARKER_MATCH);
+	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.MatchType.ID_MARKER_MATCH);
 	    if (elem != null)
 	    {
 		if (! matchedOld.contains(elem)) 
@@ -504,7 +484,7 @@ public class Merger implements IUMLParserEventsSink {
 	{
 	    if (! matchedNew.contains(newElem)) 
 	    {
-		INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.BASE_MATCH);
+		INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.MatchType.BASE_MATCH);
 		if (elem != null)
 		{
 		    if (! matchedOld.contains(elem)) 
@@ -885,13 +865,24 @@ public class Merger implements IUMLParserEventsSink {
 
     }
 
-    
+    public static interface StringPreProcessor {
+	
+	public String preprocess(String val);
+
+    }
+     
     public static class BySpecificAttributeNodeComparator implements NodeComparator {
 
 	String attrName;
+	StringPreProcessor pp;
 
 	public BySpecificAttributeNodeComparator(String attrName) {
 	    this.attrName = attrName;
+	}
+
+	public BySpecificAttributeNodeComparator(String attrName, StringPreProcessor pp) {
+	    this.attrName = attrName;
+	    this.pp = pp;
 	}
 
 	public boolean compare(Node n1, Node n2) {
@@ -899,16 +890,45 @@ public class Merger implements IUMLParserEventsSink {
 		return false;
 	    } else if (n1 != null) {	    
 		String v1 = XMLManip.getAttributeValue(n1, attrName);
-		String v2 = XMLManip.getAttributeValue(n2, attrName);		
+		String v2 = XMLManip.getAttributeValue(n2, attrName);	
+		if (pp != null) 
+		{
+		    v1 = pp.preprocess(v1);
+		    v2 = pp.preprocess(v2);
+		}
 		if (!compareStringValues(v1, v2)) {
 		    return false;
 		}
 	    }
 	    return true;
 	}
-
+    
     }
 
+    public static class PackageFilter implements StringPreProcessor{
+	
+	public String preprocess(String fqName) 
+	{
+	    if (fqName != null) 
+	    {
+		int li = fqName.lastIndexOf("::");
+		if (li > -1) 
+		{
+		    if (li < fqName.length() - 2) 
+		    {
+			return fqName.substring(li + 2);
+		    }
+		    else 
+		    {
+			return "";
+		    }
+		}
+		return fqName;
+	    }
+	    return null;
+	}
+
+    }
 
     public static boolean compareStringValues(String s1, String s2) {
 	if ( (s1 == null) != (s2 == null)) {
@@ -920,12 +940,17 @@ public class Merger implements IUMLParserEventsSink {
     }
 
 
-    public static boolean compareParameters(IParameter par1, IParameter par2) {
+    public static boolean compareParameters(IParameter par1, IParameter par2, boolean fq) {
 	
 	Node pn1 = par1.getNode();
 	Node pn2 = par2.getNode();
 
-	if (! new BySpecificAttributeNodeComparator("type").compare(pn1, pn2)) {
+	StringPreProcessor pp = null;
+	if (! fq) 
+	{
+	    pp = new PackageFilter();
+	}
+	if (! new BySpecificAttributeNodeComparator("type", pp).compare(pn1, pn2)) {
 	    return false;
 	}	
 	
