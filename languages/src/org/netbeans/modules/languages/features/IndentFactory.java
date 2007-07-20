@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
@@ -63,7 +64,7 @@ public class IndentFactory implements IndentTask.Factory {
         }
 
         public void reindent () throws BadLocationException {
-            //S ystem.out.println("reformat !\n  " + context.document() + "\n  " + context.isIndent() + "\n  " + context.startOffset () + "\n  " + context.endOffset());
+            //System.out.println("SCHLIEMAN reformat !\n  " + context.document() + "\n  " + context.isIndent() + "\n  " + context.startOffset () + "\n  " + context.endOffset());
             StyledDocument doc = (StyledDocument) context.document ();
             int offset = context.startOffset ();
             try {
@@ -76,7 +77,16 @@ public class IndentFactory implements IndentTask.Factory {
                         ts.move (offset);
                         if (!ts.moveNext ()) break;
                     }
-                Language l = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
+                //check if the found deepest embedding equals to the context mimepath
+                MimePath mimePath = MimePath.parse(context.mimePath());
+                //get latest mimetype from the mimetype
+                mimePath = MimePath.get(mimePath.getMimeType(mimePath.size() - 1));
+                String deepestMimeType = ts.language ().mimeType ();
+                if(!mimePath.getPath().equals(deepestMimeType)) {
+                    return ; //not our bussiness
+                }
+                
+                Language l = LanguagesManager.getDefault ().getLanguage (deepestMimeType);
                 //Token token = ts.token ();
                 Object indentValue = getIndentProperties (l);
 
