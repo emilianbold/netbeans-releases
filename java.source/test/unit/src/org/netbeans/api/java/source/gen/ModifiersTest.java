@@ -1137,7 +1137,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "\n" +
                 "import java.io.*;\n" +
                 "\n" +
-                "@Annotation(attr1 = \"aa\")\n" +
+                "@Annotation(attr2 = \"bb\")\n" +
                 "public class Test {\n" +
                 "    void alois() {\n" +
                 "    }\n" +
@@ -1170,7 +1170,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "import java.io.*;\n" +
                 "\n" +
                 "@Annotation(attr1 = \"aa\", attr2 = \"bb\", attr3 = \"cc\")\n" +
-                "    public class Test {\n" +
+                "public class Test {\n" +
                 "    void alois() {\n" +
                 "    }\n" +
                 "    \n" +
