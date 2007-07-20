@@ -20,7 +20,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 2
@@ -35,7 +35,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 3
@@ -65,7 +65,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 4
@@ -86,7 +86,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 5
@@ -106,7 +106,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester::UnconnectedUDP
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 6
@@ -127,7 +127,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 7
@@ -143,7 +143,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester::ConnectedUDP
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 8
@@ -166,7 +166,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 9
@@ -182,7 +182,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester::TCP
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 10
@@ -206,7 +206,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 11
@@ -221,7 +221,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Requester
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 12
@@ -242,7 +242,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 13
@@ -257,7 +257,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Config
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 14
@@ -272,7 +272,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Config
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 15
@@ -302,7 +302,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 16
@@ -321,7 +321,7 @@ Indexed:
 Not Indexed:
   attrs : m
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 17
@@ -353,7 +353,7 @@ Indexed:
 Not Indexed:
   attrs : m
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 18
@@ -368,7 +368,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 19
@@ -383,7 +383,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 20
@@ -406,7 +406,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Label
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 21
@@ -421,7 +421,7 @@ Indexed:
 Not Indexed:
   attrs : m
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 22
@@ -449,7 +449,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 23
@@ -476,7 +476,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Message
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 24
@@ -505,7 +505,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Message
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 25
@@ -546,7 +546,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 26
@@ -562,7 +562,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 27
@@ -583,7 +583,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 28
@@ -603,7 +603,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 29
@@ -619,7 +619,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 30
@@ -635,7 +635,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 31
@@ -662,7 +662,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 32
@@ -678,7 +678,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 33
@@ -700,7 +700,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 34
@@ -722,7 +722,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 35
@@ -744,7 +744,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 36
@@ -766,7 +766,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 37
@@ -782,7 +782,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 38
@@ -804,7 +804,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource::IN
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 39
@@ -828,7 +828,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource::IN
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 40
@@ -850,7 +850,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource::IN
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 41
@@ -875,7 +875,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS::Resource::IN
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 42
@@ -890,7 +890,7 @@ Indexed:
 Not Indexed:
   attrs : m
   in : Resolv::DNS::Resource
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 43
@@ -914,7 +914,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv::DNS
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 44
@@ -950,7 +950,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 45
@@ -975,7 +975,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 46
@@ -1004,7 +1004,7 @@ Indexed:
 Not Indexed:
   attrs : c
   in : Resolv
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv
 
 
 Document 47
@@ -1034,4 +1034,4 @@ Indexed:
 
 Not Indexed:
   attrs : c
-  requires : fcntl,timeout,win32/resolv,socket,thread
+  requires : fcntl,socket,thread,timeout,win32/resolv

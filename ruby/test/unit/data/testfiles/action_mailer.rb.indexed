@@ -14,4 +14,4 @@ Indexed:
   source : <TESTURL>/action_mailer.rb
 
 Not Indexed:
-  requires : net/smtp,action_controller,action_mailer/helpers,tmail,action_mailer/mail_helper,action_mailer/base,rubygems,action_mailer/quoting
+  requires : action_controller,action_mailer/base,action_mailer/helpers,action_mailer/mail_helper,action_mailer/quoting,net/smtp,rubygems,tmail

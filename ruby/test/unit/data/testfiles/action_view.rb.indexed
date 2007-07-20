@@ -14,4 +14,4 @@ Indexed:
   source : <TESTURL>/action_view.rb
 
 Not Indexed:
-  requires : action_view/partials,action_view/base
+  requires : action_view/base,action_view/partials

@@ -15,6 +15,7 @@ import org.netbeans.api.gsf.CompilationInfo;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,20 @@ public class RubyIndexerTest extends RubyTestBase {
         public String toString() {
             return sb.toString().replace(localUrl, "<TESTURL>");
         }
+        
+        private String sortCommaList(String s) {
+            String[] items = s.split(",");
+            Arrays.sort(items);
+            StringBuilder sb = new StringBuilder();
+            for (String item : items) {
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+                sb.append(item);
+            }
+            
+            return sb.toString();
+        }
 
         public void gsfStore(Set<Map<String, String>> fieldToData, Set<Map<String, String>> noIndexData, Map<String, String> toDelete) throws IOException {
             sb.append("\n\nDocument ");
@@ -99,7 +114,11 @@ public class RubyIndexerTest extends RubyTestBase {
             strings = new ArrayList<String>();
             for (Map<String,String> map : noIndexData) {
                 for (String key : map.keySet()) {
-                    strings.add(key + " : " + map.get(key));
+                    String value = map.get(key);
+                    if (value.indexOf(',') != -1) {
+                        value = sortCommaList(value);
+                    }
+                    strings.add(key + " : " + value);
                 }
             }
             Collections.sort(strings);

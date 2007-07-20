@@ -61,4 +61,4 @@ Indexed:
 
 Not Indexed:
   attrs : c
-  requires : rexml/document,html,categories,escaper,putter,feed,crumbs,rubygems,poster,getter,service,validator,builder,samples,deleter,entry,names,authent,collection
+  requires : authent,builder,categories,collection,crumbs,deleter,entry,escaper,feed,getter,html,names,poster,putter,rexml/document,rubygems,samples,service,validator

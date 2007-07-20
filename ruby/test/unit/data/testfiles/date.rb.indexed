@@ -116,7 +116,7 @@ Indexed:
 Not Indexed:
   attrs : c
   includes : Comparable
-  requires : rational,date/format
+  requires : date/format,rational
 
 
 Document 2
@@ -139,7 +139,7 @@ Indexed:
 
 Not Indexed:
   attrs : c
-  requires : rational,date/format
+  requires : date/format,rational
 
 
 Document 3
@@ -152,7 +152,7 @@ Indexed:
 
 Not Indexed:
   attrs : c
-  requires : rational,date/format
+  requires : date/format,rational
 
 
 Document 4
@@ -166,4 +166,4 @@ Indexed:
 
 Not Indexed:
   attrs : c
-  requires : rational,date/format
+  requires : date/format,rational
