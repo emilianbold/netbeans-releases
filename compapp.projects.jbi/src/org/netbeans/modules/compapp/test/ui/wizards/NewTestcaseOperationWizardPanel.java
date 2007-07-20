@@ -52,7 +52,6 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
     private NewTestcaseOperationVisualPanel mComponent;
     private WsdlSupport mWsdlSupport;
     private WizardDescriptor wiz;
-    private boolean mWsdlSupportInitialized = false;
     
     // Get the visual mComponent for the panel. In this template, the mComponent
     // is kept separate. This can be more efficient: if the wizard is created
@@ -62,9 +61,8 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
         if (mComponent == null) {
             mComponent = new NewTestcaseOperationVisualPanel(this);
         }
-        if (mWsdlSupport != null && ! mWsdlSupportInitialized) {
-            mComponent.setWsdlSupport(mWsdlSupport);
-            mWsdlSupportInitialized = true;
+        if (mWsdlSupport != null) {
+            mComponent.setWsdlModel(mWsdlSupport.getWsdlModel());
         }
         return mComponent;
     }

@@ -45,6 +45,8 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     private javax.swing.JTree mTree;
     private NewTestcaseOperationWizardPanel mPanel;
     
+    private WSDLModel wsdlModel;
+    
     /** Creates new form NewTestcaseOperationVisualPanel_1 */
     public NewTestcaseOperationVisualPanel(NewTestcaseOperationWizardPanel panel) {
         mPanel = panel;
@@ -106,11 +108,11 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
                 "LBL_Select_the_operation_to_test");  // NOI18N
     }
     
-    public void setWsdlSupport(WsdlSupport wsdlSupport) {
-        if (wsdlSupport == null) {
+    public void setWsdlModel(WSDLModel wsdlModel) {
+        if (this.wsdlModel == wsdlModel) {
             return;
         }
-        WSDLModel wsdlModel = wsdlSupport.getWsdlModel();
+        
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         for (Binding binding : Util.getSortedBindings(wsdlModel)) {
             DefaultMutableTreeNode bindingNode = new DefaultMutableTreeNode(binding);
