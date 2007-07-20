@@ -122,9 +122,17 @@ public class ValidationDecorationProvider extends DecorationProvider
                             entity.removeCookie(decoration_key);
                             entity.removeCookie(list_key);
                         } else if (!compareLists(old_results, new_results)){
+                            ShowGlassPaneButton showGlassPaneButton 
+                                    = getShowGlassPaneButton(entity);
+                            if (showGlassPaneButton == null) {
+                                showGlassPaneButton 
+                                        = new ShowGlassPaneButton(new_results);
+                            } else {
+                                showGlassPaneButton.setResultItems(new_results);
+                            }
+
                             ComponentsDescriptor cd = new ComponentsDescriptor();
-                            cd.add(new ShowGlassPaneButton(new_results),
-                                    ComponentsDescriptor.RIGHT_TB);
+                            cd.add(showGlassPaneButton, ComponentsDescriptor.RIGHT_TB);
                             
                             StripeDescriptor sd = StripeDescriptor
                                     .createValidation(new_results);
@@ -148,6 +156,22 @@ public class ValidationDecorationProvider extends DecorationProvider
         
     }
     
+
+    private ShowGlassPaneButton getShowGlassPaneButton(BpelEntity entity) {
+        Decoration decoration = (Decoration) entity.getCookie(decoration_key);
+        if (decoration == null) return null;
+        ComponentsDescriptor components = decoration.getComponents();
+        if (components == null) return null;
+
+        for (int i = components.getComponentCount() - 1; i >= 0; i--) {
+            java.awt.Component c = components.getComponent(i);
+            if (c instanceof ShowGlassPaneButton) {
+                return (ShowGlassPaneButton) c;
+            }
+        }
+
+        return null;
+    }
     
 
     public void validationUpdated(List<ResultItem> results) {

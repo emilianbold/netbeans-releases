@@ -74,6 +74,15 @@ public class ShowGlassPaneButton extends JToggleButton
         
         glassPane.addHierarchyListener(this);
     }
+
+
+
+    public void setResultItems(List<ResultItem> resultItems) {
+        glassPane.removeHeaders();
+        glassPane.removeHTML();
+        fillGlassPaneHeader(resultItems);
+        fillGlassPaneContent(resultItems);
+    }
     
     
     private void fillGlassPaneHeader(List<ResultItem> resultItems) {

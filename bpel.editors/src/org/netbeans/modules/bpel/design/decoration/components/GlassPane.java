@@ -174,6 +174,16 @@ public class GlassPane extends JPanel implements ActionListener,
             throw new IndexOutOfBoundsException("Too many headers"); // NOI18N
         }
     }
+
+
+    public void removeHeaders() {
+        labelPane.removeAll();
+    }
+
+
+    public void removeHTML() {
+        html.delete(0, html.length());
+    }
     
     
     public void addListItem(String iconPath, String description) {
@@ -208,9 +218,24 @@ public class GlassPane extends JPanel implements ActionListener,
         
         fillHTMLFooter();
         
-        editorPane.setText(html.toString());
+        String newText = html.toString();
+        String oldText = editorPane.getText();
+
+        if (!equals(newText, oldText)) {
+            editorPane.setText(newText);
+            editorPane.setCaretPosition(editorPane.getDocument()
+                .getStartPosition().getOffset());
+        }
         
         html.delete(0, html.length());
+    }
+
+
+    private boolean equals(String s1, String s2) {
+        if (s1 == s2) return true;
+        if (s1 == null) return false;
+        if (s2 == null) return false;
+        return s1.equals(s2);
     }
     
     
