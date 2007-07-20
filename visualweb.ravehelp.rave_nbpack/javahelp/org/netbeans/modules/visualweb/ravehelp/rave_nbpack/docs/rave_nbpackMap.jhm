@@ -218,26 +218,18 @@
 	<mapID target="projrave_projects_howtoprojects_add_image" url="projects/howtoprojects/add_image.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_object" url="projects/howtoprojects/add_remove_object.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_theme" url="projects/howtoprojects/add_theme.html"/>
-	<mapID target="projrave_projects_howtoprojects_build_project" url="projects/howtoprojects/build_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_clean_project" url="projects/howtoprojects/clean_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_compile_file" url="projects/howtoprojects/compile_file.html"/>
 	<mapID target="projrave_projects_howtoprojects_copy_project" url="projects/howtoprojects/copy_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_create_library" url="projects/howtoprojects/create_library.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_project" url="projects/howtoprojects/create_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
 	<mapID target="projrave_projects_howtoprojects_delete_lib_ref" url="projects/howtoprojects/delete_lib_ref.html"/>
 	<mapID target="projrave_projects_howtoprojects_delete_proj_item" url="projects/howtoprojects/delete_proj_item.html"/>
-	<mapID target="projrave_projects_howtoprojects_delete_project" url="projects/howtoprojects/delete_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_find_files" url="projects/howtoprojects/find_files.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_creator_project" url="projects/howtoprojects/import_creator_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_libraries" url="projects/howtoprojects/import_libraries.html"/>
 	<mapID target="projrave_projects_howtoprojects_modify_library" url="projects/howtoprojects/modify_library.html"/>
 	<mapID target="projrave_projects_howtoprojects_open_project" url="projects/howtoprojects/open_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_proj_main" url="projects/howtoprojects/proj_main.html"/>
-	<mapID target="projrave_projects_howtoprojects_projects_quickref" url="projects/howtoprojects/projects_quickref.html"/>
-	<mapID target="projrave_projects_howtoprojects_projects_quickref_addbeanprop" url="projects/howtoprojects/projects_quickref.html#addbeanprop"/>
 	<mapID target="projrave_projects_howtoprojects_rename_page" url="projects/howtoprojects/rename_page.html"/>
-	<mapID target="projrave_projects_howtoprojects_run_project" url="projects/howtoprojects/run_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_save_project" url="projects/howtoprojects/save_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_set_project_properties" url="projects/howtoprojects/set_project_properties.html"/>
 	<mapID target="projrave_projects_howtoprojects_set_start_page" url="projects/howtoprojects/set_start_page.html"/>
