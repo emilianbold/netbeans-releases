@@ -280,7 +280,7 @@ public class BinaryFS extends FileSystem {
         public void delete(FileLock lock) throws IOException {
             throw new IOException(); // Read-only
         }
-        public OutputStream getOutputStream(FileLock lock) throws java.io.IOException {
+        public OutputStream getOutputStream(FileLock lock) throws IOException {
             throw new IOException(); // Read-only
         }
         public FileLock lock() throws IOException {
@@ -388,13 +388,13 @@ public class BinaryFS extends FileSystem {
 
                 for (int i=0; i< attrCount; i++) {  // do read attribute
                     // attribute names are highly duplicated, intern!
-                    String name = getString(sub).intern();   // String attrName
+                    String attrName = getString(sub).intern();   // String attrName
                     byte type = sub.get();          // byte attrType
                     // values have high redundancy as well,
                     // like "true", "JSeparator", paths to orig files from
                     // shadow, ...
                     String value = getString(sub).intern();  // String attrValue
-                    attrs.put(name, new AttrImpl(type, value));
+                    attrs.put(attrName, new AttrImpl(type, value));
                 }
 
                 doInitialize(sub);
@@ -472,7 +472,7 @@ public class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                Exceptions.attachLocalizedMessage(exc, "value = " + value); //NOI18N
+                Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
                 Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, exc);
             }
             return null; // problem getting the value...
@@ -646,7 +646,7 @@ public class BinaryFS extends FileSystem {
         }
 
         /** Get input stream. */
-        public InputStream getInputStream() throws java.io.FileNotFoundException {
+        public InputStream getInputStream() throws FileNotFoundException {
             initialize();
             try {
                 return len == -1 ?          // URI or not
@@ -678,7 +678,7 @@ public class BinaryFS extends FileSystem {
          * byte[contentLength] content (or String uri);
          */
         protected void doInitialize(ByteBuffer sub) throws Exception {
-            len = sub.getInt();;
+            len = sub.getInt();
             contentOffset = sub.position();
             if (len == -1) {
                 uri = getString(sub);
@@ -782,7 +782,7 @@ public class BinaryFS extends FileSystem {
         }
 
         /** Get input stream. */
-        public InputStream getInputStream() throws java.io.FileNotFoundException {
+        public InputStream getInputStream() throws FileNotFoundException {
             throw new FileNotFoundException("Is a directory: " + this);
         }
 
@@ -813,12 +813,12 @@ public class BinaryFS extends FileSystem {
             if (files > 0) {
                 childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
                 for (int i=0; i<files; i++) { //read file desc:
-                    String name = getString(sub);   // String name
+                    String nm = getString(sub);   // String name
                     byte isFolder = sub.get();      // boolean isFolder
                     int off = sub.getInt();          // int contentRef
-                    childrenMap.put(name, isFolder == 0 ?
-                        new BFSFile(name, this, off) :
-                        new BFSFolder(name, this, off));
+                    childrenMap.put(nm, isFolder == 0 ?
+                        new BFSFile(nm, this, off) :
+                        new BFSFolder(nm, this, off));
                 }
             }
         }
