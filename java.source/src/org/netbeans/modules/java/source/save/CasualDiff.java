@@ -428,13 +428,13 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = posHint);
         // if abstract, hint is before ending semi-colon, otherwise before method body
         if (oldT.thrown.isEmpty()) {
-            posHint = (oldT.body == null ? endPos(oldT) : oldT.body.pos) - 1;
-            // now check, that there is a whitespace. It is not mandatory, we
-            // have to ensure. If whitespace is not present, take body beginning
-            tokenSequence.move(posHint);
-            tokenSequence.moveNext();
-            if (tokenSequence.token().id() != JavaTokenId.WHITESPACE) {
-                ++posHint;
+            if (oldT.body != null) {
+                tokenSequence.move(oldT.body.pos);
+                PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                tokenSequence.moveNext();
+                posHint = tokenSequence.offset();
+            } else {
+                posHint = endPos(oldT);
             }
         } else {
             posHint = oldT.thrown.iterator().next().getStartPosition();
