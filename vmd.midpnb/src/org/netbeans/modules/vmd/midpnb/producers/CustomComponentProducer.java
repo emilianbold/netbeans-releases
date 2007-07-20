@@ -19,15 +19,18 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
-import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
@@ -80,7 +83,7 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public SVGMenuEventHandlerProducer() {
             super(SVGMenuEventHandlerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    "SVG Menu Action", "SVG Menu Action", SVGImageCD.ICON_PATH, SVGImageCD.ICON_LARGE_PATH));
+                    "SVG Menu Action", "SVG Menu Action", SVGMenuEventHandlerCD.ICON_PATH, SVGMenuEventHandlerCD.LARGE_ICON_PATH));
         }
 
         @Override

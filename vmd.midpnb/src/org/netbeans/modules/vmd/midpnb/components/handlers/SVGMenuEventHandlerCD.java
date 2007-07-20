@@ -39,7 +39,8 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SVGMenuEventHandler"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_16.png"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_action_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_action_32.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (EventHandlerCD.TYPEID, TYPEID, true, false);
