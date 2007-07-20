@@ -34,31 +34,14 @@ rm -rf $DIST/
 
 ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
 
-# standard NetBeans unit and UI validation tests
-ant -f nbbuild/build.xml commit-validation
-# Init application server for tests
-sh -x `dirname $0`/initAppserver.sh
-# visualweb UI validation tests
-sh -x `dirname $0`/run-vw-sanity.sh
-# SOA (BPEL, XSLT) and XML UI validation tests
-ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
-# CND UI validation tests
-ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true runtests
-# Profiler UI validation tests
-# XXX - disabled because it is failing
-#ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true runtests
-# J2EE UI validation tests
-ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
-# Do not halt if there were failures, but do collect results for Hudson:
-ant -f nbbuild/build.xml commit-validation-junit-format
-
 # we can't afford to run build-nbms in hudson builds, on deadlock.netbeans.org it takes 6 minutes from a typical 15 min build run
 # mkdir -p $DIST/nbms
 # ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms || exit
 
 cd nbbuild
 rm -f netbeans/nb.cluster.*
-rm -f netbeans/moduleCluster.properties
+# Do not delete. It is needed for tests to determine classpath.
+#rm -f netbeans/moduleCluster.properties
 rm -f netbeans/module_tracking.xml
 rm -f netbeans/build_info
 
@@ -97,3 +80,26 @@ if [ -d $prev_generated ]; then
         (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
     fi
 fi
+
+###############  Commit validation tests  ##########################
+TESTS_STARTED=`date`
+# standard NetBeans unit and UI validation tests
+ant -f nbbuild/build.xml commit-validation
+# Init application server for tests
+sh -x `dirname $0`/initAppserver.sh
+# visualweb UI validation tests
+sh -x `dirname $0`/run-vw-sanity.sh
+# SOA (BPEL, XSLT) and XML UI validation tests
+ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
+# CND UI validation tests
+ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true runtests
+# Profiler UI validation tests
+# XXX - disabled because it is failing
+#ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true runtests
+# J2EE UI validation tests
+ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
+echo TESTS STARTED: $TESTS_STARTED
+echo TESTS FINISHED: `date`
+
+# Do not halt if there were failures, but do collect results for Hudson:
+ant -f nbbuild/build.xml commit-validation-junit-format
