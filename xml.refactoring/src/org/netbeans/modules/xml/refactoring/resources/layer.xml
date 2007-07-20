@@ -23,9 +23,13 @@
 <filesystem>
     <folder name="Windows2">
         <folder name="Modes">
-            <folder name="output">       <!-- "output" is defined in core/ui -->
-                <file name="xml-find-usages.wstcref" url="xml-find-usages.wstcref"/>
-                <file name="xml-refactoring-preview.wstcref" url="xml-refactoring-preview.wstcref"/>
+            <folder name="output">
+                <file name="xml-find-usages.wstcref" url="xml-find-usages.wstcref">
+                    <attr name="position" intvalue="1200"/>
+                </file>
+                <file name="xml-refactoring-preview.wstcref" url="xml-refactoring-preview.wstcref">
+                    <attr name="position" intvalue="1600"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">

@@ -115,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <folder name="output">
                 <file name="svnversioning.wstcref" url="svn_wstcref.xml">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
             </folder>
         </folder>

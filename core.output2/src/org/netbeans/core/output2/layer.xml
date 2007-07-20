@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="output.wsmode" url="resources/output.wsmode"/>
             <folder name="output">
                 <file name="output.wstcref" url="resources/output.wstcref">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>

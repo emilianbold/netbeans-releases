@@ -58,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="XML">
              <file name="JavaXMLBinding">
+                <attr name="position" intvalue="900"/>
                  <attr name="template" boolvalue="true"/>
                  <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.xml.jaxb.ui.JAXBWizardIterator.create"/>
                  <attr name="templateCategory" stringvalue="java-classes"/>

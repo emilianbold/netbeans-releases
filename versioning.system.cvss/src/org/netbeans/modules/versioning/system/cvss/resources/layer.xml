@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <folder name="output">
                 <file name="synchronize.wstcref" url="modes/output/synchronize.wstcref">
-                    <attr name="position" intvalue="200"/>
+                    <attr name="position" intvalue="600"/>
                 </file>
             </folder>
         </folder>

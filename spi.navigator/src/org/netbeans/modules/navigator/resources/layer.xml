@@ -45,7 +45,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <file name="navigator.wsmode" url="navigator.wsmode"/>
             <folder name="navigator">
-                <file name="navigatorTC.wstcref" url="navigatorTC.wstcref"/>
+                <file name="navigatorTC.wstcref" url="navigatorTC.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
             </folder>
         </folder>
 

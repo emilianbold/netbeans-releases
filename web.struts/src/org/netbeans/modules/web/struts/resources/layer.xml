@@ -98,12 +98,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"/>          
             </file>
             <file name="DispatchAction.java" url="templates/DispatchAction.template">
+                <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template">
+                <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template">
+                <attr name="position" intvalue="0"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             <file name="StrutsActionForm.java" url="templates/StrutsActionForm.template">

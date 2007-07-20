@@ -5,6 +5,7 @@
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
             <file name="RESTServicesFromEntities">         
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromEntitiesIterator"/>
@@ -14,6 +15,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
             <file name="RESTServicesFromPatterns">
+                <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.GenericRESTServicesIterator"/>
@@ -22,6 +24,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
             <file name="clientStub">
+                <attr name="position" intvalue="350"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.ClientStubWizardIterator"/>
@@ -29,17 +32,39 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
-            <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template"/>
-            <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template"/>
-            <file name="JaxwsWrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/JaxwsWrapperResource.template"/>
-            <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
-            <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
-            <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template"/>
-            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
-            <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
-            <file name="YahooNewsResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsResource.template"/>
-            <file name="YahooNewsRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsRefConverter.template"/>            
-            <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template"/>            
+            <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="JaxwsWrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/JaxwsWrapperResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="YahooNewsResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsResource.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="YahooNewsRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsRefConverter.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
     </folder>
     

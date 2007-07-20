@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
             </file>
             <file name="rakefile.rb" url="rakefile.rb">
+                <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
@@ -92,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyClassTemplateIterator"/>
             </file>
             <file name="module.rb" url="module.rb">
+                <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
@@ -100,6 +102,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyModuleTemplateIterator"/>
             </file>
             <file name="test.rb" url="test.rb">
+                <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
@@ -110,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateNamePrefix" stringvalue=""/>
             </file>
             <file name="suite.rb" url="suite.rb">
+                <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
@@ -213,7 +217,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="IrbTopComponent.wstcref" url="IrbTopComponentWstcref.xml"/>
+                <file name="IrbTopComponent.wstcref" url="IrbTopComponentWstcref.xml">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
         </folder>
     </folder>

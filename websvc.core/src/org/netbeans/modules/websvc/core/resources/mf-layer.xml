@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
             <attr name="position" intvalue="1500"/>
             <file name="WSDL.wsdl" url="nbres:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/WSDL.template">
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="WebServiceClient">
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="web-service-clients"/>
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="WebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebService.template">         
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="web-services"/>
@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="WebServiceFromWSDL.java">
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="web-services"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="MessageHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.template">         
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="900"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-services"/>
@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="LogicalHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.template">         
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="600"/>
+                <attr name="position" intvalue="800"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-services"/>

@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Ruby">
             <file name="empty.rjs" url="empty.rjs">
+                <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.railsprojects.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="rails"/>

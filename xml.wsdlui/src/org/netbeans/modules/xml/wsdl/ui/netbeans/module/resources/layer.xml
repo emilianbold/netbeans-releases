@@ -152,6 +152,7 @@
     <folder name="Templates">       
         <folder name="XML">
             <file name="WSDL.wsdl" url="WSDL.template">
+                <attr name="position" intvalue="230"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
@@ -159,7 +160,9 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
-            <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
+            <file name="WSDL_import.wsdl" url="WSDL_import.template">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
     </folder>
     <folder name="Windows2">

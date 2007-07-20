@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
 	<folder name="Modes">
 	    <folder name="navigator">
 		<file name="classview.wstcref" url="classview.wstcref">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
 	    </folder>
 	</folder>

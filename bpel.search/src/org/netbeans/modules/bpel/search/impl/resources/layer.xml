@@ -29,7 +29,9 @@
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">
-                <file name="search.wstcref" url="search.wstcref"/>
+                <file name="search.wstcref" url="search.wstcref">
+                    <attr name="position" intvalue="1400"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">

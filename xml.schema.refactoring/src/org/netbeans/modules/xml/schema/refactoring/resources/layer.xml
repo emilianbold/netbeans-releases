@@ -23,8 +23,10 @@
 <filesystem>
     <folder name="Windows2">
         <folder name="Modes">
-            <folder name="output">       <!-- "output" is defined in core/ui -->
-                <file name="xml-schema-query.wstcref" url="xml-schema-query.wstcref"/>
+            <folder name="output">
+                <file name="xml-schema-query.wstcref" url="xml-schema-query.wstcref">
+                    <attr name="position" intvalue="1300"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">

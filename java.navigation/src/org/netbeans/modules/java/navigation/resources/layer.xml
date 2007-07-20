@@ -149,8 +149,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="DeclarationTopComponent.wstcref" url="DeclarationTopComponentWstcref.xml"/>
-                <file name="JavadocTopComponent.wstcref" url="JavadocTopComponentWstcref.xml"/>
+                <file name="DeclarationTopComponent.wstcref" url="DeclarationTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2500"/>
+                </file>
+                <file name="JavadocTopComponent.wstcref" url="JavadocTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2600"/>
+                </file>
             </folder>
         </folder>
     </folder>

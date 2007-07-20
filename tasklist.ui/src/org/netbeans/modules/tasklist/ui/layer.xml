@@ -28,7 +28,9 @@
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="TaskListTopComponent.wstcref" url="resources/TaskListTopComponentWstcref.xml"/>
+                <file name="TaskListTopComponent.wstcref" url="resources/TaskListTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2000"/>
+                </file>
             </folder>
         </folder>
     </folder>    

@@ -83,8 +83,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
         <folder name="Modes">
-            <folder name="output">       <!-- "output" is defined in core/ui -->
-                <file name="GlobalActionTable.wstcref" url="windowmanager/GlobalActionTable.wstcref"/>
+            <folder name="output">
+                <file name="GlobalActionTable.wstcref" url="windowmanager/GlobalActionTable.wstcref">
+                    <attr name="position" intvalue="2700"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">

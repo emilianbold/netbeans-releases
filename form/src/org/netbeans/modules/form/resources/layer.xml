@@ -577,7 +577,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="navigator">
-                <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref"/>
+                <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref">
+                    <attr name="position" intvalue="500"/>
+                </file>
             </folder>
         </folder>
 

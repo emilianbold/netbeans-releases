@@ -126,9 +126,13 @@ Microsystems, Inc. All Rights Reserved.
 
      <folder name="Windows2">
         <folder name="Modes">
-            <folder name="output">       <!-- "output" is defined in core/ui -->
-                <file name="find-usages.wstcref" url="find-usages.wstcref"/>
-                <file name="refactoring-preview.wstcref" url="refactoring-preview.wstcref"/>
+            <folder name="output">
+                <file name="find-usages.wstcref" url="find-usages.wstcref">
+                    <attr name="position" intvalue="1100"/>
+                </file>
+                <file name="refactoring-preview.wstcref" url="refactoring-preview.wstcref">
+                    <attr name="position" intvalue="1500"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">
@@ -144,7 +148,7 @@ Microsystems, Inc. All Rights Reserved.
               <file name="RefactoringAll.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RSMDataObjectAction"/>
                   <attr name="position" intvalue="1000"/>
-                    </file>
+              </file>
               <file name="RenameAction.instance_hidden"/>
             </folder>
         </folder>

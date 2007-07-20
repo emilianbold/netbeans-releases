@@ -332,6 +332,7 @@ Microsystems, Inc. All Rights Reserved.
 
 	    <file name="file.cc" url="templates/cpp/empty-cc.template">
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-cc.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
@@ -340,7 +341,7 @@ Microsystems, Inc. All Rights Reserved.
 
 	    <file name="main.cc" url="templates/cpp/simple-cc.template">
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
@@ -349,7 +350,7 @@ Microsystems, Inc. All Rights Reserved.
 
 	    <file name="file.h" url="templates/cpp/header-h.template">
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-h.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>

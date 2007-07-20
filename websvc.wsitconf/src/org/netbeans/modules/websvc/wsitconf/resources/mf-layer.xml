@@ -22,6 +22,7 @@
    <folder name="Templates">
         <folder name="WebServices">
             <file name="STSWizard.java">
+             <attr name="position" intvalue="700"/>
              <attr name="template" boolvalue="true"/>
              <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.wsitconf.wizard.STSWizard.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
@@ -29,16 +30,36 @@
              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
             </file>
-            <file name="sts.wsdl" url="templates/sts.template"/>
-            <file name="sts_schema.xsd" url="templates/sts_schema.template"/>
-            <file name="Saml11hok.java" url="templates/Saml11HOKCallbackHandler.template"/>
-            <file name="Saml11sv.java" url="templates/Saml11SVCallbackHandler.template"/>
-            <file name="Saml20hok.java" url="templates/Saml20HOKCallbackHandler.template"/>
-            <file name="Saml20sv.java" url="templates/Saml20SVCallbackHandler.template"/>
-            <file name="client-keystore.jks" url="client-keystore.jks"/>
-            <file name="client-truststore.jks" url="client-truststore.jks"/>
-            <file name="server-keystore.jks" url="server-keystore.jks"/>
-            <file name="server-truststore.jks" url="server-truststore.jks"/>
+            <file name="sts.wsdl" url="templates/sts.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="sts_schema.xsd" url="templates/sts_schema.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="Saml11hok.java" url="templates/Saml11HOKCallbackHandler.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="Saml11sv.java" url="templates/Saml11SVCallbackHandler.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="Saml20hok.java" url="templates/Saml20HOKCallbackHandler.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="Saml20sv.java" url="templates/Saml20SVCallbackHandler.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="client-keystore.jks" url="client-keystore.jks">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="client-truststore.jks" url="client-truststore.jks">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="server-keystore.jks" url="server-keystore.jks">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="server-truststore.jks" url="server-truststore.jks">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
    </folder>
 </filesystem>

@@ -213,8 +213,10 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 
     <folder name="Windows2">
         <folder name="Modes">
-            <folder name="output">        <!-- "output" is defined in core/ui -->
-                <file name="junit-test-results.wstcref" url="../output/junit-test-results.wstcref"/>
+            <folder name="output">
+                <file name="junit-test-results.wstcref" url="../output/junit-test-results.wstcref">
+                    <attr name="position" intvalue="200"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">

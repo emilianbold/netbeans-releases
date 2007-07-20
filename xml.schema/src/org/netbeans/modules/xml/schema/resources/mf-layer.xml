@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="XML">
             <file name="XmlSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/XMLSchema.xml">
+                <attr name="position" intvalue="150"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
 		<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
@@ -32,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
             <file name="retrieveWSDLResource">
+                <attr name="position" intvalue="270"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
@@ -40,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveWSDLResource.html"/>
             </file>
 	    <file name="retrieveSchemaResource">
+                <attr name="position" intvalue="260"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
@@ -48,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveSchemaResource.html"/>
             </file>
             <file name="PurchaseOrder.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/PurchaseOrder.xsd">
-                <attr name="position" intvalue="700"/>
+                <attr name="position" intvalue="2000"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
@@ -57,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
             <file name="LoanApplication.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/LoanApplication.xsd">
-                <attr name="position" intvalue="800"/>
+                <attr name="position" intvalue="2100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
