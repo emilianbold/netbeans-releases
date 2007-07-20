@@ -160,5 +160,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.versioning.spi</package>
             </public-packages>
         </data>
+        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>
