@@ -49,13 +49,23 @@ public final class ChangeType implements ErrorRule<Void> {
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, TypeMirror[] expressionType, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset);
 
-        // Try to locate the right tree
-        while (path != null) {
+        // Try to locate the VARIABLE tree
+        if (path != null) {
             Tree scope = path.getLeaf();
             TypeMirror expected = null;
             TypeMirror resolved = null;
             ExpressionTree found = null;
             
+            // Check if this is an assignment. 
+            if (scope.getKind() == Kind.ASSIGNMENT) {
+            	path = path.getParentPath();
+            	if (path != null) {
+            		// set it's parent as the scope
+            		scope = path.getLeaf();
+            	}
+            }
+            
+            // Is thsis a VARIABLE tree
             if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
                 expected = info.getTrees().getTypeMirror(path);
                 found = ((VariableTree) scope).getInitializer();
@@ -64,24 +74,15 @@ public final class ChangeType implements ErrorRule<Void> {
             
             if (expected != null && resolved != null) {
                 TypeMirror foundTM = info.getTrees().getTypeMirror(new TreePath(path, found));
-                
                 if (foundTM.getKind() == TypeKind.EXECUTABLE) {
-                    //XXX: ignoring executable, see AddCast9 for more information when this happens.
-                } else {
-                    if (
-                        /*#85346: cast hint should not be proposed for error types:*/
-                        foundTM.getKind() != TypeKind.ERROR
-                        && expected.getKind() != TypeKind.ERROR) {
-                        tm[0] = expected;
-                        expression[0] = found;
-                        expressionType[0] = resolved;
-                        leaf[0] = scope;
-                        break;
-                    }
+                } else if (foundTM.getKind() != TypeKind.ERROR &&
+                		expected.getKind() != TypeKind.ERROR) {
+                    tm[0] = expected;
+                    expression[0] = found;
+                    expressionType[0] = resolved;
+                    leaf[0] = scope;
                 }
             }
-            
-            path = path.getParentPath();
         }
     }
 
@@ -114,10 +115,9 @@ public final class ChangeType implements ErrorRule<Void> {
         
         if (leaf[0] instanceof VariableTree) {
             if (tm[0] != null) {
-                int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), leaf[0]) + 1; // Need to add 1. Bug?
                 result.add(new ChangeTypeFix(info.getJavaSource(),
                         ((VariableTree) leaf[0]).getName().toString(), 
-                        Utilities.getTypeName(expressionType[0], false).toString(), position));
+                        Utilities.getTypeName(expressionType[0], false).toString(), offset));
             }
         }
         

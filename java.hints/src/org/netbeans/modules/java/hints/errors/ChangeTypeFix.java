@@ -37,7 +37,8 @@ import org.openide.util.NbBundle;
 
 /**
  * This hint changes the type of a variable to the type of
- * initializer expression. In effect it works opposite of Add Cast hist.
+ * initializer expression. In effect it works opposite of 
+ * Add Cast hint.
  *
  * @author Sandip Chitale
  */
