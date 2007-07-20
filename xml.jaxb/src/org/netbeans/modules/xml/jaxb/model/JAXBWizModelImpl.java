@@ -38,12 +38,14 @@ import org.openide.util.Exceptions;
 public class JAXBWizModelImpl implements JAXBWizModel {
     private List<JAXBWizEventListener> listeners = null;
     private Project project;
-    private JaxbCfgChangeListener jaxbListener = new JaxbCfgChangeListener();
+    // Do not need to listen to Dir see #110406
+    //private JaxbCfgChangeListener jaxbListener = new JaxbCfgChangeListener();
     private boolean swallowCfgFileEditEvent = false;
         
     public JAXBWizModelImpl(Project prj){
         this.project = prj;
-        ProjectHelper.addCfgFileChangeListener(project, jaxbListener);
+         // Do not need to listen to Dir see #110406
+        //ProjectHelper.addCfgFileChangeListener(project, jaxbListener);
     }
     
     public synchronized void addJAXBWizEventListener(JAXBWizEventListener listener) {
@@ -207,8 +209,10 @@ public class JAXBWizModelImpl implements JAXBWizModel {
             FileObject fo = ProjectHelper.getFOForBindingConfigFile(project);
             if ((fo != null) && (fo.isValid())) {
                 // Remove listening on folder, add for the file
-                ProjectHelper.removeModelListner(project, jaxbListener);
-                ProjectHelper.addCfgFileChangeListener(project, jaxbListener);
+                
+                // Do not need to listen to Dir see #110406
+                //ProjectHelper.removeModelListner(project, jaxbListener);
+                //ProjectHelper.addCfgFileChangeListener(project, jaxbListener);
                 refreshNodes();
             } 
         }
