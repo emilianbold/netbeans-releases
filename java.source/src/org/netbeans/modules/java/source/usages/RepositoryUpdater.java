@@ -2283,6 +2283,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             if (jt != null) {
                                 jt.finish();
                             }
+                            //When a javac failed with the Exception mark a file
+                            //causing this exceptin as compiled
+                            //otherwise tasklist will reschedule the parse again
+                            //and the RepositoryUpdater ends in infinite loop of reparse.
+                            if (compiledFiles != null) {
+                                compiledFiles.add(activeFile);
+                            }
                             final URI activeURI = active.toUri();
                             jt = null;
                             active = null;                            
