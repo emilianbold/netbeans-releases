@@ -246,6 +246,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file> 
+            <!-- XXX does not exist!
             <file name="MBeanTest.java" url="resources/templates/MBeanTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
@@ -254,6 +255,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>           
+            -->
         </folder>  
     </folder>
     
