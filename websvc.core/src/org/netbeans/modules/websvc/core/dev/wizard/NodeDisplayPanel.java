@@ -56,8 +56,8 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         });
         setLayout(new BorderLayout());
         add(btv, BorderLayout.CENTER);
-        btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
-        btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
+        btv.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_PortNodeTreeView"));
+        btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_PortNodeTreeView"));
     }
     
     /** Ubuntu workaround

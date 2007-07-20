@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.border.EtchedBorder;
 import org.netbeans.modules.websvc.core.dev.wizard.nodes.PortNode;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.NbBundle;
@@ -49,7 +51,10 @@ public class PortChooser extends javax.swing.JPanel {
                 validateNodes();
             }
         });
-
+        
+        BeanTreeView btw = (BeanTreeView)nodeDisplayPanel.getComponent(0);
+        jLabelDesc.setLabelFor(btw.getViewport().getView());
+        
         validateNodes();
     }
     
@@ -91,16 +96,13 @@ public class PortChooser extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jLabelDesc.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PortChooser.class, "MNE_SelectBeanDescription").charAt(0));
-        jLabelDesc.setLabelFor(jPanelBeanTree);
-        jLabelDesc.setText(org.openide.util.NbBundle.getMessage(PortChooser.class, "LBL_SelectPortDescription"));
+        jLabelDesc.setText(org.openide.util.NbBundle.getMessage(PortChooser.class, "LBL_SelectPortDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(jLabelDesc, gridBagConstraints);
-        jLabelDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortChooser.class, "LBL_SelectPortDescription"));
 
         jPanelBeanTree.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -109,8 +111,6 @@ public class PortChooser extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 11);
         add(jPanelBeanTree, gridBagConstraints);
-        jPanelBeanTree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PortChooser.class, "A11Y_PortTree_Name"));
-        jPanelBeanTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortChooser.class, "A11Y_PortTree_Name"));
 
         jLabelError.setForeground(new java.awt.Color(255, 0, 0));
         jLabelError.setLabelFor(jPanelBeanTree);
@@ -121,9 +121,8 @@ public class PortChooser extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 11);
         add(jLabelError, gridBagConstraints);
-        jLabelError.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PortChooser.class, "A11Y_PortTreeError_Name"));
-        jLabelError.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortChooser.class, "A11Y_PortTreeError_Name"));
 
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortChooser.class, "LBL_SelectPortDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
