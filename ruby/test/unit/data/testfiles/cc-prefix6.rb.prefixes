@@ -1,0 +1,42 @@
+@foo = 5
+ ^@,@foo
+@foo = 5
+  ^@f,@foo
+@foo = 5
+   ^@fo,@foo
+@foo = 5
+    ^@foo,@foo
+@foo = 5
+        ^5,5
+@@bar = 10
+ ^@,@
+@@bar = 10
+  ^@@,@@bar
+@@bar = 10
+   ^@@b,@@bar
+@@bar = 10
+    ^@@ba,@@bar
+@@bar = 10
+     ^@@bar,@@bar
+@@bar = 10
+         ^1,10
+@@bar = 10
+          ^10,10
+$foobar = 15
+ ^$,$foobar
+$foobar = 15
+  ^$f,$foobar
+$foobar = 15
+   ^$fo,$foobar
+$foobar = 15
+    ^$foo,$foobar
+$foobar = 15
+     ^$foob,$foobar
+$foobar = 15
+      ^$fooba,$foobar
+$foobar = 15
+       ^$foobar,$foobar
+$foobar = 15
+           ^1,15
+$foobar = 15
+            ^15,15

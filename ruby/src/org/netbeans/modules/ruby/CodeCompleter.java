@@ -544,19 +544,50 @@ public class CodeCompleter implements Completable {
                 //return doc.getText(regexpOffset, offset-regexpOffset);
             }
 
-            // Normal identifier lookup
-            int[] blk = org.netbeans.editor.Utilities.getIdentifierBlock(doc, lexOffset);
-
-            if (blk != null) {
-                int start = blk[0];
-
-                if (start < lexOffset) {
-                    String prefix;
-
-                    if (upToOffset) {
-                        prefix = doc.getText(start, lexOffset - start);
+            int lineBegin = Utilities.getRowStart(doc, lexOffset);
+            if (lineBegin != -1) {
+                int lineEnd = Utilities.getRowEnd(doc, lexOffset);
+                String line = doc.getText(lineBegin, lineEnd-lineBegin);
+                String prefix = null;
+                int lineOffset = lexOffset-lineBegin;
+                int start = lineOffset;
+                if (lineOffset > 0) {
+                    for (int i = lineOffset-1; i >= 0; i--) {
+                        char c = line.charAt(i);
+                        if (!RubyUtils.isIdentifierChar(c)) {
+                            break;
+                        } else {
+                            start = i;
+                        }
+                    }
+                }
+                
+                // Find identifier end
+                if (upToOffset ){
+                    prefix = line.substring(start, lineOffset);
+                } else {
+                    if (lineOffset == line.length()) {
+                        prefix = line.substring(start);
                     } else {
-                        prefix = doc.getText(start, blk[1] - start);
+                        int n = line.length();
+                        int end = lineOffset;
+                        for (int j = lineOffset; j < n; j++) {
+                            char d = line.charAt(j);
+                            // Try to accept Foo::Bar as well
+                            if (!RubyUtils.isStrictIdentifierChar(d)) {
+                                break;
+                            } else {
+                                end = j+1;
+                            }
+                        }
+                        prefix = line.substring(start, end);
+                    }
+                }
+                
+                if (prefix.length() > 0) {
+
+                    if (prefix.endsWith(":") && prefix.length() > 1) {
+                        return null;
                     }
 
                     // Strip out LHS if it's a qualified method, e.g.  Benchmark::measure -> measure
@@ -570,18 +601,26 @@ public class CodeCompleter implements Completable {
                     // they include things like "=", "!" and even "&" such that double-clicks will
                     // pick up the whole "token" the user is after. But "=" is only allowed at the
                     // end of identifiers for example.
-                    for (int i = prefix.length()-2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
-                        char c = prefix.charAt(i);
-                        if (!Character.isJavaIdentifierPart(c)) {
-                            prefix = prefix.substring(i+1);
-                            break;
+                    if (prefix.length() == 1) {
+                        char c = prefix.charAt(0);
+                        if (!(Character.isJavaIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
+                            return null;
+                        }
+                    } else {
+                        for (int i = prefix.length()-2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
+                            char c = prefix.charAt(i);
+                            if (i ==0 && c == ':') {
+                                // : is okay at the begining of prefixes
+                            } else if (!(Character.isJavaIdentifierPart(c) || c == '@' || c == '$')) {
+                                prefix = prefix.substring(i+1);
+                                break;
+                            }
                         }
                     }
 
                     return prefix;
                 }
             }
-
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -1239,11 +1278,11 @@ public class CodeCompleter implements Completable {
     }
 
     // TODO: Move to the top
-    public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix,
-        NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
+    public List<CompletionProposal> complete(final CompilationInfo info, int lexOffset, String prefix,
+        final NameKind kind, final QueryType queryType, final boolean caseSensitive, final HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
 
-        int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (astOffset == -1) {
             return null;
         }
@@ -1253,51 +1292,27 @@ public class CodeCompleter implements Completable {
             prefix = "";
         }
 
-        // Let's stick the keywords in there...
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
 
         anchor = lexOffset - prefix.length();
 
-        RubyIndex index = RubyIndex.get(info.getIndex());
+        final RubyIndex index = RubyIndex.get(info.getIndex());
 
-        Document document = null;
-
+        final Document document;
         try {
             document = info.getDocument();
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
+            return null;
         }
 
         // TODO - move to LexUtilities now that this applies to the lexing offset?
         lexOffset = AstUtilities.boundCaretOffset(info, lexOffset);
 
         // Discover whether we're in a require statement, and if so, use special completion
-        TokenHierarchy<Document> th = TokenHierarchy.get(document);
-        BaseDocument doc = (BaseDocument)document;
-        FileObject fileObject = info.getFileObject();
-
-        // Carry completion context around since this logic is split across lots of methods
-        // and I don't want to pass dozens of parameters from method to method; just pass
-        // a request context with supporting info needed by the various completion helpers i
-        CompletionRequest request = new CompletionRequest();
-        request.formatter = formatter;
-        request.lexOffset = lexOffset;
-        request.astOffset = astOffset;
-        request.index = index;
-        request.doc = doc;
-        request.info = info;
-        request.prefix = prefix;
-        request.th = th;
-        request.kind = kind;
-        request.queryType = queryType;
-        request.fileObject = fileObject;
-        
-        // See if we're inside a string or regular expression and if so,
-        // do completions applicable to strings - require-completion,
-        // escape codes for quoted strings and regular expressions, etc.
-        if (completeStrings(proposals, request)) {
-            return proposals;
-        }
+        final TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        final BaseDocument doc = (BaseDocument)document;
+        final FileObject fileObject = info.getFileObject();
 
         boolean showLower = true;
         boolean showUpper = true;
@@ -1329,6 +1344,29 @@ public class CodeCompleter implements Completable {
                 }
             }
         }
+        
+        // Carry completion context around since this logic is split across lots of methods
+        // and I don't want to pass dozens of parameters from method to method; just pass
+        // a request context with supporting info needed by the various completion helpers i
+        CompletionRequest request = new CompletionRequest();
+        request.formatter = formatter;
+        request.lexOffset = lexOffset;
+        request.astOffset = astOffset;
+        request.index = index;
+        request.doc = doc;
+        request.info = info;
+        request.prefix = prefix;
+        request.th = th;
+        request.kind = kind;
+        request.queryType = queryType;
+        request.fileObject = fileObject;
+        
+        // See if we're inside a string or regular expression and if so,
+        // do completions applicable to strings - require-completion,
+        // escape codes for quoted strings and regular expressions, etc.
+        if (completeStrings(proposals, request)) {
+            return proposals;
+        }
 
         // Fields
         // This is a bit stupid at the moment, not looking at the current typing context etc.
@@ -1342,17 +1380,18 @@ public class CodeCompleter implements Completable {
 
         // Compute the bounds of the line that the caret is on, and suppress nodes overlapping the line.
         // This will hide not only paritally typed identifiers, but surrounding contents like the current class and module
-        int astLineBegin = -1;
-        int astLineEnd = -1;
+        final int astLineBegin;
+        final int astLineEnd;
 
         try {
             astLineBegin = AstUtilities.getAstOffset(info, Utilities.getRowStart(doc, lexOffset));
             astLineEnd = AstUtilities.getAstOffset(info, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
+            return null;
         }
 
-        AstPath path = new AstPath(root, astOffset);
+        final AstPath path = new AstPath(root, astOffset);
         request.path = path;
 
         Map<String, Node> variables = new HashMap<String, Node>();
@@ -1360,7 +1399,7 @@ public class CodeCompleter implements Completable {
         Map<String, Node> globals = new HashMap<String, Node>();
         Map<String, Node> constants = new HashMap<String, Node>();
 
-        Node closest = path.leaf();
+        final Node closest = path.leaf();
         request.node = closest;
 
         Call call = LexUtilities.getCallType(doc, th, lexOffset);
@@ -2692,7 +2731,9 @@ public class CodeCompleter implements Completable {
             String in = element.getIn();
             if ("Module".equals(in)) {
                 // Module.attr_ methods typically shouldn't use parentheses
-                if (n.startsWith("attr_") || n.equals("include")) {
+                if (n.startsWith("attr_"))  {
+                    return new String[] { " :", " " };
+                } else if (n.equals("include")) {
                     return new String[] { " ", " " };
                 }
             } else if ("Kernel".equals(in)) {

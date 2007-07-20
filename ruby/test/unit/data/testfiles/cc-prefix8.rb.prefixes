@@ -1,0 +1,28 @@
+x = :foo
+ ^x,x
+x = :foo
+     ^:,:foo
+x = :foo
+      ^:f,:foo
+x = :foo
+       ^:fo,:foo
+x = :foo
+        ^:foo,:foo
+y = :Bar
+ ^y,y
+y = :Bar
+     ^:,:Bar
+y = :Bar
+      ^:B,:Bar
+y = :Bar
+       ^:Ba,:Bar
+y = :Bar
+        ^:Bar,:Bar
+f(xyz)
+ ^f,f
+f(xyz)
+   ^x,xyz
+f(xyz)
+    ^xy,xyz
+f(xyz)
+     ^xyz,xyz

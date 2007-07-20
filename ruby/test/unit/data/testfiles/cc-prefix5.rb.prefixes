@@ -7,17 +7,19 @@ File.exists?("foo")
 File.exists?("foo")
     ^File,File
 File.exists?("foo")
-      ^e,exists
+      ^e,exists?
 File.exists?("foo")
-       ^ex,exists
+       ^ex,exists?
 File.exists?("foo")
-        ^exi,exists
+        ^exi,exists?
 File.exists?("foo")
-         ^exis,exists
+         ^exis,exists?
 File.exists?("foo")
-          ^exist,exists
+          ^exist,exists?
 File.exists?("foo")
-           ^exists,exists
+           ^exists,exists?
+File.exists?("foo")
+            ^exists?,exists?
 File.exists?("foo")
               ^"",""
 File.exists?("foo")

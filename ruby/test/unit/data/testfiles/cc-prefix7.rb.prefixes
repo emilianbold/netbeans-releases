@@ -1,0 +1,26 @@
+    # foo
+       ^f,foo
+    # foo
+        ^fo,foo
+    # foo
+         ^foo,foo
+bar
+ ^b,bar
+bar
+  ^ba,bar
+bar
+   ^bar,bar
+foo_bar
+ ^f,foo_bar
+foo_bar
+  ^fo,foo_bar
+foo_bar
+   ^foo,foo_bar
+foo_bar
+    ^foo_,foo_bar
+foo_bar
+     ^foo_b,foo_bar
+foo_bar
+      ^foo_ba,foo_bar
+foo_bar
+       ^foo_bar,foo_bar

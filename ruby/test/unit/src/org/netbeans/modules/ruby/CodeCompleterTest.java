@@ -96,7 +96,7 @@ public class CodeCompleterTest extends RubyTestBase {
             if (Utilities.getRowFirstNonWhite(doc, index) != -1) {
                 String line = doc.getText(lineStart, lineEnd-lineStart);
                 for (int i = lineStart; i <= lineEnd; i++) {
-                    String prefix = completer.getPrefix(info, i, true);
+                    String prefix = completer.getPrefix(info, i, true); // line.charAt(i)
                     if (prefix == null) {
                         continue;
                     }
@@ -144,5 +144,17 @@ public class CodeCompleterTest extends RubyTestBase {
 
     public void testPrefix5() throws Exception {
         checkPrefix("testfiles/cc-prefix5.rb");
+    }
+
+    public void testPrefix6() throws Exception {
+        checkPrefix("testfiles/cc-prefix6.rb");
+    }
+
+    public void testPrefix7() throws Exception {
+        checkPrefix("testfiles/cc-prefix7.rb");
+    }
+
+    public void testPrefix8() throws Exception {
+        checkPrefix("testfiles/cc-prefix8.rb");
     }
 }
