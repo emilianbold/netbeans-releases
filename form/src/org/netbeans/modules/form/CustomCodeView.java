@@ -340,6 +340,7 @@ class CustomCodeView extends javax.swing.JPanel {
                 selectInComboBox(combo, items[0]);
                 combo.setToolTipText(NbBundle.getMessage(CustomCodeView.class, "CTL_GuardCombo_Default_Hint")); // NOI18N
             }
+            combo.getAccessibleContext().setAccessibleName(gBlock.getCustomEntry().getName());
             combo.addActionListener(new GuardSwitchL(category, blockIndex));
             getGutter(doc).add(combo, pos);
         }
@@ -521,6 +522,7 @@ class CustomCodeView extends javax.swing.JPanel {
             codeEntries = eBlock.getEntries();
             targetCombo = new JComboBox(codeEntries);
             setSelectedIndex(selIndex);
+            targetCombo.getAccessibleContext().setAccessibleName(codeEntries[selIndex].getName());
             targetCombo.setToolTipText(codeEntries[selIndex].getToolTipText());
             targetCombo.addActionListener(new EditSwitchL());
         }
@@ -1021,46 +1023,53 @@ class CustomCodeView extends javax.swing.JPanel {
         FormListener formListener = new FormListener();
 
         initCodeLabel.setFont(initCodeLabel.getFont().deriveFont(initCodeLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        initCodeLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.initCodeLabel.text")); // NOI18N
+        initCodeLabel.setLabelFor(initCodeEditor);
+        org.openide.awt.Mnemonics.setLocalizedText(initCodeLabel, org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.initCodeLabel.text")); // NOI18N
 
         jScrollPane1.setViewportView(initCodeEditor);
 
         declarationCodeLabel.setFont(declarationCodeLabel.getFont().deriveFont(declarationCodeLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        declarationCodeLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.declarationCodeLabel.text")); // NOI18N
+        declarationCodeLabel.setLabelFor(declareCodeEditor);
+        org.openide.awt.Mnemonics.setLocalizedText(declarationCodeLabel, org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.declarationCodeLabel.text")); // NOI18N
 
         jScrollPane2.setViewportView(declareCodeEditor);
 
-        selectComponentLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.selectComponentLabel.text")); // NOI18N
+        selectComponentLabel.setLabelFor(componentCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(selectComponentLabel, org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.selectComponentLabel.text")); // NOI18N
 
+        componentCombo.setToolTipText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.componentCombo.toolTipText")); // NOI18N
         componentCombo.addActionListener(formListener);
 
-        renameButton.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.renameButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(renameButton, org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.renameButton.text")); // NOI18N
+        renameButton.setToolTipText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.renameButton.toolTipText")); // NOI18N
         renameButton.addActionListener(formListener);
 
-        variableScopeLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.variableScopeLabel.text")); // NOI18N
+        variableScopeLabel.setLabelFor(variableCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(variableScopeLabel, org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.variableScopeLabel.text")); // NOI18N
 
         variableCombo.addActionListener(formListener);
 
-        variableAccessLabel.setText(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.variableAccessLabel.text")); // NOI18N
+        variableAccessLabel.setLabelFor(accessCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(variableAccessLabel, org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.variableAccessLabel.text")); // NOI18N
 
         accessCombo.addActionListener(formListener);
 
-        staticCheckBox.setText("static"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(staticCheckBox, "&static"); // NOI18N
         staticCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         staticCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         staticCheckBox.addActionListener(formListener);
 
-        finalCheckBox.setText("final"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(finalCheckBox, "&final"); // NOI18N
         finalCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         finalCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         finalCheckBox.addActionListener(formListener);
 
-        transientCheckBox.setText("transient"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(transientCheckBox, "&transient"); // NOI18N
         transientCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         transientCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         transientCheckBox.addActionListener(formListener);
 
-        volatileCheckBox.setText("volatile"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(volatileCheckBox, "v&olatile"); // NOI18N
         volatileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         volatileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         volatileCheckBox.addActionListener(formListener);
@@ -1072,16 +1081,16 @@ class CustomCodeView extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(variableScopeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(variableCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(variableAccessLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(accessCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(finalCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(staticCheckBox)
@@ -1089,7 +1098,7 @@ class CustomCodeView extends javax.swing.JPanel {
                         .add(transientCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(volatileCheckBox))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, declarationCodeLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(selectComponentLabel)
@@ -1131,6 +1140,13 @@ class CustomCodeView extends javax.swing.JPanel {
                     .add(volatileCheckBox))
                 .addContainerGap())
         );
+
+        staticCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.staticCheckBox.accessibleDescription")); // NOI18N
+        finalCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.finalCheckBox.accessibleDescription")); // NOI18N
+        transientCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.transientCheckBox.accessibleDescription")); // NOI18N
+        volatileCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.volatileCheckBox.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomCodeView.class, "CustomCodeView.accessibleDescription")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
