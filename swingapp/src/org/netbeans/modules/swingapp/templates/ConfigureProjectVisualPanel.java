@@ -227,12 +227,12 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         setName(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.name")); // NOI18N
 
         jLabel1.setLabelFor(projectNameTextField);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setLabelFor(projectLocationTextField);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel2.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jButton1.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -240,19 +240,20 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         });
 
         jLabel3.setLabelFor(createdFolderTextField);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel3.text")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 
         mainProjectCheckBox.setSelected(true);
-        mainProjectCheckBox.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.mainProjectCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mainProjectCheckBox, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.mainProjectCheckBox.text")); // NOI18N
         mainProjectCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         mainProjectCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel4.text")); // NOI18N
+        jLabel4.setLabelFor(appNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel4.text")); // NOI18N
 
         shellListLabel.setLabelFor(shellList);
-        shellListLabel.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.shellListLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(shellListLabel, org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.shellListLabel.text")); // NOI18N
         shellListLabel.setToolTipText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.shellListLabel.toolTipText")); // NOI18N
 
         shellList.setTraversalAllowed(false);
@@ -266,7 +267,7 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(mainProjectCheckBox)
-                .addContainerGap(350, Short.MAX_VALUE))
+                .addContainerGap(348, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel4)
@@ -281,14 +282,14 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(shellListLabel)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(shellList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(descBrowser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .add(descBrowser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -320,6 +321,17 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
                     .add(descBrowser, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
                     .add(shellList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel1.accessibleDescription")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel2.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jButton1.accessibleDescription")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel3.accessibleDescription")); // NOI18N
+        mainProjectCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.mainProjectCheckBox.accessibleDescription")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.jLabel4.accessibleDescription")); // NOI18N
+        descBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.descBrowser.accessibleName")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "TITLE_NewDesktopApp")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
