@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
@@ -461,7 +462,11 @@ public class InstallSupportImpl {
             currentStep = STEP.CANCEL;
         }
         if (es != null) {
-            es.shutdownNow ();
+            try {
+                es.shutdownNow ();
+            } catch (AccessControlException ace) {
+                err.log (Level.INFO, ace.getMessage (), ace);
+            }
         }
         for (File f : getDownloadedFiles ()) {
             if (f != null && f.exists ()) {

@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -210,7 +211,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             showCertificate.addActionListener (new ActionListener () {
                 public void actionPerformed (ActionEvent e) {
                     if (showCertificate.equals (e.getSource ())) {
-                        DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message (certificate));
+                        JTextArea ta = new JTextArea (certificate);
+                        ta.setEditable (false);
+                        DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message (ta));
                     }
                 }
             });
