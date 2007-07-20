@@ -27,6 +27,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -916,13 +918,18 @@ public class FormEditor {
 
     /** @return JEditorPane set up with the actuall forms java source*/
     public static JEditorPane createCodeEditorPane(FormModel formModel) {                        
+        FormDataObject dobj = getFormDataObject(formModel);
+        JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
+        codeGen.regenerateCode();
+
         JEditorPane codePane = new JEditorPane();
+        SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
+        int pos = sec.getText().indexOf('{') + 2 + sec.getStartPosition().getOffset();
+        DialogBinding.bindComponentToFile(dobj.getPrimaryFile(), pos, 0, codePane);
         codePane.setContentType("text/x-java");  // NOI18N
+//        codePane.getDocument().putProperty(Document.StreamDescriptionProperty, dobj);
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(codePane);
         eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        codePane.getDocument().putProperty(Document.StreamDescriptionProperty, getFormDataObject(formModel));
-        JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
-        codeGen.regenerateCode();                                                    
         return codePane;
     }
 
