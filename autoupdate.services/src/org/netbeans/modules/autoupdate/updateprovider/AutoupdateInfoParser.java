@@ -79,9 +79,11 @@ public class AutoupdateInfoParser {
         try {
             Document doc = getAutoupdateInfo (nbmFile);
             SimpleItem simple = createSimpleItem (doc, true);
-            assert simple instanceof SimpleItem.License : simple + " is instanceof License.";
-            SimpleItem.License license = (SimpleItem.License) simple;
-            res.put (license.getLicenseId (), license.getLicenseContent ());
+            if (simple != null) {
+                assert simple instanceof SimpleItem.License : simple + " is instanceof License.";
+                SimpleItem.License license = (SimpleItem.License) simple;
+                res.put (license.getLicenseId (), license.getLicenseContent ());
+            }
         } catch (IOException ex) {
             ERR.log (Level.INFO, ex.getMessage(), ex);
         } catch (SAXException ex) {
