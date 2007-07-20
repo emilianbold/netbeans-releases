@@ -97,22 +97,8 @@ class DiffFacility {
             int addStart = diff.getAddedStart();
             int addEnd   = diff.getAddedEnd();
             
-            String from = toString(delStart, delEnd);
-            String to = toString(addStart, addEnd);
             char type = delEnd != Difference.NONE && addEnd != Difference.NONE ? 'c' : (delEnd == Difference.NONE ? 'a' : 'd');
 
-            if (logDiffs) {
-                System.out.println(from + type + to);
-                if (delEnd != Difference.NONE) {
-                    printLines(delStart, delEnd, "<", lines1);
-                    if (addEnd != Difference.NONE) {
-                        System.out.println("---");
-                    }
-                }
-                if (addEnd != Difference.NONE) {
-                    printLines(addStart, addEnd, ">", lines2);
-                }
-            }
             // addition
             if (type == 'a') {
                 StringBuilder builder = new StringBuilder();
@@ -149,13 +135,7 @@ class DiffFacility {
         return null;
     }
     
-    /**
-     * Temporary logging variable - just for debugging reason during development.
-     */
-    private static boolean logDiffs = false;
-    
     public List<Diff> makeTokenListMatch(String text1, String text2, int currentPos) {
-        if (logDiffs) System.out.println("----- token match for change -");
         TokenSequence<JavaTokenId> seq1 = TokenHierarchy.create(text1, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         TokenSequence<JavaTokenId> seq2 = TokenHierarchy.create(text2, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         List<Line> list1 = new ArrayList<Line>();
@@ -178,22 +158,8 @@ class DiffFacility {
             int addStart = diff.getAddedStart();
             int addEnd   = diff.getAddedEnd();
             
-            String from = toString(delStart, delEnd);
-            String to = toString(addStart, addEnd);
             char type = delEnd != Difference.NONE && addEnd != Difference.NONE ? 'c' : (delEnd == Difference.NONE ? 'a' : 'd');
 
-            if (logDiffs) {
-                System.out.println(from + type + to);
-                if (delEnd != Difference.NONE) {
-                    printTokens(delStart, delEnd, "<", lines1);
-                    if (addEnd != Difference.NONE) {
-                        System.out.println("---");
-                    }
-                }
-                if (addEnd != Difference.NONE) {
-                    printTokens(addStart, addEnd, ">", lines2);
-                }
-            }
             // addition
             if (type == 'a') {
                 StringBuilder builder = new StringBuilder();
@@ -227,33 +193,6 @@ class DiffFacility {
             }
                     
         }
-        if (logDiffs) System.out.println("----- end token match -");
         return null;
-    }
-    
-    protected String toString(int start, int end) {
-        // adjusted, because file lines are one-indexed, not zero.
-        
-        StringBuffer buf = new StringBuffer();
-        
-        // match the line numbering from diff(1):
-        buf.append(end == Difference.NONE ? start : (1 + start));
-        
-        if (end != Difference.NONE && start != end) {
-            buf.append(",").append(1 + end);
-        }
-        return buf.toString();
-    }
-    
-    private void printLines(int start, int end, String ind, Line[] lines) {
-        for (int lnum = start; lnum <= end; ++lnum) {
-            System.out.print(ind + " " + lines[lnum]);
-        }
-    }
-    
-    private void printTokens(int start, int end, String ind, Line[] lines) {
-        for (int lnum = start; lnum <= end; ++lnum) {
-            System.out.println(ind + " '" + lines[lnum] + "'");
-        }
     }
 }
