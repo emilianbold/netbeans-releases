@@ -65,7 +65,6 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     
     public Iterator<FileObject> iterator() {
         ArrayList<FileObject> list = new ArrayList<FileObject>( 1 );
-        FileObject currentFile = getCurrentFile();
         if( null != currentFile )
             list.add( currentFile );
         return list.iterator();
@@ -75,8 +74,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     public boolean isInScope( FileObject resource ) {
         if( null == resource )
             return false;
-        FileObject activeFile = getCurrentFile();
-        return null != activeFile && activeFile.equals( resource );
+        return null != currentFile && currentFile.equals( resource );
     }
     
     public Lookup getLookup() {
@@ -127,11 +125,13 @@ public class CurrentEditorScanningScope extends TaskScanningScope
                 lookupContent.remove( currentFile );
             if( null != newActiveFile )
                 lookupContent.add( newActiveFile );
+            currentFile = newActiveFile;
             //notify the TaskManager that user activated other file
             if( null != callback )
                 callback.refresh();
+        } else {
+            currentFile = newActiveFile;
         }
-        currentFile = newActiveFile;
     }
     
     private FileObject getCurrentFile() {
