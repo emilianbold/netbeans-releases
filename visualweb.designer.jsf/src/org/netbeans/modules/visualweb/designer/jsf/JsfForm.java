@@ -1956,7 +1956,7 @@ public class JsfForm {
     
     public void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
 //        domProvider.dumpHtmlMarkupForNode(node);
-        DesignBean designBean = (DesignBean)node.getLookup().lookup(DesignBean.class);
+        DesignBean designBean = node.getLookup().lookup(DesignBean.class);
         if (designBean instanceof MarkupDesignBean) {
             MarkupDesignBean markupDesignBean = (MarkupDesignBean)designBean;
             Element sourceElement = markupDesignBean.getElement();
@@ -1978,7 +1978,7 @@ public class JsfForm {
         DocumentFragment df = getHtmlDomFragment();
         Element html = Util.findDescendant(HtmlTag.HTML.name, df);
         if (html == null) {
-            return;
+            html = getHtmlBody(false);
         }
         log("Rendered html element markup design bean=" + MarkupUnit.getMarkupDesignBeanForElement(html)
                 + "\n" + Util.getHtmlStream(html)); // NOI18N
@@ -1999,12 +1999,26 @@ public class JsfForm {
 
             if (bean != null) {
                 DesignBean designBean = liveUnit.getDesignBean(bean);
-                return designBean instanceof MarkupDesignBean ? JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean) : null;
+                Element defaultParentElement = designBean instanceof MarkupDesignBean
+                        ? JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean)
+                        : null;
+//                return defaultParentElement == null ? findDefaultParentComponent() : defaultParentElement;
+                return defaultParentElement;
             }
         }
 
         return null;
     }
+    
+//    private Element findDefaultParentComponent() {
+//        Element bodyElement = getHtmlBody(false);
+//        if (isFragment()) {
+//            Element fSubViewElement = Util.findDescendant(HtmlTag.FSUBVIEW.name, bodyElement);
+//            return fSubViewElement == null ? bodyElement : fSubViewElement;
+//        } else {
+//            return bodyElement;
+//        }
+//    }
     
     public Transferable copyComponents(Element[] componentRootElements) {
 //        return domProvider.copyComponents(componentRootElements);

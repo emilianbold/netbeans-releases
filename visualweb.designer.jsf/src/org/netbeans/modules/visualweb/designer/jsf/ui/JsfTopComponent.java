@@ -1632,7 +1632,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        Element html = WebForm.getDomProviderService().findHtmlElementDescendant(df);
         Element html = JsfSupportUtilities.findHtmlElementDescendant(df);
         if (html == null) {
-            return;
+            html = jsfForm.getHtmlBody(false);
         }
 //        PageBox pageBox = webform.getPane().getPageBox();
         Box pageBox = designer.getPageBox();

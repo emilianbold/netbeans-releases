@@ -92,6 +92,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent;
+import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.propertyeditors.UrlPropertyEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -3041,10 +3042,17 @@ linkCheckFinished:
         }
 
         if (parent == null) {
-            // No valid parent found.
-            Toolkit.getDefaultToolkit().beep();
-
-            return null;
+            // XXX #110353 There is no rendered component corresponding to the fragment root?!
+            // Hacking the problem here so it works like before.
+            LiveUnit liveUnit = jsfForm.getLiveUnit();
+            FacesPageUnit facesPageUnit = jsfForm.getFacesPageUnit();
+            parent = liveUnit == null || facesPageUnit == null ? null : liveUnit.getDesignBean(facesPageUnit.getDefaultParent());
+            
+            if (parent == null) {
+                // No valid parent found.
+                Toolkit.getDefaultToolkit().beep();
+                return null;
+            }
         }
 
 //        Document document = null;
