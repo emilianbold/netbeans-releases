@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
@@ -545,21 +546,15 @@ public class ComplibServiceProvider implements ComplibService {
                     for (ExtensionComplib projectComplib : projectComplibs) {
                         ExtensionComplib userComplib = userScope.getExistingComplib(projectComplib);
                         if (userComplib != null) {
-                            if (addLibraryRefAndDef(project, userComplib)) {
-                                /*
-                                 * An existing modern Lib Ref was not found in the project which
-                                 * means that we need to remove any legacy Lib Refs and Defs from
-                                 * prior versions of the IDE.
-                                 */
-                                try {
-                                    removeLegacyLibraryRefsAndDefs(project, projectComplib);
-                                } catch (IOException e) {
-                                    IdeUtil
-                                            .logWarning(
-                                                    "Unable to remove legacy library reference and definition. Use Project Properties to remove manually",
-                                                    e);
-                                }
+                            try {
+                                removeLegacyLibraryRefsAndDefs(project, projectComplib);
+                            } catch (IOException e) {
+                                IdeUtil
+                                        .logWarning(
+                                                "Unable to remove legacy library reference and definition. Use Project Properties to remove manually",
+                                                e);
                             }
+                            addLibraryRefAndDef(project, userComplib);
                         }
                     }
                 } catch (IOException e) {
@@ -624,8 +619,8 @@ public class ComplibServiceProvider implements ComplibService {
      * Remove existing legacy Library Refs and Library Defs to an embedded complib for a particular
      * project.
      * 
-     * TODO This is a hack b/c there isn't a NB API to get all of the project's library references.
-     * If and when NB provides such an API, change this code!
+     * Note: This is a hack because as of 2007-07 there isn't a NB API to enumerate all of the
+     * project's library references. If and when NB provides such an API, we can change this code.
      * 
      * @param project
      * @param projectComplib
@@ -634,53 +629,83 @@ public class ComplibServiceProvider implements ComplibService {
      */
     private void removeLegacyLibraryRefsAndDefs(Project project, ExtensionComplib projectComplib)
             throws IOException {
-
-        /*
-         * FIXME This code does not work because of complicated problems related to changes in the
-         * way Lib Defs and Refs were mapped to NB APIs in JsfProjectUtils. I think, it would be
-         * time consuming to really fix this so the workaround is to remove old Lib Refs manually
-         * via Project Properties.
-         */
-
-        /*
-         * In VWP 5.5.x or shortfin, there was only a single Lib Def with a "design-time" volume but
-         * two separate Lib Refs. However, the API has changed so I don't know if this code will
-         * remove both of the exiting Lib Refs.
-         */
-        String projectName = project.getProjectDirectory().getName();
-        String libName = IdeUtil.removeWhiteSpace(projectName + "_"
-                + projectComplib.getDirectoryBaseName());
-        if (removeLibraryDefAndRef(project, libName, projectComplib)) {
+        if (removeLegacyShortfinLibRefsAndDefs(project, projectComplib)) {
             return;
         }
 
-        /*
-         * In Creator, there were a couple Lib Def and Lib Ref pairs, one for design-time and one
-         * for runtime. So we remove both pairs.
-         */
-        libName = IdeUtil.removeWhiteSpace(projectName + " Design-time "
-                + projectComplib.getTitle());
-        removeLibraryDefAndRef(project, libName, projectComplib);
-
-        libName = IdeUtil.removeWhiteSpace(projectName + " Runtime " + projectComplib.getTitle());
-        removeLibraryDefAndRef(project, libName, projectComplib);
+        removeLegacyCreatorLibRefsAndDefs(project, projectComplib);
     }
 
-    /**
-     * Remove a named Lib Ref and also it's corresponding Lib Def.
-     * 
-     * @param project
-     * @param libName
-     *            Lib Def name
-     * @param complib
-     *            the complib that corresponds to the Lib Def
-     * @return
-     * @throws IOException
-     */
-    private boolean removeLibraryDefAndRef(Project project, String libName, ExtensionComplib complib)
+    private boolean removeLegacyShortfinLibRefsAndDefs(Project project, ExtensionComplib complib)
             throws IOException {
-        boolean found = false;
+        /*
+         * In NetBeans VWP 5.5.x or shortfin, there was only a single Lib Def with a "design-time"
+         * volume but two separate Lib Refs that showed up in the Project Properites UI as a node
+         * under "Libraries" w/o package checkbox and another under "Packaging".
+         */
+        String projectName = project.getProjectDirectory().getName();
+        String libName = IdeUtil.removeWhiteSpace(projectName + "_"
+                + complib.getDirectoryBaseName());
+        Library libDef = getMaybeFakeLibDef(libName, complib);
 
+        // Remove existing "compile" Lib Ref
+        boolean foundCompile = JsfProjectUtils.removeLibraryReferences(project,
+                new Library[] { libDef }, ClassPath.COMPILE);
+
+        // Remove existing "package" Lib Ref
+        boolean foundPackaging = JsfProjectUtils.removeLibraryReferences(project,
+                new Library[] { libDef }, ClassPath.EXECUTE);
+
+        // Remove the Lib Def
+        JsfProjectUtils.removeLibrary(libName);
+
+        // Cleanup bundle
+        LibraryLocalizationBundle.remove(libName);
+
+        // If we found at least one of them then the project was probably a shortfin project
+        return foundCompile || foundPackaging;
+    }
+
+    private boolean removeLegacyCreatorLibRefsAndDefs(Project project, ExtensionComplib complib)
+            throws IOException {
+        /*
+         * In Creator, there were two pairs of Lib Def and Lib Refs, one for design-time and one for
+         * runtime. So we remove both pairs. First the runtime...
+         */
+        String projectName = project.getProjectDirectory().getName();
+        String libName = IdeUtil.removeWhiteSpace(projectName + " Design-time "
+                + complib.getTitle());
+        Library libDef = getMaybeFakeLibDef(libName, complib);
+        // Remove existing "compile" Lib Ref
+        boolean foundCompile = JsfProjectUtils.removeLibraryReferences(project,
+                new Library[] { libDef }, ClassPath.COMPILE);
+
+        // Remove the Lib Def
+        JsfProjectUtils.removeLibrary(libName);
+
+        // Cleanup bundle
+        LibraryLocalizationBundle.remove(libName);
+
+        /*
+         * Now, the design-time which appears in the Project Properties "Packaging" sub-node.
+         */
+        libName = IdeUtil.removeWhiteSpace(projectName + " Runtime " + complib.getTitle());
+        libDef = getMaybeFakeLibDef(libName, complib);
+        // Remove existing "package" Lib Ref
+        boolean foundPackaging = JsfProjectUtils.removeLibraryReferences(project,
+                new Library[] { libDef }, ClassPath.EXECUTE);
+
+        // Remove the Lib Def
+        JsfProjectUtils.removeLibrary(libName);
+
+        // Cleanup bundle
+        LibraryLocalizationBundle.remove(libName);
+
+        // If we found at least one of them then the project was probably a Creator project
+        return foundCompile || foundPackaging;
+    }
+
+    private Library getMaybeFakeLibDef(String libName, ExtensionComplib complib) throws IOException {
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
             /*
@@ -693,20 +718,7 @@ public class ComplibServiceProvider implements ComplibService {
             libDef = JsfProjectUtils.createComponentLibrary(libName, null, null, rtPath, null,
                     null, null);
         }
-
-        // Remove an existing Lib Ref
-        if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
-            JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });
-            found = true;
-        }
-
-        // Remove the Lib Def
-        JsfProjectUtils.removeLibrary(libName);
-
-        // Cleanup bundle
-        LibraryLocalizationBundle.remove(libName);
-
-        return found;
+        return libDef;
     }
 
     /**
@@ -715,32 +727,21 @@ public class ComplibServiceProvider implements ComplibService {
      * 
      * @param project
      * @param userComplib
-     * @return false iff a Library Ref was already found in the project and therefore there is no
-     *         need to check for legacy Lib Refs and Defs
      * @throws IOException
      */
-    private boolean addLibraryRefAndDef(Project project, ExtensionComplib userComplib)
+    private void addLibraryRefAndDef(Project project, ExtensionComplib userComplib)
             throws IOException {
         String libName = deriveUniqueLibraryName(userComplib);
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef == null) {
             /*
-             * Library Defs are created at install time (since NB 6). However, it is still possible
-             * that the user removes the Lib Def afterward and so we re-create it here in case that
-             * happens.
+             * Library Defs are created when complib is installed into userdir (since NB 6).
+             * However, it is still possible that the user removes the Lib Def afterward and so we
+             * re-create it here in case that happens.
              */
             libDef = createUserScopeLibDef(userComplib);
         }
-
-        // If needed, create new Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef)) {
-            if (!JsfProjectUtils.addLibraryReferences(project, new Library[] { libDef })) {
-                IdeUtil.logWarning("Failed to add library reference to project: "
-                        + libDef.getName());
-            }
-            return true;
-        }
-        return false;
+        JsfProjectUtils.addLibraryReferences(project, new Library[] { libDef });
     }
 
     /**
@@ -1195,9 +1196,7 @@ public class ComplibServiceProvider implements ComplibService {
             String libName = deriveUniqueLibraryName(userComplib);
             Library libDef = LibraryManager.getDefault().getLibrary(libName);
             if (libDef != null) {
-                if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
-                    JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });
-                }
+                JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });
             }
         }
 
@@ -1790,12 +1789,10 @@ public class ComplibServiceProvider implements ComplibService {
         libDef = JsfProjectUtils.createComponentLibrary(libName, libName, localizingBundle, rtPath,
                 sourcePath, javadocPath, dtPath);
 
-        // If needed, create new compile-time and deploy Library Ref
-        if (!JsfProjectUtils.hasLibraryReference(project, libDef)) {
-            if (!JsfProjectUtils.addLibraryReferences(project, new Library[] { libDef })) {
-                IdeUtil.logError("Failed to add compile-time library reference to project: "
-                        + libDef.getName());
-            }
+        // Create new compile-time and deploy Library Ref
+        if (!JsfProjectUtils.addLibraryReferences(project, new Library[] { libDef })) {
+            IdeUtil.logError("Failed to add compile-time library reference to project: "
+                    + libDef.getName());
         }
     }
 
@@ -1814,10 +1811,7 @@ public class ComplibServiceProvider implements ComplibService {
         Library libDef = LibraryManager.getDefault().getLibrary(libName);
         if (libDef != null) {
             // Existing definition so first remove any existing references
-
-            if (JsfProjectUtils.hasLibraryReference(project, libDef)) {
-                JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });
-            }
+            JsfProjectUtils.removeLibraryReferences(project, new Library[] { libDef });
 
             JsfProjectUtils.removeLibrary(libName);
 
