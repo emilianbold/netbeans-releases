@@ -167,6 +167,7 @@ public class JBIGenerator {
      */
     public JBIGenerator() {
     }
+
     /**
      * Constructor
      * @param depedentProjectDirs List of dependent projects directories
@@ -176,6 +177,7 @@ public class JBIGenerator {
         this.mDepedentProjectDirs = depedentProjectDirs;
         this.mSourceDirs = sourceDirs;
     }
+
     /**
      * Process the source directory and gather 
      * the data required to generate JBI.xml
@@ -186,6 +188,7 @@ public class JBIGenerator {
             processSourceDirs(this.mSourceDirs);
         }
     }
+
     /**
      * Generate JBI.xml
      * @param buildDir the build directory 
@@ -207,6 +210,7 @@ public class JBIGenerator {
             logger.log(Level.SEVERE, "Failed to create jbi.xml", ex);
         }
     }
+
     /**
      * Utility method used in generating JBI.xml 
      * Adds attribute to the Elements
@@ -220,15 +224,14 @@ public class JBIGenerator {
             Map.Entry entry = (Map.Entry)  itr.next();
             root.setAttribute(NS_ATTR_NAME+":"+(String)entry.getValue(),(String)entry.getKey() );
         }
-        
     }
+
     /**
      * Generate the JBI.xml 
      * @param jbiFie File object representing the JBI.xml 
      * @throws ParserConfigurationException
      */
     private void generateJbiXml(File jbiFile) throws ParserConfigurationException {
-        
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument(); // Create from whole cloth
@@ -241,7 +244,6 @@ public class JBIGenerator {
         addNamespaceToRoot(root);
         
         Map map = new HashMap();
-        
         document.appendChild(root);
         
         // add services
@@ -331,9 +333,6 @@ public class JBIGenerator {
             transformer.setOutputProperty(OutputKeys.MEDIA_TYPE, "text/xml");  // NOI18N
             transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");  // NOI18N
             
-            // indent the output to make it more legible...
-          //  transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");  // NOI18N
-          //  transformer.setOutputProperty(OutputKeys.INDENT, "yes");  // NOI18N
             transformer.transform(source, result);
         } catch (Exception ex) {
             
@@ -353,7 +352,6 @@ public class JBIGenerator {
                 }
             }
         }
-        
     }
     
     /**
@@ -367,6 +365,7 @@ public class JBIGenerator {
             processFile(file);
         }
     }
+
     /**
      * Process the folder to generate JBI.xml
      * @param fileDir  Folder location
@@ -387,21 +386,25 @@ public class JBIGenerator {
         String fileName = file.getName();
         String fileExtension = null;
         int dotIndex = fileName.lastIndexOf('.');
+
         if(dotIndex != -1) {
             fileExtension = fileName.substring(dotIndex +1);
         }
         
         if (fileExtension != null && fileExtension.equalsIgnoreCase("bpel")) {
             BpelModel bpelModel = null;
+
             try {
                 bpelModel = BPELCatalogModel.getDefault().getBPELModel(file.toURI());
-            }catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 this.logger.log(java.util.logging.Level.SEVERE, "Error while creating BPEL Model ", ex);
                 throw new RuntimeException("Error while creating BPEL Model ",ex);
             }
             try {
                 populateProviderConsumer(bpelModel);
-            }catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 logger.log(Level.SEVERE, "Error encountered while processing BPEL file - "+file.getAbsolutePath());
                 throw new RuntimeException(ex);
             }
@@ -423,14 +426,25 @@ public class JBIGenerator {
         }
         return namespacePrefix;
     }
-    /**
-     * Populate the provider/consumer objects from BPELModel
-     * @param bpelModel input BPEL Model
-     */
+
     void populateProviderConsumer(BpelModel bpelModel) {
+        // vlv # 109292
+        if (bpelModel == null) {
+          return;
+        }
+        if (bpelModel.getProcess() == null) {
+          return;
+        }
+        if (bpelModel.getProcess().getPartnerLinkContainer() == null) {
+          return;
+        }
+        if (bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks() == null) {
+          return;
+        }
         PartnerLink[] pLinks = bpelModel.getProcess().getPartnerLinkContainer().getPartnerLinks();
         Provider provider = null;
         Consumer consumer = null;
+
         for (int index =0; index < pLinks.length; index++) {
             PartnerLink pLink = pLinks[index];
             String partnerLinkName = pLink.getName();
@@ -438,8 +452,7 @@ public class JBIGenerator {
             
             String partnerLinkQNameLocalPart = partnerLinkName;
             String partnerLinkNameSpaceURI = pLinks[index].getBpelModel().getProcess().getTargetNamespace();
-        //    String partnerLinkNameSpaceURI = bpelModel.getProcess().getTargetNamespace();
-              String partnerLinkNSPrefix = populateNamespace(partnerLinkNameSpaceURI);
+            String partnerLinkNSPrefix = populateNamespace(partnerLinkNameSpaceURI);
             
             PartnerLinkType pLTypeForPLinkType = (PartnerLinkType)partnerLinkTypeWSDLRef.get();
             String portName = null;
@@ -449,7 +462,7 @@ public class JBIGenerator {
             WSDLReference<Role> myRoleWSDLRef = pLinks[index].getMyRole();
 
             if (pLTypeForPLinkType == null) {
-                logger.log(Level.SEVERE, "Problem encountered while processing partnerLinkType of   \""+partnerLinkName+"\"");
+                logger.log(Level.SEVERE, "Problem encountered while processing partnerLinkType of \""+partnerLinkName+"\"");
                 throw new RuntimeException("PartnerLink Type is Null!");
             }     
 
@@ -481,6 +494,7 @@ public class JBIGenerator {
                 }
             }
             WSDLReference<Role> myPartnerRoleRef = pLinks[index].getPartnerRole();
+
             if ( myPartnerRoleRef != null) {
                 String partnerRoleName = null;
                 Role  partnerRole= myPartnerRoleRef.get();
@@ -508,14 +522,8 @@ public class JBIGenerator {
                 }
             }
         }
-
     }
     
-    /**
-     * Utility!
-     * Format the file.
-     * @param portMapFile
-     */
     private void formatXml(File portMapFile) {
         try {
             DataWriter w = new DataWriter(XMLReaderFactory.createXMLReader());
@@ -530,32 +538,21 @@ public class JBIGenerator {
             logger.log(Level.SEVERE, "Failed to format xml  "+ portMapFile.getPath(), ex);
             throw new BuildException("Failed to format xml  "+ portMapFile.getPath() + " \n" +  ex.getMessage());
         }
-        
     }
     
-    /**
-     * Process the list of source directories to generate JBI.xml
-     * @param sourceDirs list of source directory
-     */
     private void processSourceDirs(List sourceDirs) {
         Iterator it = sourceDirs.iterator();
+
         while(it.hasNext()) {
             File sourceDir = (File) it.next();
             processSourceDir(sourceDir);
             readAndPackageFromProjectCatalog(sourceDir);
         }
-        
-        
     }
     
-    /**
-     * Proces the source directory to generate JBI.xml
-     * @param sourceDir
-     */
     private void processSourceDir(File sourceDir) {
         processFileObject(sourceDir);
     }
-    
     
     private void readAndPackageFromProjectCatalog(File sourceDir) {
         String projectCatalogLocation = new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getProjectWideCatalogForWizard()).getAbsolutePath();
@@ -563,6 +560,4 @@ public class JBIGenerator {
         pa.doCopy(projectCatalogLocation, this.mBuildDir );
         
     }
-    
-    
 }

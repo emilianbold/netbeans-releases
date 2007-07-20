@@ -39,11 +39,7 @@ import org.openide.filesystems.FileUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
-
-
 import javax.xml.namespace.QName;
-
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
@@ -76,48 +72,32 @@ import org.netbeans.modules.bpel.project.anttasks.jbi.Provider;
  * @author Sreenivasan Genipudi
  */
 public class IDEJBIGenerator extends JBIGenerator {
-    //Member variable representing logger
-    /**
-     * Logger instance
-     */
-    private Logger logger = Logger.getLogger(IDEJBIGenerator.class.getName());
-    //Constant representing the partnerRole
 
-    /**
-     * Constructor
-     */
     public IDEJBIGenerator() {
     }
-    /**
-     * Constructor
-     * @param depedentProjectDirs List of dependent projects directories
-     * @param sourceDirs  List of current source directory
-     */
+
     public IDEJBIGenerator(List depedentProjectDirs , List sourceDirs) {
         super(depedentProjectDirs, sourceDirs);
     }
-    /**
-     * Process the file to generate JBI.xml
-     * @param file input file
-     */
+
     public void processFile(File file) {
         String fileName = file.getName();
         String fileExtension = null;
         int dotIndex = fileName.lastIndexOf('.');
+
         if(dotIndex != -1) {
             fileExtension = fileName.substring(dotIndex +1);
         }
-
         if (fileExtension != null && fileExtension.equalsIgnoreCase("bpel")) {
             BpelModel bpelModel = null;
+
             try {
                 bpelModel =IDEBPELCatalogModel.getDefault().getBPELModel(file);
-            }catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 this.logger.log(java.util.logging.Level.SEVERE, "Error while creating BPEL Model ", ex);
                 throw new RuntimeException("Error while creating BPEL Model ",ex);
             }
-           
-            
             try {
                 populateProviderConsumer(bpelModel);
             }catch (Exception ex) {
@@ -127,6 +107,5 @@ public class IDEJBIGenerator extends JBIGenerator {
         }
     }
 
-
-
+    private Logger logger = Logger.getLogger(IDEJBIGenerator.class.getName());
 }
