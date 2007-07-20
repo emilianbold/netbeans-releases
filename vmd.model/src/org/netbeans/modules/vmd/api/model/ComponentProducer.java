@@ -80,11 +80,21 @@ public abstract class ComponentProducer {
      * @return the result of creation
      */
     public final Result createComponent (DesignDocument document) {
-        DesignComponent mainComponent = document.createComponent (getMainComponentTypeID ());
+        DesignComponent mainComponent = createMainComponent(document);
+        assert mainComponent != null;
         Result result = postInitialize (document, mainComponent);
         assert result != null;
         assert result.getMainComponent () == mainComponent;
         return result;
+    }
+    
+    /**
+     * Creates or finds a main component of the producer for a document.
+     * @param document the docuemnt
+     * @return created or found non-null main component
+     */
+    protected DesignComponent createMainComponent (DesignDocument document) {
+        return document.createComponent (getMainComponentTypeID ());
     }
 
     /**
