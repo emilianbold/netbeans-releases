@@ -113,6 +113,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             return;
         }
         
+        this.wsdlModel = wsdlModel;
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         for (Binding binding : Util.getSortedBindings(wsdlModel)) {
             DefaultMutableTreeNode bindingNode = new DefaultMutableTreeNode(binding);
