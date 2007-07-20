@@ -122,10 +122,4 @@
 -->    
     </folder>
     
-    <folder name="BPELProjectDebuggerAction">
-        <file name="Action">
-            <attr name="Action" stringvalue="org.netbeans.modules.bpel.debugger.ui.action.AttachDebuggerAction"/>
-        </file>
-    </folder> 
-    
 </filesystem>
