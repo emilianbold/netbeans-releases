@@ -112,7 +112,8 @@ public class CallStackModel implements TreeModel, NodeModel,
         if (node instanceof RubyFrame) {
             RubyFrame frame = ((RubyFrame) node);
             String basename = new File(frame.getFile()).getName();
-            return basename + ':' + frame.getLine();
+            String dn = basename + ':' + frame.getLine();
+            return rubySession.isSelectedFrame(frame) ? "<html><b>" + dn + "</b></html>" : dn;
         } else if (node == ROOT) {
             return NbBundle.getMessage(CallStackModel.class, "CTL_CallstackModel_Column_Name_Name");
         } else {
@@ -122,9 +123,11 @@ public class CallStackModel implements TreeModel, NodeModel,
     
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof RubyFrame) {
-            return CALL_STACK;
-            //} else if (is current RubyFrame) {
-            //return CURRENT_CALL_STACK;
+            if (rubySession.isSelectedFrame((RubyFrame) node)) {
+                return CURRENT_CALL_STACK;
+            } else {
+                return CALL_STACK;
+            }
         } else if (node == ROOT) {
             return null;
         } else {
@@ -153,6 +156,7 @@ public class CallStackModel implements TreeModel, NodeModel,
                     EditorUtil.getLine(rubySession.resolveAbsolutePath(frame.getFile()),
                     frame.getLine() - 1));
             rubySession.selectFrame(frame);
+            fireChanges();
             contextProvider.getVariablesModel().fireChanges();
             contextProvider.getWatchesModel().fireChanges();
         } else {

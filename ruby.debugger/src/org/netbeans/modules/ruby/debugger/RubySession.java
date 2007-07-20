@@ -32,6 +32,7 @@ import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
@@ -182,8 +183,17 @@ public final class RubySession {
         this.selectedFrame = frame;
     }
 
-    private RubyFrame getSelectedFrame() throws RubyDebuggerException {
-        return selectedFrame == null ? getTopFrame() : selectedFrame;
+    private RubyFrame getSelectedFrame() {
+        try {
+            return selectedFrame == null ? getTopFrame() : selectedFrame;
+        } catch (RubyDebuggerException e) {
+            Util.LOGGER.log(Level.INFO, "Unable to read top stack frame", e); // NOI18N
+            return null;
+        }
+    }
+    
+    public boolean isSelectedFrame(final RubyFrame frame) {
+        return frame.equals(getSelectedFrame());
     }
     
     public RubyVariable[] getGlobalVariables() {
