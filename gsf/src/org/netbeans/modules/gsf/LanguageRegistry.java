@@ -625,11 +625,10 @@ public class LanguageRegistry implements Iterable<Language> {
                         FileUtil.createData(root,
                             "Toolbars/Default/Separator-before-comment.instance");
                     sep.setAttribute("instanceClass", "javax.swing.JSeparator");
-                    // Should come after stop-macro-recording:
-                    sep.setAttribute("position", 1000);
+                    sep.setAttribute("position", 30000);
 
-                    FileUtil.createData(root, "Toolbars/Default/comment").setAttribute("position", 1100);
-                    FileUtil.createData(root, "Toolbars/Default/uncomment").setAttribute("position", 1200);
+                    FileUtil.createData(root, "Toolbars/Default/comment").setAttribute("position", 30100);
+                    FileUtil.createData(root, "Toolbars/Default/uncomment").setAttribute("position", 30200);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

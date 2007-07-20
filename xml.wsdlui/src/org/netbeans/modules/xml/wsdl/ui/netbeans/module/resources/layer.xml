@@ -131,7 +131,7 @@
             <folder name="x-wsdl+xml">
                 <folder name="Popup">
                     <file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance">
-                        <attr name="position" intvalue="4100"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
             </folder>

@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="4100"/>
+                        <attr name="position" intvalue="3600"/>
                     </file>
                     </folder>
             </folder>
