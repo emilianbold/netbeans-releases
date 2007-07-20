@@ -59,6 +59,7 @@
 
                     <!-- BluePrints -->
                     <folder name="BPELBluePrints">
+                        <attr name="position" intvalue="400"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/category.html"/>
 

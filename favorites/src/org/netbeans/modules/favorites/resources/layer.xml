@@ -87,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Other">
             <attr name="position" intvalue="2100"/>
             <folder name="Folder">
-                <attr name="position" intvalue="900"/>
+                <attr name="position" intvalue="2100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/templatesFolder.html"/>
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
             <file name="file">
                 <![CDATA[]]>
-                <attr name="position" intvalue="600"/>
+                <attr name="position" intvalue="2000"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/newFile.png"/>
@@ -107,6 +107,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Privileged">
 	    <file name="Folder.shadow">
                 <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
+                <attr name="position" intvalue="2000"/>
             </file>
 	</folder>
     </folder>

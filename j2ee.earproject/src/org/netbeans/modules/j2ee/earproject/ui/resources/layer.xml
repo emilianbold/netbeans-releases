@@ -48,6 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="J2EE">
             <file name="ApplicationXml">
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="800"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.dd.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.dd.ApplicationXmlWizardIterator"/>
                 <attr name="templateCategory" stringvalue="ear-types,ear-deployment-descriptor"/>

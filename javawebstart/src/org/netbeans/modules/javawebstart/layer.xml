@@ -100,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javawebstart.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="java-classes"/>
+                <attr name="position" intvalue="500"/>
             </file>
         </folder>
     </folder>

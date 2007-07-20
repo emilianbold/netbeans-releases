@@ -45,14 +45,14 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
             <file name="Project.xml" url="Project.xml_">
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
                 <attr name="templateCategory" stringvalue="ant-script"/>
             </file>
             <file name="CustomTask.java" url="CustomTask_java">
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
                 <!-- XXX #44054: implies a runtime dep on java/project module: -->

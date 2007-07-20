@@ -145,6 +145,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
              </file>
             <file name="LocalizationSupport.properties" url="templates/MIDP/LocalizationSupport_properties.template">
+                <attr name="position" intvalue="0"/>
                 <!--
                 <attr boolvalue="true" name="template"/>
                 -->

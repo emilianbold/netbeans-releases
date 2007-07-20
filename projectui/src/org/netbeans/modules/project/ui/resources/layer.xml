@@ -171,6 +171,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Generic import folder -->
             <folder name="Import">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="position" intvalue="990"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/import.html"/>
             </folder>
         </folder>        

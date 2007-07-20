@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Other">
             <file name="CascadeStyleSheet.css" url="CascadeStyleSheet.css.template">
-                <attr name="position" intvalue="800"/>
+                <attr name="position" intvalue="310"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif"/>

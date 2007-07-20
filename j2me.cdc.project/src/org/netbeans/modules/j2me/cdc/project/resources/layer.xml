@@ -193,6 +193,7 @@
                 <attr name="templateCategory" stringvalue="CDC/AGUI"/>
             </file>
             <file name="JFrame.java" url="templates/JFrame_java">
+                <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/JFrame.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         

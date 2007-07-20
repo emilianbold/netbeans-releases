@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Samples">
                 <folder name="Native">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
-
+                    <attr name="position" intvalue="650"/>
                     
                     <folder name="Applications">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>

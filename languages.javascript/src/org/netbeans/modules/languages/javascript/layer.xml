@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Other">
             <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="400"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
@@ -57,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="EmptyJSON.json" url="EmptyJSON.json">
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="450"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>

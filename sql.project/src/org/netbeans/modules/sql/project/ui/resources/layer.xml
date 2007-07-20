@@ -112,6 +112,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Add template for the J2SE project -->
                 <file name="emptySQLpro.xml">
                     <attr name="template" boolvalue="true"/>
+                    <attr name="position" intvalue="400"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.sql.project.ui.wizards.NewSQLproProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/sql/project/ui/resources/sqlproProjectIcon.gif"/>

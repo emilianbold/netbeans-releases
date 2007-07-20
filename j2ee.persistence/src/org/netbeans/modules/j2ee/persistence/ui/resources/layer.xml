@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="position" intvalue="1300"/>
             <file name="Entity.java">
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizard.create"/>
                 <attr name="templateCategory" stringvalue="persistence"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityEJB.html"/>
@@ -42,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"/>
             </file>
             <file name="RelatedCMP">
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard.createForJPA"/>
                 <attr name="templateCategory" stringvalue="persistence"/>
@@ -52,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
 
             </file>
             <file name="PersistenceUnit">
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizard.create"/>
                 <attr name="templateCategory" stringvalue="persistence,deployment-descriptor"/>
@@ -61,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"/>
             </file>
             <file name="ejbFacade">
+                <attr name="position" intvalue="500"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.dao.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator"/>
                 <attr name="template" boolvalue="true"/>

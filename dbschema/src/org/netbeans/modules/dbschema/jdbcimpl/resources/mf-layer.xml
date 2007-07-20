@@ -82,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/Databases.html"/>
 
       <file name="Schema.dbschema" url="templates/Schema.template">
+          <attr name="position" intvalue="400"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/>
          <attr name="template" boolvalue="true"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/DBSchema.html"/>

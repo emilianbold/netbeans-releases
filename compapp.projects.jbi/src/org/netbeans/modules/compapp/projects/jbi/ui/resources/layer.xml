@@ -23,7 +23,7 @@
         <folder name="Project">
             <folder name="SOA">
                 <file name="emptyJbi.xml">
-                    <attr name="position" intvalue="200"/>
+                    <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.compapp.projects.jbi.ui.wizards.NewJbiProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.projects.jbi.ui.wizards.Bundle"/>

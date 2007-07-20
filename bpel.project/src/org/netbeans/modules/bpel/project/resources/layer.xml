@@ -27,7 +27,7 @@
                 <attr name="position" intvalue="650"/>
 
                 <file name="emptyBpelpro.xml">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.bpel.project.wizards.NewBpelproProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.project.wizards.Bundle"/>

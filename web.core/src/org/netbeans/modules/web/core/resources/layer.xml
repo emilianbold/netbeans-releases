@@ -36,11 +36,17 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       <!--  JSP Document --> 
-      <file name="JSPX.jspx" url="templates/JSPDoc.template"/>
+      <file name="JSPX.jspx" url="templates/JSPDoc.template">
+        <attr name="position" intvalue="0"/>
+      </file>
       <!--  JSP Segment --> 
-      <file name="JSPF.jspf" url="templates/JSPF.template"/>
+      <file name="JSPF.jspf" url="templates/JSPF.template">
+        <attr name="position" intvalue="0"/>
+      </file>
       <!--  XML segemnt --> 
-      <file name="JSPFX.jspf" url="templates/JSPDocX.template"/>
+      <file name="JSPFX.jspf" url="templates/JSPDocX.template">
+        <attr name="position" intvalue="0"/>
+      </file>
       <!-- Tag File -->
       <file name="TagFile.tag" url="templates/TagFile.template">
         <attr name="position" intvalue="1100"/>
@@ -51,10 +57,16 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag File Document --> 
-      <file name="TagFileX.tagx" url="templates/TagFileX.template"/>
+      <file name="TagFileX.tagx" url="templates/TagFileX.template">
+        <attr name="position" intvalue="0"/>
+      </file>
       <!--  Tag File Segments --> 
-      <file name="TagFileF.tagf" url="templates/TagFileF.template"/>
-      <file name="TagFileFX.tagf" url="templates/TagFileFX.template"/>
+      <file name="TagFileF.tagf" url="templates/TagFileF.template">
+        <attr name="position" intvalue="0"/>
+      </file>
+      <file name="TagFileFX.tagf" url="templates/TagFileFX.template">
+        <attr name="position" intvalue="0"/>
+      </file>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="position" intvalue="200"/>
@@ -116,7 +128,9 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag Library 1.2 --> 
-      <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template"/>
+      <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template">
+        <attr name="position" intvalue="0"/>
+      </file>
       <!-- Filters --> 
       <file name="SimpleFilter.java" url="templates/SimpleFilter.template">
         <attr name="position" intvalue="300"/>
@@ -130,6 +144,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>      
       <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template">
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="position" intvalue="0"/>
       </file>
       <!-- Tag Handlers --> 
       <file name="TagHandler.java" url="templates/SimpleTagHandler.template">
@@ -144,6 +159,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>      
       <file name="BodyTagHandler.java" url="templates/BodyTagHandler.template">
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="position" intvalue="0"/>
       </file>
       
     </folder>

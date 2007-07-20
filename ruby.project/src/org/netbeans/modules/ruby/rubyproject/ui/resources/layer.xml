@@ -124,6 +124,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Other">
             <file name="main.rb" url="main.rb">
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="700"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <!-- This is a hack to allow Ruby files to show up in Java projects as well in case you want to mix in Ruby for scripting. -->

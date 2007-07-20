@@ -90,9 +90,10 @@
             <folder name="Samples">
                 <folder name="J2ME">
                     <folder name="CDC">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
-                        <folder name="Ricoh">
+                        <attr name="position" intvalue="300"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                        <folder name="Ricoh">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                             <file name="ButtonTest.zip" url="samples/ButtonTest.zip">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
