@@ -19,6 +19,8 @@
 
 package org.netbeans.spi.autoupdate;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -26,7 +28,6 @@ import org.netbeans.modules.autoupdate.services.*;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl.OperationInfoImpl;
 import org.netbeans.modules.autoupdate.services.UpdateUnitImpl;
-import org.netbeans.spi.autoupdate.UpdateItem;
 
 /** Trampline to access internals of API and SPI.
  *
@@ -80,6 +81,14 @@ final class TrampolineSPI extends Trampoline {
 
     protected OperationInfo createOperationInfo(OperationContainerImpl.OperationInfoImpl impl) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    protected File findCluster (String clusterName, AutoupdateClusterCreator creator) {
+        return creator.findCluster (clusterName);
+    }
+
+    protected File[] registerCluster (String clusterName, File cluster, AutoupdateClusterCreator creator) throws IOException {
+        return creator.registerCluster (clusterName, cluster);
     }
 
 }

@@ -28,10 +28,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -80,6 +82,39 @@ public class InstallManager {
                         } else {
                             ERR.log (Level.WARNING, "No write permision in target cluster " + targetCluster + 
                                     " for " + update.getUpdateElement ());
+                        }
+                    }
+                }
+                
+                // handle non-existing clusters
+                if (res == null && targetCluster != null) {
+                    for (AutoupdateClusterCreator creator : Lookup.getDefault ().lookupAll (AutoupdateClusterCreator.class)) {
+                        File possibleCluster = Trampoline.SPI.findCluster (targetCluster, creator);
+                        if (possibleCluster != null) {
+                            try {
+                                ERR.log (Level.FINE, "Found cluster candidate " + possibleCluster + " for declared target cluster " + targetCluster);
+                                File[] dirs = Trampoline.SPI.registerCluster (targetCluster, possibleCluster, creator);
+                                
+                                // it looks good, generate new netbeans.dirs
+                                res = possibleCluster;
+                                
+                                StringBuffer sb = new StringBuffer ();
+                                String sep = "";
+                                for (int i = 0; i < dirs.length; i++) {
+                                    sb.append (sep);
+                                    sb.append (dirs [i].getPath ());
+                                    sep = File.pathSeparator;
+                                }
+                                
+                                System.setProperty("netbeans.dirs", sb.toString ()); // NOI18N
+                                ERR.log (Level.FINE, "Was written new netbeans.dirs " + sb);
+                                
+                                res = possibleCluster;
+                                break;
+                                
+                            } catch (IOException ioe) {
+                                ERR.log (Level.INFO, ioe.getMessage (), ioe);
+                            }
                         }
                     }
                 }

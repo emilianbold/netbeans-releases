@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +30,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl.OperationInfoImpl;
-import org.netbeans.modules.autoupdate.services.UpdateUnitImpl;
+import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.spi.autoupdate.UpdateItem;
 
 /** Trampline to access internals of API and SPI.
@@ -76,4 +78,8 @@ public abstract class Trampoline<Support> extends Object {
     // spi.UpdateItem
     protected abstract UpdateItemImpl impl (UpdateItem item);
     protected abstract UpdateItem createUpdateItem (UpdateItemImpl impl);
+    
+    // spi.AutoupdateClusterCreator
+    protected abstract File findCluster (String clusterName, AutoupdateClusterCreator creator);
+    protected abstract File[] registerCluster (String clusterName, File cluster, AutoupdateClusterCreator creator) throws IOException;
 }
