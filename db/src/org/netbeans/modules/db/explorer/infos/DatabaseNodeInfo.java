@@ -96,8 +96,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     private boolean connected = false;
 
-    transient boolean passwordWasSet = false;
-    
     protected static ResourceBundle bundle() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
     }
@@ -322,10 +320,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             super.put(key, obj);
         else
             remove(key);
-
-        // TEMP HACK FOR JDBC
-        if(key.equals(DatabaseNodeInfo.PASSWORD))
-            passwordWasSet = true;
 
         if (getDriverPCSKeys().contains(key)){
             getDriverPCS().firePropertyChange((String)key, old, obj);
@@ -816,10 +810,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
      */
     public void setDriverSpecification(DriverSpecification driverSpecification) {
         put(DRIVER_SPECIFICATION, driverSpecification);
-    }
-    
-    public boolean isPasswordSet() {
-        return passwordWasSet;
     }
 
 }
