@@ -47,7 +47,7 @@ public final class XMLComponentProducer extends ComponentProducer {
     public static final String VERSION_VALUE_1 = "1"; // NOI18N
 
     protected XMLComponentProducer (String producerID, TypeID typeID, PaletteDescriptor paletteDescriptor) {
-        super (producerID, typeID, paletteDescriptor); // TODO
+        super (producerID, typeID, paletteDescriptor);
     }
 
     public static XMLComponentProducer deserialize (String projectType, Document document) {

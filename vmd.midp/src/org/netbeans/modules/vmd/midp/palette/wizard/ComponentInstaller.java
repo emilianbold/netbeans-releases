@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midp.serialization.MidpTypesConvertor;
 import org.netbeans.modules.vmd.midp.serialization.MidpAddImportPresenterSerializer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
@@ -178,11 +179,7 @@ public final class ComponentInstaller {
         boolean isAbstract = element.getModifiers ().contains (Modifier.ABSTRACT);
         boolean isFinal = element.getModifiers ().contains (Modifier.FINAL);
         FileObject file = SourceUtils.getFile (ElementHandle.create (element), info);
-        boolean isInSource = false;
-        try {
-            isInSource = file != null  &&  sourceGroup != null  &&  sourceGroup.contains (file);
-	} catch (IllegalArgumentException e) {
-        }
+        boolean isInSource = file != null  &&  sourceGroup != null  &&  FileUtil.isParentOf (sourceGroup.getRootFolder (), file);
         item = new Item (superFQN, fqn, isAbstract, isFinal, isInSource);
         item.addPresenter (new MidpAddImportPresenterSerializer ());
 
