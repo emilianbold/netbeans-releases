@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <tstamp>
                 <format property="dalp-index.update-time" pattern="yyyy-MM-dd-HHmm"/>
             </tstamp>
-            <echo message="libs.RicohAntTools.classpath = ${libs.RicohAntTools.classpath}"/>
+            <echo message="libs.ricoh-ant-utils.classpath = ${libs.ricoh-ant-utils.classpath}"/>
             <echo message="build.dir = ${build.dir}"/>
             <echo message="xml.dir   = ${xml.dir}"/>
             <mkdir dir="${xml.dir}"/>
@@ -38,25 +38,8 @@ Microsystems, Inc. All Rights Reserved.
                                 &lt;dalpList pubDate="${dalp-index.update-time}"&gt;
                                 &lt;/dalpList&gt;
                         
-                    </echo>
-            <taskIf if="ricoh.deployment.deploy.method" value="samba">
-                <property name="ricoh.install-server.web-port" value="${ricoh.deployment.smb.webport}"/>
-                <property name="ricoh.install-server.path" value="${ricoh.deployment.smb.webpath}"/>
-            </taskIf>
-            <taskIf if="ricoh.deployment.deploy.method" value="scp">
-                <property name="ricoh.install-server.web-port" value="${ricoh.deployment.scp.webport}"/>
-                <property name="ricoh.install-server.path" value="${ricoh.deployment.scp.webpath}"/>
-            </taskIf>
-            <echo message="Fetching Dalp.xml off HTTP server @ ${ricoh.deployment.server.name} on port ${ricoh.install-server.web-port}..."/>
-            <get src="http://${ricoh.deployment.server.name}:${ricoh.install-server.web-port}${ricoh.install-server.path}/Dalp.xml" dest="${xml.dir}/Original-Dalp.xml" ignoreerrors="true"/>
-            <condition property="no.original.dalp" value="true">
-                <not>
-                    <available file="${xml.dir}/Original-Dalp.xml"/>
-                </not>
-            </condition>
-            <taskIf if="no.original.dalp" value="true">
-                <echo message="Dalp.xml not found on webserver; generating new copy"/>
-            </taskIf>
+            </echo>
+            <property name="no.original.dalp" value="true"/>
             <taskIf unless="no.original.dalp" value="true">
                 <echo message="Got original Dalp.xml, adding project to list."/>
             </taskIf>
@@ -247,28 +230,29 @@ Microsystems, Inc. All Rights Reserved.
                     </fileset>
                 </scp>
             </taskIf>
-        </taskIf>
-        <!--
+        </taskIf>        
         <taskIf if="ricoh.deployment.deploy.method" value="samba">
-            <fail unless="jcifs" message="jcifs-1.2.x.jar library is not available. Download library at http://jcifs.samba.org/ and install it into &lt;NetBeans install directory&gt;/cdc2/external/"/>
-            <echo message="Deploying to webserver [${ricoh.smb.install-server}] via Samba as ''${ricoh.smb.install-server.user}''"/>
-            <taskIf unless="${ricoh.smb.install-server.smb-port}" value="">
-                <echo message="Connecting to Samba share on port ${ricoh.smb.install-server.smb-port}"/>
+            <available property="jcifs" classname="jcifs.smb.SmbFile" classpath="${libs.ricoh-ant-utils.classpath}"/>
+            <fail unless="jcifs" message="jcifs-1.2.x.jar library is not available. Download library at http://jcifs.samba.org/ and install it into &lt;NetBeans install directory&gt;/mobility8/external/"/>
+            <echo message="Deploying to webserver [${ricoh.deployment.server.name}] via Samba as ''${ricoh.deployment.server.user}''"/>
+            <taskIf unless="${ricoh.deployment.smb.smbport}" value="">
+                <echo message="Connecting to Samba share on port ${ricoh.deployment.smb.smbport}"/>
             </taskIf>
-            <taskIf if="${ricoh.smb.install-server.smb-port}" value="">
+            <taskIf if="${ricoh.deployment.smb.smbport}" value="">
                 <echo message="Connecting to Samba share on port 139"/>
             </taskIf>
-            <taskdef name="smb" classname="ricoh.ant.samba.SambaTask" classpath="${libs.RicohAntTools.classpath}"/>
-            <smb todir="smb://${ricoh.smb.install-server.user}:${ricoh.smb.install-server.password}@${ricoh.smb.install-server}${ricoh.smb.install-server.dir}" destPort="${ricoh.smb.install-server.smb-port}">
+            <taskdef name="smb" classname="ricoh.ant.samba.SambaTask" classpath="${libs.ricoh-ant-utils.classpath}"/>
+            <smb todir="smb://${ricoh.deployment.server.user}:${ricoh.deployment.server.password}@${ricoh.deployment.server.name}/${ricoh.deployment.smb.dir}" destPort="${ricoh.deployment.smb.smbport}">
                 <fileset dir="${xml.dir}">
                     <include name="Dalp.xml"/>
                 </fileset>
-                <fileset file="${target.dir}/Ricoh-test.dalp"/>
-                <fileset dir="${target.dir}">
+                <fileset file="${deploy.dir}/${xlet.dalp}"/>
+                <fileset dir="${deploy.dir}">
                     <include name="*.jar"/>
                 </fileset>
             </smb>
         </taskIf>
+        <!--
         <taskIf if="ricoh.deployment.deploy.method" value="httppost">
             <echo message="Installing directly to MFD:"/>
             <echo message="Host:        ${ricoh.http.install-server.host}"/>

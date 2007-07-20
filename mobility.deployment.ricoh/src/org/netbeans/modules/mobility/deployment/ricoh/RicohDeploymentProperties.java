@@ -65,14 +65,10 @@ public class RicohDeploymentProperties
     //SMB properties
      static String PROP_RICOH_DEPLOY_SMB_PORT     = "ricoh.deployment.smb.smbport"; //NOI18N
      static String PROP_RICOH_DEPLOY_SMB_PATH     = "ricoh.deployment.smb.dir"; //NOI18N    
-     static String PROP_RICOH_DEPLOY_SMB_WEBPORT  = "ricoh.deployment.smb.webport"; //NOI18N
-     static String PROP_RICOH_DEPLOY_SMB_WEBPATH  = "ricoh.deployment.smb.webpath"; //NOI18N
     
     //SSH (via SCP) properties
      static String PROP_RICOH_DEPLOY_SSH_PORT     = "ricoh.deployment.scp.sshport"; //NOI18N
      static String PROP_RICOH_DEPLOY_SSH_PATH     = "ricoh.deployment.scp.dir"; //NOI18N
-     static String PROP_RICOH_DEPLOY_SSH_WEBPORT  = "ricoh.deployment.scp.webport"; //NOI18N
-     static String PROP_RICOH_DEPLOY_SSH_WEBPATH  = "ricoh.deployment.scp.webpath"; //NOI18N
      static String PROP_RICOH_DEPLOY_SSH_KEYFILE  = "ricoh.deployment.scp.keyfile"; //NOI18N
 
     //HTTP POST property
@@ -113,13 +109,9 @@ public class RicohDeploymentProperties
         
         globalProp.put(PROP_RICOH_DEPLOY_SMB_PORT,DEFAULT_SMB_PORT);
         globalProp.put(PROP_RICOH_DEPLOY_SMB_PATH,"");
-        globalProp.put(PROP_RICOH_DEPLOY_SMB_WEBPORT,DEFAULT_HTTP_PORT);
-        globalProp.put(PROP_RICOH_DEPLOY_SMB_WEBPATH,"");
         
         globalProp.put(PROP_RICOH_DEPLOY_SSH_PORT,DEFAULT_SSH_PORT);
         globalProp.put(PROP_RICOH_DEPLOY_SSH_PATH,"");
-        globalProp.put(PROP_RICOH_DEPLOY_SSH_WEBPORT,DEFAULT_HTTP_PORT);
-        globalProp.put(PROP_RICOH_DEPLOY_SSH_WEBPATH,"");
         globalProp.put(PROP_RICOH_DEPLOY_SSH_KEYFILE,DEFAULT_SSHKEY_PATH);
         
         globalProp.put(PROP_RICOH_DEPLOY_HTTP_PORT,DEFAULT_OSGI_PORT);
