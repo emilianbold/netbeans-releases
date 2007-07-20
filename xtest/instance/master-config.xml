@@ -228,4 +228,10 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ide" testtypes="qa-functional" attributes="j2ee"/>
   </config>
 
+  <config name="commit-validation-mobility">
+      <module name="mobility/project" testtypes="qa-functional" attributes="commit">
+          <!-- Propagate wtk.dir property to build-qa-functional.xml. -->
+          <property name="wtk.dir" value="${wtk.dir}"/>
+      </module>
+  </config>
 </testconfig>
