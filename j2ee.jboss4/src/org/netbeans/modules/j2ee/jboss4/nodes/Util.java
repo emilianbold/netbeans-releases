@@ -75,7 +75,7 @@ public class Util {
     public static Node createWaitNode() {
         AbstractNode n = new AbstractNode(Children.LEAF);
         n.setName(NbBundle.getMessage(JBItemNode.class, "LBL_WaitNode_DisplayName")); //NOI18N
-        n.setIconBaseWithExtension("org/openide/src/resources/wait.gif"); // NOI18N
+        n.setIconBaseWithExtension("org/netbeans/modules/j2ee/jboss4/resources/wait.gif"); // NOI18N
         return n;
     }
     
