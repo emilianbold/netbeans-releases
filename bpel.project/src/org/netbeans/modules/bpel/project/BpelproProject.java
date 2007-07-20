@@ -566,8 +566,8 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
       private String getFileName(String file) {
         file = file.replaceAll("%20", " ");
 
-        if (file.startsWith("file:/")) { // NOI18N
-          file = file.substring(6);
+        if (file.startsWith("file:")) { // NOI18N
+          file = file.substring(5);
         }
         return file;
       }
