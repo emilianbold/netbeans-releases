@@ -232,7 +232,7 @@ public class JProjectTree extends ApplicationView implements IProjectTreeControl
          //         m_Tree.setShowsRootHandles(perfValue.equals("PSK_YES") == false);
 
          m_Tree.setInvokesStopCellEditing(true);
-         m_Tree.setCellEditor(new ProjectTreeCellEditor());
+         m_Tree.setCellEditor(new ProjectTreeCellEditor(m_Tree));
          m_Tree.setEditable(true);
 
          registerContextMenu(true);
