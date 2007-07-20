@@ -48,7 +48,7 @@ public class SVGMenuCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGMenu"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_menu_32.png"; // NOI18N
 
     public static final String PROP_ELEMENTS = "elements"; // NOI18N
     public static final String PROP_INDEX_BASED_SWITCH = "indexBasedSwitch";  // NOI18N
